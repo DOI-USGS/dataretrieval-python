@@ -1,0 +1,5 @@
+numpy==1.14.1
+pandas==0.22.0
+python-dateutil==2.6.1
+pytest==3.5.0
+requests==2.18.1
