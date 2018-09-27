@@ -61,6 +61,11 @@ def try_format_datetime(df, date_field, time_field, tz_field):
 
 def get_qwdata(**kwargs):
     """Get water sample data from qwdata service.
+
+    Parameters
+    ----------
+    qw_sample_wide : string
+        separated_wide
     """
     # check number of sites, may need to create multiindex
 
@@ -74,8 +79,8 @@ def get_qwdata(**kwargs):
                'rdb_qw_attributes': 'expanded',
                'date_format': 'YYYY-MM-DD',
                'rdb_compression': 'value',
-               'submmitted_form': 'brief_list',
-               'qw_sample_wide': 'separated_wide'}
+               'submmitted_form': 'brief_list'}
+               #'qw_sample_wide': 'separated_wide'}
 
     kwargs = {**payload, **kwargs}
 
@@ -399,7 +404,8 @@ def get_record(sites=None, start=None, end=None, state=None,
         record_df = get_dv(sites=sites, startDT=start, endDT=end, **kwargs)
 
     elif service == 'qwdata':
-        record_df = get_qwdata(site_no=sites, begin_date=start, start_date=end)
+        record_df = get_qwdata(site_no=sites, begin_date=start, start_date=end,
+                               qw_sample_wide='separated_wide', **kwargs)
 
     elif service == 'site':
         record_df = get_info(sites=sites)
