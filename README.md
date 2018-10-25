@@ -4,11 +4,16 @@ dataretrieval: Download hydrologic data
 What is dataretrieval?
 -----------------------
 
-dataretrieval is a python alternative to USGS-R's dataRetrieval package for
+dataretrieval is a Python alternative to USGS-R's dataRetrieval package for
 obtaining USGS or EPA water quality data, streamflow data, and metadata
-directly from web services. Note that dataretrieval is an **alternantive** to the
-R package, not a port, in that it reproduces and expands upon the functionality
-of the R package but the organization and functionality often differs.
+directly from web services. Note that dataretrieval is an **alternative** to the
+R package, not a port, in that it reproduces the functionality
+of the R package but, its organization and functionality often differ. The
+the Python version also expands upon the functionality of its predecessor by including
+the capability to pull data from a variety of web portals besides NWIS and STORET. 
+
+If there's a hydrologic or environmental data portal that you'd like dataretrievel to 
+work with, raise it as an [issue](https://github.com/USGS-python/dataretrieval/issues).
 
 Here's an example of how to use dataretrievel to retrieve data from the National Water Information System (NWIS).
 
