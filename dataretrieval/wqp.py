@@ -56,7 +56,6 @@ def get_results(**kwargs):
     """
     kwargs['zip'] = 'no'
     kwargs['mimeType'] = 'csv'
-    kwargs['dataProfile']= 'narrowResult'
 
     response = query(wqp_url('Result'), **kwargs)
 
