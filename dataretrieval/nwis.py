@@ -59,11 +59,13 @@ def try_format_datetime(df, date_field, time_field, tz_field):
         return None
 
 
-def get_qwdata(**kwargs):
+def get_qwdata(datetime_index=True, **kwargs):
     """Get water sample data from qwdata service.
 
     Parameters
     ----------
+    datetime_index : boolean
+        If True, create a datetime index
     qw_sample_wide : string
         separated_wide
     """
@@ -87,8 +89,10 @@ def get_qwdata(**kwargs):
     query = query_waterdata('qwdata', **kwargs)
 
     df = read_rdb(query)
-    df = try_format_datetime(df, 'sample_dt', 'sample_tm',
-                             'sample_start_time_datum_cd')
+
+    if datetime_index == True:
+        df = try_format_datetime(df, 'sample_dt', 'sample_tm',
+                                 'sample_start_time_datum_cd')
 
     return format_response(df)
 
