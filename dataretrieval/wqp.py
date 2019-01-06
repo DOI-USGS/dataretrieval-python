@@ -72,7 +72,6 @@ def what_sites(**kwargs):
     """
     kwargs['zip'] = 'no'
     kwargs['mimeType'] = 'csv'
-    kwargs['dataProfile']= 'narrowResult'
 
     url = wqp_url('Station')
     query_string = query(url, **kwargs)
