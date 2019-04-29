@@ -408,7 +408,7 @@ def get_record(sites=None, start=None, end=None, state=None,
         record_df = get_dv(sites=sites, startDT=start, endDT=end, **kwargs)
 
     elif service == 'qwdata':
-        record_df = get_qwdata(site_no=sites, begin_date=start, start_date=end,
+        record_df = get_qwdata(site_no=sites, begin_date=start, end_date=end,
                                qw_sample_wide='separated_wide', **kwargs)
 
     elif service == 'site':
