@@ -380,7 +380,7 @@ def get_pmcodes(**kwargs):
     return format_response(df)
 
 
-def get_record(sites=None, start=None, end=None, state=None,
+def get_record(sites, start=None, end=None, state=None,
                service='iv', *args, **kwargs):
     """
     Get data from NWIS and return it as a DataFrame.
