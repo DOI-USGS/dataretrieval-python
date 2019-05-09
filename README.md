@@ -26,13 +26,13 @@ site = '03339000'
 
 
 # get instantaneous values (iv)
-df = nwis.get_record(site=site, service='iv', start='2017-12-31', end='2018-01-01')
+df = nwis.get_record(sites=site, service='iv', start='2017-12-31', end='2018-01-01')
 
 # get water quality samples (qwdata)
-df2 = nwis.get_record(site=site, service='qwdata', start='2017-12-31', end='2018-01-01')
+df2 = nwis.get_record(sites=site, service='qwdata', start='2017-12-31', end='2018-01-01')
 
 # get basic info about the site
-df3 = nwis.get_record(site=site, service='site')
+df3 = nwis.get_record(sites=site, service='site')
 ```
 Services available from NWIS include:
 - instantaneous values (iv)
@@ -45,7 +45,7 @@ Services available from NWIS include:
 
 To access the full functionality available from NWIS web services, nwis.get record appends any additional kwargs into the REST request. For example
 ```python
-nwis.get_record(site='03339000', service='dv', start='2017-12-31', parameterCd='00060')
+nwis.get_record(sites='03339000', service='dv', start='2017-12-31', parameterCd='00060')
 ```
 will download daily data with the parameter code 00060 (discharge).
 
