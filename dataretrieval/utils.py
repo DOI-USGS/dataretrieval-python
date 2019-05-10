@@ -56,7 +56,8 @@ def format_datetime(df, date_field, time_field, tz_field):
     df['datetime'] = pd.to_datetime(df.pop(date_field) + ' ' +
                                     df.pop(time_field) + ' ' +
                                     df.pop(tz_field),
-                                    format = '%Y-%m-%d %H:%M')
+                                    format = '%Y-%m-%d %H:%M',
+                                    utc=True)
 
     return df
 

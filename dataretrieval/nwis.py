@@ -38,9 +38,13 @@ def format_response(df, service=None):
     elif len(df['site_no'].unique()) > 1:
         # setup multi-index
         df.set_index(['site_no', 'datetime'], inplace=True)
+        if df.index.levels[1].tzinfo is None:
+            df = df.tz_localize('UTC', level=1)
 
     else:
         df.set_index(['datetime'], inplace=True)
+        if df.index.tzinfo is None:
+            df = df.tz_localize('UTC')
 
     return df.sort_index()
 
@@ -348,6 +352,7 @@ def get_info(**kwargs):
 def get_iv(**kwargs):
 
     query = query_waterservices('iv', format='json', **kwargs)
+
     df = read_json(query)
 
     return format_response(df)
@@ -486,6 +491,7 @@ def read_json(json, multi_index=False):
                                       'dateTime': 'datetime',
                                       'qualifiers': col_name + '_cd'},
                              inplace=True)
+
 
             if merged_df.empty:
                 merged_df = record_df
