@@ -447,6 +447,10 @@ def read_json(json, multi_index=False):
         DataFrame containing times series data from the NWIS json.
     """
     merged_df = pd.DataFrame()
+
+    if not json:
+        return merged_df
+
     for timeseries in json['value']['timeSeries']:
 
         site_no = timeseries['sourceInfo']['siteCode'][0]['value']
