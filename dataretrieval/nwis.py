@@ -211,7 +211,7 @@ def query_waterdata(service, **kwargs):
         raise TypeError('Query must specify a major filter: site_no, stateCd, bBox')
 
     elif any(key in kwargs for key in bbox_params) \
-    and not all(keys in kwargs for key in bbox_params):
+    and not all(key in kwargs for key in bbox_params):
         raise TypeError('One or more lat/long coordinates missing or invalid.')
 
     if service not in WATERDATA_SERVICES:
