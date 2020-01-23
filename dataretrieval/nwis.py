@@ -152,7 +152,7 @@ def get_stats(**kwargs):
 
     TODO: fix date parsing
     """
-    if sites not in kwargs:
+    if 'sites' not in kwargs:
         raise TypeError('Query must specify a site or list of sites')
 
     query = query_waterservices('stat', **kwargs)
