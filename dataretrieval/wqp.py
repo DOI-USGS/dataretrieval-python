@@ -82,5 +82,5 @@ def what_sites(**kwargs):
 
 
 def wqp_url(service):
-    base_url = 'https://waterqualitydata.us/'
+    base_url = 'https://www.waterqualitydata.us/'
     return '{}{}/Search?'.format(base_url, service)
