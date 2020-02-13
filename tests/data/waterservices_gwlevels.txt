@@ -1,0 +1,74 @@
+# ---------------------------------- WARNING ----------------------------------------
+# Some of the data that you have obtained from this U.S. Geological Survey database may not 
+# have received Director's approval.  Any such data values are qualified as provisional and 
+# are subject to revision.  Provisional data are released on the condition that neither the 
+# USGS nor the United States Government may be held liable for any damages resulting from its use.
+# Additional info: http://help.waterdata.usgs.gov/policies/provisional-data-statement
+#
+# File-format description:  http://help.waterdata.usgs.gov/faq/about-tab-delimited-output
+# Automated-retrieval info: http://help.waterdata.usgs.gov/faq/automated-retrievals
+#
+# Contact:   gs-w_support_nwisweb@usgs.gov
+# retrieved: 2020-02-14 17:37:13 -05:00	(natwebsdas01)
+#
+# US Geological Survey groundwater levels
+#
+# Data for the following 1 site(s) are contained in this file
+#    USGS 434400121275801 21S/11E-19CCC
+# -----------------------------------------------------------------------------------
+#
+# The fields in this file include:
+# ---------------------------------
+# agency_cd     Agency code
+# site_no       USGS site number
+# site_tp_cd    Site type code
+# lev_dt        Date level measured
+# lev_tm        Time level measured
+# lev_tz_cd     Time datum
+# lev_va        Water-level value in feet below land surface
+# sl_lev_va     Water-level value in feet above specific vertical datum
+# sl_datum_cd   Referenced vertical datum
+# lev_status_cd Status
+# lev_agency_cd Measuring agency
+# lev_dt_acy_cd Water-level date-time accuracy
+# lev_acy_cd    Water-level accuracy
+# lev_src_cd    Source of measurement
+# lev_meth_cd   Method of measurement
+# lev_age_cd    Water-level approval status
+#
+# Referenced agency codes (lev_agency_cd) included in this output
+#
+#     USGS       U.S. Geological Survey
+#
+# Referenced site type codes (site_tp_cd) included in this output
+#
+#     GW         Well
+#
+# Referenced water-level site status codes (lev_status_cd) included in this output
+#
+#     ""         The reported water-level measurement represents a static level
+#
+#
+# Referenced water-level date-time accuracy codes (lev_dt_acy_cd) included in this output
+#
+#     m          Date is accurate to the Minute
+#
+# Referenced water-level accuracy codes (lev_acy_cd) included in this output
+#
+#     2          Water level accuracy to nearest hundredth of a foot
+#
+# Referenced source of measurement codes (lev_src_cd) included in this output
+#
+#     S          Measured by personnel of reporting agency.
+#
+# Referenced method of measurement codes (lev_meth_cd) included in this output
+#
+#     S          Steel-tape measurement.
+#
+# Referenced water-level approval-status codes (lev_age_cd) included in this output
+#
+#     A          Approved for publication -- Processing and review completed.
+#
+agency_cd	site_no	site_tp_cd	lev_dt	lev_tm	lev_tz_cd	lev_va	sl_lev_va	sl_datum_cd	lev_status_cd	lev_agency_cd	lev_dt_acy_cd	lev_acy_cd	lev_src_cd	lev_meth_cd	lev_age_cd
+5s	15s	6s	10d	5d	5s	12s	12s	10s	1s	5s	1s	1s	1s	1s	1s
+USGS	434400121275801	GW	2016-10-26	09:22	PDT	28.33				USGS	m	2	S	S	A
