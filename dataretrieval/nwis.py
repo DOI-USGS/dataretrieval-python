@@ -183,6 +183,14 @@ def query(url, **kwargs):
     try:
 
         req = requests.get(url, params=payload)
+        # TODO remove these code snippets
+        #print(req.url)
+        #print("encoding {}".format(req.encoding))
+        #with open('output.txt', 'w', encoding=req.encoding) as f:
+        #    f.write(req.text)
+        #with open('output.json', 'w') as f:
+        #    import json
+        #    f.write(json.dumps(req.json()))
 
     except ConnectionError:
 
