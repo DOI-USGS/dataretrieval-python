@@ -102,7 +102,7 @@ def get_qwdata(datetime_index=True, **kwargs):
 
 
 def get_discharge_measurements(**kwargs):
-    """ **DEPCRECATED**
+    """
     Args:
         sites (listlike):
     """
@@ -113,7 +113,7 @@ def get_discharge_measurements(**kwargs):
 
 
 def get_discharge_peaks(**kwargs):
-    """ **DEPRECATED** Implement through waterservices
+    """
 
     Args:
         site_no (listlike):
@@ -186,7 +186,7 @@ def query(url, **kwargs):
         # TODO remove these code snippets
         #print(req.url)
         #print("encoding {}".format(req.encoding))
-        #with open('output.txt', 'w', encoding=req.encoding) as f:
+        #with open('output.txt', 'w') as f:
         #    f.write(req.text)
         #with open('output.json', 'w') as f:
         #    import json

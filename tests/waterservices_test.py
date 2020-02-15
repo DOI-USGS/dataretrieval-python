@@ -3,9 +3,23 @@ import requests
 
 from pandas import DataFrame
 
-from dataretrieval.nwis import query_waterservices, get_record
+from dataretrieval.nwis import query_waterservices, get_record, query_waterdata
 
 def test_query_waterservices_validation():
+    """Tests the validation parameters of the query_waterservices method"""
+    with pytest.raises(TypeError) as type_error:
+        query_waterdata(service='pmcodes', format='rdb')
+    assert 'Query must specify a major filter: site_no, stateCd, bBox' == str(type_error.value)
+
+    with pytest.raises(TypeError) as type_error:
+        query_waterdata(service=None, site_no='sites')
+    assert 'Service not recognized' == str(type_error.value)
+
+    with pytest.raises(TypeError) as type_error:
+        query_waterdata(service='pmcodes', nw_longitude_va='something')
+    assert 'One or more lat/long coordinates missing or invalid.' == str(type_error.value)
+
+def test_query_waterdata_validation():
     """Tests the validation parameters of the query_waterservices method"""
     with pytest.raises(TypeError) as type_error:
         query_waterservices(service='dv', format='rdb')
@@ -76,3 +90,21 @@ def test_get_gwlevels(requests_mock):
 
     gwlevels = get_record(sites=["434400121275801"], service='gwlevels')
     assert type(gwlevels) is DataFrame
+
+def test_get_discharge_peaks():
+    """Tests get_discharge_peaks method correctly generates the request url and returns the result in a DataFrame"""
+    #with open('data/waterservices_peaks.txt') as text:
+    #    requests_mock.get('https://nwis.waterdata.usgs.gov/nwis/peaks?format=rdb&site_no=01594440'
+    #                      '&begin_date=2000-02-14&end_date=2020-02-15',
+    #                      text=text.read())
+    info = get_record(sites=["01594440"], service='peaks', start='2000-02-14', end='2020-02-15')
+    assert type(info) is DataFrame
+
+def test_get_discharge_measurements(requests_mock):
+    """Tests get_discharge_measurements method correctly generates the request url and returns the result in a DataFrame"""
+    with open('data/waterdata_measurements.txt') as text:
+        requests_mock.get('https://nwis.waterdata.usgs.gov/nwis/measurements?format=rdb&site_no=01594440'
+                          '&begin_date=2000-02-14&end_date=2020-02-15',
+                          text=text.read())
+    info = get_record(sites=["01594440"], service='measurements', start='2000-02-14', end='2020-02-15')
+    assert type(info) is DataFrame
