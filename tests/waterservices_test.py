@@ -41,21 +41,23 @@ def test_get_record_validation():
 
 def test_get_dv(requests_mock):
     """Tests get_dv method correctly generates the request url and returns the result in a DataFrame"""
-    with open('data/waterservices_dv.json') as text:
+    with open('data/waterservices_dv.txt') as text:
         requests_mock.get('https://waterservices.usgs.gov/nwis/dv?format=json&sites=01491000%2C01645000'
                           '&startDT=2020-02-14&endDT=2020-02-15',
                           text=text.read())
     dv = get_record(sites=["01491000","01645000"], start='2020-02-14', end='2020-02-15', service='dv')
     assert type(dv) is DataFrame
+    assert dv.size == 8
 
 def test_get_iv(requests_mock):
     """Tests get_dv method correctly generates the request url and returns the result in a DataFrame"""
-    with open('data/waterservices_iv.json') as text:
+    with open('data/waterservices_iv.txt') as text:
         requests_mock.get('https://waterservices.usgs.gov/nwis/iv?sites=01491000%2C01645000&format=json'
-                          '&startDT=2020-02-14&endDT=2020-02-15',
+                          '&startDT=2019-02-14&endDT=2020-02-15',
                           text=text.read())
-    iv = get_record(sites=["01491000","01645000"], start='2020-02-14', end='2020-02-15', service='iv')
+    iv = get_record(sites=["01491000","01645000"], start='2019-02-14', end='2020-02-15', service='iv')
     assert type(iv) is DataFrame
+    assert iv.size == 563380
 
 def test_get_info(requests_mock):
     """
@@ -67,20 +69,20 @@ def test_get_info(requests_mock):
                           text=text.read())
     info = get_record(sites=["01491000","01645000"], start='2020-02-14', end='2020-02-15', service='site')
     assert type(info) is DataFrame
+    assert info.size == 24
 
-
-def test_get_qwdata():
+def test_get_qwdata(requests_mock):
     """Tests get_qwdata method correctly generates the request url and returns the result in a DataFrame"""
-    #with open('data/waterdata_qwdata.txt') as text:
-    #    requests_mock.get('https://nwis.waterdata.usgs.gov/nwis/qwdata?agency_cd=USGS&format=rdb'
-    #                      '&pm_cd_compare=Greater+than&inventory_output=0&rdb_inventory_output=file&TZoutput=0'
-    #                      '&radio_parm_cds=all_parm_cds&rdb_qw_attributes=expanded&date_format=YYYY-MM-DD'
-    #                      '&rdb_compression=value&submmitted_form=brief_list&site_no=01491000%2C01645000'
-    #                      '&qw_sample_wide=separated_wide',
-    #                      text=text.read())
-    info = get_record(sites=["01491000","01645000"], service='qwdata')
-    assert type(info) is DataFrame
-
+    with open('data/waterdata_qwdata.txt') as text:
+        requests_mock.get('https://nwis.waterdata.usgs.gov/nwis/qwdata?agency_cd=USGS&format=rdb'
+                          '&pm_cd_compare=Greater+than&inventory_output=0&rdb_inventory_output=file&TZoutput=0'
+                          '&radio_parm_cds=all_parm_cds&rdb_qw_attributes=expanded&date_format=YYYY-MM-DD'
+                          '&rdb_compression=value&submmitted_form=brief_list&site_no=01491000%2C01645000'
+                          '&qw_sample_wide=separated_wide',
+                          text=text.read())
+    qwdata = get_record(sites=["01491000","01645000"], service='qwdata')
+    assert type(qwdata) is DataFrame
+    assert qwdata.size == 1389300
 
 def test_get_gwlevels(requests_mock):
     """Tests get_gwlevels method correctly generates the request url and returns the result in a DataFrame."""
@@ -90,15 +92,17 @@ def test_get_gwlevels(requests_mock):
 
     gwlevels = get_record(sites=["434400121275801"], service='gwlevels')
     assert type(gwlevels) is DataFrame
+    assert gwlevels.size == 13
 
-def test_get_discharge_peaks():
+def test_get_discharge_peaks(requests_mock):
     """Tests get_discharge_peaks method correctly generates the request url and returns the result in a DataFrame"""
-    #with open('data/waterservices_peaks.txt') as text:
-    #    requests_mock.get('https://nwis.waterdata.usgs.gov/nwis/peaks?format=rdb&site_no=01594440'
-    #                      '&begin_date=2000-02-14&end_date=2020-02-15',
-    #                      text=text.read())
+    with open('data/waterservices_peaks.txt') as text:
+        requests_mock.get('https://nwis.waterdata.usgs.gov/nwis/peaks?format=rdb&site_no=01594440'
+                          '&begin_date=2000-02-14&end_date=2020-02-15',
+                          text=text.read())
     info = get_record(sites=["01594440"], service='peaks', start='2000-02-14', end='2020-02-15')
     assert type(info) is DataFrame
+    assert info.size == 240
 
 def test_get_discharge_measurements(requests_mock):
     """Tests get_discharge_measurements method correctly generates the request url and returns the result in a DataFrame"""
@@ -108,3 +112,4 @@ def test_get_discharge_measurements(requests_mock):
                           text=text.read())
     info = get_record(sites=["01594440"], service='measurements', start='2000-02-14', end='2020-02-15')
     assert type(info) is DataFrame
+    assert info.size == 2130
