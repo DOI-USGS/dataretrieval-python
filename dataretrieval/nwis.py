@@ -160,7 +160,7 @@ def get_stats(**kwargs):
     return read_rdb(query)
 
 
-def query(url, **kwargs):
+def query(url, payload):
     """Send a query.
 
     Wrapper for requests.get that handles errors, converts listed
@@ -174,11 +174,9 @@ def query(url, **kwargs):
         string : query response
     """
 
-    payload = {}
-
-    for key, value in kwargs.items():
-        value = to_str(value)
-        payload[key] = value
+    for index in range(len(payload)):
+        key, value = payload[index]
+        payload[index] = (key, to_str(value))
 
     try:
 
@@ -188,7 +186,7 @@ def query(url, **kwargs):
 
         print('could not connect to {}'.format(req.url))
 
-    response_format = kwargs.get('format')
+    response_format = get_item(payload, 'format')
 
     if req.status_code == 400:
         return False
@@ -199,6 +197,11 @@ def query(url, **kwargs):
     else:
         return req.text
 
+def get_item(payload, key):
+    for entry in payload:
+        if entry[0] == key:
+            return entry[1]
+    return None
 
 def query_waterdata(service, **kwargs):
     """Querys waterdata.
@@ -219,7 +222,7 @@ def query_waterdata(service, **kwargs):
 
     url = WATERDATA_URL + service
 
-    return query(url, **kwargs)
+    return query(url, list(kwargs.items()))
 
 
 def query_waterservices(service, **kwargs):
@@ -252,7 +255,7 @@ def query_waterservices(service, **kwargs):
 
     url = WATERSERVICE_URL + service
 
-    return query(url, **kwargs)
+    return query(url, list(kwargs.items()))
 
 
 def get_dv(**kwargs):
@@ -358,29 +361,29 @@ def get_iv(**kwargs):
     return format_response(df)
 
 
-def get_pmcodes(**kwargs):
+def get_pmcodes(parameterCd, **kwargs):
     """Return a DataFrame containing all NWIS parameter codes.
 
     Returns:
         DataFrame containgin the USGS parameter codes
     """
-    payload = {'radio_pm_search': 'param_group',
-               'pm_group': 'All+--+include+all+parameter+groups',
-               'pm_sarch': None,
-               'casrn_search': None,
-               'srsname_search': None,
-               'show': 'parameter_group_nm',
-               'show': 'casrn',
-               'show': 'srsname',
-               'show': 'parameter_units',
-               'format': 'rdb',
-               }
+    payload = [('radio_pm_search', 'pm_search'),
+               ('pm_group', 'All+--+include+all+parameter+groups'),
+               ('pm_search', parameterCd),
+               ('casrn_search', None),
+               ('srsname_search', None),
+               ('show', 'parameter_group_nm'),
+               ('show', 'casrn'),
+               ('show', 'srsname'),
+               ('show', 'parameter_units'),
+               ('format', 'rdb')
+               ]
 
-    kwargs = {**payload, **kwargs}
+    payload += list(kwargs.items())
 
     # XXX check that the url is correct
-    url = WATERSERVICE_URL + 'pmcodes'
-    df = read_rdb(query(url, **kwargs))
+    url = WATERDATA_URL + 'pmcodes/pmcodes'
+    df = read_rdb(query(url, payload))
 
     return format_response(df)
 
@@ -430,6 +433,9 @@ def get_record(sites, start=None, end=None, state=None,
     elif service == 'gwlevels':
         record_df = get_gwlevels(sites=sites, startDT=start, endDT=end,
                                  **kwargs)
+
+    elif service == 'pmcodes':
+        record_df = get_pmcodes(**kwargs)
 
     else:
         raise TypeError('{} service not yet implemented'.format(service))

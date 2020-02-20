@@ -113,3 +113,14 @@ def test_get_discharge_measurements(requests_mock):
     info = get_record(sites=["01594440"], service='measurements', start='2000-02-14', end='2020-02-15')
     assert type(info) is DataFrame
     assert info.size == 2130
+
+def test_get_pmcodes(requests_mock):
+    """Tests get_discharge_measurements method correctly generates the request url and returns the result in a DataFrame"""
+    with open('data/waterdata_pmcodes.txt') as text:
+        requests_mock.get('https://nwis.waterdata.usgs.gov/nwis/pmcodes/pmcodes?radio_pm_search=pm_search'
+                          '&pm_group=All%2B--%2Binclude%2Ball%2Bparameter%2Bgroups&pm_search=00618'
+                          '&show=parameter_group_nm&show=casrn&show=srsname&show=parameter_units&format=rdb',
+                          text=text.read())
+    info = get_record(sites=None, service='pmcodes', parameterCd='00618')
+    assert type(info) is DataFrame
+    assert info.size == 5
