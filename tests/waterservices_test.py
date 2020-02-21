@@ -1,5 +1,6 @@
 import pytest
 import requests
+import datetime
 
 from pandas import DataFrame
 
@@ -41,86 +42,104 @@ def test_get_record_validation():
 
 def test_get_dv(requests_mock):
     """Tests get_dv method correctly generates the request url and returns the result in a DataFrame"""
+    request_url = 'https://waterservices.usgs.gov/nwis/dv?format=json&sites=01491000%2C01645000' \
+                  '&startDT=2020-02-14&endDT=2020-02-15'
     with open('data/waterservices_dv.txt') as text:
-        requests_mock.get('https://waterservices.usgs.gov/nwis/dv?format=json&sites=01491000%2C01645000'
-                          '&startDT=2020-02-14&endDT=2020-02-15',
-                          text=text.read())
+        requests_mock.get(request_url, text=text.read())
     dv = get_record(sites=["01491000","01645000"], start='2020-02-14', end='2020-02-15', service='dv')
     assert type(dv) is DataFrame
     assert dv.size == 8
+    assert dv.url == request_url
+    assert isinstance(dv.query_time, datetime.timedelta)
 
 def test_get_iv(requests_mock):
     """Tests get_dv method correctly generates the request url and returns the result in a DataFrame"""
+    request_url = 'https://waterservices.usgs.gov/nwis/iv?format=json&sites=01491000%2C01645000' \
+                  '&startDT=2019-02-14&endDT=2020-02-15'
     with open('data/waterservices_iv.txt') as text:
-        requests_mock.get('https://waterservices.usgs.gov/nwis/iv?sites=01491000%2C01645000&format=json'
-                          '&startDT=2019-02-14&endDT=2020-02-15',
-                          text=text.read())
+        requests_mock.get(request_url, text=text.read())
     iv = get_record(sites=["01491000","01645000"], start='2019-02-14', end='2020-02-15', service='iv')
     assert type(iv) is DataFrame
     assert iv.size == 563380
+    assert iv.url == request_url
+    assert isinstance(iv.query_time, datetime.timedelta)
 
 def test_get_info(requests_mock):
     """
     Tests get_info method correctly generates the request url and returns the result in a DataFrame.
     Note that only sites and format are passed as query params
     """
+    request_url = 'https://waterservices.usgs.gov/nwis/site?sites=01491000%2C01645000&format=rdb'
     with open('data/waterservices_site.txt') as text:
-        requests_mock.get('https://waterservices.usgs.gov/nwis/site?sites=01491000%2C01645000&format=rdb',
-                          text=text.read())
+        requests_mock.get(request_url, text=text.read())
     info = get_record(sites=["01491000","01645000"], start='2020-02-14', end='2020-02-15', service='site')
     assert type(info) is DataFrame
     assert info.size == 24
+    assert info.url == request_url
+    assert isinstance(info.query_time, datetime.timedelta)
 
 def test_get_qwdata(requests_mock):
     """Tests get_qwdata method correctly generates the request url and returns the result in a DataFrame"""
+    request_url = 'https://nwis.waterdata.usgs.gov/nwis/qwdata?agency_cd=USGS&format=rdb' \
+                  '&pm_cd_compare=Greater+than&inventory_output=0&rdb_inventory_output=file&TZoutput=0' \
+                  '&radio_parm_cds=all_parm_cds&rdb_qw_attributes=expanded&date_format=YYYY-MM-DD' \
+                  '&rdb_compression=value&submmitted_form=brief_list&site_no=01491000%2C01645000' \
+                  '&qw_sample_wide=separated_wide'
     with open('data/waterdata_qwdata.txt') as text:
-        requests_mock.get('https://nwis.waterdata.usgs.gov/nwis/qwdata?agency_cd=USGS&format=rdb'
-                          '&pm_cd_compare=Greater+than&inventory_output=0&rdb_inventory_output=file&TZoutput=0'
-                          '&radio_parm_cds=all_parm_cds&rdb_qw_attributes=expanded&date_format=YYYY-MM-DD'
-                          '&rdb_compression=value&submmitted_form=brief_list&site_no=01491000%2C01645000'
-                          '&qw_sample_wide=separated_wide',
-                          text=text.read())
+        requests_mock.get(request_url, text=text.read())
     qwdata = get_record(sites=["01491000","01645000"], service='qwdata')
     assert type(qwdata) is DataFrame
     assert qwdata.size == 1389300
+    assert qwdata.url == request_url
+    assert isinstance(qwdata.query_time, datetime.timedelta)
 
 def test_get_gwlevels(requests_mock):
     """Tests get_gwlevels method correctly generates the request url and returns the result in a DataFrame."""
+    request_url = 'https://waterservices.usgs.gov/nwis/gwlevels?sites=434400121275801&format=rdb'
     with open('data/waterservices_gwlevels.txt') as text:
-        requests_mock.get('https://waterservices.usgs.gov/nwis/gwlevels?sites=434400121275801&format=rdb',
+        requests_mock.get(request_url,
                           text=text.read())
 
     gwlevels = get_record(sites=["434400121275801"], service='gwlevels')
     assert type(gwlevels) is DataFrame
     assert gwlevels.size == 13
+    assert gwlevels.url == request_url
+    assert isinstance(gwlevels.query_time, datetime.timedelta)
 
 def test_get_discharge_peaks(requests_mock):
     """Tests get_discharge_peaks method correctly generates the request url and returns the result in a DataFrame"""
+    request_url = 'https://nwis.waterdata.usgs.gov/nwis/peaks?format=rdb&site_no=01594440' \
+                  '&begin_date=2000-02-14&end_date=2020-02-15'
     with open('data/waterservices_peaks.txt') as text:
-        requests_mock.get('https://nwis.waterdata.usgs.gov/nwis/peaks?format=rdb&site_no=01594440'
-                          '&begin_date=2000-02-14&end_date=2020-02-15',
-                          text=text.read())
+        requests_mock.get(request_url, text=text.read())
     info = get_record(sites=["01594440"], service='peaks', start='2000-02-14', end='2020-02-15')
     assert type(info) is DataFrame
     assert info.size == 240
+    assert info.url == request_url
+    assert isinstance(info.query_time, datetime.timedelta)
 
 def test_get_discharge_measurements(requests_mock):
     """Tests get_discharge_measurements method correctly generates the request url and returns the result in a DataFrame"""
+    request_url = 'https://nwis.waterdata.usgs.gov/nwis/measurements?format=rdb&site_no=01594440' \
+                  '&begin_date=2000-02-14&end_date=2020-02-15'
     with open('data/waterdata_measurements.txt') as text:
-        requests_mock.get('https://nwis.waterdata.usgs.gov/nwis/measurements?format=rdb&site_no=01594440'
-                          '&begin_date=2000-02-14&end_date=2020-02-15',
-                          text=text.read())
-    info = get_record(sites=["01594440"], service='measurements', start='2000-02-14', end='2020-02-15')
-    assert type(info) is DataFrame
-    assert info.size == 2130
+        requests_mock.get(request_url, text=text.read())
+    dm = get_record(sites=["01594440"], service='measurements', start='2000-02-14', end='2020-02-15')
+    assert type(dm) is DataFrame
+    assert dm.size == 2130
+    assert dm.url == request_url
+    assert isinstance(dm.query_time, datetime.timedelta)
 
 def test_get_pmcodes(requests_mock):
     """Tests get_discharge_measurements method correctly generates the request url and returns the result in a DataFrame"""
+    request_url = 'https://nwis.waterdata.usgs.gov/nwis/pmcodes/pmcodes?radio_pm_search=pm_search' \
+                  '&pm_group=All%2B--%2Binclude%2Ball%2Bparameter%2Bgroups&pm_search=00618' \
+                  '&show=parameter_group_nm&show=casrn&show=srsname&show=parameter_units&format=rdb'
     with open('data/waterdata_pmcodes.txt') as text:
-        requests_mock.get('https://nwis.waterdata.usgs.gov/nwis/pmcodes/pmcodes?radio_pm_search=pm_search'
-                          '&pm_group=All%2B--%2Binclude%2Ball%2Bparameter%2Bgroups&pm_search=00618'
-                          '&show=parameter_group_nm&show=casrn&show=srsname&show=parameter_units&format=rdb',
+        requests_mock.get(request_url,
                           text=text.read())
-    info = get_record(sites=None, service='pmcodes', parameterCd='00618')
-    assert type(info) is DataFrame
-    assert info.size == 5
+    pmcodes = get_record(sites=None, service='pmcodes', parameterCd='00618')
+    assert type(pmcodes) is DataFrame
+    assert pmcodes.size == 5
+    assert pmcodes.url == request_url
+    assert isinstance(pmcodes.query_time, datetime.timedelta)

@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """Functions for downloading data from NWIS
 
 Todo:
@@ -18,6 +18,8 @@ WATERSERVICE_URL = 'https://waterservices.usgs.gov/nwis/'
 
 WATERSERVICES_SERVICES = ['dv', 'iv', 'site', 'stat', 'gwlevels']
 WATERDATA_SERVICES = ['qwdata', 'measurements', 'peaks', 'pmcodes']
+
+
 # add more services
 
 
@@ -62,6 +64,11 @@ def try_format_datetime(df, date_field, time_field, tz_field):
     except TypeError:
         return None
 
+def set_metadata(df, query):
+    df.url = query['url']
+    df.query_time = query['query_time']
+    return df
+
 
 def get_qwdata(datetime_index=True, **kwargs):
     """Get water sample data from qwdata service.
@@ -86,19 +93,20 @@ def get_qwdata(datetime_index=True, **kwargs):
                'date_format': 'YYYY-MM-DD',
                'rdb_compression': 'value',
                'submmitted_form': 'brief_list'}
-               #'qw_sample_wide': 'separated_wide'}
+    # 'qw_sample_wide': 'separated_wide'}
 
     kwargs = {**payload, **kwargs}
 
     query = query_waterdata('qwdata', **kwargs)
 
-    df = read_rdb(query)
+    df = read_rdb(query['data'])
 
     if datetime_index == True:
         df = try_format_datetime(df, 'sample_dt', 'sample_tm',
                                  'sample_start_time_datum_cd')
 
-    return format_response(df)
+    df = format_response(df)
+    return set_metadata(df, query)
 
 
 def get_discharge_measurements(**kwargs):
@@ -107,7 +115,7 @@ def get_discharge_measurements(**kwargs):
         sites (listlike):
     """
     query = query_waterdata('measurements', format='rdb', **kwargs)
-    return read_rdb(query)
+    return set_metadata(read_rdb(query['data']), query)
 
 
 def get_discharge_peaks(**kwargs):
@@ -120,9 +128,9 @@ def get_discharge_peaks(**kwargs):
     """
     query = query_waterdata('peaks', format='rdb', **kwargs)
 
-    df = read_rdb(query)
+    df = read_rdb(query['data'])
 
-    return format_response(df, service='peaks')
+    return set_metadata(format_response(df, service='peaks'), query)
 
 
 def get_gwlevels(**kwargs):
@@ -130,10 +138,10 @@ def get_gwlevels(**kwargs):
     """
     query = query_waterservices('gwlevels', **kwargs)
 
-    df = read_rdb(query)
+    df = read_rdb(query['data'])
     df = try_format_datetime(df, 'lev_dt', 'lev_tm', 'lev_tz_cd')
 
-    return format_response(df)
+    return set_metadata(format_response(df), query)
 
 
 def get_stats(**kwargs):
@@ -155,7 +163,7 @@ def get_stats(**kwargs):
 
     query = query_waterservices('stat', **kwargs)
 
-    return read_rdb(query)
+    return set_metadata(read_rdb(query['data']), query)
 
 
 def query(url, payload):
@@ -178,28 +186,30 @@ def query(url, payload):
 
     try:
 
-        req = requests.get(url, params=payload)
+        response = requests.get(url, params=payload)
 
     except ConnectionError:
 
-        print('could not connect to {}'.format(req.url))
+        print('could not connect to {}'.format(response.url))
 
     response_format = get_item(payload, 'format')
 
-    if req.status_code == 400:
+    if response.status_code == 400:
         return False
 
     if response_format == 'json':
-        return req.json()
+        return {'data': response.json(), 'url': response.url, 'query_time': response.elapsed}
 
     else:
-        return req.text
+        return {'data': response.text, 'url': response.url, 'query_time': response.elapsed}
+
 
 def get_item(payload, key):
     for entry in payload:
         if entry[0] == key:
             return entry[1]
     return None
+
 
 def query_waterdata(service, **kwargs):
     """Querys waterdata.
@@ -212,7 +222,7 @@ def query_waterdata(service, **kwargs):
         raise TypeError('Query must specify a major filter: site_no, stateCd, bBox')
 
     elif any(key in kwargs for key in bbox_params) \
-    and not all(key in kwargs for key in bbox_params):
+            and not all(key in kwargs for key in bbox_params):
         raise TypeError('One or more lat/long coordinates missing or invalid.')
 
     if service not in WATERDATA_SERVICES:
@@ -257,11 +267,11 @@ def query_waterservices(service, **kwargs):
 
 
 def get_dv(**kwargs):
-
     query = query_waterservices('dv', format='json', **kwargs)
-    df = read_json(query)
+    df = read_json(query['data'])
 
-    return format_response(df)
+    df = format_response(df)
+    return set_metadata(df, query)
 
 
 def get_info(**kwargs):
@@ -347,7 +357,7 @@ def get_info(**kwargs):
 
     query = query_waterservices('site', **kwargs)
 
-    return read_rdb(query)
+    return set_metadata(read_rdb(query['data']), query)
 
 
 def get_iv(**kwargs):
@@ -357,7 +367,7 @@ def get_iv(**kwargs):
             DataFrame containing instantaneous values data from NWIS
         """
     query = query_waterservices('iv', format='json', **kwargs)
-    return read_json(query)
+    return set_metadata(read_json(query['data']), query)
 
 
 def get_pmcodes(parameterCd, **kwargs):
@@ -382,7 +392,8 @@ def get_pmcodes(parameterCd, **kwargs):
 
     # XXX check that the url is correct
     url = WATERDATA_URL + 'pmcodes/pmcodes'
-    return read_rdb(query(url, payload))
+    query_result = query(url, payload)
+    return set_metadata(read_rdb(query_result['data']), query_result)
 
 
 def get_record(sites, start=None, end=None, state=None,
@@ -451,9 +462,6 @@ def read_json(json, multi_index=False):
     """
     merged_df = pd.DataFrame()
 
-    if not json:
-        return merged_df
-
     for timeseries in json['value']['timeSeries']:
 
         site_no = timeseries['sourceInfo']['siteCode'][0]['value']
@@ -499,7 +507,6 @@ def read_json(json, multi_index=False):
                                       'qualifiers': col_name + '_cd'},
                              inplace=True)
 
-
             if merged_df.empty:
                 merged_df = record_df
 
@@ -507,7 +514,8 @@ def read_json(json, multi_index=False):
                 merged_df = update_merge(merged_df, record_df, na_only=True,
                                          on=['site_no', 'datetime'])
 
-    return format_response(merged_df)
+    merged_df = format_response(merged_df)
+    return merged_df
 
 
 def read_rdb(rdb):
@@ -532,7 +540,9 @@ def read_rdb(rdb):
     fields = rdb.splitlines()[count].split('\t')
     dtypes = {'site_no': str}
 
-    df = pd.read_csv(StringIO(rdb), delimiter='\t', skiprows=count+2,
+    df = pd.read_csv(StringIO(rdb), delimiter='\t', skiprows=count + 2,
                      names=fields, na_values='NaN', dtype=dtypes)
 
-    return format_response(df)
+    df = format_response(df)
+    return df
+    # return DataFrameWrapper(df=df, url=response_dict['url'], query_time=response_dict['query_time'])
