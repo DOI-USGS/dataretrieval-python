@@ -107,9 +107,7 @@ def get_discharge_measurements(**kwargs):
         sites (listlike):
     """
     query = query_waterdata('measurements', format='rdb', **kwargs)
-    df = read_rdb(query)
-
-    return format_response(df)
+    return read_rdb(query)
 
 
 def get_discharge_peaks(**kwargs):
@@ -353,12 +351,13 @@ def get_info(**kwargs):
 
 
 def get_iv(**kwargs):
+    """Get instantaneous values data from NWIS and return it as a DataFrame
 
+        Returns:
+            DataFrame containing instantaneous values data from NWIS
+        """
     query = query_waterservices('iv', format='json', **kwargs)
-
-    df = read_json(query)
-
-    return format_response(df)
+    return read_json(query)
 
 
 def get_pmcodes(parameterCd, **kwargs):
@@ -383,9 +382,7 @@ def get_pmcodes(parameterCd, **kwargs):
 
     # XXX check that the url is correct
     url = WATERDATA_URL + 'pmcodes/pmcodes'
-    df = read_rdb(query(url, payload))
-
-    return format_response(df)
+    return read_rdb(query(url, payload))
 
 
 def get_record(sites, start=None, end=None, state=None,
