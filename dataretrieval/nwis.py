@@ -13,11 +13,12 @@ from io import StringIO
 
 from dataretrieval.utils import to_str, format_datetime, update_merge
 
-WATERDATA_URL = 'https://nwis.waterdata.usgs.gov/nwis/'
+WATERDATA_BASE_URL = 'https://nwis.waterdata.usgs.gov/'
+WATERDATA_URL = WATERDATA_BASE_URL + 'nwis/'
 WATERSERVICE_URL = 'https://waterservices.usgs.gov/nwis/'
 
 WATERSERVICES_SERVICES = ['dv', 'iv', 'site', 'stat', 'gwlevels']
-WATERDATA_SERVICES = ['qwdata', 'measurements', 'peaks', 'pmcodes']
+WATERDATA_SERVICES = ['qwdata', 'measurements', 'peaks', 'pmcodes', 'water_use']
 
 
 # add more services
@@ -396,7 +397,35 @@ def get_pmcodes(parameterCd, **kwargs):
     return set_metadata(read_rdb(query_result['data']), query_result)
 
 
-def get_record(sites, start=None, end=None, state=None,
+def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
+    """
+    Water use data retrieval from USGS (NWIS)
+
+    Args:
+        years (Listlike): List or comma delimited string of years.  Must be years ending in 0 or 5, or "ALL",
+                            which retrieves all available years
+        state (string): full name, abbreviation or id
+        county (string): County IDs from county lookup or "ALL"
+        categories (Listlike): List or comma delimited string of Two-letter category abbreviations
+
+    Return:
+        DataFrame containing requested data.
+    """
+    payload = [('rdb_compression', 'value'),
+               ('format', 'rdb'),
+               ('wu_year', years),
+               ('wu_category', categories),
+               ('wu_county', counties)
+               ]
+    url = WATERDATA_URL + 'water_use'
+    if state is not None:
+        url = WATERDATA_BASE_URL + state + "/nwis/water_use"
+        payload.append(("wu_area", "county"))
+    query_result = query(url, payload)
+    return set_metadata(read_rdb(query_result['data']), query_result)
+
+
+def get_record(sites=None, start=None, end=None, state=None,
                service='iv', *args, **kwargs):
     """
     Get data from NWIS and return it as a DataFrame.
@@ -444,6 +473,9 @@ def get_record(sites, start=None, end=None, state=None,
 
     elif service == 'pmcodes':
         record_df = get_pmcodes(**kwargs)
+
+    elif service == 'water_use':
+        record_df = get_water_use(state=state, **kwargs)
 
     else:
         raise TypeError('{} service not yet implemented'.format(service))
