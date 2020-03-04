@@ -7,5 +7,5 @@ setup(name='dataretrieval',
       author='Timothy Hodson',
       author_email='thodson@usgs.gov',
       license='MIT',
-      packages=['dataretrieval'],
+      packages=['dataretrieval', 'dataretrieval.codes'],
       zip_safe=False)
