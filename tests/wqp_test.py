@@ -1,0 +1,23 @@
+import pytest
+import requests
+import datetime
+
+from pandas import DataFrame
+
+from dataretrieval.wqp import get_results
+
+
+def test_get_ratings(requests_mock):
+    """"""
+    request_url = "https://waterqualitydata.us/Result/Search?siteid=WIDNR_WQX-10032762" \
+                  "&characteristicName=Specific+conductance&startDateLo=05-01-2011&startDateHi=09-30-2011" \
+                  "&zip=no&mimeType=csv"
+    with open('data/wqp_results.txt') as text:
+        requests_mock.get(request_url, text=text.read())
+    ratings = get_results(siteid='WIDNR_WQX-10032762',
+                          characteristicName = 'Specific conductance',
+                          startDateLo='05-01-2011', startDateHi='09-30-2011')
+    assert type(ratings) is DataFrame
+    assert ratings.size == 315
+    assert ratings.url == request_url
+    assert isinstance(ratings.query_time, datetime.timedelta)

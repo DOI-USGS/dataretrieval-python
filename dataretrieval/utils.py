@@ -2,6 +2,7 @@
 Useful utilities for data munging.
 """
 import pandas as pd
+import requests
 from pandas.core.indexes.multi import MultiIndex
 from pandas.core.indexes.datetimes import DatetimeIndex
 
@@ -144,3 +145,54 @@ def update_merge(left, right, na_only=False, on=None, **kwargs):
             df.drop([name + '_x', name + '_y'], axis=1, inplace=True)
 
     return df
+
+
+def set_metadata(df, query):
+    df.url = query['url']
+    df.query_time = query['query_time']
+    return df
+
+
+def get_item(payload, key):
+    for entry in payload:
+        if entry[0] == key:
+            return entry[1]
+    return None
+
+
+def query(url, payload):
+    """Send a query.
+
+    Wrapper for requests.get that handles errors, converts listed
+    query paramaters to comma separated strings, and returns response.
+
+    Args:
+        url:
+        kwargs: query parameters passed to requests.get
+
+    Returns:
+        string : query response
+    """
+
+    for index in range(len(payload)):
+        key, value = payload[index]
+        payload[index] = (key, to_str(value))
+
+    try:
+
+        response = requests.get(url, params=payload)
+
+    except ConnectionError:
+
+        print('could not connect to {}'.format(response.url))
+
+    response_format = get_item(payload, 'format')
+
+    if response.status_code == 400:
+        raise TypeError("Bad Request, check that your parameters are correct. Reason: {}".format(response.reason))
+
+    if response_format == 'json':
+        return {'data': response.json(), 'url': response.url, 'query_time': response.elapsed}
+
+    else:
+        return {'data': response.text, 'url': response.url, 'query_time': response.elapsed}

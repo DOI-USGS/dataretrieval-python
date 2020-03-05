@@ -8,10 +8,10 @@ Todo:
 """
 
 import pandas as pd
-import requests
 from io import StringIO
 
 from dataretrieval.utils import to_str, format_datetime, update_merge
+from .utils import set_metadata, query
 
 WATERDATA_BASE_URL = 'https://nwis.waterdata.usgs.gov/'
 WATERDATA_URL = WATERDATA_BASE_URL + 'nwis/'
@@ -64,11 +64,6 @@ def try_format_datetime(df, date_field, time_field, tz_field):
 
     except TypeError:
         return None
-
-def set_metadata(df, query):
-    df.url = query['url']
-    df.query_time = query['query_time']
-    return df
 
 
 def get_qwdata(datetime_index=True, **kwargs):
@@ -165,51 +160,6 @@ def get_stats(**kwargs):
     query = query_waterservices('stat', **kwargs)
 
     return set_metadata(read_rdb(query['data']), query)
-
-
-def query(url, payload):
-    """Send a query.
-
-    Wrapper for requests.get that handles errors, converts listed
-    query paramaters to comma separated strings, and returns response.
-
-    Args:
-        url:
-        kwargs: query parameters passed to requests.get
-
-    Returns:
-        string : query response
-    """
-
-    for index in range(len(payload)):
-        key, value = payload[index]
-        payload[index] = (key, to_str(value))
-
-    try:
-
-        response = requests.get(url, params=payload)
-
-    except ConnectionError:
-
-        print('could not connect to {}'.format(response.url))
-
-    response_format = get_item(payload, 'format')
-
-    if response.status_code == 400:
-        return False
-
-    if response_format == 'json':
-        return {'data': response.json(), 'url': response.url, 'query_time': response.elapsed}
-
-    else:
-        return {'data': response.text, 'url': response.url, 'query_time': response.elapsed}
-
-
-def get_item(payload, key):
-    for entry in payload:
-        if entry[0] == key:
-            return entry[1]
-    return None
 
 
 def query_waterdata(service, **kwargs):

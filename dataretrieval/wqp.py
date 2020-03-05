@@ -8,7 +8,7 @@ TODO:
 """
 import pandas as pd
 from io import StringIO
-from dataretrieval.nwis import query
+from .utils import set_metadata, query
 
 
 def get_results(**kwargs):
@@ -57,10 +57,10 @@ def get_results(**kwargs):
     kwargs['zip'] = 'no'
     kwargs['mimeType'] = 'csv'
 
-    response = query(wqp_url('Result'), **kwargs)
+    response = query(wqp_url('Result'), list(kwargs.items()))
 
-    df = pd.read_csv(StringIO(response), delimiter=',')
-    return df
+    df = pd.read_csv(StringIO(response['data']), delimiter=',')
+    return set_metadata(df, response)
 
 
 def what_sites(**kwargs):
