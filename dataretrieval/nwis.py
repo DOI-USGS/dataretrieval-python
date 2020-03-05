@@ -306,6 +306,8 @@ def get_info(**kwargs):
     https://waterservices.usgs.gov/rest/Site-Service.html#stateCd
     """
 
+    kwargs['siteOutput'] = 'Expanded'
+
     query = query_waterservices('site', **kwargs)
 
     return set_metadata(read_rdb(query['data']), query)
