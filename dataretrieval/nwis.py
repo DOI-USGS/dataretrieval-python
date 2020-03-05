@@ -402,6 +402,21 @@ def get_ratings(site, file_type="base"):
     return set_metadata(read_rdb(query_result['data']), query_result)
 
 
+def what_sites(**kwargs):
+    """ Search NWIS for sites within a region with specific data.
+
+    Parameters
+    ----------
+    same as get_info
+    """
+
+    response = query_waterservices(service='site', **kwargs)
+
+    df = read_rdb(response['data'])
+
+    return set_metadata(df, response)
+
+
 def get_record(sites=None, start=None, end=None, state=None,
                service='iv', *args, **kwargs):
     """

@@ -15,7 +15,7 @@ def to_str(listlike):
         List-like object as string
     """
     if type(listlike) == list:
-        return ','.join(listlike)
+        return ','.join([str(x) for x in listlike])
 
     elif type(listlike) == pd.core.series.Series:
         return ','.join(listlike.tolist())

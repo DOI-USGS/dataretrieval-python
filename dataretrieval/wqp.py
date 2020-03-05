@@ -74,11 +74,11 @@ def what_sites(**kwargs):
     kwargs['mimeType'] = 'csv'
 
     url = wqp_url('Station')
-    query_string = query(url, **kwargs)
+    response = query(url, list(kwargs.items()))
 
-    df = pd.read_csv(StringIO(query_string), delimiter=',')
+    df = pd.read_csv(StringIO(response['data']), delimiter=',')
 
-    return df
+    return set_metadata(df, response)
 
 
 def wqp_url(service):

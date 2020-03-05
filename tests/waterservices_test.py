@@ -4,7 +4,7 @@ import datetime
 
 from pandas import DataFrame
 
-from dataretrieval.nwis import query_waterservices, get_record, query_waterdata
+from dataretrieval.nwis import query_waterservices, get_record, query_waterdata, what_sites
 
 
 def test_query_waterservices_validation():
@@ -129,7 +129,8 @@ def test_get_discharge_peaks(requests_mock):
 
 
 def test_get_discharge_measurements(requests_mock):
-    """Tests get_discharge_measurements method correctly generates the request url and returns the result in a DataFrame"""
+    """Tests get_discharge_measurements method correctly generates the request url and returns the result in a
+    DataFrame"""
     request_url = 'https://nwis.waterdata.usgs.gov/nwis/measurements?format=rdb&site_no=01594440' \
                   '&begin_date=2000-02-14&end_date=2020-02-15'
     with open('data/waterdata_measurements.txt') as text:
@@ -142,7 +143,8 @@ def test_get_discharge_measurements(requests_mock):
 
 
 def test_get_pmcodes(requests_mock):
-    """Tests get_discharge_measurements method correctly generates the request url and returns the result in a DataFrame"""
+    """Tests get_discharge_measurements method correctly generates the request url and returns the result in a
+    DataFrame"""
     request_url = 'https://nwis.waterdata.usgs.gov/nwis/pmcodes/pmcodes?radio_pm_search=pm_search' \
                   '&pm_group=All%2B--%2Binclude%2Ball%2Bparameter%2Bgroups&pm_search=00618' \
                   '&show=parameter_group_nm&show=casrn&show=srsname&show=parameter_units&format=rdb'
@@ -157,7 +159,8 @@ def test_get_pmcodes(requests_mock):
 
 
 def test_get_water_use_national(requests_mock):
-    """Tests get_discharge_measurements method correctly generates the request url and returns the result in a DataFrame"""
+    """Tests get_discharge_measurements method correctly generates the request url and returns the result in a
+    DataFrame"""
     request_url = 'https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format=rdb&wu_year=ALL' \
                   '&wu_category=ALL&wu_county=ALL'
     with open('data/water_use_national.txt') as text:
@@ -171,7 +174,8 @@ def test_get_water_use_national(requests_mock):
 
 
 def test_get_water_use_national(requests_mock):
-    """Tests get_discharge_measurements method correctly generates the request url and returns the result in a DataFrame"""
+    """Tests get_discharge_measurements method correctly generates the request url and returns the result in a
+    DataFrame"""
     request_url = 'https://nwis.waterdata.usgs.gov/PA/nwis/water_use?rdb_compression=value&format=rdb&wu_year=ALL' \
                   '&wu_category=ALL&wu_county=003&wu_area=county'
     with open('data/water_use_allegheny.txt') as text:
@@ -185,7 +189,7 @@ def test_get_water_use_national(requests_mock):
 
 
 def test_get_ratings(requests_mock):
-    """"""
+    """Tests get_ratings method correctly generates the request url and returns the result in a DataFrame"""
     request_url = "https://nwis.waterdata.usgs.gov/nwisweb/get_ratings/?site_no=01594440&file_type=base"
     with open('data/waterservices_ratings.txt') as text:
         requests_mock.get(request_url, text=text.read())
@@ -194,3 +198,18 @@ def test_get_ratings(requests_mock):
     assert ratings.size == 33
     assert ratings.url == request_url
     assert isinstance(ratings.query_time, datetime.timedelta)
+
+
+def test_what_sites(requests_mock):
+    """Tests test_what_sites method correctly generates the request url and returns the result in a DataFrame"""
+    request_url = "https://waterservices.usgs.gov/nwis/site?bBox=-83.0%2C36.5%2C-81.0%2C38.5" \
+                  "&parameterCd=00010%2C00060&hasDataTypeCd=dv&format=rdb"
+    with open('data/nwis_sites.txt') as text:
+        requests_mock.get(request_url, text=text.read())
+    sites = what_sites(bBox=[-83.0,36.5,-81.0,38.5],
+                         parameterCd=["00010","00060"],
+                         hasDataTypeCd="dv")
+    assert type(sites) is DataFrame
+    assert sites.size == 2472
+    assert sites.url == request_url
+    assert isinstance(sites.query_time, datetime.timedelta)
