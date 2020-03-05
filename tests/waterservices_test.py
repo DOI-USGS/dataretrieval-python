@@ -182,3 +182,15 @@ def test_get_water_use_national(requests_mock):
     assert water_use.size == 1981
     assert water_use.url == request_url
     assert isinstance(water_use.query_time, datetime.timedelta)
+
+
+def test_get_ratings(requests_mock):
+    """"""
+    request_url = "https://nwis.waterdata.usgs.gov/nwisweb/get_ratings/?site_no=01594440&file_type=base"
+    with open('data/waterservices_ratings.txt') as text:
+        requests_mock.get(request_url, text=text.read())
+    ratings = get_record(service='ratings', site='01594440')
+    assert type(ratings) is DataFrame
+    assert ratings.size == 33
+    assert ratings.url == request_url
+    assert isinstance(ratings.query_time, datetime.timedelta)

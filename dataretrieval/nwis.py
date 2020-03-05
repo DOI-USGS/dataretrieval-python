@@ -18,7 +18,7 @@ WATERDATA_URL = WATERDATA_BASE_URL + 'nwis/'
 WATERSERVICE_URL = 'https://waterservices.usgs.gov/nwis/'
 
 WATERSERVICES_SERVICES = ['dv', 'iv', 'site', 'stat', 'gwlevels']
-WATERDATA_SERVICES = ['qwdata', 'measurements', 'peaks', 'pmcodes', 'water_use']
+WATERDATA_SERVICES = ['qwdata', 'measurements', 'peaks', 'pmcodes', 'water_use', 'ratings']
 
 
 # add more services
@@ -425,6 +425,33 @@ def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
     return set_metadata(read_rdb(query_result['data']), query_result)
 
 
+def get_ratings(site, file_type="base"):
+    """
+    Rating table for an active USGS streamgage retrieval
+    Reads current rating table for an active USGS streamgage from NWISweb.
+    Data is retrieved from https://waterdata.usgs.gov/nwis.
+
+    Args:
+        site (string): USGS site number.  This is usually an 8 digit number as a string
+        base (string): can be "base", "corr", or "exsa"
+        county (string): County IDs from county lookup or "ALL"
+        categories (Listlike): List or comma delimited string of Two-letter category abbreviations
+
+    Return:
+        DataFrame containing requested data.
+    """
+    payload = []
+    url = WATERDATA_BASE_URL + 'nwisweb/get_ratings/'
+    if site is not None:
+        payload.append(("site_no", site))
+    if file_type is not None:
+        if file_type not in ["base", "corr", "exsa"]:
+            raise TypeError('Unrecognized file_type: {}, must be "base", "corr" or "exsa"'.format(file_type))
+        payload.append(("file_type", file_type))
+    query_result = query(url, payload)
+    return set_metadata(read_rdb(query_result['data']), query_result)
+
+
 def get_record(sites=None, start=None, end=None, state=None,
                service='iv', *args, **kwargs):
     """
@@ -476,6 +503,9 @@ def get_record(sites=None, start=None, end=None, state=None,
 
     elif service == 'water_use':
         record_df = get_water_use(state=state, **kwargs)
+
+    elif service == 'ratings':
+        record_df = get_ratings(**kwargs)
 
     else:
         raise TypeError('{} service not yet implemented'.format(service))
