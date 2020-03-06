@@ -85,6 +85,7 @@ def wqp_url(service):
     base_url = 'https://www.waterqualitydata.us/'
     return '{}{}/Search?'.format(base_url, service)
 
+
 def set_metadata(response, **parameters):
     md = set_md(response)
     if 'sites' in parameters:

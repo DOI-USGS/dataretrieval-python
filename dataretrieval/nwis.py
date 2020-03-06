@@ -401,7 +401,7 @@ def get_ratings(site, file_type="base"):
             raise TypeError('Unrecognized file_type: {}, must be "base", "corr" or "exsa"'.format(file_type))
         payload.append(("file_type", file_type))
     query_result = query(url, payload)
-    return read_rdb(query_result['data']), set_metadata(query_result, site=site)
+    return read_rdb(query_result['data']), set_metadata(query_result, site_no=site)
 
 
 def what_sites(**kwargs):
@@ -578,8 +578,6 @@ def set_metadata(response, **parameters):
     md = set_md(response)
     if 'sites' in parameters:
         md.site_info = lambda : what_sites(sites=parameters['sites'])
-    elif 'site' in parameters:
-        md.site_info = lambda : what_sites(sites=parameters['site'])
     elif 'site_no' in parameters:
         md.site_info = lambda : what_sites(sites=parameters['site_no'])
     return md

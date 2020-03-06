@@ -29,8 +29,8 @@ def test_what_sites(requests_mock):
                   "&mimeType=csv"
     with open('data/wqp_sites.txt') as text:
         requests_mock.get(request_url, text=text.read())
-    ratings, md = what_sites(statecode="US:34", characteristicName="Chloride")
-    assert type(ratings) is DataFrame
-    assert ratings.size == 239904
+    sites, md = what_sites(statecode="US:34", characteristicName="Chloride")
+    assert type(sites) is DataFrame
+    assert sites.size == 239904
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
