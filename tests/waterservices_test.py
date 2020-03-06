@@ -169,7 +169,7 @@ def test_get_water_use_national(requests_mock):
     assert_metadata(requests_mock, request_url, md, None)
 
 
-def test_get_water_use_national(requests_mock):
+def test_get_water_use_allegheny(requests_mock):
     """Tests get_discharge_measurements method correctly generates the request url and returns the result in a
     DataFrame"""
     request_url = 'https://nwis.waterdata.usgs.gov/PA/nwis/water_use?rdb_compression=value&format=rdb&wu_year=ALL' \
