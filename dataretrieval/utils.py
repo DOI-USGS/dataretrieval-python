@@ -132,7 +132,7 @@ def query(url, payload):
     response = requests.get(url, params=payload)
 
     if response.status_code == 400:
-        raise ValueError("Bad Request, check that your parameters are correct. Reason: {}".format(response.reason))
+        raise ValueError("Bad Request, check that your parameters are correct. URL: {}".format(response.url))
 
     if response.text.startswith('No sites/data'):
         raise NoSitesError(response.url)

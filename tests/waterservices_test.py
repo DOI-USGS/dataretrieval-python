@@ -5,6 +5,7 @@ import datetime
 from pandas import DataFrame
 
 from dataretrieval.nwis import query_waterservices, get_record, query_waterdata, what_sites, get_stats
+from dataretrieval.utils import NoSitesError
 
 
 def test_query_waterservices_validation():
@@ -33,6 +34,21 @@ def test_query_waterdata_validation():
     assert 'Service not recognized' == str(type_error.value)
 
 
+def test_query_validation(requests_mock):
+    request_url = "https://waterservices.usgs.gov/nwis/stat?sites=bad_site_id&format=rdb"
+    requests_mock.get(request_url, status_code=400)
+    with pytest.raises(ValueError) as type_error:
+        get_stats(sites="bad_site_id")
+    assert request_url in str(type_error)
+
+    request_url = "https://waterservices.usgs.gov/nwis/stat?sites=123456&format=rdb"
+    requests_mock.get(request_url,
+                      text="No sites/data found using the selection criteria specified")
+    with pytest.raises(NoSitesError) as no_sites_error:
+        get_stats(sites="123456")
+    assert request_url in str(no_sites_error)
+
+
 def test_get_record_validation():
     """Tests the validation parameters of the get_record method"""
     with pytest.raises(TypeError) as type_error:
@@ -51,9 +67,9 @@ def test_get_dv(requests_mock):
                   '&startDT=2020-02-14&endDT=2020-02-15'.format(site)
     response_file_path = 'data/waterservices_dv.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    dv, md = get_record(sites=["01491000", "01645000"], start='2020-02-14', end='2020-02-15', service='dv')
-    assert type(dv) is DataFrame
-    assert dv.size == 8
+    df, md = get_record(sites=["01491000", "01645000"], start='2020-02-14', end='2020-02-15', service='dv')
+    assert type(df) is DataFrame
+    assert df.size == 8
     assert_metadata(requests_mock, request_url, md, site)
 
 
@@ -64,9 +80,9 @@ def test_get_iv(requests_mock):
                   '&startDT=2019-02-14&endDT=2020-02-15'.format(site)
     response_file_path = 'data/waterservices_iv.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    iv, md = get_record(sites=["01491000", "01645000"], start='2019-02-14', end='2020-02-15', service='iv')
-    assert type(iv) is DataFrame
-    assert iv.size == 563380
+    df, md = get_record(sites=["01491000", "01645000"], start='2019-02-14', end='2020-02-15', service='iv')
+    assert type(df) is DataFrame
+    assert df.size == 563380
     assert md.url == request_url
     assert_metadata(requests_mock, request_url, md, site)
 
@@ -80,9 +96,9 @@ def test_get_info(requests_mock):
     request_url = 'https://waterservices.usgs.gov/nwis/site?sites={}&siteOutput=Expanded&format=rdb'.format(site)
     response_file_path = 'data/waterservices_site.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    info, md = get_record(sites=["01491000", "01645000"], start='2020-02-14', end='2020-02-15', service='site')
-    assert type(info) is DataFrame
-    assert info.size == 24
+    df, md = get_record(sites=["01491000", "01645000"], start='2020-02-14', end='2020-02-15', service='site')
+    assert type(df) is DataFrame
+    assert df.size == 24
     assert md.url == request_url
     assert_metadata(requests_mock, request_url, md, site)
 
@@ -97,9 +113,9 @@ def test_get_qwdata(requests_mock):
                   '&qw_sample_wide=separated_wide'.format(site)
     response_file_path = 'data/waterdata_qwdata.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    qwdata, md = get_record(sites=["01491000", "01645000"], service='qwdata')
-    assert type(qwdata) is DataFrame
-    assert qwdata.size == 1389300
+    df, md = get_record(sites=["01491000", "01645000"], service='qwdata')
+    assert type(df) is DataFrame
+    assert df.size == 1389300
     assert_metadata(requests_mock, request_url, md, site)
 
 
@@ -109,9 +125,9 @@ def test_get_gwlevels(requests_mock):
     request_url = 'https://waterservices.usgs.gov/nwis/gwlevels?sites={}&format=rdb'.format(site)
     response_file_path = 'data/waterservices_gwlevels.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    gwlevels, md = get_record(sites=[site], service='gwlevels')
-    assert type(gwlevels) is DataFrame
-    assert gwlevels.size == 13
+    df, md = get_record(sites=[site], service='gwlevels')
+    assert type(df) is DataFrame
+    assert df.size == 13
     assert_metadata(requests_mock, request_url, md, site)
 
 
@@ -122,9 +138,9 @@ def test_get_discharge_peaks(requests_mock):
                   '&begin_date=2000-02-14&end_date=2020-02-15'.format(site)
     response_file_path = 'data/waterservices_peaks.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    info, md = get_record(sites=[site], service='peaks', start='2000-02-14', end='2020-02-15')
-    assert type(info) is DataFrame
-    assert info.size == 240
+    df, md = get_record(sites=[site], service='peaks', start='2000-02-14', end='2020-02-15')
+    assert type(df) is DataFrame
+    assert df.size == 240
     assert_metadata(requests_mock, request_url, md, site)
 
 
@@ -136,9 +152,9 @@ def test_get_discharge_measurements(requests_mock):
                   '&begin_date=2000-02-14&end_date=2020-02-15'.format(site)
     response_file_path = 'data/waterdata_measurements.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    dm, md = get_record(sites=[site], service='measurements', start='2000-02-14', end='2020-02-15')
-    assert type(dm) is DataFrame
-    assert dm.size == 2130
+    df, md = get_record(sites=[site], service='measurements', start='2000-02-14', end='2020-02-15')
+    assert type(df) is DataFrame
+    assert df.size == 2130
     assert_metadata(requests_mock, request_url, md, site)
 
 
@@ -150,9 +166,9 @@ def test_get_pmcodes(requests_mock):
                   '&show=parameter_group_nm&show=casrn&show=srsname&show=parameter_units&format=rdb'
     response_file_path = 'data/waterdata_pmcodes.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    pmcodes, md = get_record(service='pmcodes', parameterCd='00618')
-    assert type(pmcodes) is DataFrame
-    assert pmcodes.size == 5
+    df, md = get_record(service='pmcodes', parameterCd='00618')
+    assert type(df) is DataFrame
+    assert df.size == 5
     assert_metadata(requests_mock, request_url, md, None)
 
 
@@ -163,9 +179,9 @@ def test_get_water_use_national(requests_mock):
                   '&wu_category=ALL&wu_county=ALL'
     response_file_path = 'data/water_use_national.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    water_use, md = get_record(service='water_use')
-    assert type(water_use) is DataFrame
-    assert water_use.size == 225
+    df, md = get_record(service='water_use')
+    assert type(df) is DataFrame
+    assert df.size == 225
     assert_metadata(requests_mock, request_url, md, None)
 
 
@@ -176,10 +192,18 @@ def test_get_water_use_allegheny(requests_mock):
                   '&wu_category=ALL&wu_county=003&wu_area=county'
     response_file_path = 'data/water_use_allegheny.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    water_use, md = get_record(service='water_use', state="PA", counties="003")
-    assert type(water_use) is DataFrame
-    assert water_use.size == 1981
+    df, md = get_record(service='water_use', state="PA", counties="003")
+    assert type(df) is DataFrame
+    assert df.size == 1981
     assert_metadata(requests_mock, request_url, md, None)
+
+
+def test_get_ratings_validation():
+    """Tests get_ratings method correctly generates the request url and returns the result in a DataFrame"""
+    site = "01594440"
+    with pytest.raises(ValueError) as value_error:
+        get_record(service='ratings', site=site, file_type="BAD")
+    assert 'Unrecognized file_type: BAD, must be "base", "corr" or "exsa"' in str(value_error)
 
 
 def test_get_ratings(requests_mock):
@@ -188,9 +212,9 @@ def test_get_ratings(requests_mock):
     request_url = "https://nwis.waterdata.usgs.gov/nwisweb/get_ratings/?site_no={}&file_type=base".format(site)
     response_file_path = 'data/waterservices_ratings.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    ratings, md = get_record(service='ratings', site=site)
-    assert type(ratings) is DataFrame
-    assert ratings.size == 33
+    df, md = get_record(service='ratings', site=site)
+    assert type(df) is DataFrame
+    assert df.size == 33
     assert_metadata(requests_mock, request_url, md, site)
 
 
@@ -201,11 +225,11 @@ def test_what_sites(requests_mock):
     response_file_path = 'data/nwis_sites.txt'
     mock_request(requests_mock, request_url, response_file_path)
 
-    sites, md = what_sites(bBox=[-83.0,36.5,-81.0,38.5],
+    df, md = what_sites(bBox=[-83.0,36.5,-81.0,38.5],
                          parameterCd=["00010","00060"],
                          hasDataTypeCd="dv")
-    assert type(sites) is DataFrame
-    assert sites.size == 2472
+    assert type(df) is DataFrame
+    assert df.size == 2472
     assert_metadata(requests_mock, request_url, md, None)
 
 
@@ -215,9 +239,9 @@ def test_get_stats(requests_mock):
     response_file_path = 'data/waterservices_stats.txt'
     mock_request(requests_mock, request_url, response_file_path)
 
-    sites, md = get_stats(sites=["01491000", "01645000"])
-    assert type(sites) is DataFrame
-    assert sites.size == 51936
+    df, md = get_stats(sites=["01491000", "01645000"])
+    assert type(df) is DataFrame
+    assert df.size == 51936
     assert_metadata(requests_mock, request_url, md, None)
 
 

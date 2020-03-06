@@ -14,11 +14,11 @@ def test_get_ratings(requests_mock):
                   "&zip=no&mimeType=csv"
     response_file_path = 'data/wqp_results.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    ratings, md = get_results(siteid='WIDNR_WQX-10032762',
+    df, md = get_results(siteid='WIDNR_WQX-10032762',
                           characteristicName = 'Specific conductance',
                           startDateLo='05-01-2011', startDateHi='09-30-2011')
-    assert type(ratings) is DataFrame
-    assert ratings.size == 315
+    assert type(df) is DataFrame
+    assert df.size == 315
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
     assert md.header == {"mock_header": "value"}
@@ -30,10 +30,9 @@ def test_what_sites(requests_mock):
                   "&mimeType=csv"
     response_file_path = 'data/wqp_sites.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    sites, md = what_sites(statecode="US:34", characteristicName="Chloride")
-    assert type(sites) is DataFrame
-    assert sites.size == 239904
-    assert md.header == {"mock_header": "value"}
+    df, md = what_sites(statecode="US:34", characteristicName="Chloride")
+    assert type(df) is DataFrame
+    assert df.size == 239904
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
     assert md.header == {"mock_header": "value"}
