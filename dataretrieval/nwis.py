@@ -441,7 +441,7 @@ def get_record(sites=None, start=None, end=None, state=None,
                                qw_sample_wide='separated_wide', **kwargs)
 
     elif service == 'site':
-        return get_info(sites=sites)
+        return get_info(sites=sites, **kwargs)
 
     elif service == 'measurements':
         return get_discharge_measurements(site_no=sites, begin_date=start,
@@ -561,8 +561,20 @@ def read_rdb(rdb):
 
 def set_metadata(response, **parameters):
     md = set_md(response)
-    if 'sites' in parameters:
-        md.site_info = lambda : what_sites(sites=parameters['sites'])
-    elif 'site_no' in parameters:
-        md.site_info = lambda : what_sites(sites=parameters['site_no'])
+    site_aliases = ['sites', 'site_no']
+    for alias in site_aliases:
+        if alias in parameters:
+            md.site_info = lambda : what_sites(sites=parameters[alias])
+            break
+
+    if 'parameterCd' in parameters:
+        md.variable_info = lambda : get_pmcodes(parameterCd=parameters['parameterCd'])
+
+    comments = ""
+    for line in response.text.splitlines():
+        if line.startswith("#"):
+            comments += line.lstrip("#") + "\n"
+    if comments != "":
+        md.comment = comments
+
     return md

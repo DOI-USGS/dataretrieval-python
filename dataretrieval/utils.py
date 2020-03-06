@@ -101,6 +101,13 @@ class Metadata:
     query_time = None
     site_info = None
     header = None
+    variable_info = None
+    comment = None
+
+    # note sure what statistic_info is
+    statistic_info = None
+    # disclaimer seems to be only part of importWaterML1
+    disclaimer = None
 
 
 def set_metadata(response):
