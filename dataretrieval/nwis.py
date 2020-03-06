@@ -317,7 +317,7 @@ def get_iv(**kwargs):
     """Get instantaneous values data from NWIS and return it as a DataFrame
 
         Returns:
-            DataFrame containing instantaneous values data from NWIS
+            DataFrame containing instantaneous values data from NWIS and Metadata as tuple
         """
     query = query_waterservices('iv', format='json', **kwargs)
     return read_json(query['data']), set_metadata(query, **kwargs)
@@ -327,7 +327,7 @@ def get_pmcodes(parameterCd, **kwargs):
     """Return a DataFrame containing all NWIS parameter codes.
 
     Returns:
-        DataFrame containgin the USGS parameter codes
+        DataFrame containgin the USGS parameter codes and Metadata as tuple
     """
     payload = [('radio_pm_search', 'pm_search'),
                ('pm_group', 'All+--+include+all+parameter+groups'),
@@ -361,7 +361,7 @@ def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
         categories (Listlike): List or comma delimited string of Two-letter category abbreviations
 
     Return:
-        DataFrame containing requested data.
+        DataFrame containing requested data and Metadata as tuple
     """
     payload = [('rdb_compression', 'value'),
                ('format', 'rdb'),
@@ -390,7 +390,7 @@ def get_ratings(site, file_type="base"):
         categories (Listlike): List or comma delimited string of Two-letter category abbreviations
 
     Return:
-        DataFrame containing requested data.
+        DataFrame containing requested data and Metadata as tuple
     """
     payload = []
     url = WATERDATA_BASE_URL + 'nwisweb/get_ratings/'
@@ -435,7 +435,7 @@ def get_record(sites=None, start=None, end=None, state=None,
             - 'site' : site description
             - 'measurements' : discharge measurements
     Return:
-        DataFrame containing requested data.
+        DataFrame containing requested data and Metadata as tuple
     """
     if service not in WATERSERVICES_SERVICES + WATERDATA_SERVICES:
         raise TypeError('Unrecognized service: {}'.format(service))
@@ -485,7 +485,7 @@ def read_json(json, multi_index=False):
         json (dict)
 
     Returns:
-        DataFrame containing times series data from the NWIS json.
+        DataFrame containing times series data from the NWIS json and Metadata as tuple
     """
     merged_df = pd.DataFrame()
 
@@ -572,7 +572,6 @@ def read_rdb(rdb):
 
     df = format_response(df)
     return df
-    # return DataFrameWrapper(df=df, url=response_dict['url'], query_time=response_dict['query_time'])
 
 def set_metadata(response, **parameters):
     md = set_md(response)
