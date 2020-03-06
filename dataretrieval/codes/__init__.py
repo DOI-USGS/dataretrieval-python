@@ -1,2 +1,2 @@
-from dataretrieval.codes.states import *
-from dataretrieval.codes.timezones import *
+from .states import *
+from .timezones import *

@@ -1,0 +1,17 @@
+# 
+#
+# USGS Parameter Code Definitions File
+#
+# Column Definitions
+#  parameter_cd  - Parameter Code
+#  parameter_group_nm  - Group Name
+#  casrn  - CASRN
+#  srsname  - SRSName
+#  parameter_units  - Parameter Unit
+#
+#
+# Date Retrieved: 2020-02-20 18:20:58 EST
+#
+parameter_cd	parameter_group_nm	casrn	srsname	parameter_units
+5s	30s	170s	170s	16s
+00618	Nutrient	14797-55-8	Nitrate	mg/l as N
