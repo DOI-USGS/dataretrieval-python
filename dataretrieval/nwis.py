@@ -27,9 +27,6 @@ WATERDATA_SERVICES = ['qwdata', 'measurements', 'peaks', 'pmcodes', 'water_use',
 def format_response(df, service=None):
     """Setup index for response from query.
     """
-    if df is None:
-        return
-
     if service == 'peaks':
         df = preformat_peaks_response(df)
 
@@ -59,11 +56,7 @@ def preformat_peaks_response(df):
 
 
 def try_format_datetime(df, date_field, time_field, tz_field):
-    try:
-        return format_datetime(df, date_field, time_field, tz_field)
-
-    except TypeError:
-        return None
+    return format_datetime(df, date_field, time_field, tz_field)
 
 
 def get_qwdata(datetime_index=True, **kwargs):
@@ -398,7 +391,7 @@ def get_ratings(site, file_type="base"):
         payload.append(("site_no", site))
     if file_type is not None:
         if file_type not in ["base", "corr", "exsa"]:
-            raise TypeError('Unrecognized file_type: {}, must be "base", "corr" or "exsa"'.format(file_type))
+            raise ValueError('Unrecognized file_type: {}, must be "base", "corr" or "exsa"'.format(file_type))
         payload.append(("file_type", file_type))
     response = query(url, payload)
     return read_rdb(response.text), set_metadata(response, site_no=site)
@@ -544,16 +537,12 @@ def read_json(json, multi_index=False):
     merged_df = format_response(merged_df)
     return merged_df
 
-
 def read_rdb(rdb):
     """Convert NWIS rdb table into a dataframe.
 
     Args:
         rdb (string):
     """
-    if rdb.startswith('No sites/data'):
-        return None
-
     count = 0
 
     for line in rdb.splitlines():

@@ -162,13 +162,6 @@ def set_metadata(response):
     return md
 
 
-def get_item(payload, key):
-    for entry in payload:
-        if entry[0] == key:
-            return entry[1]
-    return None
-
-
 def query(url, payload):
     """Send a query.
 
@@ -187,14 +180,20 @@ def query(url, payload):
         key, value = payload[index]
         payload[index] = (key, to_str(value))
 
-    try:
-
-        response = requests.get(url, params=payload)
-
-    except ConnectionError:
-        raise
+    response = requests.get(url, params=payload)
 
     if response.status_code == 400:
-        raise TypeError("Bad Request, check that your parameters are correct. Reason: {}".format(response.reason))
+        raise ValueError("Bad Request, check that your parameters are correct. Reason: {}".format(response.reason))
+
+    if response.text.startswith('No sites/data'):
+        raise NoSitesError(response.url)
 
     return response
+
+
+class NoSitesError(Exception):
+    def __init__(self, url):
+        self.url = url
+
+    def __str__(self):
+        return "No sites/data found using the selection criteria specified in url: {}".format(self.url)
