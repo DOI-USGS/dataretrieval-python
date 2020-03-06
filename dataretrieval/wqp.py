@@ -8,7 +8,7 @@ TODO:
 """
 import pandas as pd
 from io import StringIO
-from .utils import set_metadata, query
+from .utils import query, set_metadata as set_md
 
 
 def get_results(**kwargs):
@@ -60,7 +60,7 @@ def get_results(**kwargs):
     response = query(wqp_url('Result'), list(kwargs.items()))
 
     df = pd.read_csv(StringIO(response['data']), delimiter=',')
-    return set_metadata(df, response)
+    return df, set_metadata(response, **kwargs)
 
 
 def what_sites(**kwargs):
@@ -78,9 +78,19 @@ def what_sites(**kwargs):
 
     df = pd.read_csv(StringIO(response['data']), delimiter=',')
 
-    return set_metadata(df, response)
+    return df, set_metadata(response, **kwargs)
 
 
 def wqp_url(service):
     base_url = 'https://www.waterqualitydata.us/'
     return '{}{}/Search?'.format(base_url, service)
+
+def set_metadata(response, **parameters):
+    md = set_md(response)
+    if 'sites' in parameters:
+        md.site_info = lambda : what_sites(sites=parameters['sites'])
+    elif 'site' in parameters:
+        md.site_info = lambda : what_sites(sites=parameters['site'])
+    elif 'site_no' in parameters:
+        md.site_info = lambda : what_sites(sites=parameters['site_no'])
+    return md

@@ -10,8 +10,8 @@ Todo:
 import pandas as pd
 from io import StringIO
 
-from dataretrieval.utils import to_str, format_datetime, update_merge
-from .utils import set_metadata, query
+from dataretrieval.utils import to_str, format_datetime, update_merge, set_metadata as set_md
+from .utils import query
 
 WATERDATA_BASE_URL = 'https://nwis.waterdata.usgs.gov/'
 WATERDATA_URL = WATERDATA_BASE_URL + 'nwis/'
@@ -102,7 +102,7 @@ def get_qwdata(datetime_index=True, **kwargs):
                                  'sample_start_time_datum_cd')
 
     df = format_response(df)
-    return set_metadata(df, query)
+    return df, set_metadata(query, **kwargs)
 
 
 def get_discharge_measurements(**kwargs):
@@ -111,7 +111,7 @@ def get_discharge_measurements(**kwargs):
         sites (listlike):
     """
     query = query_waterdata('measurements', format='rdb', **kwargs)
-    return set_metadata(read_rdb(query['data']), query)
+    return read_rdb(query['data']), set_metadata(query, **kwargs)
 
 
 def get_discharge_peaks(**kwargs):
@@ -126,7 +126,7 @@ def get_discharge_peaks(**kwargs):
 
     df = read_rdb(query['data'])
 
-    return set_metadata(format_response(df, service='peaks'), query)
+    return format_response(df, service='peaks'), set_metadata(query, **kwargs)
 
 
 def get_gwlevels(**kwargs):
@@ -137,7 +137,7 @@ def get_gwlevels(**kwargs):
     df = read_rdb(query['data'])
     df = try_format_datetime(df, 'lev_dt', 'lev_tm', 'lev_tz_cd')
 
-    return set_metadata(format_response(df), query)
+    return format_response(df), set_metadata(query, **kwargs)
 
 
 def get_stats(**kwargs):
@@ -159,7 +159,7 @@ def get_stats(**kwargs):
 
     query = query_waterservices('stat', **kwargs)
 
-    return set_metadata(read_rdb(query['data']), query)
+    return read_rdb(query['data']), set_metadata(query, **kwargs)
 
 
 def query_waterdata(service, **kwargs):
@@ -222,7 +222,7 @@ def get_dv(**kwargs):
     df = read_json(query['data'])
 
     df = format_response(df)
-    return set_metadata(df, query)
+    return df, set_metadata(query, **kwargs)
 
 
 def get_info(**kwargs):
@@ -310,7 +310,7 @@ def get_info(**kwargs):
 
     query = query_waterservices('site', **kwargs)
 
-    return set_metadata(read_rdb(query['data']), query)
+    return read_rdb(query['data']), set_metadata(query, **kwargs)
 
 
 def get_iv(**kwargs):
@@ -320,7 +320,7 @@ def get_iv(**kwargs):
             DataFrame containing instantaneous values data from NWIS
         """
     query = query_waterservices('iv', format='json', **kwargs)
-    return set_metadata(read_json(query['data']), query)
+    return read_json(query['data']), set_metadata(query, **kwargs)
 
 
 def get_pmcodes(parameterCd, **kwargs):
@@ -346,7 +346,7 @@ def get_pmcodes(parameterCd, **kwargs):
     # XXX check that the url is correct
     url = WATERDATA_URL + 'pmcodes/pmcodes'
     query_result = query(url, payload)
-    return set_metadata(read_rdb(query_result['data']), query_result)
+    return read_rdb(query_result['data']), set_metadata(query_result, **kwargs)
 
 
 def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
@@ -374,7 +374,7 @@ def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
         url = WATERDATA_BASE_URL + state + "/nwis/water_use"
         payload.append(("wu_area", "county"))
     query_result = query(url, payload)
-    return set_metadata(read_rdb(query_result['data']), query_result)
+    return read_rdb(query_result['data']), set_metadata(query_result)
 
 
 def get_ratings(site, file_type="base"):
@@ -401,7 +401,7 @@ def get_ratings(site, file_type="base"):
             raise TypeError('Unrecognized file_type: {}, must be "base", "corr" or "exsa"'.format(file_type))
         payload.append(("file_type", file_type))
     query_result = query(url, payload)
-    return set_metadata(read_rdb(query_result['data']), query_result)
+    return read_rdb(query_result['data']), set_metadata(query_result, site=site)
 
 
 def what_sites(**kwargs):
@@ -416,7 +416,7 @@ def what_sites(**kwargs):
 
     df = read_rdb(response['data'])
 
-    return set_metadata(df, response)
+    return df, set_metadata(response, **kwargs)
 
 
 def get_record(sites=None, start=None, end=None, state=None,
@@ -441,43 +441,41 @@ def get_record(sites=None, start=None, end=None, state=None,
         raise TypeError('Unrecognized service: {}'.format(service))
 
     if service == 'iv':
-        record_df = get_iv(sites=sites, startDT=start, endDT=end, **kwargs)
+        return get_iv(sites=sites, startDT=start, endDT=end, **kwargs)
 
     elif service == 'dv':
-        record_df = get_dv(sites=sites, startDT=start, endDT=end, **kwargs)
+        return get_dv(sites=sites, startDT=start, endDT=end, **kwargs)
 
     elif service == 'qwdata':
-        record_df = get_qwdata(site_no=sites, begin_date=start, end_date=end,
+        return get_qwdata(site_no=sites, begin_date=start, end_date=end,
                                qw_sample_wide='separated_wide', **kwargs)
 
     elif service == 'site':
-        record_df = get_info(sites=sites)
+        return get_info(sites=sites)
 
     elif service == 'measurements':
-        record_df = get_discharge_measurements(site_no=sites, begin_date=start,
+        return get_discharge_measurements(site_no=sites, begin_date=start,
                                                end_date=end, **kwargs)
 
     elif service == 'peaks':
-        record_df = get_discharge_peaks(site_no=sites, begin_date=start,
+        return get_discharge_peaks(site_no=sites, begin_date=start,
                                         end_date=end, **kwargs)
 
     elif service == 'gwlevels':
-        record_df = get_gwlevels(sites=sites, startDT=start, endDT=end,
+        return get_gwlevels(sites=sites, startDT=start, endDT=end,
                                  **kwargs)
 
     elif service == 'pmcodes':
-        record_df = get_pmcodes(**kwargs)
+        return get_pmcodes(**kwargs)
 
     elif service == 'water_use':
-        record_df = get_water_use(state=state, **kwargs)
+        return get_water_use(state=state, **kwargs)
 
     elif service == 'ratings':
-        record_df = get_ratings(**kwargs)
+        return get_ratings(**kwargs)
 
     else:
         raise TypeError('{} service not yet implemented'.format(service))
-
-    return record_df
 
 
 def read_json(json, multi_index=False):
@@ -575,3 +573,13 @@ def read_rdb(rdb):
     df = format_response(df)
     return df
     # return DataFrameWrapper(df=df, url=response_dict['url'], query_time=response_dict['query_time'])
+
+def set_metadata(response, **parameters):
+    md = set_md(response)
+    if 'sites' in parameters:
+        md.site_info = lambda : what_sites(sites=parameters['sites'])
+    elif 'site' in parameters:
+        md.site_info = lambda : what_sites(sites=parameters['site'])
+    elif 'site_no' in parameters:
+        md.site_info = lambda : what_sites(sites=parameters['site_no'])
+    return md

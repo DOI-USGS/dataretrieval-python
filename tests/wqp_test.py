@@ -14,13 +14,13 @@ def test_get_ratings(requests_mock):
                   "&zip=no&mimeType=csv"
     with open('data/wqp_results.txt') as text:
         requests_mock.get(request_url, text=text.read())
-    ratings = get_results(siteid='WIDNR_WQX-10032762',
+    ratings, md = get_results(siteid='WIDNR_WQX-10032762',
                           characteristicName = 'Specific conductance',
                           startDateLo='05-01-2011', startDateHi='09-30-2011')
     assert type(ratings) is DataFrame
     assert ratings.size == 315
-    assert ratings.url == request_url
-    assert isinstance(ratings.query_time, datetime.timedelta)
+    assert md.url == request_url
+    assert isinstance(md.query_time, datetime.timedelta)
 
 
 def test_what_sites(requests_mock):
@@ -29,8 +29,8 @@ def test_what_sites(requests_mock):
                   "&mimeType=csv"
     with open('data/wqp_sites.txt') as text:
         requests_mock.get(request_url, text=text.read())
-    ratings = what_sites(statecode="US:34", characteristicName="Chloride")
+    ratings, md = what_sites(statecode="US:34", characteristicName="Chloride")
     assert type(ratings) is DataFrame
     assert ratings.size == 239904
-    assert ratings.url == request_url
-    assert isinstance(ratings.query_time, datetime.timedelta)
+    assert md.url == request_url
+    assert isinstance(md.query_time, datetime.timedelta)

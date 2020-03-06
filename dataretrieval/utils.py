@@ -147,10 +147,17 @@ def update_merge(left, right, na_only=False, on=None, **kwargs):
     return df
 
 
-def set_metadata(df, query):
-    df.url = query['url']
-    df.query_time = query['query_time']
-    return df
+class Metadata:
+    url = None
+    query_time = None
+    site_info = None
+
+
+def set_metadata(query):
+    md = Metadata()
+    md.url = query['url']
+    md.query_time = query['query_time']
+    return md
 
 
 def get_item(payload, key):
