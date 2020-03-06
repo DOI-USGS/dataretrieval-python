@@ -59,8 +59,8 @@ def get_results(**kwargs):
 
     response = query(wqp_url('Result'), list(kwargs.items()))
 
-    df = pd.read_csv(StringIO(response['data']), delimiter=',')
-    return df, set_metadata(response, **kwargs)
+    df = pd.read_csv(StringIO(response.text), delimiter=',')
+    return df, set_metadata(response)
 
 
 def what_sites(**kwargs):
@@ -76,9 +76,9 @@ def what_sites(**kwargs):
     url = wqp_url('Station')
     response = query(url, list(kwargs.items()))
 
-    df = pd.read_csv(StringIO(response['data']), delimiter=',')
+    df = pd.read_csv(StringIO(response.text), delimiter=',')
 
-    return df, set_metadata(response, **kwargs)
+    return df, set_metadata(response)
 
 
 def wqp_url(service):

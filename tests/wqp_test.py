@@ -12,8 +12,8 @@ def test_get_ratings(requests_mock):
     request_url = "https://waterqualitydata.us/Result/Search?siteid=WIDNR_WQX-10032762" \
                   "&characteristicName=Specific+conductance&startDateLo=05-01-2011&startDateHi=09-30-2011" \
                   "&zip=no&mimeType=csv"
-    with open('data/wqp_results.txt') as text:
-        requests_mock.get(request_url, text=text.read())
+    response_file_path = 'data/wqp_results.txt'
+    mock_request(requests_mock, request_url, response_file_path)
     ratings, md = get_results(siteid='WIDNR_WQX-10032762',
                           characteristicName = 'Specific conductance',
                           startDateLo='05-01-2011', startDateHi='09-30-2011')
@@ -21,16 +21,24 @@ def test_get_ratings(requests_mock):
     assert ratings.size == 315
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
+    assert md.header is not None
 
 
 def test_what_sites(requests_mock):
     """Tests Water quality portal sites query"""
     request_url = "https://waterqualitydata.us/Station/Search?statecode=US%3A34&characteristicName=Chloride&zip=no" \
                   "&mimeType=csv"
-    with open('data/wqp_sites.txt') as text:
-        requests_mock.get(request_url, text=text.read())
+    response_file_path = 'data/wqp_sites.txt'
+    mock_request(requests_mock, request_url, response_file_path)
     sites, md = what_sites(statecode="US:34", characteristicName="Chloride")
     assert type(sites) is DataFrame
     assert sites.size == 239904
+    assert md.header == {"mock_header": "value"}
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
+    assert md.header is not None
+
+
+def mock_request(requests_mock, request_url, file_path):
+    with open(file_path) as text:
+        requests_mock.get(request_url, text=text.read(), headers={"mock_header": "value"})

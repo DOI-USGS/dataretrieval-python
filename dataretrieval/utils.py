@@ -151,12 +151,14 @@ class Metadata:
     url = None
     query_time = None
     site_info = None
+    header = None
 
 
-def set_metadata(query):
+def set_metadata(response):
     md = Metadata()
-    md.url = query['url']
-    md.query_time = query['query_time']
+    md.url = response.url
+    md.query_time = response.elapsed
+    md.header = response.headers
     return md
 
 
@@ -190,16 +192,9 @@ def query(url, payload):
         response = requests.get(url, params=payload)
 
     except ConnectionError:
-
-        print('could not connect to {}'.format(response.url))
-
-    response_format = get_item(payload, 'format')
+        raise
 
     if response.status_code == 400:
         raise TypeError("Bad Request, check that your parameters are correct. Reason: {}".format(response.reason))
 
-    if response_format == 'json':
-        return {'data': response.json(), 'url': response.url, 'query_time': response.elapsed}
-
-    else:
-        return {'data': response.text, 'url': response.url, 'query_time': response.elapsed}
+    return response

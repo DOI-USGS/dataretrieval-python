@@ -93,16 +93,16 @@ def get_qwdata(datetime_index=True, **kwargs):
 
     kwargs = {**payload, **kwargs}
 
-    query = query_waterdata('qwdata', **kwargs)
+    response = query_waterdata('qwdata', **kwargs)
 
-    df = read_rdb(query['data'])
+    df = read_rdb(response.text)
 
     if datetime_index == True:
         df = try_format_datetime(df, 'sample_dt', 'sample_tm',
                                  'sample_start_time_datum_cd')
 
     df = format_response(df)
-    return df, set_metadata(query, **kwargs)
+    return df, set_metadata(response, **kwargs)
 
 
 def get_discharge_measurements(**kwargs):
@@ -110,8 +110,8 @@ def get_discharge_measurements(**kwargs):
     Args:
         sites (listlike):
     """
-    query = query_waterdata('measurements', format='rdb', **kwargs)
-    return read_rdb(query['data']), set_metadata(query, **kwargs)
+    response = query_waterdata('measurements', format='rdb', **kwargs)
+    return read_rdb(response.text), set_metadata(response, **kwargs)
 
 
 def get_discharge_peaks(**kwargs):
@@ -122,22 +122,22 @@ def get_discharge_peaks(**kwargs):
         state_cd (listline):
 
     """
-    query = query_waterdata('peaks', format='rdb', **kwargs)
+    response = query_waterdata('peaks', format='rdb', **kwargs)
 
-    df = read_rdb(query['data'])
+    df = read_rdb(response.text)
 
-    return format_response(df, service='peaks'), set_metadata(query, **kwargs)
+    return format_response(df, service='peaks'), set_metadata(response, **kwargs)
 
 
 def get_gwlevels(**kwargs):
     """Querys the groundwater level service from waterservices
     """
-    query = query_waterservices('gwlevels', **kwargs)
+    response = query_waterservices('gwlevels', **kwargs)
 
-    df = read_rdb(query['data'])
+    df = read_rdb(response.text)
     df = try_format_datetime(df, 'lev_dt', 'lev_tm', 'lev_tz_cd')
 
-    return format_response(df), set_metadata(query, **kwargs)
+    return format_response(df), set_metadata(response, **kwargs)
 
 
 def get_stats(**kwargs):
@@ -157,9 +157,9 @@ def get_stats(**kwargs):
     if 'sites' not in kwargs:
         raise TypeError('Query must specify a site or list of sites')
 
-    query = query_waterservices('stat', **kwargs)
+    response = query_waterservices('stat', **kwargs)
 
-    return read_rdb(query['data']), set_metadata(query, **kwargs)
+    return read_rdb(response.text), set_metadata(response, **kwargs)
 
 
 def query_waterdata(service, **kwargs):
@@ -218,11 +218,11 @@ def query_waterservices(service, **kwargs):
 
 
 def get_dv(**kwargs):
-    query = query_waterservices('dv', format='json', **kwargs)
-    df = read_json(query['data'])
+    response = query_waterservices('dv', format='json', **kwargs)
+    df = read_json(response.json())
 
     df = format_response(df)
-    return df, set_metadata(query, **kwargs)
+    return df, set_metadata(response, **kwargs)
 
 
 def get_info(**kwargs):
@@ -308,9 +308,9 @@ def get_info(**kwargs):
 
     kwargs['siteOutput'] = 'Expanded'
 
-    query = query_waterservices('site', **kwargs)
+    response = query_waterservices('site', **kwargs)
 
-    return read_rdb(query['data']), set_metadata(query, **kwargs)
+    return read_rdb(response.text), set_metadata(response, **kwargs)
 
 
 def get_iv(**kwargs):
@@ -319,8 +319,8 @@ def get_iv(**kwargs):
         Returns:
             DataFrame containing instantaneous values data from NWIS and Metadata as tuple
         """
-    query = query_waterservices('iv', format='json', **kwargs)
-    return read_json(query['data']), set_metadata(query, **kwargs)
+    response = query_waterservices('iv', format='json', **kwargs)
+    return read_json(response.json()), set_metadata(response, **kwargs)
 
 
 def get_pmcodes(parameterCd, **kwargs):
@@ -345,8 +345,8 @@ def get_pmcodes(parameterCd, **kwargs):
 
     # XXX check that the url is correct
     url = WATERDATA_URL + 'pmcodes/pmcodes'
-    query_result = query(url, payload)
-    return read_rdb(query_result['data']), set_metadata(query_result, **kwargs)
+    response = query(url, payload)
+    return read_rdb(response.text), set_metadata(response, **kwargs)
 
 
 def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
@@ -373,8 +373,8 @@ def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
     if state is not None:
         url = WATERDATA_BASE_URL + state + "/nwis/water_use"
         payload.append(("wu_area", "county"))
-    query_result = query(url, payload)
-    return read_rdb(query_result['data']), set_metadata(query_result)
+    response = query(url, payload)
+    return read_rdb(response.text), set_metadata(response)
 
 
 def get_ratings(site, file_type="base"):
@@ -400,8 +400,8 @@ def get_ratings(site, file_type="base"):
         if file_type not in ["base", "corr", "exsa"]:
             raise TypeError('Unrecognized file_type: {}, must be "base", "corr" or "exsa"'.format(file_type))
         payload.append(("file_type", file_type))
-    query_result = query(url, payload)
-    return read_rdb(query_result['data']), set_metadata(query_result, site_no=site)
+    response = query(url, payload)
+    return read_rdb(response.text), set_metadata(response, site_no=site)
 
 
 def what_sites(**kwargs):
@@ -414,7 +414,7 @@ def what_sites(**kwargs):
 
     response = query_waterservices(service='site', **kwargs)
 
-    df = read_rdb(response['data'])
+    df = read_rdb(response.text)
 
     return df, set_metadata(response, **kwargs)
 
