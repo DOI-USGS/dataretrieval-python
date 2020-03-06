@@ -4,7 +4,7 @@ import datetime
 
 from pandas import DataFrame
 
-from dataretrieval.nwis import query_waterservices, get_record, query_waterdata, what_sites
+from dataretrieval.nwis import query_waterservices, get_record, query_waterdata, what_sites, get_stats
 
 
 def test_query_waterservices_validation():
@@ -195,7 +195,7 @@ def test_get_ratings(requests_mock):
 
 
 def test_what_sites(requests_mock):
-    """Tests test_what_sites method correctly generates the request url and returns the result in a DataFrame"""
+    """Tests what_sites method correctly generates the request url and returns the result in a DataFrame"""
     request_url = "https://waterservices.usgs.gov/nwis/site?bBox=-83.0%2C36.5%2C-81.0%2C38.5" \
                   "&parameterCd=00010%2C00060&hasDataTypeCd=dv&format=rdb"
     response_file_path = 'data/nwis_sites.txt'
@@ -206,6 +206,18 @@ def test_what_sites(requests_mock):
                          hasDataTypeCd="dv")
     assert type(sites) is DataFrame
     assert sites.size == 2472
+    assert_metadata(requests_mock, request_url, md, None)
+
+
+def test_get_stats(requests_mock):
+    """Tests get_stats method correctly generates the request url and returns the result in a DataFrame"""
+    request_url = "https://waterservices.usgs.gov/nwis/stat?sites=01491000%2C01645000&format=rdb"
+    response_file_path = 'data/waterservices_stats.txt'
+    mock_request(requests_mock, request_url, response_file_path)
+
+    sites, md = get_stats(sites=["01491000", "01645000"])
+    assert type(sites) is DataFrame
+    assert sites.size == 51936
     assert_metadata(requests_mock, request_url, md, None)
 
 

@@ -133,7 +133,7 @@ def get_gwlevels(**kwargs):
     return format_response(df), set_metadata(response, **kwargs)
 
 
-def get_stats(**kwargs):
+def get_stats(sites, **kwargs):
     """Querys waterservices statistics information
 
     Must specify
@@ -147,10 +147,7 @@ def get_stats(**kwargs):
 
     TODO: fix date parsing
     """
-    if 'sites' not in kwargs:
-        raise TypeError('Query must specify a site or list of sites')
-
-    response = query_waterservices('stat', **kwargs)
+    response = query_waterservices('stat', sites=sites, **kwargs)
 
     return read_rdb(response.text), set_metadata(response, **kwargs)
 
