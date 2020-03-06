@@ -21,7 +21,7 @@ def test_get_ratings(requests_mock):
     assert ratings.size == 315
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header is not None
+    assert md.header == {"mock_header": "value"}
 
 
 def test_what_sites(requests_mock):
@@ -36,7 +36,7 @@ def test_what_sites(requests_mock):
     assert md.header == {"mock_header": "value"}
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header is not None
+    assert md.header == {"mock_header": "value"}
 
 
 def mock_request(requests_mock, request_url, file_path):
