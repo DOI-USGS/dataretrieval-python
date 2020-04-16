@@ -81,12 +81,26 @@ def get_qwdata(datetime_index=True, **kwargs):
                'inventory_output': '0',
                'rdb_inventory_output': 'file',
                'TZoutput': '0',
-               'radio_parm_cds': 'all_parm_cds',
                'rdb_qw_attributes': 'expanded',
                'date_format': 'YYYY-MM-DD',
                'rdb_compression': 'value',
                'submmitted_form': 'brief_list'}
                #'qw_sample_wide': 'separated_wide'}
+
+    # check for parameter codes, and reformat query args
+    qwdata_parameter_code_field = 'parameterCd'
+    if kwargs.get(qwdata_parameter_code_field):
+        parameter_codes = kwargs.pop(qwdata_parameter_code_field)
+        parameter_codes = to_str(parameter_codes)
+        kwargs['multiple_parameter_cds'] = parameter_codes
+        kwargs['param_cd_operator'] = 'OR'
+
+        search_criteria = kwargs.get('list_of_search_criteria')
+        if search_criteria:
+            kwargs['list_of_search_criteria'] = '{},{}'.format(search_criteria, 'multiple_parameter_cds')
+        else:
+            kwargs['list_of_search_criteria'] = 'multiple_parameter_cds'
+        #search_criteria = kwargs.get('list_of_search_criteria
 
     kwargs = {**payload, **kwargs}
 
@@ -181,7 +195,6 @@ def query(url, **kwargs):
         payload[key] = value
 
     try:
-
         req = requests.get(url, params=payload)
 
     except ConnectionError:
