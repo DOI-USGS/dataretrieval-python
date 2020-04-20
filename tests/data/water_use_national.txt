@@ -1,0 +1,60 @@
+#
+# File created on 2020-02-28 18:01:44 EST
+# Refresh Date: 2018-06
+#
+# U.S. Geological Survey
+#
+# This file contains selected WaterUse data
+#
+# The data you have secured from the USGS NWISWeb database may include data that have
+# not received Director's approval and as such are provisional and subject to revision.
+# The data are released on the condition that neither the USGS nor the United States
+# Government may be held liable for any damages resulting from its authorized or
+# unauthorized use.
+#
+#  * References to sources of water-use data can be found here. - https://water.usgs.gov/watuse
+#
+#  Search Criteria:
+#  Year(s)          - ALL
+#  Area             -
+#  County Codes(s)  - ALL
+#  County Name(s)   -
+#  Category Code(s) - ALL
+#  Category Name(s) -
+#
+#  Columns:
+#  National Totals - Summary
+#
+#  The following years are included:
+#  1950
+#  1955
+#  1960
+#  1965
+#  1970
+#  1975
+#  1980
+#  1985
+#  1990
+#  1995
+#  2000
+#  2005
+#  2010
+#  2015
+#
+National Totals	1950	1955	1960	1965	1970	1975	1980	1985	1990	1995	2000	2005	2010	2015
+100s	16s	16s	16s	16s	16s	16s	16s	16s	16s	16s	16s	16s	16s	16s
+Population, in millions	150.7	164.0	179.3	193.8	205.9	216.4	229.6	242.4	252.3	267.1	285.3	300.7	312.6	325.0
+Total withdrawals, in Bgal/d	180	240	270	310	370	420	430	397	404	398	413	410a	354a	322
+Public supply, in Bgal/d	14	17	21	24	27	29	33	36.6	38.7	40.2	43.3	44.4a	42.0	39.0
+Self-supplied domestic, in Bgal/d	2.1	2.1	2.0	2.3	2.6	2.8	3.4	3.32	3.39	3.39	3.58	3.73a	3.53a	3.26
+Livestock, in Bgal/d	1.5	1.5	1.6	1.7	1.9	2.1	2.2	2.23	2.25	2.28	2.37a	2.15	2.00	2.00
+Irrigation, in Bgal/d	89	110	110	120	130	140	150	135	134	130	139	127	116a	118
+Thermoelectric power, in Bgal/d	40	72	100	130	170	200	210	187	194	190	195	201	162a	133
+Self-supplied industrial, in Bgal/d	37	39	38	46	47	45	45	25.8	22.4a	21.6	19.5a	18.1	16.2a	14.8
+Mining, In Bgal/d	b	b	b	b	b	b	b	3.44	4.93	3.59	4.13a	3.83	3.97a	4.00
+Commercial, in Bgal/d	b	b	b	b	b	b	b	1.23	2.39	2.89	c	c	c	c
+Aquaculture, in Bgal/d	b	b	b	b	b	b	b	2.24	2.24	3.27a	5.79a	8.83a	8.96a	7.55
+Total Groundwater, fresh, in Bgal/d	34	47	50	60	68	82	83	73.4	79.4	76.4a	84.3a	78.9	75.9a	82.3
+Total Groundwater, saline, in Bgal/d	c	0.6	0.4	0.5	1.0	1.0	0.93	0.66	1.30a	1.11	2.47a	1.51	2.22a	2.34
+Total Surface water, fresh, in Bgal/d	140	180	190	210	250	260	280	263	255a	261	265	270	231a	198
+Total Surface water, saline, in Bgal/d	10	18	31	43	53	69	71	59.6	68.7a	59.7	61.0	59.8a	45.0	38.6

@@ -1,0 +1,47 @@
+# //UNITED STATES GEOLOGICAL SURVEY       http://water.usgs.gov/
+# //NATIONAL WATER INFORMATION SYSTEM     http://water.usgs.gov/data.html
+# //DATA ARE PROVISIONAL AND SUBJECT TO CHANGE UNTIL PUBLISHED BY USGS
+# //RETRIEVED: 2018-02-28 01:11:02
+# //WARNING
+# //WARNING The stage-discharge rating provided in this file should be
+# //WARNING considered provisional and subject to change. Stage-discharge
+# //WARNING ratings change over time as the channel features that control
+# //WARNING the relation between stage and discharge vary. Users are
+# //WARNING cautioned to consider carefully the applicability of this
+# //WARNING rating before using it for decisions that concern personal or
+# //WARNING public safety or operational consequences.
+# //WARNING
+# //WARNING This rating does not include any shifts that may have been
+# //WARNING used along with this base rating in converting stage to
+# //WARNING discharge at this site. Stage data processed with the rating
+# //WARNING thus may not match that displayed or published by the USGS.
+# //WARNING
+# //FILE TYPE="NWIS RATING" 
+# //DATABASE NUMBER=01 DESCRIPTION=" Standard data base for this site."
+# //STATION AGENCY="USGS " NUMBER="01594440       " TIME_ZONE="EST" DST_FLAG=N
+# //STATION NAME="PATUXENT RIVER NEAR BOWIE, MD"
+# //LABEL="Discharge ft^3/s"
+# //PARAMETER CODE="00060"
+# //RATING ID="20.0" TYPE="STGQ" NAME="stage-discharge" AGING=Working
+# //RATING REMARKS=""
+# //RATING EXPANSION="logarithmic"
+# //RATING OFFSET1=2.000000E+00
+# //RATING_INDEP ROUNDING="????" PARAMETER="Gage height (ft)"
+# //RATING_DEP ROUNDING="????" PARAMETER="Discharge (ft^3/s)"
+# //RATING_DATETIME BEGIN=20151001000000 BZONE=-05:00 END=20170206000000 EZONE=-05:00 AGING=None
+# //RATING_DATETIME COMMENT="Adjust high end to Meas 32C. Begin on WY change"
+# //RATING_DATETIME BEGIN=20170206000000 BZONE=-05:00 END=-------------- EZONE=--- AGING=None
+# //RATING_DATETIME COMMENT="Adjust high end to Meas 32C. Begin on WY change"
+INDEP	DEP	STOR
+16N	16N	1S
+2.9900000E+00	3.0000000E+01	*
+4.0000000E+00	1.1000000E+02	*
+5.0000000E+00	2.2500000E+02	*
+5.5000000E+00	3.0000000E+02	*
+6.0000000E+00	3.9000000E+02	*
+6.5000000E+00	4.9000000E+02	*
+7.0000000E+00	6.0000000E+02	*
+9.0000000E+00	1.1750000E+03	*
+1.3000000E+01	4.3500000E+03	*
+2.0850000E+01	1.6497750E+04	*
+2.7900000E+01	3.1100000E+04	*

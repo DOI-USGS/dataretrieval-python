@@ -8,7 +8,7 @@ TODO:
 """
 import pandas as pd
 from io import StringIO
-from dataretrieval.nwis import query
+from .utils import query, set_metadata as set_md
 
 
 def get_results(**kwargs):
@@ -57,10 +57,10 @@ def get_results(**kwargs):
     kwargs['zip'] = 'no'
     kwargs['mimeType'] = 'csv'
 
-    response = query(wqp_url('Result'), **kwargs)
+    response = query(wqp_url('Result'), list(kwargs.items()))
 
-    df = pd.read_csv(StringIO(response), delimiter=',')
-    return df
+    df = pd.read_csv(StringIO(response.text), delimiter=',')
+    return df, set_metadata(response)
 
 
 def what_sites(**kwargs):
@@ -74,13 +74,24 @@ def what_sites(**kwargs):
     kwargs['mimeType'] = 'csv'
 
     url = wqp_url('Station')
-    query_string = query(url, **kwargs)
+    response = query(url, list(kwargs.items()))
 
-    df = pd.read_csv(StringIO(query_string), delimiter=',')
+    df = pd.read_csv(StringIO(response.text), delimiter=',')
 
-    return df
+    return df, set_metadata(response)
 
 
 def wqp_url(service):
     base_url = 'https://www.waterqualitydata.us/'
     return '{}{}/Search?'.format(base_url, service)
+
+
+def set_metadata(response, **parameters):
+    md = set_md(response)
+    if 'sites' in parameters:
+        md.site_info = lambda : what_sites(sites=parameters['sites'])
+    elif 'site' in parameters:
+        md.site_info = lambda : what_sites(sites=parameters['site'])
+    elif 'site_no' in parameters:
+        md.site_info = lambda : what_sites(sites=parameters['site_no'])
+    return md
