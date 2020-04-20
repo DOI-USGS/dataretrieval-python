@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """Functions for downloading data from NWIS
 
 Todo:
@@ -8,25 +8,25 @@ Todo:
 """
 
 import pandas as pd
-import requests
 from io import StringIO
 
-from dataretrieval.utils import to_str, format_datetime, update_merge
+from dataretrieval.utils import to_str, format_datetime, update_merge, set_metadata as set_md
+from .utils import query
 
-WATERDATA_URL = 'https://nwis.waterdata.usgs.gov/nwis/'
+WATERDATA_BASE_URL = 'https://nwis.waterdata.usgs.gov/'
+WATERDATA_URL = WATERDATA_BASE_URL + 'nwis/'
 WATERSERVICE_URL = 'https://waterservices.usgs.gov/nwis/'
 
 WATERSERVICES_SERVICES = ['dv', 'iv', 'site', 'stat', 'gwlevels']
-WATERDATA_SERVICES = ['qwdata', 'measurements', 'peaks', 'pmcodes']
+WATERDATA_SERVICES = ['qwdata', 'measurements', 'peaks', 'pmcodes', 'water_use', 'ratings']
+
+
 # add more services
 
 
 def format_response(df, service=None):
     """Setup index for response from query.
     """
-    if df is None:
-        return
-
     if service == 'peaks':
         df = preformat_peaks_response(df)
 
@@ -55,14 +55,6 @@ def preformat_peaks_response(df):
     return df
 
 
-def try_format_datetime(df, date_field, time_field, tz_field):
-    try:
-        return format_datetime(df, date_field, time_field, tz_field)
-
-    except TypeError:
-        return None
-
-
 def get_qwdata(datetime_index=True, **kwargs):
     """Get water sample data from qwdata service.
 
@@ -85,7 +77,7 @@ def get_qwdata(datetime_index=True, **kwargs):
                'date_format': 'YYYY-MM-DD',
                'rdb_compression': 'value',
                'submmitted_form': 'brief_list'}
-               #'qw_sample_wide': 'separated_wide'}
+    # 'qw_sample_wide': 'separated_wide'}
 
     # check for parameter codes, and reformat query args
     qwdata_parameter_code_field = 'parameterCd'
@@ -104,55 +96,54 @@ def get_qwdata(datetime_index=True, **kwargs):
 
     kwargs = {**payload, **kwargs}
 
-    query = query_waterdata('qwdata', **kwargs)
+    response = query_waterdata('qwdata', **kwargs)
 
-    df = read_rdb(query)
+    df = read_rdb(response.text)
 
     if datetime_index == True:
-        df = try_format_datetime(df, 'sample_dt', 'sample_tm',
-                                 'sample_start_time_datum_cd')
+        df = format_datetime(df, 'sample_dt', 'sample_tm',
+                             'sample_start_time_datum_cd')
 
-    return format_response(df)
+    df = format_response(df)
+    return df, set_metadata(response, **kwargs)
 
 
 def get_discharge_measurements(**kwargs):
-    """ **DEPCRECATED**
+    """
     Args:
         sites (listlike):
     """
-    query = query_waterdata('measurements', format='rdb', **kwargs)
-    df = read_rdb(query)
-
-    return format_response(df)
+    response = query_waterdata('measurements', format='rdb', **kwargs)
+    return read_rdb(response.text), set_metadata(response, **kwargs)
 
 
 def get_discharge_peaks(**kwargs):
-    """ **DEPRECATED** Implement through waterservices
+    """
 
     Args:
         site_no (listlike):
         state_cd (listline):
 
     """
-    query = query_waterdata('peaks', format='rdb', **kwargs)
+    response = query_waterdata('peaks', format='rdb', **kwargs)
 
-    df = read_rdb(query)
+    df = read_rdb(response.text)
 
-    return format_response(df, service='peaks')
+    return format_response(df, service='peaks'), set_metadata(response, **kwargs)
 
 
-def get_gwlevels(**kwargs):
+def get_gwlevels(startDT='1851-01-01', **kwargs):
     """Querys the groundwater level service from waterservices
     """
-    query = query_waterservices('gwlevels', **kwargs)
+    response = query_waterservices('gwlevels', **kwargs)
 
-    df = read_rdb(query)
-    df = try_format_datetime(df, 'lev_dt', 'lev_tm', 'lev_tz_cd')
+    df = read_rdb(response.text)
+    df = format_datetime(df, 'lev_dt', 'lev_tm', 'lev_tz_cd')
 
-    return format_response(df)
+    return format_response(df), set_metadata(response, **kwargs)
 
 
-def get_stats(**kwargs):
+def get_stats(sites, **kwargs):
     """Querys waterservices statistics information
 
     Must specify
@@ -166,51 +157,9 @@ def get_stats(**kwargs):
 
     TODO: fix date parsing
     """
-    if 'sites' not in kwargs:
-        raise TypeError('Query must specify a site or list of sites')
+    response = query_waterservices('stat', sites=sites, **kwargs)
 
-    query = query_waterservices('stat', **kwargs)
-
-    return read_rdb(query)
-
-
-def query(url, **kwargs):
-    """Send a query.
-
-    Wrapper for requests.get that handles errors, converts listed
-    query paramaters to comma separated strings, and returns response.
-
-    Args:
-        url:
-        kwargs: query parameters passed to requests.get
-
-    Returns:
-        string : query response
-    """
-
-    payload = {}
-
-    for key, value in kwargs.items():
-        value = to_str(value)
-        payload[key] = value
-
-    try:
-        req = requests.get(url, params=payload)
-
-    except ConnectionError:
-
-        print('could not connect to {}'.format(req.url))
-
-    response_format = kwargs.get('format')
-
-    if req.status_code == 400:
-        return False
-
-    if response_format == 'json':
-        return req.json()
-
-    else:
-        return req.text
+    return read_rdb(response.text), set_metadata(response, **kwargs)
 
 
 def query_waterdata(service, **kwargs):
@@ -224,7 +173,7 @@ def query_waterdata(service, **kwargs):
         raise TypeError('Query must specify a major filter: site_no, stateCd, bBox')
 
     elif any(key in kwargs for key in bbox_params) \
-    and not all(key in kwargs for key in bbox_params):
+            and not all(key in kwargs for key in bbox_params):
         raise TypeError('One or more lat/long coordinates missing or invalid.')
 
     if service not in WATERDATA_SERVICES:
@@ -232,7 +181,7 @@ def query_waterdata(service, **kwargs):
 
     url = WATERDATA_URL + service
 
-    return query(url, **kwargs)
+    return query(url, list(kwargs.items()))
 
 
 def query_waterservices(service, **kwargs):
@@ -265,15 +214,15 @@ def query_waterservices(service, **kwargs):
 
     url = WATERSERVICE_URL + service
 
-    return query(url, **kwargs)
+    return query(url, list(kwargs.items()))
 
 
 def get_dv(**kwargs):
+    response = query_waterservices('dv', format='json', **kwargs)
+    df = read_json(response.json())
 
-    query = query_waterservices('dv', format='json', **kwargs)
-    df = read_json(query)
-
-    return format_response(df)
+    df = format_response(df)
+    return df, set_metadata(response, **kwargs)
 
 
 def get_info(**kwargs):
@@ -357,48 +306,121 @@ def get_info(**kwargs):
     https://waterservices.usgs.gov/rest/Site-Service.html#stateCd
     """
 
-    query = query_waterservices('site', **kwargs)
+    kwargs['siteOutput'] = 'Expanded'
 
-    return read_rdb(query)
+    response = query_waterservices('site', **kwargs)
+
+    return read_rdb(response.text), set_metadata(response, **kwargs)
 
 
 def get_iv(**kwargs):
+    """Get instantaneous values data from NWIS and return it as a DataFrame
 
-    query = query_waterservices('iv', format='json', **kwargs)
+        Returns:
+            DataFrame containing instantaneous values data from NWIS and Metadata as tuple
+        """
+    response = query_waterservices('iv', format='json', **kwargs)
+    return read_json(response.json()), set_metadata(response, **kwargs)
 
-    df = read_json(query)
 
-    return format_response(df)
-
-
-def get_pmcodes(**kwargs):
+def get_pmcodes(parameterCd, **kwargs):
     """Return a DataFrame containing all NWIS parameter codes.
 
     Returns:
-        DataFrame containgin the USGS parameter codes
+        DataFrame containgin the USGS parameter codes and Metadata as tuple
     """
-    payload = {'radio_pm_search': 'param_group',
-               'pm_group': 'All+--+include+all+parameter+groups',
-               'pm_sarch': None,
-               'casrn_search': None,
-               'srsname_search': None,
-               'show': 'parameter_group_nm',
-               'show': 'casrn',
-               'show': 'srsname',
-               'show': 'parameter_units',
-               'format': 'rdb',
-               }
+    payload = [('radio_pm_search', 'pm_search'),
+               ('pm_group', 'All+--+include+all+parameter+groups'),
+               ('pm_search', parameterCd),
+               ('casrn_search', None),
+               ('srsname_search', None),
+               ('show', 'parameter_group_nm'),
+               ('show', 'casrn'),
+               ('show', 'srsname'),
+               ('show', 'parameter_units'),
+               ('show', 'parameter_nm'),
+               ('format', 'rdb')
+               ]
 
-    kwargs = {**payload, **kwargs}
+    payload += list(kwargs.items())
 
     # XXX check that the url is correct
-    url = WATERSERVICE_URL + 'pmcodes'
-    df = read_rdb(query(url, **kwargs))
+    url = WATERDATA_URL + 'pmcodes/pmcodes'
+    response = query(url, payload)
+    return read_rdb(response.text), set_metadata(response, **kwargs)
 
-    return format_response(df)
+
+def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
+    """
+    Water use data retrieval from USGS (NWIS)
+
+    Args:
+        years (Listlike): List or comma delimited string of years.  Must be years ending in 0 or 5, or "ALL",
+                            which retrieves all available years
+        state (string): full name, abbreviation or id
+        county (string): County IDs from county lookup or "ALL"
+        categories (Listlike): List or comma delimited string of Two-letter category abbreviations
+
+    Return:
+        DataFrame containing requested data and Metadata as tuple
+    """
+    payload = [('rdb_compression', 'value'),
+               ('format', 'rdb'),
+               ('wu_year', years),
+               ('wu_category', categories),
+               ('wu_county', counties)
+               ]
+    url = WATERDATA_URL + 'water_use'
+    if state is not None:
+        url = WATERDATA_BASE_URL + state + "/nwis/water_use"
+        payload.append(("wu_area", "county"))
+    response = query(url, payload)
+    return read_rdb(response.text), set_metadata(response)
 
 
-def get_record(sites, start=None, end=None, state=None,
+def get_ratings(site, file_type="base"):
+    """
+    Rating table for an active USGS streamgage retrieval
+    Reads current rating table for an active USGS streamgage from NWISweb.
+    Data is retrieved from https://waterdata.usgs.gov/nwis.
+
+    Args:
+        site (string): USGS site number.  This is usually an 8 digit number as a string
+        base (string): can be "base", "corr", or "exsa"
+        county (string): County IDs from county lookup or "ALL"
+        categories (Listlike): List or comma delimited string of Two-letter category abbreviations
+
+    Return:
+        DataFrame containing requested data and Metadata as tuple
+    """
+    payload = []
+    url = WATERDATA_BASE_URL + 'nwisweb/get_ratings/'
+    if site is not None:
+        payload.append(("site_no", site))
+    if file_type is not None:
+        if file_type not in ["base", "corr", "exsa"]:
+            raise ValueError('Unrecognized file_type: {}, must be "base", "corr" or "exsa"'.format(file_type))
+        payload.append(("file_type", file_type))
+    response = query(url, payload)
+    return read_rdb(response.text), set_metadata(response, site_no=site)
+
+
+def what_sites(**kwargs):
+    """ Search NWIS for sites within a region with specific data.
+
+    Parameters
+    ----------
+    same as get_info
+    """
+
+    response = query_waterservices(service='site', **kwargs)
+
+    df = read_rdb(response.text)
+
+    return df, set_metadata(response, **kwargs)
+
+
+def get_record(sites=None, start=None, end=None, state=None,
                service='iv', *args, **kwargs):
     """
     Get data from NWIS and return it as a DataFrame.
@@ -414,40 +436,57 @@ def get_record(sites, start=None, end=None, state=None,
             - 'site' : site description
             - 'measurements' : discharge measurements
     Return:
-        DataFrame containing requested data.
+        DataFrame containing requested data
     """
     if service not in WATERSERVICES_SERVICES + WATERDATA_SERVICES:
         raise TypeError('Unrecognized service: {}'.format(service))
 
     if service == 'iv':
-        record_df = get_iv(sites=sites, startDT=start, endDT=end, **kwargs)
+        df, _ = get_iv(sites=sites, startDT=start, endDT=end, **kwargs)
+        return df
 
     elif service == 'dv':
-        record_df = get_dv(sites=sites, startDT=start, endDT=end, **kwargs)
+        df, _ = get_dv(sites=sites, startDT=start, endDT=end, **kwargs)
+        return df
 
     elif service == 'qwdata':
-        record_df = get_qwdata(site_no=sites, begin_date=start, end_date=end,
-                               qw_sample_wide='separated_wide', **kwargs)
+        df, _ = get_qwdata(site_no=sites, begin_date=start, end_date=end,
+                           qw_sample_wide='separated_wide', **kwargs)
+        return df
 
     elif service == 'site':
-        record_df = get_info(sites=sites)
+        df, _ = get_info(sites=sites, **kwargs)
+        return df
 
     elif service == 'measurements':
-        record_df = get_discharge_measurements(site_no=sites, begin_date=start,
-                                               end_date=end, **kwargs)
+        df, _ = get_discharge_measurements(site_no=sites, begin_date=start,
+                                           end_date=end, **kwargs)
+        return df
 
     elif service == 'peaks':
-        record_df = get_discharge_peaks(site_no=sites, begin_date=start,
-                                        end_date=end, **kwargs)
+        df, _ = get_discharge_peaks(site_no=sites, begin_date=start,
+                                    end_date=end, **kwargs)
+        return df
 
     elif service == 'gwlevels':
-        record_df = get_gwlevels(sites=sites, startDT=start, endDT=end,
-                                 **kwargs)
+        df, _ = get_gwlevels(sites=sites, startDT=start, endDT=end,
+                             **kwargs)
+        return df
+
+    elif service == 'pmcodes':
+        df, _ = get_pmcodes(**kwargs)
+        return df
+
+    elif service == 'water_use':
+        df, _ = get_water_use(state=state, **kwargs)
+        return df
+
+    elif service == 'ratings':
+        df, _ = get_ratings(**kwargs)
+        return df
 
     else:
         raise TypeError('{} service not yet implemented'.format(service))
-
-    return record_df
 
 
 def read_json(json, multi_index=False):
@@ -457,12 +496,9 @@ def read_json(json, multi_index=False):
         json (dict)
 
     Returns:
-        DataFrame containing times series data from the NWIS json.
+        DataFrame containing times series data from the NWIS json and Metadata as tuple
     """
     merged_df = pd.DataFrame()
-
-    if not json:
-        return merged_df
 
     for timeseries in json['value']['timeSeries']:
 
@@ -509,7 +545,6 @@ def read_json(json, multi_index=False):
                                       'qualifiers': col_name + '_cd'},
                              inplace=True)
 
-
             if merged_df.empty:
                 merged_df = record_df
 
@@ -517,7 +552,8 @@ def read_json(json, multi_index=False):
                 merged_df = update_merge(merged_df, record_df, na_only=True,
                                          on=['site_no', 'datetime'])
 
-    return format_response(merged_df)
+    merged_df = format_response(merged_df)
+    return merged_df
 
 
 def read_rdb(rdb):
@@ -526,9 +562,6 @@ def read_rdb(rdb):
     Args:
         rdb (string):
     """
-    if rdb.startswith('No sites/data'):
-        return None
-
     count = 0
 
     for line in rdb.splitlines():
@@ -542,7 +575,29 @@ def read_rdb(rdb):
     fields = rdb.splitlines()[count].split('\t')
     dtypes = {'site_no': str}
 
-    df = pd.read_csv(StringIO(rdb), delimiter='\t', skiprows=count+2,
+    df = pd.read_csv(StringIO(rdb), delimiter='\t', skiprows=count + 2,
                      names=fields, na_values='NaN', dtype=dtypes)
 
-    return format_response(df)
+    df = format_response(df)
+    return df
+
+
+def set_metadata(response, **parameters):
+    md = set_md(response)
+    site_aliases = ['sites', 'site_no']
+    for alias in site_aliases:
+        if alias in parameters:
+            md.site_info = lambda: what_sites(sites=parameters[alias])
+            break
+
+    if 'parameterCd' in parameters:
+        md.variable_info = lambda: get_pmcodes(parameterCd=parameters['parameterCd'])
+
+    comments = ""
+    for line in response.text.splitlines():
+        if line.startswith("#"):
+            comments += line.lstrip("#") + "\n"
+    if comments != "":
+        md.comment = comments
+
+    return md

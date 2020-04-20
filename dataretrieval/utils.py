@@ -2,6 +2,7 @@
 Useful utilities for data munging.
 """
 import pandas as pd
+import requests
 from pandas.core.indexes.multi import MultiIndex
 from pandas.core.indexes.datetimes import DatetimeIndex
 
@@ -14,7 +15,7 @@ def to_str(listlike):
         List-like object as string
     """
     if type(listlike) == list:
-        return ','.join(listlike)
+        return ','.join([str(x) for x in listlike])
 
     elif type(listlike) == pd.core.series.Series:
         return ','.join(listlike.tolist())
@@ -62,57 +63,6 @@ def format_datetime(df, date_field, time_field, tz_field):
     return df
 
 
-def mmerge_asof(left, right, tolerance=None, **kwargs):
-    """Merges two dataframes with multi-index.
-
-    Only works on two-level multi-index where the second level is a time.
-
-    Parameters
-    ----------
-    left : DataFrame
-
-    right : DataFrame
-
-    tolerance : integer or Timedelta, optional, default None
-        Select asof tolerance within this range; must be compatible with the merge index.
-
-    Returns
-    -------
-    merged : DataFrame
-
-    Examples
-    --------
-    TODO
-    """
-    # if not multiindex pass  to merge_asof
-    if not isinstance(left.index, MultiIndex) and not isinstance(right.index, MultiIndex):
-        return pd.merge_asof(left, right,
-                             tolerance=tolerance,
-                             right_index=True,
-                             left_index=True)
-
-    elif left.index.names != right.index.names:
-        raise TypeError('Both indexes must have matching names')
-
-    #check that lowest level is the datetime index
-
-    #check that their are only two levels
-
-    out_df = pd.DataFrame()
-    dt_name = left.index.names[1]
-    #TODO modify to handle more levels
-    index_name = left.index.names[0]
-
-    left_temp = left.reset_index().dropna(subset=[dt_name]).sort_values([dt_name])
-    right_temp = right.reset_index().dropna(subset=[dt_name]).sort_values([dt_name])
-
-    merged_df = pd.merge_asof(left_temp, right_temp,
-                              tolerance=tolerance,
-                              on=dt_name,
-                              by=index_name)
-
-    return merged_df.set_index([index_name, dt_name]).sort_index()
-
 #This function may be deprecated once pandas.update support joins besides left.
 def update_merge(left, right, na_only=False, on=None, **kwargs):
     """Performs a combination update and merge.
@@ -144,3 +94,62 @@ def update_merge(left, right, na_only=False, on=None, **kwargs):
             df.drop([name + '_x', name + '_y'], axis=1, inplace=True)
 
     return df
+
+
+class Metadata:
+    url = None
+    query_time = None
+    site_info = None
+    header = None
+    variable_info = None
+    comment = None
+
+    # note sure what statistic_info is
+    statistic_info = None
+    # disclaimer seems to be only part of importWaterML1
+    disclaimer = None
+
+
+def set_metadata(response):
+    md = Metadata()
+    md.url = response.url
+    md.query_time = response.elapsed
+    md.header = response.headers
+    return md
+
+
+def query(url, payload):
+    """Send a query.
+
+    Wrapper for requests.get that handles errors, converts listed
+    query paramaters to comma separated strings, and returns response.
+
+    Args:
+        url:
+        kwargs: query parameters passed to requests.get
+
+    Returns:
+        string : query response
+    """
+
+    for index in range(len(payload)):
+        key, value = payload[index]
+        payload[index] = (key, to_str(value))
+
+    response = requests.get(url, params=payload)
+
+    if response.status_code == 400:
+        raise ValueError("Bad Request, check that your parameters are correct. URL: {}".format(response.url))
+
+    if response.text.startswith('No sites/data'):
+        raise NoSitesError(response.url)
+
+    return response
+
+
+class NoSitesError(Exception):
+    def __init__(self, url):
+        self.url = url
+
+    def __str__(self):
+        return "No sites/data found using the selection criteria specified in url: {}".format(self.url)

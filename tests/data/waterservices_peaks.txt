@@ -1,0 +1,94 @@
+#
+# U.S. Geological Survey
+# National Water Information System
+# Retrieved: 2020-02-20 16:35:50 EST
+#
+# ---------------------------------- WARNING ----------------------------------------
+# Some of the data that you have obtained from this U.S. Geological Survey database
+# may not have received Director's approval. Any such data values are qualified
+# as provisional and are subject to revision. Provisional data are released on the
+# condition that neither the USGS nor the United States Government may be held liable
+# for any damages resulting from its use.
+#
+# More data may be available offline.
+# For more information on these data,  contact  USGS Water Data Inquiries.
+# This file contains the annual peak streamflow data.
+#
+# This information includes the following fields:
+#
+#  agency_cd     Agency Code
+#  site_no       USGS station number
+#  peak_dt       Date of peak streamflow (format YYYY-MM-DD)
+#  peak_tm       Time of peak streamflow (24 hour format, 00:00 - 23:59)
+#  peak_va       Annual peak streamflow value in cfs
+#  peak_cd       Peak Discharge-Qualification codes (see explanation below)
+#  gage_ht       Gage height for the associated peak streamflow in feet
+#  gage_ht_cd    Gage height qualification codes
+#  year_last_pk  Peak streamflow reported is the highest since this year
+#  ag_dt         Date of maximum gage-height for water year (if not concurrent with peak)
+#  ag_tm         Time of maximum gage-height for water year (if not concurrent with peak
+#  ag_gage_ht    maximum Gage height for water year in feet (if not concurrent with peak
+#  ag_gage_ht_cd maximum Gage height code
+#
+# Sites in this file include:
+#  USGS 01594440 PATUXENT RIVER NEAR BOWIE, MD
+#
+# Peak Streamflow-Qualification Codes(peak_cd):
+#   1 ... Discharge is a Maximum Daily Average
+#   2 ... Discharge is an Estimate
+#   3 ... Discharge affected by Dam Failure
+#   4 ... Discharge less than indicated value,
+#           which is Minimum Recordable Discharge at this site
+#   5 ... Discharge affected to unknown degree by
+#           Regulation or Diversion
+#   6 ... Discharge affected by Regulation or Diversion
+#   7 ... Discharge is an Historic Peak
+#   8 ... Discharge actually greater than indicated value
+#   9 ... Discharge due to Snowmelt, Hurricane,
+#           Ice-Jam or Debris Dam breakup
+#   A ... Year of occurrence is unknown or not exact
+#   Bd ... Day of occurrence is unknown or not exact
+#   Bm ... Month of occurrence is unknown or not exact
+#   C ... All or part of the record affected by Urbanization,
+#            Mining, Agricultural changes, Channelization, or other
+#   F ... Peak supplied by another agency
+#   O ... Opportunistic value not from systematic data collection
+#   R ... Revised
+#
+# Gage height qualification codes(gage_ht_cd,ag_gage_ht_cd):
+#   1 ... Gage height affected by backwater
+#   2 ... Gage height not the maximum for the year
+#   3 ... Gage height at different site and(or) datum
+#   4 ... Gage height below minimum recordable elevation
+#   5 ... Gage height is an estimate
+#   6 ... Gage datum changed during this year
+#   7 ... Debris, mud, or hyper-concentrated flow
+#   8 ... Gage height tidally affected
+#   Bd ... Day of occurrence is unknown or not exact
+#   Bm ... Month of occurrence is unknown or not exact
+#   F ... Peak supplied by another agency
+#   R ... Revised
+#
+#
+agency_cd	site_no	peak_dt	peak_tm	peak_va	peak_cd	gage_ht	gage_ht_cd	year_last_pk	ag_dt	ag_tm	ag_gage_ht	ag_gage_ht_cd
+5s	15s	10d	6s	8s	33s	8s	27s	4s	10d	6s	8s	27s
+USGS	01594440	2000-03-22		3640	5	11.90						
+USGS	01594440	2001-06-08	06:30	3800	5	12.05						
+USGS	01594440	2002-04-29		1510	2,5,8							
+USGS	01594440	2003-02-23	19:30	6990	5	15.08						
+USGS	01594440	2003-12-12	10:45	5790	5	13.99						
+USGS	01594440	2005-04-03	19:15	5210	5	13.42						
+USGS	01594440	2006-06-26	23:00	12700	5	19.20						
+USGS	01594440	2007-04-16	11:15	5520	5	13.73						
+USGS	01594440	2008-05-13	02:00	7860	5	15.80						
+USGS	01594440	2009-06-19	05:45	4130	5	12.35						
+USGS	01594440	2010-03-14	13:00	5780	5	13.98						
+USGS	01594440	2011-09-08	13:15	16800	5	21.10						
+USGS	01594440	2011-12-08	20:30	4900	5	13.74						
+USGS	01594440	2012-10-30	23:00	10800	5	18.02						
+USGS	01594440	2014-05-01	17:30	15600	5	20.56						
+USGS	01594440	2015-06-28	18:15	6610	5	15.03						
+USGS	01594440	2016-08-01	00:30	6140	5	14.64						
+USGS	01594440	2017-07-30	01:15	4960	5	13.60						
+USGS	01594440	2018-06-04	18:30	8360	5	16.32						
+USGS	01594440	2018-12-16	23:30	7220	5	15.50						

@@ -1,0 +1,18 @@
+# 
+#
+# USGS Parameter Code Definitions File
+#
+# Column Definitions
+#  parameter_cd  - Parameter Code
+#  parameter_group_nm  - Group Name
+#  casrn  - CASRN
+#  srsname  - SRSName
+#  parameter_units  - Parameter Unit
+#  parameter_nm  - Parameter Name/Description
+#
+#
+# Date Retrieved: 2020-04-16 18:48:43 EDT
+#
+parameter_cd	parameter_group_nm	casrn	srsname	parameter_units	parameter_nm
+5s	30s	170s	170s	16s	170s
+00618	Nutrient	Nitrate, water, filtered, milligrams per liter as nitrogen	14797-55-8	Nitrate	mg/l as N
