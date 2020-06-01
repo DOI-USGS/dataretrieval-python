@@ -66,11 +66,11 @@ def test_get_dv(requests_mock):
     """Tests get_dv method correctly generates the request url and returns the result in a DataFrame"""
     format = "json"
     site = '01491000%2C01645000'
-    request_url = 'https://waterservices.usgs.gov/nwis/dv?format={}&sites={}' \
-                  '&startDT=2020-02-14&endDT=2020-02-15'.format(format, site)
+    request_url = 'https://waterservices.usgs.gov/nwis/dv?format={}' \
+                  '&startDT=2020-02-14&endDT=2020-02-15&sites={}'.format(format, site)
     response_file_path = 'data/waterservices_dv.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    df, md = get_dv(sites=["01491000", "01645000"], startDT='2020-02-14', endDT='2020-02-15')
+    df, md = get_dv(sites=["01491000", "01645000"], start='2020-02-14', end='2020-02-15')
     assert type(df) is DataFrame
     assert df.size == 8
     assert_metadata(requests_mock, request_url, md, site, None, format)
@@ -80,11 +80,11 @@ def test_get_iv(requests_mock):
     """Tests get_dv method correctly generates the request url and returns the result in a DataFrame"""
     format = "json"
     site = '01491000%2C01645000'
-    request_url = 'https://waterservices.usgs.gov/nwis/iv?format={}&sites={}' \
-                  '&startDT=2019-02-14&endDT=2020-02-15'.format(format, site)
+    request_url = 'https://waterservices.usgs.gov/nwis/iv?format={}' \
+                  '&startDT=2019-02-14&endDT=2020-02-15&sites={}'.format(format, site)
     response_file_path = 'data/waterservices_iv.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    df, md = get_iv(sites=["01491000", "01645000"], startDT='2019-02-14', endDT='2020-02-15')
+    df, md = get_iv(sites=["01491000", "01645000"], start='2019-02-14', end='2020-02-15')
     assert type(df) is DataFrame
     assert df.size == 563380
     assert md.url == request_url
@@ -115,12 +115,12 @@ def test_get_qwdata(requests_mock):
     site = '01491000%2C01645000'
     request_url = 'https://nwis.waterdata.usgs.gov/nwis/qwdata?agency_cd=USGS&format={}' \
                   '&pm_cd_compare=Greater+than&inventory_output=0&rdb_inventory_output=file' \
-                  '&TZoutput=0&radio_parm_cds=all_parm_cds&rdb_qw_attributes=expanded&date_format=YYYY-MM-DD' \
+                  '&TZoutput=0&rdb_qw_attributes=expanded&date_format=YYYY-MM-DD' \
                   '&rdb_compression=value&submmitted_form=brief_list' \
-                  '&site_no={}'.format(format, site)
+                  '&site_no={}&qw_sample_wide=separated_wide'.format(format, site)
     response_file_path = 'data/waterdata_qwdata.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    df, md = get_qwdata(site_no=["01491000", "01645000"])
+    df, md = get_qwdata(sites=["01491000", "01645000"])
     assert type(df) is DataFrame
     assert df.size == 1650709
     assert_metadata(requests_mock, request_url, md, site, None, format)
@@ -130,7 +130,8 @@ def test_get_gwlevels(requests_mock):
     """Tests get_gwlevels method correctly generates the request url and returns the result in a DataFrame."""
     format = "rdb"
     site = '434400121275801'
-    request_url = 'https://waterservices.usgs.gov/nwis/gwlevels?sites={}&format={}'.format(site, format)
+    request_url = 'https://waterservices.usgs.gov/nwis/gwlevels?startDT=1851-01-01' \
+                  '&sites={}&format={}'.format(site, format)
     response_file_path = 'data/waterservices_gwlevels.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_gwlevels(sites=[site])
@@ -147,7 +148,7 @@ def test_get_discharge_peaks(requests_mock):
                   '&begin_date=2000-02-14&end_date=2020-02-15'.format(format, site)
     response_file_path = 'data/waterservices_peaks.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    df, md = get_discharge_peaks(site_no=[site], begin_date='2000-02-14', end_date='2020-02-15')
+    df, md = get_discharge_peaks(sites=[site], start='2000-02-14', end='2020-02-15')
     assert type(df) is DataFrame
     assert df.size == 240
     assert_metadata(requests_mock, request_url, md, site, None, format)
@@ -162,7 +163,7 @@ def test_get_discharge_measurements(requests_mock):
                   '&begin_date=2000-02-14&end_date=2020-02-15'.format(format, site)
     response_file_path = 'data/waterdata_measurements.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    df, md = get_discharge_measurements(site_no=[site], begin_date='2000-02-14', end_date='2020-02-15')
+    df, md = get_discharge_measurements(sites=[site], start='2000-02-14', end='2020-02-15')
     assert type(df) is DataFrame
     assert df.size == 2130
     assert_metadata(requests_mock, request_url, md, site, None, format)
@@ -226,7 +227,7 @@ def test_get_ratings(requests_mock):
     request_url = "https://nwis.waterdata.usgs.gov/nwisweb/get_ratings/?site_no={}&file_type=base".format(site)
     response_file_path = 'data/waterservices_ratings.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    df, md = get_ratings(site=site)
+    df, md = get_ratings(site_no=site)
     assert type(df) is DataFrame
     assert df.size == 33
     assert_metadata(requests_mock, request_url, md, site, None, format)

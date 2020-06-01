@@ -10,7 +10,7 @@ Todo:
 import pandas as pd
 from io import StringIO
 
-from dataretrieval.utils import format_datetime, update_merge, set_metadata as set_md
+from dataretrieval.utils import to_str, format_datetime, update_merge, set_metadata as set_md
 from .utils import query
 
 WATERDATA_BASE_URL = 'https://nwis.waterdata.usgs.gov/'
