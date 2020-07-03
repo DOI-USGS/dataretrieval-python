@@ -709,6 +709,10 @@ def _read_rdb(rdb):
     fields = rdb.splitlines()[count].split('\t')
     dtypes = {'site_no': str, 'dec_long_va': float, 'dec_lat_va': float}
 
+    # raise error if result has error
+    if "Error report" in (fields[0]):
+        raise ValueError
+
     df = pd.read_csv(StringIO(rdb), delimiter='\t', skiprows=count + 2,
                      names=fields, na_values='NaN', dtype=dtypes)
 
