@@ -573,7 +573,7 @@ def read_rdb(rdb):
             break
 
     fields = rdb.splitlines()[count].split('\t')
-    dtypes = {'site_no': str}
+    dtypes = {'site_no': str, 'dec_long_va': float, 'dec_lat_va': float}
 
     df = pd.read_csv(StringIO(rdb), delimiter='\t', skiprows=count + 2,
                      names=fields, na_values='NaN', dtype=dtypes)
