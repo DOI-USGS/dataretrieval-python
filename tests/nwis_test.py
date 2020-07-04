@@ -1,5 +1,7 @@
 import pytest
-from dataretrieval.nwis import get_record
+
+from dataretrieval.exceptions import EmptyQueryResultError
+from dataretrieval.nwis import get_record, read_rdb
 
 START_DATE = '2018-01-24'
 END_DATE   = '2018-01-25'
@@ -37,6 +39,11 @@ def test_iv_service_answer():
 
     # check multiindex function
     assert df.index.names == [SITENO_COL, DATETIME_COL], "iv service returned incorrect index: {}".format(df.index.names)
+
+
+def test_read_rdb_raises_error():
+    with pytest.raises(EmptyQueryResultError):
+        read_rdb("Error report")
 
 
 if __name__=='__main__':
