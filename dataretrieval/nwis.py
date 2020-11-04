@@ -21,9 +21,6 @@ WATERSERVICES_SERVICES = ['dv', 'iv', 'site', 'stat', 'gwlevels']
 WATERDATA_SERVICES = ['qwdata', 'measurements', 'peaks', 'pmcodes', 'water_use', 'ratings']
 
 
-# add more services
-
-
 def format_response(df, service=None):
     """Setup index for response from query.
     """
@@ -55,16 +52,33 @@ def preformat_peaks_response(df):
     return df
 
 
-def get_qwdata(datetime_index=True, **kwargs):
-    """Get water sample data from qwdata service.
+def get_qwdata(datetime_index=True, qw_sample_wide='separated_wide', sites=None, start=None, end=None, **kwargs):
+    """
+    Get water sample data from qwdata service.
 
-    Parameters
+    Parameters (Additional parameters, if supplied, will be used as query parameters)
     ----------
     datetime_index : boolean
         If True, create a datetime index
     qw_sample_wide : string
         separated_wide
+    sites: array of strings
+        If the qwdata parameter site_no is supplied, it will overwrite the sites parameter
+    start: string
+        If the qwdata parameter begin_date is supplied, it will overwrite the start parameter
+    end: string
+        If the qwdata parameter end_date is supplied, it will overwrite the end parameter
+
+    Returns:
+        DataFrame containing times series data from the NWIS json and Metadata as tuple
     """
+    start = kwargs.pop('begin_date', start)
+    end = kwargs.pop('end_date', end)
+    sites = kwargs.pop('site_no', sites)
+    return _qwdata(site_no=sites, begin_date=start, end_date=end, datetime_index=datetime_index,
+                   qw_sample_wide=qw_sample_wide, ** kwargs)
+
+def _qwdata(datetime_index=True, **kwargs):
     # check number of sites, may need to create multiindex
 
     payload = {'agency_cd': 'USGS',
@@ -98,56 +112,109 @@ def get_qwdata(datetime_index=True, **kwargs):
 
     response = query_waterdata('qwdata', **kwargs)
 
-    df = read_rdb(response.text)
+    df = _read_rdb(response.text)
 
     if datetime_index == True:
         df = format_datetime(df, 'sample_dt', 'sample_tm',
                              'sample_start_time_datum_cd')
 
     df = format_response(df)
-    return df, set_metadata(response, **kwargs)
+    return df, _set_metadata(response, **kwargs)
 
 
-def get_discharge_measurements(**kwargs):
+def get_discharge_measurements(sites=None, start=None, end=None, **kwargs):
     """
-    Args:
-        sites (listlike):
+    Get discharge measurements from the waterdata service.
+
+    Parameters (Additional parameters, if supplied, will be used as query parameters)
+    ----------
+    sites: array of strings
+        If the qwdata parameter site_no is supplied, it will overwrite the sites parameter
+    start: string
+        If the qwdata parameter begin_date is supplied, it will overwrite the start parameter
+    end: string
+        If the qwdata parameter end_date is supplied, it will overwrite the end parameter
+
+    Returns:
+        DataFrame containing times series data from the NWIS json and Metadata as tuple
     """
+    start = kwargs.pop('begin_date', start)
+    end = kwargs.pop('end_date', end)
+    sites = kwargs.pop('site_no', sites)
+    return _discharge_measurements(site_no=sites, begin_date=start, end_date=end, **kwargs)
+
+
+def _discharge_measurements(**kwargs):
     response = query_waterdata('measurements', format='rdb', **kwargs)
-    return read_rdb(response.text), set_metadata(response, **kwargs)
+    return _read_rdb(response.text), _set_metadata(response, **kwargs)
 
 
-def get_discharge_peaks(**kwargs):
+def get_discharge_peaks(sites=None, start=None, end=None, **kwargs):
     """
+    Get discharge peaks from the waterdata service.
 
-    Args:
-        site_no (listlike):
-        state_cd (listline):
+    Parameters (Additional parameters, if supplied, will be used as query parameters)
+    ----------
+    sites: array of strings
+        If the waterdata parameter site_no is supplied, it will overwrite the sites parameter
+    start: string
+        If the waterdata parameter begin_date is supplied, it will overwrite the start parameter
+    end: string
+        If the waterdata parameter end_date is supplied, it will overwrite the end parameter
 
+    Returns:
+        DataFrame containing times series data from the NWIS json and Metadata as tuple
     """
+    start = kwargs.pop('begin_date', start)
+    end = kwargs.pop('end_date', end)
+    sites = kwargs.pop('site_no', sites)
+    return _discharge_peaks(site_no=sites, begin_date=start, end_date=end, **kwargs)
+
+
+def _discharge_peaks(**kwargs):
     response = query_waterdata('peaks', format='rdb', **kwargs)
 
-    df = read_rdb(response.text)
+    df = _read_rdb(response.text)
 
-    return format_response(df, service='peaks'), set_metadata(response, **kwargs)
+    return format_response(df, service='peaks'), _set_metadata(response, **kwargs)
 
 
-def get_gwlevels(startDT='1851-01-01', **kwargs):
-    """Querys the groundwater level service from waterservices
+def get_gwlevels(start='1851-01-01', end=None, **kwargs):
     """
+    Querys the groundwater level service from waterservices
+
+    Parameters (Additional parameters, if supplied, will be used as query parameters)
+    ----------
+    start: string
+        If the waterdata parameter begin_date is supplied, it will overwrite the start
+        parameter (defaults to '1851-01-01')
+    end: string
+        If the waterdata parameter end_date is supplied, it will overwrite the end parameter
+
+    Returns:
+        DataFrame containing times series data from the NWIS json and Metadata as tuple
+    """
+    start = kwargs.pop('startDT', start)
+    end = kwargs.pop('endDT', end)
+    return _gwlevels(startDT=start, endDT=end, **kwargs)
+
+
+def _gwlevels(**kwargs):
     response = query_waterservices('gwlevels', **kwargs)
 
-    df = read_rdb(response.text)
+    df = _read_rdb(response.text)
     df = format_datetime(df, 'lev_dt', 'lev_tm', 'lev_tz_cd')
 
-    return format_response(df), set_metadata(response, **kwargs)
+    return format_response(df), _set_metadata(response, **kwargs)
 
 
 def get_stats(sites, **kwargs):
-    """Querys waterservices statistics information
+    """
+    Querys waterservices statistics information
 
+    Parameters (Additional parameters, if supplied, will be used as query parameters)
+    ----------
     Must specify
-    Args:
         sites (string or list): USGS site number
         statReportType (string): daily (default), monthly, or annual
         statTypeCd (string): all, mean, max, min, median
@@ -159,11 +226,12 @@ def get_stats(sites, **kwargs):
     """
     response = query_waterservices('stat', sites=sites, **kwargs)
 
-    return read_rdb(response.text), set_metadata(response, **kwargs)
+    return _read_rdb(response.text), _set_metadata(response, **kwargs)
 
 
 def query_waterdata(service, **kwargs):
-    """Querys waterdata.
+    """
+    Querys waterdata.
     """
     major_params = ['site_no', 'state_cd']
     bbox_params = ['nw_longitude_va', 'nw_latitude_va',
@@ -185,18 +253,23 @@ def query_waterdata(service, **kwargs):
 
 
 def query_waterservices(service, **kwargs):
-    """Querys waterservices.usgs.gov
+    """
+    Querys waterservices.usgs.gov
 
     For more documentation see
 
-    Args:
-        service (string): 'site','stats',etc
-        bBox:
-        huc (string): 7-digit Hydrologic Unit Code
+    Parameters (Additional parameters, if supplied, will be used as query parameters)
+    ----------
+        service: string
+            'site','stats',etc
+        bBox: huc string
+            7-digit Hydrologic Unit Code
 
-        startDT (string): start date (2017-12-31)
-        endDT (string): end date
-        modifiedSince (string): for example
+        startDT: string
+            start date (2017-12-31)
+        endDT: string
+            end date
+        modifiedSince: string
 
     Returns:
         request
@@ -217,12 +290,31 @@ def query_waterservices(service, **kwargs):
     return query(url, list(kwargs.items()))
 
 
-def get_dv(**kwargs):
+def get_dv(start=None, end=None, **kwargs):
+    """
+    Get daily values data from NWIS and return it as a DataFrame
+
+    Parameters (Additional parameters, if supplied, will be used as query parameters)
+    ----------
+    start: string
+        If the waterdata parameter startDT is supplied, it will overwrite the start parameter
+    end: string
+        If the waterdata parameter endDT is supplied, it will overwrite the end parameter
+
+    Returns:
+        DataFrame containing times series data from the NWIS json and Metadata as tuple
+    """
+    start = kwargs.pop('startDT', start)
+    end = kwargs.pop('endDT', end)
+    return _dv(startDT=start, endDT=end, **kwargs)
+
+
+def _dv(**kwargs):
     response = query_waterservices('dv', format='json', **kwargs)
-    df = read_json(response.json())
+    df = _read_json(response.json())
 
     df = format_response(df)
-    return df, set_metadata(response, **kwargs)
+    return df, _set_metadata(response, **kwargs)
 
 
 def get_info(**kwargs):
@@ -231,8 +323,8 @@ def get_info(**kwargs):
 
     Note: Must specify one major parameter.
 
-    Major Parameters
-    ----------------
+    Parameters (Additional parameters, if supplied, will be used as query parameters)
+    ----------
     sites : string or list
         A list of site numters. Sites may be prefixed with an optional agency
         code followed by a colon.
@@ -310,24 +402,41 @@ def get_info(**kwargs):
 
     response = query_waterservices('site', **kwargs)
 
-    return read_rdb(response.text), set_metadata(response, **kwargs)
+    return _read_rdb(response.text), _set_metadata(response, **kwargs)
 
 
-def get_iv(**kwargs):
+def get_iv(start=None, end=None, **kwargs):
     """Get instantaneous values data from NWIS and return it as a DataFrame
 
-        Returns:
-            DataFrame containing instantaneous values data from NWIS and Metadata as tuple
-        """
+    Parameters
+    ----------
+    start: string
+        If the waterdata parameter startDT is supplied, it will overwrite the start parameter
+    end: string
+        If the waterdata parameter endDT is supplied, it will overwrite the end parameter
+
+    Returns:
+        DataFrame containing times series data from the NWIS json and Metadata as tuple
+    """
+    start = kwargs.pop('startDT', start)
+    end = kwargs.pop('endDT', end)
+    return _iv(startDT=start, endDT=end, **kwargs)
+
+
+def _iv(**kwargs):
     response = query_waterservices('iv', format='json', **kwargs)
-    return read_json(response.json()), set_metadata(response, **kwargs)
+    return _read_json(response.json()), _set_metadata(response, **kwargs)
 
 
 def get_pmcodes(parameterCd, **kwargs):
-    """Return a DataFrame containing all NWIS parameter codes.
+    """
+    Return a DataFrame containing all NWIS parameter codes.
 
+    Parameters (Additional parameters, if supplied, will be used as query parameters)
+    ----------
+        parameterCd: string
     Returns:
-        DataFrame containgin the USGS parameter codes and Metadata as tuple
+        DataFrame containing the USGS parameter codes and Metadata as tuple
     """
     payload = [('radio_pm_search', 'pm_search'),
                ('pm_group', 'All+--+include+all+parameter+groups'),
@@ -347,19 +456,24 @@ def get_pmcodes(parameterCd, **kwargs):
     # XXX check that the url is correct
     url = WATERDATA_URL + 'pmcodes/pmcodes'
     response = query(url, payload)
-    return read_rdb(response.text), set_metadata(response, **kwargs)
+    return _read_rdb(response.text), _set_metadata(response, **kwargs)
 
 
 def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
     """
     Water use data retrieval from USGS (NWIS)
 
-    Args:
-        years (Listlike): List or comma delimited string of years.  Must be years ending in 0 or 5, or "ALL",
-                            which retrieves all available years
-        state (string): full name, abbreviation or id
-        county (string): County IDs from county lookup or "ALL"
-        categories (Listlike): List or comma delimited string of Two-letter category abbreviations
+    Parameters (Additional parameters, if supplied, will be used as query parameters)
+    ----------
+        years: Listlike
+            List or comma delimited string of years.  Must be years ending in 0 or 5, or "ALL",
+            which retrieves all available years
+        state: string
+            full name, abbreviation or id
+        county: string
+            County IDs from county lookup or "ALL"
+        categories: Listlike
+            List or comma delimited string of Two-letter category abbreviations
 
     Return:
         DataFrame containing requested data and Metadata as tuple
@@ -375,24 +489,35 @@ def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
         url = WATERDATA_BASE_URL + state + "/nwis/water_use"
         payload.append(("wu_area", "county"))
     response = query(url, payload)
-    return read_rdb(response.text), set_metadata(response)
+    return _read_rdb(response.text), _set_metadata(response)
 
 
-def get_ratings(site, file_type="base"):
+def get_ratings(site=None, file_type="base", **kwargs):
     """
     Rating table for an active USGS streamgage retrieval
     Reads current rating table for an active USGS streamgage from NWISweb.
     Data is retrieved from https://waterdata.usgs.gov/nwis.
 
-    Args:
-        site (string): USGS site number.  This is usually an 8 digit number as a string
-        base (string): can be "base", "corr", or "exsa"
-        county (string): County IDs from county lookup or "ALL"
-        categories (Listlike): List or comma delimited string of Two-letter category abbreviations
+    Parameters (Additional parameters, if supplied, will be used as query parameters)
+    ----------
+        site: string
+            USGS site number.  This is usually an 8 digit number as a string.
+            If the nwis parameter site_no is supplied, it will overwrite the site parameter
+        base: string
+            can be "base", "corr", or "exsa"
+        county: string
+            County IDs from county lookup or "ALL"
+        categories: Listlike
+            List or comma delimited string of Two-letter category abbreviations
 
     Return:
         DataFrame containing requested data and Metadata as tuple
     """
+    site = kwargs.pop('site_no', site)
+    return _ratings(site=site, file_type=file_type, **kwargs)
+
+
+def _ratings(site, file_type):
     payload = []
     url = WATERDATA_BASE_URL + 'nwisweb/get_ratings/'
     if site is not None:
@@ -402,11 +527,12 @@ def get_ratings(site, file_type="base"):
             raise ValueError('Unrecognized file_type: {}, must be "base", "corr" or "exsa"'.format(file_type))
         payload.append(("file_type", file_type))
     response = query(url, payload)
-    return read_rdb(response.text), set_metadata(response, site_no=site)
+    return _read_rdb(response.text), _set_metadata(response, site_no=site)
 
 
 def what_sites(**kwargs):
-    """ Search NWIS for sites within a region with specific data.
+    """
+    Search NWIS for sites within a region with specific data.
 
     Parameters
     ----------
@@ -415,9 +541,9 @@ def what_sites(**kwargs):
 
     response = query_waterservices(service='site', **kwargs)
 
-    df = read_rdb(response.text)
+    df = _read_rdb(response.text)
 
-    return df, set_metadata(response, **kwargs)
+    return df, _set_metadata(response, **kwargs)
 
 
 def get_record(sites=None, start=None, end=None, state=None,
@@ -425,11 +551,15 @@ def get_record(sites=None, start=None, end=None, state=None,
     """
     Get data from NWIS and return it as a DataFrame.
 
-    Args:
-        sites (listlike): List or comma delimited string of site.
-        start (string): Starting date of record (YYYY-MM-DD)
-        end (string): Ending date of record.
-        service (string):
+    Parameters (Additional parameters, if supplied, will be used as query parameters)
+    ----------
+        sites: listlike
+            List or comma delimited string of site.
+        start: string
+            Starting date of record (YYYY-MM-DD)
+        end: string
+            Ending date of record.
+        service: string
             - 'iv' : instantaneous data
             - 'dv' : daily mean data
             - 'qwdata' : discrete samples
@@ -489,11 +619,13 @@ def get_record(sites=None, start=None, end=None, state=None,
         raise TypeError('{} service not yet implemented'.format(service))
 
 
-def read_json(json, multi_index=False):
-    """Reads a NWIS Water Services formated JSON into a dataframe
+def _read_json(json, multi_index=False):
+    """
+    Reads a NWIS Water Services formatted JSON into a DataFrame
 
     Args:
-        json (dict)
+        json: dict
+            A JSON dictionary Response to be parsed into a DataFrame
 
     Returns:
         DataFrame containing times series data from the NWIS json and Metadata as tuple
@@ -556,11 +688,13 @@ def read_json(json, multi_index=False):
     return merged_df
 
 
-def read_rdb(rdb):
-    """Convert NWIS rdb table into a dataframe.
+def _read_rdb(rdb):
+    """
+    Convert NWIS rdb table into a dataframe.
 
     Args:
-        rdb (string):
+        rdb: string
+            A string representation of an rdb table
     """
     count = 0
 
@@ -582,7 +716,15 @@ def read_rdb(rdb):
     return df
 
 
-def set_metadata(response, **parameters):
+def _set_metadata(response, **parameters):
+    """Generates a standard set of metadata informated by the response
+
+    Args:
+        response: Response
+             Response object from requests module
+        parameters: unpacked dictionary
+            unpacked dictionary of the parameters supplied in the request
+    """
     md = set_md(response)
     site_aliases = ['sites', 'site_no']
     for alias in site_aliases:
