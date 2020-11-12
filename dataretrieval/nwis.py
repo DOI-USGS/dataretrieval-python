@@ -35,12 +35,12 @@ def format_response(df, service=None):
     elif len(df['site_no'].unique()) > 1:
         # setup multi-index
         df.set_index(['site_no', 'datetime'], inplace=True)
-        if df.index.levels[1].tzinfo is None:
+        if hasattr(df.index.levels[1], 'tzinfo') and df.index.levels[1].tzinfo is None:
             df = df.tz_localize('UTC', level=1)
 
     else:
         df.set_index(['datetime'], inplace=True)
-        if df.index.tzinfo is None:
+        if hasattr(df.index, 'tzinfo') and df.index.tzinfo is None:
             df = df.tz_localize('UTC')
 
     return df.sort_index()
