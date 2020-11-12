@@ -12,7 +12,7 @@ def test_get_ratings(requests_mock):
     request_url = "https://www.waterqualitydata.us/Result/Search?siteid=WIDNR_WQX-10032762" \
                   "&characteristicName=Specific+conductance&startDateLo=05-01-2011&startDateHi=09-30-2011" \
                   "&zip=no&mimeType=csv"
-    response_file_path = 'tests/data/wqp_results.txt'
+    response_file_path = 'data/wqp_results.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_results(siteid='WIDNR_WQX-10032762',
                           characteristicName = 'Specific conductance',
@@ -29,7 +29,7 @@ def test_what_sites(requests_mock):
     """Tests Water quality portal sites query"""
     request_url = "https://www.waterqualitydata.us/Station/Search?statecode=US%3A34&characteristicName=Chloride&zip=no" \
                   "&mimeType=csv"
-    response_file_path = 'tests/data/wqp_sites.txt'
+    response_file_path = 'data/wqp_sites.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = what_sites(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
