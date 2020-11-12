@@ -1,8 +1,8 @@
 coverage==5.0
-numpy==1.19.1
-pandas==1.1.1
-python-dateutil==2.6.1
+numpy>=1.19.1
+pandas>=1.1.1
+python-dateutil==2.8.1
 pytest==3.5.0
-requests=>2.20.0
+requests>=2.20.0
 requests-mock==1.7.0
-Sphinx==2.4.0
+Sphinx==3.3.1
