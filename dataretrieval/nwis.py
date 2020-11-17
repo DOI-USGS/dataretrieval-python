@@ -370,7 +370,7 @@ def get_info(**kwargs):
         changed during the request period.
 
     parameterCd : string or list
-        Returns only site data for thos sites containing the requested USGS
+        Returns only site data for those sites containing the requested USGS
         parameter codes.
 
     siteType : string or list
