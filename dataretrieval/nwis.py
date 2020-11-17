@@ -52,7 +52,7 @@ def preformat_peaks_response(df):
     return df
 
 
-def get_qwdata(datetime_index=True, qw_sample_wide='separated_wide', sites=None, start=None, end=None, **kwargs):
+def get_qwdata(datetime_index=True, wide_format=True, sites=None, start=None, end=None, **kwargs):
     """
     Get water sample data from qwdata service.
 
@@ -60,8 +60,8 @@ def get_qwdata(datetime_index=True, qw_sample_wide='separated_wide', sites=None,
     ----------
     datetime_index : boolean
         If True, create a datetime index
-    qw_sample_wide : string
-        separated_wide
+    wide_format : boolean
+        If True, return data in wide format with multiple samples per row and one row per time.
     sites: array of strings
         If the qwdata parameter site_no is supplied, it will overwrite the sites parameter
     start: string
@@ -72,11 +72,13 @@ def get_qwdata(datetime_index=True, qw_sample_wide='separated_wide', sites=None,
     Returns:
         DataFrame containing times series data from the NWIS json and Metadata as tuple
     """
+    if wide_format:
+        kwargs['qw_sample_wide'] = 'qw_sample_wide'
     start = kwargs.pop('begin_date', start)
     end = kwargs.pop('end_date', end)
     sites = kwargs.pop('site_no', sites)
     return _qwdata(site_no=sites, begin_date=start, end_date=end, datetime_index=datetime_index,
-                   qw_sample_wide=qw_sample_wide, ** kwargs)
+                   ** kwargs)
 
 def _qwdata(datetime_index=True, **kwargs):
     # check number of sites, may need to create multiindex
