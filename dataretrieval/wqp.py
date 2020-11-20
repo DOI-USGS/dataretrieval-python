@@ -55,9 +55,9 @@ def get_results(**kwargs):
     zip : string (yes or no)
     """
     kwargs['zip'] = 'no'
-    kwargs['mimeType'] = 'csv'
+    kwargs['mimeType'] = 'csv'        
 
-    response = query(wqp_url('Result'), list(kwargs.items()))
+    response = query(wqp_url('Result'), list(kwargs.items()), protect = "siteid")
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
     return df, set_metadata(response)

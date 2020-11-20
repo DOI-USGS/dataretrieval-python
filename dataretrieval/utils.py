@@ -118,7 +118,7 @@ def set_metadata(response):
     return md
 
 
-def query(url, payload):
+def query(url, payload, protect = None):
     """Send a query.
 
     Wrapper for requests.get that handles errors, converts listed
@@ -127,15 +127,19 @@ def query(url, payload):
     Args:
         url:
         kwargs: query parameters passed to requests.get
+        protect: list of query parameters to retain in un-collapsed form
 
     Returns:
         string : query response
     """
 
-    for index in range(len(payload)):
+    for index in range(len(payload)):        
         key, value = payload[index]
-        payload[index] = (key, to_str(value))
-
+        if key in protect:            
+            payload[index] = (key, [to_str(x) for x in value])
+        else: 
+            payload[index] = (key, to_str(value))    
+    
     response = requests.get(url, params=payload)
 
     if response.status_code == 400:
