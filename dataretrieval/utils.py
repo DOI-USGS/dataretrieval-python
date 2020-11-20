@@ -133,14 +133,15 @@ def query(url, payload, protect = [None]):
         string : query response
     """
 
-    for index in range(len(payload)):        
+    for index in range(len(payload)):
         key, value = payload[index]
-        if key in protect:            
+        if key in protect:
+            if type(value) == str: value = [value]            
             payload[index] = (key, [to_str(x) for x in value])
-        else: 
+        else:
             payload[index] = (key, to_str(value))    
-    
-    response = requests.get(url, params=payload)
+        
+    response = requests.get(url, params=payload)    
 
     if response.status_code == 400:
         raise ValueError("Bad Request, check that your parameters are correct. URL: {}".format(response.url))
