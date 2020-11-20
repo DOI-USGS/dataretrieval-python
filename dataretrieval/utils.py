@@ -118,7 +118,7 @@ def set_metadata(response):
     return md
 
 
-def query(url, payload, protect = None):
+def query(url, payload, protect = [None]):
     """Send a query.
 
     Wrapper for requests.get that handles errors, converts listed
