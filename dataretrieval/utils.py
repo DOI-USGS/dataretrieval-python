@@ -8,20 +8,20 @@ from pandas.core.indexes.datetimes import DatetimeIndex
 
 from dataretrieval.codes import tz
 
-def to_str(listlike):
+def to_str(listlike, delimiter=','):
     """Translates list-like objects into strings.
 
     Return:
         List-like object as string
     """
     if type(listlike) == list:
-        return ','.join([str(x) for x in listlike])
+        return delimiter.join([str(x) for x in listlike])
 
     elif type(listlike) == pd.core.series.Series:
-        return ','.join(listlike.tolist())
+        return delimiter.join(listlike.tolist())
 
     elif type(listlike) == pd.core.indexes.base.Index:
-        return ','.join(listlike.tolist())
+        return delimiter.join(listlike.tolist())
 
     elif type(listlike) == str:
         return listlike
