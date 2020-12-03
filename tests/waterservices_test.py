@@ -285,7 +285,7 @@ def assert_metadata(requests_mock, request_url, md, site, parameter_cd, format):
     else:
         pcode_request_url = "https://nwis.waterdata.usgs.gov/nwis/pmcodes/pmcodes?radio_pm_search=pm_search" \
                             "&pm_group=All%2B--%2Binclude%2Ball%2Bparameter%2Bgroups&pm_search={}" \
-                            "&show=parameter_group_nm&show=casrn&show=srsname&show=parameter_units" \
+                            "&show=parameter_group_nm%2Ccasrn%2Csrsname%2Cparameter_units%2Cparameter_nm" \
                             "&format=rdb".format(parameter_cd)
         with open('data/waterdata_pmcodes.txt') as text:
             requests_mock.get(pcode_request_url, text=text.read())
