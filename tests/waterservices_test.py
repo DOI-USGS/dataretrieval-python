@@ -174,8 +174,8 @@ def test_get_pmcodes(requests_mock):
     DataFrame"""
     format = "rdb"
     request_url = 'https://nwis.waterdata.usgs.gov/nwis/pmcodes/pmcodes?radio_pm_search=pm_search' \
-                  '&pm_group=All%2B--%2Binclude%2Ball%2Bparameter%2Bgroups&pm_search=00618&show=parameter_group_nm' \
-                  '&show=casrn&show=srsname&show=parameter_units&show=parameter_nm&format={}'.format(format)
+                  '&pm_group=All%2B--%2Binclude%2Ball%2Bparameter%2Bgroups&pm_search=00618' \
+                  '&show=parameter_group_nm%2Ccasrn%2Csrsname%2Cparameter_units%2Cparameter_nm&format={}'.format(format)
     response_file_path = 'data/waterdata_pmcodes.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_pmcodes(parameterCd='00618')
