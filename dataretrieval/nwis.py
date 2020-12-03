@@ -52,7 +52,7 @@ def preformat_peaks_response(df):
     return df
 
 
-def get_qwdata(datetime_index=True, qw_sample_wide='separated_wide', sites=None, start=None, end=None, **kwargs):
+def get_qwdata(datetime_index=True, wide_format=True, sites=None, start=None, end=None, **kwargs):
     """
     Get water sample data from qwdata service.
 
@@ -60,8 +60,8 @@ def get_qwdata(datetime_index=True, qw_sample_wide='separated_wide', sites=None,
     ----------
     datetime_index : boolean
         If True, create a datetime index
-    qw_sample_wide : string
-        separated_wide
+    wide_format : boolean
+        If True, return data in wide format with multiple samples per row and one row per time.
     sites: array of strings
         If the qwdata parameter site_no is supplied, it will overwrite the sites parameter
     start: string
@@ -72,11 +72,13 @@ def get_qwdata(datetime_index=True, qw_sample_wide='separated_wide', sites=None,
     Returns:
         DataFrame containing times series data from the NWIS json and Metadata as tuple
     """
+    if wide_format:
+        kwargs['qw_sample_wide'] = 'qw_sample_wide'
     start = kwargs.pop('begin_date', start)
     end = kwargs.pop('end_date', end)
     sites = kwargs.pop('site_no', sites)
     return _qwdata(site_no=sites, begin_date=start, end_date=end, datetime_index=datetime_index,
-                   qw_sample_wide=qw_sample_wide, ** kwargs)
+                   ** kwargs)
 
 def _qwdata(datetime_index=True, **kwargs):
     # check number of sites, may need to create multiindex
@@ -108,7 +110,8 @@ def _qwdata(datetime_index=True, **kwargs):
             kwargs['list_of_search_criteria'] = 'multiple_parameter_cds'
         #search_criteria = kwargs.get('list_of_search_criteria
 
-    kwargs = {**payload, **kwargs}
+    #kwargs = {**payload, **kwargs}
+    kwargs.update(payload)
 
     response = query_waterdata('qwdata', **kwargs)
 
@@ -249,7 +252,7 @@ def query_waterdata(service, **kwargs):
 
     url = WATERDATA_URL + service
 
-    return query(url, list(kwargs.items()))
+    return query(url, payload=kwargs)
 
 
 def query_waterservices(service, **kwargs):
@@ -287,7 +290,7 @@ def query_waterservices(service, **kwargs):
 
     url = WATERSERVICE_URL + service
 
-    return query(url, list(kwargs.items()))
+    return query(url, payload=kwargs)
 
 
 def get_dv(start=None, end=None, **kwargs):
@@ -428,32 +431,25 @@ def _iv(**kwargs):
     return _read_json(response.json()), _set_metadata(response, **kwargs)
 
 
-def get_pmcodes(parameterCd, **kwargs):
+def get_pmcodes(parameterCd='All', **kwargs):
     """
     Return a DataFrame containing all NWIS parameter codes.
 
     Parameters (Additional parameters, if supplied, will be used as query parameters)
     ----------
-        parameterCd: string
+        parameterCd: string or listlike
     Returns:
         DataFrame containing the USGS parameter codes and Metadata as tuple
     """
-    payload = [('radio_pm_search', 'pm_search'),
-               ('pm_group', 'All+--+include+all+parameter+groups'),
-               ('pm_search', parameterCd),
-               ('casrn_search', None),
-               ('srsname_search', None),
-               ('show', 'parameter_group_nm'),
-               ('show', 'casrn'),
-               ('show', 'srsname'),
-               ('show', 'parameter_units'),
-               ('show', 'parameter_nm'),
-               ('format', 'rdb')
-               ]
-
-    payload += list(kwargs.items())
-
-    # XXX check that the url is correct
+    payload = {'radio_pm_search' : 'pm_search',
+               'pm_group' : 'All+--+include+all+parameter+groups',
+               'pm_search' : parameterCd,
+               'casrn_search' : None,
+               'srsname_search' : None,
+               'show' :  ['parameter_group_nm', 'casrn', 'srsname','parameter_units', 'parameter_nm'],
+               'format' : 'rdb'}
+    
+    payload.update(kwargs)
     url = WATERDATA_URL + 'pmcodes/pmcodes'
     response = query(url, payload)
     return _read_rdb(response.text), _set_metadata(response, **kwargs)
@@ -478,16 +474,15 @@ def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
     Return:
         DataFrame containing requested data and Metadata as tuple
     """
-    payload = [('rdb_compression', 'value'),
-               ('format', 'rdb'),
-               ('wu_year', years),
-               ('wu_category', categories),
-               ('wu_county', counties)
-               ]
+    payload = {'rdb_compression' : 'value',
+               'format' : 'rdb',
+               'wu_year' : years,
+               'wu_category' : categories,
+               'wu_county' : counties}
     url = WATERDATA_URL + 'water_use'
     if state is not None:
         url = WATERDATA_BASE_URL + state + "/nwis/water_use"
-        payload.append(("wu_area", "county"))
+        payload.update({"wu_area" : "county"})
     response = query(url, payload)
     return _read_rdb(response.text), _set_metadata(response)
 
@@ -518,14 +513,14 @@ def get_ratings(site=None, file_type="base", **kwargs):
 
 
 def _ratings(site, file_type):
-    payload = []
+    payload = {}
     url = WATERDATA_BASE_URL + 'nwisweb/get_ratings/'
     if site is not None:
-        payload.append(("site_no", site))
+        payload.update({"site_no": site})
     if file_type is not None:
         if file_type not in ["base", "corr", "exsa"]:
             raise ValueError('Unrecognized file_type: {}, must be "base", "corr" or "exsa"'.format(file_type))
-        payload.append(("file_type", file_type))
+        payload.update({"file_type" : file_type})
     response = query(url, payload)
     return _read_rdb(response.text), _set_metadata(response, site_no=site)
 

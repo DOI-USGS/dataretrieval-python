@@ -56,8 +56,7 @@ def get_results(**kwargs):
     """
     kwargs['zip'] = 'no'
     kwargs['mimeType'] = 'csv'
-
-    response = query(wqp_url('Result'), list(kwargs.items()))
+    response = query(wqp_url('Result'), kwargs, delimiter=';')
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
     return df, set_metadata(response)
@@ -74,7 +73,7 @@ def what_sites(**kwargs):
     kwargs['mimeType'] = 'csv'
 
     url = wqp_url('Station')
-    response = query(url, list(kwargs.items()))
+    response = query(url, payload = kwargs, delimiter = ';')
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
 

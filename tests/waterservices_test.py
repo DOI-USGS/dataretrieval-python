@@ -113,11 +113,10 @@ def test_get_qwdata(requests_mock):
     """Tests get_qwdata method correctly generates the request url and returns the result in a DataFrame"""
     format = "rdb"
     site = '01491000%2C01645000'
-    request_url = 'https://nwis.waterdata.usgs.gov/nwis/qwdata?agency_cd=USGS&format={}' \
-                  '&pm_cd_compare=Greater+than&inventory_output=0&rdb_inventory_output=file' \
-                  '&TZoutput=0&rdb_qw_attributes=expanded&date_format=YYYY-MM-DD' \
-                  '&rdb_compression=value&submmitted_form=brief_list' \
-                  '&site_no={}&qw_sample_wide=separated_wide'.format(format, site)
+    request_url = 'https://nwis.waterdata.usgs.gov/nwis/qwdata?site_no={}' \
+                  '&qw_sample_wide=qw_sample_wide&agency_cd=USGS&format={}&pm_cd_compare=Greater+than' \
+                  '&inventory_output=0&rdb_inventory_output=file&TZoutput=0&rdb_qw_attributes=expanded' \
+                  '&date_format=YYYY-MM-DD&rdb_compression=value&submmitted_form=brief_list'.format(site, format)
     response_file_path = 'data/waterdata_qwdata.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_qwdata(sites=["01491000", "01645000"])
@@ -174,8 +173,8 @@ def test_get_pmcodes(requests_mock):
     DataFrame"""
     format = "rdb"
     request_url = 'https://nwis.waterdata.usgs.gov/nwis/pmcodes/pmcodes?radio_pm_search=pm_search' \
-                  '&pm_group=All%2B--%2Binclude%2Ball%2Bparameter%2Bgroups&pm_search=00618&show=parameter_group_nm' \
-                  '&show=casrn&show=srsname&show=parameter_units&show=parameter_nm&format={}'.format(format)
+                  '&pm_group=All%2B--%2Binclude%2Ball%2Bparameter%2Bgroups&pm_search=00618' \
+                  '&show=parameter_group_nm%2Ccasrn%2Csrsname%2Cparameter_units%2Cparameter_nm&format={}'.format(format)
     response_file_path = 'data/waterdata_pmcodes.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_pmcodes(parameterCd='00618')
@@ -285,7 +284,7 @@ def assert_metadata(requests_mock, request_url, md, site, parameter_cd, format):
     else:
         pcode_request_url = "https://nwis.waterdata.usgs.gov/nwis/pmcodes/pmcodes?radio_pm_search=pm_search" \
                             "&pm_group=All%2B--%2Binclude%2Ball%2Bparameter%2Bgroups&pm_search={}" \
-                            "&show=parameter_group_nm&show=casrn&show=srsname&show=parameter_units" \
+                            "&show=parameter_group_nm%2Ccasrn%2Csrsname%2Cparameter_units%2Cparameter_nm" \
                             "&format=rdb".format(parameter_cd)
         with open('data/waterdata_pmcodes.txt') as text:
             requests_mock.get(pcode_request_url, text=text.read())

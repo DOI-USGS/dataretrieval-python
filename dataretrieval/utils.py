@@ -8,20 +8,20 @@ from pandas.core.indexes.datetimes import DatetimeIndex
 
 from dataretrieval.codes import tz
 
-def to_str(listlike):
+def to_str(listlike, delimiter=','):
     """Translates list-like objects into strings.
 
     Return:
         List-like object as string
     """
     if type(listlike) == list:
-        return ','.join([str(x) for x in listlike])
+        return delimiter.join([str(x) for x in listlike])
 
     elif type(listlike) == pd.core.series.Series:
-        return ','.join(listlike.tolist())
+        return delimiter.join(listlike.tolist())
 
     elif type(listlike) == pd.core.indexes.base.Index:
-        return ','.join(listlike.tolist())
+        return delimiter.join(listlike.tolist())
 
     elif type(listlike) == str:
         return listlike
@@ -118,23 +118,26 @@ def set_metadata(response):
     return md
 
 
-def query(url, payload):
+def query(url, payload, delimiter=','):
     """Send a query.
 
     Wrapper for requests.get that handles errors, converts listed
     query paramaters to comma separated strings, and returns response.
 
     Args:
-        url:
-        kwargs: query parameters passed to requests.get
+        url :
+        payload : query parameters passed to requests.get
+        delimiter : delimeter to use with lists
 
     Returns:
         string : query response
     """
 
-    for index in range(len(payload)):
-        key, value = payload[index]
-        payload[index] = (key, to_str(value))
+    for key, value in payload.items():
+        payload[key] = to_str(value, delimiter)
+    #for index in range(len(payload)):
+    #    key, value = payload[index]
+    #    payload[index] = (key, to_str(value))
 
     response = requests.get(url, params=payload)
 
