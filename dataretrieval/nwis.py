@@ -482,7 +482,7 @@ def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
     url = WATERDATA_URL + 'water_use'
     if state is not None:
         url = WATERDATA_BASE_URL + state + "/nwis/water_use"
-        payload.update({"wu_area" : "country"})
+        payload.update({"wu_area" : "county"})
     response = query(url, payload)
     return _read_rdb(response.text), _set_metadata(response)
 
