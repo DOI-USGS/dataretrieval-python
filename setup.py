@@ -6,7 +6,7 @@ setup(name='dataretrieval',
       url='',
       author='Timothy Hodson',
       author_email='thodson@usgs.gov',
-      license='MIT',
+      license='CC0',
       packages=['dataretrieval', 'dataretrieval.codes'],
       install_requires=[
           'pandas',
