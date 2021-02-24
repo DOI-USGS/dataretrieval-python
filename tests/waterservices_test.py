@@ -10,11 +10,11 @@ from dataretrieval.nwis import query_waterservices, get_record, query_waterdata,
 from dataretrieval.utils import NoSitesError
 
 
-def test_query_waterservices_validation():
+def test_query_waterdata_validation():
     """Tests the validation parameters of the query_waterservices method"""
     with pytest.raises(TypeError) as type_error:
         query_waterdata(service='pmcodes', format='rdb')
-    assert 'Query must specify a major filter: site_no, stateCd, bBox' == str(type_error.value)
+    assert 'Query must specify a major filter: site_no, stateCd, bBox, ' == str(type_error.value)
 
     with pytest.raises(TypeError) as type_error:
         query_waterdata(service=None, site_no='sites')
@@ -25,11 +25,11 @@ def test_query_waterservices_validation():
     assert 'One or more lat/long coordinates missing or invalid.' == str(type_error.value)
 
 
-def test_query_waterdata_validation():
+def test_query_waterservices_validation():
     """Tests the validation parameters of the query_waterservices method"""
     with pytest.raises(TypeError) as type_error:
         query_waterservices(service='dv', format='rdb')
-    assert 'Query must specify a major filter: sites, stateCd, bBox' == str(type_error.value)
+    assert 'Query must specify a major filter: sites, stateCd, bBox, or huc' == str(type_error.value)
 
     with pytest.raises(TypeError) as type_error:
         query_waterservices(service=None, sites='sites')
