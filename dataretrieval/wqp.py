@@ -1,10 +1,10 @@
 """
-Tool for downloading data from teh Water Quality Portal (https://waterquality.data.us)
+Tool for downloading data from the Water Quality Portal (https://waterquality.data.us)
 
 See www.waterqualitydata.us/webservices_documentation for API reference
 
 TODO:
-    - implement other services like Organization, Acticity, etc.
+    - implement other services like Organization, Activity, etc.
 """
 import pandas as pd
 from io import StringIO
