@@ -279,8 +279,8 @@ def query_waterservices(service, **kwargs):
 
     Usage: must specify one major filter: sites, stateCd, bBox,
     """
-    if not any(key in kwargs for key in ['sites', 'stateCd', 'bBox']):
-        raise TypeError('Query must specify a major filter: sites, stateCd, bBox')
+    if not any(key in kwargs for key in ['sites', 'stateCd', 'bBox', 'huc']):
+        raise TypeError('Query must specify a major filter: sites, stateCd, bBox, or huc')
 
     if service not in WATERSERVICES_SERVICES:
         raise TypeError('Service not recognized')
@@ -295,8 +295,10 @@ def query_waterservices(service, **kwargs):
 
 def get_dv(start=None, end=None, **kwargs):
     """
-    Get daily values data from NWIS and return it as a DataFrame
+    Get daily values data from NWIS and return it as a DataFrame.
 
+    Note: If no start or end date are provided, only the most recent record is returned.
+    
     Parameters (Additional parameters, if supplied, will be used as query parameters)
     ----------
     start: string
@@ -409,8 +411,10 @@ def get_info(**kwargs):
 
 
 def get_iv(start=None, end=None, **kwargs):
-    """Get instantaneous values data from NWIS and return it as a DataFrame
+    """Get instantaneous values data from NWIS and return it as a DataFrame.
 
+    Note: If no start or end date are provided, only the most recent record is returned.
+    
     Parameters
     ----------
     start: string
@@ -457,7 +461,7 @@ def get_pmcodes(parameterCd='All', **kwargs):
 
 def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
     """
-    Water use data retrieval from USGS (NWIS)
+    Water use data retrieval from USGS (NWIS).
 
     Parameters (Additional parameters, if supplied, will be used as query parameters)
     ----------
@@ -546,6 +550,8 @@ def get_record(sites=None, start=None, end=None, state=None,
     """
     Get data from NWIS and return it as a DataFrame.
 
+    Note: If no start or end date are provided, only the most recent record is returned.
+
     Parameters (Additional parameters, if supplied, will be used as query parameters)
     ----------
         sites: listlike
@@ -616,7 +622,7 @@ def get_record(sites=None, start=None, end=None, state=None,
 
 def _read_json(json, multi_index=False):
     """
-    Reads a NWIS Water Services formatted JSON into a DataFrame
+    Reads a NWIS Water Services formatted JSON into a DataFrame.
 
     Args:
         json: dict
@@ -712,7 +718,7 @@ def _read_rdb(rdb):
 
 
 def _set_metadata(response, **parameters):
-    """Generates a standard set of metadata informated by the response
+    """Generates a standard set of metadata informated by the response.
 
     Args:
         response: Response
