@@ -4,7 +4,7 @@ import requests
 
 ResponseFormat = "json" # json, xml
 
-url = f"https://waterwatch.usgs.gov/webservices/floodstage"
+url = "https://waterwatch.usgs.gov/webservices/floodstage"
 
 
 def get_flood_stages(res_fmt: str = ResponseFormat) -> Dict:
