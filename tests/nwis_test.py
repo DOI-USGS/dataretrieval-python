@@ -1,7 +1,7 @@
 import pytest
 
 from dataretrieval.exceptions import EmptyQueryResultError
-from dataretrieval.nwis import get_record, read_rdb
+from dataretrieval.nwis import get_record, _read_rdb
 
 START_DATE = '2018-01-24'
 END_DATE   = '2018-01-25'
@@ -43,7 +43,7 @@ def test_iv_service_answer():
 
 def test_read_rdb_raises_error():
     with pytest.raises(EmptyQueryResultError):
-        read_rdb("Error report")
+        _read_rdb("Error report")
 
 
 if __name__=='__main__':
