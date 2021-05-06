@@ -11,6 +11,7 @@ import pandas as pd
 from io import StringIO
 
 from dataretrieval.utils import to_str, format_datetime, update_merge, set_metadata as set_md
+from .exceptions import EmptyQueryResultError
 from .utils import query
 
 WATERDATA_BASE_URL = 'https://nwis.waterdata.usgs.gov/'
@@ -712,6 +713,9 @@ def _read_rdb(rdb):
     # raise error if result has error
     if "Error report" in (fields[0]):
         raise ValueError
+
+    if "Error report" in (fields[0]):
+        raise EmptyQueryResultError
 
     df = pd.read_csv(StringIO(rdb), delimiter='\t', skiprows=count + 2,
                      names=fields, na_values='NaN', dtype=dtypes)
