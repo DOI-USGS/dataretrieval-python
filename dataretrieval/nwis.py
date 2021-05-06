@@ -712,9 +712,6 @@ def _read_rdb(rdb):
 
     # raise error if result has error
     if "Error report" in (fields[0]):
-        raise ValueError
-
-    if "Error report" in (fields[0]):
         raise EmptyQueryResultError
 
     df = pd.read_csv(StringIO(rdb), delimiter='\t', skiprows=count + 2,
