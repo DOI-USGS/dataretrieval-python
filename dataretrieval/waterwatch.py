@@ -6,7 +6,7 @@ import pandas as pd
 ResponseFormat = "json" # json, xml
 
 # WaterWatch won't receive any new features but it will continue to operate.
-url = "https://waterwatch.usgs.gov/webservices/floodstage"
+waterwatch_url = "https://waterwatch.usgs.gov/webservices/"
 
 
 def _read_json(data: Dict) -> pd.DataFrame:
@@ -41,19 +41,24 @@ def get_flood_stage(sites: List[str] = None, fmt: str= "DF") -> Union[pd.DataFra
     07144101         None        None                 None              None
     50057000           16          20                   24                30
     """
-    res = requests.get(url, params={"format": ResponseFormat})
+    res = requests.get(url + 'floodstage', params={"format": ResponseFormat})
+
     if res.ok:
         json_res = res.json()
         stages = {site['site_no']: {k: v for k, v in site.items() if k != 'site_no'} for site in json_res['sites']}
     else:
         raise requests.RequestException(f"[{res.status_code}] - {res.reason}")
 
-    stations_stages = {}
-    for site in sites:
-        try:
-            stations_stages[site] = stages[site]
-        except KeyError:
-            stations_stages[site] = None
+    if not sites:
+        stations_stages = stages
+    else:
+        stations_stages = {}
+        for site in sites:
+            try:
+                stations_stages[site] = stages[site]
+            except KeyError:
+                stations_stages[site] = None
+
     if fmt == "dict":
         return stations_stages
     else:
