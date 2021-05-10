@@ -10,6 +10,7 @@ setup(name='dataretrieval',
       packages=['dataretrieval', 'dataretrieval.codes'],
       install_requires=[
           'pandas',
-          'requests'
+          'requests',
+          'typing'
       ],
       zip_safe=False)
