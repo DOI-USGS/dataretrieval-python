@@ -208,7 +208,7 @@ def what_activity_metrics(**kwargs):
 
 
 def wqp_url(service):
-    base_url = 'https://www.waterqualitydata.us/'
+    base_url = 'https://www.waterqualitydata.us/data/'
     return '{}{}/Search?'.format(base_url, service)
 
 
