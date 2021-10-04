@@ -80,8 +80,135 @@ def what_sites(**kwargs):
     return df, set_metadata(response)
 
 
+def what_organizations(**kwargs):
+    """ Search WQP for organizations within a region with specific data.
+
+    Parameters
+    ----------
+    same as get_results
+    """
+    kwargs['zip'] = 'no'
+    kwargs['mimeType'] = 'csv'
+
+    url = wqp_url('Organization')
+    response = query(url, payload = kwargs, delimiter = ';')
+
+    df = pd.read_csv(StringIO(response.text), delimiter=',')
+
+    return df, set_metadata(response)
+
+
+def what_projects(**kwargs):
+    """ Search WQP for projects within a region with specific data.
+
+    Parameters
+    ----------
+    same as get_results
+    """
+    kwargs['zip'] = 'no'
+    kwargs['mimeType'] = 'csv'
+
+    url = wqp_url('Project')
+    response = query(url, payload = kwargs, delimiter = ';')
+
+    df = pd.read_csv(StringIO(response.text), delimiter=',')
+
+    return df, set_metadata(response)
+
+
+def what_activities(**kwargs):
+    """ Search WQP for activities within a region with specific data.
+
+    Parameters
+    ----------
+    same as get_results
+    """
+    kwargs['zip'] = 'no'
+    kwargs['mimeType'] = 'csv'
+
+    url = wqp_url('Activity')
+    response = query(url, payload = kwargs, delimiter = ';')
+
+    df = pd.read_csv(StringIO(response.text), delimiter=',')
+
+    return df, set_metadata(response)
+
+
+def what_detection_limits(**kwargs):
+    """ Search WQP for result detection limits within a region with specific
+    data.
+
+    Parameters
+    ----------
+    same as get_results
+    """
+    kwargs['zip'] = 'no'
+    kwargs['mimeType'] = 'csv'
+
+    url = wqp_url('ResultDetectionQuantitationLimit')
+    response = query(url, payload = kwargs, delimiter = ';')
+
+    df = pd.read_csv(StringIO(response.text), delimiter=',')
+
+    return df, set_metadata(response)
+
+
+def what_habitat_metrics(**kwargs):
+    """ Search WQP for habitat metrics within a region with specific data.
+
+    Parameters
+    ----------
+    same as get_results
+    """
+    kwargs['zip'] = 'no'
+    kwargs['mimeType'] = 'csv'
+
+    url = wqp_url('BiologicalMetric')
+    response = query(url, payload = kwargs, delimiter = ';')
+
+    df = pd.read_csv(StringIO(response.text), delimiter=',')
+
+    return df, set_metadata(response)
+
+
+def what_project_weights(**kwargs):
+    """ Search WQP for project weights within a region with specific data.
+
+    Parameters
+    ----------
+    same as get_results
+    """
+    kwargs['zip'] = 'no'
+    kwargs['mimeType'] = 'csv'
+
+    url = wqp_url('ProjectMonitoringLocationWeighting')
+    response = query(url, payload = kwargs, delimiter = ';')
+
+    df = pd.read_csv(StringIO(response.text), delimiter=',')
+
+    return df, set_metadata(response)
+
+
+def what_activity_metrics(**kwargs):
+    """ Search WQP for activity metrics within a region with specific data.
+
+    Parameters
+    ----------
+    same as get_results
+    """
+    kwargs['zip'] = 'no'
+    kwargs['mimeType'] = 'csv'
+
+    url = wqp_url('ActivityMetric')
+    response = query(url, payload = kwargs, delimiter = ';')
+
+    df = pd.read_csv(StringIO(response.text), delimiter=',')
+
+    return df, set_metadata(response)
+
+
 def wqp_url(service):
-    base_url = 'https://www.waterqualitydata.us/'
+    base_url = 'https://www.waterqualitydata.us/data/'
     return '{}{}/Search?'.format(base_url, service)
 
 
