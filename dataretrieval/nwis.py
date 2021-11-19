@@ -9,6 +9,7 @@ Todo:
 
 import pandas as pd
 from io import StringIO
+import re
 
 from dataretrieval.utils import to_str, format_datetime, update_merge, set_metadata as set_md
 from .utils import query
@@ -707,7 +708,7 @@ def _read_rdb(rdb):
         else:
             break
 
-    fields = rdb.splitlines()[count].split('\t')
+    fields = re.split("[,\t]", rdb.splitlines()[count])
     dtypes = {'site_no': str, 'dec_long_va': float, 'dec_lat_va': float}
 
     df = pd.read_csv(StringIO(rdb), delimiter='\t', skiprows=count + 2,
