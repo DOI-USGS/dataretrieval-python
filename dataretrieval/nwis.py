@@ -440,7 +440,11 @@ def get_pmcodes(parameterCd='All', **kwargs):
     """
     Return a DataFrame containing all NWIS parameter codes.
 
-    Parameters (Additional parameters, if supplied, will be used as query parameters)
+    Note: NWIS may return incorrect column names. Rename them with
+
+    >>> df.rename(columns={key:value})
+
+    Parameters (Additional parameters, if supplied, will be used as query parameters).
     ----------
         parameterCd: string or listlike
     Returns:
