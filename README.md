@@ -49,6 +49,15 @@ nwis.get_record(sites='03339000', service='dv', start='2017-12-31', parameterCd=
 ```
 will download daily data with the parameter code 00060 (discharge).
 
+Accessing the "Internal" NWIS
+-----------------------------
+If you're connected to the USGS network, dataretrieval call pull from the internal (non-public) NWIS interface.
+Most dataretrieval functions pass kwargs directly to NWIS's REST API, which provides simple access to internal data; simply specify "access='3'".
+For example
+```python
+nwis.get_record(sites='05404147',service='iv', start='2021-01-01', end='2021-3-01', access='3')
+```
+
 More services and documentation to come!
 
 Quick start
