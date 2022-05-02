@@ -12,7 +12,7 @@ from io import StringIO
 import re
 
 from dataretrieval.utils import to_str, format_datetime, update_merge, set_metadata as set_md
-from dataretrieval.utils import query
+from .utils import query
 
 WATERDATA_BASE_URL = 'https://nwis.waterdata.usgs.gov/'
 WATERDATA_URL = WATERDATA_BASE_URL + 'nwis/'
