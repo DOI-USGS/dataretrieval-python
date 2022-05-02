@@ -21,7 +21,7 @@ PARAMCODES_URL = 'https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?'
 ALLPARAMCODES_URL = 'https://help.waterdata.usgs.gov/code/parameter_cd_query?'
 
 WATERSERVICES_SERVICES = ['dv', 'iv', 'site', 'stat', 'gwlevels']
-WATERDATA_SERVICES = ['qwdata', 'measurements', 'peaks', 'water_use', 'ratings']
+WATERDATA_SERVICES = ['qwdata', 'measurements', 'peaks', 'pmcodes', 'water_use', 'ratings']
 
 
 def format_response(df, service=None):
