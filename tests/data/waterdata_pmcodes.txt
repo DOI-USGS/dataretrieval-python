@@ -1,18 +1,10 @@
-# 
 #
-# USGS Parameter Code Definitions File
-#
-# Column Definitions
-#  parameter_cd  - Parameter Code
-#  parameter_group_nm  - Group Name
-#  casrn  - CASRN
-#  srsname  - SRSName
-#  parameter_units  - Parameter Unit
-#  parameter_nm  - Parameter Name/Description
+# National Water Information System
+# 2022/05/03
 #
 #
-# Date Retrieved: 2020-04-16 18:48:43 EDT
+# Date Retrieved: USGS Water Data for the Nation Help System
 #
-parameter_cd	parameter_group_nm	casrn	srsname	parameter_units	parameter_nm
-5s	30s	170s	170s	16s	170s
-00618	Nutrient	Nitrate, water, filtered, milligrams per liter as nitrogen	14797-55-8	Nitrate	mg/l as N
+parameter_cd	group	parm_nm	epa_equivalence	result_statistical_basis	result_time_basis	result_weight_basis	result_particle_size_basis	result_sample_fraction	result_temperature_basis	CASRN	SRSName	parm_unit
+5s	8s	58s	5s	0s	0s	0s	0s	9s	0s	10s	7s	9s
+00618	Nutrient	Nitrate, water, filtered, milligrams per liter as nitrogen	Agree					Dissolved		14797-55-8	Nitrate	mg/l as N
