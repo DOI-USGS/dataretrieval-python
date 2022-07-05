@@ -438,7 +438,7 @@ def _iv(**kwargs):
     return _read_json(response.json()), _set_metadata(response, **kwargs)
 
 
-def get_pmcodes(parameterCd = 'all', partial = True):
+def get_pmcodes(parameterCd = 'All', partial = True):
     """
     Returns a DataFrame containing all NWIS parameter code information.
 
@@ -452,43 +452,40 @@ def get_pmcodes(parameterCd = 'all', partial = True):
     Returns:
         DataFrame containing the USGS parameter codes and Metadata as tuple
     """
-    url = PARAMCODES_URL
-    payload = {'fmt':'rdb'}
-    
     if parameterCd is None:
         raise TypeError('The query must include a parameter name or code')
-        
-    else:
-        if isinstance(parameterCd, str): # when a single code or name is given
-            if parameterCd.lower() == "all": # Querying all parameters (this is also the default)
-                payload.update({'group_cd':'%'})
-                url = ALLPARAMCODES_URL
-            else: # this is for querying with a single parameter code or name
-                if partial:
-                    parameterCd ='%{0}%'.format(parameterCd)
-                payload.update({'parm_nm_cd':parameterCd})  
-        elif isinstance(parameterCd, list): # Querying with a list of parameters names, codes, or mixed
-            l = []
-            for param in parameterCd:
-                if isinstance(param, str):
-                    if partial:
-                        param ='%{0}%'.format(param)
-                    payload.update({'parm_nm_cd':param})
-                    response = query(url, payload)
-                    if len(response.text.splitlines()) < 10: # empty query
-                        raise TypeError('One of the parameter codes or names entered does not return any information,'\
-                                        ' please try a different value. Consider using partial = True to extend query results')
-                    l.append(_read_rdb(response.text))
-                else:
-                    raise TypeError('Parameter information (code or name) must be type string or list')
-            return pd.concat(l), _set_metadata(response)
-        else:
-            raise TypeError('Parameter information (code or name) must be type string or list')
     
-    response = query(url, payload)
-    if len(response.text.splitlines()) < 10: # empty query
-        raise TypeError('The query does not return any information, please try a different code or name. Consider using partial = True to expand query results')
-    return _read_rdb(response.text), _set_metadata(response)
+    payload = {'fmt':'rdb'}
+    url = PARAMCODES_URL
+    
+    if isinstance(parameterCd, str): # when a single code or name is given
+        if parameterCd.lower() == "all":
+            payload.update({'group_cd': '%'})
+            url = ALLPARAMCODES_URL
+            response = query(url, payload)
+            return _read_rdb(response.text), _set_metadata(response)
+        
+        else:
+            parameterCd = [parameterCd]
+            
+    if not isinstance(parameterCd, list):
+        raise TypeError('Parameter information (code or name) must be type string or list')
+            
+    # Querying with a list of parameters names, codes, or mixed
+    l = []
+    for param in parameterCd:
+        if isinstance(param, str):
+            if partial:
+                param ='%{0}%'.format(param)
+            payload.update({'parm_nm_cd':param})
+            response = query(url, payload)
+            if len(response.text.splitlines()) < 10: # empty query
+                raise TypeError('One of the parameter codes or names entered does not return any information,'\
+                                ' please try a different value')
+            l.append(_read_rdb(response.text))
+        else:
+            raise TypeError('Parameter information (code or name) must be type string')
+    return pd.concat(l), _set_metadata(response) 
 
 
 def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
@@ -768,7 +765,7 @@ def _set_metadata(response, **parameters):
 
     if 'parameterCd' in parameters:
         md.variable_info = lambda: get_pmcodes(parameterCd=parameters['parameterCd'])
-
+        
     comments = ""
     for line in response.text.splitlines():
         if line.startswith("#"):
