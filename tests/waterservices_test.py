@@ -106,7 +106,7 @@ def test_get_info(requests_mock):
     assert type(df) is DataFrame
     assert df.size == 24
     assert md.url == request_url
-    assert_metadata(requests_mock, request_url, md, site, parameter_cd, format)
+    assert_metadata(requests_mock, request_url, md, site, [parameter_cd], format)
 
 
 def test_get_qwdata(requests_mock):
@@ -172,14 +172,12 @@ def test_get_pmcodes(requests_mock):
     """Tests get_discharge_measurements method correctly generates the request url and returns the result in a
     DataFrame"""
     format = "rdb"
-    request_url = 'https://nwis.waterdata.usgs.gov/nwis/pmcodes/pmcodes?radio_pm_search=pm_search' \
-                  '&pm_group=All%2B--%2Binclude%2Ball%2Bparameter%2Bgroups&pm_search=00618' \
-                  '&show=parameter_group_nm%2Ccasrn%2Csrsname%2Cparameter_units%2Cparameter_nm&format={}'.format(format)
+    request_url = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?fmt=rdb&parm_nm_cd=%2500618%25"
     response_file_path = 'data/waterdata_pmcodes.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_pmcodes(parameterCd='00618')
     assert type(df) is DataFrame
-    assert df.size == 6
+    assert df.size == 13
     assert_metadata(requests_mock, request_url, md, None, None, format)
 
 
@@ -236,17 +234,18 @@ def test_what_sites(requests_mock):
     """Tests what_sites method correctly generates the request url and returns the result in a DataFrame"""
     format = "rdb"
     parameter_cd = '00010%2C00060'
+    parameter_cd_list = ["00010","00060"]
     request_url = "https://waterservices.usgs.gov/nwis/site?bBox=-83.0%2C36.5%2C-81.0%2C38.5" \
                   "&parameterCd={}&hasDataTypeCd=dv&format={}".format(parameter_cd, format)
     response_file_path = 'data/nwis_sites.txt'
     mock_request(requests_mock, request_url, response_file_path)
 
     df, md = what_sites(bBox=[-83.0,36.5,-81.0,38.5],
-                         parameterCd=["00010","00060"],
+                         parameterCd=parameter_cd_list,
                          hasDataTypeCd="dv")
     assert type(df) is DataFrame
     assert df.size == 2472
-    assert_metadata(requests_mock, request_url, md, None, parameter_cd, format)
+    assert_metadata(requests_mock, request_url, md, None, parameter_cd_list, format)
 
 
 def test_get_stats(requests_mock):
@@ -280,17 +279,17 @@ def assert_metadata(requests_mock, request_url, md, site, parameter_cd, format):
         site_info, _ = md.site_info()
         assert type(site_info) is DataFrame
     if parameter_cd is None:
-        assert md.variable_info is None
+        assert md.variable_info is None    
     else:
-        pcode_request_url = "https://nwis.waterdata.usgs.gov/nwis/pmcodes/pmcodes?radio_pm_search=pm_search" \
-                            "&pm_group=All%2B--%2Binclude%2Ball%2Bparameter%2Bgroups&pm_search={}" \
-                            "&show=parameter_group_nm%2Ccasrn%2Csrsname%2Cparameter_units%2Cparameter_nm" \
-                            "&format=rdb".format(parameter_cd)
-        with open('data/waterdata_pmcodes.txt') as text:
-            requests_mock.get(pcode_request_url, text=text.read())
+        for param in parameter_cd:
+            pcode_request_url = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?fmt=rdb&parm_nm_cd=%25{}%25".format(param)
+            with open('data/waterdata_pmcodes.txt') as text:
+                requests_mock.get(pcode_request_url, text=text.read())
         variable_info, _ = md.variable_info()
         assert type(variable_info) is DataFrame
+        
     if format == "rdb":
         assert md.comment is not None
     else:
         assert md.comment is None
+
