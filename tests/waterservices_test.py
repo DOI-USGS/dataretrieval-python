@@ -106,7 +106,7 @@ def test_get_info(requests_mock):
     assert type(df) is DataFrame
     assert df.size == 24
     assert md.url == request_url
-    assert_metadata(requests_mock, request_url, md, site, parameter_cd, format)
+    assert_metadata(requests_mock, request_url, md, site, [parameter_cd], format)
 
 
 def test_get_qwdata(requests_mock):
