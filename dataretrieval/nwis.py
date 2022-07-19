@@ -413,7 +413,7 @@ def get_info(**kwargs):
     return _read_rdb(response.text), _set_metadata(response, **kwargs)
 
 
-def get_iv(start=None, end=None, **kwargs):
+def get_iv(start=None, end=None, zone=None, **kwargs):
     """Get instantaneous values data from NWIS and return it as a DataFrame.
 
     Note: If no start or end date are provided, only the most recent record is returned.
@@ -430,6 +430,7 @@ def get_iv(start=None, end=None, **kwargs):
     """
     start = kwargs.pop('startDT', start)
     end = kwargs.pop('endDT', end)
+    zone = kwargs.pop('zoneAbbreviation', zone)
     return _iv(startDT=start, endDT=end, **kwargs)
 
 
