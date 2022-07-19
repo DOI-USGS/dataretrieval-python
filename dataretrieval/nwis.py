@@ -24,7 +24,7 @@ WATERSERVICES_SERVICES = ['dv', 'iv', 'site', 'stat', 'gwlevels']
 WATERDATA_SERVICES = ['qwdata', 'measurements', 'peaks', 'pmcodes', 'water_use', 'ratings']
 
 
-def format_response(df, service=None):
+def format_response(df, service=None, MultiIndex=True):
     """Setup index for response from query.
     """
     if service == 'peaks':
@@ -40,6 +40,9 @@ def format_response(df, service=None):
         df.set_index(['site_no', 'datetime'], inplace=True)
         if hasattr(df.index.levels[1], 'tzinfo') and df.index.levels[1].tzinfo is None:
             df = df.tz_localize('UTC', level=1)
+            
+    elif len(df['site_no'].unique()) > 1 and MultiIndex==False:
+        df.set_index(['datetime'], inplace=True)
 
     else:
         df.set_index(['datetime'], inplace=True)
