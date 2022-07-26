@@ -24,7 +24,7 @@ WATERSERVICES_SERVICES = ['dv', 'iv', 'site', 'stat', 'gwlevels']
 WATERDATA_SERVICES = ['qwdata', 'measurements', 'peaks', 'pmcodes', 'water_use', 'ratings']
 
 
-def format_response(df, service=None, MultiIndex=True):
+def format_response(df, service=None):
     """Setup index for response from query.
     """
     if service == 'peaks':
@@ -40,11 +40,6 @@ def format_response(df, service=None, MultiIndex=True):
         df.set_index(['site_no', 'datetime'], inplace=True)
         if hasattr(df.index.levels[1], 'tzinfo') and df.index.levels[1].tzinfo is None:
             df = df.tz_localize('UTC', level=1)
-            df['DateTime'] = df.index.levels[1]
-            
-    elif len(df['site_no'].unique()) > 1 and MultiIndex==False:
-        df.set_index(['datetime'], inplace=True)
-        df['DateTime'] = df.index
 
     else:
         df.set_index(['datetime'], inplace=True)
@@ -418,7 +413,7 @@ def get_info(**kwargs):
     return _read_rdb(response.text), _set_metadata(response, **kwargs)
 
 
-def get_iv(start=None, end=None, zone=None, **kwargs):
+def get_iv(start=None, end=None, **kwargs):
     """Get instantaneous values data from NWIS and return it as a DataFrame.
 
     Note: If no start or end date are provided, only the most recent record is returned.
@@ -435,7 +430,6 @@ def get_iv(start=None, end=None, zone=None, **kwargs):
     """
     start = kwargs.pop('startDT', start)
     end = kwargs.pop('endDT', end)
-    zone = kwargs.pop('zoneAbbreviation', zone)
     return _iv(startDT=start, endDT=end, **kwargs)
 
 
