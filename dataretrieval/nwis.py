@@ -17,12 +17,14 @@ from .utils import query
 WATERDATA_BASE_URL = 'https://nwis.waterdata.usgs.gov/'
 WATERDATA_URL = WATERDATA_BASE_URL + 'nwis/'
 WATERSERVICE_URL = 'https://waterservices.usgs.gov/nwis/'
+PARAMCODES_URL = 'https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?'
+ALLPARAMCODES_URL = 'https://help.waterdata.usgs.gov/code/parameter_cd_query?'
 
 WATERSERVICES_SERVICES = ['dv', 'iv', 'site', 'stat', 'gwlevels']
 WATERDATA_SERVICES = ['qwdata', 'measurements', 'peaks', 'pmcodes', 'water_use', 'ratings']
 
 
-def format_response(df, service=None):
+def format_response(df, service=None, MultiIndex=True):
     """Setup index for response from query.
     """
     if service == 'peaks':
@@ -38,6 +40,11 @@ def format_response(df, service=None):
         df.set_index(['site_no', 'datetime'], inplace=True)
         if hasattr(df.index.levels[1], 'tzinfo') and df.index.levels[1].tzinfo is None:
             df = df.tz_localize('UTC', level=1)
+            df['DateTime'] = df.index.levels[1]
+            
+    elif len(df['site_no'].unique()) > 1 and MultiIndex==False:
+        df.set_index(['datetime'], inplace=True)
+        df['DateTime'] = df.index
 
     else:
         df.set_index(['datetime'], inplace=True)
@@ -411,7 +418,7 @@ def get_info(**kwargs):
     return _read_rdb(response.text), _set_metadata(response, **kwargs)
 
 
-def get_iv(start=None, end=None, **kwargs):
+def get_iv(start=None, end=None, zone=None, **kwargs):
     """Get instantaneous values data from NWIS and return it as a DataFrame.
 
     Note: If no start or end date are provided, only the most recent record is returned.
@@ -428,6 +435,7 @@ def get_iv(start=None, end=None, **kwargs):
     """
     start = kwargs.pop('startDT', start)
     end = kwargs.pop('endDT', end)
+    zone = kwargs.pop('zoneAbbreviation', zone)
     return _iv(startDT=start, endDT=end, **kwargs)
 
 
@@ -436,32 +444,54 @@ def _iv(**kwargs):
     return _read_json(response.json()), _set_metadata(response, **kwargs)
 
 
-def get_pmcodes(parameterCd='All', **kwargs):
+def get_pmcodes(parameterCd = 'All', partial = True):
     """
-    Return a DataFrame containing all NWIS parameter codes.
+    Returns a DataFrame containing all NWIS parameter code information.
 
-    Note: NWIS may return incorrect column names. Rename them with
-
-    >>> df.rename(columns={key:value})
-
-    Parameters (Additional parameters, if supplied, will be used as query parameters).
+    Parameters 
     ----------
-        parameterCd: string or listlike
+        parameterCd: string or list
+            Accepts parameter codes or names
+        
+        partial: boolean
+            Default is True (partial querying). If False, the funciton will query only exact matches 
     Returns:
         DataFrame containing the USGS parameter codes and Metadata as tuple
     """
-    payload = {'radio_pm_search' : 'pm_search',
-               'pm_group' : 'All+--+include+all+parameter+groups',
-               'pm_search' : parameterCd,
-               'casrn_search' : None,
-               'srsname_search' : None,
-               'show' :  ['parameter_group_nm', 'casrn', 'srsname','parameter_units', 'parameter_nm'],
-               'format' : 'rdb'}
+    if parameterCd is None:
+        raise TypeError('The query must include a parameter name or code')
     
-    payload.update(kwargs)
-    url = WATERDATA_URL + 'pmcodes/pmcodes'
-    response = query(url, payload)
-    return _read_rdb(response.text), _set_metadata(response, **kwargs)
+    payload = {'fmt':'rdb'}
+    url = PARAMCODES_URL
+    
+    if isinstance(parameterCd, str): # when a single code or name is given
+        if parameterCd.lower() == "all":
+            payload.update({'group_cd': '%'})
+            url = ALLPARAMCODES_URL
+            response = query(url, payload)
+            return _read_rdb(response.text), _set_metadata(response)
+        
+        else:
+            parameterCd = [parameterCd]
+            
+    if not isinstance(parameterCd, list):
+        raise TypeError('Parameter information (code or name) must be type string or list')
+            
+    # Querying with a list of parameters names, codes, or mixed
+    l = []
+    for param in parameterCd:
+        if isinstance(param, str):
+            if partial:
+                param ='%{0}%'.format(param)
+            payload.update({'parm_nm_cd':param})
+            response = query(url, payload)
+            if len(response.text.splitlines()) < 10: # empty query
+                raise TypeError('One of the parameter codes or names entered does not return any information,'\
+                                ' please try a different value')
+            l.append(_read_rdb(response.text))
+        else:
+            raise TypeError('Parameter information (code or name) must be type string')
+    return pd.concat(l), _set_metadata(response) 
 
 
 def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
@@ -712,8 +742,9 @@ def _read_rdb(rdb):
         else:
             break
 
-    fields = re.split("[,\t]", rdb.splitlines()[count])
-    dtypes = {'site_no': str, 'dec_long_va': float, 'dec_lat_va': float}
+    fields = re.split("[\t]", rdb.splitlines()[count])
+    fields  = [field.replace(",", "") for field in fields]
+    dtypes = {'site_no': str, 'dec_long_va': float, 'dec_lat_va': float, 'parm_cd': str, 'parameter_cd':str}
 
     df = pd.read_csv(StringIO(rdb), delimiter='\t', skiprows=count + 2,
                      names=fields, na_values='NaN', dtype=dtypes)
@@ -740,7 +771,7 @@ def _set_metadata(response, **parameters):
 
     if 'parameterCd' in parameters:
         md.variable_info = lambda: get_pmcodes(parameterCd=parameters['parameterCd'])
-
+        
     comments = ""
     for line in response.text.splitlines():
         if line.startswith("#"):

@@ -41,7 +41,7 @@ def get_flood_stage(sites: List[str] = None, fmt: str= "DF") -> Union[pd.DataFra
     07144101         None        None                 None              None
     50057000           16          20                   24                30
     """
-    res = requests.get(url + 'floodstage', params={"format": ResponseFormat})
+    res = requests.get(waterwatch_url + 'floodstage', params={"format": ResponseFormat})
 
     if res.ok:
         json_res = res.json()
