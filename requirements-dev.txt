@@ -2,3 +2,7 @@ numpy
 pandas
 python-dateutil
 requests
+requests-mock
+coverage
+pytest
+flake8
