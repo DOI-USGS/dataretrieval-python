@@ -24,9 +24,11 @@ WATERSERVICES_SERVICES = ['dv', 'iv', 'site', 'stat', 'gwlevels']
 WATERDATA_SERVICES = ['qwdata', 'measurements', 'peaks', 'pmcodes', 'water_use', 'ratings']
 
 
-def format_response(df, service=None):
+def format_response(df, service=None, **kwargs):
     """Setup index for response from query.
     """
+    mi = kwargs.pop('multi_index', True)
+
     if service == 'peaks':
         df = preformat_peaks_response(df)
 
@@ -35,7 +37,7 @@ def format_response(df, service=None):
         # XXX: consider making site_no index
         return df
 
-    elif len(df['site_no'].unique()) > 1:
+    elif len(df['site_no'].unique()) > 1 and mi:
         # setup multi-index
         df.set_index(['site_no', 'datetime'], inplace=True)
         if hasattr(df.index.levels[1], 'tzinfo') and df.index.levels[1].tzinfo is None:
@@ -55,7 +57,8 @@ def preformat_peaks_response(df):
     return df
 
 
-def get_qwdata(datetime_index=True, wide_format=True, sites=None, start=None, end=None, **kwargs):
+def get_qwdata(datetime_index=True, wide_format=True, sites=None,
+               start=None, end=None, multi_index=True,**kwargs):
     """
     Get water sample data from qwdata service.
 
@@ -71,6 +74,8 @@ def get_qwdata(datetime_index=True, wide_format=True, sites=None, start=None, en
         If the qwdata parameter begin_date is supplied, it will overwrite the start parameter
     end: string
         If the qwdata parameter end_date is supplied, it will overwrite the end parameter
+    multi_index: boolean
+        If False, a dataframe with a single-level index (datetime) is returned
 
     Returns:
         DataFrame containing times series data from the NWIS json and Metadata as tuple
@@ -81,7 +86,7 @@ def get_qwdata(datetime_index=True, wide_format=True, sites=None, start=None, en
     end = kwargs.pop('end_date', end)
     sites = kwargs.pop('site_no', sites)
     return _qwdata(site_no=sites, begin_date=start, end_date=end, datetime_index=datetime_index,
-                   ** kwargs)
+                   multi_index=multi_index, ** kwargs)
 
 def _qwdata(datetime_index=True, **kwargs):
     # check number of sites, may need to create multiindex
@@ -124,8 +129,7 @@ def _qwdata(datetime_index=True, **kwargs):
         df = format_datetime(df, 'sample_dt', 'sample_tm',
                              'sample_start_time_datum_cd')
 
-    df = format_response(df)
-    return df, _set_metadata(response, **kwargs)
+    return format_response(df, **kwargs), _set_metadata(response, **kwargs)
 
 
 def get_discharge_measurements(sites=None, start=None, end=None, **kwargs):
@@ -155,7 +159,7 @@ def _discharge_measurements(**kwargs):
     return _read_rdb(response.text), _set_metadata(response, **kwargs)
 
 
-def get_discharge_peaks(sites=None, start=None, end=None, **kwargs):
+def get_discharge_peaks(sites=None, start=None, end=None,  multi_index=True, **kwargs):
     """
     Get discharge peaks from the waterdata service.
 
@@ -174,7 +178,7 @@ def get_discharge_peaks(sites=None, start=None, end=None, **kwargs):
     start = kwargs.pop('begin_date', start)
     end = kwargs.pop('end_date', end)
     sites = kwargs.pop('site_no', sites)
-    return _discharge_peaks(site_no=sites, begin_date=start, end_date=end, **kwargs)
+    return _discharge_peaks(site_no=sites, begin_date=start, end_date=end, multi_index=multi_index, **kwargs)
 
 
 def _discharge_peaks(**kwargs):
@@ -182,10 +186,10 @@ def _discharge_peaks(**kwargs):
 
     df = _read_rdb(response.text)
 
-    return format_response(df, service='peaks'), _set_metadata(response, **kwargs)
+    return format_response(df, service='peaks', **kwargs), _set_metadata(response, **kwargs)
 
 
-def get_gwlevels(start='1851-01-01', end=None, **kwargs):
+def get_gwlevels(start='1851-01-01', end=None, multi_index=True, **kwargs):
     """
     Querys the groundwater level service from waterservices
 
@@ -202,16 +206,17 @@ def get_gwlevels(start='1851-01-01', end=None, **kwargs):
     """
     start = kwargs.pop('startDT', start)
     end = kwargs.pop('endDT', end)
-    return _gwlevels(startDT=start, endDT=end, **kwargs)
+    return _gwlevels(startDT=start, endDT=end, multi_index=multi_index, **kwargs)
 
 
 def _gwlevels(**kwargs):
+
     response = query_waterservices('gwlevels', **kwargs)
 
     df = _read_rdb(response.text)
     df = format_datetime(df, 'lev_dt', 'lev_tm', 'lev_tz_cd')
 
-    return format_response(df), _set_metadata(response, **kwargs)
+    return format_response(df, **kwargs), _set_metadata(response, **kwargs)
 
 
 def get_stats(sites, **kwargs):
@@ -296,7 +301,7 @@ def query_waterservices(service, **kwargs):
     return query(url, payload=kwargs)
 
 
-def get_dv(start=None, end=None, **kwargs):
+def get_dv(start=None, end=None, multi_index=True, **kwargs):
     """
     Get daily values data from NWIS and return it as a DataFrame.
 
@@ -314,15 +319,14 @@ def get_dv(start=None, end=None, **kwargs):
     """
     start = kwargs.pop('startDT', start)
     end = kwargs.pop('endDT', end)
-    return _dv(startDT=start, endDT=end, **kwargs)
+    return _dv(startDT=start, endDT=end, multi_index=multi_index, **kwargs)
 
 
 def _dv(**kwargs):
     response = query_waterservices('dv', format='json', **kwargs)
     df = _read_json(response.json())
 
-    df = format_response(df)
-    return df, _set_metadata(response, **kwargs)
+    return format_response(df, **kwargs), _set_metadata(response, **kwargs)
 
 
 def get_info(**kwargs):
@@ -413,7 +417,7 @@ def get_info(**kwargs):
     return _read_rdb(response.text), _set_metadata(response, **kwargs)
 
 
-def get_iv(start=None, end=None, **kwargs):
+def get_iv(start=None, end=None, multi_index=True, **kwargs):
     """Get instantaneous values data from NWIS and return it as a DataFrame.
 
     Note: If no start or end date are provided, only the most recent record is returned.
@@ -430,12 +434,13 @@ def get_iv(start=None, end=None, **kwargs):
     """
     start = kwargs.pop('startDT', start)
     end = kwargs.pop('endDT', end)
-    return _iv(startDT=start, endDT=end, **kwargs)
+    return _iv(startDT=start, endDT=end, multi_index=multi_index, **kwargs)
 
 
 def _iv(**kwargs):
     response = query_waterservices('iv', format='json', **kwargs)
-    return _read_json(response.json()), _set_metadata(response, **kwargs)
+    df = _read_json(response.json())
+    return format_response(df, **kwargs), _set_metadata(response, **kwargs)
 
 
 def get_pmcodes(parameterCd = 'All', partial = True):
@@ -649,7 +654,7 @@ def get_record(sites=None, start=None, end=None, state=None,
         raise TypeError('{} service not yet implemented'.format(service))
 
 
-def _read_json(json, multi_index=False):
+def _read_json(json):
     """
     Reads a NWIS Water Services formatted JSON into a DataFrame.
 
@@ -714,7 +719,6 @@ def _read_json(json, multi_index=False):
                 merged_df = update_merge(merged_df, record_df, na_only=True,
                                          on=['site_no', 'datetime'])
 
-    merged_df = format_response(merged_df)
     return merged_df
 
 
