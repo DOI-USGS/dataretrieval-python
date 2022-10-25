@@ -121,7 +121,7 @@ def test_get_qwdata(requests_mock):
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_qwdata(sites=["01491000", "01645000"])
     assert type(df) is DataFrame
-    assert df.size == 1650709
+    assert df.size == 1821472
     assert_metadata(requests_mock, request_url, md, site, None, format)
 
 
@@ -135,7 +135,7 @@ def test_get_gwlevels(requests_mock):
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_gwlevels(sites=[site])
     assert type(df) is DataFrame
-    assert df.size == 13
+    assert df.size == 16
     assert_metadata(requests_mock, request_url, md, site, None, format)
 
 
