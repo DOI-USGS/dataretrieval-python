@@ -54,9 +54,9 @@ def format_datetime(df, date_field, time_field, tz_field):
     #create a datetime index from the columns in qwdata response
     df[tz_field] = df[tz_field].map(tz)
 
-    df['datetime'] = pd.to_datetime(df.pop(date_field) + ' ' +
-                                    df.pop(time_field) + ' ' +
-                                    df.pop(tz_field),
+    df['datetime'] = pd.to_datetime(df[date_field] + ' ' +
+                                    df[time_field] + ' ' +
+                                    df[tz_field],
                                     format = '%Y-%m-%d %H:%M',
                                     utc=True)
 
