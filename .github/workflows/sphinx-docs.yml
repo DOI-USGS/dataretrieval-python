@@ -30,7 +30,7 @@ jobs:
         echo ${{ github.ref == 'refs/heads/master' }}
         echo ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     - name: Deploy to GitHub Pages
-      uses: JamesIves/github-pages-deploy-action@4
+      uses: JamesIves/github-pages-deploy-action@v4.4.1
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
