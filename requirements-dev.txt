@@ -6,3 +6,7 @@ requests-mock
 coverage
 pytest
 flake8
+sphinx
+sphinx-rtd-theme
+ipython
+ipykernel

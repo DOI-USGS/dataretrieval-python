@@ -1,5 +1,5 @@
 """
-Tool for downloading data from the Water Quality Portal (https://waterquality.data.us)
+Tool for downloading data from the Water Quality Portal (https://waterqualitydata.us)
 
 See www.waterqualitydata.us/webservices_documentation for API reference
 

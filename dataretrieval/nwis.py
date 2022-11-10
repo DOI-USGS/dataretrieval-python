@@ -63,7 +63,7 @@ def get_qwdata(datetime_index=True, wide_format=True, sites=None,
     Get water sample data from qwdata service.
 
     Parameters (Additional parameters, if supplied, will be used as query parameters)
-    ----------
+    ---------------------------------------------------------------------------------
     datetime_index : boolean
         If True, create a datetime index
     wide_format : boolean
@@ -137,7 +137,7 @@ def get_discharge_measurements(sites=None, start=None, end=None, **kwargs):
     Get discharge measurements from the waterdata service.
 
     Parameters (Additional parameters, if supplied, will be used as query parameters)
-    ----------
+    ---------------------------------------------------------------------------------
     sites: array of strings
         If the qwdata parameter site_no is supplied, it will overwrite the sites parameter
     start: string
@@ -164,7 +164,7 @@ def get_discharge_peaks(sites=None, start=None, end=None,  multi_index=True, **k
     Get discharge peaks from the waterdata service.
 
     Parameters (Additional parameters, if supplied, will be used as query parameters)
-    ----------
+    ---------------------------------------------------------------------------------
     sites: array of strings
         If the waterdata parameter site_no is supplied, it will overwrite the sites parameter
     start: string
@@ -194,7 +194,7 @@ def get_gwlevels(start='1851-01-01', end=None, multi_index=True, **kwargs):
     Querys the groundwater level service from waterservices
 
     Parameters (Additional parameters, if supplied, will be used as query parameters)
-    ----------
+    ---------------------------------------------------------------------------------
     start: string
         If the waterdata parameter begin_date is supplied, it will overwrite the start
         parameter (defaults to '1851-01-01')
@@ -224,7 +224,7 @@ def get_stats(sites, **kwargs):
     Querys waterservices statistics information
 
     Parameters (Additional parameters, if supplied, will be used as query parameters)
-    ----------
+    ---------------------------------------------------------------------------------
     Must specify
         sites (string or list): USGS site number
         statReportType (string): daily (default), monthly, or annual
@@ -270,7 +270,7 @@ def query_waterservices(service, **kwargs):
     For more documentation see
 
     Parameters (Additional parameters, if supplied, will be used as query parameters)
-    ----------
+    ---------------------------------------------------------------------------------
         service: string
             'site','stats',etc
         bBox: huc string
@@ -286,6 +286,7 @@ def query_waterservices(service, **kwargs):
         request
 
     Usage: must specify one major filter: sites, stateCd, bBox,
+
     """
     if not any(key in kwargs for key in ['sites', 'stateCd', 'bBox', 'huc']):
         raise TypeError('Query must specify a major filter: sites, stateCd, bBox, or huc')
@@ -306,9 +307,9 @@ def get_dv(start=None, end=None, multi_index=True, **kwargs):
     Get daily values data from NWIS and return it as a DataFrame.
 
     Note: If no start or end date are provided, only the most recent record is returned.
-    
+
     Parameters (Additional parameters, if supplied, will be used as query parameters)
-    ----------
+    ---------------------------------------------------------------------------------
     start: string
         If the waterdata parameter startDT is supplied, it will overwrite the start parameter
     end: string
@@ -336,7 +337,7 @@ def get_info(**kwargs):
     Note: Must specify one major parameter.
 
     Parameters (Additional parameters, if supplied, will be used as query parameters)
-    ----------
+    ---------------------------------------------------------------------------------
     sites : string or list
         A list of site numters. Sites may be prefixed with an optional agency
         code followed by a colon.
@@ -421,7 +422,7 @@ def get_iv(start=None, end=None, multi_index=True, **kwargs):
     """Get instantaneous values data from NWIS and return it as a DataFrame.
 
     Note: If no start or end date are provided, only the most recent record is returned.
-    
+
     Parameters
     ----------
     start: string
@@ -447,35 +448,36 @@ def get_pmcodes(parameterCd = 'All', partial = True):
     """
     Returns a DataFrame containing all NWIS parameter code information.
 
-    Parameters 
+    Parameters
     ----------
         parameterCd: string or list
             Accepts parameter codes or names
-        
+
         partial: boolean
-            Default is True (partial querying). If False, the funciton will query only exact matches 
+            Default is True (partial querying). If False, the function will query only exact matches
     Returns:
         DataFrame containing the USGS parameter codes and Metadata as tuple
+
     """
     if parameterCd is None:
         raise TypeError('The query must include a parameter name or code')
-    
+
     payload = {'fmt':'rdb'}
     url = PARAMCODES_URL
-    
+
     if isinstance(parameterCd, str): # when a single code or name is given
         if parameterCd.lower() == "all":
             payload.update({'group_cd': '%'})
             url = ALLPARAMCODES_URL
             response = query(url, payload)
             return _read_rdb(response.text), _set_metadata(response)
-        
+
         else:
             parameterCd = [parameterCd]
-            
+
     if not isinstance(parameterCd, list):
         raise TypeError('Parameter information (code or name) must be type string or list')
-            
+
     # Querying with a list of parameters names, codes, or mixed
     l = []
     for param in parameterCd:
@@ -490,7 +492,7 @@ def get_pmcodes(parameterCd = 'All', partial = True):
             l.append(_read_rdb(response.text))
         else:
             raise TypeError('Parameter information (code or name) must be type string')
-    return pd.concat(l), _set_metadata(response) 
+    return pd.concat(l), _set_metadata(response)
 
 
 def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
@@ -498,7 +500,7 @@ def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
     Water use data retrieval from USGS (NWIS).
 
     Parameters (Additional parameters, if supplied, will be used as query parameters)
-    ----------
+    ---------------------------------------------------------------------------------
         years: Listlike
             List or comma delimited string of years.  Must be years ending in 0 or 5, or "ALL",
             which retrieves all available years
@@ -532,7 +534,7 @@ def get_ratings(site=None, file_type="base", **kwargs):
     Data is retrieved from https://waterdata.usgs.gov/nwis.
 
     Parameters (Additional parameters, if supplied, will be used as query parameters)
-    ----------
+    ---------------------------------------------------------------------------------
         site: string
             USGS site number.  This is usually an 8 digit number as a string.
             If the nwis parameter site_no is supplied, it will overwrite the site parameter
@@ -587,7 +589,7 @@ def get_record(sites=None, start=None, end=None, state=None,
     Note: If no start or end date are provided, only the most recent record is returned.
 
     Parameters (Additional parameters, if supplied, will be used as query parameters)
-    ----------
+    ---------------------------------------------------------------------------------
         sites: listlike
             List or comma delimited string of site.
         start: string
@@ -602,6 +604,7 @@ def get_record(sites=None, start=None, end=None, state=None,
             - 'measurements' : discharge measurements
     Return:
         DataFrame containing requested data
+
     """
     if service not in WATERSERVICES_SERVICES + WATERDATA_SERVICES:
         raise TypeError('Unrecognized service: {}'.format(service))
@@ -769,7 +772,7 @@ def _set_metadata(response, **parameters):
 
     if 'parameterCd' in parameters:
         md.variable_info = lambda: get_pmcodes(parameterCd=parameters['parameterCd'])
-        
+
     comments = ""
     for line in response.text.splitlines():
         if line.startswith("#"):

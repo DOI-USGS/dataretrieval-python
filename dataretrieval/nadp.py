@@ -1,6 +1,6 @@
 """
 Tools for retrieving data from the National Atmospheric Deposition Program (NADP) including
-the National Trends Network (NTN), the Mercury Deposition Network (MDN). 
+the National Trends Network (NTN), the Mercury Deposition Network (MDN).
 
 National Trends Network
 -----------------------
@@ -30,7 +30,10 @@ import zipfile
 import io
 import os
 import re
-import gdal
+try:
+    import gdal
+except:
+    from osgeo import gdal
 
 from os.path import basename
 from uuid import uuid4
@@ -50,13 +53,14 @@ class GDALMemFile():
     Modeled after rasterio function of same name
 
     Example
-    ------
+    -------
     >>> with GDALMemFile(buf).open() as dataset:
             # do something
 
-    TODO
-    ----
-    - could this work on url, file, or buf?
+    .. todo::
+
+        could this work on url, file, or buf?
+
     """
     def __init__(self, buf):
         """
@@ -114,7 +118,7 @@ def get_annual_MDN_map(measurement_type, year, path=None):
         z.extractall(path)
         return '{}{}{}'.format(path, os.sep, basename(filename))
 
-    #else if no path return a buffer
+    # else if no path return a buffer
     return GDALMemFile(z.tif())
 
 
@@ -156,7 +160,7 @@ def get_annual_NTN_map(measurement_type, measurement=None, year=None, path=None)
         z.extractall(path)
         return '{}{}{}'.format(path, os.sep, basename(filename))
 
-    #else if no path return a buffer
+    # else if no path return a buffer
     return GDALMemFile(z.tif())
 
 
@@ -167,14 +171,14 @@ def get_zip(url, filename):
     -------
     ZipFile
 
-    TODO
-    ----
+    .. todo::
+
+    finish docstring
+
     """
     req = requests.get(url + filename)
     req.raise_for_status()
 
-    #z = zipfile.ZipFile(io.BytesIO(req.content))
+    # z = zipfile.ZipFile(io.BytesIO(req.content))
     z = NADP_ZipFile(io.BytesIO(req.content))
     return z
-
-
