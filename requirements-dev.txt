@@ -1,5 +1,6 @@
 numpy
 pandas
+scipy
 python-dateutil
 requests
 requests-mock
@@ -11,3 +12,4 @@ sphinx-rtd-theme
 ipython
 ipykernel
 nbsphinx
+nbsphinx_link

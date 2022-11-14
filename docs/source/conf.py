@@ -5,6 +5,13 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # Since we aren't installing package here, we mock imports of the dependencies.
 
+# Relative paths so docunentation can reference and include demos folder
+import os
+import sys
+
+# path to repository head
+sys.path.insert(0, os.path.abspath('../..'))
+
 # Project Information
 project = 'dataretrieval'
 version = '0.7'
@@ -22,7 +29,9 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages'
+    'sphinx.ext.githubpages',
+    'nbsphinx',
+    'nbsphinx_link'
 ]
 
 # Add any paths that contain templates here, relative to this directory.

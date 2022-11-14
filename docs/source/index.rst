@@ -16,6 +16,7 @@ Table of Contents
    :maxdepth: 1
 
    meta/installing
+   examples/index
    meta/contributing
    meta/license
    reference/index
