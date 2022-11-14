@@ -10,3 +10,4 @@ sphinx
 sphinx-rtd-theme
 ipython
 ipykernel
+nbsphinx

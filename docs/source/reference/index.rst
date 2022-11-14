@@ -4,11 +4,8 @@
 API reference
 =============
 
-
-This page gives an overview of all dataretrieval objects, functions, and methods.
-
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     nadp
     nwis
@@ -16,13 +13,3 @@ This page gives an overview of all dataretrieval objects, functions, and methods
     utils
     waterwatch
     wqp
-
-Search
-------
-
-* :ref:`search`
-
-.. Search the Index
-.. ==================
-
-.. * :ref:`genindex`

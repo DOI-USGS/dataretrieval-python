@@ -5,10 +5,6 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # Since we aren't installing package here, we mock imports of the dependencies.
 
-import os
-import sys
-import dataretrieval
-
 # Project Information
 project = 'dataretrieval'
 version = '0.7'
@@ -18,14 +14,16 @@ author = 'Hodson et al'
 # -- General configuration ------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings.
-extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.doctest',
-              'sphinx.ext.autosummary',
-              'sphinx.ext.napoleon',
-              'sphinx.ext.todo',
-              'sphinx.ext.coverage',
-              'sphinx.ext.viewcode',
-              'sphinx.ext.githubpages']
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.doctest',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.todo',
+    'sphinx.ext.coverage',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.githubpages'
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -74,8 +72,18 @@ napoleon_use_rtype = True
 # Autosummary / Automodapi settings
 autosummary_generate = True
 automodapi_inheritance_diagram = False
-autodoc_default_options = {'members': True, 'inherited-members': False,
-                           'private-members': True}
+autodoc_default_options = {
+    'members': True,
+    'inherited-members': False,
+    'private-members': True
+}
+
+# doctest
+doctest_global_setup = '''
+import dataretrieval
+import numpy as np
+import pandas as pd
+'''
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -100,7 +108,9 @@ html_static_path = ['_static']
 
 # -- Options for linkcheck -------------------------------------------
 
-# Some links are throwing 403s for unknown reasons; we simply skip checking them here.
-linkcheck_ignore = [r'https://streamstats.usgs.gov/streamstatsservices/#/',
-                    r'https://www.waterqualitydata.us/public_srsnames/',
-		            r'https://waterqualitydata.us']
+# Links to not "check" because they are problematic for the link checker
+linkcheck_ignore = [
+    r'https://streamstats.usgs.gov/streamstatsservices/#/',
+    r'https://www.waterqualitydata.us/public_srsnames/',
+    r'https://waterqualitydata.us'
+]

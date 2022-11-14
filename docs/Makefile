@@ -14,7 +14,7 @@ help:
 .PHONY: help docs Makefile
 
 
-docs: test
+docs: test clean html
 
 
 clean :
@@ -22,9 +22,9 @@ clean :
 
 
 test : clean
+	@$(SPHINXBUILD) -b doctest "$(SOURCEDIR)" "$(BUILDDIR)"
 	@$(SPHINXBUILD) -b linkcheck "$(SOURCEDIR)" "$(BUILDDIR)"
-	make clean
-	@$(SPHINXBUILD) -b html "$(SOURCEDIR)" "$(BUILDDIR)"
+
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
