@@ -19,7 +19,7 @@ def get_results(**kwargs):
         Concatenate an agency code, a hyphen ("-"), and a site-identification number.
 
     statecode : string
-        (Example: Illinois is US:17)
+        Concatenate 'US', a colon (":"), and a FIPS numeric code (Example: Illinois is US:17)
 
     countycode : string
 
