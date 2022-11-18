@@ -3,15 +3,14 @@ Useful utilities for data munging.
 """
 import pandas as pd
 import requests
-from pandas.core.indexes.multi import MultiIndex
-from pandas.core.indexes.datetimes import DatetimeIndex
-
 from dataretrieval.codes import tz
+
 
 def to_str(listlike, delimiter=','):
     """Translates list-like objects into strings.
 
-    Return:
+    Returns
+    -------
         List-like object as string
     """
     if type(listlike) == list:
@@ -26,6 +25,7 @@ def to_str(listlike, delimiter=','):
     elif type(listlike) == str:
         return listlike
 
+
 def format_datetime(df, date_field, time_field, tz_field):
     """Creates a datetime field from separate date, time, and
     time zone fields.
@@ -34,8 +34,8 @@ def format_datetime(df, date_field, time_field, tz_field):
 
     Parameters
     ----------
-    df : DataFrame
-        DataFrame containing date, time, and timezone fields.
+    df : ``pandas.DataFrame``
+        ``pandas.DataFrame`` containing date, time, and timezone fields.
 
     date_field : string
         Name of date column in df.
@@ -48,7 +48,7 @@ def format_datetime(df, date_field, time_field, tz_field):
 
     Returns
     -------
-    df : DataFrame
+    df : ``pandas.DataFrame``
     """
 
     #create a datetime index from the columns in qwdata response
@@ -67,12 +67,25 @@ def format_datetime(df, date_field, time_field, tz_field):
 def update_merge(left, right, na_only=False, on=None, **kwargs):
     """Performs a combination update and merge.
 
-    Args:
-    left (DataFrame): original data
-    right (DataFrame): updated data
-    na_only (bool): if True, only update na values
+    Parameters
+    ----------
+    left: ``pandas.DataFrame``
+        original data
+    right: ``pandas.DataFrame``
+        updated data
+    na_only: bool
+        if True, only update na values
 
-    TODO: na_only
+    Returns
+    -------
+    df: ``pandas.DataFrame``
+        updated data
+
+
+    .. todo::
+
+        add na_only parameter support
+
     """
     #df = left.merge(right, how='outer',
     #                left_index=True, right_index=True)
@@ -122,14 +135,16 @@ def query(url, payload, delimiter=','):
     """Send a query.
 
     Wrapper for requests.get that handles errors, converts listed
-    query paramaters to comma separated strings, and returns response.
+    query parameters to comma separated strings, and returns response.
 
-    Args:
+    Parameters
+    ----------
         url :
         payload : query parameters passed to requests.get
         delimiter : delimeter to use with lists
 
-    Returns:
+    Returns
+    -------
         string : query response
     """
 

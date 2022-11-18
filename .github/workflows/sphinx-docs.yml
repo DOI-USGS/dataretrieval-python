@@ -1,0 +1,41 @@
+# This workflow builds the sphinx docs
+
+name: Sphinx Docs Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+    - name: Install dataretrieval, dependencies, and Sphinx then build docs
+      shell: bash -l {0}
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+        pip install .
+        sudo apt update -y && sudo apt install -y latexmk texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended dvipng pandoc
+        (cd docs && make docs)
+        (cd docs && make html)
+    - name: Debug
+      run: |
+        echo $REF
+        echo $EVENT_NAME
+        echo ${{ github.event_name == 'push' }}
+        echo ${{ github.ref == 'refs/heads/master' }}
+        echo ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@v4.4.1
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          BRANCH: gh-pages
+          FOLDER: docs/build/html

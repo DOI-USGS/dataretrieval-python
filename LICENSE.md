@@ -1,7 +1,7 @@
 License
 =======
 
-Unless otherwise noted, This project is in the public domain in the United
+Unless otherwise noted, this project is in the public domain in the United
 States because it contains materials that originally came from the United
 States Geological Survey, an agency of the United States Department of
 Interior. For more information, see the official USGS copyright policy at

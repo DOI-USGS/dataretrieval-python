@@ -1,6 +1,8 @@
 """
-This module is a wrapper for the streamstats API, documentation for which is at
-https://streamstats.usgs.gov/streamstatsservices/#/
+This module is a wrapper for the streamstats API (`streamstats documentation`_).
+
+.. _streamstats documentation: https://streamstats.usgs.gov/streamstatsservices/#/
+
 """
 
 import json
@@ -9,15 +11,21 @@ import requests
 def download_workspace(filepath, workspaceID, format=''):
     """
 
-    Args:
-        workspaceID (string): Service workspace received form watershed result
-        format (string): Download return format. Default will return ESRI
-                         geodatabase zipfile. 'SHAPE' will return a zip file containing
-                         shape format.
+    Parameters
+    ----------
+    workspaceID: string
+        Service workspace received form watershed result
 
-    Returns:
-        A zip file containing the workspace contents, in either a geodatabase or shape
-        files.
+    format: string
+        Download return format. Default will return ESRI geodatabase zipfile.
+        'SHAPE' will return a zip file containing shape format.
+
+    Returns
+    -------
+        r: geodatabase or shapefiles
+            A zip file containing the workspace contents, in either a
+            geodatabase or shape files.
+
     """
     payload = {'workspaceID':workspaceID, 'format':format}
     url = 'https://streamstats.usgs.gov/streamstatsservices/download'
@@ -34,12 +42,12 @@ def download_workspace(filepath, workspaceID, format=''):
     #return
 
 def get_sample_watershed():
-    return get_watershed('NY',-74.524, 43.939) 
+    return get_watershed('NY',-74.524, 43.939)
 
 def get_watershed(rcode, xlocation, ylocation, crs=4326,
                   includeparameters=True, includeflowtypes=False,
                   includefeatures=True, simplify=True, format='geojson'):
-    """ Get watershed object based on locationi
+    """ Get watershed object based on location
 
     Streamstats documentation
     -------------------------
@@ -49,7 +57,8 @@ def get_watershed(rcode, xlocation, ylocation, crs=4326,
     workspace where files are stored and can be used for further processing such
     as for downloads and flow statistic computations.
 
-    Args:
+    Parameters
+    ----------
         rcode: StreamStats 2-3 character code that identifies the Study Area -- either a
                State or a Regional Study.
         xlocation: X location of the most downstream point of desired study area.
@@ -60,7 +69,8 @@ def get_watershed(rcode, xlocation, ylocation, crs=4326,
         includefeatures: Comma seperated list of features to include in response.
         simplify:
 
-    Returns:
+    Returns
+    -------
         Json watershed object describing watershed
 
     see: https://streamstats.usgs.gov/streamstatsservices/#/

@@ -1,28 +1,27 @@
 """
 Tools for retrieving data from the National Atmospheric Deposition Program (NADP) including
-the National Trends Network (NTN), the Mercury Deposition Network (MDN). 
+the National Trends Network (NTN), the Mercury Deposition Network (MDN).
 
 National Trends Network
 -----------------------
 The  NTN provides longterm records of precipitation chemistry across the United States.
-See nadp.slw.wisc.edu/ntn for more info.
+See https://nadp.slh.wisc.edu/ntn for more info.
 
 Mercury Deposition Network
 --------------------------
-the MDN provides longterm records of total mercury (Hg) concentration and deposition in precipitation in the United States and Canada.
-For more information visit nadp.slh.wisc.edu/MDN
+The MDN provides longterm records of total mercury (Hg) concentration and deposition in precipitation in the United States and Canada.
+For more information visit https://nadp.slh.wisc.edu/networks/mercury-deposition-network/
 
 Notes
 -----
 Gridded data on NADP is served as zipped tif files. Functions in this module will either download and extract the data,
-when a path is specified, or open the data as a GDAL memory-mmapped file when no path is specified.
+when a path is specified, or open the data as a GDAL memory-mapped file when no path is specified.
 
+.. todo::
+    - include AIRMoN, AMNet, and AMoN
+    - add errorchecking
+    - add tests
 
-Todo list
----------
-- include AIRMoN, AMNet, and AMoN
-- add errorchecking
-- add tests
 """
 
 import requests
@@ -30,7 +29,10 @@ import zipfile
 import io
 import os
 import re
-import gdal
+try:
+    import gdal
+except:
+    from osgeo import gdal
 
 from os.path import basename
 from uuid import uuid4
@@ -41,36 +43,38 @@ NADP_MAP_EXT = 'maplib/grids'
 NTN_CONC_PARAMS = ['pH','So4','NO3','NH4','Ca','Mg','K','Na','Cl','Br']
 NTN_DEP_PARAMS  = ['H','So4','NO3','NH4','Ca','Mg','K','Na','Cl','Br','N','SPlusN']
 
-NTN_MEAS_TYPE = ['conc','dep','precip'] #concentration or deposition
+NTN_MEAS_TYPE = ['conc','dep','precip']  #concentration or deposition
 
 
 class GDALMemFile():
-    """Creates a GDAL memmory-mapped file
+    """Creates a GDAL memory-mapped file
 
-    Modeled after rasterio function of same name
+    Modeled after `rasterio` function of same name
 
-    Example
-    ------
-    >>> with GDALMemFile(buf).open() as dataset:
+    .. code::
+
+        with GDALMemFile(buf).open() as dataset:
             # do something
 
-    TODO
-    ----
-    - could this work on url, file, or buf?
+    .. todo::
+
+        could this work on url, file, or buf?
+
     """
     def __init__(self, buf):
         """
-        Arugments
-        ---------
+        Parameters
+        ----------
         buf : buffer
             Buffer containing gdal formatted data.
+
         """
         self.buf = buf
 
     def open(self):
         """
+        see https://gist.github.com/jleinonen/5781308
 
-        see gist.github.com/jleinonen/5781308 gdal_mmap.py
         """
         mmap_name = '/vsimem/' + uuid4().hex #vsimem is special GDAL string
         gdal.FileFromMemBuffer(mmap_name, self.buf)
@@ -114,7 +118,7 @@ def get_annual_MDN_map(measurement_type, year, path=None):
         z.extractall(path)
         return '{}{}{}'.format(path, os.sep, basename(filename))
 
-    #else if no path return a buffer
+    # else if no path return a buffer
     return GDALMemFile(z.tif())
 
 
@@ -140,8 +144,11 @@ def get_annual_NTN_map(measurement_type, measurement=None, year=None, path=None)
 
     Examples
     --------
-    >>> get_annual_NTN_map(measurement='NO3', mesurement_type='conc',
-                           year='1996')
+    .. code::
+
+        >>> dataretrieval.nadp.get_annual_NTN_map(
+        ...     measurement='NO3', measurement_type='conc', year='1996')
+
     """
     url = '{}/{}/{}/'.format(NADP_URL, NADP_MAP_EXT, year)
 
@@ -156,7 +163,7 @@ def get_annual_NTN_map(measurement_type, measurement=None, year=None, path=None)
         z.extractall(path)
         return '{}{}{}'.format(path, os.sep, basename(filename))
 
-    #else if no path return a buffer
+    # else if no path return a buffer
     return GDALMemFile(z.tif())
 
 
@@ -167,14 +174,15 @@ def get_zip(url, filename):
     -------
     ZipFile
 
-    TODO
-    ----
+
+    .. todo::
+
+        finish docstring
+
     """
     req = requests.get(url + filename)
     req.raise_for_status()
 
-    #z = zipfile.ZipFile(io.BytesIO(req.content))
+    # z = zipfile.ZipFile(io.BytesIO(req.content))
     z = NADP_ZipFile(io.BytesIO(req.content))
     return z
-
-
