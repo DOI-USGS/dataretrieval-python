@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation Guide &mdash; dataretrieval 0.7 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Examples" href="../examples/index.html" />
+    <link rel="prev" title="Welcome" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> dataretrieval
+          </a>
+              <div class="version">
+                0.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#user-installation">User Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#via-pip">Via <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#via-conda">Via <code class="docutils literal notranslate"><span class="pre">conda</span></code>:</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#developer-installation">Developer Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Installation Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/meta/installing.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="installation-guide">
+<h1>Installation Guide<a class="headerlink" href="#installation-guide" title="Permalink to this heading"></a></h1>
+<p>Whether you are a user or developer we recommend installing <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code>
+in a virtual environment. This can be done using something like <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code>
+or <code class="docutils literal notranslate"><span class="pre">conda</span></code>. Package dependencies are listed in the <a class="reference external" href="https://github.com/USGS-python/dataretrieval/blob/master/requirements.txt">requirements.txt</a> file,
+a full list of dependencies necessary for development are listed in the
+<a class="reference external" href="https://github.com/USGS-python/dataretrieval/blob/master/requirements-dev.txt">requirements-dev.txt</a> file.</p>
+<section id="user-installation">
+<h2>User Installation<a class="headerlink" href="#user-installation" title="Permalink to this heading"></a></h2>
+<section id="via-pip">
+<h3>Via <code class="docutils literal notranslate"><span class="pre">pip</span></code>:<a class="headerlink" href="#via-pip" title="Permalink to this heading"></a></h3>
+<p>To install the latest stable release of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> from <a class="reference external" href="https://pypi.org/project/dataretrieval">PyPI</a>, run the
+following commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install dataretrieval
+</pre></div>
+</div>
+</section>
+<section id="via-conda">
+<h3>Via <code class="docutils literal notranslate"><span class="pre">conda</span></code>:<a class="headerlink" href="#via-conda" title="Permalink to this heading"></a></h3>
+<p>To install the latest stable release of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> from the
+<a class="reference external" href="https://anaconda.org/conda-forge/dataretrieval">conda-forge channel</a>, run the following commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ conda -c conda-forge install dataretrieval
+</pre></div>
+</div>
+</section>
+</section>
+<section id="developer-installation">
+<h2>Developer Installation<a class="headerlink" href="#developer-installation" title="Permalink to this heading"></a></h2>
+<p>To install <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> for development, we recommend first forking
+the repository on GitHub. This will allow you to develop on your own
+feature branch, and propose changes as pull requests to the main branch of
+the repository.</p>
+<p>The first step is to clone your fork of the repository:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/USGS-python/dataretrieval.git
+</pre></div>
+</div>
+<p>Then, set the cloned repository as your current working directory in your
+terminal and run the following commands to get an “editable” installation of
+the package for development:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install -r requirements-dev.txt
+$ pip install -e .
+</pre></div>
+</div>
+<p>To check your installation you can run the tests with the following commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> tests
+$ pytest
+</pre></div>
+</div>
+<p>In order to fetch the latest version of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code>, we recommend
+defining the main repository as a remote <cite>upstream</cite> repository:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git remote add upstream https://github.com/USGS-python/dataretrieval.git
+</pre></div>
+</div>
+<p>You can also build the documentation locally by running the following commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> docs
+$ make docs
+</pre></div>
+</div>
+<p>This both tests the documentation (runs code blocks and checks links), and also
+locally <em>builds</em> the documentation, placing the HTML files within the
+<code class="docutils literal notranslate"><span class="pre">docs/build/html</span></code> directory. You can then open the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> file in
+your browser to view the documentation.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="Welcome" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../examples/index.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

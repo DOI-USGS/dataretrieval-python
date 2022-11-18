@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dataretrieval.streamstats &mdash; dataretrieval 0.7 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="dataretrieval.utils" href="utils.html" />
+    <link rel="prev" title="dataretrieval.nwis" href="nwis.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> dataretrieval
+          </a>
+              <div class="version">
+                0.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="nadp.html">dataretrieval.nadp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nwis.html">dataretrieval.nwis</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.streamstats</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.streamstats.download_workspace"><code class="docutils literal notranslate"><span class="pre">download_workspace()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.streamstats.get_watershed"><code class="docutils literal notranslate"><span class="pre">get_watershed()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">dataretrieval.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="waterwatch.html">dataretrieval.waterwatch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wqp.html">dataretrieval.wqp</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">API reference</a></li>
+      <li class="breadcrumb-item active">dataretrieval.streamstats</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/reference/streamstats.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="module-dataretrieval.streamstats">
+<span id="dataretrieval-streamstats"></span><h1>dataretrieval.streamstats<a class="headerlink" href="#module-dataretrieval.streamstats" title="Permalink to this heading"></a></h1>
+<p>This module is a wrapper for the streamstats API (<a class="reference external" href="https://streamstats.usgs.gov/streamstatsservices/#/">streamstats documentation</a>).</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.streamstats.download_workspace">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.streamstats.</span></span><span class="sig-name descname"><span class="pre">download_workspace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspaceID</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#download_workspace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.download_workspace" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>workspaceID</strong> (<em>string</em>) – Service workspace received form watershed result</p></li>
+<li><p><strong>format</strong> (<em>string</em>) – Download return format. Default will return ESRI geodatabase zipfile.
+‘SHAPE’ will return a zip file containing shape format.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>r</strong> – A zip file containing the workspace contents, in either a
+geodatabase or shape files.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>geodatabase or shapefiles</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.streamstats.get_watershed">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.streamstats.</span></span><span class="sig-name descname"><span class="pre">get_watershed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rcode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlocation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylocation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4326</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">includeparameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">includeflowtypes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">includefeatures</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simplify</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'geojson'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#get_watershed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.get_watershed" title="Permalink to this definition"></a></dt>
+<dd><p>Get watershed object based on location</p>
+<section id="id1">
+<h2>Streamstats documentation<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
+<p>Returns a watershed object. The request configuration will determine the
+overall request response. However all returns will return a watershed object
+with at least the workspaceid. The workspace id is the id to the service
+workspace where files are stored and can be used for further processing such
+as for downloads and flow statistic computations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">param rcode</dt>
+<dd class="field-odd"><p>State or a Regional Study.</p>
+</dd>
+<dt class="field-even">type rcode</dt>
+<dd class="field-even"><p>StreamStats 2-3 character code that identifies the Study Area – either a</p>
+</dd>
+<dt class="field-odd">param xlocation</dt>
+<dd class="field-odd"><p></p></dd>
+<dt class="field-even">type xlocation</dt>
+<dd class="field-even"><p>X location of the most downstream point of desired study area.</p>
+</dd>
+<dt class="field-odd">param ylocation</dt>
+<dd class="field-odd"><p></p></dd>
+<dt class="field-even">type ylocation</dt>
+<dd class="field-even"><p>Y location of the most downstream point of desired study area.</p>
+</dd>
+<dt class="field-odd">param crs</dt>
+<dd class="field-odd"><p></p></dd>
+<dt class="field-even">type crs</dt>
+<dd class="field-even"><p>ESPSG spatial reference code.</p>
+</dd>
+<dt class="field-odd">param includeparameters</dt>
+<dd class="field-odd"><p></p></dd>
+<dt class="field-even">param includeflowtypes</dt>
+<dd class="field-even"><p></p></dd>
+<dt class="field-odd">type includeflowtypes</dt>
+<dd class="field-odd"><p>Not yet implemented.</p>
+</dd>
+<dt class="field-even">param includefeatures</dt>
+<dd class="field-even"><p></p></dd>
+<dt class="field-odd">type includefeatures</dt>
+<dd class="field-odd"><p>Comma seperated list of features to include in response.</p>
+</dd>
+<dt class="field-even">param simplify</dt>
+<dd class="field-even"><p></p></dd>
+<dt class="field-odd">rtype</dt>
+<dd class="field-odd"><p>Json watershed object describing watershed</p>
+</dd>
+</dl>
+<p>see: <a class="reference external" href="https://streamstats.usgs.gov/streamstatsservices/#/">https://streamstats.usgs.gov/streamstatsservices/#/</a></p>
+</section>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="nwis.html" class="btn btn-neutral float-left" title="dataretrieval.nwis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="utils.html" class="btn btn-neutral float-right" title="dataretrieval.utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>National trends in peak annual streamflow &mdash; dataretrieval 0.7 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Python Equivalents to R Vignette Examples" href="rvignettes.html" />
+    <link rel="prev" title="Examples from the Readme file on retrieving NWIS data" href="readme_examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> dataretrieval
+          </a>
+              <div class="version">
+                0.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">National trends in peak annual streamflow</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Introduction">Introduction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Setup">Setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Basic-usage">Basic usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Preparing-the-regression">Preparing the regression</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Preparing-the-analysis">Preparing the analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Plotting-the-results">Plotting the results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">National trends in peak annual streamflow</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/nwisdemo01.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars and line breaks on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+    white-space: pre;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt .copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+.jp-RenderedHTMLCommon table,
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+.jp-RenderedHTMLCommon thead,
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+.jp-RenderedHTMLCommon tr,
+.jp-RenderedHTMLCommon th,
+.jp-RenderedHTMLCommon td,
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+.jp-RenderedHTMLCommon th,
+div.rendered_html th {
+  font-weight: bold;
+}
+.jp-RenderedHTMLCommon tbody tr:nth-child(odd),
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+.jp-RenderedHTMLCommon tbody tr:hover,
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="National-trends-in-peak-annual-streamflow">
+<h1>National trends in peak annual streamflow<a class="headerlink" href="#National-trends-in-peak-annual-streamflow" title="Permalink to this heading"></a></h1>
+<section id="Introduction">
+<h2>Introduction<a class="headerlink" href="#Introduction" title="Permalink to this heading"></a></h2>
+<p>This notebook demonstrates a slightly more advanced application of data_retrieval.nwis to collect using a national dataset of historical peak annual streamflow measurements. The objective is to use a regression of peak annual streamflow and time to identify any trends. But, not for a singile station,</p>
+</section>
+<section id="Setup">
+<h2>Setup<a class="headerlink" href="#Setup" title="Permalink to this heading"></a></h2>
+<p>Before we begin any analysis, we’ll need to setup our environment by importing any modules.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+
+<span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">nwis</span><span class="p">,</span> <span class="n">utils</span><span class="p">,</span> <span class="n">codes</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Basic-usage">
+<h2>Basic usage<a class="headerlink" href="#Basic-usage" title="Permalink to this heading"></a></h2>
+<p>Recall that the basic way to download data from NWIS is through through the <code class="docutils literal notranslate"><span class="pre">nwis.get_record()</span></code> function, which returns a user-specified record as a <code class="docutils literal notranslate"><span class="pre">pandas</span></code> dataframe. The <code class="docutils literal notranslate"><span class="pre">nwis.get_record()</span></code> function is really a facade of sorts, that allows the user to download data from various NWIS services through a consistant interface. To get started, we require a few simple parameters: a list of site numbers or states codes, a service, and a start date.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># download annual peaks from a single site</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;03339000&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;peaks&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;1970-01-01&#39;</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+
+<span class="c1"># alternatively information for the entire state of illiois can be downloaded using</span>
+<span class="c1">#df = nwis.get_record(state_cd=&#39;il&#39;, service=&#39;peaks&#39;, start=&#39;1970-01-01&#39;)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>agency_cd</th>
+      <th>site_no</th>
+      <th>peak_tm</th>
+      <th>peak_va</th>
+      <th>peak_cd</th>
+      <th>gage_ht</th>
+      <th>gage_ht_cd</th>
+      <th>year_last_pk</th>
+      <th>ag_dt</th>
+      <th>ag_tm</th>
+      <th>ag_gage_ht</th>
+      <th>ag_gage_ht_cd</th>
+    </tr>
+    <tr>
+      <th>datetime</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1970-04-20 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>03339000</td>
+      <td>NaN</td>
+      <td>16300</td>
+      <td>5</td>
+      <td>19.80</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1971-02-05 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>03339000</td>
+      <td>NaN</td>
+      <td>8910</td>
+      <td>5</td>
+      <td>13.61</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1972-04-22 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>03339000</td>
+      <td>NaN</td>
+      <td>9240</td>
+      <td>5</td>
+      <td>13.94</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1973-04-23 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>03339000</td>
+      <td>NaN</td>
+      <td>16600</td>
+      <td>5</td>
+      <td>20.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1974-06-23 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>03339000</td>
+      <td>NaN</td>
+      <td>19500</td>
+      <td>5</td>
+      <td>21.70</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Most of the fields are empty, but no matter. All we require are date (<code class="docutils literal notranslate"><span class="pre">datetime</span></code>), site number (<code class="docutils literal notranslate"><span class="pre">site_no</span></code>), and peak streamflow (<code class="docutils literal notranslate"><span class="pre">peak_va</span></code>).</p>
+<p>Note that when multiple sites are specified, <code class="docutils literal notranslate"><span class="pre">nwis.get_record()</span></code> will combine <code class="docutils literal notranslate"><span class="pre">datetime</span></code> and <code class="docutils literal notranslate"><span class="pre">site_no</span></code> fields to create a multi-index dataframe.</p>
+</section>
+<section id="Preparing-the-regression">
+<h2>Preparing the regression<a class="headerlink" href="#Preparing-the-regression" title="Permalink to this heading"></a></h2>
+<p>Next we’ll define a function that applies ordinary least squares on peak discharge and time. After grouping the dataset by <code class="docutils literal notranslate"><span class="pre">site_no</span></code>, we will apply the regression on a per-site basis. The results from each site, will be returned as a row that includes the slope, y-intercept, r<span class="math notranslate nohighlight">\(^2\)</span>, p value, and standard error of the regression.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">peak_trend_regression</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#convert datetimes to days for regression</span>
+    <span class="n">peak_date</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span>
+    <span class="n">peak_date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;peak_d&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">peak_date</span> <span class="o">-</span> <span class="n">peak_date</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">timedelta64</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
+    <span class="c1">#df[&#39;peak_d&#39;] = (df[&#39;peak_dt&#39;] - df[&#39;peak_dt&#39;].min())  / np.timedelta64(1,&#39;D&#39;)</span>
+
+    <span class="c1">#normalize the peak discharge values</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;peak_va&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;peak_va&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;peak_va&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span><span class="o">/</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;peak_va&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+    <span class="n">slope</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">r_value</span><span class="p">,</span> <span class="n">p_value</span><span class="p">,</span> <span class="n">std_error</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">linregress</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;peak_d&#39;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;peak_va&#39;</span><span class="p">])</span>
+
+    <span class="c1">#df_out = pd.DataFrame({&#39;slope&#39;:slope,&#39;intercept&#39;:intercept,&#39;p_value&#39;:p_value},index=df[&#39;site_no&#39;].iloc[0])</span>
+
+    <span class="c1">#return df_out</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">({</span><span class="s1">&#39;slope&#39;</span><span class="p">:</span><span class="n">slope</span><span class="p">,</span><span class="s1">&#39;intercept&#39;</span><span class="p">:</span><span class="n">intercept</span><span class="p">,</span><span class="s1">&#39;p_value&#39;</span><span class="p">:</span> <span class="n">p_value</span><span class="p">,</span><span class="s1">&#39;std_error&#39;</span><span class="p">:</span><span class="n">std_error</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Preparing-the-analysis">
+<h2>Preparing the analysis<a class="headerlink" href="#Preparing-the-analysis" title="Permalink to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">peak_trend_analysis</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">start_date</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    states : list</span>
+<span class="sd">        a list containing the two-letter codes for each state to include in the</span>
+<span class="sd">        analysis.</span>
+
+<span class="sd">    start_date : string</span>
+<span class="sd">        the date to use a the beginning of the analysis.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">final_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">states</span><span class="p">:</span>
+        <span class="c1"># download annual peak discharge records</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">state_cd</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;peaks&#39;</span><span class="p">)</span>
+        <span class="c1"># group the data by site and apply our regression</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;site_no&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">peak_trend_regression</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+        <span class="c1"># drop any insignificant results</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="n">temp</span><span class="p">[</span><span class="s1">&#39;p_value&#39;</span><span class="p">]</span><span class="o">&lt;</span><span class="mf">0.05</span><span class="p">]</span>
+
+        <span class="c1"># now download metadata for each site, which we&#39;ll use later to plot the sites</span>
+        <span class="c1"># on a map</span>
+        <span class="n">site_df</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">temp</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">final_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">final_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">site_df</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">right_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s1">&#39;site_no&#39;</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">final_df</span> <span class="o">=</span> <span class="n">final_df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">site_df</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">right_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s1">&#39;site_no&#39;</span><span class="p">)</span> <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">final_df</span>
+<br/></pre></div>
+</div>
+</div>
+<p>To run the analysis for all states since 1970, one would only need to uncomment and run the following lines. However, pulling all that data from NWIS takes time and puts and could put a burden on resoures.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Warning these lines will download a large dataset from the web and</span>
+<span class="c1"># will take few minutes to run.</span>
+
+<span class="c1">#start = &#39;1970-01-01&#39;</span>
+<span class="c1">#states = codes.state_codes</span>
+<span class="c1">#final_df = peak_trend_analysis(states=states, start_date=start)</span>
+<span class="c1">#final_df.to_csv(&#39;datasets/peak_discharge_trends.csv&#39;)</span>
+</pre></div>
+</div>
+</div>
+<p>Instead, lets quickly load some predownloaded data, which I generated using the code above.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">final_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;datasets/peak_discharge_trends.csv&#39;</span><span class="p">)</span>
+<span class="n">final_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Unnamed: 0</th>
+      <th>agency_cd</th>
+      <th>site_no</th>
+      <th>station_nm</th>
+      <th>site_tp_cd</th>
+      <th>dec_lat_va</th>
+      <th>dec_long_va</th>
+      <th>coord_acy_cd</th>
+      <th>dec_coord_datum_cd</th>
+      <th>alt_va</th>
+      <th>alt_acy_va</th>
+      <th>alt_datum_cd</th>
+      <th>huc_cd</th>
+      <th>intercept</th>
+      <th>p_value</th>
+      <th>slope</th>
+      <th>std_error</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>USGS</td>
+      <td>2343275</td>
+      <td>ABBIE CREEK NEAR ABBEVILLE AL</td>
+      <td>ST</td>
+      <td>31.561836</td>
+      <td>-85.204932</td>
+      <td>U</td>
+      <td>NAD83</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>3130004.0</td>
+      <td>-0.641911</td>
+      <td>0.015899</td>
+      <td>0.000231</td>
+      <td>0.000065</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>USGS</td>
+      <td>2360275</td>
+      <td>JUDY CREEK NEAR OZARK AL</td>
+      <td>ST</td>
+      <td>31.463224</td>
+      <td>-85.572159</td>
+      <td>U</td>
+      <td>NAD83</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>3140201.0</td>
+      <td>-0.702569</td>
+      <td>0.004652</td>
+      <td>0.000269</td>
+      <td>0.000069</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2</td>
+      <td>USGS</td>
+      <td>2360500</td>
+      <td>EAST FORK CHOCTAWHATCHEE R NEAR MIDLAND CITY AL</td>
+      <td>ST</td>
+      <td>31.373227</td>
+      <td>-85.477158</td>
+      <td>U</td>
+      <td>NAD83</td>
+      <td>179.1</td>
+      <td>0.01</td>
+      <td>NGVD29</td>
+      <td>3140201.0</td>
+      <td>-1.138552</td>
+      <td>0.007698</td>
+      <td>0.000211</td>
+      <td>0.000003</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3</td>
+      <td>USGS</td>
+      <td>2367400</td>
+      <td>YELLOW RIVER NR SANFORD, ALA</td>
+      <td>ST</td>
+      <td>31.317391</td>
+      <td>-86.355788</td>
+      <td>U</td>
+      <td>NAD83</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>3140103.0</td>
+      <td>-0.611310</td>
+      <td>0.015836</td>
+      <td>0.000511</td>
+      <td>0.000013</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>4</td>
+      <td>USGS</td>
+      <td>2367500</td>
+      <td>LIGHTWOOD KNOT CREEK AT BABBIE AL</td>
+      <td>ST</td>
+      <td>31.270725</td>
+      <td>-86.313564</td>
+      <td>U</td>
+      <td>NAD83</td>
+      <td>185.0</td>
+      <td>0.01</td>
+      <td>NGVD29</td>
+      <td>3140103.0</td>
+      <td>-0.705676</td>
+      <td>0.015231</td>
+      <td>0.000210</td>
+      <td>0.000052</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Notice how the data has been transformed. In addition to statistics about the peak streamflow trends, we’ve also used the NWIS site service to add latitude and longtitude information for each station.</p>
+</section>
+</section>
+<section id="Plotting-the-results">
+<h1>Plotting the results<a class="headerlink" href="#Plotting-the-results" title="Permalink to this heading"></a></h1>
+<p>Finally we’ll use <code class="docutils literal notranslate"><span class="pre">basemap</span></code> and <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>, along with the location information from NWIS, to plot the results on a map (shown below). Stations with increasing peak annual discharge are shown in red; whereas, stations with decreasing peaks are blue.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Currently commented out as there isn&#39;t an easy way to install mpl_toolkits</span>
+<span class="c1"># on a remote machine without spinning up a full geospatial stack.</span>
+
+<span class="c1"># from mpl_toolkits.basemap import Basemap, cm</span>
+<span class="c1"># import matplotlib.pyplot as plt</span>
+
+<span class="c1"># fig = plt.figure(num=None, figsize=(10, 6) )</span>
+
+<span class="c1"># # setup a basemap covering the contiguous United States</span>
+<span class="c1"># m = Basemap(width=5500000, height=4000000, resolution=&#39;l&#39;,</span>
+<span class="c1">#             projection=&#39;aea&#39;, lat_1=36., lat_2=44, lon_0=-100, lat_0=40)</span>
+
+
+<span class="c1"># # add coastlines</span>
+<span class="c1"># m.drawcoastlines(linewidth=0.5)</span>
+
+<span class="c1"># # add parallels and meridians.</span>
+<span class="c1"># m.drawparallels(np.arange(-90.,91.,15.),labels=[True,True,False,False],dashes=[2,2])</span>
+<span class="c1"># m.drawmeridians(np.arange(-180.,181.,15.),labels=[False,False,False,True],dashes=[2,2])</span>
+
+<span class="c1"># # add boundaries and rivers</span>
+<span class="c1"># m.drawcountries(linewidth=1, linestyle=&#39;solid&#39;, color=&#39;k&#39; )</span>
+<span class="c1"># m.drawstates(linewidth=0.5, linestyle=&#39;solid&#39;, color=&#39;k&#39;)</span>
+<span class="c1"># m.drawrivers(linewidth=0.5, linestyle=&#39;solid&#39;, color=&#39;cornflowerblue&#39;)</span>
+
+
+<span class="c1"># increasing = final_df[final_df[&#39;slope&#39;] &gt; 0]</span>
+<span class="c1"># decreasing = final_df[final_df[&#39;slope&#39;] &lt; 0]</span>
+
+<span class="c1"># #x,y = m(lons, lats)</span>
+
+<span class="c1"># # categorical plots get a little  ugly in basemap</span>
+<span class="c1"># m.scatter(increasing[&#39;dec_long_va&#39;].tolist(),</span>
+<span class="c1">#           increasing[&#39;dec_lat_va&#39;].tolist(),</span>
+<span class="c1">#           label=&#39;increasing&#39;, s=2, color=&#39;red&#39;,</span>
+<span class="c1">#           latlon=True)</span>
+
+<span class="c1"># m.scatter(decreasing[&#39;dec_long_va&#39;].tolist(),</span>
+<span class="c1">#           decreasing[&#39;dec_lat_va&#39;].tolist(),</span>
+<span class="c1">#           label=&#39;increasing&#39;, s=2, color=&#39;blue&#39;,</span>
+<span class="c1">#           latlon=True)</span>
+</pre></div>
+</div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="readme_examples.html" class="btn btn-neutral float-left" title="Examples from the Readme file on retrieving NWIS data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="rvignettes.html" class="btn btn-neutral float-right" title="Python Equivalents to R Vignette Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

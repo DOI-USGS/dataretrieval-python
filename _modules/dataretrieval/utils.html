@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dataretrieval.utils &mdash; dataretrieval 0.7 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> dataretrieval
+          </a>
+              <div class="version">
+                0.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dataretrieval.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dataretrieval.utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Useful utilities for data munging.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">dataretrieval.codes</span> <span class="kn">import</span> <span class="n">tz</span>
+
+
+<div class="viewcode-block" id="to_str"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.to_str">[docs]</a><span class="k">def</span> <span class="nf">to_str</span><span class="p">(</span><span class="n">listlike</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Translates list-like objects into strings.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        List-like object as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">listlike</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">listlike</span><span class="p">])</span>
+
+    <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">listlike</span><span class="p">)</span> <span class="o">==</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">listlike</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+    <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">listlike</span><span class="p">)</span> <span class="o">==</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">indexes</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">Index</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">listlike</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+    <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">listlike</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">listlike</span></div>
+
+
+<div class="viewcode-block" id="format_datetime"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.format_datetime">[docs]</a><span class="k">def</span> <span class="nf">format_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">date_field</span><span class="p">,</span> <span class="n">time_field</span><span class="p">,</span> <span class="n">tz_field</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates a datetime field from separate date, time, and</span>
+<span class="sd">    time zone fields.</span>
+
+<span class="sd">    Assumes ISO 8601.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : ``pandas.DataFrame``</span>
+<span class="sd">        ``pandas.DataFrame`` containing date, time, and timezone fields.</span>
+
+<span class="sd">    date_field : string</span>
+<span class="sd">        Name of date column in df.</span>
+
+<span class="sd">    time_field : string</span>
+<span class="sd">        Name of time column in df.</span>
+
+<span class="sd">    tz_field : string</span>
+<span class="sd">        Name of time zone column in df.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#create a datetime index from the columns in qwdata response</span>
+    <span class="n">df</span><span class="p">[</span><span class="n">tz_field</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">tz_field</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">tz</span><span class="p">)</span>
+
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">date_field</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span>
+                                    <span class="n">df</span><span class="p">[</span><span class="n">time_field</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span>
+                                    <span class="n">df</span><span class="p">[</span><span class="n">tz_field</span><span class="p">],</span>
+                                    <span class="nb">format</span> <span class="o">=</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M&#39;</span><span class="p">,</span>
+                                    <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<span class="c1">#This function may be deprecated once pandas.update support joins besides left.</span>
+<div class="viewcode-block" id="update_merge"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.update_merge">[docs]</a><span class="k">def</span> <span class="nf">update_merge</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">na_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Performs a combination update and merge.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    left: ``pandas.DataFrame``</span>
+<span class="sd">        original data</span>
+<span class="sd">    right: ``pandas.DataFrame``</span>
+<span class="sd">        updated data</span>
+<span class="sd">    na_only: bool</span>
+<span class="sd">        if True, only update na values</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df: ``pandas.DataFrame``</span>
+<span class="sd">        updated data</span>
+
+
+<span class="sd">    .. todo::</span>
+
+<span class="sd">        add na_only parameter support</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#df = left.merge(right, how=&#39;outer&#39;,</span>
+    <span class="c1">#                left_index=True, right_index=True)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">left</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="n">on</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+    <span class="c1"># check for column overlap and resolve update</span>
+    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="c1">#if duplicated column, use the value from right</span>
+        <span class="k">if</span> <span class="n">column</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">==</span> <span class="s1">&#39;_x&#39;</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">column</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="c1"># find column name</span>
+
+            <span class="k">if</span> <span class="n">na_only</span><span class="p">:</span>
+                <span class="n">df</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_y&#39;</span><span class="p">])</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">df</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_y&#39;</span><span class="p">])</span>
+
+            <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_x&#39;</span><span class="p">,</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_y&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<span class="k">class</span> <span class="nc">Metadata</span><span class="p">:</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">query_time</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">site_info</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">variable_info</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">comment</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># note sure what statistic_info is</span>
+    <span class="n">statistic_info</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1"># disclaimer seems to be only part of importWaterML1</span>
+    <span class="n">disclaimer</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="k">def</span> <span class="nf">set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+    <span class="n">md</span> <span class="o">=</span> <span class="n">Metadata</span><span class="p">()</span>
+    <span class="n">md</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">url</span>
+    <span class="n">md</span><span class="o">.</span><span class="n">query_time</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">elapsed</span>
+    <span class="n">md</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span>
+    <span class="k">return</span> <span class="n">md</span>
+
+
+<div class="viewcode-block" id="query"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.query">[docs]</a><span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Send a query.</span>
+
+<span class="sd">    Wrapper for requests.get that handles errors, converts listed</span>
+<span class="sd">    query parameters to comma separated strings, and returns response.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">        url :</span>
+<span class="sd">        payload : query parameters passed to requests.get</span>
+<span class="sd">        delimiter : delimeter to use with lists</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        string : query response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">payload</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">payload</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_str</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">delimiter</span><span class="p">)</span>
+    <span class="c1">#for index in range(len(payload)):</span>
+    <span class="c1">#    key, value = payload[index]</span>
+    <span class="c1">#    payload[index] = (key, to_str(value))</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Bad Request, check that your parameters are correct. URL: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;No sites/data&#39;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">NoSitesError</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">response</span></div>
+
+
+<div class="viewcode-block" id="NoSitesError"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError">[docs]</a><span class="k">class</span> <span class="nc">NoSitesError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<div class="viewcode-block" id="NoSitesError.__init__"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span></div>
+
+<div class="viewcode-block" id="NoSitesError.__str__"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError.__str__">[docs]</a>    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;No sites/data found using the selection criteria specified in url: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

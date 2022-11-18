@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.7 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> dataretrieval
+          </a>
+              <div class="version">
+                0.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dataretrieval.nwis</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dataretrieval.nwis</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;Functions for downloading data from the `National Water Information System (NWIS)`_.</span>
+
+<span class="sd">.. _National Water Information System (NWIS): https://waterdata.usgs.gov/nwis</span>
+
+
+<span class="sd">.. todo::</span>
+
+<span class="sd">    * Create a test to check whether functions pull multiple sites</span>
+<span class="sd">    * Work on multi-index capabilities.</span>
+<span class="sd">    * Check that all timezones are handled properly for each service.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">dataretrieval.utils</span> <span class="kn">import</span> <span class="n">to_str</span><span class="p">,</span> <span class="n">format_datetime</span><span class="p">,</span> <span class="n">update_merge</span><span class="p">,</span> <span class="n">set_metadata</span> <span class="k">as</span> <span class="n">set_md</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">query</span>
+
+<span class="n">WATERDATA_BASE_URL</span> <span class="o">=</span> <span class="s1">&#39;https://nwis.waterdata.usgs.gov/&#39;</span>
+<span class="n">WATERDATA_URL</span> <span class="o">=</span> <span class="n">WATERDATA_BASE_URL</span> <span class="o">+</span> <span class="s1">&#39;nwis/&#39;</span>
+<span class="n">WATERSERVICE_URL</span> <span class="o">=</span> <span class="s1">&#39;https://waterservices.usgs.gov/nwis/&#39;</span>
+<span class="n">PARAMCODES_URL</span> <span class="o">=</span> <span class="s1">&#39;https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?&#39;</span>
+<span class="n">ALLPARAMCODES_URL</span> <span class="o">=</span> <span class="s1">&#39;https://help.waterdata.usgs.gov/code/parameter_cd_query?&#39;</span>
+
+<span class="n">WATERSERVICES_SERVICES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;dv&#39;</span><span class="p">,</span> <span class="s1">&#39;iv&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;stat&#39;</span><span class="p">,</span> <span class="s1">&#39;gwlevels&#39;</span><span class="p">]</span>
+<span class="n">WATERDATA_SERVICES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;qwdata&#39;</span><span class="p">,</span> <span class="s1">&#39;measurements&#39;</span><span class="p">,</span> <span class="s1">&#39;peaks&#39;</span><span class="p">,</span> <span class="s1">&#39;pmcodes&#39;</span><span class="p">,</span> <span class="s1">&#39;water_use&#39;</span><span class="p">,</span> <span class="s1">&#39;ratings&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="format_response"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.format_response">[docs]</a><span class="k">def</span> <span class="nf">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Setup index for response from query.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;multi_index&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;peaks&#39;</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">preformat_peaks_response</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="c1"># check for multiple sites:</span>
+    <span class="k">if</span> <span class="s1">&#39;datetime&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="c1"># XXX: consider making site_no index</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;site_no&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">mi</span><span class="p">:</span>
+        <span class="c1"># setup multi-index</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;site_no&#39;</span><span class="p">,</span> <span class="s1">&#39;datetime&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">levels</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;tzinfo&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">levels</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tzinfo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;datetime&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;tzinfo&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tzinfo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span></div>
+
+
+<span class="k">def</span> <span class="nf">preformat_peaks_response</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;peak_dt&#39;</span><span class="p">),</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">df</span>
+
+
+<div class="viewcode-block" id="get_qwdata"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_qwdata">[docs]</a><span class="k">def</span> <span class="nf">get_qwdata</span><span class="p">(</span><span class="n">datetime_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">wide_format</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get water sample data from qwdata service.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    datetime_index : boolean</span>
+<span class="sd">        If True, create a datetime index</span>
+<span class="sd">    wide_format : boolean</span>
+<span class="sd">        If True, return data in wide format with multiple samples per row and one row per time.</span>
+<span class="sd">    sites: array of strings</span>
+<span class="sd">        If the qwdata parameter site_no is supplied, it will overwrite the sites parameter</span>
+<span class="sd">    start: string</span>
+<span class="sd">        If the qwdata parameter begin_date is supplied, it will overwrite the start parameter</span>
+<span class="sd">    end: string</span>
+<span class="sd">        If the qwdata parameter end_date is supplied, it will overwrite the end parameter</span>
+<span class="sd">    multi_index: boolean</span>
+<span class="sd">        If False, a dataframe with a single-level index (datetime) is returned</span>
+<span class="sd">    **kwargs: optional</span>
+<span class="sd">        If supplied, will be used as query parameters</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``pandas.DataFrame`` containing times series data from the NWIS json and Metadata as tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">wide_format</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;qw_sample_wide&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;qw_sample_wide&#39;</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;begin_date&#39;</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;end_date&#39;</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+    <span class="n">sites</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;site_no&#39;</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_qwdata</span><span class="p">(</span><span class="n">site_no</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">begin_date</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">datetime_index</span><span class="o">=</span><span class="n">datetime_index</span><span class="p">,</span>
+                   <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="o">**</span> <span class="n">kwargs</span><span class="p">)</span></div>
+
+<span class="k">def</span> <span class="nf">_qwdata</span><span class="p">(</span><span class="n">datetime_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="c1"># check number of sites, may need to create multiindex</span>
+
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;agency_cd&#39;</span><span class="p">:</span> <span class="s1">&#39;USGS&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;rdb&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;pm_cd_compare&#39;</span><span class="p">:</span> <span class="s1">&#39;Greater than&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;inventory_output&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;rdb_inventory_output&#39;</span><span class="p">:</span> <span class="s1">&#39;file&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;TZoutput&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;rdb_qw_attributes&#39;</span><span class="p">:</span> <span class="s1">&#39;expanded&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;date_format&#39;</span><span class="p">:</span> <span class="s1">&#39;YYYY-MM-DD&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;rdb_compression&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;submmitted_form&#39;</span><span class="p">:</span> <span class="s1">&#39;brief_list&#39;</span><span class="p">}</span>
+    <span class="c1"># &#39;qw_sample_wide&#39;: &#39;separated_wide&#39;}</span>
+
+    <span class="c1"># check for parameter codes, and reformat query args</span>
+    <span class="n">qwdata_parameter_code_field</span> <span class="o">=</span> <span class="s1">&#39;parameterCd&#39;</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">qwdata_parameter_code_field</span><span class="p">):</span>
+        <span class="n">parameter_codes</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">qwdata_parameter_code_field</span><span class="p">)</span>
+        <span class="n">parameter_codes</span> <span class="o">=</span> <span class="n">to_str</span><span class="p">(</span><span class="n">parameter_codes</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;multiple_parameter_cds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parameter_codes</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;param_cd_operator&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;OR&#39;</span>
+
+        <span class="n">search_criteria</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;list_of_search_criteria&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">search_criteria</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;list_of_search_criteria&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">,</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">search_criteria</span><span class="p">,</span> <span class="s1">&#39;multiple_parameter_cds&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;list_of_search_criteria&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;multiple_parameter_cds&#39;</span>
+        <span class="c1">#search_criteria = kwargs.get(&#39;list_of_search_criteria</span>
+
+    <span class="c1">#kwargs = {**payload, **kwargs}</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterdata</span><span class="p">(</span><span class="s1">&#39;qwdata&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">datetime_index</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">format_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s1">&#39;sample_dt&#39;</span><span class="p">,</span> <span class="s1">&#39;sample_tm&#39;</span><span class="p">,</span>
+                             <span class="s1">&#39;sample_start_time_datum_cd&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_discharge_measurements"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_discharge_measurements">[docs]</a><span class="k">def</span> <span class="nf">get_discharge_measurements</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get discharge measurements from the waterdata service.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sites: array of strings</span>
+<span class="sd">        If the qwdata parameter site_no is supplied, it will overwrite the sites parameter</span>
+<span class="sd">    start: string</span>
+<span class="sd">        If the qwdata parameter begin_date is supplied, it will overwrite the start parameter</span>
+<span class="sd">    end: string</span>
+<span class="sd">        If the qwdata parameter end_date is supplied, it will overwrite the end parameter</span>
+<span class="sd">    **kwargs: optional</span>
+<span class="sd">        If supplied, will be used as query parameters</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``pandas.DataFrame`` containing times series data from the NWIS json and Metadata as tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;begin_date&#39;</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;end_date&#39;</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+    <span class="n">sites</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;site_no&#39;</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_discharge_measurements</span><span class="p">(</span><span class="n">site_no</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">begin_date</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_discharge_measurements</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterdata</span><span class="p">(</span><span class="s1">&#39;measurements&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;rdb&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_discharge_peaks"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_discharge_peaks">[docs]</a><span class="k">def</span> <span class="nf">get_discharge_peaks</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="n">multi_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get discharge peaks from the waterdata service.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sites: array of strings</span>
+<span class="sd">        If the waterdata parameter site_no is supplied, it will overwrite the sites parameter</span>
+<span class="sd">    start: string</span>
+<span class="sd">        If the waterdata parameter begin_date is supplied, it will overwrite the start parameter</span>
+<span class="sd">    end: string</span>
+<span class="sd">        If the waterdata parameter end_date is supplied, it will overwrite the end parameter</span>
+<span class="sd">    **kwargs: optional</span>
+<span class="sd">        If supplied, will be used as query parameters</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``pandas.DataFrame`` containing times series data from the NWIS json and Metadata as tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;begin_date&#39;</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;end_date&#39;</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+    <span class="n">sites</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;site_no&#39;</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_discharge_peaks</span><span class="p">(</span><span class="n">site_no</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">begin_date</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_discharge_peaks</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterdata</span><span class="p">(</span><span class="s1">&#39;peaks&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;rdb&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;peaks&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_gwlevels"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_gwlevels">[docs]</a><span class="k">def</span> <span class="nf">get_gwlevels</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="s1">&#39;1851-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Queries the groundwater level service from waterservices</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start: string</span>
+<span class="sd">        If the waterdata parameter begin_date is supplied, it will overwrite the start</span>
+<span class="sd">        parameter (defaults to &#39;1851-01-01&#39;)</span>
+<span class="sd">    end: string</span>
+<span class="sd">        If the waterdata parameter end_date is supplied, it will overwrite the end parameter</span>
+<span class="sd">    **kwargs: optional</span>
+<span class="sd">        If supplied, will be used as query parameters</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``pandas.DataFrame`` containing times series data from the NWIS json and Metadata as tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;startDT&#39;</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;endDT&#39;</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_gwlevels</span><span class="p">(</span><span class="n">startDT</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">endDT</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_gwlevels</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s1">&#39;gwlevels&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">format_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s1">&#39;lev_dt&#39;</span><span class="p">,</span> <span class="s1">&#39;lev_tm&#39;</span><span class="p">,</span> <span class="s1">&#39;lev_tz_cd&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_stats"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_stats">[docs]</a><span class="k">def</span> <span class="nf">get_stats</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Queries waterservices statistics information</span>
+
+<span class="sd">    Parameters (Additional parameters, if supplied, will be used as query parameters)</span>
+<span class="sd">    ---------------------------------------------------------------------------------</span>
+<span class="sd">    Must specify</span>
+<span class="sd">        sites (string or list): USGS site number</span>
+<span class="sd">        statReportType (string): daily (default), monthly, or annual</span>
+<span class="sd">        statTypeCd (string): all, mean, max, min, median</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        ``pandas.Dataframe``</span>
+
+<span class="sd">    .. todo::</span>
+
+<span class="sd">        fix date parsing</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s1">&#39;stat&#39;</span><span class="p">,</span> <span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="query_waterdata"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.query_waterdata">[docs]</a><span class="k">def</span> <span class="nf">query_waterdata</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Queries waterdata.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">major_params</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;site_no&#39;</span><span class="p">,</span> <span class="s1">&#39;state_cd&#39;</span><span class="p">]</span>
+    <span class="n">bbox_params</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;nw_longitude_va&#39;</span><span class="p">,</span> <span class="s1">&#39;nw_latitude_va&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;se_longitude_va&#39;</span><span class="p">,</span> <span class="s1">&#39;se_latitude_va&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">major_params</span> <span class="o">+</span> <span class="n">bbox_params</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Query must specify a major filter: site_no, stateCd, bBox&#39;</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="nb">any</span><span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">bbox_params</span><span class="p">)</span> \
+            <span class="ow">and</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">bbox_params</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;One or more lat/long coordinates missing or invalid.&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">service</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">WATERDATA_SERVICES</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Service not recognized&#39;</span><span class="p">)</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="n">WATERDATA_URL</span> <span class="o">+</span> <span class="n">service</span>
+
+    <span class="k">return</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="query_waterservices"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.query_waterservices">[docs]</a><span class="k">def</span> <span class="nf">query_waterservices</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Querys waterservices.usgs.gov</span>
+
+<span class="sd">    For more documentation see</span>
+
+<span class="sd">    Parameters (Additional parameters, if supplied, will be used as query parameters)</span>
+<span class="sd">    ---------------------------------------------------------------------------------</span>
+<span class="sd">        service: string</span>
+<span class="sd">            &#39;site&#39;,&#39;stats&#39;,etc</span>
+<span class="sd">        bBox: huc string</span>
+<span class="sd">            7-digit Hydrologic Unit Code</span>
+
+<span class="sd">        startDT: string</span>
+<span class="sd">            start date (2017-12-31)</span>
+<span class="sd">        endDT: string</span>
+<span class="sd">            end date</span>
+<span class="sd">        modifiedSince: string</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        request</span>
+
+<span class="sd">    Usage: must specify one major filter: sites, stateCd, bBox,</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;sites&#39;</span><span class="p">,</span> <span class="s1">&#39;stateCd&#39;</span><span class="p">,</span> <span class="s1">&#39;bBox&#39;</span><span class="p">,</span> <span class="s1">&#39;huc&#39;</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Query must specify a major filter: sites, stateCd, bBox, or huc&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">service</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">WATERSERVICES_SERVICES</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Service not recognized&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">&#39;format&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;rdb&#39;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="n">WATERSERVICE_URL</span> <span class="o">+</span> <span class="n">service</span>
+
+    <span class="k">return</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_dv"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_dv">[docs]</a><span class="k">def</span> <span class="nf">get_dv</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get daily values data from NWIS and return it as a ``pandas.DataFrame``.</span>
+
+<span class="sd">    Note: If no start or end date are provided, only the most recent record is returned.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start: string</span>
+<span class="sd">        If the waterdata parameter startDT is supplied, it will overwrite the start parameter</span>
+<span class="sd">    end: string</span>
+<span class="sd">        If the waterdata parameter endDT is supplied, it will overwrite the end parameter</span>
+<span class="sd">    **kwargs: optional</span>
+<span class="sd">        If supplied, will be used as query parameters</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``pandas.DataFrame`` containing times series data from the NWIS json and Metadata as tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;startDT&#39;</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;endDT&#39;</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_dv</span><span class="p">(</span><span class="n">startDT</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">endDT</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_dv</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s1">&#39;dv&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_json</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_info"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_info">[docs]</a><span class="k">def</span> <span class="nf">get_info</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get site description information from NWIS.</span>
+
+<span class="sd">    Note: Must specify one major parameter.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sites : string or list</span>
+<span class="sd">        A list of site numters. Sites may be prefixed with an optional agency</span>
+<span class="sd">        code followed by a colon.</span>
+
+<span class="sd">    stateCd : string</span>
+<span class="sd">        U.S. postal service (2-digit) state code. Only 1 state can be specified</span>
+<span class="sd">        per request.</span>
+
+<span class="sd">    huc : string or list</span>
+<span class="sd">        A list of hydrologic unit codes (HUC) or aggregated watersheds. Only 1</span>
+<span class="sd">        major HUC can be specified per request, or up to 10 minor HUCs. A major</span>
+<span class="sd">        HUC has two digits.</span>
+
+<span class="sd">    bBox : list</span>
+<span class="sd">        A contiguous range of decimal latitude and longitude, starting with the</span>
+<span class="sd">        west longitude, then the south latitude, then the east longitude, and</span>
+<span class="sd">        then the north latitude with each value separated by a comma. The</span>
+<span class="sd">        product of the range of latitude range and longitude cannot exceed 25</span>
+<span class="sd">        degrees. Whole or decimal degrees must be specified, up to six digits</span>
+<span class="sd">        of precision. Minutes and seconds are not allowed.</span>
+
+<span class="sd">    countyCd : string or list</span>
+<span class="sd">        A list of county numbers, in a 5 digit numeric format. The first two</span>
+<span class="sd">        digits of a county&#39;s code are the FIPS State Code.</span>
+<span class="sd">        (url: https://help.waterdata.usgs.gov/code/county_query?fmt=html)</span>
+
+<span class="sd">    **kwargs: optional</span>
+<span class="sd">        If supplied, will be used as query parameters</span>
+
+<span class="sd">    Minor Parameters</span>
+<span class="sd">    ----------------</span>
+<span class="sd">    startDt : string</span>
+<span class="sd">        Selects sites based on whether data was collected at a point in time</span>
+<span class="sd">        beginning after startDt (start date). Dates must be in ISO-8601</span>
+<span class="sd">        Calendar Date format (for example: 1990-01-01).</span>
+
+<span class="sd">    endDt : string</span>
+
+<span class="sd">    period : string</span>
+<span class="sd">        Selects sites based on whether or not they were active between now</span>
+<span class="sd">        and a time in the past. For example, period=P10W will select sites</span>
+<span class="sd">        active in the last ten weeks.</span>
+
+<span class="sd">    modifiedSince : string</span>
+<span class="sd">        Returns only sites where site attributes or period of record data have</span>
+<span class="sd">        changed during the request period.</span>
+
+<span class="sd">    parameterCd : string or list</span>
+<span class="sd">        Returns only site data for those sites containing the requested USGS</span>
+<span class="sd">        parameter codes.</span>
+
+<span class="sd">    siteType : string or list</span>
+<span class="sd">        Restricts sites to those having one or more major and/or minor site</span>
+<span class="sd">        types, such as stream, spring or well. For a list of all valid site</span>
+<span class="sd">        types see https://help.waterdata.usgs.gov/site_tp_cd</span>
+<span class="sd">        For example, siteType=&#39;ST&#39; returns streams only.</span>
+
+<span class="sd">    Formatting Parameters</span>
+<span class="sd">    ---------------------</span>
+<span class="sd">    siteOutput : string (&#39;basic&#39; or &#39;expanded&#39;)</span>
+<span class="sd">        Indicates the richness of metadata you want for site attributes. Note</span>
+<span class="sd">        that for visually oriented formats like Google Map format, this</span>
+<span class="sd">        argument has no meaning. Note: for performance reasons,</span>
+<span class="sd">        siteOutput=expanded cannot be used if seriesCatalogOutput=true or with</span>
+<span class="sd">        any values for outputDataTypeCd.</span>
+
+<span class="sd">    seriesCatalogOutput : boolean</span>
+<span class="sd">        A switch that provides detailed period of record information for</span>
+<span class="sd">        certain output formats. The period of record indicates date ranges for</span>
+<span class="sd">        a certain kind of information about a site, for example the start and</span>
+<span class="sd">        end dates for a site&#39;s daily mean streamflow.</span>
+
+<span class="sd">    For additional parameter options see</span>
+<span class="sd">    https://waterservices.usgs.gov/rest/Site-Service.html#stateCd</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;siteOutput&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Expanded&#39;</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_iv"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_iv">[docs]</a><span class="k">def</span> <span class="nf">get_iv</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get instantaneous values data from NWIS and return it as a DataFrame.</span>
+
+<span class="sd">    Note: If no start or end date are provided, only the most recent record is returned.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start: string</span>
+<span class="sd">        If the waterdata parameter startDT is supplied, it will overwrite the start parameter</span>
+<span class="sd">    end: string</span>
+<span class="sd">        If the waterdata parameter endDT is supplied, it will overwrite the end parameter</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``pandas.DataFrame`` containing times series data from the NWIS json and Metadata as tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;startDT&#39;</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;endDT&#39;</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_iv</span><span class="p">(</span><span class="n">startDT</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">endDT</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_iv</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s1">&#39;iv&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_json</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_pmcodes"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_pmcodes">[docs]</a><span class="k">def</span> <span class="nf">get_pmcodes</span><span class="p">(</span><span class="n">parameterCd</span> <span class="o">=</span> <span class="s1">&#39;All&#39;</span><span class="p">,</span> <span class="n">partial</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a ``pandas.DataFrame`` containing all NWIS parameter codes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">        parameterCd: string or list</span>
+<span class="sd">            Accepts parameter codes or names</span>
+
+<span class="sd">        partial: boolean</span>
+<span class="sd">            Default is True (partial querying). If False, the function will query only exact matches</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        DataFrame containing the USGS parameter codes and Metadata as tuple</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">parameterCd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;The query must include a parameter name or code&#39;</span><span class="p">)</span>
+
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;fmt&#39;</span><span class="p">:</span><span class="s1">&#39;rdb&#39;</span><span class="p">}</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">PARAMCODES_URL</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parameterCd</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span> <span class="c1"># when a single code or name is given</span>
+        <span class="k">if</span> <span class="n">parameterCd</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span><span class="p">:</span>
+            <span class="n">payload</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;group_cd&#39;</span><span class="p">:</span> <span class="s1">&#39;%&#39;</span><span class="p">})</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">ALLPARAMCODES_URL</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">parameterCd</span> <span class="o">=</span> <span class="p">[</span><span class="n">parameterCd</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parameterCd</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Parameter information (code or name) must be type string or list&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Querying with a list of parameters names, codes, or mixed</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">parameterCd</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">partial</span><span class="p">:</span>
+                <span class="n">param</span> <span class="o">=</span><span class="s1">&#39;%</span><span class="si">{0}</span><span class="s1">%&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+            <span class="n">payload</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;parm_nm_cd&#39;</span><span class="p">:</span><span class="n">param</span><span class="p">})</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span> <span class="c1"># empty query</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;One of the parameter codes or names entered does not return any information,&#39;</span>\
+                                <span class="s1">&#39; please try a different value&#39;</span><span class="p">)</span>
+            <span class="n">l</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Parameter information (code or name) must be type string&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">l</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_water_use"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_water_use">[docs]</a><span class="k">def</span> <span class="nf">get_water_use</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="s2">&quot;ALL&quot;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">counties</span><span class="o">=</span><span class="s2">&quot;ALL&quot;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s2">&quot;ALL&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Water use data retrieval from USGS (NWIS).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    years: Listlike</span>
+<span class="sd">        List or comma delimited string of years.  Must be years ending in 0 or 5, or &quot;ALL&quot;,</span>
+<span class="sd">        which retrieves all available years</span>
+<span class="sd">    state: string</span>
+<span class="sd">        full name, abbreviation or id</span>
+<span class="sd">    county: string</span>
+<span class="sd">        County IDs from county lookup or &quot;ALL&quot;</span>
+<span class="sd">    categories: Listlike</span>
+<span class="sd">        List or comma delimited string of Two-letter category abbreviations</span>
+<span class="sd">    **kwargs: optional</span>
+<span class="sd">        If supplied, will be used as query parameters</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        ``pandas.DataFrame`` containing requested data and Metadata as tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;rdb_compression&#39;</span> <span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;format&#39;</span> <span class="p">:</span> <span class="s1">&#39;rdb&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;wu_year&#39;</span> <span class="p">:</span> <span class="n">years</span><span class="p">,</span>
+               <span class="s1">&#39;wu_category&#39;</span> <span class="p">:</span> <span class="n">categories</span><span class="p">,</span>
+               <span class="s1">&#39;wu_county&#39;</span> <span class="p">:</span> <span class="n">counties</span><span class="p">}</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">WATERDATA_URL</span> <span class="o">+</span> <span class="s1">&#39;water_use&#39;</span>
+    <span class="k">if</span> <span class="n">state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">WATERDATA_BASE_URL</span> <span class="o">+</span> <span class="n">state</span> <span class="o">+</span> <span class="s2">&quot;/nwis/water_use&quot;</span>
+        <span class="n">payload</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;wu_area&quot;</span> <span class="p">:</span> <span class="s2">&quot;county&quot;</span><span class="p">})</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_ratings"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_ratings">[docs]</a><span class="k">def</span> <span class="nf">get_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="s2">&quot;base&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Rating table for an active USGS streamgage retrieval</span>
+<span class="sd">    Reads current rating table for an active USGS streamgage from NWISweb.</span>
+<span class="sd">    Data is retrieved from https://waterdata.usgs.gov/nwis.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    site: string</span>
+<span class="sd">        USGS site number.  This is usually an 8 digit number as a string.</span>
+<span class="sd">        If the nwis parameter site_no is supplied, it will overwrite the site parameter</span>
+<span class="sd">    base: string</span>
+<span class="sd">        can be &quot;base&quot;, &quot;corr&quot;, or &quot;exsa&quot;</span>
+<span class="sd">    county: string</span>
+<span class="sd">        County IDs from county lookup or &quot;ALL&quot;</span>
+<span class="sd">    categories: Listlike</span>
+<span class="sd">        List or comma delimited string of Two-letter category abbreviations</span>
+<span class="sd">    **kwargs: optional</span>
+<span class="sd">        If supplied, will be used as query parameters</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        ``pandas.DataFrame`` containing requested data and Metadata as tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">site</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;site_no&#39;</span><span class="p">,</span> <span class="n">site</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="n">file_type</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_ratings</span><span class="p">(</span><span class="n">site</span><span class="p">,</span> <span class="n">file_type</span><span class="p">):</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">WATERDATA_BASE_URL</span> <span class="o">+</span> <span class="s1">&#39;nwisweb/get_ratings/&#39;</span>
+    <span class="k">if</span> <span class="n">site</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">payload</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;site_no&quot;</span><span class="p">:</span> <span class="n">site</span><span class="p">})</span>
+    <span class="k">if</span> <span class="n">file_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">file_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;base&quot;</span><span class="p">,</span> <span class="s2">&quot;corr&quot;</span><span class="p">,</span> <span class="s2">&quot;exsa&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unrecognized file_type: </span><span class="si">{}</span><span class="s1">, must be &quot;base&quot;, &quot;corr&quot; or &quot;exsa&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file_type</span><span class="p">))</span>
+        <span class="n">payload</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;file_type&quot;</span> <span class="p">:</span> <span class="n">file_type</span><span class="p">})</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">site_no</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="what_sites"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.what_sites">[docs]</a><span class="k">def</span> <span class="nf">what_sites</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Search NWIS for sites within a region with specific data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    same as get_info</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_record"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_record">[docs]</a><span class="k">def</span> <span class="nf">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">service</span><span class="o">=</span><span class="s1">&#39;iv&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get data from NWIS and return it as a ``pandas.DataFrame``.</span>
+
+<span class="sd">    Note: If no start or end date are provided, only the most recent record is returned.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sites: listlike</span>
+<span class="sd">        List or comma delimited string of site.</span>
+<span class="sd">    start: string</span>
+<span class="sd">        Starting date of record (YYYY-MM-DD)</span>
+<span class="sd">    end: string</span>
+<span class="sd">        Ending date of record.</span>
+<span class="sd">    service: string</span>
+<span class="sd">        - &#39;iv&#39; : instantaneous data</span>
+<span class="sd">        - &#39;dv&#39; : daily mean data</span>
+<span class="sd">        - &#39;qwdata&#39; : discrete samples</span>
+<span class="sd">        - &#39;site&#39; : site description</span>
+<span class="sd">        - &#39;measurements&#39; : discharge measurements</span>
+<span class="sd">    **kwargs: optional</span>
+<span class="sd">        If supplied, will be used as query parameters</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        ``pandas.DataFrame`` containing requested data</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">service</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">WATERSERVICES_SERVICES</span> <span class="o">+</span> <span class="n">WATERDATA_SERVICES</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Unrecognized service: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">service</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;iv&#39;</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">startDT</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">endDT</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;dv&#39;</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">startDT</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">endDT</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;qwdata&#39;</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_qwdata</span><span class="p">(</span><span class="n">site_no</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">begin_date</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
+                           <span class="n">qw_sample_wide</span><span class="o">=</span><span class="s1">&#39;separated_wide&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;site&#39;</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_info</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;measurements&#39;</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_discharge_measurements</span><span class="p">(</span><span class="n">site_no</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">begin_date</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+                                           <span class="n">end_date</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;peaks&#39;</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_discharge_peaks</span><span class="p">(</span><span class="n">site_no</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">begin_date</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+                                    <span class="n">end_date</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;gwlevels&#39;</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_gwlevels</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">startDT</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">endDT</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
+                             <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;pmcodes&#39;</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_pmcodes</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;water_use&#39;</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_water_use</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;ratings&#39;</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_ratings</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> service not yet implemented&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">service</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="_read_json"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._read_json">[docs]</a><span class="k">def</span> <span class="nf">_read_json</span><span class="p">(</span><span class="n">json</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reads a NWIS Water Services formatted JSON into a ``pandas.DataFrame``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        json: dict</span>
+<span class="sd">            A JSON dictionary response to be parsed into a ``pandas.DataFrame``</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``pandas.DataFrame`` containing times series data from the NWIS json and Metadata as tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">merged_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">timeseries</span> <span class="ow">in</span> <span class="n">json</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">][</span><span class="s1">&#39;timeSeries&#39;</span><span class="p">]:</span>
+
+        <span class="n">site_no</span> <span class="o">=</span> <span class="n">timeseries</span><span class="p">[</span><span class="s1">&#39;sourceInfo&#39;</span><span class="p">][</span><span class="s1">&#39;siteCode&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
+        <span class="n">param_cd</span> <span class="o">=</span> <span class="n">timeseries</span><span class="p">[</span><span class="s1">&#39;variable&#39;</span><span class="p">][</span><span class="s1">&#39;variableCode&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
+        <span class="c1"># check whether min, max, mean record XXX</span>
+        <span class="n">option</span> <span class="o">=</span> <span class="n">timeseries</span><span class="p">[</span><span class="s1">&#39;variable&#39;</span><span class="p">][</span><span class="s1">&#39;options&#39;</span><span class="p">][</span><span class="s1">&#39;option&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">)</span>
+
+        <span class="c1"># loop through each parameter in timeseries.</span>
+        <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">timeseries</span><span class="p">[</span><span class="s1">&#39;values&#39;</span><span class="p">]:</span>
+            <span class="n">col_name</span> <span class="o">=</span> <span class="n">param_cd</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;methodDescription&#39;</span><span class="p">]</span>
+
+            <span class="c1"># if len(timeseries[&#39;values&#39;]) &gt; 1 and method:</span>
+            <span class="k">if</span> <span class="n">method</span><span class="p">:</span>
+                <span class="c1"># get method, format it, and append to column name</span>
+                <span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;[]()&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="n">col_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">col_name</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">option</span><span class="p">:</span>
+                <span class="n">col_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">col_name</span><span class="p">,</span> <span class="n">option</span><span class="p">)</span>
+
+            <span class="n">record_json</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">record_json</span><span class="p">:</span>
+                <span class="c1"># no data in record</span>
+                <span class="k">continue</span>
+            <span class="c1"># should be able to avoid this by dumping</span>
+            <span class="n">record_json</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">record_json</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s1">&#39;&quot;&#39;</span><span class="p">)</span>
+
+            <span class="c1"># read json, converting all values to float64 and all qaulifiers</span>
+            <span class="c1"># Lists can&#39;t be hashed, thus we cannot df.merge on a list column</span>
+            <span class="n">record_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="n">record_json</span><span class="p">,</span>
+                                     <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;records&#39;</span><span class="p">,</span>
+                                     <span class="n">dtype</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;float64&#39;</span><span class="p">,</span>
+                                            <span class="s1">&#39;qualifiers&#39;</span><span class="p">:</span> <span class="s1">&#39;unicode&#39;</span><span class="p">})</span>
+
+            <span class="n">record_df</span><span class="p">[</span><span class="s1">&#39;qualifiers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">record_df</span><span class="p">[</span><span class="s1">&#39;qualifiers&#39;</span><span class="p">]</span>
+                                       <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;[]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+            <span class="n">record_df</span><span class="p">[</span><span class="s1">&#39;site_no&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">site_no</span>
+
+            <span class="n">record_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">col_name</span><span class="p">,</span>
+                                      <span class="s1">&#39;dateTime&#39;</span><span class="p">:</span> <span class="s1">&#39;datetime&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;qualifiers&#39;</span><span class="p">:</span> <span class="n">col_name</span> <span class="o">+</span> <span class="s1">&#39;_cd&#39;</span><span class="p">},</span>
+                             <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">merged_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="n">merged_df</span> <span class="o">=</span> <span class="n">record_df</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">merged_df</span> <span class="o">=</span> <span class="n">update_merge</span><span class="p">(</span><span class="n">merged_df</span><span class="p">,</span> <span class="n">record_df</span><span class="p">,</span> <span class="n">na_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                         <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site_no&#39;</span><span class="p">,</span> <span class="s1">&#39;datetime&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">merged_df</span></div>
+
+
+<div class="viewcode-block" id="_read_rdb"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._read_rdb">[docs]</a><span class="k">def</span> <span class="nf">_read_rdb</span><span class="p">(</span><span class="n">rdb</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert NWIS rdb table into a ``pandas.dataframe``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rdb: string</span>
+<span class="sd">            A string representation of an rdb table</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">rdb</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="c1"># ignore comment lines</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">):</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="n">fields</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;[</span><span class="se">\t</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">rdb</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="n">count</span><span class="p">])</span>
+    <span class="n">fields</span>  <span class="o">=</span> <span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">]</span>
+    <span class="n">dtypes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;site_no&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="s1">&#39;dec_long_va&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="s1">&#39;dec_lat_va&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="s1">&#39;parm_cd&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="s1">&#39;parameter_cd&#39;</span><span class="p">:</span><span class="nb">str</span><span class="p">}</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">rdb</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="n">count</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
+                     <span class="n">names</span><span class="o">=</span><span class="n">fields</span><span class="p">,</span> <span class="n">na_values</span><span class="o">=</span><span class="s1">&#39;NaN&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtypes</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="_set_metadata"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._set_metadata">[docs]</a><span class="k">def</span> <span class="nf">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generates a standard set of metadata informed by the response.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        response: Response</span>
+<span class="sd">             Response object from requests module</span>
+<span class="sd">        parameters: unpacked dictionary</span>
+<span class="sd">            unpacked dictionary of the parameters supplied in the request</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">md</span> <span class="o">=</span> <span class="n">set_md</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+    <span class="n">site_aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sites&#39;</span><span class="p">,</span> <span class="s1">&#39;site_no&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">alias</span> <span class="ow">in</span> <span class="n">site_aliases</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">alias</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+            <span class="n">md</span><span class="o">.</span><span class="n">site_info</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="n">alias</span><span class="p">])</span>
+            <span class="k">break</span>
+
+    <span class="k">if</span> <span class="s1">&#39;parameterCd&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+        <span class="n">md</span><span class="o">.</span><span class="n">variable_info</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">get_pmcodes</span><span class="p">(</span><span class="n">parameterCd</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;parameterCd&#39;</span><span class="p">])</span>
+
+    <span class="n">comments</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+            <span class="n">comments</span> <span class="o">+=</span> <span class="n">line</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">if</span> <span class="n">comments</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="n">md</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="n">comments</span>
+
+    <span class="k">return</span> <span class="n">md</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

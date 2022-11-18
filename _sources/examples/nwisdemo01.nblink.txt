@@ -1,0 +1,6 @@
+{
+    "path": "../../../demos/NWIS_demo_1.ipynb",
+    "extra-media": [
+        "../../../demos/datasets"
+    ]
+}
