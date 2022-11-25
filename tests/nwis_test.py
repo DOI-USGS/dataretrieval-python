@@ -1,5 +1,7 @@
+import numpy as np
+import pandas as pd
 import pytest
-from dataretrieval.nwis import get_record
+from dataretrieval.nwis import get_record, preformat_peaks_response
 
 START_DATE = '2018-01-24'
 END_DATE   = '2018-01-25'
@@ -38,6 +40,23 @@ def test_iv_service_answer():
     # check multiindex function
     assert df.index.names == [SITENO_COL, DATETIME_COL], "iv service returned incorrect index: {}".format(df.index.names)
 
+def test_preformat_peaks_response():
+    # make a data frame with a "peak_dt" datetime column
+    # it will have some nan and none values
+    data = {"peak_dt": ["2000-03-22",
+                        np.nan,
+                        None],
+            "peak_va": [1000,
+                        2000,
+                        3000]
+    }
+    # turn data into dataframe
+    df = pd.DataFrame(data)
+    # run preformat function
+    df = preformat_peaks_response(df)
+    # assertions
+    assert 'datetime' in df.columns
+    assert df['datetime'].isna().sum() == 0
 
 if __name__=='__main__':
      test_measurements_service_answer()
