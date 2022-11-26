@@ -58,7 +58,7 @@ def format_response(df, service=None, **kwargs):
 
 def preformat_peaks_response(df):
     df['datetime'] = pd.to_datetime(df.pop('peak_dt'), errors='coerce')
-    df.dropna(subset=['datetime'])
+    df.dropna(subset=['datetime'], inplace=True)
     return df
 
 
