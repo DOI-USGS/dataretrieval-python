@@ -12,6 +12,7 @@
 
 """
 
+import warnings
 import pandas as pd
 from io import StringIO
 import re
@@ -66,6 +67,13 @@ def get_qwdata(datetime_index=True, wide_format=True, sites=None,
                start=None, end=None, multi_index=True,**kwargs):
     """
     Get water sample data from qwdata service.
+
+    .. warning::
+
+        The NWIS qw data service is being deprecated. See this note from the
+        R package for more information:
+        https://cran.r-project.org/web/packages/dataRetrieval/vignettes/qwdata_changes.html
+        If you have additional questions about the qw data service, email gs-w-IOW_PO_team@usgs.gov.
 
     Parameters
     ----------
@@ -128,6 +136,11 @@ def _qwdata(datetime_index=True, **kwargs):
     #kwargs = {**payload, **kwargs}
     kwargs.update(payload)
 
+    warnings.warn(
+        "NWIS qw web services are being retired. " +
+        "See this note from the R package for more: " +
+        "https://cran.r-project.org/web/packages/dataRetrieval/vignettes/qwdata_changes.html",
+        category=DeprecationWarning)
     response = query_waterdata('qwdata', **kwargs)
 
     df = _read_rdb(response.text)
