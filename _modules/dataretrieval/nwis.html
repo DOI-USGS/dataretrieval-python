@@ -87,6 +87,7 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
 <span class="kn">import</span> <span class="nn">re</span>
@@ -141,6 +142,13 @@
                <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get water sample data from qwdata service.</span>
+
+<span class="sd">    .. warning::</span>
+
+<span class="sd">        The NWIS qw data service is being deprecated. See this note from the</span>
+<span class="sd">        R package for more information:</span>
+<span class="sd">        https://cran.r-project.org/web/packages/dataRetrieval/vignettes/qwdata_changes.html</span>
+<span class="sd">        If you have additional questions about the qw data service, email gs-w-IOW_PO_team@usgs.gov.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -203,6 +211,11 @@
     <span class="c1">#kwargs = {**payload, **kwargs}</span>
     <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
 
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="s2">&quot;NWIS qw web services are being retired. &quot;</span> <span class="o">+</span>
+        <span class="s2">&quot;See this note from the R package for more: &quot;</span> <span class="o">+</span>
+        <span class="s2">&quot;https://cran.r-project.org/web/packages/dataRetrieval/vignettes/qwdata_changes.html&quot;</span><span class="p">,</span>
+        <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterdata</span><span class="p">(</span><span class="s1">&#39;qwdata&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>

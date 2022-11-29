@@ -386,13 +386,13 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from scipy import stats
+import pandas as pd
+import numpy as np
 
 
 
-<span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">nwis</span><span class="p">,</span> <span class="n">utils</span><span class="p">,</span> <span class="n">codes</span>
+from dataretrieval import nwis, utils, codes
 </pre></div>
 </div>
 </div>
@@ -404,12 +404,12 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># download annual peaks from a single site</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;03339000&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;peaks&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;1970-01-01&#39;</span><span class="p">)</span>
-<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># download annual peaks from a single site
+df = nwis.get_record(sites=&#39;03339000&#39;, service=&#39;peaks&#39;, start=&#39;1970-01-01&#39;)
+df.head()
 
-<span class="c1"># alternatively information for the entire state of illiois can be downloaded using</span>
-<span class="c1">#df = nwis.get_record(state_cd=&#39;il&#39;, service=&#39;peaks&#39;, start=&#39;1970-01-01&#39;)</span>
+# alternatively information for the entire state of illiois can be downloaded using
+#df = nwis.get_record(state_cd=&#39;il&#39;, service=&#39;peaks&#39;, start=&#39;1970-01-01&#39;)
 </pre></div>
 </div>
 </div>
@@ -555,24 +555,24 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">peak_trend_regression</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1">#convert datetimes to days for regression</span>
-    <span class="n">peak_date</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span>
-    <span class="n">peak_date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
-    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;peak_d&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">peak_date</span> <span class="o">-</span> <span class="n">peak_date</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">timedelta64</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
-    <span class="c1">#df[&#39;peak_d&#39;] = (df[&#39;peak_dt&#39;] - df[&#39;peak_dt&#39;].min())  / np.timedelta64(1,&#39;D&#39;)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def peak_trend_regression(df):
+    &quot;&quot;&quot;
+    &quot;&quot;&quot;
+    #convert datetimes to days for regression
+    peak_date = df.index
+    peak_date = pd.to_datetime(df.index.get_level_values(1))
+    df[&#39;peak_d&#39;] = (peak_date - peak_date.min()) / np.timedelta64(1,&#39;D&#39;)
+    #df[&#39;peak_d&#39;] = (df[&#39;peak_dt&#39;] - df[&#39;peak_dt&#39;].min())  / np.timedelta64(1,&#39;D&#39;)
 
-    <span class="c1">#normalize the peak discharge values</span>
-    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;peak_va&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;peak_va&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;peak_va&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span><span class="o">/</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;peak_va&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+    #normalize the peak discharge values
+    df[&#39;peak_va&#39;] = (df[&#39;peak_va&#39;] - df[&#39;peak_va&#39;].mean())/df[&#39;peak_va&#39;].std()
 
-    <span class="n">slope</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">r_value</span><span class="p">,</span> <span class="n">p_value</span><span class="p">,</span> <span class="n">std_error</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">linregress</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;peak_d&#39;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;peak_va&#39;</span><span class="p">])</span>
+    slope, intercept, r_value, p_value, std_error = stats.linregress(df[&#39;peak_d&#39;], df[&#39;peak_va&#39;])
 
-    <span class="c1">#df_out = pd.DataFrame({&#39;slope&#39;:slope,&#39;intercept&#39;:intercept,&#39;p_value&#39;:p_value},index=df[&#39;site_no&#39;].iloc[0])</span>
+    #df_out = pd.DataFrame({&#39;slope&#39;:slope,&#39;intercept&#39;:intercept,&#39;p_value&#39;:p_value},index=df[&#39;site_no&#39;].iloc[0])
 
-    <span class="c1">#return df_out</span>
-    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">({</span><span class="s1">&#39;slope&#39;</span><span class="p">:</span><span class="n">slope</span><span class="p">,</span><span class="s1">&#39;intercept&#39;</span><span class="p">:</span><span class="n">intercept</span><span class="p">,</span><span class="s1">&#39;p_value&#39;</span><span class="p">:</span> <span class="n">p_value</span><span class="p">,</span><span class="s1">&#39;std_error&#39;</span><span class="p">:</span><span class="n">std_error</span><span class="p">})</span>
+    #return df_out
+    return pd.Series({&#39;slope&#39;:slope,&#39;intercept&#39;:intercept,&#39;p_value&#39;: p_value,&#39;std_error&#39;:std_error})
 </pre></div>
 </div>
 </div>
@@ -583,36 +583,36 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">peak_trend_analysis</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">start_date</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    states : list</span>
-<span class="sd">        a list containing the two-letter codes for each state to include in the</span>
-<span class="sd">        analysis.</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def peak_trend_analysis(states, start_date):
+    &quot;&quot;&quot;
+    states : list
+        a list containing the two-letter codes for each state to include in the
+        analysis.
 
-<span class="sd">    start_date : string</span>
-<span class="sd">        the date to use a the beginning of the analysis.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">final_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    start_date : string
+        the date to use a the beginning of the analysis.
+    &quot;&quot;&quot;
+    final_df = pd.DataFrame()
 
-    <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">states</span><span class="p">:</span>
-        <span class="c1"># download annual peak discharge records</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">state_cd</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;peaks&#39;</span><span class="p">)</span>
-        <span class="c1"># group the data by site and apply our regression</span>
-        <span class="n">temp</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;site_no&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">peak_trend_regression</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-        <span class="c1"># drop any insignificant results</span>
-        <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="n">temp</span><span class="p">[</span><span class="s1">&#39;p_value&#39;</span><span class="p">]</span><span class="o">&lt;</span><span class="mf">0.05</span><span class="p">]</span>
+    for state in states:
+        # download annual peak discharge records
+        df = nwis.get_record(state_cd=state, start=start_date, service=&#39;peaks&#39;)
+        # group the data by site and apply our regression
+        temp = df.groupby(&#39;site_no&#39;).apply(peak_trend_regression).dropna()
+        # drop any insignificant results
+        temp = temp[temp[&#39;p_value&#39;]&lt;0.05]
 
-        <span class="c1"># now download metadata for each site, which we&#39;ll use later to plot the sites</span>
-        <span class="c1"># on a map</span>
-        <span class="n">site_df</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">temp</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+        # now download metadata for each site, which we&#39;ll use later to plot the sites
+        # on a map
+        site_df = nwis.get_record(sites=temp.index, service=&#39;site&#39;)
 
-        <span class="k">if</span> <span class="n">final_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-            <span class="n">final_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">site_df</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">right_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s1">&#39;site_no&#39;</span><span class="p">)</span>
+        if final_df.empty:
+            final_df = pd.merge(site_df, temp, right_index=True, left_on=&#39;site_no&#39;)
 
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">final_df</span> <span class="o">=</span> <span class="n">final_df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">site_df</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">right_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s1">&#39;site_no&#39;</span><span class="p">)</span> <span class="p">)</span>
+        else:
+            final_df = final_df.append( pd.merge(site_df, temp, right_index=True, left_on=&#39;site_no&#39;) )
 
-    <span class="k">return</span> <span class="n">final_df</span>
+    return final_df
 <br/></pre></div>
 </div>
 </div>
@@ -621,13 +621,13 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Warning these lines will download a large dataset from the web and</span>
-<span class="c1"># will take few minutes to run.</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Warning these lines will download a large dataset from the web and
+# will take few minutes to run.
 
-<span class="c1">#start = &#39;1970-01-01&#39;</span>
-<span class="c1">#states = codes.state_codes</span>
-<span class="c1">#final_df = peak_trend_analysis(states=states, start_date=start)</span>
-<span class="c1">#final_df.to_csv(&#39;datasets/peak_discharge_trends.csv&#39;)</span>
+#start = &#39;1970-01-01&#39;
+#states = codes.state_codes
+#final_df = peak_trend_analysis(states=states, start_date=start)
+#final_df.to_csv(&#39;datasets/peak_discharge_trends.csv&#39;)
 </pre></div>
 </div>
 </div>
@@ -636,8 +636,8 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">final_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;datasets/peak_discharge_trends.csv&#39;</span><span class="p">)</span>
-<span class="n">final_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>final_df = pd.read_csv(&#39;datasets/peak_discharge_trends.csv&#39;)
+final_df.head()
 </pre></div>
 </div>
 </div>
@@ -798,47 +798,47 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Currently commented out as there isn&#39;t an easy way to install mpl_toolkits</span>
-<span class="c1"># on a remote machine without spinning up a full geospatial stack.</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Currently commented out as there isn&#39;t an easy way to install mpl_toolkits
+# on a remote machine without spinning up a full geospatial stack.
 
-<span class="c1"># from mpl_toolkits.basemap import Basemap, cm</span>
-<span class="c1"># import matplotlib.pyplot as plt</span>
+# from mpl_toolkits.basemap import Basemap, cm
+# import matplotlib.pyplot as plt
 
-<span class="c1"># fig = plt.figure(num=None, figsize=(10, 6) )</span>
+# fig = plt.figure(num=None, figsize=(10, 6) )
 
-<span class="c1"># # setup a basemap covering the contiguous United States</span>
-<span class="c1"># m = Basemap(width=5500000, height=4000000, resolution=&#39;l&#39;,</span>
-<span class="c1">#             projection=&#39;aea&#39;, lat_1=36., lat_2=44, lon_0=-100, lat_0=40)</span>
-
-
-<span class="c1"># # add coastlines</span>
-<span class="c1"># m.drawcoastlines(linewidth=0.5)</span>
-
-<span class="c1"># # add parallels and meridians.</span>
-<span class="c1"># m.drawparallels(np.arange(-90.,91.,15.),labels=[True,True,False,False],dashes=[2,2])</span>
-<span class="c1"># m.drawmeridians(np.arange(-180.,181.,15.),labels=[False,False,False,True],dashes=[2,2])</span>
-
-<span class="c1"># # add boundaries and rivers</span>
-<span class="c1"># m.drawcountries(linewidth=1, linestyle=&#39;solid&#39;, color=&#39;k&#39; )</span>
-<span class="c1"># m.drawstates(linewidth=0.5, linestyle=&#39;solid&#39;, color=&#39;k&#39;)</span>
-<span class="c1"># m.drawrivers(linewidth=0.5, linestyle=&#39;solid&#39;, color=&#39;cornflowerblue&#39;)</span>
+# # setup a basemap covering the contiguous United States
+# m = Basemap(width=5500000, height=4000000, resolution=&#39;l&#39;,
+#             projection=&#39;aea&#39;, lat_1=36., lat_2=44, lon_0=-100, lat_0=40)
 
 
-<span class="c1"># increasing = final_df[final_df[&#39;slope&#39;] &gt; 0]</span>
-<span class="c1"># decreasing = final_df[final_df[&#39;slope&#39;] &lt; 0]</span>
+# # add coastlines
+# m.drawcoastlines(linewidth=0.5)
 
-<span class="c1"># #x,y = m(lons, lats)</span>
+# # add parallels and meridians.
+# m.drawparallels(np.arange(-90.,91.,15.),labels=[True,True,False,False],dashes=[2,2])
+# m.drawmeridians(np.arange(-180.,181.,15.),labels=[False,False,False,True],dashes=[2,2])
 
-<span class="c1"># # categorical plots get a little  ugly in basemap</span>
-<span class="c1"># m.scatter(increasing[&#39;dec_long_va&#39;].tolist(),</span>
-<span class="c1">#           increasing[&#39;dec_lat_va&#39;].tolist(),</span>
-<span class="c1">#           label=&#39;increasing&#39;, s=2, color=&#39;red&#39;,</span>
-<span class="c1">#           latlon=True)</span>
+# # add boundaries and rivers
+# m.drawcountries(linewidth=1, linestyle=&#39;solid&#39;, color=&#39;k&#39; )
+# m.drawstates(linewidth=0.5, linestyle=&#39;solid&#39;, color=&#39;k&#39;)
+# m.drawrivers(linewidth=0.5, linestyle=&#39;solid&#39;, color=&#39;cornflowerblue&#39;)
 
-<span class="c1"># m.scatter(decreasing[&#39;dec_long_va&#39;].tolist(),</span>
-<span class="c1">#           decreasing[&#39;dec_lat_va&#39;].tolist(),</span>
-<span class="c1">#           label=&#39;increasing&#39;, s=2, color=&#39;blue&#39;,</span>
-<span class="c1">#           latlon=True)</span>
+
+# increasing = final_df[final_df[&#39;slope&#39;] &gt; 0]
+# decreasing = final_df[final_df[&#39;slope&#39;] &lt; 0]
+
+# #x,y = m(lons, lats)
+
+# # categorical plots get a little  ugly in basemap
+# m.scatter(increasing[&#39;dec_long_va&#39;].tolist(),
+#           increasing[&#39;dec_lat_va&#39;].tolist(),
+#           label=&#39;increasing&#39;, s=2, color=&#39;red&#39;,
+#           latlon=True)
+
+# m.scatter(decreasing[&#39;dec_long_va&#39;].tolist(),
+#           decreasing[&#39;dec_lat_va&#39;].tolist(),
+#           label=&#39;increasing&#39;, s=2, color=&#39;blue&#39;,
+#           latlon=True)
 </pre></div>
 </div>
 </div>

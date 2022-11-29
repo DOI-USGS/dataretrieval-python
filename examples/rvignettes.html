@@ -372,8 +372,8 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">nwis</span>
-<span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">wqp</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from dataretrieval import nwis
+from dataretrieval import wqp
 </pre></div>
 </div>
 </div>
@@ -383,38 +383,38 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">library(dataRetrieval)</span>
-<span class="sd"># Choptank River near Greensboro, MD</span>
-<span class="sd">siteNumber &lt;- &quot;01491000&quot;</span>
-<span class="sd">ChoptankInfo &lt;- readNWISsite(siteNumber)</span>
-<span class="sd">parameterCd &lt;- &quot;00060&quot;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>&#39;&#39;&#39;
+library(dataRetrieval)
+# Choptank River near Greensboro, MD
+siteNumber &lt;- &quot;01491000&quot;
+ChoptankInfo &lt;- readNWISsite(siteNumber)
+parameterCd &lt;- &quot;00060&quot;
 
-<span class="sd">#Raw daily data:</span>
-<span class="sd">rawDailyData &lt;- readNWISdv(siteNumber,parameterCd,</span>
-<span class="sd">                      &quot;1980-01-01&quot;,&quot;2010-01-01&quot;)</span>
+#Raw daily data:
+rawDailyData &lt;- readNWISdv(siteNumber,parameterCd,
+                      &quot;1980-01-01&quot;,&quot;2010-01-01&quot;)
 
-<span class="sd"># Sample data Nitrate:</span>
-<span class="sd">parameterCd &lt;- &quot;00618&quot;</span>
-<span class="sd">qwData &lt;- readNWISqw(siteNumber,parameterCd,</span>
-<span class="sd">                      &quot;1980-01-01&quot;,&quot;2010-01-01&quot;)</span>
+# Sample data Nitrate:
+parameterCd &lt;- &quot;00618&quot;
+qwData &lt;- readNWISqw(siteNumber,parameterCd,
+                      &quot;1980-01-01&quot;,&quot;2010-01-01&quot;)
 
-<span class="sd">pCode &lt;- readNWISpCode(parameterCd)</span>
-<span class="sd">&#39;&#39;&#39;</span>
+pCode &lt;- readNWISpCode(parameterCd)
+&#39;&#39;&#39;
 
-<span class="c1"># Choptank River near Greensboro, MD</span>
-<span class="n">siteNumber</span> <span class="o">=</span> <span class="s1">&#39;01491000&#39;</span>
-<span class="n">chop_tank_info</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">)</span>
-<span class="n">parameterCd</span> <span class="o">=</span> <span class="s1">&#39;00060&#39;</span>
+# Choptank River near Greensboro, MD
+siteNumber = &#39;01491000&#39;
+chop_tank_info, md = nwis.get_info(sites=siteNumber)
+parameterCd = &#39;00060&#39;
 
-<span class="c1"># raw daily data</span>
-<span class="n">rawDailyData</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;1980-01-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2010-01-01&quot;</span><span class="p">)</span>
+# raw daily data
+rawDailyData, md = nwis.get_dv(sites=siteNumber, parameterCd=parameterCd, start=&quot;1980-01-01&quot;, end=&quot;2010-01-01&quot;)
 
-<span class="c1"># sample data Nitrate:</span>
-<span class="n">parameterCd</span> <span class="o">=</span> <span class="s2">&quot;00618&quot;</span>
-<span class="n">qwData</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_qwdata</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;1980-01-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2010-01-01&quot;</span><span class="p">)</span>
+# sample data Nitrate:
+parameterCd = &quot;00618&quot;
+qwData, md = nwis.get_qwdata(sites=siteNumber, parameterCd=parameterCd, start=&quot;1980-01-01&quot;, end=&quot;2010-01-01&quot;)
 
-<span class="n">pCode</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_pmcodes</span><span class="p">(</span><span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">)</span>
+pCode, md = nwis.get_pmcodes(parameterCd=parameterCd)
 </pre></div>
 </div>
 </div>
@@ -422,13 +422,13 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">{r getSite, echo=TRUE, eval=FALSE}</span>
-<span class="sd">siteNumbers &lt;- c(&quot;01491000&quot;,&quot;01645000&quot;)</span>
-<span class="sd">siteINFO &lt;- readNWISsite(siteNumbers)</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="n">siteNumbers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;01491000&quot;</span><span class="p">,</span><span class="s2">&quot;01645000&quot;</span><span class="p">]</span>
-<span class="n">siteINFO</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumbers</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>&#39;&#39;&#39;
+{r getSite, echo=TRUE, eval=FALSE}
+siteNumbers &lt;- c(&quot;01491000&quot;,&quot;01645000&quot;)
+siteINFO &lt;- readNWISsite(siteNumbers)
+&#39;&#39;&#39;
+siteNumbers = [&quot;01491000&quot;,&quot;01645000&quot;]
+siteINFO, md = nwis.get_iv(sites=siteNumbers)
 </pre></div>
 </div>
 </div>
@@ -436,14 +436,14 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd"># Continuing from the previous example:</span>
-<span class="sd"># This pulls out just the daily, mean data:</span>
-<span class="sd">dailyDataAvailable &lt;- whatNWISdata(siteNumbers,</span>
-<span class="sd">                    service=&quot;dv&quot;, statCd=&quot;00003&quot;)</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>&#39;&#39;&#39;
+# Continuing from the previous example:
+# This pulls out just the daily, mean data:
+dailyDataAvailable &lt;- whatNWISdata(siteNumbers,
+                    service=&quot;dv&quot;, statCd=&quot;00003&quot;)
+&#39;&#39;&#39;
 
-<span class="n">dailyDataAvailable</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumbers</span><span class="p">,</span> <span class="n">statCd</span><span class="o">=</span><span class="s2">&quot;00003&quot;</span><span class="p">)</span>
+dailyDataAvailable, md = nwis.get_dv(sites=siteNumbers, statCd=&quot;00003&quot;)
 </pre></div>
 </div>
 </div>
@@ -451,13 +451,13 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd"># Using defaults:</span>
-<span class="sd">parameterCd &lt;- &quot;00618&quot;</span>
-<span class="sd">parameterINFO &lt;- readNWISpCode(parameterCd)</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>&#39;&#39;&#39;
+# Using defaults:
+parameterCd &lt;- &quot;00618&quot;
+parameterINFO &lt;- readNWISpCode(parameterCd)
+&#39;&#39;&#39;
 
-<span class="n">pCode</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_pmcodes</span><span class="p">(</span><span class="n">parameterCd</span><span class="o">=</span><span class="s2">&quot;00618&quot;</span><span class="p">)</span>
+pCode, md = nwis.get_pmcodes(parameterCd=&quot;00618&quot;)
 </pre></div>
 </div>
 </div>
@@ -465,23 +465,23 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd"># Choptank River near Greensboro, MD:</span>
-<span class="sd">siteNumber &lt;- &quot;01491000&quot;</span>
-<span class="sd">parameterCd &lt;- &quot;00060&quot;  # Discharge</span>
-<span class="sd">startDate &lt;- &quot;2009-10-01&quot;</span>
-<span class="sd">endDate &lt;- &quot;2012-09-30&quot;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>&#39;&#39;&#39;
+# Choptank River near Greensboro, MD:
+siteNumber &lt;- &quot;01491000&quot;
+parameterCd &lt;- &quot;00060&quot;  # Discharge
+startDate &lt;- &quot;2009-10-01&quot;
+endDate &lt;- &quot;2012-09-30&quot;
 
-<span class="sd">discharge &lt;- readNWISdv(siteNumber,</span>
-<span class="sd">                    parameterCd, startDate, endDate)</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="c1"># Choptank River near Greensboro, MD:</span>
-<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;01491000&quot;</span>
-<span class="n">parameterCd</span> <span class="o">=</span> <span class="s2">&quot;00060&quot;</span>  <span class="c1"># Discharge</span>
-<span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;2009-10-01&quot;</span>
-<span class="n">endDate</span> <span class="o">=</span> <span class="s2">&quot;2012-09-30&quot;</span>
+discharge &lt;- readNWISdv(siteNumber,
+                    parameterCd, startDate, endDate)
+&#39;&#39;&#39;
+# Choptank River near Greensboro, MD:
+siteNumber = &quot;01491000&quot;
+parameterCd = &quot;00060&quot;  # Discharge
+startDate = &quot;2009-10-01&quot;
+endDate = &quot;2012-09-30&quot;
 
-<span class="n">discharge</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">)</span>
+discharge, md = nwis.get_dv(sites=siteNumber, parameterCd=parameterCd, start=startDate, end=endDate)
 </pre></div>
 </div>
 </div>
@@ -489,24 +489,24 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">siteNumber &lt;- &quot;01491000&quot;</span>
-<span class="sd">parameterCd &lt;- c(&quot;00010&quot;,&quot;00060&quot;)  # Temperature and discharge</span>
-<span class="sd">statCd &lt;- c(&quot;00001&quot;,&quot;00003&quot;)  # Mean and maximum</span>
-<span class="sd">startDate &lt;- &quot;2012-01-01&quot;</span>
-<span class="sd">endDate &lt;- &quot;2012-05-01&quot;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>&#39;&#39;&#39;
+siteNumber &lt;- &quot;01491000&quot;
+parameterCd &lt;- c(&quot;00010&quot;,&quot;00060&quot;)  # Temperature and discharge
+statCd &lt;- c(&quot;00001&quot;,&quot;00003&quot;)  # Mean and maximum
+startDate &lt;- &quot;2012-01-01&quot;
+endDate &lt;- &quot;2012-05-01&quot;
 
-<span class="sd">temperatureAndFlow &lt;- readNWISdv(siteNumber, parameterCd,</span>
-<span class="sd">        startDate, endDate, statCd=statCd)</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;01491000&quot;</span>
-<span class="n">parameterCd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;00010&quot;</span><span class="p">,</span><span class="s2">&quot;00060&quot;</span><span class="p">]</span>  <span class="c1"># Temperature and discharge</span>
-<span class="n">statCd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;00001&quot;</span><span class="p">,</span><span class="s2">&quot;00003&quot;</span><span class="p">]</span>  <span class="c1"># Mean and maximum</span>
-<span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;2012-01-01&quot;</span>
-<span class="n">endDate</span> <span class="o">=</span> <span class="s2">&quot;2012-05-01&quot;</span>
+temperatureAndFlow &lt;- readNWISdv(siteNumber, parameterCd,
+        startDate, endDate, statCd=statCd)
+&#39;&#39;&#39;
+siteNumber = &quot;01491000&quot;
+parameterCd = [&quot;00010&quot;,&quot;00060&quot;]  # Temperature and discharge
+statCd = [&quot;00001&quot;,&quot;00003&quot;]  # Mean and maximum
+startDate = &quot;2012-01-01&quot;
+endDate = &quot;2012-05-01&quot;
 
-<span class="n">temperatureAndFlow</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
-                                     <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">,</span> <span class="n">statCd</span><span class="o">=</span><span class="n">statCd</span><span class="p">)</span>
+temperatureAndFlow, md = nwis.get_dv(sites=siteNumber, parameterCd=parameterCd,
+                                     start=startDate, end=endDate, statCd=statCd)
 </pre></div>
 </div>
 </div>
@@ -514,19 +514,19 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">parameterCd &lt;- &quot;00060&quot;  # Discharge</span>
-<span class="sd">startDate &lt;- &quot;2012-05-12&quot;</span>
-<span class="sd">endDate &lt;- &quot;2012-05-13&quot;</span>
-<span class="sd">dischargeUnit &lt;- readNWISuv(siteNumber, parameterCd,</span>
-<span class="sd">        startDate, endDate)</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;01491000&quot;</span>
-<span class="n">parameterCd</span> <span class="o">=</span> <span class="s2">&quot;00060&quot;</span>  <span class="c1"># Discharge</span>
-<span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;2012-05-12&quot;</span>
-<span class="n">endDate</span> <span class="o">=</span> <span class="s2">&quot;2012-05-13&quot;</span>
-<span class="n">dischargeUnit</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
-                            <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>&#39;&#39;&#39;
+parameterCd &lt;- &quot;00060&quot;  # Discharge
+startDate &lt;- &quot;2012-05-12&quot;
+endDate &lt;- &quot;2012-05-13&quot;
+dischargeUnit &lt;- readNWISuv(siteNumber, parameterCd,
+        startDate, endDate)
+&#39;&#39;&#39;
+siteNumber = &quot;01491000&quot;
+parameterCd = &quot;00060&quot;  # Discharge
+startDate = &quot;2012-05-12&quot;
+endDate = &quot;2012-05-13&quot;
+dischargeUnit, md = nwis.get_iv(sites=siteNumber, parameterCd=parameterCd,
+                            start=startDate, end=endDate)
 </pre></div>
 </div>
 </div>
@@ -534,23 +534,23 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd"># Dissolved Nitrate parameter codes:</span>
-<span class="sd">parameterCd &lt;- c(&quot;00618&quot;,&quot;71851&quot;)</span>
-<span class="sd">startDate &lt;- &quot;1985-10-01&quot;</span>
-<span class="sd">endDate &lt;- &quot;2012-09-30&quot;</span>
-<span class="sd">dfLong &lt;- readNWISqw(siteNumber, parameterCd,</span>
-<span class="sd">      startDate, endDate)</span>
-<span class="sd"># Or the wide return:</span>
-<span class="sd">dfWide &lt;- readNWISqw(siteNumber, parameterCd,</span>
-<span class="sd">      startDate, endDate, reshape=TRUE)</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;01491000&quot;</span>
-<span class="n">parameterCd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;00618&quot;</span><span class="p">,</span><span class="s2">&quot;71851&quot;</span><span class="p">]</span>
-<span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;1985-10-01&quot;</span>
-<span class="n">endDate</span> <span class="o">=</span> <span class="s2">&quot;2012-09-30&quot;</span>
-<span class="n">dfLong</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_qwdata</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
-                             <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>&#39;&#39;&#39;
+# Dissolved Nitrate parameter codes:
+parameterCd &lt;- c(&quot;00618&quot;,&quot;71851&quot;)
+startDate &lt;- &quot;1985-10-01&quot;
+endDate &lt;- &quot;2012-09-30&quot;
+dfLong &lt;- readNWISqw(siteNumber, parameterCd,
+      startDate, endDate)
+# Or the wide return:
+dfWide &lt;- readNWISqw(siteNumber, parameterCd,
+      startDate, endDate, reshape=TRUE)
+&#39;&#39;&#39;
+siteNumber = &quot;01491000&quot;
+parameterCd = [&quot;00618&quot;,&quot;71851&quot;]
+startDate = &quot;1985-10-01&quot;
+endDate = &quot;2012-09-30&quot;
+dfLong, md = nwis.get_qwdata(sites=siteNumber, parameterCd=parameterCd,
+                             start=startDate, end=endDate)
 </pre></div>
 </div>
 </div>
@@ -558,12 +558,12 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">siteNumber &lt;- &quot;434400121275801&quot;</span>
-<span class="sd">groundWater &lt;- readNWISgwl(siteNumber)</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;434400121275801&quot;</span>
-<span class="n">groundWater</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_gwlevels</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>&#39;&#39;&#39;
+siteNumber &lt;- &quot;434400121275801&quot;
+groundWater &lt;- readNWISgwl(siteNumber)
+&#39;&#39;&#39;
+siteNumber = &quot;434400121275801&quot;
+groundWater, md = nwis.get_gwlevels(sites=siteNumber)
 </pre></div>
 </div>
 </div>
@@ -571,12 +571,12 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">siteNumber &lt;- &#39;01594440&#39;</span>
-<span class="sd">peakData &lt;- readNWISpeak(siteNumber)</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="n">siteNumber</span> <span class="o">=</span> <span class="s1">&#39;01594440&#39;</span>
-<span class="n">peakData</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_discharge_peaks</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>&#39;&#39;&#39;
+siteNumber &lt;- &#39;01594440&#39;
+peakData &lt;- readNWISpeak(siteNumber)
+&#39;&#39;&#39;
+siteNumber = &#39;01594440&#39;
+peakData, md = nwis.get_discharge_peaks(sites=siteNumber)
 </pre></div>
 </div>
 </div>
@@ -584,11 +584,11 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">ratingData &lt;- readNWISrating(siteNumber, &quot;base&quot;)</span>
-<span class="sd">attr(ratingData, &quot;RATING&quot;)</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="n">ratings_data</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="s1">&#39;01594440&#39;</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="s2">&quot;base&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>&#39;&#39;&#39;
+ratingData &lt;- readNWISrating(siteNumber, &quot;base&quot;)
+attr(ratingData, &quot;RATING&quot;)
+&#39;&#39;&#39;
+ratings_data, md = nwis.get_ratings(site=&#39;01594440&#39;, file_type=&quot;base&quot;)
 </pre></div>
 </div>
 </div>
@@ -596,9 +596,9 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;surfaceData &lt;- readNWISmeas(siteNumber)&#39;&#39;&#39;</span>
-<span class="n">siteNumber</span> <span class="o">=</span> <span class="s1">&#39;01594440&#39;</span>
-<span class="n">surface_data</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_discharge_measurements</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>&#39;&#39;&#39;surfaceData &lt;- readNWISmeas(siteNumber)&#39;&#39;&#39;
+siteNumber = &#39;01594440&#39;
+surface_data, md = nwis.get_discharge_measurements(sites=siteNumber)
 </pre></div>
 </div>
 </div>
@@ -606,16 +606,16 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">allegheny &lt;- readNWISuse(stateCd = &quot;Pennsylvania&quot;,</span>
-<span class="sd">                         countyCd = &quot;Allegheny&quot;)</span>
-<span class="sd">national &lt;- readNWISuse(stateCd = NULL,</span>
-<span class="sd">                        countyCd = NULL,</span>
-<span class="sd">                        transform = TRUE)</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="n">allegheny</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_water_use</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s2">&quot;PA&quot;</span><span class="p">,</span> <span class="n">counties</span><span class="o">=</span><span class="s2">&quot;003&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>&#39;&#39;&#39;
+allegheny &lt;- readNWISuse(stateCd = &quot;Pennsylvania&quot;,
+                         countyCd = &quot;Allegheny&quot;)
+national &lt;- readNWISuse(stateCd = NULL,
+                        countyCd = NULL,
+                        transform = TRUE)
+&#39;&#39;&#39;
+allegheny, md = nwis.get_water_use(state=&quot;PA&quot;, counties=&quot;003&quot;)
 
-<span class="n">national</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_water_use</span><span class="p">()</span>
+national, md = nwis.get_water_use()
 </pre></div>
 </div>
 </div>
@@ -623,12 +623,12 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">discharge_stats &lt;- readNWISstat(siteNumbers=c(&quot;02319394&quot;),</span>
-<span class="sd">                   parameterCd=c(&quot;00060&quot;),</span>
-<span class="sd">                   statReportType=&quot;annual&quot;)</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="n">discharge_stats</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;02319394&#39;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="n">statReportType</span><span class="o">=</span><span class="s1">&#39;annual&#39;</span><span class="p">,</span> <span class="n">statTypeCd</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>&#39;&#39;&#39;
+discharge_stats &lt;- readNWISstat(siteNumbers=c(&quot;02319394&quot;),
+                   parameterCd=c(&quot;00060&quot;),
+                   statReportType=&quot;annual&quot;)
+&#39;&#39;&#39;
+discharge_stats, md = nwis.get_stats(sites=&#39;02319394&#39;, parameterCd=&quot;00060&quot;, statReportType=&#39;annual&#39;, statTypeCd=&#39;all&#39;)
 </pre></div>
 </div>
 </div>
@@ -636,14 +636,14 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># &#39;&#39;&#39;</span>
-<span class="c1"># specificCond &lt;- readWQPqw(&#39;WIDNR_WQX-10032762&#39;,</span>
-<span class="c1">#                           &#39;Specific conductance&#39;,</span>
-<span class="c1">#                           &#39;2011-05-01&#39;,&#39;2011-09-30&#39;)</span>
-<span class="c1"># &#39;&#39;&#39;</span>
-<span class="c1"># specific_cond, md = wqp.get_results(siteid=&#39;WIDNR_WQX-10032762&#39;,</span>
-<span class="c1">#                           characteristicName = &#39;Specific conductance&#39;,</span>
-<span class="c1">#                           startDateLo=&#39;2011-05-01&#39;, startDateHi=&#39;2011-09-30&#39;)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># &#39;&#39;&#39;
+# specificCond &lt;- readWQPqw(&#39;WIDNR_WQX-10032762&#39;,
+#                           &#39;Specific conductance&#39;,
+#                           &#39;2011-05-01&#39;,&#39;2011-09-30&#39;)
+# &#39;&#39;&#39;
+# specific_cond, md = wqp.get_results(siteid=&#39;WIDNR_WQX-10032762&#39;,
+#                           characteristicName = &#39;Specific conductance&#39;,
+#                           startDateLo=&#39;2011-05-01&#39;, startDateHi=&#39;2011-09-30&#39;)
 </pre></div>
 </div>
 </div>
@@ -651,14 +651,14 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># &#39;&#39;&#39;</span>
-<span class="c1"># dischargeWI &lt;- readNWISdata(service=&quot;dv&quot;,</span>
-<span class="c1">#                            stateCd=&quot;WI&quot;,</span>
-<span class="c1">#                            parameterCd=&quot;00060&quot;,</span>
-<span class="c1">#                            drainAreaMin=&quot;50&quot;,</span>
-<span class="c1">#                            statCd=&quot;00003&quot;)</span>
-<span class="c1"># &#39;&#39;&#39;</span>
-<span class="c1"># dischargeWI, md = nwis.get_dv(stateCd=&quot;WI&quot;, parameterCd=&quot;00060&quot;, drainAreaMin=&quot;50&quot;, statCd=&quot;00003&quot;)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># &#39;&#39;&#39;
+# dischargeWI &lt;- readNWISdata(service=&quot;dv&quot;,
+#                            stateCd=&quot;WI&quot;,
+#                            parameterCd=&quot;00060&quot;,
+#                            drainAreaMin=&quot;50&quot;,
+#                            statCd=&quot;00003&quot;)
+# &#39;&#39;&#39;
+# dischargeWI, md = nwis.get_dv(stateCd=&quot;WI&quot;, parameterCd=&quot;00060&quot;, drainAreaMin=&quot;50&quot;, statCd=&quot;00003&quot;)
 </pre></div>
 </div>
 </div>
@@ -666,11 +666,11 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># &#39;&#39;&#39;</span>
-<span class="c1"># sitesNJ &lt;- whatWQPsites(statecode=&quot;US:34&quot;,</span>
-<span class="c1">#                        characteristicName=&quot;Chloride&quot;)</span>
-<span class="c1"># &#39;&#39;&#39;</span>
-<span class="c1"># sitesNJ, md = wqp.what_sites(statecode=&quot;US:34&quot;, characteristicName=&quot;Chloride&quot;)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># &#39;&#39;&#39;
+# sitesNJ &lt;- whatWQPsites(statecode=&quot;US:34&quot;,
+#                        characteristicName=&quot;Chloride&quot;)
+# &#39;&#39;&#39;
+# sitesNJ, md = wqp.what_sites(statecode=&quot;US:34&quot;, characteristicName=&quot;Chloride&quot;)
 </pre></div>
 </div>
 </div>
@@ -678,11 +678,11 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># &#39;&#39;&#39;</span>
-<span class="c1"># dataPH &lt;- readWQPdata(statecode=&quot;US:55&quot;,</span>
-<span class="c1">#                  characteristicName=&quot;pH&quot;)</span>
-<span class="c1"># &#39;&#39;&#39;</span>
-<span class="c1"># dataPH, md = wqp.what_sites(statecode=&quot;US:55&quot;, characteristicName=&quot;pH&quot;)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># &#39;&#39;&#39;
+# dataPH &lt;- readWQPdata(statecode=&quot;US:55&quot;,
+#                  characteristicName=&quot;pH&quot;)
+# &#39;&#39;&#39;
+# dataPH, md = wqp.what_sites(statecode=&quot;US:55&quot;, characteristicName=&quot;pH&quot;)
 </pre></div>
 </div>
 </div>
@@ -690,12 +690,12 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># &#39;&#39;&#39;</span>
-<span class="c1"># type &lt;- &quot;Stream&quot;</span>
-<span class="c1"># sites &lt;- whatWQPdata(countycode=&quot;US:55:025&quot;,siteType=type)</span>
-<span class="c1"># &#39;&#39;&#39;</span>
-<span class="c1"># streamType = &quot;Stream&quot;</span>
-<span class="c1"># sites, md = wqp.get_results(countycode=&quot;US:55:025&quot;, siteType=streamType)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># &#39;&#39;&#39;
+# type &lt;- &quot;Stream&quot;
+# sites &lt;- whatWQPdata(countycode=&quot;US:55:025&quot;,siteType=type)
+# &#39;&#39;&#39;
+# streamType = &quot;Stream&quot;
+# sites, md = wqp.get_results(countycode=&quot;US:55:025&quot;, siteType=streamType)
 </pre></div>
 </div>
 </div>
@@ -703,9 +703,9 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;site &lt;- whatWQPsamples(siteid=&quot;USGS-01594440&quot;)&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>&#39;&#39;&#39;site &lt;- whatWQPsamples(siteid=&quot;USGS-01594440&quot;)&#39;&#39;&#39;
 
-<span class="n">site</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">wqp</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">siteid</span><span class="o">=</span><span class="s2">&quot;USGS-01594440&quot;</span><span class="p">)</span>
+site, md = wqp.what_sites(siteid=&quot;USGS-01594440&quot;)
 </pre></div>
 </div>
 </div>
@@ -713,12 +713,12 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">type &lt;- &quot;Stream&quot;</span>
-<span class="sd">sites &lt;- whatWQPmetrics(countycode=&quot;US:55:025&quot;,siteType=type)</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="n">streamType</span> <span class="o">=</span> <span class="s2">&quot;Stream&quot;</span>
-<span class="n">sites</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">wqp</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">countycode</span><span class="o">=</span><span class="s2">&quot;US:55:025&quot;</span><span class="p">,</span><span class="n">siteType</span><span class="o">=</span><span class="n">streamType</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>&#39;&#39;&#39;
+type &lt;- &quot;Stream&quot;
+sites &lt;- whatWQPmetrics(countycode=&quot;US:55:025&quot;,siteType=type)
+&#39;&#39;&#39;
+streamType = &quot;Stream&quot;
+sites, md = wqp.what_sites(countycode=&quot;US:55:025&quot;,siteType=streamType)
 </pre></div>
 </div>
 </div>
