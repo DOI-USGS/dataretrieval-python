@@ -1,6 +1,7 @@
 """
 Useful utilities for data munging.
 """
+import numpy as np
 import pandas as pd
 import requests
 from dataretrieval.codes import tz
@@ -26,7 +27,7 @@ def to_str(listlike, delimiter=','):
         return listlike
 
 
-def format_datetime(df, date_field, time_field, tz_field):
+def format_datetime(df, date_field, time_field, tz_field, coerce_datetime=False):
     """Creates a datetime field from separate date, time, and
     time zone fields.
 
@@ -46,12 +47,19 @@ def format_datetime(df, date_field, time_field, tz_field):
     tz_field : string
         Name of time zone column in df.
 
+    coerce_datetime : boolean, optional
+        Optional boolean parameter to enable coercion of incomplete datetime
+        information into full datetime objects. Default is False, meaning
+        incomplete datetimes will be designated NaT. If set to True, then
+        missing months, days, or times will be replaced by 01, 01, and
+        00:00:00+00:00 respectively.
+
     Returns
     -------
     df : ``pandas.DataFrame``
     """
 
-    #create a datetime index from the columns in qwdata response
+    # create a datetime index from the columns in qwdata response
     df[tz_field] = df[tz_field].map(tz)
 
     df['datetime'] = pd.to_datetime(df[date_field] + ' ' +
@@ -60,7 +68,25 @@ def format_datetime(df, date_field, time_field, tz_field):
                                     format = '%Y-%m-%d %H:%M',
                                     utc=True)
 
+    # if there are any incomplete dates, call corresponding private function
+    if any(pd.isna(df['datetime']) == True) and coerce_datetime is True:
+        df['datetime'] = _format_incomplete_dates(df,
+                                                  date_field,
+                                                  time_field,
+                                                  tz_field)
+
     return df
+
+
+def _format_incomplete_dates(df, date_field, time_field, tz_field):
+    # get indices with incomplete datetime information
+    idx = np.where(pd.isna(df['datetime']) == True)
+    for i in idx:
+        # re-make without the time bit
+        df.loc[i, 'datetime'] = pd.to_datetime(df[date_field][i],
+                                               format='%Y-%m-%d',
+                                               utc=True)
+    return df['datetime']
 
 
 #This function may be deprecated once pandas.update support joins besides left.

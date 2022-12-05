@@ -61,3 +61,43 @@ def test_preformat_peaks_response():
 if __name__=='__main__':
      test_measurements_service_answer()
      test_iv_service_answer()
+
+
+# tests using real queries to USGS webservices
+# these specific queries represent some edge-cases and the tests to address
+# incomplete date-time information
+
+def test_inc_date_01():
+    """Test based on GitHub Issue #47 - lack of timestamp for measurement."""
+    site = "403451073585601"
+    df = get_record(site, "1980-01-01", "1990-01-01", service='gwlevels')
+    # assert that there are indeed incomplete dates
+    assert any(pd.isna(df.index) == True)
+    # make call with date coersion then assert lack of incomplete dates
+    df = get_record(site, "1980-01-01", "1990-01-01", service='gwlevels',
+                    coerce_datetime=True)
+    assert all(pd.isna(df.index) == False)
+
+
+def test_inc_date_02():
+    """Test based on GitHub Issue #47 - lack of month, day, or time."""
+    site = "180049066381200"
+    df = get_record(site, "1900-01-01", "2013-01-01", service='gwlevels')
+    # assert that there are indeed incomplete dates
+    assert any(pd.isna(df.index) == True)
+    # make call with date coersion then assert lack of incomplete dates
+    df = get_record(site, "1900-01-01", "2013-01-01", service='gwlevels',
+                    coerce_datetime=True)
+    assert all(pd.isna(df.index) == False)
+
+
+def test_inc_date_03():
+    """Test based on GitHub Issue #47 - lack of day, and times."""
+    site = "290000095192602"
+    df = get_record(site, "1975-01-01", "2000-01-01", service='gwlevels')
+    # assert that there are indeed incomplete dates
+    assert any(pd.isna(df.index) == True)
+    # make call with date coersion then assert lack of incomplete dates
+    df = get_record(site, "1975-01-01", "2000-01-01", service='gwlevels',
+                    coerce_datetime=True)
+    assert all(pd.isna(df.index) == False)

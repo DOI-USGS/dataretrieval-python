@@ -240,7 +240,9 @@ def _gwlevels(**kwargs):
     response = query_waterservices('gwlevels', **kwargs)
 
     df = _read_rdb(response.text)
-    df = format_datetime(df, 'lev_dt', 'lev_tm', 'lev_tz_cd')
+
+    coerce_datetime = kwargs.pop('coerce_datetime', False)
+    df = format_datetime(df, 'lev_dt', 'lev_tm', 'lev_tz_cd', coerce_datetime)
 
     return format_response(df, **kwargs), _set_metadata(response, **kwargs)
 
