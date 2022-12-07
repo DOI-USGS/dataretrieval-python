@@ -63,8 +63,9 @@ def preformat_peaks_response(df):
     return df
 
 
-def get_qwdata(datetime_index=True, wide_format=True, sites=None,
-               start=None, end=None, multi_index=True,**kwargs):
+def get_qwdata(sites=None, start=None, end=None,
+               multi_index=True, wide_format=True, datetime_index=True,
+               **kwargs):
     """
     Get water sample data from qwdata service.
 
@@ -77,10 +78,6 @@ def get_qwdata(datetime_index=True, wide_format=True, sites=None,
 
     Parameters
     ----------
-    datetime_index : boolean
-        If True, create a datetime index
-    wide_format : boolean
-        If True, return data in wide format with multiple samples per row and one row per time.
     sites: array of strings
         If the qwdata parameter site_no is supplied, it will overwrite the sites parameter
     start: string
@@ -89,6 +86,10 @@ def get_qwdata(datetime_index=True, wide_format=True, sites=None,
         If the qwdata parameter end_date is supplied, it will overwrite the end parameter
     multi_index: boolean
         If False, a dataframe with a single-level index (datetime) is returned
+    wide_format : boolean
+        If True, return data in wide format with multiple samples per row and one row per time
+    datetime_index : boolean
+        If True, create a datetime index
     **kwargs: optional
         If supplied, will be used as query parameters
 
@@ -100,8 +101,10 @@ def get_qwdata(datetime_index=True, wide_format=True, sites=None,
     start = kwargs.pop('begin_date', start)
     end = kwargs.pop('end_date', end)
     sites = kwargs.pop('site_no', sites)
-    return _qwdata(site_no=sites, begin_date=start, end_date=end, datetime_index=datetime_index,
-                   multi_index=multi_index, ** kwargs)
+    return _qwdata(site_no=sites, begin_date=start, end_date=end,
+                   datetime_index=datetime_index,
+                   multi_index=multi_index, **kwargs)
+
 
 def _qwdata(datetime_index=True, **kwargs):
     # check number of sites, may need to create multiindex
@@ -181,7 +184,8 @@ def _discharge_measurements(**kwargs):
     return _read_rdb(response.text), _set_metadata(response, **kwargs)
 
 
-def get_discharge_peaks(sites=None, start=None, end=None,  multi_index=True, **kwargs):
+def get_discharge_peaks(sites=None, start=None, end=None,
+                        multi_index=True, **kwargs):
     """
     Get discharge peaks from the waterdata service.
 
@@ -193,6 +197,8 @@ def get_discharge_peaks(sites=None, start=None, end=None,  multi_index=True, **k
         If the waterdata parameter begin_date is supplied, it will overwrite the start parameter
     end: string
         If the waterdata parameter end_date is supplied, it will overwrite the end parameter
+    multi_index: boolean
+        If False, a dataframe with a single-level index (datetime) is returned
     **kwargs: optional
         If supplied, will be used as query parameters
 
@@ -202,7 +208,8 @@ def get_discharge_peaks(sites=None, start=None, end=None,  multi_index=True, **k
     start = kwargs.pop('begin_date', start)
     end = kwargs.pop('end_date', end)
     sites = kwargs.pop('site_no', sites)
-    return _discharge_peaks(site_no=sites, begin_date=start, end_date=end, multi_index=multi_index, **kwargs)
+    return _discharge_peaks(site_no=sites, begin_date=start, end_date=end,
+                            multi_index=multi_index, **kwargs)
 
 
 def _discharge_peaks(**kwargs):
@@ -213,7 +220,8 @@ def _discharge_peaks(**kwargs):
     return format_response(df, service='peaks', **kwargs), _set_metadata(response, **kwargs)
 
 
-def get_gwlevels(start='1851-01-01', end=None, multi_index=True, **kwargs):
+def get_gwlevels(sites=None, start='1851-01-01', end=None,
+                 multi_index=True, datetime_index=True, **kwargs):
     """
     Queries the groundwater level service from waterservices
 
@@ -224,6 +232,10 @@ def get_gwlevels(start='1851-01-01', end=None, multi_index=True, **kwargs):
         parameter (defaults to '1851-01-01')
     end: string
         If the waterdata parameter end_date is supplied, it will overwrite the end parameter
+    multi_index: boolean
+        If False, a dataframe with a single-level index (datetime) is returned
+    datetime_index : boolean
+        If True, create a datetime index
     **kwargs: optional
         If supplied, will be used as query parameters
 
@@ -232,15 +244,20 @@ def get_gwlevels(start='1851-01-01', end=None, multi_index=True, **kwargs):
     """
     start = kwargs.pop('startDT', start)
     end = kwargs.pop('endDT', end)
-    return _gwlevels(startDT=start, endDT=end, multi_index=multi_index, **kwargs)
+    sites = kwargs.pop('sites', sites)
+    return _gwlevels(startDT=start, endDT=end,
+                     datetime_index=datetime_index, sites=sites,
+                     multi_index=multi_index, **kwargs)
 
 
-def _gwlevels(**kwargs):
+def _gwlevels(datetime_index=True, **kwargs):
 
     response = query_waterservices('gwlevels', **kwargs)
 
     df = _read_rdb(response.text)
-    df = format_datetime(df, 'lev_dt', 'lev_tm', 'lev_tz_cd')
+
+    if datetime_index == True:
+        df = format_datetime(df, 'lev_dt', 'lev_tm', 'lev_tz_cd')
 
     return format_response(df, **kwargs), _set_metadata(response, **kwargs)
 
@@ -332,7 +349,7 @@ def query_waterservices(service, **kwargs):
     return query(url, payload=kwargs)
 
 
-def get_dv(start=None, end=None, multi_index=True, **kwargs):
+def get_dv(sites=None, start=None, end=None, multi_index=True, **kwargs):
     """
     Get daily values data from NWIS and return it as a ``pandas.DataFrame``.
 
@@ -352,7 +369,9 @@ def get_dv(start=None, end=None, multi_index=True, **kwargs):
     """
     start = kwargs.pop('startDT', start)
     end = kwargs.pop('endDT', end)
-    return _dv(startDT=start, endDT=end, multi_index=multi_index, **kwargs)
+    sites = kwargs.pop('sites', sites)
+    return _dv(startDT=start, endDT=end, sites=sites,
+               multi_index=multi_index, **kwargs)
 
 
 def _dv(**kwargs):
@@ -371,7 +390,7 @@ def get_info(**kwargs):
     Parameters
     ----------
     sites : string or list
-        A list of site numters. Sites may be prefixed with an optional agency
+        A list of site numbers. Sites may be prefixed with an optional agency
         code followed by a colon.
 
     stateCd : string
@@ -453,7 +472,7 @@ def get_info(**kwargs):
     return _read_rdb(response.text), _set_metadata(response, **kwargs)
 
 
-def get_iv(start=None, end=None, multi_index=True, **kwargs):
+def get_iv(sites=None, start=None, end=None, multi_index=True, **kwargs):
     """Get instantaneous values data from NWIS and return it as a DataFrame.
 
     Note: If no start or end date are provided, only the most recent record is returned.
@@ -470,7 +489,9 @@ def get_iv(start=None, end=None, multi_index=True, **kwargs):
     """
     start = kwargs.pop('startDT', start)
     end = kwargs.pop('endDT', end)
-    return _iv(startDT=start, endDT=end, multi_index=multi_index, **kwargs)
+    sites = kwargs.pop('sites', sites)
+    return _iv(startDT=start, endDT=end, sites=sites,
+               multi_index=multi_index, **kwargs)
 
 
 def _iv(**kwargs):
@@ -479,7 +500,7 @@ def _iv(**kwargs):
     return format_response(df, **kwargs), _set_metadata(response, **kwargs)
 
 
-def get_pmcodes(parameterCd = 'All', partial = True):
+def get_pmcodes(parameterCd='All', partial=True):
     """
     Return a ``pandas.DataFrame`` containing all NWIS parameter codes.
 
@@ -621,8 +642,9 @@ def what_sites(**kwargs):
     return df, _set_metadata(response, **kwargs)
 
 
-def get_record(sites=None, start=None, end=None, state=None,
-               service='iv', *args, **kwargs):
+def get_record(sites=None, start=None, end=None,
+               multi_index=True, wide_format=True, datetime_index=True,
+               state=None, service='iv', **kwargs):
     """
     Get data from NWIS and return it as a ``pandas.DataFrame``.
 
@@ -654,16 +676,19 @@ def get_record(sites=None, start=None, end=None, state=None,
         raise TypeError('Unrecognized service: {}'.format(service))
 
     if service == 'iv':
-        df, _ = get_iv(sites=sites, startDT=start, endDT=end, **kwargs)
+        df, _ = get_iv(sites=sites, startDT=start, endDT=end,
+                       multi_index=multi_index, **kwargs)
         return df
 
     elif service == 'dv':
-        df, _ = get_dv(sites=sites, startDT=start, endDT=end, **kwargs)
+        df, _ = get_dv(sites=sites, startDT=start, endDT=end,
+                       multi_index=multi_index, **kwargs)
         return df
 
     elif service == 'qwdata':
         df, _ = get_qwdata(site_no=sites, begin_date=start, end_date=end,
-                           qw_sample_wide='separated_wide', **kwargs)
+                           multi_index=multi_index,
+                           wide_format=wide_format, **kwargs)
         return df
 
     elif service == 'site':
@@ -677,12 +702,14 @@ def get_record(sites=None, start=None, end=None, state=None,
 
     elif service == 'peaks':
         df, _ = get_discharge_peaks(site_no=sites, begin_date=start,
-                                    end_date=end, **kwargs)
+                                    end_date=end,
+                                    multi_index=multi_index, **kwargs)
         return df
 
     elif service == 'gwlevels':
         df, _ = get_gwlevels(sites=sites, startDT=start, endDT=end,
-                             **kwargs)
+                             multi_index=multi_index,
+                             datetime_index=datetime_index, **kwargs)
         return df
 
     elif service == 'pmcodes':
@@ -694,7 +721,7 @@ def get_record(sites=None, start=None, end=None, state=None,
         return df
 
     elif service == 'ratings':
-        df, _ = get_ratings(**kwargs)
+        df, _ = get_ratings(site=sites, **kwargs)
         return df
 
     else:
@@ -788,8 +815,8 @@ def _read_rdb(rdb):
             break
 
     fields = re.split("[\t]", rdb.splitlines()[count])
-    fields  = [field.replace(",", "") for field in fields]
-    dtypes = {'site_no': str, 'dec_long_va': float, 'dec_lat_va': float, 'parm_cd': str, 'parameter_cd':str}
+    fields = [field.replace(",", "") for field in fields]
+    dtypes = {'site_no': str, 'dec_long_va': float, 'dec_lat_va': float, 'parm_cd': str, 'parameter_cd': str}
 
     df = pd.read_csv(StringIO(rdb), delimiter='\t', skiprows=count + 2,
                      names=fields, na_values='NaN', dtype=dtypes)

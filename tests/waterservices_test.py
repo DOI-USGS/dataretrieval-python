@@ -119,7 +119,8 @@ def test_get_qwdata(requests_mock):
                   '&date_format=YYYY-MM-DD&rdb_compression=value&submmitted_form=brief_list'.format(site, format)
     response_file_path = 'data/waterdata_qwdata.txt'
     mock_request(requests_mock, request_url, response_file_path)
-    df, md = get_qwdata(sites=["01491000", "01645000"])
+    with pytest.warns(DeprecationWarning):
+        df, md = get_qwdata(sites=["01491000", "01645000"])
     assert type(df) is DataFrame
     assert df.size == 1821472
     assert_metadata(requests_mock, request_url, md, site, None, format)
@@ -279,7 +280,7 @@ def assert_metadata(requests_mock, request_url, md, site, parameter_cd, format):
         site_info, _ = md.site_info()
         assert type(site_info) is DataFrame
     if parameter_cd is None:
-        assert md.variable_info is None    
+        assert md.variable_info is None
     else:
         for param in parameter_cd:
             pcode_request_url = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?fmt=rdb&parm_nm_cd=%25{}%25".format(param)
@@ -287,9 +288,8 @@ def assert_metadata(requests_mock, request_url, md, site, parameter_cd, format):
                 requests_mock.get(pcode_request_url, text=text.read())
         variable_info, _ = md.variable_info()
         assert type(variable_info) is DataFrame
-        
+
     if format == "rdb":
         assert md.comment is not None
     else:
         assert md.comment is None
-

@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='dataretrieval',
-      version='0.7',
+      version='0.8',
       description='',
       url='',
       author='Timothy Hodson',

@@ -1,6 +1,8 @@
 """
 Useful utilities for data munging.
 """
+import warnings
+import numpy as np
 import pandas as pd
 import requests
 from dataretrieval.codes import tz
@@ -51,14 +53,21 @@ def format_datetime(df, date_field, time_field, tz_field):
     df : ``pandas.DataFrame``
     """
 
-    #create a datetime index from the columns in qwdata response
+    # create a datetime index from the columns in qwdata response
     df[tz_field] = df[tz_field].map(tz)
 
     df['datetime'] = pd.to_datetime(df[date_field] + ' ' +
                                     df[time_field] + ' ' +
                                     df[tz_field],
-                                    format = '%Y-%m-%d %H:%M',
+                                    format='%Y-%m-%d %H:%M',
                                     utc=True)
+
+    # if there are any incomplete dates, warn the user
+    if any(pd.isna(df['datetime'])):
+        count = sum(pd.isna(df['datetime']) == True)
+        warnings.warn(
+            f'Warning: {count} incomplete dates found, ' +
+            'consider setting datetime_index to False.', UserWarning)
 
     return df
 
