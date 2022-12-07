@@ -554,7 +554,7 @@ dfLong, md = nwis.get_qwdata(sites=siteNumber, parameterCd=parameterCd,
 </pre></div>
 </div>
 </div>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
@@ -566,6 +566,15 @@ siteNumber = &quot;434400121275801&quot;
 groundWater, md = nwis.get_gwlevels(sites=siteNumber)
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/runner/.local/lib/python3.10/site-packages/dataretrieval/utils.py:68: UserWarning: Warning: 189 incomplete dates found, consider setting datetime_index to False.
+  warnings.warn(
+</pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
