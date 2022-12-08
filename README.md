@@ -67,9 +67,6 @@ dataretrieval can be installed using pip:
 
     $ python3 -m pip install -U dataretrieval
 
-If you want to run the latest version of the code, you can install from git:
-
-    $ python3 -m pip install -U git+git://github.com/USGS-python/dataretrieval.git
 
 Issue tracker
 -------------
