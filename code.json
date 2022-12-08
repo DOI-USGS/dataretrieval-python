@@ -1,0 +1,45 @@
+[
+  {
+    "name": "dataretrieval",
+    "organization": "U.S. Geological Survey",
+    "description": "Tools for downloading hydrologic data from NWIS.",
+    "version": "1.0.0",
+    "status": "Development",
+
+    "permissions": {
+      "usageType": "openSource",
+      "licenses": [
+        {
+          "name": "Public Domain, CC0-1.0",
+          "URL": "https://code.usgs.gov/cmwsc/shwa/dataretrieval/-/raw/master/LICENSE.md"
+        }
+      ]
+    },
+
+    "homepageURL": "https://code.usgs.gov/cmwsc/shwa/dataretrieval",
+    "downloadURL": "https://code.usgs.gov/cmwsc/shwa/dataretrieval/-/archive/master/dataretrieval-master.zip",
+    "disclaimerURL": "https://code.usgs.gov/cmwsc/shwa/dataretrieval/-/raw/master/DISCLAIMER.md",
+    "repositoryURL": "https://code.usgs.gov/cmwsc/shwa/dataretrieval.git",
+    "vcs": "git",
+
+    "laborHours": 0,
+
+    "tags": [
+      "Python",
+      "USGS"
+    ],
+
+    "languages": [
+      "Python"
+    ],
+
+    "contact": {
+      "name": "Timothy 0. Hodson",
+      "email": "thodson@usgs.gov"
+    },
+
+    "date": {
+      "metadataLastUpdated": "2022-12-08"
+    }
+  }
+]
