@@ -2,9 +2,9 @@
   {
     "name": "dataretrieval",
     "organization": "U.S. Geological Survey",
-    "description": "Tools for downloading hydrologic data from NWIS.",
+    "description": "A Python package for discovering and retrieving water data from U.S. federal hydrologic web services.",
     "version": "1.0.0",
-    "status": "Development",
+    "status": "Production",
 
     "permissions": {
       "usageType": "openSource",
