@@ -86,6 +86,12 @@ For more details, see the file [CONTRIBUTING.md](CONTRIBUTING.md).
 
 [![Coverage Status](https://coveralls.io/repos/github/thodson-usgs/data_retrieval/badge.svg?branch=master)](https://coveralls.io/github/thodson-usgs/data_retrieval?branch=master)
 
+## Package Support
+The Water Mission Area of the USGS supports the development and maintenance of `dataretrieval`
+and most likely further into the future.
+Resources are available primarily for maintenance and responding to user questions.
+Priorities on the development of new features are determined by the `dataretrieval` development team.
+
 ## Disclaimer
 
 This software is in the public domain because it contains materials that originally came from the U.S. Geological Survey,
