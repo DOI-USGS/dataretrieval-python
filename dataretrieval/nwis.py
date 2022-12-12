@@ -73,7 +73,7 @@ def get_qwdata(sites=None, start=None, end=None,
 
         The NWIS qw data service is being deprecated. See this note from the
         R package for more information:
-        https://cran.r-project.org/web/packages/dataRetrieval/vignettes/qwdata_changes.html
+        https://doi-usgs.github.io/dataRetrieval/articles/qwdata_changes.html
         If you have additional questions about the qw data service, email gs-w-IOW_PO_team@usgs.gov.
 
     Parameters
@@ -142,7 +142,7 @@ def _qwdata(datetime_index=True, **kwargs):
     warnings.warn(
         "NWIS qw web services are being retired. " +
         "See this note from the R package for more: " +
-        "https://cran.r-project.org/web/packages/dataRetrieval/vignettes/qwdata_changes.html",
+        "https://doi-usgs.github.io/dataRetrieval/articles/qwdata_changes.html",
         category=DeprecationWarning)
     response = query_waterdata('qwdata', **kwargs)
 
