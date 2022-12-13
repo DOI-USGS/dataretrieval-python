@@ -50,6 +50,9 @@ def format_response(df, service=None, **kwargs):
             df = df.tz_localize('UTC', level=1)
 
     else:
+        # transform datetime column to datetime values
+        #df['datetime'] = pd.to_datetime(df.pop('datetime'), errors='coerce')
+        # define index using datetime values
         df.set_index(['datetime'], inplace=True)
         if hasattr(df.index, 'tzinfo') and df.index.tzinfo is None:
             df = df.tz_localize('UTC')
@@ -770,12 +773,13 @@ def _read_json(json):
             # should be able to avoid this by dumping
             record_json = str(record_json).replace("'", '"')
 
-            # read json, converting all values to float64 and all qaulifiers
+            # read json, converting all values to float64 and all qualifiers
             # Lists can't be hashed, thus we cannot df.merge on a list column
             record_df = pd.read_json(record_json,
                                      orient='records',
                                      dtype={'value': 'float64',
-                                            'qualifiers': 'unicode'})
+                                            'qualifiers': 'unicode'},
+                                     convert_dates=True)
 
             record_df['qualifiers'] = (record_df['qualifiers']
                                        .str.strip("[]").str.replace("'", ""))

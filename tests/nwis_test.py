@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from dataretrieval.nwis import get_record, preformat_peaks_response
+from dataretrieval.nwis import what_sites, get_iv
 
 START_DATE = '2018-01-24'
 END_DATE   = '2018-01-25'
@@ -36,7 +37,6 @@ def test_iv_service():
 
 def test_iv_service_answer():
     df = test_iv_service()
-
     # check multiindex function
     assert df.index.names == [SITENO_COL, DATETIME_COL], "iv service returned incorrect index: {}".format(df.index.names)
 
@@ -122,3 +122,10 @@ def test_inc_date_03():
     assert df.shape == df2.shape
     # assert that the datetime index is not there
     assert df2.index.name != 'datetime'
+
+
+def test_multiple_tz_01():
+    """Test based on GitHub Issue #60 - error merging different time zones."""
+    sites, sites_md = what_sites(stateCd='MD')
+    iv, iv_md = get_iv(sites=sites.site_no.values[:25].tolist())
+    import pdb; pdb.set_trace()
