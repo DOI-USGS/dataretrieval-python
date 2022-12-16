@@ -50,9 +50,6 @@ def format_response(df, service=None, **kwargs):
             df = df.tz_localize('UTC', level=1)
 
     else:
-        # transform datetime column to datetime values
-        #df['datetime'] = pd.to_datetime(df.pop('datetime'), errors='coerce')
-        # define index using datetime values
         df.set_index(['datetime'], inplace=True)
         if hasattr(df.index, 'tzinfo') and df.index.tzinfo is None:
             df = df.tz_localize('UTC')
@@ -121,7 +118,7 @@ def _qwdata(datetime_index=True, **kwargs):
                'rdb_qw_attributes': 'expanded',
                'date_format': 'YYYY-MM-DD',
                'rdb_compression': 'value',
-               'submmitted_form': 'brief_list'}
+               'submitted_form': 'brief_list'}
     # 'qw_sample_wide': 'separated_wide'}
 
     # check for parameter codes, and reformat query args
@@ -797,8 +794,8 @@ def _read_json(json):
                 merged_df = update_merge(merged_df, record_df, na_only=True,
                                          on=['site_no', 'datetime'])
 
-    # convert to datetime
-    merged_df['datetime'] = pd.to_datetime(merged_df['datetime'])
+    # convert to datetime, normalizing the timezone to UTC when doing so
+    merged_df['datetime'] = pd.to_datetime(merged_df['datetime'], utc=True)
 
     return merged_df
 
