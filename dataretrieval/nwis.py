@@ -779,7 +779,7 @@ def _read_json(json):
                                      orient='records',
                                      dtype={'value': 'float64',
                                             'qualifiers': 'unicode'},
-                                     convert_dates=True)
+                                     convert_dates=False)
 
             record_df['qualifiers'] = (record_df['qualifiers']
                                        .str.strip("[]").str.replace("'", ""))
@@ -796,6 +796,9 @@ def _read_json(json):
             else:
                 merged_df = update_merge(merged_df, record_df, na_only=True,
                                          on=['site_no', 'datetime'])
+
+    # convert to datetime
+    merged_df['datetime'] = pd.to_datetime(merged_df['datetime'])
 
     return merged_df
 
