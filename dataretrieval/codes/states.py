@@ -5,7 +5,7 @@ state_codes =[
     'ar', # Arkansas
     'ca', # California
     'co', # Colorado
-    'ct', # Conneticut
+    'ct', # Connecticut
     'de', # Delaware
     'dc', # District of Columbia
     'fl', # Florida

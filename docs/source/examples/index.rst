@@ -11,6 +11,7 @@ Simple uses of the ``dataretrieval`` package
     :maxdepth: 2
 
     readme_examples
+    siteinfo_examples
 
 Using ``dataretrieval`` to obtain nation trends in peak annual streamflow
 -------------------------------------------------------------------------

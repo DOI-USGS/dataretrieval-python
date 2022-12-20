@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import datetime
-from dataretrieval.nwis import get_record, preformat_peaks_response
+from dataretrieval.nwis import get_record, preformat_peaks_response, get_info
 from dataretrieval.nwis import what_sites, get_iv, get_dv, get_discharge_peaks
 
 START_DATE = '2018-01-24'
@@ -146,3 +146,51 @@ class TestTZ:
         assert 'datetime' in iv.index.names
         # assert that it is a datetime type
         assert isinstance(iv.index[0][1], datetime.datetime)
+
+
+class TestSiteseriesCatalogOutput:
+    """Tests relating to GitHub Issue #34."""
+
+    def test_seriesCatalogOutput_get_record(self):
+        """Test setting seriesCatalogOutput to true with get_record."""
+        data = get_record(huc='20', parameterCd='00060',
+                          service='site', seriesCatalogOutput='True')
+        # assert that expected data columns are present
+        assert 'begin_date' in data.columns
+        assert 'end_date' in data.columns
+        assert 'count_nu' in data.columns
+
+    def test_seriesCatalogOutput_get_info(self):
+        """Test setting seriesCatalogOutput to true with get_info."""
+        data, _ = get_info(
+            huc='20', parameterCd='00060', seriesCatalogOutput='TRUE')
+        # assert that expected data columns are present
+        assert 'begin_date' in data.columns
+        assert 'end_date' in data.columns
+        assert 'count_nu' in data.columns
+
+    def test_seriesCatalogOutput_bool(self):
+        """Test setting seriesCatalogOutput with a boolean."""
+        data, _ = get_info(
+            huc='20', parameterCd='00060', seriesCatalogOutput=True)
+        # assert that expected data columns are present
+        assert 'begin_date' in data.columns
+        assert 'end_date' in data.columns
+        assert 'count_nu' in data.columns
+
+    def test_expandedrdb_get_record(self):
+        """Test default expanded_rdb format with get_record."""
+        data = get_record(huc='20', parameterCd='00060',
+                          service='site', seriesCatalogOutput='False')
+        # assert that seriesCatalogOutput columns are not present
+        assert 'begin_date' not in data.columns
+        assert 'end_date' not in data.columns
+        assert 'count_nu' not in data.columns
+
+    def test_expandedrdb_get_info(self):
+        """Test default expanded_rdb format with get_info."""
+        data, _ = get_info(huc='20', parameterCd='00060')
+        # assert that seriesCatalogOutput columns are not present
+        assert 'begin_date' not in data.columns
+        assert 'end_date' not in data.columns
+        assert 'count_nu' not in data.columns

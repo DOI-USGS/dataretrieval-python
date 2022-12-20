@@ -464,8 +464,13 @@ def get_info(**kwargs):
     For additional parameter options see
     https://waterservices.usgs.gov/rest/Site-Service.html#stateCd
     """
-
-    kwargs['siteOutput'] = 'Expanded'
+    seriesCatalogOutput = kwargs.pop('seriesCatalogOutput', None)
+    if seriesCatalogOutput in ['True', 'TRUE', 'true', True]:
+        # convert bool to string if necessary
+        kwargs['seriesCatalogOutput'] = 'True'
+    else:
+        # cannot have both seriesCatalogOutput and the expanded format
+        kwargs['siteOutput'] = 'Expanded'
 
     response = query_waterservices('site', **kwargs)
 
