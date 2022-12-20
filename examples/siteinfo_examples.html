@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retrieving site information &mdash; dataretrieval 0.7 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="National trends in peak annual streamflow" href="nwisdemo01.html" />
+    <link rel="prev" title="Examples from the Readme file on retrieving NWIS data" href="readme_examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> dataretrieval
+          </a>
+              <div class="version">
+                0.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="readme_examples.html">Examples from the Readme file on retrieving NWIS data</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Retrieving site information</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">Retrieving site information</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/siteinfo_examples.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="retrieving-site-information">
+<h1>Retrieving site information<a class="headerlink" href="#retrieving-site-information" title="Permalink to this heading"></a></h1>
+<p>By default <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> fetches the so-called “expanded” site date from
+the NWIS web service. However there is an optional keyword parameter called
+<code class="docutils literal notranslate"><span class="pre">seriesCatalogOutput</span></code> that can be set to “True” if you wish to retrieve the
+detailed period of record information for a site instead. Refer to the
+<a class="reference external" href="https://nwis.waterservices.usgs.gov/rest/Site-Service.html">NWIS water services documentation</a> for additional information. The below
+example illustrates the use of the <code class="docutils literal notranslate"><span class="pre">seriesCatalogOutput</span></code> switch and displays
+the resulting column names for the output dataframes (example prompted by
+<a class="reference external" href="https://github.com/USGS-python/dataretrieval/issues/34">GitHub Issue #34</a>).</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go"># first import the functions for downloading data from NWIS</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">dataretrieval.nwis</span> <span class="k">as</span> <span class="nn">nwis</span>
+
+<span class="go"># fetch data from a major HUC basin with seriesCatalogOutput set to True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">huc</span><span class="o">=</span><span class="s1">&#39;20&#39;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;00060&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">service</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">seriesCatalogOutput</span><span class="o">=</span><span class="s1">&#39;True&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="go">Index([&#39;agency_cd&#39;, &#39;site_no&#39;, &#39;station_nm&#39;, &#39;site_tp_cd&#39;, &#39;dec_lat_va&#39;,</span>
+<span class="go">       &#39;dec_long_va&#39;, &#39;coord_acy_cd&#39;, &#39;dec_coord_datum_cd&#39;, &#39;alt_va&#39;,</span>
+<span class="go">       &#39;alt_acy_va&#39;, &#39;alt_datum_cd&#39;, &#39;huc_cd&#39;, &#39;data_type_cd&#39;, &#39;parm_cd&#39;,</span>
+<span class="go">       &#39;stat_cd&#39;, &#39;ts_id&#39;, &#39;loc_web_ds&#39;, &#39;medium_grp_cd&#39;, &#39;parm_grp_cd&#39;,</span>
+<span class="go">       &#39;srs_id&#39;, &#39;access_cd&#39;, &#39;begin_date&#39;, &#39;end_date&#39;, &#39;count_nu&#39;],</span>
+<span class="go">      dtype=&#39;object&#39;)</span>
+
+<span class="go"># repeat the same query with seriesCatalogOutput set as False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">huc</span><span class="o">=</span><span class="s1">&#39;20&#39;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;00060&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">service</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">seriesCatalogOutput</span><span class="o">=</span><span class="s1">&#39;False&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="go">Index([&#39;agency_cd&#39;, &#39;site_no&#39;, &#39;station_nm&#39;, &#39;site_tp_cd&#39;, &#39;lat_va&#39;, &#39;long_va&#39;,</span>
+<span class="go">       &#39;dec_lat_va&#39;, &#39;dec_long_va&#39;, &#39;coord_meth_cd&#39;, &#39;coord_acy_cd&#39;,</span>
+<span class="go">       &#39;coord_datum_cd&#39;, &#39;dec_coord_datum_cd&#39;, &#39;district_cd&#39;, &#39;state_cd&#39;,</span>
+<span class="go">       &#39;county_cd&#39;, &#39;country_cd&#39;, &#39;land_net_ds&#39;, &#39;map_nm&#39;, &#39;map_scale_fc&#39;,</span>
+<span class="go">       &#39;alt_va&#39;, &#39;alt_meth_cd&#39;, &#39;alt_acy_va&#39;, &#39;alt_datum_cd&#39;, &#39;huc_cd&#39;,</span>
+<span class="go">       &#39;basin_cd&#39;, &#39;topo_cd&#39;, &#39;instruments_cd&#39;, &#39;construction_dt&#39;,</span>
+<span class="go">       &#39;inventory_dt&#39;, &#39;drain_area_va&#39;, &#39;contrib_drain_area_va&#39;, &#39;tz_cd&#39;,</span>
+<span class="go">       &#39;local_time_fg&#39;, &#39;reliability_cd&#39;, &#39;gw_file_cd&#39;, &#39;nat_aqfr_cd&#39;,</span>
+<span class="go">       &#39;aqfr_cd&#39;, &#39;aqfr_type_cd&#39;, &#39;well_depth_va&#39;, &#39;hole_depth_va&#39;,</span>
+<span class="go">       &#39;depth_src_cd&#39;, &#39;project_no&#39;],</span>
+<span class="go">      dtype=&#39;object&#39;)</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="readme_examples.html" class="btn btn-neutral float-left" title="Examples from the Readme file on retrieving NWIS data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="nwisdemo01.html" class="btn btn-neutral float-right" title="National trends in peak annual streamflow" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

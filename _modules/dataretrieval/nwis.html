@@ -540,8 +540,13 @@
 <span class="sd">    For additional parameter options see</span>
 <span class="sd">    https://waterservices.usgs.gov/rest/Site-Service.html#stateCd</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;siteOutput&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Expanded&#39;</span>
+    <span class="n">seriesCatalogOutput</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;seriesCatalogOutput&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">seriesCatalogOutput</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;True&#39;</span><span class="p">,</span> <span class="s1">&#39;TRUE&#39;</span><span class="p">,</span> <span class="s1">&#39;true&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">]:</span>
+        <span class="c1"># convert bool to string if necessary</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;seriesCatalogOutput&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;True&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># cannot have both seriesCatalogOutput and the expanded format</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;siteOutput&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Expanded&#39;</span>
 
     <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 

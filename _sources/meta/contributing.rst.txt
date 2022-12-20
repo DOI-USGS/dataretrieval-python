@@ -68,6 +68,22 @@ Before you submit a pull request, check that it meets these guidelines:
    Actions continuous integration pipelines.
 
 
+Updating Package Version:
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Follow semantic versioning as best as possible. This means that changing the
+first digit of the version indicates a breaking change. Any smaller changes
+should attempt to maintain backwards-compatibility with previous code and
+issue deprecation warnings for features or functionality that will be removed
+or no longer be backwards-compatible in future releases.
+
+When updating the package version, there are currently two places where this
+must be done:
+
+1. In the `setup.py` file the version field should be updated
+2. In the `conf.py` file both the version and release fields can be updated
+
+
 Coding Standards
 ----------------
 

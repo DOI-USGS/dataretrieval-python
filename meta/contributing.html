@@ -58,6 +58,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#contributor-guidelines">Contributor Guidelines</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#pull-request-guidelines">Pull Request Guidelines:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#updating-package-version">Updating Package Version:</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#coding-standards">Coding Standards</a></li>
@@ -176,6 +177,20 @@ your new functionality into a function with a docstring, and add the
 feature to the list in README.md.</p></li>
 <li><p>The pull request should work for Python 3.6, 3.7, 3.8, and pass the GitHub
 Actions continuous integration pipelines.</p></li>
+</ol>
+</section>
+<section id="updating-package-version">
+<h3>Updating Package Version:<a class="headerlink" href="#updating-package-version" title="Permalink to this heading"></a></h3>
+<p>Follow semantic versioning as best as possible. This means that changing the
+first digit of the version indicates a breaking change. Any smaller changes
+should attempt to maintain backwards-compatibility with previous code and
+issue deprecation warnings for features or functionality that will be removed
+or no longer be backwards-compatible in future releases.</p>
+<p>When updating the package version, there are currently two places where this
+must be done:</p>
+<ol class="arabic simple">
+<li><p>In the <cite>setup.py</cite> file the version field should be updated</p></li>
+<li><p>In the <cite>conf.py</cite> file both the version and release fields can be updated</p></li>
 </ol>
 </section>
 </section>
