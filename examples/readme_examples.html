@@ -45,6 +45,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Examples from the Readme file on retrieving NWIS data</a></li>
@@ -114,21 +115,44 @@
 <p class="admonition-title">Note</p>
 <p>NWIS stands for the National Water Information System</p>
 </div>
-<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go"># first import the functions for downloading data from NWIS</span>
-<span class="go">import dataretrieval.nwis as nwis</span>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># first import the functions for downloading data from NWIS</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">dataretrieval.nwis</span> <span class="k">as</span> <span class="nn">nwis</span>
 
-<span class="go"># specify the USGS site code for which we want data.</span>
-<span class="go">site = &#39;03339000&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># specify the USGS site code for which we want data.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">site</span> <span class="o">=</span> <span class="s1">&#39;03339000&#39;</span>
 
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># get instantaneous values (iv)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;iv&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2017-12-31&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2018-01-01&#39;</span><span class="p">)</span>
 
-<span class="go"># get instantaneous values (iv)</span>
-<span class="go">df = nwis.get_record(sites=site, service=&#39;iv&#39;, start=&#39;2017-12-31&#39;, end=&#39;2018-01-01&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="go">                           00010 00010_cd   site_no  00060 00060_cd  ...  63680_ysi), [discontinued 10/5/21_cd 63680_hach  63680_hach_cd 99133  99133_cd</span>
+<span class="go">datetime                                                             ...</span>
+<span class="go">2017-12-31 06:00:00+00:00    1.0        A  03339000  140.0        A  ...                                     A        3.6              A  4.61         A</span>
+<span class="go">2017-12-31 06:15:00+00:00    1.0        A  03339000  138.0        A  ...                                     A        3.6              A  4.61         A</span>
+<span class="go">2017-12-31 06:30:00+00:00    1.0        A  03339000  139.0        A  ...                                     A        3.4              A  4.61         A</span>
+<span class="go">2017-12-31 06:45:00+00:00    1.0        A  03339000  139.0        A  ...                                     A        3.4              A  4.61         A</span>
+<span class="go">2017-12-31 07:00:00+00:00    1.0        A  03339000  139.0        A  ...                                     A        3.5              A  4.61         A</span>
 
-<span class="go"># get water quality samples (qwdata)</span>
-<span class="go">df2 = nwis.get_record(sites=site, service=&#39;qwdata&#39;, start=&#39;2017-12-31&#39;, end=&#39;2018-01-01&#39;)</span>
+<span class="go">[5 rows x 21 columns]</span>
 
-<span class="go"># get basic info about the site</span>
-<span class="go">df3 = nwis.get_record(sites=site, service=&#39;site&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># get water quality samples (qwdata)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;qwdata&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2018-12-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2019-01-01&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df2</span><span class="p">)</span>
+<span class="go">                          agency_cd   site_no   sample_dt sample_tm  sample_end_dt  sample_end_tm  ... p80154 p82398 p84164  p91157  p91158  p91159</span>
+<span class="go">datetime                                                                                           ...</span>
+<span class="go">2018-12-10 17:30:00+00:00      USGS  03339000  2018-12-10     11:30            NaN            NaN  ...     16     50   3060  0.0165  0.0141  0.0024</span>
+
+<span class="go">[1 rows x 33 columns]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># get basic info about the site</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df3</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df3</span><span class="p">)</span>
+<span class="go">  agency_cd   site_no                         station_nm site_tp_cd  lat_va  ...  aqfr_type_cd  well_depth_va  hole_depth_va depth_src_cd project_no</span>
+<span class="go">0      USGS  03339000  VERMILION RIVER NEAR DANVILLE, IL         ST  400603  ...           NaN            NaN            NaN          NaN        100</span>
+
+<span class="go">[1 rows x 42 columns]</span>
 </pre></div>
 </div>
 </section>

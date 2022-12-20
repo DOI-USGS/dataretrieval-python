@@ -42,6 +42,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../userguide/index.html">User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../meta/contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../meta/license.html">License and Disclaimer</a></li>
@@ -193,7 +194,7 @@
                <span class="s1">&#39;rdb_qw_attributes&#39;</span><span class="p">:</span> <span class="s1">&#39;expanded&#39;</span><span class="p">,</span>
                <span class="s1">&#39;date_format&#39;</span><span class="p">:</span> <span class="s1">&#39;YYYY-MM-DD&#39;</span><span class="p">,</span>
                <span class="s1">&#39;rdb_compression&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;submmitted_form&#39;</span><span class="p">:</span> <span class="s1">&#39;brief_list&#39;</span><span class="p">}</span>
+               <span class="s1">&#39;submitted_form&#39;</span><span class="p">:</span> <span class="s1">&#39;brief_list&#39;</span><span class="p">}</span>
     <span class="c1"># &#39;qw_sample_wide&#39;: &#39;separated_wide&#39;}</span>
 
     <span class="c1"># check for parameter codes, and reformat query args</span>
@@ -845,12 +846,13 @@
             <span class="c1"># should be able to avoid this by dumping</span>
             <span class="n">record_json</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">record_json</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s1">&#39;&quot;&#39;</span><span class="p">)</span>
 
-            <span class="c1"># read json, converting all values to float64 and all qaulifiers</span>
+            <span class="c1"># read json, converting all values to float64 and all qualifiers</span>
             <span class="c1"># Lists can&#39;t be hashed, thus we cannot df.merge on a list column</span>
             <span class="n">record_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="n">record_json</span><span class="p">,</span>
                                      <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;records&#39;</span><span class="p">,</span>
                                      <span class="n">dtype</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;float64&#39;</span><span class="p">,</span>
-                                            <span class="s1">&#39;qualifiers&#39;</span><span class="p">:</span> <span class="s1">&#39;unicode&#39;</span><span class="p">})</span>
+                                            <span class="s1">&#39;qualifiers&#39;</span><span class="p">:</span> <span class="s1">&#39;unicode&#39;</span><span class="p">},</span>
+                                     <span class="n">convert_dates</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
             <span class="n">record_df</span><span class="p">[</span><span class="s1">&#39;qualifiers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">record_df</span><span class="p">[</span><span class="s1">&#39;qualifiers&#39;</span><span class="p">]</span>
                                        <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;[]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
@@ -867,6 +869,9 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">merged_df</span> <span class="o">=</span> <span class="n">update_merge</span><span class="p">(</span><span class="n">merged_df</span><span class="p">,</span> <span class="n">record_df</span><span class="p">,</span> <span class="n">na_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                          <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site_no&#39;</span><span class="p">,</span> <span class="s1">&#39;datetime&#39;</span><span class="p">])</span>
+
+    <span class="c1"># convert to datetime, normalizing the timezone to UTC when doing so</span>
+    <span class="n">merged_df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">merged_df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">merged_df</span></div>
 

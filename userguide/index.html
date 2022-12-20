@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Guide &mdash; dataretrieval 0.7 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Datetime Information" href="timeconventions.html" />
+    <link rel="prev" title="Installation Guide" href="../meta/installing.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> dataretrieval
+          </a>
+              <div class="version">
+                0.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#contents">Contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="timeconventions.html">Datetime Information</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#datetime-information">Datetime Information</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#inspecting-timestamps">Inspecting Timestamps</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">User Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/userguide/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="user-guide">
+<h1>User Guide<a class="headerlink" href="#user-guide" title="Permalink to this heading"></a></h1>
+<section id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="timeconventions.html">Datetime Information</a></li>
+</ul>
+</div>
+</section>
+<section id="datetime-information">
+<h2>Datetime Information<a class="headerlink" href="#datetime-information" title="Permalink to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> attempts to normalize time data to UTC time when converting
+web service data into dataframes. To do this, in-built pandas functions are
+used; either <code class="xref py py-obj docutils literal notranslate"><span class="pre">pandas.to_datetime()</span></code> during the initial datetime object
+conversion, or <code class="xref py py-obj docutils literal notranslate"><span class="pre">pandas.DataFrame.tz_localize()</span></code> if the datetime objects
+exist but are not UTC-localized. In most cases (single-site and multi-site),
+<code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> assigns the datetime information as the dataframe <em>index</em>,
+the exception to this is when incomplete datetime information is available, in
+these cases integers are used as the dataframe index (see <a class="reference external" href="https://github.com/USGS-python/dataretrieval/pull/58">PR#58</a> for more
+details).</p>
+<section id="inspecting-timestamps">
+<h3>Inspecting Timestamps<a class="headerlink" href="#inspecting-timestamps" title="Permalink to this heading"></a></h3>
+<p>For single sites, the index of the returned dataframe contains pandas
+timestamps.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">dataretrieval.nwis</span> <span class="k">as</span> <span class="nn">nwis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">site</span> <span class="o">=</span> <span class="s1">&#39;03339000&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;peaks&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2015-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2017-12-31&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="go">                          agency_cd   site_no peak_tm  peak_va peak_cd  gage_ht  gage_ht_cd  year_last_pk  ag_dt  ag_tm  ag_gage_ht  ag_gage_ht_cd</span>
+<span class="go">datetime</span>
+<span class="go">2015-06-08 00:00:00+00:00      USGS  03339000   17:30    25100       C    22.83         NaN           NaN    NaN    NaN         NaN            NaN</span>
+<span class="go">2015-12-29 00:00:00+00:00      USGS  03339000   18:45    37600       C    26.66         NaN           NaN    NaN    NaN         NaN            NaN</span>
+<span class="go">2017-05-05 00:00:00+00:00      USGS  03339000   04:45    17000       C    18.47         NaN           NaN    NaN    NaN         NaN            NaN</span>
+</pre></div>
+</div>
+<p>Here the index of the dataframe <code class="docutils literal notranslate"><span class="pre">df</span></code> is a set of datetime objects. Each has
+the format, <code class="docutils literal notranslate"><span class="pre">YYYY-MM-DD</span> <span class="pre">HH:MM:SS+HH:MM</span></code>. Because these timestamps are
+localized to be in UTC, the expected offset (<code class="docutils literal notranslate"><span class="pre">+HH:MM</span></code>) is <code class="docutils literal notranslate"><span class="pre">+00:00</span></code>.
+These values can be converted to a local timezone of your choosing using
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">pandas</span></code> functionality.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="s1">&#39;America/New_York&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="go">                          agency_cd   site_no peak_tm  peak_va peak_cd  gage_ht  gage_ht_cd  year_last_pk  ag_dt  ag_tm  ag_gage_ht  ag_gage_ht_cd</span>
+<span class="go">datetime</span>
+<span class="go">2015-06-07 20:00:00-04:00      USGS  03339000   17:30    25100       C    22.83         NaN           NaN    NaN    NaN         NaN            NaN</span>
+<span class="go">2015-12-28 19:00:00-05:00      USGS  03339000   18:45    37600       C    26.66         NaN           NaN    NaN    NaN         NaN            NaN</span>
+<span class="go">2017-05-04 20:00:00-04:00      USGS  03339000   04:45    17000       C    18.47         NaN           NaN    NaN    NaN         NaN            NaN</span>
+</pre></div>
+</div>
+<p>Above, the index was converted to localize the timestamps to New York.
+In the updated dataframe index, the resulting timestamps now have offsets of
+<code class="docutils literal notranslate"><span class="pre">-04:00</span></code> and <code class="docutils literal notranslate"><span class="pre">-05:00</span></code> as New York is either 4 or 5 hours behind UTC
+depending on the time of year (due to daylight savings).</p>
+<p>When information for multiple sites is requested, <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> creates a
+dataframe with a multi-index, with the first entry containing the site number,
+and the second containing the datetime information.</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">dataretrieval.nwis</span> <span class="k">as</span> <span class="nn">nwis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sites</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;180049066381200&#39;</span><span class="p">,</span> <span class="s1">&#39;290000095192602&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;gwlevels&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2021-10-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2022-01-01&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span>
+<span class="go">                                          agency_cd site_tp_cd      lev_dt lev_tm lev_tz_cd  ...  lev_dt_acy_cd  lev_acy_cd  lev_src_cd  lev_meth_cd lev_age_cd</span>
+<span class="go">site_no         datetime                                                                     ...</span>
+<span class="go">180049066381200 2021-10-04 19:54:00+00:00      USGS         GW  2021-10-04  19:54     +0000  ...              m         NaN           S            S          A</span>
+<span class="go">                2021-11-16 14:28:00+00:00      USGS         GW  2021-11-16  14:28     +0000  ...              m         NaN           S            S          A</span>
+<span class="go">                2021-12-09 10:43:00+00:00      USGS         GW  2021-12-09  10:43     +0000  ...              m         NaN           S            S          A</span>
+<span class="go">290000095192602 2021-12-08 19:07:00+00:00      USGS         GW  2021-12-08  19:07     +0000  ...              m         NaN           S            S          P</span>
+
+<span class="go">[4 rows x 15 columns]</span>
+</pre></div>
+</div>
+<p>Here note that the default datetime index information returned is also UTC
+localized, and therefore the offset values are <code class="docutils literal notranslate"><span class="pre">+00:00</span></code>.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../meta/installing.html" class="btn btn-neutral float-left" title="Installation Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="timeconventions.html" class="btn btn-neutral float-right" title="Datetime Information" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
