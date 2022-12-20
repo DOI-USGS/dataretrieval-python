@@ -167,6 +167,8 @@ def query(url, payload, delimiter=','):
 
     if response.status_code == 400:
         raise ValueError("Bad Request, check that your parameters are correct. URL: {}".format(response.url))
+    elif response.status_code == 414:
+        raise ValueError("Request URL too long. Modify your query to use fewer sites. API response reason: {}".format(response.reason))
 
     if response.text.startswith('No sites/data'):
         raise NoSitesError(response.url)
