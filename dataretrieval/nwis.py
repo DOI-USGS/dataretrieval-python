@@ -455,17 +455,23 @@ def get_info(**kwargs):
         siteOutput=expanded cannot be used if seriesCatalogOutput=true or with
         any values for outputDataTypeCd.
 
-    seriesCatalogOutput : boolean
+    seriesCatalogOutput : boolean or string
         A switch that provides detailed period of record information for
         certain output formats. The period of record indicates date ranges for
         a certain kind of information about a site, for example the start and
-        end dates for a site's daily mean streamflow.
+        end dates for a site's daily mean streamflow. Can be set as True,
+        'True', 'TRUE', or 'true'.
 
     For additional parameter options see
     https://waterservices.usgs.gov/rest/Site-Service.html#stateCd
     """
-
-    kwargs['siteOutput'] = 'Expanded'
+    seriesCatalogOutput = kwargs.pop('seriesCatalogOutput', None)
+    if seriesCatalogOutput in ['True', 'TRUE', 'true', True]:
+        # convert bool to string if necessary
+        kwargs['seriesCatalogOutput'] = 'True'
+    else:
+        # cannot have both seriesCatalogOutput and the expanded format
+        kwargs['siteOutput'] = 'Expanded'
 
     response = query_waterservices('site', **kwargs)
 
