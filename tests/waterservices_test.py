@@ -116,7 +116,7 @@ def test_get_qwdata(requests_mock):
     request_url = 'https://nwis.waterdata.usgs.gov/nwis/qwdata?site_no={}' \
                   '&qw_sample_wide=qw_sample_wide&agency_cd=USGS&format={}&pm_cd_compare=Greater+than' \
                   '&inventory_output=0&rdb_inventory_output=file&TZoutput=0&rdb_qw_attributes=expanded' \
-                  '&date_format=YYYY-MM-DD&rdb_compression=value&submmitted_form=brief_list'.format(site, format)
+                  '&date_format=YYYY-MM-DD&rdb_compression=value&submitted_form=brief_list'.format(site, format)
     response_file_path = 'data/waterdata_qwdata.txt'
     mock_request(requests_mock, request_url, response_file_path)
     with pytest.warns(DeprecationWarning):

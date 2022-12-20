@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
 import pytest
+import datetime
 from dataretrieval.nwis import get_record, preformat_peaks_response
+from dataretrieval.nwis import what_sites, get_iv, get_dv, get_discharge_peaks
 
 START_DATE = '2018-01-24'
 END_DATE   = '2018-01-25'
@@ -36,7 +38,6 @@ def test_iv_service():
 
 def test_iv_service_answer():
     df = test_iv_service()
-
     # check multiindex function
     assert df.index.names == [SITENO_COL, DATETIME_COL], "iv service returned incorrect index: {}".format(df.index.names)
 
@@ -122,3 +123,26 @@ def test_inc_date_03():
     assert df.shape == df2.shape
     # assert that the datetime index is not there
     assert df2.index.name != 'datetime'
+
+
+class TestTZ:
+    """Tests relating to GitHub Issue #60."""
+    sites, _ = what_sites(stateCd='MD')
+
+    def test_multiple_tz_01(self):
+        """Test based on GitHub Issue #60 - error merging different time zones."""
+        # this test fails before issue #60 is fixed
+        iv, _ = get_iv(sites=self.sites.site_no.values[:25].tolist())
+        # assert that the datetime column exists
+        assert 'datetime' in iv.index.names
+        # assert that it is a datetime type
+        assert isinstance(iv.index[0][1], datetime.datetime)
+
+    def test_multiple_tz_02(self):
+        """Test based on GitHub Issue #60 - confirm behavior for same tz."""
+        # this test passes before issue #60 is fixed
+        iv, _ = get_iv(sites=self.sites.site_no.values[:20].tolist())
+        # assert that the datetime column exists
+        assert 'datetime' in iv.index.names
+        # assert that it is a datetime type
+        assert isinstance(iv.index[0][1], datetime.datetime)

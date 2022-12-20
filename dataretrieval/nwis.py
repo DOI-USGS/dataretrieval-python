@@ -118,7 +118,7 @@ def _qwdata(datetime_index=True, **kwargs):
                'rdb_qw_attributes': 'expanded',
                'date_format': 'YYYY-MM-DD',
                'rdb_compression': 'value',
-               'submmitted_form': 'brief_list'}
+               'submitted_form': 'brief_list'}
     # 'qw_sample_wide': 'separated_wide'}
 
     # check for parameter codes, and reformat query args
@@ -770,12 +770,13 @@ def _read_json(json):
             # should be able to avoid this by dumping
             record_json = str(record_json).replace("'", '"')
 
-            # read json, converting all values to float64 and all qaulifiers
+            # read json, converting all values to float64 and all qualifiers
             # Lists can't be hashed, thus we cannot df.merge on a list column
             record_df = pd.read_json(record_json,
                                      orient='records',
                                      dtype={'value': 'float64',
-                                            'qualifiers': 'unicode'})
+                                            'qualifiers': 'unicode'},
+                                     convert_dates=False)
 
             record_df['qualifiers'] = (record_df['qualifiers']
                                        .str.strip("[]").str.replace("'", ""))
@@ -792,6 +793,9 @@ def _read_json(json):
             else:
                 merged_df = update_merge(merged_df, record_df, na_only=True,
                                          on=['site_no', 'datetime'])
+
+    # convert to datetime, normalizing the timezone to UTC when doing so
+    merged_df['datetime'] = pd.to_datetime(merged_df['datetime'], utc=True)
 
     return merged_df
 
