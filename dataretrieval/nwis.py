@@ -455,12 +455,11 @@ def get_info(**kwargs):
         siteOutput=expanded cannot be used if seriesCatalogOutput=true or with
         any values for outputDataTypeCd.
 
-    seriesCatalogOutput : boolean or string
+    seriesCatalogOutput : boolean
         A switch that provides detailed period of record information for
         certain output formats. The period of record indicates date ranges for
         a certain kind of information about a site, for example the start and
-        end dates for a site's daily mean streamflow. Can be set as True,
-        'True', 'TRUE', or 'true'.
+        end dates for a site's daily mean streamflow.
 
     For additional parameter options see
     https://waterservices.usgs.gov/rest/Site-Service.html#stateCd
