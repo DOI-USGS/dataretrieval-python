@@ -43,7 +43,7 @@ Examples from the Readme file on retrieving NWIS data
     >>> df3 = nwis.get_record(sites=site, service='site')
 
     >>> print(df3)
-      agency_cd   site_no                         station_nm site_tp_cd  lat_va  ...  aqfr_type_cd  well_depth_va  hole_depth_va depth_src_cd project_no
-    0      USGS  03339000  VERMILION RIVER NEAR DANVILLE, IL         ST  400603  ...           NaN            NaN            NaN          NaN        100
+      agency_cd   site_no                         station_nm site_tp_cd  lat_va  long_va  ...  aqfr_cd  aqfr_type_cd well_depth_va hole_depth_va depth_src_cd project_no
+    0      USGS  03339000  VERMILION RIVER NEAR DANVILLE, IL         ST  400603   873550  ...      NaN           NaN           NaN           NaN          NaN        100
     <BLANKLINE>
     [1 rows x 42 columns]
