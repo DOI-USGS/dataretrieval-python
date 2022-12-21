@@ -58,7 +58,7 @@ More services and documentation to come!
 ## Quick start
 
 dataretrieval can be installed using pip:
-
+	
     $ python3 -m pip install -U dataretrieval
 
 or conda:
@@ -92,6 +92,11 @@ and most likely further into the future.
 Resources are available primarily for maintenance and responding to user questions.
 Priorities on the development of new features are determined by the `dataretrieval` development team.
 
+
+## Acknowledgments
+This material is partially based upon work supported by the National Science Foundation (NSF) under award 1931297.
+Any opinions, findings, conclusions, or recommendations expressed in this material are those of the authors and do not necessarily reflect the views of the NSF.
+
 ## Disclaimer
 
 This software is in the public domain because it contains materials that originally came from the U.S. Geological Survey,
@@ -109,5 +114,6 @@ This software is provided “AS IS.”
 
 ## Citation
 
-Hodson, T.O. and contributors, 2022, dataretrieval (Python): a Python package for discovering and retrieving water data
-available from U.S. federal hydrologic web services. https://doi.org/10.5066/P94I5TX3
+Hodson, T.O., Hariharan, J.A., and contributors, 2022, dataretrieval (Python): a Python package for discovering
+and retrieving water data available from U.S. federal hydrologic web services.
+https://doi.org/10.5066/P94I5TX3
