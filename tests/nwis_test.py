@@ -199,5 +199,5 @@ class TestSiteseriesCatalogOutput:
 def test_empty_timeseries():
     """Test based on empty case from GitHub Issue #26."""
     df = get_record(sites='011277906', service='iv',
-                    start='2010-07-20', end='2010-07-21')
+                    start='2010-07-20', end='2010-07-20')
     assert df.empty is True
