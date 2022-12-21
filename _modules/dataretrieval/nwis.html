@@ -876,7 +876,8 @@
                                          <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site_no&#39;</span><span class="p">,</span> <span class="s1">&#39;datetime&#39;</span><span class="p">])</span>
 
     <span class="c1"># convert to datetime, normalizing the timezone to UTC when doing so</span>
-    <span class="n">merged_df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">merged_df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s1">&#39;datetime&#39;</span> <span class="ow">in</span> <span class="n">merged_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">merged_df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">merged_df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">merged_df</span></div>
 
