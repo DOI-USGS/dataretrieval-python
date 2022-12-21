@@ -58,6 +58,8 @@ def format_response(df, service=None, **kwargs):
 
 
 def preformat_peaks_response(df):
+    """Datetime formatting for the 'peaks' service response.
+    """
     df['datetime'] = pd.to_datetime(df.pop('peak_dt'), errors='coerce')
     df.dropna(subset=['datetime'], inplace=True)
     return df
@@ -93,8 +95,15 @@ def get_qwdata(sites=None, start=None, end=None,
     **kwargs: optional
         If supplied, will be used as query parameters
 
-    Returns:
-        ``pandas.DataFrame`` containing times series data from the NWIS json and Metadata as tuple
+    Returns
+    -------
+    df: :obj:`pandas.DataFrame`
+        Times series data from the NWIS JSON
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
+
+    Examples
+    --------
     """
     if wide_format:
         kwargs['qw_sample_wide'] = 'qw_sample_wide'
@@ -170,8 +179,15 @@ def get_discharge_measurements(sites=None, start=None, end=None, **kwargs):
     **kwargs: optional
         If supplied, will be used as query parameters
 
-    Returns:
-        ``pandas.DataFrame`` containing times series data from the NWIS json and Metadata as tuple
+    Returns
+    -------
+    df: :obj:`pandas.DataFrame`
+        Times series data from the NWIS JSON
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
+
+    Examples
+    --------
     """
     start = kwargs.pop('begin_date', start)
     end = kwargs.pop('end_date', end)
@@ -202,8 +218,15 @@ def get_discharge_peaks(sites=None, start=None, end=None,
     **kwargs: optional
         If supplied, will be used as query parameters
 
-    Returns:
-        ``pandas.DataFrame`` containing times series data from the NWIS json and Metadata as tuple
+    Returns
+    -------
+    df: :obj:`pandas.DataFrame`
+        Times series data from the NWIS JSON
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
+
+    Examples
+    --------
     """
     start = kwargs.pop('begin_date', start)
     end = kwargs.pop('end_date', end)
@@ -239,8 +262,15 @@ def get_gwlevels(sites=None, start='1851-01-01', end=None,
     **kwargs: optional
         If supplied, will be used as query parameters
 
-    Returns:
-        ``pandas.DataFrame`` containing times series data from the NWIS json and Metadata as tuple
+    Returns
+    -------
+    df: :obj:`pandas.DataFrame`
+        Times series data from the NWIS JSON
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
+
+    Examples
+    --------
     """
     start = kwargs.pop('startDT', start)
     end = kwargs.pop('endDT', end)
@@ -280,6 +310,17 @@ def get_stats(sites, **kwargs):
     .. todo::
 
         fix date parsing
+
+    Examples
+    --------
+
+    .. doctest::
+
+        >>> df, md = dataretrieval.nwis.get_stats(
+        ...     sites='01646500', statReportType='annual' statYearType='water')
+
+        >>> df, md = dataretrieval.nwis.get_stats(
+        ...     sites='01646500', statReportType='monthly')
 
     """
     response = query_waterservices('stat', sites=sites, **kwargs)
@@ -329,7 +370,8 @@ def query_waterservices(service, **kwargs):
             end date
         modifiedSince: string
 
-    Returns:
+    Returns
+    -------
         request
 
     Usage: must specify one major filter: sites, stateCd, bBox,
@@ -364,8 +406,15 @@ def get_dv(sites=None, start=None, end=None, multi_index=True, **kwargs):
     **kwargs: optional
         If supplied, will be used as query parameters
 
-    Returns:
-        ``pandas.DataFrame`` containing times series data from the NWIS json and Metadata as tuple
+    Returns
+    -------
+    df: :obj:`pandas.DataFrame`
+        Times series data from the NWIS JSON
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
+
+    Examples
+    --------
     """
     start = kwargs.pop('startDT', start)
     end = kwargs.pop('endDT', end)
@@ -463,6 +512,9 @@ def get_info(**kwargs):
 
     For additional parameter options see
     https://waterservices.usgs.gov/rest/Site-Service.html#stateCd
+
+    Examples
+    --------
     """
     seriesCatalogOutput = kwargs.pop('seriesCatalogOutput', None)
     if seriesCatalogOutput in ['True', 'TRUE', 'true', True]:
@@ -480,7 +532,9 @@ def get_info(**kwargs):
 def get_iv(sites=None, start=None, end=None, multi_index=True, **kwargs):
     """Get instantaneous values data from NWIS and return it as a DataFrame.
 
-    Note: If no start or end date are provided, only the most recent record is returned.
+    .. note::
+
+        If no start or end date are provided, only the most recent record is returned.
 
     Parameters
     ----------
@@ -489,8 +543,15 @@ def get_iv(sites=None, start=None, end=None, multi_index=True, **kwargs):
     end: string
         If the waterdata parameter endDT is supplied, it will overwrite the end parameter
 
-    Returns:
-        ``pandas.DataFrame`` containing times series data from the NWIS json and Metadata as tuple
+    Returns
+    -------
+    df: :obj:`pandas.DataFrame`
+        Times series data from the NWIS JSON
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
+
+    Examples
+    --------
     """
     start = kwargs.pop('startDT', start)
     end = kwargs.pop('endDT', end)
@@ -511,13 +572,32 @@ def get_pmcodes(parameterCd='All', partial=True):
 
     Parameters
     ----------
-        parameterCd: string or list
-            Accepts parameter codes or names
+    parameterCd: string or list
+        Accepts parameter codes or names
 
-        partial: boolean
-            Default is True (partial querying). If False, the function will query only exact matches
-    Returns:
-        DataFrame containing the USGS parameter codes and Metadata as tuple
+    partial: boolean
+        Default is True (partial querying). If False, the function will query
+        only exact matches
+
+    Returns
+    -------
+    df: :obj:`pandas.DataFrame`
+        Times series data from the NWIS JSON
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
+
+    Examples
+    --------
+
+    .. doctest::
+
+        >>> # Get information about the '00060' pcode
+        >>> df, md = dataretrieval.nwis.get_pmcodes(
+        ...     parameterCd='00060', partial=False)
+
+        >>> # Get information about all 'Discharge' pcodes
+        >>> df, md = dataretrieval.nwis.get_pmcodes(
+        ...     parameterCd='Discharge', partial=True)
 
     """
     if parameterCd is None:
@@ -576,7 +656,24 @@ def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
 
     Returns
     -------
-        ``pandas.DataFrame`` containing requested data and Metadata as tuple
+    df: :obj:`pandas.DataFrame`
+        Data from NWIS
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
+
+    Examples
+    --------
+
+    .. doctest::
+
+        >>> # Get total population for RI from the NWIS water use service
+        >>> df, md = dataretrieval.nwis.get_water_use(
+        ...     years='2000', state='RI', categories='TP')
+
+        >>> # Get the national total water use for livestock in Bgal/day
+        >>> df, md = dataretrieval.nwis.get_water_use(
+        ...     years='2010', categories='L')
+
     """
     payload = {'rdb_compression' : 'value',
                'format' : 'rdb',
@@ -593,7 +690,8 @@ def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
 
 def get_ratings(site=None, file_type="base", **kwargs):
     """
-    Rating table for an active USGS streamgage retrieval
+    Rating table for an active USGS streamgage retrieval.
+
     Reads current rating table for an active USGS streamgage from NWISweb.
     Data is retrieved from https://waterdata.usgs.gov/nwis.
 
@@ -611,8 +709,20 @@ def get_ratings(site=None, file_type="base", **kwargs):
     **kwargs: optional
         If supplied, will be used as query parameters
 
-    Return:
-        ``pandas.DataFrame`` containing requested data and Metadata as tuple
+    Return
+    ------
+    df: :obj:`pandas.DataFrame`
+        Formatted requested data
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
+
+    Examples
+    --------
+
+    .. doctest::
+
+        >>> df, md = dataretrieval.nwis.get_ratings(site='01594440')
+
     """
     site = kwargs.pop('site_no', site)
     return _ratings(site=site, file_type=file_type, **kwargs)
@@ -637,7 +747,20 @@ def what_sites(**kwargs):
 
     Parameters
     ----------
-    same as get_info
+    same as :obj:`dataretrieval.nwis.get_info`
+
+    Examples
+    --------
+
+    .. doctest::
+
+        >>> # get information about a single site
+        >>> df, md = dataretrieval.nwis.what_sites(sites='05114000)
+
+        >>> # get information about sites with phosphorus in Ohio
+        >>> df, md = dataretrieval.nwis.what_sites(
+        ...     stateCd='OH', parameterCd='00665')
+
     """
 
     response = query_waterservices(service='site', **kwargs)
@@ -653,7 +776,9 @@ def get_record(sites=None, start=None, end=None,
     """
     Get data from NWIS and return it as a ``pandas.DataFrame``.
 
-    Note: If no start or end date are provided, only the most recent record is returned.
+    .. note::
+
+        If no start or end date are provided, only the most recent record is returned.
 
     Parameters
     ----------
@@ -676,6 +801,8 @@ def get_record(sites=None, start=None, end=None,
     -------
         ``pandas.DataFrame`` containing requested data
 
+    Examples
+    --------
     """
     if service not in WATERSERVICES_SERVICES + WATERDATA_SERVICES:
         raise TypeError('Unrecognized service: {}'.format(service))
@@ -737,12 +864,18 @@ def _read_json(json):
     """
     Reads a NWIS Water Services formatted JSON into a ``pandas.DataFrame``.
 
-    Args:
-        json: dict
-            A JSON dictionary response to be parsed into a ``pandas.DataFrame``
+    Parameters
+    ----------
+    json: dict
+        A JSON dictionary response to be parsed into a ``pandas.DataFrame``
 
-    Returns:
-        ``pandas.DataFrame`` containing times series data from the NWIS json and Metadata as tuple
+    Returns
+    -------
+    df: :obj:`pandas.DataFrame`
+        Times series data from the NWIS JSON
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
+
     """
     merged_df = pd.DataFrame()
 
@@ -810,9 +943,16 @@ def _read_rdb(rdb):
     """
     Convert NWIS rdb table into a ``pandas.dataframe``.
 
-    Args:
-        rdb: string
-            A string representation of an rdb table
+    Parameters
+    ----------
+    rdb: string
+        A string representation of an rdb table
+
+    Returns
+    -------
+    df: ``pandas.dataframe``
+        A formatted pandas data frame
+
     """
     count = 0
 
@@ -838,11 +978,18 @@ def _read_rdb(rdb):
 def _set_metadata(response, **parameters):
     """Generates a standard set of metadata informed by the response.
 
-    Args:
-        response: Response
-             Response object from requests module
-        parameters: unpacked dictionary
-            unpacked dictionary of the parameters supplied in the request
+    Parameters
+    ----------
+    response: Response
+        Response object from requests module
+    parameters: unpacked dictionary
+        Unpacked dictionary of the parameters supplied in the request
+
+    Returns
+    -------
+    md: :obj:`dataretrieval.utils.Metadata`
+        A ``dataretrieval`` custom :obj:`dataretrieval.utils.Metadata` object.
+
     """
     md = set_md(response)
     # site_no is preferred over sites to set site_info if both are present,

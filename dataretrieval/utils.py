@@ -11,9 +11,32 @@ from dataretrieval.codes import tz
 def to_str(listlike, delimiter=','):
     """Translates list-like objects into strings.
 
+    Parameters
+    ----------
+    listlike: list-like object
+        An object that is a list, or list-like
+        (e.g., :obj:`pandas.core.series.Series`)
+
+    delimiter: string, optional
+        The delimiter that is placed between entries in listlike when it is
+        turned into a string. Default value is a comma.
+
     Returns
     -------
-        List-like object as string
+    listlike: string
+        The listlike object as string separated by the delimiter
+
+    Examples
+    --------
+
+    .. doctest::
+
+        >>> to_str([1, 'a', 2])
+            '1,a,2'
+
+        >>> to_str([0, 10, 42], delimiter='+')
+            '0+10+42'
+
     """
     if type(listlike) == list:
         return delimiter.join([str(x) for x in listlike])
@@ -119,6 +142,8 @@ def update_merge(left, right, na_only=False, on=None, **kwargs):
 
 
 class Metadata:
+    """Custom class for metadata.
+    """
     url = None
     query_time = None
     site_info = None
@@ -133,6 +158,8 @@ class Metadata:
 
 
 def set_metadata(response):
+    """Function to initialize and set metadata from an API response.
+    """
     md = Metadata()
     md.url = response.url
     md.query_time = response.elapsed
@@ -148,13 +175,16 @@ def query(url, payload, delimiter=','):
 
     Parameters
     ----------
-        url :
-        payload : query parameters passed to requests.get
-        delimiter : delimeter to use with lists
+        url: string
+            URL to query
+        payload: dict
+            query parameters passed to requests.get
+        delimiter: string
+            delimeter to use with lists
 
     Returns
     -------
-        string : query response
+        string: query response
     """
 
     for key, value in payload.items():
@@ -177,6 +207,8 @@ def query(url, payload, delimiter=','):
 
 
 class NoSitesError(Exception):
+    """Custom error class used when selection criteria returns no sites/data.
+    """
     def __init__(self, url):
         self.url = url
 
