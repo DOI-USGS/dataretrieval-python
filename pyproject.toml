@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dataretrieval"
+description = "Discover and retrieve water data from U.S. federal hydrologic web services."
+readme = "README.md"
+requires-python = ">=3.7"
+keywords = ["USGS", "water data"]
+license = {file = "LICENSE.md"}
+maintainers = [
+  {name = "Timothy Hodson", email = "thodson@usgs.gov"},
+  {name = "Jayaram Hariharan", email = "jhariharan@usgs.gov"},
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "requests",
+    "pandas",
+    "typing"
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+test = [
+  "pytest > 5.0.0",
+  "pytest-cov[all]"
+]
+doc = [
+  "sphinx",
+]
+
+[project.urls]
+homepage = "https://github.com/USGS-python/dataretrieval"
+documentation = "https://usgs-python.github.io/dataretrieval"
+repository = "https://github.com/USGS-python/dataretrieval.git"
