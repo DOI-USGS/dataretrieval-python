@@ -5,7 +5,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # Since we aren't installing package here, we mock imports of the dependencies.
 
-# Relative paths so docunentation can reference and include demos folder
+# Relative paths so documentation can reference and include demos folder
 import os
 import sys
 
@@ -92,6 +92,7 @@ doctest_global_setup = '''
 import dataretrieval
 import numpy as np
 import pandas as pd
+import matplotlib
 '''
 
 # -- Options for HTML output ----------------------------------------------

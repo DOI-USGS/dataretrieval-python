@@ -13,3 +13,4 @@ ipython
 ipykernel
 nbsphinx
 nbsphinx_link
+matplotlib
