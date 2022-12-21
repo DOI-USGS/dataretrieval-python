@@ -800,7 +800,7 @@ def _read_json(json):
                                          on=['site_no', 'datetime'])
 
     # convert to datetime, normalizing the timezone to UTC when doing so
-    if merged_df.empty is False:
+    if 'datetime' in merged_df.columns:
         merged_df['datetime'] = pd.to_datetime(merged_df['datetime'], utc=True)
 
     return merged_df
