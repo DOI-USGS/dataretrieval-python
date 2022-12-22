@@ -31,11 +31,11 @@ def to_str(listlike, delimiter=','):
 
     .. doctest::
 
-        >>> to_str([1, 'a', 2])
-            '1,a,2'
+        >>> dataretrieval.utils.to_str([1, 'a', 2])
+        '1,a,2'
 
-        >>> to_str([0, 10, 42], delimiter='+')
-            '0+10+42'
+        >>> dataretrieval.utils.to_str([0, 10, 42], delimiter='+')
+        '0+10+42'
 
     """
     if type(listlike) == list:
