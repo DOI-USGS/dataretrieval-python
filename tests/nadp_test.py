@@ -1,7 +1,10 @@
 """Tests for NADP functions."""
 import pytest
 import os
-import dataretrieval.nadp as nadp
+try:
+    import dataretrieval.nadp as nadp
+except ImportError:
+    pass  # happens when GDAL is not available
 
 
 class TestMDNmap:
