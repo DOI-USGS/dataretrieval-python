@@ -15,7 +15,7 @@ def to_str(listlike, delimiter=','):
     ----------
     listlike: list-like object
         An object that is a list, or list-like
-        (e.g., :obj:`pandas.core.series.Series`)
+        (e.g., ``pandas.core.series.Series``)
 
     delimiter: string, optional
         The delimiter that is placed between entries in listlike when it is
@@ -28,7 +28,6 @@ def to_str(listlike, delimiter=','):
 
     Examples
     --------
-
     .. doctest::
 
         >>> dataretrieval.utils.to_str([1, 'a', 2])
@@ -60,7 +59,7 @@ def format_datetime(df, date_field, time_field, tz_field):
     Parameters
     ----------
     df : ``pandas.DataFrame``
-        ``pandas.DataFrame`` containing date, time, and timezone fields.
+        A data frame containing date, time, and timezone fields.
 
     date_field : string
         Name of date column in df.
@@ -74,6 +73,7 @@ def format_datetime(df, date_field, time_field, tz_field):
     Returns
     -------
     df : ``pandas.DataFrame``
+        The data frame with a formatted 'datetime' column
     """
 
     # create a datetime index from the columns in qwdata response
@@ -102,16 +102,16 @@ def update_merge(left, right, na_only=False, on=None, **kwargs):
     Parameters
     ----------
     left: ``pandas.DataFrame``
-        original data
+        Original data
     right: ``pandas.DataFrame``
-        updated data
+        Updated data
     na_only: bool
-        if True, only update na values
+        If True, only update na values
 
     Returns
     -------
     df: ``pandas.DataFrame``
-        updated data
+        Updated data frame
 
 
     .. todo::
