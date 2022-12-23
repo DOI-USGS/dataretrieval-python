@@ -271,9 +271,7 @@ def assert_metadata(requests_mock, request_url, md, site, parameter_cd, format):
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
     assert md.header == {"mock_header": "value"}
-    if site is None:
-        assert md.site_info is None
-    else:
+    if site is not None:
         site_request_url = "https://waterservices.usgs.gov/nwis/site?sites={}&format=rdb".format(site)
         with open('data/waterservices_site.txt') as text:
             requests_mock.get(site_request_url, text=text.read())
