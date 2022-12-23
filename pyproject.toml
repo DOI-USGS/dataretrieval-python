@@ -23,6 +23,9 @@ dependencies = [
 ]
 dynamic = ["version"]
 
+[tool.setuptools]
+packages = ["dataretrieval", "dataretrieval.codes"]
+
 [project.optional-dependencies]
 test = [
   "pytest > 5.0.0",
