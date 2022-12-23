@@ -411,8 +411,8 @@
 <span class="sd">    Usage: must specify one major filter: sites, stateCd, bBox,</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;sites&#39;</span><span class="p">,</span> <span class="s1">&#39;stateCd&#39;</span><span class="p">,</span> <span class="s1">&#39;bBox&#39;</span><span class="p">,</span> <span class="s1">&#39;huc&#39;</span><span class="p">]):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Query must specify a major filter: sites, stateCd, bBox, or huc&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;sites&#39;</span><span class="p">,</span> <span class="s1">&#39;stateCd&#39;</span><span class="p">,</span> <span class="s1">&#39;bBox&#39;</span><span class="p">,</span> <span class="s1">&#39;huc&#39;</span><span class="p">,</span> <span class="s1">&#39;countyCd&#39;</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Query must specify a major filter: sites, stateCd, bBox, huc, or countyCd&#39;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">service</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">WATERSERVICES_SERVICES</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Service not recognized&#39;</span><span class="p">)</span>
@@ -921,12 +921,24 @@
 <span class="sd">            unpacked dictionary of the parameters supplied in the request</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">md</span> <span class="o">=</span> <span class="n">set_md</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-    <span class="n">site_aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sites&#39;</span><span class="p">,</span> <span class="s1">&#39;site_no&#39;</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">alias</span> <span class="ow">in</span> <span class="n">site_aliases</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">alias</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
-            <span class="n">md</span><span class="o">.</span><span class="n">site_info</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="n">alias</span><span class="p">])</span>
-            <span class="k">break</span>
+    <span class="c1"># site_no is preferred over sites to set site_info if both are present,</span>
+    <span class="c1"># matching behavior of the get_rating() function</span>
+    <span class="k">if</span> <span class="s1">&#39;site_no&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+        <span class="n">md</span><span class="o">.</span><span class="n">site_info</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;site_no&#39;</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="s1">&#39;sites&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+        <span class="n">md</span><span class="o">.</span><span class="n">site_info</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;sites&#39;</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="s1">&#39;stateCd&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+        <span class="n">md</span><span class="o">.</span><span class="n">site_info</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">stateCd</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;stateCd&#39;</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="s1">&#39;huc&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+        <span class="n">md</span><span class="o">.</span><span class="n">site_info</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">huc</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;huc&#39;</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="s1">&#39;countyCd&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+        <span class="n">md</span><span class="o">.</span><span class="n">site_info</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">countyCd</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;countyCd&#39;</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="s1">&#39;bBox&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+        <span class="n">md</span><span class="o">.</span><span class="n">site_info</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">bBox</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;bBox&#39;</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>  <span class="c1"># don&#39;t set metadata site_info attribute</span>
 
+    <span class="c1"># define variable_info metadata based on parameterCd if available</span>
     <span class="k">if</span> <span class="s1">&#39;parameterCd&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
         <span class="n">md</span><span class="o">.</span><span class="n">variable_info</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">get_pmcodes</span><span class="p">(</span><span class="n">parameterCd</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;parameterCd&#39;</span><span class="p">])</span>
 
