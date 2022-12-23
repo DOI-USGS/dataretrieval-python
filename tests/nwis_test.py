@@ -1,9 +1,13 @@
 import numpy as np
 import pandas as pd
 import pytest
+import requests
 import datetime
 from dataretrieval.nwis import get_record, preformat_peaks_response, get_info
 from dataretrieval.nwis import what_sites, get_iv, get_dv, get_discharge_peaks
+from dataretrieval.nwis import _set_metadata
+import unittest.mock as mock
+
 
 START_DATE = '2018-01-24'
 END_DATE   = '2018-01-25'
@@ -201,3 +205,73 @@ def test_empty_timeseries():
     df = get_record(sites='011277906', service='iv',
                     start='2010-07-20', end='2010-07-20')
     assert df.empty is True
+
+
+class TestMetaData:
+    """Tests of NWIS metadata setting, based on GitHub Issue #73."""
+
+    def test_set_metadata_info_site(self):
+        """Test metadata info is set when site parameter is supplied."""
+        # mock the query response
+        response = mock.MagicMock()
+        # make metadata call
+        md = _set_metadata(response, sites='01491000')
+        # assert that metadata info exists but don't execute lambda function
+        assert md.site_info is not None
+        # assert metadata site_info is callable
+        assert hasattr(md.site_info, '__call__')
+
+    def test_set_metadata_info_site_no(self):
+        """Test metadata info is set when site_no parameter is supplied."""
+        # mock the query response
+        response = mock.MagicMock()
+        # make metadata call
+        md = _set_metadata(response, site_no='01491000')
+        # assert that metadata info exists but don't execute lambda function
+        assert md.site_info is not None
+        # assert metadata site_info is callable
+        assert hasattr(md.site_info, '__call__')
+
+    def test_set_metadata_info_stateCd(self):
+        """Test metadata info is set when stateCd parameter is supplied."""
+        # mock the query response
+        response = mock.MagicMock()
+        # make metadata call
+        md = _set_metadata(response, stateCd='RI')
+        # assert that metadata info exists but don't execute lambda function
+        assert md.site_info is not None
+        # assert metadata site_info is callable
+        assert hasattr(md.site_info, '__call__')
+
+    def test_set_metadata_info_huc(self):
+        """Test metadata info is set when huc parameter is supplied."""
+        # mock the query response
+        response = mock.MagicMock()
+        # make metadata call
+        md = _set_metadata(response, huc='01')
+        # assert that metadata info exists but don't execute lambda function
+        assert md.site_info is not None
+        # assert metadata site_info is callable
+        assert hasattr(md.site_info, '__call__')
+
+    def test_set_metadata_info_bbox(self):
+        """Test metadata info is set when bbox parameter is supplied."""
+        # mock the query response
+        response = mock.MagicMock()
+        # make metadata call
+        md = _set_metadata(response, bBox='-92.8,44.2,-88.9,46.0')
+        # assert that metadata info exists but don't execute lambda function
+        assert md.site_info is not None
+        # assert metadata site_info is callable
+        assert hasattr(md.site_info, '__call__')
+
+    def test_set_metadata_info_countyCd(self):
+        """Test metadata info is set when countyCd parameter is supplied."""
+        # mock the query response
+        response = mock.MagicMock()
+        # make metadata call
+        md = _set_metadata(response, countyCd='01001')
+        # assert that metadata info exists but don't execute lambda function
+        assert md.site_info is not None
+        # assert metadata site_info is callable
+        assert hasattr(md.site_info, '__call__')
