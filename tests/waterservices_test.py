@@ -29,7 +29,7 @@ def test_query_waterservices_validation():
     """Tests the validation parameters of the query_waterservices method"""
     with pytest.raises(TypeError) as type_error:
         query_waterservices(service='dv', format='rdb')
-    assert 'Query must specify a major filter: sites, stateCd, bBox, or huc' == str(type_error.value)
+    assert 'Query must specify a major filter: sites, stateCd, bBox, huc, or countyCd' == str(type_error.value)
 
     with pytest.raises(TypeError) as type_error:
         query_waterservices(service=None, sites='sites')
