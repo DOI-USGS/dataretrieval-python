@@ -335,8 +335,8 @@ def query_waterservices(service, **kwargs):
     Usage: must specify one major filter: sites, stateCd, bBox,
 
     """
-    if not any(key in kwargs for key in ['sites', 'stateCd', 'bBox', 'huc']):
-        raise TypeError('Query must specify a major filter: sites, stateCd, bBox, or huc')
+    if not any(key in kwargs for key in ['sites', 'stateCd', 'bBox', 'huc', 'countyCd']):
+        raise TypeError('Query must specify a major filter: sites, stateCd, bBox, huc, or countyCd')
 
     if service not in WATERSERVICES_SERVICES:
         raise TypeError('Service not recognized')
@@ -845,12 +845,24 @@ def _set_metadata(response, **parameters):
             unpacked dictionary of the parameters supplied in the request
     """
     md = set_md(response)
-    site_aliases = ['sites', 'site_no']
-    for alias in site_aliases:
-        if alias in parameters:
-            md.site_info = lambda: what_sites(sites=parameters[alias])
-            break
+    # site_no is preferred over sites to set site_info if both are present,
+    # matching behavior of the get_rating() function
+    if 'site_no' in parameters:
+        md.site_info = lambda: what_sites(sites=parameters['site_no'])
+    elif 'sites' in parameters:
+        md.site_info = lambda: what_sites(sites=parameters['sites'])
+    elif 'stateCd' in parameters:
+        md.site_info = lambda: what_sites(stateCd=parameters['stateCd'])
+    elif 'huc' in parameters:
+        md.site_info = lambda: what_sites(huc=parameters['huc'])
+    elif 'countyCd' in parameters:
+        md.site_info = lambda: what_sites(countyCd=parameters['countyCd'])
+    elif 'bBox' in parameters:
+        md.site_info = lambda: what_sites(bBox=parameters['bBox'])
+    else:
+        pass  # don't set metadata site_info attribute
 
+    # define variable_info metadata based on parameterCd if available
     if 'parameterCd' in parameters:
         md.variable_info = lambda: get_pmcodes(parameterCd=parameters['parameterCd'])
 

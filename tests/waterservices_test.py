@@ -29,7 +29,7 @@ def test_query_waterservices_validation():
     """Tests the validation parameters of the query_waterservices method"""
     with pytest.raises(TypeError) as type_error:
         query_waterservices(service='dv', format='rdb')
-    assert 'Query must specify a major filter: sites, stateCd, bBox, or huc' == str(type_error.value)
+    assert 'Query must specify a major filter: sites, stateCd, bBox, huc, or countyCd' == str(type_error.value)
 
     with pytest.raises(TypeError) as type_error:
         query_waterservices(service=None, sites='sites')
@@ -271,9 +271,7 @@ def assert_metadata(requests_mock, request_url, md, site, parameter_cd, format):
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
     assert md.header == {"mock_header": "value"}
-    if site is None:
-        assert md.site_info is None
-    else:
+    if site is not None:
         site_request_url = "https://waterservices.usgs.gov/nwis/site?sites={}&format=rdb".format(site)
         with open('data/waterservices_site.txt') as text:
             requests_mock.get(site_request_url, text=text.read())
