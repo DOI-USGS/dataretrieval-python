@@ -22,12 +22,12 @@ def download_workspace(filepath, workspaceID, format=''):
 
     Returns
     -------
-        r: geodatabase or shapefiles
-            A zip file containing the workspace contents, in either a
-            geodatabase or shape files.
+    r: geodatabase or shapefiles
+        A zip file containing the workspace contents, in either a
+        geodatabase or shape files.
 
     """
-    payload = {'workspaceID':workspaceID, 'format':format}
+    payload = {'workspaceID': workspaceID, 'format': format}
     url = 'https://streamstats.usgs.gov/streamstatsservices/download'
 
     r = requests.get(url, params=payload)
@@ -41,8 +41,10 @@ def download_workspace(filepath, workspaceID, format=''):
 
     #return
 
+
 def get_sample_watershed():
-    return get_watershed('NY',-74.524, 43.939)
+    return get_watershed('NY', -74.524, 43.939)
+
 
 def get_watershed(rcode, xlocation, ylocation, crs=4326,
                   includeparameters=True, includeflowtypes=False,
@@ -59,29 +61,30 @@ def get_watershed(rcode, xlocation, ylocation, crs=4326,
 
     Parameters
     ----------
-        rcode: StreamStats 2-3 character code that identifies the Study Area -- either a
-               State or a Regional Study.
-        xlocation: X location of the most downstream point of desired study area.
-        ylocation: Y location of the most downstream point of desired study area.
-        crs: ESPSG spatial reference code.
-        includeparameters:
-        includeflowtypes: Not yet implemented.
-        includefeatures: Comma seperated list of features to include in response.
-        simplify:
+    rcode: StreamStats 2-3 character code that identifies the Study Area -- either a
+            State or a Regional Study.
+    xlocation: X location of the most downstream point of desired study area.
+    ylocation: Y location of the most downstream point of desired study area.
+    crs: ESPSG spatial reference code.
+    includeparameters:
+    includeflowtypes: Not yet implemented.
+    includefeatures: Comma seperated list of features to include in response.
+    simplify:
 
     Returns
     -------
-        Json watershed object describing watershed
+    Json watershed object describing watershed
 
     see: https://streamstats.usgs.gov/streamstatsservices/#/
     """
 
-    payload = {'rcode':rcode, 'xlocation':xlocation, 'ylocation':ylocation, 'crs':crs,
-               'includeparameters':includeparameters, 'includeflowtypes':includeflowtypes,
-               'includefeatures':includefeatures, 'simplify':simplify}
+    payload = {'rcode': rcode, 'xlocation': xlocation, 'ylocation': ylocation,
+               'crs': crs, 'includeparameters': includeparameters,
+               'includeflowtypes': includeflowtypes,
+               'includefeatures': includefeatures, 'simplify': simplify}
     url = 'https://streamstats.usgs.gov/streamstatsservices/watershed.geojson'
 
-    r   = requests.get(url, params=payload)
+    r = requests.get(url, params=payload)
 
     r.raise_for_status()
 
@@ -96,9 +99,9 @@ def get_watershed(rcode, xlocation, ylocation, crs=4326,
         # return a python object
         pass
 
-    #data = r.json() #raise error
     data = json.loads(r.text)
     return Watershed.from_streamstats_json(data)
+
 
 class Watershed:
 

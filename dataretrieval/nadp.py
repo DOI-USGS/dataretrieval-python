@@ -20,6 +20,7 @@ will either download and extract the data, when a path is specified, or open
 the data as a GDAL memory-mapped file when no path is specified.
 
 .. todo::
+
     - include AIRMoN, AMNet, and AMoN
     - flexible handling of strings for parameters and measurement types
     - add errorchecking
