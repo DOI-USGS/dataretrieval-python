@@ -20,18 +20,18 @@ def get_flood_stage(sites: List[str] = None, fmt: str= "DF") -> Union[pd.DataFra
     ----------
     sites: List of strings
         Site numbers
-    fmt
-        Returned format: Default is "DF" for ``pandas.DataFrame``, else ``dict``
+    fmt: ``pandas.DataFrame`` or dict
+        Returned format: Default is "DF" for ``pandas.DataFrame``, else
+        a dictionary is returned.
 
     Returns
     -------
-        station_stages:``pandas.Dataframe`` or ``dict``
-            contains station numbers and their flood stages.
-            If no flood stage for a station, ``None`` is returned.
+    station_stages: ``pandas.Dataframe`` or dict
+        contains station numbers and their flood stages.
+        If no flood stage for a station, ``None`` is returned.
 
     Examples
     --------
-
     .. doctest::
 
         >> stations = ["07144100", "07144101"]
