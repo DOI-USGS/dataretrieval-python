@@ -147,7 +147,7 @@ def get_qwdata(sites=None, start=None, end=None,
     .. doctest::
 
         >>> # get water sample information for site 11447650
-        >>> df, md = get_qwdata(
+        >>> df, md = dataretrieval.nwis.get_qwdata(
         ...     sites='11447650', start='2010-01-01', end='2010-02-01')
 
     """
@@ -241,11 +241,11 @@ def get_discharge_measurements(sites=None, start=None, end=None, **kwargs):
     .. doctest::
 
         >>> # Get discharge measurements for site 05114000
-        >>> df, md = get_discharge_measurements(
+        >>> df, md = dataretrieval.nwis.get_discharge_measurements(
         ...     sites='05114000', start='2000-01-01', end='2000-01-30')
 
         >>> # Get discharge measurements for sites in Alaska
-        >>> df, md = get_discharge_measurements(
+        >>> df, md = dataretrieval.nwis.get_discharge_measurements(
         ...     start='2012-01-09', end='2012-01-10', stateCd='AK')
 
     """
@@ -294,11 +294,11 @@ def get_discharge_peaks(sites=None, start=None, end=None,
     .. doctest::
 
         >>> # Get discharge peaks for site 01491000
-        >>> df, md = get_discharge_peaks(
+        >>> df, md = dataretrieval.nwis.get_discharge_peaks(
         ...     sites='01491000', start='1980-01-01', end='1990-01-01')
 
         >>> # Get discharge peaks for sites in Hawaii
-        >>> df, md = get_discharge_peaks(
+        >>> df, md = dataretrieval.nwis.get_discharge_peaks(
         ...     start='1980-01-01', end='1980-01-02', stateCd='HI')
 
     """
@@ -350,7 +350,7 @@ def get_gwlevels(sites=None, start='1851-01-01', end=None,
     .. doctest::
 
         >>> # Get groundwater levels for site 434400121275801
-        >>> df, md = get_gwlevels(sites='434400121275801')
+        >>> df, md = dataretrieval.nwis.get_gwlevels(sites='434400121275801')
 
     """
     start = kwargs.pop('startDT', start)
