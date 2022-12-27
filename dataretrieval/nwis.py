@@ -33,6 +33,27 @@ WATERDATA_SERVICES = ['qwdata', 'measurements', 'peaks', 'pmcodes', 'water_use',
 
 def format_response(df, service=None, **kwargs):
     """Setup index for response from query.
+
+    This function formats the response from the NWIS web services, in
+    particular it sets the index of the data frame. This function tries to
+    convert the NWIS response into pandas datetime values localized to UTC,
+    and if possible, uses these timestamps to define the data frame index.
+
+    Parameters
+    ----------
+    df: ``pandas.DataFrame``
+        The data frame to format
+    service: string
+        The NWIS service that was queried, important because the 'peaks'
+        service returns a different format than the other services.
+    **kwargs: optional
+        Additional keyword arguments, e.g., 'multi_index'
+
+    Returns
+    -------
+    df: ``pandas.DataFrame``
+        The formatted data frame
+
     """
     mi = kwargs.pop('multi_index', True)
 
@@ -60,6 +81,19 @@ def format_response(df, service=None, **kwargs):
 
 def preformat_peaks_response(df):
     """Datetime formatting for the 'peaks' service response.
+
+    Function to format the datetime column of the 'peaks' service response.
+
+    Parameters
+    ----------
+    df: ``pandas.DataFrame``
+        The data frame to format
+
+    Returns
+    -------
+    df: ``pandas.DataFrame``
+        The formatted data frame
+
     """
     df['datetime'] = pd.to_datetime(df.pop('peak_dt'), errors='coerce')
     df.dropna(subset=['datetime'], inplace=True)
@@ -87,10 +121,10 @@ def get_qwdata(sites=None, start=None, end=None,
         sites parameter
     start: string
         If the qwdata parameter begin_date is supplied, it will overwrite the
-        start parameter
+        start parameter (YYYY-MM-DD)
     end: string
         If the qwdata parameter end_date is supplied, it will overwrite the
-        end parameter
+        end parameter (YYYY-MM-DD)
     multi_index: boolean
         If False, a dataframe with a single-level index (datetime) is returned
     wide_format : boolean
@@ -110,6 +144,12 @@ def get_qwdata(sites=None, start=None, end=None,
 
     Examples
     --------
+    .. doctest::
+
+        >>> # get water sample information for site 11447650
+        >>> df, md = get_qwdata(
+        ...     sites='11447650', start='2010-01-01', end='2010-02-01')
+
     """
     if wide_format:
         kwargs['qw_sample_wide'] = 'qw_sample_wide'
@@ -182,10 +222,10 @@ def get_discharge_measurements(sites=None, start=None, end=None, **kwargs):
         sites parameter
     start: string
         If the qwdata parameter begin_date is supplied, it will overwrite the
-        start parameter
+        start parameter (YYYY-MM-DD)
     end: string
         If the qwdata parameter end_date is supplied, it will overwrite the
-        end parameter
+        end parameter (YYYY-MM-DD)
     **kwargs: optional
         If supplied, will be used as query parameters
 
@@ -198,6 +238,16 @@ def get_discharge_measurements(sites=None, start=None, end=None, **kwargs):
 
     Examples
     --------
+    .. doctest::
+
+        >>> # Get discharge measurements for site 05114000
+        >>> df, md = get_discharge_measurements(
+        ...     sites='05114000', start='2000-01-01', end='2000-01-30')
+
+        >>> # Get discharge measurements for sites in Alaska
+        >>> df, md = get_discharge_measurements(
+        ...     start='2012-01-09', end='2012-01-10', stateCd='AK')
+
     """
     start = kwargs.pop('begin_date', start)
     end = kwargs.pop('end_date', end)
@@ -223,10 +273,10 @@ def get_discharge_peaks(sites=None, start=None, end=None,
         sites parameter
     start: string
         If the waterdata parameter begin_date is supplied, it will overwrite
-        the start parameter
+        the start parameter (YYYY-MM-DD)
     end: string
         If the waterdata parameter end_date is supplied, it will overwrite
-        the end parameter
+        the end parameter (YYYY-MM-DD)
     multi_index: boolean
         If False, a dataframe with a single-level index (datetime) is returned
     **kwargs: optional
@@ -241,6 +291,16 @@ def get_discharge_peaks(sites=None, start=None, end=None,
 
     Examples
     --------
+    .. doctest::
+
+        >>> # Get discharge peaks for site 01491000
+        >>> df, md = get_discharge_peaks(
+        ...     sites='01491000', start='1980-01-01', end='1990-01-01')
+
+        >>> # Get discharge peaks for sites in Hawaii
+        >>> df, md = get_discharge_peaks(
+        ...     start='1980-01-01', end='1980-01-02', stateCd='HI')
+
     """
     start = kwargs.pop('begin_date', start)
     end = kwargs.pop('end_date', end)
@@ -270,7 +330,7 @@ def get_gwlevels(sites=None, start='1851-01-01', end=None,
         the start parameter (defaults to '1851-01-01')
     end: string
         If the waterdata parameter end_date is supplied, it will overwrite the
-        end parameter
+        end parameter (YYYY-MM-DD)
     multi_index: boolean
         If False, a dataframe with a single-level index (datetime) is returned
     datetime_index : boolean
@@ -287,6 +347,11 @@ def get_gwlevels(sites=None, start='1851-01-01', end=None,
 
     Examples
     --------
+    .. doctest::
+
+        >>> # Get groundwater levels for site 434400121275801
+        >>> df, md = get_gwlevels(sites='434400121275801')
+
     """
     start = kwargs.pop('startDT', start)
     end = kwargs.pop('endDT', end)
@@ -446,10 +511,10 @@ def get_dv(sites=None, start=None, end=None, multi_index=True, **kwargs):
     ----------
     start: string
         If the waterdata parameter startDT is supplied, it will overwrite the
-        start parameter
+        start parameter (YYYY-MM-DD)
     end: string
         If the waterdata parameter endDT is supplied, it will overwrite the
-        end parameter
+        end parameter (YYYY-MM-DD)
     **kwargs: optional
         If supplied, will be used as query parameters
 
@@ -462,6 +527,16 @@ def get_dv(sites=None, start=None, end=None, multi_index=True, **kwargs):
 
     Examples
     --------
+    .. doctest::
+
+        >>> # Get mean statistic daily values for site 04085427
+        >>> df, md = dataretrieval.nwis.get_dv(
+        ...     sites='04085427', start='2012-01-01', end='2012-06-30',
+        ...     statCd='00003')
+
+        >>> # Get the latest daily values for site 01646500
+        >>> df, md = dataretrieval.nwis.get_dv(sites='01646500')
+
     """
     start = kwargs.pop('startDT', start)
     end = kwargs.pop('endDT', end)
@@ -481,84 +556,72 @@ def get_info(**kwargs):
     """
     Get site description information from NWIS.
 
-    Note: Must specify one major parameter.
+    **Note:** *Must specify one major parameter.*
+
+    For additional parameter options see
+    https://waterservices.usgs.gov/rest/Site-Service.html#stateCd
 
     Parameters
     ----------
-    sites : string or list
+    sites: string or list
         A list of site numbers. Sites may be prefixed with an optional agency
         code followed by a colon.
-
-    stateCd : string
+    stateCd: string
         U.S. postal service (2-digit) state code. Only 1 state can be specified
         per request.
-
-    huc : string or list
+    huc: string or list
         A list of hydrologic unit codes (HUC) or aggregated watersheds. Only 1
         major HUC can be specified per request, or up to 10 minor HUCs. A major
         HUC has two digits.
-
-    bBox : list
+    bBox: list
         A contiguous range of decimal latitude and longitude, starting with the
         west longitude, then the south latitude, then the east longitude, and
         then the north latitude with each value separated by a comma. The
         product of the range of latitude range and longitude cannot exceed 25
         degrees. Whole or decimal degrees must be specified, up to six digits
         of precision. Minutes and seconds are not allowed.
-
-    countyCd : string or list
+    countyCd: string or list
         A list of county numbers, in a 5 digit numeric format. The first two
         digits of a county's code are the FIPS State Code.
         (url: https://help.waterdata.usgs.gov/code/county_query?fmt=html)
-
     **kwargs: optional
         If supplied, will be used as query parameters
 
-    Minor Parameters
+    Other Parameters
     ----------------
-    startDt : string
+    startDt: string
         Selects sites based on whether data was collected at a point in time
         beginning after startDt (start date). Dates must be in ISO-8601
         Calendar Date format (for example: 1990-01-01).
-
-    endDt : string
-
-    period : string
+    endDt: string
+        The end date for the period of record. Dates must be in ISO-8601
+        Calendar Date format (for example: 1990-01-01).
+    period: string
         Selects sites based on whether or not they were active between now
         and a time in the past. For example, period=P10W will select sites
         active in the last ten weeks.
-
-    modifiedSince : string
+    modifiedSince: string
         Returns only sites where site attributes or period of record data have
         changed during the request period.
-
-    parameterCd : string or list
+    parameterCd: string or list
         Returns only site data for those sites containing the requested USGS
         parameter codes.
-
-    siteType : string or list
+    siteType: string or list
         Restricts sites to those having one or more major and/or minor site
         types, such as stream, spring or well. For a list of all valid site
         types see https://help.waterdata.usgs.gov/site_tp_cd
         For example, siteType='ST' returns streams only.
-
-    Formatting Parameters
-    ---------------------
-    siteOutput : string ('basic' or 'expanded')
+    siteOutput: string ('basic' or 'expanded')
         Indicates the richness of metadata you want for site attributes. Note
         that for visually oriented formats like Google Map format, this
         argument has no meaning. Note: for performance reasons,
         siteOutput=expanded cannot be used if seriesCatalogOutput=true or with
         any values for outputDataTypeCd.
-
-    seriesCatalogOutput : boolean
+    seriesCatalogOutput: boolean
         A switch that provides detailed period of record information for
         certain output formats. The period of record indicates date ranges for
         a certain kind of information about a site, for example the start and
         end dates for a site's daily mean streamflow.
-
-    For additional parameter options see
-    https://waterservices.usgs.gov/rest/Site-Service.html#stateCd
 
     Returns
     -------
@@ -604,10 +667,10 @@ def get_iv(sites=None, start=None, end=None, multi_index=True, **kwargs):
     ----------
     start: string
         If the waterdata parameter startDT is supplied, it will overwrite the
-        start parameter
+        start parameter (YYYY-MM-DD)
     end: string
         If the waterdata parameter endDT is supplied, it will overwrite the
-        end parameter
+        end parameter (YYYY-MM-DD)
 
     Returns
     -------
@@ -618,6 +681,13 @@ def get_iv(sites=None, start=None, end=None, multi_index=True, **kwargs):
 
     Examples
     --------
+    .. doctest::
+
+        >>> # Get instantaneous discharge data for site 05114000
+        >>> df, md = dataretrieval.nwis.get_iv(
+        ...     sites='05114000', start='2013-11-03', end='2013-11-03',
+        ...     parameterCd='00060')
+
     """
     start = kwargs.pop('startDT', start)
     end = kwargs.pop('endDT', end)
@@ -640,7 +710,6 @@ def get_pmcodes(parameterCd='All', partial=True):
     ----------
     parameterCd: string or list
         Accepts parameter codes or names
-
     partial: boolean
         Default is True (partial querying). If False, the function will query
         only exact matches
@@ -853,7 +922,7 @@ def get_record(sites=None, start=None, end=None,
     start: string
         Starting date of record (YYYY-MM-DD)
     end: string
-        Ending date of record.
+        Ending date of record. (YYYY-MM-DD)
     service: string
         - 'iv' : instantaneous data
         - 'dv' : daily mean data
