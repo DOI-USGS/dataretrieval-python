@@ -929,6 +929,11 @@ def get_record(sites=None, start=None, end=None,
         - 'qwdata' : discrete samples
         - 'site' : site description
         - 'measurements' : discharge measurements
+        - 'peaks': discharge peaks
+        - 'gwlevels': groundwater levels
+        - 'pmcodes': get parameter codes
+        - 'water_use': get water use data
+        - 'ratings': get rating table
     **kwargs: optional
         If supplied, will be used as query parameters
 
@@ -938,6 +943,46 @@ def get_record(sites=None, start=None, end=None,
 
     Examples
     --------
+    .. doctest::
+
+        >>> # Get latest instantaneous data from site 01585200
+        >>> df = dataretrieval.nwis.get_record(sites='01585200', service='iv')
+
+        >>> # Get latest daily mean data from site 01585200
+        >>> df = dataretrieval.nwis.get_record(sites='01585200', service='dv')
+
+        >>> # Get all discrete sample data from site 01585200
+        >>> df = dataretrieval.nwis.get_record(
+        ...     sites='01585200', service='qwdata')
+
+        >>> # Get site description for site 01585200
+        >>> df = dataretrieval.nwis.get_record(
+        ...     sites='01585200', service='site')
+
+        >>> # Get discharge measurements for site 01585200
+        >>> df = dataretrieval.nwis.get_record(
+        ...     sites='01585200', service='measurements')
+
+        >>> # Get discharge peaks for site 01585200
+        >>> df = dataretrieval.nwis.get_record(
+        ...     sites='01585200', service='peaks')
+
+        >>> # Get latest groundwater level for site 434400121275801
+        >>> df = dataretrieval.nwis.get_record(
+        ...     sites='434400121275801', service='gwlevels')
+
+        >>> # Get information about the discharge parameter code
+        >>> df = dataretrieval.nwis.get_record(
+        ...     service='pmcodes', parameterCd='00060')
+
+        >>> # Get water use data for livestock nationally in 2010
+        >>> df = dataretrieval.nwis.get_record(
+        ...     service='water_use', years='2010', categories='L')
+
+        >>> # Get rating table for USGS streamgage 01585200
+        >>> df = dataretrieval.nwis.get_record(
+        ...     sites='01585200', service='ratings')
+
     """
     if service not in WATERSERVICES_SERVICES + WATERDATA_SERVICES:
         raise TypeError('Unrecognized service: {}'.format(service))
