@@ -2,7 +2,6 @@
 Useful utilities for data munging.
 """
 import warnings
-import numpy as np
 import pandas as pd
 import requests
 from dataretrieval.codes import tz
@@ -16,7 +15,6 @@ def to_str(listlike, delimiter=','):
     listlike: list-like object
         An object that is a list, or list-like
         (e.g., ``pandas.core.series.Series``)
-
     delimiter: string, optional
         The delimiter that is placed between entries in listlike when it is
         turned into a string. Default value is a comma.
@@ -58,24 +56,21 @@ def format_datetime(df, date_field, time_field, tz_field):
 
     Parameters
     ----------
-    df : ``pandas.DataFrame``
+    df: ``pandas.DataFrame``
         A data frame containing date, time, and timezone fields.
-
-    date_field : string
+    date_field: string
         Name of date column in df.
-
-    time_field : string
+    time_field: string
         Name of time column in df.
-
-    tz_field : string
+    tz_field: string
         Name of time zone column in df.
 
     Returns
     -------
-    df : ``pandas.DataFrame``
+    df: ``pandas.DataFrame``
         The data frame with a formatted 'datetime' column
-    """
 
+    """
     # create a datetime index from the columns in qwdata response
     df[tz_field] = df[tz_field].map(tz)
 
@@ -112,7 +107,6 @@ def update_merge(left, right, na_only=False, on=None, **kwargs):
     -------
     df: ``pandas.DataFrame``
         Updated data frame
-
 
     .. todo::
 
@@ -175,16 +169,17 @@ def query(url, payload, delimiter=','):
 
     Parameters
     ----------
-        url: string
-            URL to query
-        payload: dict
-            query parameters passed to requests.get
-        delimiter: string
-            delimeter to use with lists
+    url: string
+        URL to query
+    payload: dict
+        query parameters passed to ``requests.get``
+    delimiter: string
+        delimiter to use with lists
 
     Returns
     -------
-        string: query response
+    string: query response
+        The response from the API query ``requests.get`` function call.
     """
 
     for key, value in payload.items():
