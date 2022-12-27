@@ -122,5 +122,6 @@ html_static_path = ['_static']
 linkcheck_ignore = [
     r'https://streamstats.usgs.gov/streamstatsservices/#/',
     r'https://www.waterqualitydata.us/public_srsnames/',
-    r'https://waterqualitydata.us'
+    r'https://waterqualitydata.us',
+    r'https://github.com/USGS-python/dataretrieval/tree/master/demos/hydroshare'
 ]
