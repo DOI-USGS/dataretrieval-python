@@ -807,6 +807,11 @@ def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
         >>> df, md = dataretrieval.nwis.get_water_use(
         ...     years='2010', categories='L')
 
+        >>> # Get 2005 domestic water use for Apache County in Arizona
+        >>> df, md = dataretrieval.nwis.get_water_use(
+        ...     years='2005', state='Arizona',
+        ...     counties='001', categories='DO')
+
     """
     payload = {'rdb_compression': 'value',
                'format': 'rdb',
