@@ -7,7 +7,8 @@ from pandas import DataFrame
 from dataretrieval.wqp import (get_results, what_sites, what_organizations,
                                what_projects, what_activities,
                                what_detection_limits, what_habitat_metrics,
-                               what_project_weights, what_activity_metrics)
+                               what_project_weights, what_activity_metrics,
+                               _alter_kwargs)
 
 
 def test_get_ratings(requests_mock):
@@ -151,3 +152,21 @@ def test_what_activity_metrics(requests_mock):
 def mock_request(requests_mock, request_url, file_path):
     with open(file_path) as text:
         requests_mock.get(request_url, text=text.read(), headers={"mock_header": "value"})
+
+
+class TestAlterKwargs:
+    """Tests for keyword alteration.
+    """
+    def test_alter_kwargs_zip(self):
+        """Tests that zip kwarg is altered correctly and warning is thrown."""
+        kwargs = {"zip": "yes", "mimeType": "csv"}
+        with pytest.warns(UserWarning):
+            kwargs = _alter_kwargs(kwargs)
+        assert kwargs == {"zip": "no", "mimeType": "csv"}
+
+    def test_alter_kwargs_mimetype(self):
+        """Tests that mimetype kwarg is altered correctly and warning is thrown."""
+        kwargs = {"zip": "no", "mimeType": "geojson"}
+        with pytest.warns(UserWarning):
+            kwargs = _alter_kwargs(kwargs)
+        assert kwargs == {"zip": "no", "mimeType": "csv"}

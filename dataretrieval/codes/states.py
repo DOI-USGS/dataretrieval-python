@@ -1,4 +1,5 @@
-state_codes =[
+"""List of 2-digit state codes with commented full names."""
+state_codes = [
     'al', # Alabama
     'ak', # Alaska
     'az', # Arizona

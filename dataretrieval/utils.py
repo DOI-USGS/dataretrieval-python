@@ -2,7 +2,6 @@
 Useful utilities for data munging.
 """
 import warnings
-import numpy as np
 import pandas as pd
 import requests
 from dataretrieval.codes import tz
@@ -11,9 +10,30 @@ from dataretrieval.codes import tz
 def to_str(listlike, delimiter=','):
     """Translates list-like objects into strings.
 
+    Parameters
+    ----------
+    listlike: list-like object
+        An object that is a list, or list-like
+        (e.g., ``pandas.core.series.Series``)
+    delimiter: string, optional
+        The delimiter that is placed between entries in listlike when it is
+        turned into a string. Default value is a comma.
+
     Returns
     -------
-        List-like object as string
+    listlike: string
+        The listlike object as string separated by the delimiter
+
+    Examples
+    --------
+    .. doctest::
+
+        >>> dataretrieval.utils.to_str([1, 'a', 2])
+        '1,a,2'
+
+        >>> dataretrieval.utils.to_str([0, 10, 42], delimiter='+')
+        '0+10+42'
+
     """
     if type(listlike) == list:
         return delimiter.join([str(x) for x in listlike])
@@ -36,23 +56,21 @@ def format_datetime(df, date_field, time_field, tz_field):
 
     Parameters
     ----------
-    df : ``pandas.DataFrame``
-        ``pandas.DataFrame`` containing date, time, and timezone fields.
-
-    date_field : string
+    df: ``pandas.DataFrame``
+        A data frame containing date, time, and timezone fields.
+    date_field: string
         Name of date column in df.
-
-    time_field : string
+    time_field: string
         Name of time column in df.
-
-    tz_field : string
+    tz_field: string
         Name of time zone column in df.
 
     Returns
     -------
-    df : ``pandas.DataFrame``
-    """
+    df: ``pandas.DataFrame``
+        The data frame with a formatted 'datetime' column
 
+    """
     # create a datetime index from the columns in qwdata response
     df[tz_field] = df[tz_field].map(tz)
 
@@ -79,17 +97,16 @@ def update_merge(left, right, na_only=False, on=None, **kwargs):
     Parameters
     ----------
     left: ``pandas.DataFrame``
-        original data
+        Original data
     right: ``pandas.DataFrame``
-        updated data
+        Updated data
     na_only: bool
-        if True, only update na values
+        If True, only update na values
 
     Returns
     -------
     df: ``pandas.DataFrame``
-        updated data
-
+        Updated data frame
 
     .. todo::
 
@@ -119,6 +136,8 @@ def update_merge(left, right, na_only=False, on=None, **kwargs):
 
 
 class Metadata:
+    """Custom class for metadata.
+    """
     url = None
     query_time = None
     site_info = None
@@ -133,6 +152,8 @@ class Metadata:
 
 
 def set_metadata(response):
+    """Function to initialize and set metadata from an API response.
+    """
     md = Metadata()
     md.url = response.url
     md.query_time = response.elapsed
@@ -148,13 +169,17 @@ def query(url, payload, delimiter=','):
 
     Parameters
     ----------
-        url :
-        payload : query parameters passed to requests.get
-        delimiter : delimeter to use with lists
+    url: string
+        URL to query
+    payload: dict
+        query parameters passed to ``requests.get``
+    delimiter: string
+        delimiter to use with lists
 
     Returns
     -------
-        string : query response
+    string: query response
+        The response from the API query ``requests.get`` function call.
     """
 
     for key, value in payload.items():
@@ -168,7 +193,19 @@ def query(url, payload, delimiter=','):
     if response.status_code == 400:
         raise ValueError("Bad Request, check that your parameters are correct. URL: {}".format(response.url))
     elif response.status_code == 414:
-        raise ValueError("Request URL too long. Modify your query to use fewer sites. API response reason: {}".format(response.reason))
+        _reason = response.reason
+        _example = """
+                    split_list = np.array_split(site_list, n)  # n is number of chunks to divide query into \n
+                    data_list = []  # list to store chunk results in \n
+                    # loop through chunks and make requests \n
+                    for site_list in split_list: \n
+                        data = nwis.get_record(sites=site_list, service='dv', start=start, end=end) \n
+                        data_list.append(data)  # append results to list"""
+        raise ValueError(
+            "Request URL too long. Modify your query to use fewer sites. " +
+            f"API response reason: {_reason}. Pseudo-code example of how to " +
+            f"split your query: \n {_example}"
+            )
 
     if response.text.startswith('No sites/data'):
         raise NoSitesError(response.url)
@@ -177,6 +214,8 @@ def query(url, payload, delimiter=','):
 
 
 class NoSitesError(Exception):
+    """Custom error class used when selection criteria returns no sites/data.
+    """
     def __init__(self, url):
         self.url = url
 
