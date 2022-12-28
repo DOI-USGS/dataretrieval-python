@@ -193,7 +193,19 @@ def query(url, payload, delimiter=','):
     if response.status_code == 400:
         raise ValueError("Bad Request, check that your parameters are correct. URL: {}".format(response.url))
     elif response.status_code == 414:
-        raise ValueError("Request URL too long. Modify your query to use fewer sites. API response reason: {}".format(response.reason))
+        _reason = response.reason
+        _example = """
+                    split_list = np.array_split(site_list, n)  # n is number of chunks to divide query into \n
+                    data_list = []  # list to store chunk results in \n
+                    # loop through chunks and make requests \n
+                    for site_list in split_list: \n
+                        data = nwis.get_record(sites=site_list, service='dv', start=start, end=end) \n
+                        data_list.append(data)  # append results to list"""
+        raise ValueError(
+            "Request URL too long. Modify your query to use fewer sites. " +
+            f"API response reason: {_reason}. Pseudo-code example of how to " +
+            f"split your query: \n {_example}"
+            )
 
     if response.text.startswith('No sites/data'):
         raise NoSitesError(response.url)
