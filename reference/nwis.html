@@ -68,6 +68,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis.get_record"><code class="docutils literal notranslate"><span class="pre">get_record()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis.get_stats"><code class="docutils literal notranslate"><span class="pre">get_stats()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis.get_water_use"><code class="docutils literal notranslate"><span class="pre">get_water_use()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis.preformat_peaks_response"><code class="docutils literal notranslate"><span class="pre">preformat_peaks_response()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis.query_waterdata"><code class="docutils literal notranslate"><span class="pre">query_waterdata()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis.query_waterservices"><code class="docutils literal notranslate"><span class="pre">query_waterservices()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis.what_sites"><code class="docutils literal notranslate"><span class="pre">what_sites()</span></code></a></li>
@@ -145,13 +146,16 @@
 <dt class="sig sig-object py" id="dataretrieval.nwis._read_json">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_read_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_read_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._read_json" title="Permalink to this definition"></a></dt>
 <dd><p>Reads a NWIS Water Services formatted JSON into a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><dl class="simple">
-<dt>json: dict</dt><dd><p>A JSON dictionary response to be parsed into a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>json</strong> (<em>dict</em>) – A JSON dictionary response to be parsed into a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></p>
 </dd>
-</dl>
-</dd>
-<dt>Returns:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> containing times series data from the NWIS json and Metadata as tuple</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -160,11 +164,15 @@
 <dt class="sig sig-object py" id="dataretrieval.nwis._read_rdb">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_read_rdb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rdb</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_read_rdb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._read_rdb" title="Permalink to this definition"></a></dt>
 <dd><p>Convert NWIS rdb table into a <code class="docutils literal notranslate"><span class="pre">pandas.dataframe</span></code>.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><dl class="simple">
-<dt>rdb: string</dt><dd><p>A string representation of an rdb table</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rdb</strong> (<em>string</em>) – A string representation of an rdb table</p>
 </dd>
-</dl>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>df</strong> – A formatted pandas data frame</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">pandas.dataframe</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -173,13 +181,18 @@
 <dt class="sig sig-object py" id="dataretrieval.nwis._set_metadata">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_set_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">response</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_set_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._set_metadata" title="Permalink to this definition"></a></dt>
 <dd><p>Generates a standard set of metadata informed by the response.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><dl class="simple">
-<dt>response: Response</dt><dd><p>Response object from requests module</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>response</strong> (<em>Response</em>) – Response object from requests module</p></li>
+<li><p><strong>parameters</strong> (<em>unpacked dictionary</em>) – Unpacked dictionary of the parameters supplied in the request</p></li>
+</ul>
 </dd>
-<dt>parameters: unpacked dictionary</dt><dd><p>unpacked dictionary of the parameters supplied in the request</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>md</strong> – A <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> custom <a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a> object.</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -188,6 +201,26 @@
 <dt class="sig sig-object py" id="dataretrieval.nwis.format_response">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">format_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#format_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.format_response" title="Permalink to this definition"></a></dt>
 <dd><p>Setup index for response from query.</p>
+<p>This function formats the response from the NWIS web services, in
+particular it sets the index of the data frame. This function tries to
+convert the NWIS response into pandas datetime values localized to UTC,
+and if possible, uses these timestamps to define the data frame index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – The data frame to format</p></li>
+<li><p><strong>service</strong> (<em>string</em>) – The NWIS service that was queried, important because the ‘peaks’
+service returns a different format than the other services.</p></li>
+<li><p><strong>**kwargs</strong> (<em>optional</em>) – Additional keyword arguments, e.g., ‘multi_index’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>df</strong> – The formatted data frame</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -197,14 +230,33 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sites</strong> (<em>array</em><em> of </em><em>strings</em>) – If the qwdata parameter site_no is supplied, it will overwrite the sites parameter</p></li>
-<li><p><strong>start</strong> (<em>string</em>) – If the qwdata parameter begin_date is supplied, it will overwrite the start parameter</p></li>
-<li><p><strong>end</strong> (<em>string</em>) – If the qwdata parameter end_date is supplied, it will overwrite the end parameter</p></li>
+<li><p><strong>sites</strong> (<em>array</em><em> of </em><em>strings</em>) – If the qwdata parameter site_no is supplied, it will overwrite the
+sites parameter</p></li>
+<li><p><strong>start</strong> (<em>string</em>) – If the qwdata parameter begin_date is supplied, it will overwrite the
+start parameter (YYYY-MM-DD)</p></li>
+<li><p><strong>end</strong> (<em>string</em>) – If the qwdata parameter end_date is supplied, it will overwrite the
+end parameter (YYYY-MM-DD)</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – If supplied, will be used as query parameters</p></li>
-<li><p><strong>Returns</strong> – <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> containing times series data from the NWIS json and Metadata as tuple</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+</ul>
+</p>
+</dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge measurements for site 05114000</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_discharge_measurements</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;05114000&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2000-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2000-01-30&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge measurements for sites in Alaska</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_discharge_measurements</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2012-01-09&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2012-01-10&#39;</span><span class="p">,</span> <span class="n">stateCd</span><span class="o">=</span><span class="s1">&#39;AK&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -214,32 +266,68 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sites</strong> (<em>array</em><em> of </em><em>strings</em>) – If the waterdata parameter site_no is supplied, it will overwrite the sites parameter</p></li>
-<li><p><strong>start</strong> (<em>string</em>) – If the waterdata parameter begin_date is supplied, it will overwrite the start parameter</p></li>
-<li><p><strong>end</strong> (<em>string</em>) – If the waterdata parameter end_date is supplied, it will overwrite the end parameter</p></li>
+<li><p><strong>sites</strong> (<em>array</em><em> of </em><em>strings</em>) – If the waterdata parameter site_no is supplied, it will overwrite the
+sites parameter</p></li>
+<li><p><strong>start</strong> (<em>string</em>) – If the waterdata parameter begin_date is supplied, it will overwrite
+the start parameter (YYYY-MM-DD)</p></li>
+<li><p><strong>end</strong> (<em>string</em>) – If the waterdata parameter end_date is supplied, it will overwrite
+the end parameter (YYYY-MM-DD)</p></li>
 <li><p><strong>multi_index</strong> (<em>boolean</em>) – If False, a dataframe with a single-level index (datetime) is returned</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – If supplied, will be used as query parameters</p></li>
-<li><p><strong>Returns</strong> – <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> containing times series data from the NWIS json and Metadata as tuple</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+</ul>
+</p>
+</dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge peaks for site 01491000</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_discharge_peaks</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01491000&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;1980-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;1990-01-01&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge peaks for sites in Hawaii</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_discharge_peaks</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">start</span><span class="o">=</span><span class="s1">&#39;1980-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;1980-01-02&#39;</span><span class="p">,</span> <span class="n">stateCd</span><span class="o">=</span><span class="s1">&#39;HI&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_dv">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_dv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_dv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_dv" title="Permalink to this definition"></a></dt>
 <dd><p>Get daily values data from NWIS and return it as a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>.</p>
-<p>Note: If no start or end date are provided, only the most recent record is returned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>start</strong> (<em>string</em>) – If the waterdata parameter startDT is supplied, it will overwrite the start parameter</p></li>
-<li><p><strong>end</strong> (<em>string</em>) – If the waterdata parameter endDT is supplied, it will overwrite the end parameter</p></li>
+<li><p><strong>start</strong> (<em>string</em>) – If the waterdata parameter startDT is supplied, it will overwrite the
+start parameter (YYYY-MM-DD)</p></li>
+<li><p><strong>end</strong> (<em>string</em>) – If the waterdata parameter endDT is supplied, it will overwrite the
+end parameter (YYYY-MM-DD)</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – If supplied, will be used as query parameters</p></li>
-<li><p><strong>Returns</strong> – <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> containing times series data from the NWIS json and Metadata as tuple</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+</ul>
+</p>
+</dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get mean statistic daily values for site 04085427</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;04085427&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2012-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2012-06-30&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">statCd</span><span class="o">=</span><span class="s1">&#39;00003&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get the latest daily values for site 01646500</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01646500&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -249,23 +337,37 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>start</strong> (<em>string</em>) – If the waterdata parameter begin_date is supplied, it will overwrite the start
-parameter (defaults to ‘1851-01-01’)</p></li>
-<li><p><strong>end</strong> (<em>string</em>) – If the waterdata parameter end_date is supplied, it will overwrite the end parameter</p></li>
+<li><p><strong>start</strong> (<em>string</em>) – If the waterdata parameter begin_date is supplied, it will overwrite
+the start parameter (defaults to ‘1851-01-01’)</p></li>
+<li><p><strong>end</strong> (<em>string</em>) – If the waterdata parameter end_date is supplied, it will overwrite the
+end parameter (YYYY-MM-DD)</p></li>
 <li><p><strong>multi_index</strong> (<em>boolean</em>) – If False, a dataframe with a single-level index (datetime) is returned</p></li>
 <li><p><strong>datetime_index</strong> (<em>boolean</em>) – If True, create a datetime index</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – If supplied, will be used as query parameters</p></li>
-<li><p><strong>Returns</strong> – <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> containing times series data from the NWIS json and Metadata as tuple</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+</ul>
+</p>
+</dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get groundwater levels for site 434400121275801</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_gwlevels</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;434400121275801&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_info">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_info" title="Permalink to this definition"></a></dt>
 <dd><p>Get site description information from NWIS.</p>
-<p>Note: Must specify one major parameter.</p>
+<p><strong>Note:</strong> <em>Must specify one major parameter.</em></p>
+<p>For additional parameter options see
+<a class="reference external" href="https://waterservices.usgs.gov/rest/Site-Service.html#stateCd">https://waterservices.usgs.gov/rest/Site-Service.html#stateCd</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -286,12 +388,11 @@ of precision. Minutes and seconds are not allowed.</p></li>
 digits of a county’s code are the FIPS State Code.
 (url: <a class="reference external" href="https://help.waterdata.usgs.gov/code/county_query?fmt=html">https://help.waterdata.usgs.gov/code/county_query?fmt=html</a>)</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – If supplied, will be used as query parameters</p></li>
-<li><p><strong>Parameters</strong> (<em>Formatting</em>) – </p></li>
-<li><p><strong>----------------</strong> – </p></li>
 <li><p><strong>startDt</strong> (<em>string</em>) – Selects sites based on whether data was collected at a point in time
 beginning after startDt (start date). Dates must be in ISO-8601
 Calendar Date format (for example: 1990-01-01).</p></li>
-<li><p><strong>endDt</strong> (<em>string</em>) – </p></li>
+<li><p><strong>endDt</strong> (<em>string</em>) – The end date for the period of record. Dates must be in ISO-8601
+Calendar Date format (for example: 1990-01-01).</p></li>
 <li><p><strong>period</strong> (<em>string</em>) – Selects sites based on whether or not they were active between now
 and a time in the past. For example, period=P10W will select sites
 active in the last ten weeks.</p></li>
@@ -303,8 +404,6 @@ parameter codes.</p></li>
 types, such as stream, spring or well. For a list of all valid site
 types see <a class="reference external" href="https://help.waterdata.usgs.gov/site_tp_cd">https://help.waterdata.usgs.gov/site_tp_cd</a>
 For example, siteType=’ST’ returns streams only.</p></li>
-<li><p><strong>Parameters</strong> – </p></li>
-<li><p><strong>---------------------</strong> – </p></li>
 <li><p><strong>siteOutput</strong> (<em>string</em><em> (</em><em>'basic'</em><em> or </em><em>'expanded'</em><em>)</em>) – Indicates the richness of metadata you want for site attributes. Note
 that for visually oriented formats like Google Map format, this
 argument has no meaning. Note: for performance reasons,
@@ -314,27 +413,60 @@ any values for outputDataTypeCd.</p></li>
 certain output formats. The period of record indicates date ranges for
 a certain kind of information about a site, for example the start and
 end dates for a site’s daily mean streamflow.</p></li>
-<li><p><strong>see</strong> (<em>For additional parameter options</em>) – </p></li>
-<li><p><strong>https</strong> (<em>//waterservices.usgs.gov/rest/Site-Service.html#stateCd</em>) – </p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Site data from the NWIS web service</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+</ul>
+</p>
+</dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get site information for a single site</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;05114000&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get site information for multiple sites</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;05114000&#39;</span><span class="p">,</span> <span class="s1">&#39;09423350&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_iv">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_iv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_iv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_iv" title="Permalink to this definition"></a></dt>
 <dd><p>Get instantaneous values data from NWIS and return it as a DataFrame.</p>
-<p>Note: If no start or end date are provided, only the most recent record is returned.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If no start or end date are provided, only the most recent record
+is returned.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>start</strong> (<em>string</em>) – If the waterdata parameter startDT is supplied, it will overwrite the start parameter</p></li>
-<li><p><strong>end</strong> (<em>string</em>) – If the waterdata parameter endDT is supplied, it will overwrite the end parameter</p></li>
-<li><p><strong>Returns</strong> – <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> containing times series data from the NWIS json and Metadata as tuple</p></li>
+<li><p><strong>start</strong> (<em>string</em>) – If the waterdata parameter startDT is supplied, it will overwrite the
+start parameter (YYYY-MM-DD)</p></li>
+<li><p><strong>end</strong> (<em>string</em>) – If the waterdata parameter endDT is supplied, it will overwrite the
+end parameter (YYYY-MM-DD)</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+</ul>
+</p>
+</dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get instantaneous discharge data for site 05114000</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;05114000&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2013-11-03&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2013-11-03&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;00060&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -345,14 +477,28 @@ end dates for a site’s daily mean streamflow.</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>parameterCd</strong> (<em>string</em><em> or </em><em>list</em>) – Accepts parameter codes or names</p></li>
-<li><p><strong>partial</strong> (<em>boolean</em>) – Default is True (partial querying). If False, the function will query only exact matches</p></li>
+<li><p><strong>partial</strong> (<em>boolean</em>) – Default is True (partial querying). If False, the function will query
+only exact matches</p></li>
 </ul>
 </dd>
-</dl>
-<dl class="simple">
-<dt>Returns:</dt><dd><p>DataFrame containing the USGS parameter codes and Metadata as tuple</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Data retrieved from the NWIS web service.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+</ul>
+</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get information about the &#39;00060&#39; pcode</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_pmcodes</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;00060&#39;</span><span class="p">,</span> <span class="n">partial</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get information about all &#39;Discharge&#39; pcodes</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_pmcodes</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;Discharge&#39;</span><span class="p">,</span> <span class="n">partial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -364,62 +510,100 @@ end dates for a site’s daily mean streamflow.</p></li>
 <p>The NWIS qw data service is being deprecated. See this note from the
 R package for more information:
 <a class="reference external" href="https://doi-usgs.github.io/dataRetrieval/articles/qwdata_changes.html">https://doi-usgs.github.io/dataRetrieval/articles/qwdata_changes.html</a>
-If you have additional questions about the qw data service, email <a class="reference external" href="mailto:gs-w-IOW_PO_team&#37;&#52;&#48;usgs&#46;gov">gs-w-IOW_PO_team<span>&#64;</span>usgs<span>&#46;</span>gov</a>.</p>
+If you have additional questions about the qw data service,
+email <a class="reference external" href="mailto:gs-w-IOW_PO_team&#37;&#52;&#48;usgs&#46;gov">gs-w-IOW_PO_team<span>&#64;</span>usgs<span>&#46;</span>gov</a>.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sites</strong> (<em>array</em><em> of </em><em>strings</em>) – If the qwdata parameter site_no is supplied, it will overwrite the sites parameter</p></li>
-<li><p><strong>start</strong> (<em>string</em>) – If the qwdata parameter begin_date is supplied, it will overwrite the start parameter</p></li>
-<li><p><strong>end</strong> (<em>string</em>) – If the qwdata parameter end_date is supplied, it will overwrite the end parameter</p></li>
+<li><p><strong>sites</strong> (<em>array</em><em> of </em><em>strings</em>) – If the qwdata parameter site_no is supplied, it will overwrite the
+sites parameter</p></li>
+<li><p><strong>start</strong> (<em>string</em>) – If the qwdata parameter begin_date is supplied, it will overwrite the
+start parameter (YYYY-MM-DD)</p></li>
+<li><p><strong>end</strong> (<em>string</em>) – If the qwdata parameter end_date is supplied, it will overwrite the
+end parameter (YYYY-MM-DD)</p></li>
 <li><p><strong>multi_index</strong> (<em>boolean</em>) – If False, a dataframe with a single-level index (datetime) is returned</p></li>
-<li><p><strong>wide_format</strong> (<em>boolean</em>) – If True, return data in wide format with multiple samples per row and one row per time</p></li>
+<li><p><strong>wide_format</strong> (<em>boolean</em>) – If True, return data in wide format with multiple samples per row and
+one row per time</p></li>
 <li><p><strong>datetime_index</strong> (<em>boolean</em>) – If True, create a datetime index</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – If supplied, will be used as query parameters</p></li>
-<li><p><strong>Returns</strong> – <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> containing times series data from the NWIS json and Metadata as tuple</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+</ul>
+</p>
+</dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># get water sample information for site 11447650</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_qwdata</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;11447650&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2010-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2010-02-01&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_ratings">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_ratings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">site</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'base'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_ratings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_ratings" title="Permalink to this definition"></a></dt>
-<dd><p>Rating table for an active USGS streamgage retrieval
-Reads current rating table for an active USGS streamgage from NWISweb.
+<dd><p>Rating table for an active USGS streamgage retrieval.</p>
+<p>Reads current rating table for an active USGS streamgage from NWISweb.
 Data is retrieved from <a class="reference external" href="https://waterdata.usgs.gov/nwis">https://waterdata.usgs.gov/nwis</a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>site</strong> (<em>string</em>) – USGS site number.  This is usually an 8 digit number as a string.
-If the nwis parameter site_no is supplied, it will overwrite the site parameter</p></li>
+If the nwis parameter site_no is supplied, it will overwrite the site
+parameter</p></li>
 <li><p><strong>base</strong> (<em>string</em>) – can be “base”, “corr”, or “exsa”</p></li>
 <li><p><strong>county</strong> (<em>string</em>) – County IDs from county lookup or “ALL”</p></li>
-<li><p><strong>categories</strong> (<em>Listlike</em>) – List or comma delimited string of Two-letter category abbreviations</p></li>
+<li><p><strong>categories</strong> (<em>list-like</em>) – List or comma delimited string of Two-letter category abbreviations</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – If supplied, will be used as query parameters</p></li>
-<li><p><strong>Return</strong> – <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> containing requested data and Metadata as tuple</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted requested data</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+</ul>
+</p>
+</dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get the rating table for USGS streamgage 01594440</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="s1">&#39;01594440&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_record">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wide_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datetime_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iv'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_record" title="Permalink to this definition"></a></dt>
 <dd><p>Get data from NWIS and return it as a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>.</p>
-<p>Note: If no start or end date are provided, only the most recent record is returned.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If no start or end date are provided, only the most recent record is
+returned.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sites</strong> (<em>listlike</em>) – List or comma delimited string of site.</p></li>
+<li><p><strong>sites</strong> (<em>list-like</em>) – List or comma delimited string of site.</p></li>
 <li><p><strong>start</strong> (<em>string</em>) – Starting date of record (YYYY-MM-DD)</p></li>
-<li><p><strong>end</strong> (<em>string</em>) – Ending date of record.</p></li>
+<li><p><strong>end</strong> (<em>string</em>) – Ending date of record. (YYYY-MM-DD)</p></li>
 <li><p><strong>service</strong> (<em>string</em>) – <ul>
 <li><p>‘iv’ : instantaneous data</p></li>
 <li><p>’dv’ : daily mean data</p></li>
 <li><p>’qwdata’ : discrete samples</p></li>
 <li><p>’site’ : site description</p></li>
 <li><p>’measurements’ : discharge measurements</p></li>
+<li><p>’peaks’: discharge peaks</p></li>
+<li><p>’gwlevels’: groundwater levels</p></li>
+<li><p>’pmcodes’: get parameter codes</p></li>
+<li><p>’water_use’: get water use data</p></li>
+<li><p>’ratings’: get rating table</p></li>
 </ul>
 </p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – If supplied, will be used as query parameters</p></li>
@@ -429,30 +613,85 @@ If the nwis parameter site_no is supplied, it will overwrite the site parameter<
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> containing requested data</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get latest instantaneous data from site 01585200</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;iv&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get latest daily mean data from site 01585200</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;dv&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get all discrete sample data from site 01585200</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;qwdata&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get site description for site 01585200</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge measurements for site 01585200</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;measurements&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge peaks for site 01585200</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;peaks&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get latest groundwater level for site 434400121275801</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;434400121275801&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;gwlevels&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get information about the discharge parameter code</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">service</span><span class="o">=</span><span class="s1">&#39;pmcodes&#39;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;00060&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get water use data for livestock nationally in 2010</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">service</span><span class="o">=</span><span class="s1">&#39;water_use&#39;</span><span class="p">,</span> <span class="n">years</span><span class="o">=</span><span class="s1">&#39;2010&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s1">&#39;L&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get rating table for USGS streamgage 01585200</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;ratings&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_stats">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_stats" title="Permalink to this definition"></a></dt>
-<dd><p>Queries waterservices statistics information</p>
-<section id="parameters-additional-parameters-if-supplied-will-be-used-as-query-parameters">
-<h2>Parameters (Additional parameters, if supplied, will be used as query parameters)<a class="headerlink" href="#parameters-additional-parameters-if-supplied-will-be-used-as-query-parameters" title="Permalink to this heading"></a></h2>
-<dl class="simple">
-<dt>Must specify</dt><dd><p>sites (string or list): USGS site number
-statReportType (string): daily (default), monthly, or annual
-statTypeCd (string): all, mean, max, min, median</p>
-</dd>
-</dl>
+<dd><p>Queries water services statistics information.</p>
+<p>For more information about the water services statistics service, visit
+<a class="reference external" href="https://waterservices.usgs.gov/rest/Statistics-Service.html">https://waterservices.usgs.gov/rest/Statistics-Service.html</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">rtype</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">pandas.Dataframe</span></code></p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sites</strong> (<em>string</em><em> or </em><em>list</em>) – USGS site number (or list of site numbers)</p></li>
+<li><p><strong>Parameters</strong> (<em>Additional</em>) – </p></li>
+<li><p><strong>---------------------</strong> – </p></li>
+<li><p><strong>statReportType</strong> (<em>string</em>) – daily (default), monthly, or annual</p></li>
+<li><p><strong>statTypeCd</strong> (<em>string</em>) – all, mean, max, min, median</p></li>
+<li><p><strong>**kwargs</strong> (<em>optional</em>) – Additional parameters that, if supplied, will be used as
+query parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Statistics data from the statistics service</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+<li><p><em>.. todo::</em> – fix date parsing</p></li>
+</ul>
+</p>
 </dd>
 </dl>
-<div class="admonition-todo admonition" id="id2">
-<p class="admonition-title">Todo</p>
-<p>fix date parsing</p>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get annual water statistics for a site</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01646500&#39;</span><span class="p">,</span> <span class="n">statReportType</span><span class="o">=</span><span class="s1">&#39;annual&#39;</span><span class="p">,</span> <span class="n">statYearType</span><span class="o">=</span><span class="s1">&#39;water&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get monthly statistics for a site</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01646500&#39;</span><span class="p">,</span> <span class="n">statReportType</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">)</span>
+</pre></div>
 </div>
-</section>
 </dd></dl>
 
 <dl class="py function">
@@ -462,16 +701,53 @@ statTypeCd (string): all, mean, max, min, median</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>years</strong> (<em>Listlike</em>) – List or comma delimited string of years.  Must be years ending in 0 or 5, or “ALL”,
-which retrieves all available years</p></li>
+<li><p><strong>years</strong> (<em>list-like</em>) – List or comma delimited string of years.  Must be years ending in 0 or
+5, or “ALL”, which retrieves all available years</p></li>
 <li><p><strong>state</strong> (<em>string</em>) – full name, abbreviation or id</p></li>
 <li><p><strong>county</strong> (<em>string</em>) – County IDs from county lookup or “ALL”</p></li>
-<li><p><strong>categories</strong> (<em>Listlike</em>) – List or comma delimited string of Two-letter category abbreviations</p></li>
+<li><p><strong>categories</strong> (<em>list-like</em>) – List or comma delimited string of Two-letter category abbreviations</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – If supplied, will be used as query parameters</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> containing requested data and Metadata as tuple</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Data from NWIS</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get total population for RI from the NWIS water use service</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_water_use</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">years</span><span class="o">=</span><span class="s1">&#39;2000&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s1">&#39;RI&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s1">&#39;TP&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get the national total water use for livestock in Bgal/day</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_water_use</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">years</span><span class="o">=</span><span class="s1">&#39;2010&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s1">&#39;L&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get 2005 domestic water use for Apache County in Arizona</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_water_use</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">years</span><span class="o">=</span><span class="s1">&#39;2005&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s1">&#39;Arizona&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">counties</span><span class="o">=</span><span class="s1">&#39;001&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s1">&#39;DO&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.nwis.preformat_peaks_response">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">preformat_peaks_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#preformat_peaks_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.preformat_peaks_response" title="Permalink to this definition"></a></dt>
+<dd><p>Datetime formatting for the ‘peaks’ service response.</p>
+<p>Function to format the datetime column of the ‘peaks’ service response.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – The data frame to format</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>df</strong> – The formatted data frame</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -485,29 +761,33 @@ which retrieves all available years</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.query_waterservices">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">query_waterservices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#query_waterservices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.query_waterservices" title="Permalink to this definition"></a></dt>
-<dd><p>Querys waterservices.usgs.gov</p>
-<p>For more documentation see</p>
-<section id="id3">
-<h2>Parameters (Additional parameters, if supplied, will be used as query parameters)<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h2>
-<blockquote>
-<div><dl class="simple">
-<dt>service: string</dt><dd><p>‘site’,’stats’,etc</p>
+<dd><p>Queries waterservices.usgs.gov</p>
+<p>For more documentation see <a class="reference external" href="https://waterservices.usgs.gov/rest/">https://waterservices.usgs.gov/rest/</a></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>User must specify one major filter: sites, stateCd, or bBox</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>service</strong> (<em>string</em>) – String specifying the service to query: ‘site’, ‘stats’, etc.</p></li>
+<li><p><strong>bBox</strong> (<em>string</em>) – 7-digit Hydrologic Unit Code (HUC)</p></li>
+<li><p><strong>startDT</strong> (<em>string</em>) – Start date (e.g., ‘2017-12-31’)</p></li>
+<li><p><strong>endDT</strong> (<em>string</em>) – End date (e.g., ‘2018-01-01’)</p></li>
+<li><p><strong>modifiedSince</strong> (<em>string</em>) – Used to return only sites where attributes or period of record data
+have changed during the request period. String expected to be formatted
+in ISO-8601 duration format (e.g., ‘P1D’ for one day,
+‘P1Y’ for one year)</p></li>
+<li><p><strong>**kwargs</strong> (<em>optional</em>) – If supplied, will be used as query parameters</p></li>
+</ul>
 </dd>
-<dt>bBox: huc string</dt><dd><p>7-digit Hydrologic Unit Code</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>request</strong> – The response object from the API request to the web service</p>
 </dd>
-<dt>startDT: string</dt><dd><p>start date (2017-12-31)</p>
-</dd>
-<dt>endDT: string</dt><dd><p>end date</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">requests.models.Response</span></code></p>
 </dd>
 </dl>
-<p>modifiedSince: string</p>
-</div></blockquote>
-<dl class="simple">
-<dt>Returns:</dt><dd><p>request</p>
-</dd>
-</dl>
-<p>Usage: must specify one major filter: sites, stateCd, bBox,</p>
-</section>
 </dd></dl>
 
 <dl class="py function">
@@ -516,9 +796,18 @@ which retrieves all available years</p></li>
 <dd><p>Search NWIS for sites within a region with specific data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>get_info</strong> (<em>same as</em>) – </p>
+<dd class="field-odd"><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.nwis.get_info" title="dataretrieval.nwis.get_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.nwis.get_info</span></code></a></p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># get information about a single site</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;05114000&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># get information about sites with phosphorus in Ohio</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">stateCd</span><span class="o">=</span><span class="s1">&#39;OH&#39;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;00665&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

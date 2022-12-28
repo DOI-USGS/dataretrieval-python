@@ -96,18 +96,18 @@
 <span class="sd">    ----------</span>
 <span class="sd">    sites: List of strings</span>
 <span class="sd">        Site numbers</span>
-<span class="sd">    fmt</span>
-<span class="sd">        Returned format: Default is &quot;DF&quot; for ``pandas.DataFrame``, else ``dict``</span>
+<span class="sd">    fmt: ``pandas.DataFrame`` or dict</span>
+<span class="sd">        Returned format: Default is &quot;DF&quot; for ``pandas.DataFrame``, else</span>
+<span class="sd">        a dictionary is returned.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">        station_stages:``pandas.Dataframe`` or ``dict``</span>
-<span class="sd">            contains station numbers and their flood stages.</span>
-<span class="sd">            If no flood stage for a station, ``None`` is returned.</span>
+<span class="sd">    station_stages: ``pandas.Dataframe`` or dict</span>
+<span class="sd">        contains station numbers and their flood stages.</span>
+<span class="sd">        If no flood stage for a station, ``None`` is returned.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-
 <span class="sd">    .. doctest::</span>
 
 <span class="sd">        &gt;&gt; stations = [&quot;07144100&quot;, &quot;07144101&quot;]</span>

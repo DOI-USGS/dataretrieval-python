@@ -52,6 +52,7 @@
 <li class="toctree-l3"><a class="reference internal" href="siteinfo_examples.html">Retrieving site information</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a></li>
 <li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
 </ul>
@@ -150,8 +151,8 @@
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df3</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df3</span><span class="p">)</span>
-<span class="go">  agency_cd   site_no                         station_nm site_tp_cd  lat_va  ...  aqfr_type_cd  well_depth_va  hole_depth_va depth_src_cd project_no</span>
-<span class="go">0      USGS  03339000  VERMILION RIVER NEAR DANVILLE, IL         ST  400603  ...           NaN            NaN            NaN          NaN        100</span>
+<span class="go">  agency_cd   site_no                         station_nm site_tp_cd  lat_va  long_va  ...  aqfr_cd  aqfr_type_cd well_depth_va hole_depth_va depth_src_cd project_no</span>
+<span class="go">0      USGS  03339000  VERMILION RIVER NEAR DANVILLE, IL         ST  400603   873550  ...      NaN           NaN           NaN           NaN          NaN        100</span>
 
 <span class="go">[1 rows x 42 columns]</span>
 </pre></div>

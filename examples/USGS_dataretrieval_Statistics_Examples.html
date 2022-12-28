@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>USGS dataretrieval Python Package get_stats() Examples &mdash; dataretrieval 0.7 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="USGS dataretrieval Python Package get_iv() Examples" href="USGS_dataretrieval_UnitValues_Examples.html" />
+    <link rel="prev" title="USGS dataretrieval Python Package what_sites() Examples" href="USGS_dataretrieval_SiteInventory_Examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> dataretrieval
+          </a>
+              <div class="version">
+                0.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_DailyValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_dv()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_gwlevels()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Measurements_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_discharge_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_ParameterCodes_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_pmcodes()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Peaks_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_discharge_peaks()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Ratings_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_ratings()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_SiteInfo_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_info()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_SiteInventory_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> Examples</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_stats()</span></code> Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Install-the-Package">Install the Package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Basic-Usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Interpreting-the-Result">Interpreting the Result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Additional-Examples">Additional Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_UnitValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_iv()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_WaterSamples_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_qwdata()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_WaterUse_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_water_use()</span></code> Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_stats()</span></code> Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/USGS_dataretrieval_Statistics_Examples.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars and line breaks on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+    white-space: pre;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt .copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+.jp-RenderedHTMLCommon table,
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+.jp-RenderedHTMLCommon thead,
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+.jp-RenderedHTMLCommon tr,
+.jp-RenderedHTMLCommon th,
+.jp-RenderedHTMLCommon td,
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+.jp-RenderedHTMLCommon th,
+div.rendered_html th {
+  font-weight: bold;
+}
+.jp-RenderedHTMLCommon tbody tr:nth-child(odd),
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+.jp-RenderedHTMLCommon tbody tr:hover,
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="USGS-dataretrieval-Python-Package-get_stats()-Examples">
+<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_stats()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-get_stats()-Examples" title="Permalink to this heading"></a></h1>
+<p>This notebook provides examples of using the Python dataretrieval package to retrieve statistics for observed variables at a United States Geological Survey (USGS) monitoring site. The dataretrieval package provides a collection of functions to get data from the USGS National Water Information System (NWIS) and other online sources of hydrology and water quality data, including the United States Environmental Protection Agency (USEPA).</p>
+<section id="Install-the-Package">
+<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Permalink to this heading"></a></h2>
+<p>Use the following code to install the package if it doesn’t exist already within your Jupyter Python environment.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>!pip install dataretrieval
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.0.0)
+Requirement already satisfied: typing in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (3.7.4.3)
+Requirement already satisfied: pandas in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (1.5.2)
+Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.25.1)
+Requirement already satisfied: python-dateutil&gt;=2.8.1 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2.8.2)
+Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas-&gt;dataretrieval) (2022.1)
+Requirement already satisfied: numpy&gt;=1.21.0 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (1.24.1)
+Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.1-&gt;pandas-&gt;dataretrieval) (1.16.0)
+</pre></div></div>
+</div>
+<p>Load the package so you can use it along with other packages used in this notebook.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from dataretrieval import nwis
+from IPython.display import display
+from matplotlib import ticker
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Basic-Usage">
+<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Permalink to this heading"></a></h2>
+<p>The dataretrieval package has several functions that allow you to retrieve data from different web services. This examples uses the <code class="docutils literal notranslate"><span class="pre">get_stats()</span></code> function to retrieve statistics for observed variable(s) for a USGS monitoring site from USGS NWIS. The following arguments are available:</p>
+<p>Arguments (Additional parameters, if supplied, will be used as query parameters).</p>
+<ul class="simple">
+<li><p><strong>sites</strong> (string or list of strings): A string or list of strings contining the USGS site identifiers for which to retrive data.</p></li>
+<li><p><strong>parameterCd</strong> (string or list of strings): A list of USGS parameter codes for which to retrieve data.</p></li>
+<li><p><strong>statReportType</strong> (string): The aggregation period for which statistics should be reported. Can be specified as ‘daily’ (default), ‘monthly’, or ‘annual’.</p></li>
+<li><p><strong>statTypeCd</strong> (string): The type of statistic to be returned in the result. Can be specified as ‘all’, ‘mean’, ‘max’, ‘min’, or ‘median’</p></li>
+</ul>
+<section id="Example-1:-Get-all-of-the-annual-mean-discharge-data-for-a-single-site">
+<h3>Example 1: Get all of the annual mean discharge data for a single site<a class="headerlink" href="#Example-1:-Get-all-of-the-annual-mean-discharge-data-for-a-single-site" title="Permalink to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Set the parameters needed to retrieve data
+siteNumber = &quot;02319394&quot;
+parameterCode = &quot;00060&quot; # Discharge
+
+# Retrieve the statistics
+x1 = nwis.get_stats(sites=siteNumber, parameterCd=parameterCode, statReportType=&quot;annual&quot;)
+print(&quot;Retrieved &quot; + str(len(x1[0])) + &quot; data values.&quot;)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Retrieved 18 data values.
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Interpreting-the-Result">
+<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Permalink to this heading"></a></h2>
+<p>The result of calling the <code class="docutils literal notranslate"><span class="pre">get_stats()</span></code> function is an object that contains a Pandas data frame object and an associated metadata object. The Pandas data frame contains the statistics values for the site and observed variable requested.</p>
+<p>Once you’ve got the data frame, there’s several useful things you can do to explore the data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Display the data frame as a table
+display(x1[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>agency_cd</th>
+      <th>site_no</th>
+      <th>parameter_cd</th>
+      <th>ts_id</th>
+      <th>loc_web_ds</th>
+      <th>year_nu</th>
+      <th>mean_va</th>
+      <th>count_nu</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2001</td>
+      <td>1404.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2002</td>
+      <td>795.9</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2003</td>
+      <td>3395.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2004</td>
+      <td>2471.0</td>
+      <td>366</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2005</td>
+      <td>3764.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2006</td>
+      <td>1029.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2007</td>
+      <td>688.5</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2008</td>
+      <td>2186.0</td>
+      <td>366</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2009</td>
+      <td>2620.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2012</td>
+      <td>784.3</td>
+      <td>366</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2013</td>
+      <td>2929.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2014</td>
+      <td>2847.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2015</td>
+      <td>2258.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2016</td>
+      <td>2125.0</td>
+      <td>366</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2017</td>
+      <td>1215.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2018</td>
+      <td>1961.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2019</td>
+      <td>1684.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2020</td>
+      <td>1665.0</td>
+      <td>366</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Show the data types of the columns in the resulting data frame.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(x1[0].dtypes)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+agency_cd        object
+site_no          object
+parameter_cd     object
+ts_id             int64
+loc_web_ds      float64
+year_nu           int64
+mean_va         float64
+count_nu          int64
+dtype: object
+</pre></div></div>
+</div>
+<p>Make a quick time series plot of the annual mean values.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>ax = x1[0].plot(x=&#39;year_nu&#39;, y=&#39;mean_va&#39;)
+ax.xaxis.set_major_formatter(ticker.FormatStrFormatter(&#39;%d&#39;))
+ax.set_xlabel(&#39;Year&#39;)
+ax.set_ylabel(&#39;Annual mean discharge (cfs)&#39;)
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Text(0, 0.5, &#39;Annual mean discharge (cfs)&#39;)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_USGS_dataretrieval_Statistics_Examples_13_1.png" src="../_images/examples_USGS_dataretrieval_Statistics_Examples_13_1.png" />
+</div>
+</div>
+<p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_stats()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(&quot;The query URL used to retrieve the data from NWIS was: &quot; + x1[1].url)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The query URL used to retrieve the data from NWIS was: https://waterservices.usgs.gov/nwis/stat?sites=02319394&amp;parameterCd=00060&amp;statReportType=annual&amp;format=rdb
+</pre></div></div>
+</div>
+</section>
+<section id="Additional-Examples">
+<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Permalink to this heading"></a></h2>
+<section id="Example-2:-Get-all-of-the-annual-mean-discharge-data-for-two-sites">
+<h3>Example 2: Get all of the annual mean discharge data for two sites<a class="headerlink" href="#Example-2:-Get-all-of-the-annual-mean-discharge-data-for-two-sites" title="Permalink to this heading"></a></h3>
+<p>Note: Passing multiple parameters (temperature and flow) looks like it returns only what is available (in this example flow, 00060)</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>x2 = nwis.get_stats(sites=[&quot;02319394&quot;, &quot;02171500&quot;], parameterCd=[&quot;00010&quot;, &quot;00060&quot;],
+                    statReportType=&quot;annual&quot;)
+display(x2[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>agency_cd</th>
+      <th>site_no</th>
+      <th>parameter_cd</th>
+      <th>ts_id</th>
+      <th>loc_web_ds</th>
+      <th>year_nu</th>
+      <th>mean_va</th>
+      <th>count_nu</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>02171500</td>
+      <td>00060</td>
+      <td>125737</td>
+      <td>NaN</td>
+      <td>1943</td>
+      <td>3026.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USGS</td>
+      <td>02171500</td>
+      <td>00060</td>
+      <td>125737</td>
+      <td>NaN</td>
+      <td>1944</td>
+      <td>3966.0</td>
+      <td>366</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USGS</td>
+      <td>02171500</td>
+      <td>00060</td>
+      <td>125737</td>
+      <td>NaN</td>
+      <td>1945</td>
+      <td>2577.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USGS</td>
+      <td>02171500</td>
+      <td>00060</td>
+      <td>125737</td>
+      <td>NaN</td>
+      <td>1946</td>
+      <td>3274.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USGS</td>
+      <td>02171500</td>
+      <td>00060</td>
+      <td>125737</td>
+      <td>NaN</td>
+      <td>1947</td>
+      <td>1553.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>86</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2016</td>
+      <td>2125.0</td>
+      <td>366</td>
+    </tr>
+    <tr>
+      <th>87</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2017</td>
+      <td>1215.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>88</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2018</td>
+      <td>1961.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>89</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2019</td>
+      <td>1684.0</td>
+      <td>365</td>
+    </tr>
+    <tr>
+      <th>90</th>
+      <td>USGS</td>
+      <td>02319394</td>
+      <td>00060</td>
+      <td>26452</td>
+      <td>NaN</td>
+      <td>2020</td>
+      <td>1665.0</td>
+      <td>366</td>
+    </tr>
+  </tbody>
+</table>
+<p>91 rows × 8 columns</p>
+</div></div>
+</div>
+</section>
+<section id="Example-3:-Request-daily-mean-and-median-values-for-temperature-and-discharge-for-a-site-for-years-between-2000-and-2007">
+<h3>Example 3: Request daily mean and median values for temperature and discharge for a site for years between 2000 and 2007<a class="headerlink" href="#Example-3:-Request-daily-mean-and-median-values-for-temperature-and-discharge-for-a-site-for-years-between-2000-and-2007" title="Permalink to this heading"></a></h3>
+<p>NOTE: The startDt and endDt parameters are not directly supported by this function but are turned into query parameters in the request to USGS NWIS, which means that they can be used to limit the time window requested.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>x3 = nwis.get_stats(sites=&quot;02171500&quot;, parameterCd=[&quot;00010&quot;, &quot;00060&quot;],
+                    statReportType=&quot;daily&quot;, statTypeCd=[&quot;mean&quot;, &quot;median&quot;],
+                    startDt=&quot;2000&quot;, endDt=&quot;2007&quot;)
+display(x3[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>agency_cd</th>
+      <th>site_no</th>
+      <th>parameter_cd</th>
+      <th>ts_id</th>
+      <th>loc_web_ds</th>
+      <th>month_nu</th>
+      <th>day_nu</th>
+      <th>begin_yr</th>
+      <th>end_yr</th>
+      <th>count_nu</th>
+      <th>mean_va</th>
+      <th>p50_va</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>02171500</td>
+      <td>00010</td>
+      <td>306223</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2006</td>
+      <td>2006</td>
+      <td>1</td>
+      <td>9.5</td>
+      <td>9.5</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USGS</td>
+      <td>02171500</td>
+      <td>00010</td>
+      <td>306223</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>2</td>
+      <td>2006</td>
+      <td>2006</td>
+      <td>1</td>
+      <td>9.7</td>
+      <td>9.7</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USGS</td>
+      <td>02171500</td>
+      <td>00010</td>
+      <td>306223</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>3</td>
+      <td>2006</td>
+      <td>2006</td>
+      <td>1</td>
+      <td>10.3</td>
+      <td>10.3</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USGS</td>
+      <td>02171500</td>
+      <td>00010</td>
+      <td>306223</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>4</td>
+      <td>2006</td>
+      <td>2006</td>
+      <td>1</td>
+      <td>10.1</td>
+      <td>10.1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USGS</td>
+      <td>02171500</td>
+      <td>00010</td>
+      <td>306223</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>5</td>
+      <td>2006</td>
+      <td>2006</td>
+      <td>1</td>
+      <td>10.3</td>
+      <td>10.3</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>708</th>
+      <td>USGS</td>
+      <td>02171500</td>
+      <td>00060</td>
+      <td>125737</td>
+      <td>NaN</td>
+      <td>12</td>
+      <td>27</td>
+      <td>2001</td>
+      <td>2008</td>
+      <td>8</td>
+      <td>631.0</td>
+      <td>628.0</td>
+    </tr>
+    <tr>
+      <th>709</th>
+      <td>USGS</td>
+      <td>02171500</td>
+      <td>00060</td>
+      <td>125737</td>
+      <td>NaN</td>
+      <td>12</td>
+      <td>28</td>
+      <td>2001</td>
+      <td>2008</td>
+      <td>8</td>
+      <td>616.0</td>
+      <td>626.0</td>
+    </tr>
+    <tr>
+      <th>710</th>
+      <td>USGS</td>
+      <td>02171500</td>
+      <td>00060</td>
+      <td>125737</td>
+      <td>NaN</td>
+      <td>12</td>
+      <td>29</td>
+      <td>2001</td>
+      <td>2008</td>
+      <td>8</td>
+      <td>605.0</td>
+      <td>624.0</td>
+    </tr>
+    <tr>
+      <th>711</th>
+      <td>USGS</td>
+      <td>02171500</td>
+      <td>00060</td>
+      <td>125737</td>
+      <td>NaN</td>
+      <td>12</td>
+      <td>30</td>
+      <td>2001</td>
+      <td>2008</td>
+      <td>8</td>
+      <td>610.0</td>
+      <td>629.0</td>
+    </tr>
+    <tr>
+      <th>712</th>
+      <td>USGS</td>
+      <td>02171500</td>
+      <td>00060</td>
+      <td>125737</td>
+      <td>NaN</td>
+      <td>12</td>
+      <td>31</td>
+      <td>2001</td>
+      <td>2008</td>
+      <td>7</td>
+      <td>589.0</td>
+      <td>621.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>713 rows × 12 columns</p>
+</div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="USGS_dataretrieval_SiteInventory_Examples.html" class="btn btn-neutral float-left" title="USGS dataretrieval Python Package what_sites() Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="USGS_dataretrieval_UnitValues_Examples.html" class="btn btn-neutral float-right" title="USGS dataretrieval Python Package get_iv() Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

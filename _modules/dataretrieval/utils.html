@@ -78,7 +78,6 @@
 <span class="sd">Useful utilities for data munging.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">from</span> <span class="nn">dataretrieval.codes</span> <span class="kn">import</span> <span class="n">tz</span>
@@ -87,9 +86,30 @@
 <div class="viewcode-block" id="to_str"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.to_str">[docs]</a><span class="k">def</span> <span class="nf">to_str</span><span class="p">(</span><span class="n">listlike</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Translates list-like objects into strings.</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    listlike: list-like object</span>
+<span class="sd">        An object that is a list, or list-like</span>
+<span class="sd">        (e.g., ``pandas.core.series.Series``)</span>
+<span class="sd">    delimiter: string, optional</span>
+<span class="sd">        The delimiter that is placed between entries in listlike when it is</span>
+<span class="sd">        turned into a string. Default value is a comma.</span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">        List-like object as string</span>
+<span class="sd">    listlike: string</span>
+<span class="sd">        The listlike object as string separated by the delimiter</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. doctest::</span>
+
+<span class="sd">        &gt;&gt;&gt; dataretrieval.utils.to_str([1, &#39;a&#39;, 2])</span>
+<span class="sd">        &#39;1,a,2&#39;</span>
+
+<span class="sd">        &gt;&gt;&gt; dataretrieval.utils.to_str([0, 10, 42], delimiter=&#39;+&#39;)</span>
+<span class="sd">        &#39;0+10+42&#39;</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">listlike</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">listlike</span><span class="p">])</span>
@@ -112,23 +132,21 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    df : ``pandas.DataFrame``</span>
-<span class="sd">        ``pandas.DataFrame`` containing date, time, and timezone fields.</span>
-
-<span class="sd">    date_field : string</span>
+<span class="sd">    df: ``pandas.DataFrame``</span>
+<span class="sd">        A data frame containing date, time, and timezone fields.</span>
+<span class="sd">    date_field: string</span>
 <span class="sd">        Name of date column in df.</span>
-
-<span class="sd">    time_field : string</span>
+<span class="sd">    time_field: string</span>
 <span class="sd">        Name of time column in df.</span>
-
-<span class="sd">    tz_field : string</span>
+<span class="sd">    tz_field: string</span>
 <span class="sd">        Name of time zone column in df.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    df : ``pandas.DataFrame``</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    df: ``pandas.DataFrame``</span>
+<span class="sd">        The data frame with a formatted &#39;datetime&#39; column</span>
 
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># create a datetime index from the columns in qwdata response</span>
     <span class="n">df</span><span class="p">[</span><span class="n">tz_field</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">tz_field</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">tz</span><span class="p">)</span>
 
@@ -155,17 +173,16 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    left: ``pandas.DataFrame``</span>
-<span class="sd">        original data</span>
+<span class="sd">        Original data</span>
 <span class="sd">    right: ``pandas.DataFrame``</span>
-<span class="sd">        updated data</span>
+<span class="sd">        Updated data</span>
 <span class="sd">    na_only: bool</span>
-<span class="sd">        if True, only update na values</span>
+<span class="sd">        If True, only update na values</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        updated data</span>
-
+<span class="sd">        Updated data frame</span>
 
 <span class="sd">    .. todo::</span>
 
@@ -194,7 +211,9 @@
     <span class="k">return</span> <span class="n">df</span></div>
 
 
-<span class="k">class</span> <span class="nc">Metadata</span><span class="p">:</span>
+<div class="viewcode-block" id="Metadata"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.Metadata">[docs]</a><span class="k">class</span> <span class="nc">Metadata</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Custom class for metadata.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">url</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">query_time</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">site_info</span> <span class="o">=</span> <span class="kc">None</span>
@@ -205,15 +224,17 @@
     <span class="c1"># note sure what statistic_info is</span>
     <span class="n">statistic_info</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="c1"># disclaimer seems to be only part of importWaterML1</span>
-    <span class="n">disclaimer</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">disclaimer</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
-<span class="k">def</span> <span class="nf">set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+<div class="viewcode-block" id="set_metadata"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.set_metadata">[docs]</a><span class="k">def</span> <span class="nf">set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to initialize and set metadata from an API response.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">md</span> <span class="o">=</span> <span class="n">Metadata</span><span class="p">()</span>
     <span class="n">md</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">url</span>
     <span class="n">md</span><span class="o">.</span><span class="n">query_time</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">elapsed</span>
     <span class="n">md</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span>
-    <span class="k">return</span> <span class="n">md</span>
+    <span class="k">return</span> <span class="n">md</span></div>
 
 
 <div class="viewcode-block" id="query"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.query">[docs]</a><span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
@@ -224,13 +245,17 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">        url :</span>
-<span class="sd">        payload : query parameters passed to requests.get</span>
-<span class="sd">        delimiter : delimeter to use with lists</span>
+<span class="sd">    url: string</span>
+<span class="sd">        URL to query</span>
+<span class="sd">    payload: dict</span>
+<span class="sd">        query parameters passed to ``requests.get``</span>
+<span class="sd">    delimiter: string</span>
+<span class="sd">        delimiter to use with lists</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">        string : query response</span>
+<span class="sd">    string: query response</span>
+<span class="sd">        The response from the API query ``requests.get`` function call.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">payload</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -244,7 +269,19 @@
     <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Bad Request, check that your parameters are correct. URL: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="p">))</span>
     <span class="k">elif</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">414</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Request URL too long. Modify your query to use fewer sites. API response reason: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">reason</span><span class="p">))</span>
+        <span class="n">_reason</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">reason</span>
+        <span class="n">_example</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                    split_list = np.array_split(site_list, n)  # n is number of chunks to divide query into </span><span class="se">\n</span><span class="s2"></span>
+<span class="s2">                    data_list = []  # list to store chunk results in </span><span class="se">\n</span><span class="s2"></span>
+<span class="s2">                    # loop through chunks and make requests </span><span class="se">\n</span><span class="s2"></span>
+<span class="s2">                    for site_list in split_list: </span><span class="se">\n</span><span class="s2"></span>
+<span class="s2">                        data = nwis.get_record(sites=site_list, service=&#39;dv&#39;, start=start, end=end) </span><span class="se">\n</span><span class="s2"></span>
+<span class="s2">                        data_list.append(data)  # append results to list&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Request URL too long. Modify your query to use fewer sites. &quot;</span> <span class="o">+</span>
+            <span class="sa">f</span><span class="s2">&quot;API response reason: </span><span class="si">{</span><span class="n">_reason</span><span class="si">}</span><span class="s2">. Pseudo-code example of how to &quot;</span> <span class="o">+</span>
+            <span class="sa">f</span><span class="s2">&quot;split your query: </span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">_example</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;No sites/data&#39;</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">NoSitesError</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
@@ -253,6 +290,8 @@
 
 
 <div class="viewcode-block" id="NoSitesError"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError">[docs]</a><span class="k">class</span> <span class="nc">NoSitesError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Custom error class used when selection criteria returns no sites/data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="NoSitesError.__init__"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span></div>
 

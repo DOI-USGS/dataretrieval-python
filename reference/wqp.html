@@ -55,7 +55,9 @@
 <li class="toctree-l2"><a class="reference internal" href="utils.html">dataretrieval.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="waterwatch.html">dataretrieval.waterwatch</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.wqp</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp._alter_kwargs"><code class="docutils literal notranslate"><span class="pre">_alter_kwargs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.get_results"><code class="docutils literal notranslate"><span class="pre">get_results()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.set_metadata"><code class="docutils literal notranslate"><span class="pre">set_metadata()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.what_activities"><code class="docutils literal notranslate"><span class="pre">what_activities()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.what_activity_metrics"><code class="docutils literal notranslate"><span class="pre">what_activity_metrics()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.what_detection_limits"><code class="docutils literal notranslate"><span class="pre">what_detection_limits()</span></code></a></li>
@@ -64,6 +66,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.what_project_weights"><code class="docutils literal notranslate"><span class="pre">what_project_weights()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.what_projects"><code class="docutils literal notranslate"><span class="pre">what_projects()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.what_sites"><code class="docutils literal notranslate"><span class="pre">what_sites()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.wqp_url"><code class="docutils literal notranslate"><span class="pre">wqp_url()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -130,29 +133,70 @@
 </ul>
 </div>
 <dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.wqp._alter_kwargs">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">_alter_kwargs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#_alter_kwargs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp._alter_kwargs" title="Permalink to this definition"></a></dt>
+<dd><p>Private function to manipulate <a href="#id2"><span class="problematic" id="id3">**</span></a>kwargs.</p>
+<p>Not all query parameters are currently supported by <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code>,
+so this function is used to set some of them and raise warnings to the
+user so they are aware of which are being hard-set.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.get_results">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">get_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#get_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.get_results" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Query the WQP for results.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>siteid</strong> (<em>string</em>) – Concatenate an agency code, a hyphen (“-“), and a site-identification number.</p></li>
-<li><p><strong>statecode</strong> (<em>string</em>) – Concatenate ‘US’, a colon (“:”), and a FIPS numeric code (Example: Illinois is US:17)</p></li>
-<li><p><strong>countycode</strong> (<em>string</em>) – </p></li>
+<li><p><strong>siteid</strong> (<em>string</em>) – Concatenate an agency code, a hyphen (“-“), and a site-identification
+number.</p></li>
+<li><p><strong>statecode</strong> (<em>string</em>) – Concatenate ‘US’, a colon (“:”), and a FIPS numeric code
+(Example: Illinois is US:17)</p></li>
+<li><p><strong>countycode</strong> (<em>string</em>) – A FIPS county code</p></li>
 <li><p><strong>huc</strong> (<em>string</em>) – One or more eight-digit hydrologic units, delimited by semicolons.</p></li>
-<li><p><strong>bBox</strong> (<em>string</em>) – (Example: bBox=-92.8,44.2,-88.9,46.0)</p></li>
-<li><p><strong>lat</strong> (<em>float</em>) – Latitude for radial search, expressed in decimal degrees, WGS84</p></li>
-<li><p><strong>long</strong> – Longitude for radial search</p></li>
-<li><p><strong>within</strong> – </p></li>
-<li><p><strong>pCode</strong> (<em>string</em>) – One or more five-digit USGS parameter codes, separated by semicolons. NWIS only.</p></li>
-<li><p><strong>startDateLo</strong> (<em>string</em>) – Date of earliest desired data-collection activity, expressed as MM-DD-YYYY</p></li>
-<li><p><strong>startDateHi</strong> (<em>string</em>) – Date of last desired data-collection activity, expressed as MM-DD-YYYY</p></li>
-<li><p><strong>characteristicName</strong> (<em>string</em>) – One or more case-sensitive characteristic names, separated by semicolons.
-(See <a class="reference external" href="https://www.waterqualitydata.us/public_srsnames/">https://www.waterqualitydata.us/public_srsnames/</a> for available characteristic names)</p></li>
-<li><p><strong>mimeType</strong> (<em>string</em><em> (</em><em>csv</em><em>)</em>) – </p></li>
-<li><p><strong>zip</strong> (<em>string</em><em> (</em><em>yes</em><em> or </em><em>no</em><em>)</em>) – </p></li>
+<li><p><strong>bBox</strong> (<em>string</em>) – Bounding box (Example: bBox=-92.8,44.2,-88.9,46.0)</p></li>
+<li><p><strong>lat</strong> (<em>string</em>) – Latitude for radial search, expressed in decimal degrees, WGS84</p></li>
+<li><p><strong>long</strong> (<em>string</em>) – Longitude for radial search</p></li>
+<li><p><strong>within</strong> (<em>string</em>) – Distance for a radial search, expressed in decimal miles</p></li>
+<li><p><strong>pCode</strong> (<em>string</em>) – One or more five-digit USGS parameter codes, separated by semicolons.
+NWIS only.</p></li>
+<li><p><strong>startDateLo</strong> (<em>string</em>) – Date of earliest desired data-collection activity,
+expressed as ‘MM-DD-YYYY’</p></li>
+<li><p><strong>startDateHi</strong> (<em>string</em>) – Date of last desired data-collection activity,
+expressed as ‘MM-DD-YYYY’</p></li>
+<li><p><strong>characteristicName</strong> (<em>string</em>) – One or more case-sensitive characteristic names, separated by
+semicolons. (See <a class="reference external" href="https://www.waterqualitydata.us/public_srsnames/">https://www.waterqualitydata.us/public_srsnames/</a>
+for available characteristic names)</p></li>
+<li><p><strong>mimeType</strong> (<em>string</em>) – String specifying the output format which is ‘csv’ by default but can
+be ‘geojson’</p></li>
+<li><p><strong>zip</strong> (<em>string</em>) – Parameter to stream compressed data, if ‘yes’, or uncompressed data
+if ‘no’. Default is ‘no’.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – Custom <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> metadata object pertaining to the query.</p></li>
+</ul>
+</p>
+</dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get results within a radial distance of a point</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">lat</span><span class="o">=</span><span class="s1">&#39;44.2&#39;</span><span class="p">,</span> <span class="n">long</span><span class="o">=</span><span class="s1">&#39;-88.9&#39;</span><span class="p">,</span> <span class="n">within</span><span class="o">=</span><span class="s1">&#39;0.5&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get results within a bounding box</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">bBox</span><span class="o">=</span><span class="s1">&#39;-92.8,44.2,-88.9,46.0&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.wqp.set_metadata">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">set_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">response</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#set_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.set_metadata" title="Permalink to this definition"></a></dt>
+<dd><p>Set metadata for WQP data.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -161,9 +205,24 @@
 <dd><p>Search WQP for activities within a region with specific data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>get_results</strong> (<em>same as</em>) – </p>
+<dd class="field-odd"><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – Custom metadata object pertaining to the query.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get activities within Washington D.C.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># during a specific time period</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_activities</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s1">&#39;US:11&#39;</span><span class="p">,</span> <span class="n">startDateLo</span><span class="o">=</span><span class="s1">&#39;12-30-2019&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s1">&#39;01-01-2020&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -172,9 +231,24 @@
 <dd><p>Search WQP for activity metrics within a region with specific data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>get_results</strong> (<em>same as</em>) – </p>
+<dd class="field-odd"><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – Custom metadata object pertaining to the query.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get activity metrics for a state (North Dakota in this case)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># within a set time period</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_activity_metrics</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s1">&#39;US:38&#39;</span><span class="p">,</span> <span class="n">startDateLo</span><span class="o">=</span><span class="s1">&#39;07-01-2006&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s1">&#39;12-01-2006&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -184,9 +258,24 @@
 data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>get_results</strong> (<em>same as</em>) – </p>
+<dd class="field-odd"><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – Custom metadata object pertaining to the query.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get detection limits for Nitrite measurements in Rhode Island</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># between specific dates</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_detection_limits</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s1">&#39;US:44&#39;</span><span class="p">,</span> <span class="n">characteristicName</span><span class="o">=</span><span class="s1">&#39;Nitrite&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateLo</span><span class="o">=</span><span class="s1">&#39;01-01-2021&#39;</span><span class="p">,</span> <span class="n">startDateHi</span><span class="o">=</span><span class="s1">&#39;02-20-2021&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -195,9 +284,22 @@ data.</p>
 <dd><p>Search WQP for habitat metrics within a region with specific data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>get_results</strong> (<em>same as</em>) – </p>
+<dd class="field-odd"><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – Custom metadata object pertaining to the query.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get habitat metrics for a state (Rhode Island in this case)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_habitat_metrics</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s1">&#39;US:44&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -206,9 +308,21 @@ data.</p>
 <dd><p>Search WQP for organizations within a region with specific data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>get_results</strong> (<em>same as</em>) – </p>
+<dd class="field-odd"><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – Custom metadata object pertaining to the query.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get all organizations in the WQP</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_organizations</span><span class="p">()</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -217,9 +331,24 @@ data.</p>
 <dd><p>Search WQP for project weights within a region with specific data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>get_results</strong> (<em>same as</em>) – </p>
+<dd class="field-odd"><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – Custom metadata object pertaining to the query.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get project weights for a state (North Dakota in this case)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># within a set time period</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_project_weights</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s1">&#39;US:38&#39;</span><span class="p">,</span> <span class="n">startDateLo</span><span class="o">=</span><span class="s1">&#39;01-01-2006&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s1">&#39;01-01-2009&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -228,9 +357,21 @@ data.</p>
 <dd><p>Search WQP for projects within a region with specific data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>get_results</strong> (<em>same as</em>) – </p>
+<dd class="field-odd"><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – Custom metadata object pertaining to the query.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get projects within a HUC region</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_projects</span><span class="p">(</span><span class="n">huc</span><span class="o">=</span><span class="s1">&#39;19&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -239,9 +380,28 @@ data.</p>
 <dd><p>Search WQP for sites within a region with specific data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>get_results</strong> (<em>same as</em>) – </p>
+<dd class="field-odd"><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – Custom metadata object pertaining to the query.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get sites within a radial distance of a point</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">lat</span><span class="o">=</span><span class="s1">&#39;44.2&#39;</span><span class="p">,</span> <span class="n">long</span><span class="o">=</span><span class="s1">&#39;-88.9&#39;</span><span class="p">,</span> <span class="n">within</span><span class="o">=</span><span class="s1">&#39;2.5&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.wqp.wqp_url">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">wqp_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#wqp_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.wqp_url" title="Permalink to this definition"></a></dt>
+<dd><p>Construct the WQP URL for a given service.</p>
 </dd></dl>
 
 </section>

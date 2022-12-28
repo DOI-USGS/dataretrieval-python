@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>USGS dataretrieval Python Package get_water_use() Examples &mdash; dataretrieval 0.7 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="National trends in peak annual streamflow" href="nwisdemo01.html" />
+    <link rel="prev" title="USGS dataretrieval Python Package get_qwdata() Examples" href="USGS_dataretrieval_WaterSamples_Examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> dataretrieval
+          </a>
+              <div class="version">
+                0.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_DailyValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_dv()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_gwlevels()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Measurements_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_discharge_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_ParameterCodes_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_pmcodes()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Peaks_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_discharge_peaks()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Ratings_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_ratings()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_SiteInfo_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_info()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_SiteInventory_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Statistics_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_stats()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_UnitValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_iv()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_WaterSamples_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_qwdata()</span></code> Examples</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_water_use()</span></code> Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Install-the-Package">Install the Package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Basic-Usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Interpreting-the-Result">Interpreting the Result</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_water_use()</span></code> Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/USGS_dataretrieval_WaterUse_Examples.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars and line breaks on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+    white-space: pre;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt .copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+.jp-RenderedHTMLCommon table,
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+.jp-RenderedHTMLCommon thead,
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+.jp-RenderedHTMLCommon tr,
+.jp-RenderedHTMLCommon th,
+.jp-RenderedHTMLCommon td,
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+.jp-RenderedHTMLCommon th,
+div.rendered_html th {
+  font-weight: bold;
+}
+.jp-RenderedHTMLCommon tbody tr:nth-child(odd),
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+.jp-RenderedHTMLCommon tbody tr:hover,
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="USGS-dataretrieval-Python-Package-get_water_use()-Examples">
+<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_water_use()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-get_water_use()-Examples" title="Permalink to this heading"></a></h1>
+<p>This notebook provides examples of using the Python dataretrieval package to retrieve water use data. The dataretrieval package provides a collection of functions to get data from the USGS National Water Information System (NWIS) and other online sources of hydrology and water quality data, including the United States Environmental Protection Agency (USEPA).</p>
+<section id="Install-the-Package">
+<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Permalink to this heading"></a></h2>
+<p>Use the following code to install the package if it doesn’t exist already within your Jupyter Python environment.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>!pip install dataretrieval
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.0.0)
+Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.25.1)
+Requirement already satisfied: pandas in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (1.5.2)
+Requirement already satisfied: typing in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (3.7.4.3)
+Requirement already satisfied: python-dateutil&gt;=2.8.1 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2.8.2)
+Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas-&gt;dataretrieval) (2022.1)
+Requirement already satisfied: numpy&gt;=1.21.0 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (1.24.1)
+Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.1-&gt;pandas-&gt;dataretrieval) (1.16.0)
+</pre></div></div>
+</div>
+<p>Load the package so you can use it along with other packages used in this notebook.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from dataretrieval import nwis
+from IPython.display import display
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Basic-Usage">
+<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Permalink to this heading"></a></h2>
+<p>The dataretrieval package has several functions that allow you to retrieve data from different web services. This examples uses the <code class="docutils literal notranslate"><span class="pre">get_water_use()</span></code> function to retrieve water use data. The following arguments are supported:</p>
+<p>Arguments (Additional arguments, if supplied, will be used as query parameters)</p>
+<ul class="simple">
+<li><p><strong>years</strong> (Listlike): List or comma delimited string of years. Must be years ending in 0 or 5 because water use data is only reported during these years, or “ALL”, which retrieves all available years</p></li>
+<li><p><strong>state</strong> (string): Full name, abbreviation or id for a state for which to retrieve data</p></li>
+<li><p><strong>county</strong> (string or list of strings): County IDs from county lookup or “ALL”</p></li>
+<li><p><strong>categories</strong> (Listlike): List or comma delimited string of two-letter category abbreviations</p></li>
+</ul>
+<section id="Example-1:-Retrieve-all-water-use-data-for-a-state">
+<h3>Example 1: Retrieve all water use data for a state<a class="headerlink" href="#Example-1:-Retrieve-all-water-use-data-for-a-state" title="Permalink to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>pennsylvania = nwis.get_water_use(state=&#39;PA&#39;)
+print(&#39;Retrieved &#39; + str(len(pennsylvania[0])) + &#39; water use records.&#39;)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Retrieved 469 water use records.
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Interpreting-the-Result">
+<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Permalink to this heading"></a></h2>
+<p>The result of calling the <code class="docutils literal notranslate"><span class="pre">get_water_use()</span></code> function is an object that contains a Pandas data frame object and an associated metadata object. The Pandas data frame contains the water use data.</p>
+<p>Once you’ve got the data frame, there’s several useful things you can do to explore the data.</p>
+<p>Display the data frame as a table. The example request was for a whole state. The data returned are organized by county and year, with summary data reported every 5 years.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>display(pennsylvania[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>state_cd</th>
+      <th>state_name</th>
+      <th>county_cd</th>
+      <th>county_nm</th>
+      <th>year</th>
+      <th>Total Population total population of area in thousands</th>
+      <th>Public Supply population served by groundwater in thousands</th>
+      <th>Public Supply population served by surface water in thousands</th>
+      <th>Public Supply total population served in thousands</th>
+      <th>Public Supply self-supplied groundwater withdrawals fresh in Mgal/d</th>
+      <th>...</th>
+      <th>Hydroelectric Power power generated by instream use in gigawatt-hours</th>
+      <th>Hydroelectric Power power generated by offstream use in gigawatt-hours</th>
+      <th>Hydroelectric Power total power generated in gigawatt-hours</th>
+      <th>Hydroelectric Power number of instream facilities</th>
+      <th>Hydroelectric Power number of offstream facilities</th>
+      <th>Hydroelectric Power total number of facilities</th>
+      <th>Wastewater Treatment returns by public wastewater facilities in Mgal/d</th>
+      <th>Wastewater Treatment number of public wastewater facilities</th>
+      <th>Wastewater Treatment number of wastewater facilities</th>
+      <th>Wastewater Treatment reclaimed wastewater released by wastewater facilities in Mgal/d</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>1</td>
+      <td>Adams County</td>
+      <td>1985</td>
+      <td>70.000</td>
+      <td>11.300</td>
+      <td>1.860</td>
+      <td>13.160</td>
+      <td>7.85</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>2.86</td>
+      <td>18</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>1</td>
+      <td>Adams County</td>
+      <td>1990</td>
+      <td>78.270</td>
+      <td>21.920</td>
+      <td>9.520</td>
+      <td>31.440</td>
+      <td>2.44</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0</td>
+      <td>-</td>
+      <td>-</td>
+      <td>6.26</td>
+      <td>18</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>1</td>
+      <td>Adams County</td>
+      <td>1995</td>
+      <td>84.000</td>
+      <td>17.160</td>
+      <td>19.660</td>
+      <td>36.820</td>
+      <td>2.58</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3.00</td>
+      <td>4</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>1</td>
+      <td>Adams County</td>
+      <td>2000</td>
+      <td>91.290</td>
+      <td>-</td>
+      <td>-</td>
+      <td>45.928</td>
+      <td>2.48</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>1</td>
+      <td>Adams County</td>
+      <td>2005</td>
+      <td>99.749</td>
+      <td>22.997</td>
+      <td>25.019</td>
+      <td>48.016</td>
+      <td>2.01</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>464</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>133</td>
+      <td>York County</td>
+      <td>1995</td>
+      <td>362.790</td>
+      <td>27.710</td>
+      <td>199.430</td>
+      <td>227.140</td>
+      <td>3.59</td>
+      <td>...</td>
+      <td>112.58</td>
+      <td>0.00</td>
+      <td>112.58</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>32.95</td>
+      <td>9</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>465</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>133</td>
+      <td>York County</td>
+      <td>2000</td>
+      <td>381.750</td>
+      <td>-</td>
+      <td>-</td>
+      <td>285.291</td>
+      <td>3.54</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>466</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>133</td>
+      <td>York County</td>
+      <td>2005</td>
+      <td>408.801</td>
+      <td>41.850</td>
+      <td>257.985</td>
+      <td>299.835</td>
+      <td>3.18</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>467</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>133</td>
+      <td>York County</td>
+      <td>2010</td>
+      <td>434.972</td>
+      <td>62.600</td>
+      <td>218.230</td>
+      <td>280.830</td>
+      <td>4.46</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>468</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>133</td>
+      <td>York County</td>
+      <td>2015</td>
+      <td>442.867</td>
+      <td>59.710</td>
+      <td>219.304</td>
+      <td>279.014</td>
+      <td>3.56</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+  </tbody>
+</table>
+<p>469 rows × 283 columns</p>
+</div></div>
+</div>
+<p>Show the data types of the columns in the resulting data frame.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(pennsylvania[0].dtypes)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+state_cd                                                                                  int64
+state_name                                                                               object
+county_cd                                                                                 int64
+county_nm                                                                                object
+year                                                                                      int64
+                                                                                          ...
+Hydroelectric Power total number of facilities                                           object
+Wastewater Treatment returns by public wastewater facilities in Mgal/d                   object
+Wastewater Treatment number of public wastewater facilities                              object
+Wastewater Treatment number of wastewater facilities                                     object
+Wastewater Treatment reclaimed wastewater released by wastewater facilities in Mgal/d    object
+Length: 283, dtype: object
+</pre></div></div>
+</div>
+<section id="Example-2:-Retrieve-data-for-an-entire-state-for-certain-years">
+<h3>Example 2: Retrieve data for an entire state for certain years<a class="headerlink" href="#Example-2:-Retrieve-data-for-an-entire-state-for-certain-years" title="Permalink to this heading"></a></h3>
+<p>Returns data parsed by county - one row for each county for each year of interest rather than the entire state. Data are included for 5 year periods.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>ohio = nwis.get_water_use(years=[2000, 2005, 2010], state=&#39;OH&#39;)
+print(&#39;Retrieved &#39; + str(len(ohio[0])) + &#39; water use records.&#39;)
+display(ohio[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Retrieved 264 water use records.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>state_cd</th>
+      <th>state_name</th>
+      <th>county_cd</th>
+      <th>county_nm</th>
+      <th>year</th>
+      <th>Total Population total population of area in thousands</th>
+      <th>Public Supply population served by groundwater in thousands</th>
+      <th>Public Supply population served by surface water in thousands</th>
+      <th>Public Supply total population served in thousands</th>
+      <th>Public Supply self-supplied groundwater withdrawals fresh in Mgal/d</th>
+      <th>...</th>
+      <th>Hydroelectric Power power generated by instream use in gigawatt-hours</th>
+      <th>Hydroelectric Power power generated by offstream use in gigawatt-hours</th>
+      <th>Hydroelectric Power total power generated in gigawatt-hours</th>
+      <th>Hydroelectric Power number of instream facilities</th>
+      <th>Hydroelectric Power number of offstream facilities</th>
+      <th>Hydroelectric Power total number of facilities</th>
+      <th>Wastewater Treatment returns by public wastewater facilities in Mgal/d</th>
+      <th>Wastewater Treatment number of public wastewater facilities</th>
+      <th>Wastewater Treatment number of wastewater facilities</th>
+      <th>Wastewater Treatment reclaimed wastewater released by wastewater facilities in Mgal/d</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>1</td>
+      <td>Adams County</td>
+      <td>2000</td>
+      <td>27.330</td>
+      <td>23.885</td>
+      <td>0.000</td>
+      <td>23.885</td>
+      <td>1.87</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>1</td>
+      <td>Adams County</td>
+      <td>2005</td>
+      <td>28.454</td>
+      <td>25.009</td>
+      <td>0.000</td>
+      <td>25.009</td>
+      <td>2.10</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>1</td>
+      <td>Adams County</td>
+      <td>2010</td>
+      <td>28.550</td>
+      <td>27.710</td>
+      <td>0.000</td>
+      <td>27.710</td>
+      <td>2.22</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>3</td>
+      <td>Allen County</td>
+      <td>2000</td>
+      <td>108.473</td>
+      <td>13.929</td>
+      <td>78.550</td>
+      <td>92.479</td>
+      <td>1.42</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>3</td>
+      <td>Allen County</td>
+      <td>2005</td>
+      <td>106.234</td>
+      <td>17.421</td>
+      <td>78.550</td>
+      <td>95.971</td>
+      <td>1.14</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>259</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>173</td>
+      <td>Wood County</td>
+      <td>2005</td>
+      <td>123.929</td>
+      <td>5.726</td>
+      <td>73.596</td>
+      <td>79.322</td>
+      <td>0.36</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>260</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>173</td>
+      <td>Wood County</td>
+      <td>2010</td>
+      <td>125.488</td>
+      <td>6.738</td>
+      <td>77.336</td>
+      <td>84.074</td>
+      <td>0.34</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>261</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>175</td>
+      <td>Wyandot County</td>
+      <td>2000</td>
+      <td>22.908</td>
+      <td>5.499</td>
+      <td>6.600</td>
+      <td>12.099</td>
+      <td>0.71</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>262</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>175</td>
+      <td>Wyandot County</td>
+      <td>2005</td>
+      <td>22.813</td>
+      <td>5.629</td>
+      <td>6.600</td>
+      <td>12.229</td>
+      <td>0.73</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>263</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>175</td>
+      <td>Wyandot County</td>
+      <td>2010</td>
+      <td>22.615</td>
+      <td>5.629</td>
+      <td>6.600</td>
+      <td>12.229</td>
+      <td>0.60</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+  </tbody>
+</table>
+<p>264 rows × 283 columns</p>
+</div></div>
+</div>
+</section>
+<section id="Example-3:-Retrieve-two-specific-water-use-categories-for-an-entire-state">
+<h3>Example 3: Retrieve two specific water use categories for an entire state<a class="headerlink" href="#Example-3:-Retrieve-two-specific-water-use-categories-for-an-entire-state" title="Permalink to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Get water use data for livestock (LI) and irrigation (IT)
+kansas = nwis.get_water_use(state=&#39;KS&#39;, categories=[&#39;IT&#39;, &#39;LI&#39;])
+print(&#39;Retrieved &#39; + str(len(kansas[0])) + &#39; water use records.&#39;)
+display(kansas[0])
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Retrieved 735 water use records.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>state_cd</th>
+      <th>state_name</th>
+      <th>county_cd</th>
+      <th>county_nm</th>
+      <th>year</th>
+      <th>Livestock self-supplied groundwater withdrawals fresh in Mgal/d</th>
+      <th>Livestock self-supplied surface-water withdrawals fresh in Mgal/d</th>
+      <th>Livestock total self-supplied withdrawals fresh in Mgal/d</th>
+      <th>Livestock consumptive use fresh in Mgal/d</th>
+      <th>Irrigation Total self-supplied groundwater withdrawals fresh in Mgal/d</th>
+      <th>...</th>
+      <th>Irrigation Total total self-supplied withdrawals in Mgal/d</th>
+      <th>Irrigation Total consumptive use fresh in Mgal/d</th>
+      <th>Irrigation Total consumptive use saline in Mgal/d</th>
+      <th>Irrigation Total total consumptive use in Mgal/d</th>
+      <th>Irrigation Total conveyance loss in Mgal/d</th>
+      <th>Irrigation Total sprinkler irrigation in thousand acres</th>
+      <th>Irrigation Total microirrigation in thousand acres</th>
+      <th>Irrigation Total surface irrigation in thousand acres</th>
+      <th>Irrigation Total total irrigation in thousand acres</th>
+      <th>Irrigation Total reclaimed wastewater in Mgal/d</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>1</td>
+      <td>Allen County</td>
+      <td>1985</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>-</td>
+      <td>1.26</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.10</td>
+      <td>0.20</td>
+      <td>-</td>
+      <td>1.00</td>
+      <td>-</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>1</td>
+      <td>Allen County</td>
+      <td>1990</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>-</td>
+      <td>0.17</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.01</td>
+      <td>0.00</td>
+      <td>-</td>
+      <td>0.78</td>
+      <td>-</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>1</td>
+      <td>Allen County</td>
+      <td>1995</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.03</td>
+      <td>0.03</td>
+      <td>0.00</td>
+      <td>0.03</td>
+      <td>0.00</td>
+      <td>0.16</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.16</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>1</td>
+      <td>Allen County</td>
+      <td>2000</td>
+      <td>0.00</td>
+      <td>0.49</td>
+      <td>0.49</td>
+      <td>-</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.26</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.43</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.43</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>1</td>
+      <td>Allen County</td>
+      <td>2005</td>
+      <td>0.00</td>
+      <td>0.56</td>
+      <td>0.56</td>
+      <td>-</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.08</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.56</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.56</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>730</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>209</td>
+      <td>Wyandotte County</td>
+      <td>1995</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.10</td>
+      <td>0.10</td>
+      <td>0.00</td>
+      <td>0.10</td>
+      <td>0.00</td>
+      <td>0.07</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.07</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>731</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>209</td>
+      <td>Wyandotte County</td>
+      <td>2000</td>
+      <td>0.00</td>
+      <td>0.05</td>
+      <td>0.05</td>
+      <td>-</td>
+      <td>0.10</td>
+      <td>...</td>
+      <td>0.27</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.24</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.24</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>732</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>209</td>
+      <td>Wyandotte County</td>
+      <td>2005</td>
+      <td>0.00</td>
+      <td>0.03</td>
+      <td>0.03</td>
+      <td>-</td>
+      <td>0.15</td>
+      <td>...</td>
+      <td>0.39</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.60</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.60</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>733</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>209</td>
+      <td>Wyandotte County</td>
+      <td>2010</td>
+      <td>0.00</td>
+      <td>0.03</td>
+      <td>0.03</td>
+      <td>-</td>
+      <td>0.10</td>
+      <td>...</td>
+      <td>0.26</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.62</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.62</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>734</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>209</td>
+      <td>Wyandotte County</td>
+      <td>2015</td>
+      <td>0.00</td>
+      <td>0.02</td>
+      <td>0.02</td>
+      <td>-</td>
+      <td>0.13</td>
+      <td>...</td>
+      <td>0.26</td>
+      <td>0.17</td>
+      <td>-</td>
+      <td>0.17</td>
+      <td>-</td>
+      <td>0.82</td>
+      <td>0.00</td>
+      <td>0.09</td>
+      <td>0.91</td>
+      <td>0.00</td>
+    </tr>
+  </tbody>
+</table>
+<p>735 rows × 27 columns</p>
+</div></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="USGS_dataretrieval_WaterSamples_Examples.html" class="btn btn-neutral float-left" title="USGS dataretrieval Python Package get_qwdata() Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="nwisdemo01.html" class="btn btn-neutral float-right" title="National trends in peak annual streamflow" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
