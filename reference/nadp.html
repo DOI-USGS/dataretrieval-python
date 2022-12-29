@@ -50,7 +50,25 @@
 <li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">API reference</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.nadp</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.nadp</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#national-trends-network">National Trends Network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mercury-deposition-network">Mercury Deposition Network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nadp.GDALMemFile"><code class="docutils literal notranslate"><span class="pre">GDALMemFile</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nadp.GDALMemFile.__init__"><code class="docutils literal notranslate"><span class="pre">GDALMemFile.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nadp.GDALMemFile.__weakref__"><code class="docutils literal notranslate"><span class="pre">GDALMemFile.__weakref__</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nadp.GDALMemFile.open"><code class="docutils literal notranslate"><span class="pre">GDALMemFile.open()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nadp.NADP_ZipFile"><code class="docutils literal notranslate"><span class="pre">NADP_ZipFile</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nadp.NADP_ZipFile.tif"><code class="docutils literal notranslate"><span class="pre">NADP_ZipFile.tif()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nadp.NADP_ZipFile.tif_name"><code class="docutils literal notranslate"><span class="pre">NADP_ZipFile.tif_name()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nadp.get_annual_MDN_map"><code class="docutils literal notranslate"><span class="pre">get_annual_MDN_map()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nadp.get_annual_NTN_map"><code class="docutils literal notranslate"><span class="pre">get_annual_NTN_map()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nadp.get_zip"><code class="docutils literal notranslate"><span class="pre">get_zip()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="nwis.html">dataretrieval.nwis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="streamstats.html">dataretrieval.streamstats</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html">dataretrieval.utils</a></li>
@@ -109,8 +127,193 @@
     text-align: unset;
 }
 </style>
-<section id="dataretrieval-nadp">
-<h1>dataretrieval.nadp<a class="headerlink" href="#dataretrieval-nadp" title="Permalink to this heading"></a></h1>
+<section id="module-dataretrieval.nadp">
+<span id="dataretrieval-nadp"></span><h1>dataretrieval.nadp<a class="headerlink" href="#module-dataretrieval.nadp" title="Permalink to this heading"></a></h1>
+<p>Tools for retrieving data from the National Atmospheric Deposition Program (NADP) including
+the National Trends Network (NTN), the Mercury Deposition Network (MDN).</p>
+<section id="national-trends-network">
+<h2>National Trends Network<a class="headerlink" href="#national-trends-network" title="Permalink to this heading"></a></h2>
+<p>The  NTN provides long-term records of precipitation chemistry across the
+United States. See <a class="reference external" href="https://nadp.slh.wisc.edu/ntn">https://nadp.slh.wisc.edu/ntn</a> for more info.</p>
+</section>
+<section id="mercury-deposition-network">
+<h2>Mercury Deposition Network<a class="headerlink" href="#mercury-deposition-network" title="Permalink to this heading"></a></h2>
+<p>The MDN provides long-term records of total mercury (Hg) concentration and
+deposition in precipitation in the United States and Canada. For more
+information visit <a class="reference external" href="https://nadp.slh.wisc.edu/networks/mercury-deposition-network/">https://nadp.slh.wisc.edu/networks/mercury-deposition-network/</a></p>
+<p class="rubric">Notes</p>
+<p>Gridded data on NADP is served as zipped tif files. Functions in this module
+will either download and extract the data, when a path is specified, or open
+the data as a GDAL memory-mapped file when no path is specified.</p>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<ul class="simple">
+<li><p>include AIRMoN, AMNet, and AMoN</p></li>
+<li><p>flexible handling of strings for parameters and measurement types</p></li>
+<li><p>add errorchecking</p></li>
+<li><p>add tests</p></li>
+</ul>
+</div>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="dataretrieval.nadp.GDALMemFile">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dataretrieval.nadp.</span></span><span class="sig-name descname"><span class="pre">GDALMemFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nadp.html#GDALMemFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nadp.GDALMemFile" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a GDAL memory-mapped file</p>
+<p>Modeled after <code class="docutils literal notranslate"><span class="pre">rasterio</span></code> function of same name</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">GDALMemFile</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">()</span> <span class="k">as</span> <span class="n">dataset</span><span class="p">:</span>
+    <span class="c1"># do something</span>
+</pre></div>
+</div>
+<div class="admonition-todo admonition" id="id2">
+<p class="admonition-title">Todo</p>
+<p>could this work on url, file, or buf?</p>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.nadp.GDALMemFile.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nadp.html#GDALMemFile.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nadp.GDALMemFile.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>buf</strong> (<em>buffer</em>) – Buffer containing gdal formatted data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dataretrieval.nadp.GDALMemFile.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#dataretrieval.nadp.GDALMemFile.__weakref__" title="Permalink to this definition"></a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.nadp.GDALMemFile.open">
+<span class="sig-name descname"><span class="pre">open</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nadp.html#GDALMemFile.open"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nadp.GDALMemFile.open" title="Permalink to this definition"></a></dt>
+<dd><p>see <a class="reference external" href="https://gist.github.com/jleinonen/5781308">https://gist.github.com/jleinonen/5781308</a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dataretrieval.nadp.NADP_ZipFile">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dataretrieval.nadp.</span></span><span class="sig-name descname"><span class="pre">NADP_ZipFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowZip64</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compresslevel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict_timestamps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nadp.html#NADP_ZipFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nadp.NADP_ZipFile" title="Permalink to this definition"></a></dt>
+<dd><p>Extend zipfile.ZipFile for working on data from NADP</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.nadp.NADP_ZipFile.tif">
+<span class="sig-name descname"><span class="pre">tif</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nadp.html#NADP_ZipFile.tif"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nadp.NADP_ZipFile.tif" title="Permalink to this definition"></a></dt>
+<dd><p>Read the tif file in the zip file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.nadp.NADP_ZipFile.tif_name">
+<span class="sig-name descname"><span class="pre">tif_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nadp.html#NADP_ZipFile.tif_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nadp.NADP_ZipFile.tif_name" title="Permalink to this definition"></a></dt>
+<dd><p>Get the name of the tif file in the zip file.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.nadp.get_annual_MDN_map">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nadp.</span></span><span class="sig-name descname"><span class="pre">get_annual_MDN_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">measurement_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nadp.html#get_annual_MDN_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nadp.get_annual_MDN_map" title="Permalink to this definition"></a></dt>
+<dd><p>Download a MDN map from NDAP.</p>
+<p>This function looks for a zip file containing gridded information at:
+<a class="reference external" href="https://nadp.slh.wisc.edu/maps-data/mdn-gradient-maps/">https://nadp.slh.wisc.edu/maps-data/mdn-gradient-maps/</a>.
+The function will download the zip file and extract it, exposing the tif
+file if a path is provided. If not, then a
+<a class="reference internal" href="#dataretrieval.nadp.GDALMemFile" title="dataretrieval.nadp.GDALMemFile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.nadp.GDALMemFile</span></code></a> object is returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>measurement_type</strong> (<em>string</em>) – The type of measurement (concentration or deposition) as a string,
+either ‘conc’ or ‘dep’ respectively.</p></li>
+<li><p><strong>year</strong> (<em>string</em>) – Year as a string ‘YYYY’</p></li>
+<li><p><strong>path</strong> (<em>string</em>) – Download directory</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>path</strong> (<em>string</em>) – Path that zip file was extracted into if path was specified.</p></li>
+<li><p><strong>GDALMemFile</strong> (<a class="reference internal" href="#dataretrieval.nadp.GDALMemFile" title="dataretrieval.nadp.GDALMemFile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.nadp.GDALMemFile</span></code></a>) – GDALMemFile containing in-memory GDAL object.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># get map of mercury concentration in 2010 and extract it to a path</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_path</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nadp</span><span class="o">.</span><span class="n">get_annual_MDN_map</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">measurement_type</span><span class="o">=</span><span class="s1">&#39;conc&#39;</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="s1">&#39;2010&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;somepath&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># get map of mercury deposition in 2008 as a GDALMemFile object</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gmem</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nadp</span><span class="o">.</span><span class="n">get_annual_MDN_map</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">measurement_type</span><span class="o">=</span><span class="s1">&#39;dep&#39;</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="s1">&#39;2008&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.nadp.get_annual_NTN_map">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nadp.</span></span><span class="sig-name descname"><span class="pre">get_annual_NTN_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">measurement_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nadp.html#get_annual_NTN_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nadp.get_annual_NTN_map" title="Permalink to this definition"></a></dt>
+<dd><p>Download a NTN map from NDAP.</p>
+<p>This function looks for a zip file containing gridded information at:
+<a class="reference external" href="https://nadp.slh.wisc.edu/maps-data/ntn-gradient-maps/">https://nadp.slh.wisc.edu/maps-data/ntn-gradient-maps/</a>.
+The function will download the zip file and extract it, exposing the tif
+file if a path is provided. If not, then a
+<a class="reference internal" href="#dataretrieval.nadp.GDALMemFile" title="dataretrieval.nadp.GDALMemFile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.nadp.GDALMemFile</span></code></a> object is returned.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Measurement type abbreviations for concentration and deposition are
+all lower-case, but for precipitation data, the first letter must be
+capitalized!</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>measurement</strong> (<em>string</em>) – The measured constituent to return.</p></li>
+<li><p><strong>measurement_type</strong> (<em>string</em>) – The type of measurement, ‘conc’, ‘dep’, or ‘Precip’, which represent
+concentration, deposition, or precipitation respectively.</p></li>
+<li><p><strong>year</strong> (<em>string</em>) – Year as a string ‘YYYY’</p></li>
+<li><p><strong>path</strong> (<em>string</em>) – Download directory</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>path</strong> (<em>string</em>) – Path that zip file was extracted into if path was specified.</p></li>
+<li><p><strong>GDALMemFile</strong> (<a class="reference internal" href="#dataretrieval.nadp.GDALMemFile" title="dataretrieval.nadp.GDALMemFile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.nadp.GDALMemFile</span></code></a>) – GDALMemFile containing in-memory GDAL object.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># get a map of nitrate concentration in 1996</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gmem</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nadp</span><span class="o">.</span><span class="n">get_annual_NTN_map</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">measurement</span><span class="o">=</span><span class="s1">&#39;NO3&#39;</span><span class="p">,</span> <span class="n">measurement_type</span><span class="o">=</span><span class="s1">&#39;conc&#39;</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="s1">&#39;1996&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># get a map of precipitation in 2015 and extract it to a path</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_path</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nadp</span><span class="o">.</span><span class="n">get_annual_NTN_map</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">measurement_type</span><span class="o">=</span><span class="s1">&#39;Precip&#39;</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="s1">&#39;2015&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;somepath&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.nadp.get_zip">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nadp.</span></span><span class="sig-name descname"><span class="pre">get_zip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nadp.html#get_zip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nadp.get_zip" title="Permalink to this definition"></a></dt>
+<dd><p>Gets a ZipFile at url and returns it</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>url</strong> (<em>string</em>) – URL to zip file</p></li>
+<li><p><strong>filename</strong> (<em>string</em>) – Name of zip file</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>ZipFile</em></p></li>
+<li><p><em>.. todo::</em> – finish docstring</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 

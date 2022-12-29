@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dataretrieval.nadp &mdash; dataretrieval 0.7 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> dataretrieval
+          </a>
+              <div class="version">
+                0.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dataretrieval.nadp</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dataretrieval.nadp</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Tools for retrieving data from the National Atmospheric Deposition Program (NADP) including</span>
+<span class="sd">the National Trends Network (NTN), the Mercury Deposition Network (MDN).</span>
+
+<span class="sd">National Trends Network</span>
+<span class="sd">-----------------------</span>
+<span class="sd">The  NTN provides long-term records of precipitation chemistry across the</span>
+<span class="sd">United States. See https://nadp.slh.wisc.edu/ntn for more info.</span>
+
+<span class="sd">Mercury Deposition Network</span>
+<span class="sd">--------------------------</span>
+<span class="sd">The MDN provides long-term records of total mercury (Hg) concentration and</span>
+<span class="sd">deposition in precipitation in the United States and Canada. For more</span>
+<span class="sd">information visit https://nadp.slh.wisc.edu/networks/mercury-deposition-network/</span>
+
+<span class="sd">Notes</span>
+<span class="sd">-----</span>
+<span class="sd">Gridded data on NADP is served as zipped tif files. Functions in this module</span>
+<span class="sd">will either download and extract the data, when a path is specified, or open</span>
+<span class="sd">the data as a GDAL memory-mapped file when no path is specified.</span>
+
+<span class="sd">.. todo::</span>
+
+<span class="sd">    - include AIRMoN, AMNet, and AMoN</span>
+<span class="sd">    - flexible handling of strings for parameters and measurement types</span>
+<span class="sd">    - add errorchecking</span>
+<span class="sd">    - add tests</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">zipfile</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">gdal</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">osgeo</span> <span class="kn">import</span> <span class="n">gdal</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;GDAL not installed. Some functions will not work.&#39;</span><span class="p">)</span>
+        <span class="kn">import</span> <span class="nn">unittest.mock</span> <span class="k">as</span> <span class="nn">mock</span>
+        <span class="n">gdal</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">basename</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">uuid4</span>
+
+<span class="n">NADP_URL</span> <span class="o">=</span> <span class="s1">&#39;https://nadp.slh.wisc.edu&#39;</span>
+<span class="n">NADP_MAP_EXT</span> <span class="o">=</span> <span class="s1">&#39;filelib/maps&#39;</span>
+
+<span class="n">NTN_CONC_PARAMS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;pH&#39;</span><span class="p">,</span> <span class="s1">&#39;So4&#39;</span><span class="p">,</span> <span class="s1">&#39;NO3&#39;</span><span class="p">,</span> <span class="s1">&#39;NH4&#39;</span><span class="p">,</span> <span class="s1">&#39;Ca&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;Mg&#39;</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="s1">&#39;Na&#39;</span><span class="p">,</span> <span class="s1">&#39;Cl&#39;</span><span class="p">,</span> <span class="s1">&#39;Br&#39;</span><span class="p">]</span>
+<span class="n">NTN_DEP_PARAMS</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="s1">&#39;So4&#39;</span><span class="p">,</span> <span class="s1">&#39;NO3&#39;</span><span class="p">,</span> <span class="s1">&#39;NH4&#39;</span><span class="p">,</span> <span class="s1">&#39;Ca&#39;</span><span class="p">,</span> <span class="s1">&#39;Mg&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="s1">&#39;Na&#39;</span><span class="p">,</span> <span class="s1">&#39;Cl&#39;</span><span class="p">,</span> <span class="s1">&#39;Br&#39;</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;SPlusN&#39;</span><span class="p">]</span>
+
+<span class="n">NTN_MEAS_TYPE</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;conc&#39;</span><span class="p">,</span> <span class="s1">&#39;dep&#39;</span><span class="p">,</span> <span class="s1">&#39;precip&#39;</span><span class="p">]</span>  <span class="c1"># concentration or deposition</span>
+
+
+<div class="viewcode-block" id="GDALMemFile"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.GDALMemFile">[docs]</a><span class="k">class</span> <span class="nc">GDALMemFile</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Creates a GDAL memory-mapped file</span>
+
+<span class="sd">    Modeled after ``rasterio`` function of same name</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        with GDALMemFile(buf).open() as dataset:</span>
+<span class="sd">            # do something</span>
+
+<span class="sd">    .. todo::</span>
+
+<span class="sd">        could this work on url, file, or buf?</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="GDALMemFile.__init__"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.GDALMemFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buf</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        buf : buffer</span>
+<span class="sd">            Buffer containing gdal formatted data.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buf</span> <span class="o">=</span> <span class="n">buf</span></div>
+
+<div class="viewcode-block" id="GDALMemFile.open"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.GDALMemFile.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        see https://gist.github.com/jleinonen/5781308</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mmap_name</span> <span class="o">=</span> <span class="s1">&#39;/vsimem/&#39;</span> <span class="o">+</span> <span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span>  <span class="c1"># vsimem is special GDAL string</span>
+        <span class="n">gdal</span><span class="o">.</span><span class="n">FileFromMemBuffer</span><span class="p">(</span><span class="n">mmap_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">buf</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">mmap_name</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="NADP_ZipFile"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.NADP_ZipFile">[docs]</a><span class="k">class</span> <span class="nc">NADP_ZipFile</span><span class="p">(</span><span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Extend zipfile.ZipFile for working on data from NADP</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="NADP_ZipFile.tif_name"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.NADP_ZipFile.tif_name">[docs]</a>    <span class="k">def</span> <span class="nf">tif_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the name of the tif file in the zip file.&quot;&quot;&quot;</span>
+        <span class="n">filenames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">namelist</span><span class="p">()</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;.*tif$&quot;</span><span class="p">)</span>
+        <span class="n">tif_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">match</span><span class="p">,</span> <span class="n">filenames</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">tif_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="NADP_ZipFile.tif"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.NADP_ZipFile.tif">[docs]</a>    <span class="k">def</span> <span class="nf">tif</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read the tif file in the zip file.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tif_name</span><span class="p">())</span></div></div>
+
+
+<div class="viewcode-block" id="get_annual_MDN_map"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.get_annual_MDN_map">[docs]</a><span class="k">def</span> <span class="nf">get_annual_MDN_map</span><span class="p">(</span><span class="n">measurement_type</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Download a MDN map from NDAP.</span>
+
+<span class="sd">    This function looks for a zip file containing gridded information at:</span>
+<span class="sd">    https://nadp.slh.wisc.edu/maps-data/mdn-gradient-maps/.</span>
+<span class="sd">    The function will download the zip file and extract it, exposing the tif</span>
+<span class="sd">    file if a path is provided. If not, then a</span>
+<span class="sd">    :obj:`dataretrieval.nadp.GDALMemFile` object is returned.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    measurement_type: string</span>
+<span class="sd">        The type of measurement (concentration or deposition) as a string,</span>
+<span class="sd">        either &#39;conc&#39; or &#39;dep&#39; respectively.</span>
+
+<span class="sd">    year: string</span>
+<span class="sd">        Year as a string &#39;YYYY&#39;</span>
+
+<span class="sd">    path: string</span>
+<span class="sd">        Download directory</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    path: string</span>
+<span class="sd">        Path that zip file was extracted into if path was specified.</span>
+
+<span class="sd">    GDALMemFile: :obj:`dataretrieval.nadp.GDALMemFile`</span>
+<span class="sd">        GDALMemFile containing in-memory GDAL object.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; # get map of mercury concentration in 2010 and extract it to a path</span>
+<span class="sd">        &gt;&gt;&gt; data_path = dataretrieval.nadp.get_annual_MDN_map(</span>
+<span class="sd">        ...     measurement_type=&#39;conc&#39;, year=&#39;2010&#39;, path=&#39;somepath&#39;)</span>
+
+<span class="sd">        &gt;&gt;&gt; # get map of mercury deposition in 2008 as a GDALMemFile object</span>
+<span class="sd">        &gt;&gt;&gt; gmem = dataretrieval.nadp.get_annual_MDN_map(</span>
+<span class="sd">        ...     measurement_type=&#39;dep&#39;, year=&#39;2008&#39;)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">/MDN/grids/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">NADP_URL</span><span class="p">,</span> <span class="n">NADP_MAP_EXT</span><span class="p">)</span>
+
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;Hg_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">.zip&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">measurement_type</span><span class="p">,</span> <span class="n">year</span><span class="p">)</span>
+
+    <span class="n">z</span> <span class="o">=</span> <span class="n">get_zip</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+        <span class="n">z</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+
+    <span class="c1"># else if no path return a buffer</span>
+    <span class="k">return</span> <span class="n">GDALMemFile</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">tif</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="get_annual_NTN_map"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.get_annual_NTN_map">[docs]</a><span class="k">def</span> <span class="nf">get_annual_NTN_map</span><span class="p">(</span><span class="n">measurement_type</span><span class="p">,</span> <span class="n">measurement</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Download a NTN map from NDAP.</span>
+
+<span class="sd">    This function looks for a zip file containing gridded information at:</span>
+<span class="sd">    https://nadp.slh.wisc.edu/maps-data/ntn-gradient-maps/.</span>
+<span class="sd">    The function will download the zip file and extract it, exposing the tif</span>
+<span class="sd">    file if a path is provided. If not, then a</span>
+<span class="sd">    :obj:`dataretrieval.nadp.GDALMemFile` object is returned.</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        Measurement type abbreviations for concentration and deposition are</span>
+<span class="sd">        all lower-case, but for precipitation data, the first letter must be</span>
+<span class="sd">        capitalized!</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    measurement : string</span>
+<span class="sd">        The measured constituent to return.</span>
+<span class="sd">    measurement_type : string</span>
+<span class="sd">        The type of measurement, &#39;conc&#39;, &#39;dep&#39;, or &#39;Precip&#39;, which represent</span>
+<span class="sd">        concentration, deposition, or precipitation respectively.</span>
+<span class="sd">    year : string</span>
+<span class="sd">        Year as a string &#39;YYYY&#39;</span>
+<span class="sd">    path : string</span>
+<span class="sd">        Download directory</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    path: string</span>
+<span class="sd">        Path that zip file was extracted into if path was specified.</span>
+
+<span class="sd">    GDALMemFile: :obj:`dataretrieval.nadp.GDALMemFile`</span>
+<span class="sd">        GDALMemFile containing in-memory GDAL object.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; # get a map of nitrate concentration in 1996</span>
+<span class="sd">        &gt;&gt;&gt; gmem = dataretrieval.nadp.get_annual_NTN_map(</span>
+<span class="sd">        ...     measurement=&#39;NO3&#39;, measurement_type=&#39;conc&#39;, year=&#39;1996&#39;)</span>
+
+<span class="sd">        &gt;&gt;&gt; # get a map of precipitation in 2015 and extract it to a path</span>
+<span class="sd">        &gt;&gt;&gt; data_path = dataretrieval.nadp.get_annual_NTN_map(</span>
+<span class="sd">        ...     measurement_type=&#39;Precip&#39;, year=&#39;2015&#39;, path=&#39;somepath&#39;)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">/NTN/grids/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">NADP_URL</span><span class="p">,</span> <span class="n">NADP_MAP_EXT</span><span class="p">,</span> <span class="n">year</span><span class="p">)</span>
+
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">.zip&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">measurement_type</span><span class="p">,</span> <span class="n">year</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">measurement</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">measurement</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+
+    <span class="n">z</span> <span class="o">=</span> <span class="n">get_zip</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+        <span class="n">z</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+
+    <span class="c1"># else if no path return a buffer</span>
+    <span class="k">return</span> <span class="n">GDALMemFile</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">tif</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="get_zip"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.get_zip">[docs]</a><span class="k">def</span> <span class="nf">get_zip</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gets a ZipFile at url and returns it</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    url : string</span>
+<span class="sd">        URL to zip file</span>
+
+<span class="sd">    filename : string</span>
+<span class="sd">        Name of zip file</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ZipFile</span>
+
+<span class="sd">    .. todo::</span>
+
+<span class="sd">        finish docstring</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">req</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span> <span class="o">+</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="n">req</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+
+    <span class="c1"># z = zipfile.ZipFile(io.BytesIO(req.content))</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">NADP_ZipFile</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">content</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">z</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
