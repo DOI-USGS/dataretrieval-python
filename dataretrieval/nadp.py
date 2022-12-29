@@ -33,10 +33,17 @@ import zipfile
 import io
 import os
 import re
+import warnings
+
 try:
     import gdal
 except:
-    from osgeo import gdal
+    try:
+        from osgeo import gdal
+    except:
+        warnings.warn('GDAL not installed. Some functions will not work.')
+        import mock
+        gdal = mock.MagicMock()
 
 from os.path import basename
 from uuid import uuid4

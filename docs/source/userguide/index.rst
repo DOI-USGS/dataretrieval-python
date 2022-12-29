@@ -4,6 +4,9 @@
 User Guide
 ==========
 
+Topic guides to provide additional information about various aspects of
+``dataretrieval``.
+
 Contents
 --------
 
@@ -11,6 +14,4 @@ Contents
     :maxdepth: 1
 
     timeconventions
-
-
-.. include:: timeconventions.rst
+    dataportals
