@@ -42,7 +42,7 @@ except:
         from osgeo import gdal
     except:
         warnings.warn('GDAL not installed. Some functions will not work.')
-        import mock
+        import unittest.mock as mock
         gdal = mock.MagicMock()
 
 from os.path import basename
