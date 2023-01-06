@@ -1,37 +1,75 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <title>dataretrieval.streamstats &mdash; dataretrieval 0.7 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="../../_static/js/theme.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
+
+          
             <a href="../../index.html" class="icon icon-home"> dataretrieval
+          
+
+          
           </a>
+
+          
+            
+            
               <div class="version">
                 0.7
               </div>
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -39,7 +77,18 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../meta/installing.html">Installation Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../userguide/index.html">User Guide</a></li>
@@ -49,30 +98,69 @@
 <li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API reference</a></li>
 </ul>
 
+            
+          
         </div>
+        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">dataretrieval</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a></li>
-          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">dataretrieval.streamstats</li>
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>dataretrieval.streamstats</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
+            
   <h1>Source code for dataretrieval.streamstats</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">This module is a wrapper for the streamstats API (`streamstats documentation`_).</span>
@@ -86,7 +174,7 @@
 
 
 <div class="viewcode-block" id="download_workspace"><a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.download_workspace">[docs]</a><span class="k">def</span> <span class="nf">download_workspace</span><span class="p">(</span><span class="n">workspaceID</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Function to download streamstats workspace.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Function to download streamstats workspace.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -120,7 +208,7 @@
 
 
 <div class="viewcode-block" id="get_sample_watershed"><a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.get_sample_watershed">[docs]</a><span class="k">def</span> <span class="nf">get_sample_watershed</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Sample function to get a watershed object for a location in NY.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sample function to get a watershed object for a location in NY.</span>
 
 <span class="sd">    Makes the function call :obj:`dataretrieval.streamstats.get_watershed`</span>
 <span class="sd">    with the parameters &#39;NY&#39;, -74.524, 43.939, and returns the watershed</span>
@@ -139,7 +227,7 @@
 <div class="viewcode-block" id="get_watershed"><a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.get_watershed">[docs]</a><span class="k">def</span> <span class="nf">get_watershed</span><span class="p">(</span><span class="n">rcode</span><span class="p">,</span> <span class="n">xlocation</span><span class="p">,</span> <span class="n">ylocation</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="mi">4326</span><span class="p">,</span>
                   <span class="n">includeparameters</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">includeflowtypes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                   <span class="n">includefeatures</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">simplify</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;geojson&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Get watershed object based on location</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Get watershed object based on location</span>
 
 <span class="sd">    **Streamstats documentation:**</span>
 <span class="sd">    Returns a watershed object. The request configuration will determine the</span>
@@ -206,10 +294,10 @@
 
 
 <div class="viewcode-block" id="Watershed"><a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.Watershed">[docs]</a><span class="k">class</span> <span class="nc">Watershed</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Class to extract information from the streamstats JSON object.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to extract information from the streamstats JSON object.&quot;&quot;&quot;</span>
 <div class="viewcode-block" id="Watershed.from_streamstats_json"><a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.Watershed.from_streamstats_json">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_streamstats_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">streamstats_json</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Method that creates a Watershed object from a streamstats JSON.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method that creates a Watershed object from a streamstats JSON.&quot;&quot;&quot;</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">watershed_point</span> <span class="o">=</span> <span class="n">streamstats_json</span><span class="p">[</span><span class="s1">&#39;featurecollection&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;feature&#39;</span><span class="p">]</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">watershed_polygon</span> <span class="o">=</span> <span class="n">streamstats_json</span><span class="p">[</span><span class="s1">&#39;featurecollection&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;feature&#39;</span><span class="p">]</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">streamstats_json</span><span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">]</span>
@@ -217,35 +305,51 @@
         <span class="k">return</span> <span class="bp">cls</span></div>
 
 <div class="viewcode-block" id="Watershed.__init__"><a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.Watershed.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rcode</span><span class="p">,</span> <span class="n">xlocation</span><span class="p">,</span> <span class="n">ylocation</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Init method that calls the :obj:`from_streamstats_json` method.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Init method that calls the :obj:`from_streamstats_json` method.&quot;&quot;&quot;</span>
         <span class="bp">self</span> <span class="o">=</span> <span class="n">get_watershed</span><span class="p">(</span><span class="n">rcode</span><span class="p">,</span> <span class="n">xlocation</span><span class="p">,</span> <span class="n">ylocation</span><span class="p">)</span></div></div>
 </pre></div>
 
            </div>
+           
           </div>
           <footer>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright .</p>
-  </div>
+    <p>
+        &#169; Copyright .
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

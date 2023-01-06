@@ -1,42 +1,80 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <title>USGS dataretrieval Python Package get_iv() Examples &mdash; dataretrieval 0.7 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script src="../_static/js/theme.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="USGS dataretrieval Python Package get_qwdata() Examples" href="USGS_dataretrieval_WaterSamples_Examples.html" />
     <link rel="prev" title="USGS dataretrieval Python Package get_stats() Examples" href="USGS_dataretrieval_Statistics_Examples.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
+
+          
             <a href="../index.html" class="icon icon-home"> dataretrieval
+          
+
+          
           </a>
+
+          
+            
+            
               <div class="version">
                 0.7
               </div>
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -44,7 +82,18 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
@@ -80,31 +129,73 @@
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
 </ul>
 
+            
+          
         </div>
+        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">dataretrieval</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
-          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
-      <li class="breadcrumb-item active">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_iv()</span></code> Examples</li>
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Examples</a> &raquo;</li>
+        
+      <li>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_iv()</span></code> Examples</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
+          
             <a href="../_sources/examples/USGS_dataretrieval_UnitValues_Examples.nblink.txt" rel="nofollow"> View page source</a>
+          
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
+            
   
 <style>
 /* CSS for nbsphinx extension */
@@ -385,16 +476,16 @@ div.rendered_html tbody tr:hover {
 }
 </style>
 <section id="USGS-dataretrieval-Python-Package-get_iv()-Examples">
-<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_iv()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-get_iv()-Examples" title="Permalink to this heading"></a></h1>
+<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_iv()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-get_iv()-Examples" title="Permalink to this heading">¶</a></h1>
 <p>This notebook provides examples of using the Python dataretrieval package to retrieve instantaneous values data for a United States Geological Survey (USGS) monitoring site. The dataretrieval package provides a collection of functions to get data from the USGS National Water Information System (NWIS) and other online sources of hydrology and water quality data, including the United States Environmental Protection Agency (USEPA).</p>
 <section id="Install-the-Package">
-<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Permalink to this heading"></a></h2>
+<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Permalink to this heading">¶</a></h2>
 <p>Use the following code to install the package if it doesn’t exist already within your Jupyter Python environment.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>!pip install dataretrieval
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>dataretrieval
 </pre></div>
 </div>
 </div>
@@ -405,12 +496,12 @@ div.rendered_html tbody tr:hover {
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
 Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.0.0)
+Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.25.1)
 Requirement already satisfied: pandas in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (1.5.2)
 Requirement already satisfied: typing in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (3.7.4.3)
-Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.25.1)
 Requirement already satisfied: numpy&gt;=1.21.0 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (1.24.1)
-Requirement already satisfied: python-dateutil&gt;=2.8.1 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2.8.2)
 Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas-&gt;dataretrieval) (2022.1)
+Requirement already satisfied: python-dateutil&gt;=2.8.1 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2.8.2)
 Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.1-&gt;pandas-&gt;dataretrieval) (1.16.0)
 </pre></div></div>
 </div>
@@ -419,15 +510,15 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from dataretrieval import nwis
-from IPython.display import display
-from datetime import date
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">nwis</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
 </pre></div>
 </div>
 </div>
 </section>
 <section id="Basic-Usage">
-<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Permalink to this heading"></a></h2>
+<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Permalink to this heading">¶</a></h2>
 <p>The dataretrieval package has several functions that allow you to retrieve data from different web services. This example uses the <code class="docutils literal notranslate"><span class="pre">get_iv()</span></code> function to retrieve instantaneous streamflow data for a USGS monitoring site from NWIS. The following arguments are supported:</p>
 <ul class="simple">
 <li><p><strong>sites</strong> (string or list of strings): A list of USGS site identifiers for which to retrieve data.</p></li>
@@ -436,20 +527,20 @@ from datetime import date
 <li><p><strong>end</strong> (string): The ending date for a period for which to retrieve data. If the waterdata parameter endDt is supplied, it will overwrite the end parameter.</p></li>
 </ul>
 <section id="Example-1:-Get-unit-value-data-for-a-specific-parameter-at-a-USGS-NWIS-monitoring-site-between-a-begin-and-end-date">
-<h3>Example 1: Get unit value data for a specific parameter at a USGS NWIS monitoring site between a begin and end date<a class="headerlink" href="#Example-1:-Get-unit-value-data-for-a-specific-parameter-at-a-USGS-NWIS-monitoring-site-between-a-begin-and-end-date" title="Permalink to this heading"></a></h3>
+<h3>Example 1: Get unit value data for a specific parameter at a USGS NWIS monitoring site between a begin and end date<a class="headerlink" href="#Example-1:-Get-unit-value-data-for-a-specific-parameter-at-a-USGS-NWIS-monitoring-site-between-a-begin-and-end-date" title="Permalink to this heading">¶</a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Set the parameters needed for the web service call
-siteID = &#39;10109000&#39;  # LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT
-parameterCode = &#39;00060&#39;  # Discharge
-startDate = &#39;2021-09-01&#39;
-endDate = &#39;2021-09-30&#39;
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the parameters needed for the web service call</span>
+<span class="n">siteID</span> <span class="o">=</span> <span class="s1">&#39;10109000&#39;</span>  <span class="c1"># LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</span>
+<span class="n">parameterCode</span> <span class="o">=</span> <span class="s1">&#39;00060&#39;</span>  <span class="c1"># Discharge</span>
+<span class="n">startDate</span> <span class="o">=</span> <span class="s1">&#39;2021-09-01&#39;</span>
+<span class="n">endDate</span> <span class="o">=</span> <span class="s1">&#39;2021-09-30&#39;</span>
 
-# Get the data
-discharge = nwis.get_iv(sites=siteID, parameterCd=parameterCode, start=startDate, end=endDate)
-print(&#39;Retrieved &#39; + str(len(discharge[0])) + &#39; data values.&#39;)
+<span class="c1"># Get the data</span>
+<span class="n">discharge</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteID</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; data values.&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -464,15 +555,15 @@ Retrieved 2880 data values.
 </section>
 </section>
 <section id="Interpreting-the-Result">
-<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Permalink to this heading"></a></h2>
+<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Permalink to this heading">¶</a></h2>
 <p>The result of calling the <code class="docutils literal notranslate"><span class="pre">get_iv()</span></code> function is an object that contains a Pandas data frame object and an associated metadata object. The Pandas data frame contains the values for the observed variable and time period requested. The data frame is indexed by the dates associated with the data values.</p>
 <p>Once you’ve got the data frame, there’s several useful things you can do to explore the data.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Display the data frame as a table
-display(discharge[0])
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Display the data frame as a table</span>
+<span class="n">display</span><span class="p">(</span><span class="n">discharge</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -586,7 +677,7 @@ display(discharge[0])
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(discharge[0].dtypes)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">discharge</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtypes</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -606,7 +697,7 @@ dtype: object
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>discharge[0].describe()
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">discharge</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -678,9 +769,9 @@ dtype: object
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>ax = discharge[0].plot(y=&#39;00060&#39;)
-ax.set_xlabel(&#39;Date&#39;)
-ax.set_ylabel(&#39;Streamflow (cfs)&#39;)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">discharge</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="s1">&#39;00060&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Streamflow (cfs)&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -705,7 +796,7 @@ Text(0, 0.5, &#39;Streamflow (cfs)&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(&#39;The query URL used to retrieve the data from NWIS was: &#39; + discharge[1].url)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The query URL used to retrieve the data from NWIS was: &#39;</span> <span class="o">+</span> <span class="n">discharge</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -719,21 +810,21 @@ The query URL used to retrieve the data from NWIS was: https://nwis.waterservice
 </div>
 </section>
 <section id="Additional-Examples">
-<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Permalink to this heading"></a></h2>
+<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Permalink to this heading">¶</a></h2>
 <section id="Example-2:-Get-unit-values-for-an-individual-site-and-parameter-between-a-start-and-end-date.">
-<h3>Example 2: Get unit values for an individual site and parameter between a start and end date.<a class="headerlink" href="#Example-2:-Get-unit-values-for-an-individual-site-and-parameter-between-a-start-and-end-date." title="Permalink to this heading"></a></h3>
+<h3>Example 2: Get unit values for an individual site and parameter between a start and end date.<a class="headerlink" href="#Example-2:-Get-unit-values-for-an-individual-site-and-parameter-between-a-start-and-end-date." title="Permalink to this heading">¶</a></h3>
 <p>NOTE: By default, start and end date are evaluated as local time, and the result is returned with the timestamps in the local time of the monitoring site.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>site_id = &#39;05114000&#39;
-startDate = &#39;2014-10-10&#39;
-endDate = &#39;2014-10-10&#39;
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_id</span> <span class="o">=</span> <span class="s1">&#39;05114000&#39;</span>
+<span class="n">startDate</span> <span class="o">=</span> <span class="s1">&#39;2014-10-10&#39;</span>
+<span class="n">endDate</span> <span class="o">=</span> <span class="s1">&#39;2014-10-10&#39;</span>
 
-discharge2 = nwis.get_iv(sites=site_id, parameterCd=parameterCode, start=startDate, end=endDate)
-print(&#39;Retrieved &#39; + str(len(discharge2[0])) + &#39; data values.&#39;)
-display(discharge2[0])
+<span class="n">discharge2</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site_id</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge2</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; data values.&#39;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">discharge2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -852,15 +943,15 @@ Retrieved 96 data values.
 </div>
 </section>
 <section id="Example-3:-Get-unit-values-for-an-individual-site-for-today">
-<h3>Example 3: Get unit values for an individual site for today<a class="headerlink" href="#Example-3:-Get-unit-values-for-an-individual-site-for-today" title="Permalink to this heading"></a></h3>
+<h3>Example 3: Get unit values for an individual site for today<a class="headerlink" href="#Example-3:-Get-unit-values-for-an-individual-site-for-today" title="Permalink to this heading">¶</a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>today = str(date.today())
-discharge_today = nwis.get_iv(sites=site_id, parameterCd=parameterCode, start=today, end=today)
-print(&#39;Retrieved &#39; + str(len(discharge_today[0])) + &#39; data values.&#39;)
-display(discharge_today[0])
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">today</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">())</span>
+<span class="n">discharge_today</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site_id</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">today</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">today</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge_today</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; data values.&#39;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">discharge_today</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -869,7 +960,7 @@ display(discharge_today[0])
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 32 data values.
+Retrieved 60 data values.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -907,193 +998,361 @@ Retrieved 32 data values.
   </thead>
   <tbody>
     <tr>
-      <th>2022-12-29 06:00:00+00:00</th>
+      <th>2023-01-06 06:00:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 06:15:00+00:00</th>
+      <th>2023-01-06 06:15:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 06:30:00+00:00</th>
+      <th>2023-01-06 06:30:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 06:45:00+00:00</th>
+      <th>2023-01-06 06:45:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 07:00:00+00:00</th>
+      <th>2023-01-06 07:00:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 07:15:00+00:00</th>
+      <th>2023-01-06 07:15:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 07:30:00+00:00</th>
+      <th>2023-01-06 07:30:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 07:45:00+00:00</th>
+      <th>2023-01-06 07:45:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 08:00:00+00:00</th>
+      <th>2023-01-06 08:00:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 08:15:00+00:00</th>
+      <th>2023-01-06 08:15:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 08:30:00+00:00</th>
+      <th>2023-01-06 08:30:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 08:45:00+00:00</th>
+      <th>2023-01-06 08:45:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 09:00:00+00:00</th>
+      <th>2023-01-06 09:00:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 09:15:00+00:00</th>
+      <th>2023-01-06 09:15:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 09:30:00+00:00</th>
+      <th>2023-01-06 09:30:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 09:45:00+00:00</th>
+      <th>2023-01-06 09:45:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 10:00:00+00:00</th>
+      <th>2023-01-06 10:00:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 10:15:00+00:00</th>
+      <th>2023-01-06 10:15:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 10:30:00+00:00</th>
+      <th>2023-01-06 10:30:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 10:45:00+00:00</th>
+      <th>2023-01-06 10:45:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 11:00:00+00:00</th>
+      <th>2023-01-06 11:00:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 11:15:00+00:00</th>
+      <th>2023-01-06 11:15:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 11:30:00+00:00</th>
+      <th>2023-01-06 11:30:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 11:45:00+00:00</th>
+      <th>2023-01-06 11:45:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 12:00:00+00:00</th>
+      <th>2023-01-06 12:00:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 12:15:00+00:00</th>
+      <th>2023-01-06 12:15:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 12:30:00+00:00</th>
+      <th>2023-01-06 12:30:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 12:45:00+00:00</th>
+      <th>2023-01-06 12:45:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 13:00:00+00:00</th>
+      <th>2023-01-06 13:00:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 13:15:00+00:00</th>
+      <th>2023-01-06 13:15:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 13:30:00+00:00</th>
+      <th>2023-01-06 13:30:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
     </tr>
     <tr>
-      <th>2022-12-29 13:45:00+00:00</th>
+      <th>2023-01-06 13:45:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 14:00:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 14:15:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 14:30:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 14:45:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 15:00:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 15:15:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 15:30:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 15:45:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 16:00:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 16:15:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 16:30:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 16:45:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 17:00:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 17:15:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 17:30:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 17:45:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 18:00:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 18:15:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 18:30:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 18:45:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 19:00:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 19:15:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 19:30:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 19:45:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 20:00:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 20:15:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 20:30:00+00:00</th>
+      <td>-999999.0</td>
+      <td>P, Ice</td>
+      <td>05114000</td>
+    </tr>
+    <tr>
+      <th>2023-01-06 20:45:00+00:00</th>
       <td>-999999.0</td>
       <td>P, Ice</td>
       <td>05114000</td>
@@ -1104,16 +1363,16 @@ Retrieved 32 data values.
 </div>
 </section>
 <section id="Example-4:-Retrieve-data-using-UTC-times">
-<h3>Example 4: Retrieve data using UTC times<a class="headerlink" href="#Example-4:-Retrieve-data-using-UTC-times" title="Permalink to this heading"></a></h3>
+<h3>Example 4: Retrieve data using UTC times<a class="headerlink" href="#Example-4:-Retrieve-data-using-UTC-times" title="Permalink to this heading">¶</a></h3>
 <p>NOTE: Adding ‘Z’ to the input time parameters indicates that they are in UTC rather than local time. The time stamps associated with the data returned are still in the local time of the USGS monitoring site.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>discharge_UTC = nwis.get_iv(sites=site_id, parameterCd=parameterCode,
-                            start=&#39;2014-10-10T00:00Z&#39;, end=&#39;2014-10-10T23:59Z&#39;)
-print(&#39;Retrieved &#39; + str(len(discharge_UTC[0])) + &#39; data values.&#39;)
-display(discharge_UTC[0])
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">discharge_UTC</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site_id</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span>
+                            <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2014-10-10T00:00Z&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2014-10-10T23:59Z&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge_UTC</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; data values.&#39;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">discharge_UTC</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -1232,15 +1491,15 @@ Retrieved 96 data values.
 </div>
 </section>
 <section id="Example-5:-Get-unit-values-for-two-sites,-for-a-single-parameter,-between-a-start-and-end-date">
-<h3>Example 5: Get unit values for two sites, for a single parameter, between a start and end date<a class="headerlink" href="#Example-5:-Get-unit-values-for-two-sites,-for-a-single-parameter,-between-a-start-and-end-date" title="Permalink to this heading"></a></h3>
+<h3>Example 5: Get unit values for two sites, for a single parameter, between a start and end date<a class="headerlink" href="#Example-5:-Get-unit-values-for-two-sites,-for-a-single-parameter,-between-a-start-and-end-date" title="Permalink to this heading">¶</a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>discharge_multisite = nwis.get_iv(sites=[&#39;04024430&#39;, &#39;04024000&#39;], parameterCd=parameterCode,
-                                  start=&#39;2013-10-01&#39;, end=&#39;2013-10-01&#39;)
-print(&#39;Retrieved &#39; + str(len(discharge_multisite[0])) + &#39; data values.&#39;)
-display(discharge_multisite[0])
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">discharge_multisite</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;04024430&#39;</span><span class="p">,</span> <span class="s1">&#39;04024000&#39;</span><span class="p">],</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span>
+                                  <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2013-10-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2013-10-01&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge_multisite</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; data values.&#39;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">discharge_multisite</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -1355,33 +1614,50 @@ Retrieved 192 data values.
 
 
            </div>
+           
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="USGS_dataretrieval_Statistics_Examples.html" class="btn btn-neutral float-left" title="USGS dataretrieval Python Package get_stats() Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="USGS_dataretrieval_WaterSamples_Examples.html" class="btn btn-neutral float-right" title="USGS dataretrieval Python Package get_qwdata() Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="USGS_dataretrieval_Statistics_Examples.html" class="btn btn-neutral float-left" title="USGS dataretrieval Python Package get_stats() Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright .</p>
-  </div>
+    <p>
+        &#169; Copyright .
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

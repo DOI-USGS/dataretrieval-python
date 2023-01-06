@@ -1,42 +1,80 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <title>USGS dataretrieval Python Package what_sites() Examples &mdash; dataretrieval 0.7 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script src="../_static/js/theme.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="USGS dataretrieval Python Package get_stats() Examples" href="USGS_dataretrieval_Statistics_Examples.html" />
     <link rel="prev" title="USGS dataretrieval Python Package get_info() Examples" href="USGS_dataretrieval_SiteInfo_Examples.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
+
+          
             <a href="../index.html" class="icon icon-home"> dataretrieval
+          
+
+          
           </a>
+
+          
+            
+            
               <div class="version">
                 0.7
               </div>
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -44,7 +82,18 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
@@ -80,31 +129,73 @@
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
 </ul>
 
+            
+          
         </div>
+        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">dataretrieval</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
-          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
-      <li class="breadcrumb-item active">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> Examples</li>
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Examples</a> &raquo;</li>
+        
+      <li>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> Examples</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
+          
             <a href="../_sources/examples/USGS_dataretrieval_SiteInventory_Examples.nblink.txt" rel="nofollow"> View page source</a>
+          
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
+            
   
 <style>
 /* CSS for nbsphinx extension */
@@ -385,16 +476,16 @@ div.rendered_html tbody tr:hover {
 }
 </style>
 <section id="USGS-dataretrieval-Python-Package-what_sites()-Examples">
-<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-what_sites()-Examples" title="Permalink to this heading"></a></h1>
+<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-what_sites()-Examples" title="Permalink to this heading">¶</a></h1>
 <p>This notebook provides examples of using the Python dataretrieval package to search NWIS for sites within a region with specific data. The dataretrieval package provides a collection of functions to get data from the USGS National Water Information System (NWIS) and other online sources of hydrology and water quality data, including the United States Environmental Protection Agency (USEPA).</p>
 <section id="Install-the-Package">
-<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Permalink to this heading"></a></h2>
+<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Permalink to this heading">¶</a></h2>
 <p>Use the following code to install the package if it doesn’t exist already within your Jupyter Python environment.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>!pip install dataretrieval
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>dataretrieval
 </pre></div>
 </div>
 </div>
@@ -405,9 +496,9 @@ div.rendered_html tbody tr:hover {
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
 Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.0.0)
-Requirement already satisfied: typing in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (3.7.4.3)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.25.1)
 Requirement already satisfied: pandas in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (1.5.2)
+Requirement already satisfied: typing in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (3.7.4.3)
 Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas-&gt;dataretrieval) (2022.1)
 Requirement already satisfied: python-dateutil&gt;=2.8.1 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2.8.2)
 Requirement already satisfied: numpy&gt;=1.21.0 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (1.24.1)
@@ -419,18 +510,18 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from dataretrieval import nwis
-from IPython.display import display
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">nwis</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
 </pre></div>
 </div>
 </div>
 </section>
 <section id="Basic-Usage">
-<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Permalink to this heading"></a></h2>
+<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Permalink to this heading">¶</a></h2>
 <p>The dataretrieval package has several functions that allow you to retrieve data from different web services. This examples uses the <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> function to search NWIS for sites within a region with specific data. The function has several arguments, depending on the result you want to retrieve.</p>
 <p>Note: Must specify one major argument.</p>
 <section id="Major-Arguments-(Additional-arguments,-if-supplied,-will-be-used-as-query-parameters)">
-<h3>Major Arguments (Additional arguments, if supplied, will be used as query parameters)<a class="headerlink" href="#Major-Arguments-(Additional-arguments,-if-supplied,-will-be-used-as-query-parameters)" title="Permalink to this heading"></a></h3>
+<h3>Major Arguments (Additional arguments, if supplied, will be used as query parameters)<a class="headerlink" href="#Major-Arguments-(Additional-arguments,-if-supplied,-will-be-used-as-query-parameters)" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>sites</strong> (string or list): A list of site numbers. Sites may be prefixed with an optional agency code followed by a colon.</p></li>
 <li><p><strong>stateCd</strong> (string): U.S. postal service (2-digit) state code. Only 1 state can be specified per request.</p></li>
@@ -440,7 +531,7 @@ from IPython.display import display
 </ul>
 </section>
 <section id="Minor-Arguments">
-<h3>Minor Arguments<a class="headerlink" href="#Minor-Arguments" title="Permalink to this heading"></a></h3>
+<h3>Minor Arguments<a class="headerlink" href="#Minor-Arguments" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>startDt</strong> (string): Selects sites based on whether data was collected at a point in time beginning after startDt (start date). Dates must be in ISO-8601 Calendar Date format (for example: 1990-01-01).</p></li>
 <li><p><strong>endDt</strong> (string)</p></li>
@@ -451,7 +542,7 @@ from IPython.display import display
 </ul>
 </section>
 <section id="Formatting-Parameters">
-<h3>Formatting Parameters<a class="headerlink" href="#Formatting-Parameters" title="Permalink to this heading"></a></h3>
+<h3>Formatting Parameters<a class="headerlink" href="#Formatting-Parameters" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>siteOutput</strong> (string ‘basic’ or ‘expanded’): Indicates the richness of metadata you want for site attributes. Note that for visually oriented formats like Google Map format, this argument has no meaning. Note: for performance reasons, siteOutput=‘expanded’ cannot be used if seriesCatalogOutput=true or with any values for outputDataTypeCd.</p></li>
 <li><p><strong>seriesCatalogOutput</strong> (boolean): A switch that provides detailed period of record information for certain output formats. The period of record indicates date ranges for a certain kind of information about a site, for example the start and end dates for a site’s daily mean streamflow.</p></li>
@@ -459,27 +550,27 @@ from IPython.display import display
 <p>For additional parameter options see <a class="reference external" href="https://waterservices.usgs.gov/rest/Site-Service.html#stateCd">https://waterservices.usgs.gov/rest/Site-Service.html#stateCd</a></p>
 </section>
 <section id="Example-1:-Retrieve-information-about-sites-in-Ohio-where-phosphorus-data-was-collected">
-<h3>Example 1: Retrieve information about sites in Ohio where phosphorus data was collected<a class="headerlink" href="#Example-1:-Retrieve-information-about-sites-in-Ohio-where-phosphorus-data-was-collected" title="Permalink to this heading"></a></h3>
+<h3>Example 1: Retrieve information about sites in Ohio where phosphorus data was collected<a class="headerlink" href="#Example-1:-Retrieve-information-about-sites-in-Ohio-where-phosphorus-data-was-collected" title="Permalink to this heading">¶</a></h3>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>siteListPhos = nwis.what_sites(stateCd=&quot;OH&quot;, parameterCd=&quot;00665&quot;)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteListPhos</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">stateCd</span><span class="o">=</span><span class="s2">&quot;OH&quot;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s2">&quot;00665&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </section>
 </section>
 <section id="Interpreting-the-Result">
-<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Permalink to this heading"></a></h2>
+<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Permalink to this heading">¶</a></h2>
 <p>The result of calling the <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> function is an object that contains a Pandas data frame object and an associated metadata object. The Pandas data frame contains the requestes site inventory data.</p>
 <p>Once you’ve got the data frame, there’s several useful things you can do to explore the data.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Display the data frame as a table
-display(siteListPhos[0])
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Display the data frame as a table</span>
+<span class="n">display</span><span class="p">(</span><span class="n">siteListPhos</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -695,7 +786,7 @@ display(siteListPhos[0])
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(&#39;The query URL used to retrieve the data from NWIS was: &#39; + siteListPhos[1].url)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The query URL used to retrieve the data from NWIS was: &#39;</span> <span class="o">+</span> <span class="n">siteListPhos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -709,15 +800,15 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
 </div>
 </section>
 <section id="Additional-Examples">
-<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Permalink to this heading"></a></h2>
+<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Permalink to this heading">¶</a></h2>
 <section id="Example-2:-Retrieve-site-information-for-a-single-site">
-<h3>Example 2: Retrieve site information for a single site<a class="headerlink" href="#Example-2:-Retrieve-site-information-for-a-single-site" title="Permalink to this heading"></a></h3>
+<h3>Example 2: Retrieve site information for a single site<a class="headerlink" href="#Example-2:-Retrieve-site-information-for-a-single-site" title="Permalink to this heading">¶</a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>oneSite = nwis.what_sites(sites=&#39;05114000&#39;)
-display(oneSite[0])
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oneSite</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;05114000&#39;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">oneSite</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -779,13 +870,13 @@ display(oneSite[0])
 </div>
 </section>
 <section id="Example-3:-Retrieve-site-information-for-a-single-site-and-show-the-result-with-expanded-output">
-<h3>Example 3: Retrieve site information for a single site and show the result with expanded output<a class="headerlink" href="#Example-3:-Retrieve-site-information-for-a-single-site-and-show-the-result-with-expanded-output" title="Permalink to this heading"></a></h3>
+<h3>Example 3: Retrieve site information for a single site and show the result with expanded output<a class="headerlink" href="#Example-3:-Retrieve-site-information-for-a-single-site-and-show-the-result-with-expanded-output" title="Permalink to this heading">¶</a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>oneSite = nwis.what_sites(sites=&#39;05114000&#39;, siteOutput=&#39;expanded&#39;)
-display(oneSite[0])
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oneSite</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;05114000&#39;</span><span class="p">,</span> <span class="n">siteOutput</span><span class="o">=</span><span class="s1">&#39;expanded&#39;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">oneSite</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -866,13 +957,13 @@ display(oneSite[0])
 </div>
 </section>
 <section id="Example-4:-Retrieve-site-information-for-sites-in-Utah-with-daily-values-data-falling-within-a-specified-date-range">
-<h3>Example 4: Retrieve site information for sites in Utah with daily values data falling within a specified date range<a class="headerlink" href="#Example-4:-Retrieve-site-information-for-sites-in-Utah-with-daily-values-data-falling-within-a-specified-date-range" title="Permalink to this heading"></a></h3>
+<h3>Example 4: Retrieve site information for sites in Utah with daily values data falling within a specified date range<a class="headerlink" href="#Example-4:-Retrieve-site-information-for-sites-in-Utah-with-daily-values-data-falling-within-a-specified-date-range" title="Permalink to this heading">¶</a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>UTsites = nwis.what_sites(stateCd=&#39;UT&#39;, outputDataTypeCd=&#39;dv&#39;, startDT=&#39;1971-07-01&#39;, endDT=&#39;2021-07-28&#39;)
-display(UTsites[0])
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">UTsites</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">stateCd</span><span class="o">=</span><span class="s1">&#39;UT&#39;</span><span class="p">,</span> <span class="n">outputDataTypeCd</span><span class="o">=</span><span class="s1">&#39;dv&#39;</span><span class="p">,</span> <span class="n">startDT</span><span class="o">=</span><span class="s1">&#39;1971-07-01&#39;</span><span class="p">,</span> <span class="n">endDT</span><span class="o">=</span><span class="s1">&#39;2021-07-28&#39;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">UTsites</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -967,8 +1058,8 @@ display(UTsites[0])
       <td>1645597</td>
       <td>0</td>
       <td>2006-07-18</td>
-      <td>2022-12-29</td>
-      <td>5938</td>
+      <td>2023-01-06</td>
+      <td>5946</td>
     </tr>
     <tr>
       <th>2</th>
@@ -991,8 +1082,8 @@ display(UTsites[0])
       <td>1645597</td>
       <td>0</td>
       <td>2006-07-19</td>
-      <td>2022-12-29</td>
-      <td>5921</td>
+      <td>2023-01-06</td>
+      <td>5929</td>
     </tr>
     <tr>
       <th>3</th>
@@ -1015,8 +1106,8 @@ display(UTsites[0])
       <td>1645597</td>
       <td>0</td>
       <td>2006-07-19</td>
-      <td>2022-12-28</td>
-      <td>5915</td>
+      <td>2023-01-05</td>
+      <td>5923</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1193,14 +1284,14 @@ display(UTsites[0])
 </div>
 </section>
 <section id="Example-5:-Retrieve-site-information-for-a-single-site-and-show-the-series-catalog-output">
-<h3>Example 5: Retrieve site information for a single site and show the series catalog output<a class="headerlink" href="#Example-5:-Retrieve-site-information-for-a-single-site-and-show-the-series-catalog-output" title="Permalink to this heading"></a></h3>
+<h3>Example 5: Retrieve site information for a single site and show the series catalog output<a class="headerlink" href="#Example-5:-Retrieve-site-information-for-a-single-site-and-show-the-series-catalog-output" title="Permalink to this heading">¶</a></h3>
 <p>The series catalog output is a list of the parameters that have been collected at that site</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>oneSite = nwis.what_sites(sites=&#39;05114000&#39;, seriesCatalogOutput=&#39;true&#39;)
-display(oneSite[0])
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oneSite</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;05114000&#39;</span><span class="p">,</span> <span class="n">seriesCatalogOutput</span><span class="o">=</span><span class="s1">&#39;true&#39;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">oneSite</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -1295,8 +1386,8 @@ display(oneSite[0])
       <td>1645597</td>
       <td>0</td>
       <td>1983-08-11</td>
-      <td>2022-12-27</td>
-      <td>5752</td>
+      <td>2023-01-03</td>
+      <td>5762</td>
     </tr>
     <tr>
       <th>2</th>
@@ -1319,8 +1410,8 @@ display(oneSite[0])
       <td>1645597</td>
       <td>0</td>
       <td>1983-08-11</td>
-      <td>2022-12-27</td>
-      <td>5752</td>
+      <td>2023-01-03</td>
+      <td>5762</td>
     </tr>
     <tr>
       <th>3</th>
@@ -1343,8 +1434,8 @@ display(oneSite[0])
       <td>1645597</td>
       <td>0</td>
       <td>1983-08-11</td>
-      <td>2022-12-27</td>
-      <td>5752</td>
+      <td>2023-01-03</td>
+      <td>5762</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1415,8 +1506,8 @@ display(oneSite[0])
       <td>1645423</td>
       <td>0</td>
       <td>1994-10-01</td>
-      <td>2022-12-29</td>
-      <td>10316</td>
+      <td>2023-01-06</td>
+      <td>10324</td>
     </tr>
     <tr>
       <th>403</th>
@@ -1439,8 +1530,8 @@ display(oneSite[0])
       <td>17164583</td>
       <td>0</td>
       <td>2007-10-01</td>
-      <td>2022-12-29</td>
-      <td>5568</td>
+      <td>2023-01-06</td>
+      <td>5576</td>
     </tr>
     <tr>
       <th>404</th>
@@ -1463,8 +1554,8 @@ display(oneSite[0])
       <td>1646694</td>
       <td>0</td>
       <td>2019-05-15</td>
-      <td>2022-12-29</td>
-      <td>1324</td>
+      <td>2023-01-04</td>
+      <td>1330</td>
     </tr>
     <tr>
       <th>405</th>
@@ -1487,8 +1578,8 @@ display(oneSite[0])
       <td>154302</td>
       <td>0</td>
       <td>2019-05-15</td>
-      <td>2022-12-29</td>
-      <td>1324</td>
+      <td>2023-01-04</td>
+      <td>1330</td>
     </tr>
     <tr>
       <th>406</th>
@@ -1511,8 +1602,8 @@ display(oneSite[0])
       <td>1642503</td>
       <td>0</td>
       <td>2022-10-01</td>
-      <td>2022-12-29</td>
-      <td>89</td>
+      <td>2023-01-06</td>
+      <td>97</td>
     </tr>
   </tbody>
 </table>
@@ -1525,33 +1616,50 @@ display(oneSite[0])
 
 
            </div>
+           
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="USGS_dataretrieval_SiteInfo_Examples.html" class="btn btn-neutral float-left" title="USGS dataretrieval Python Package get_info() Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="USGS_dataretrieval_Statistics_Examples.html" class="btn btn-neutral float-right" title="USGS dataretrieval Python Package get_stats() Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="USGS_dataretrieval_SiteInfo_Examples.html" class="btn btn-neutral float-left" title="USGS dataretrieval Python Package get_info() Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright .</p>
-  </div>
+    <p>
+        &#169; Copyright .
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

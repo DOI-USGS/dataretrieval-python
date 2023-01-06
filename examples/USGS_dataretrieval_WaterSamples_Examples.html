@@ -1,42 +1,80 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <title>USGS dataretrieval Python Package get_qwdata() Examples &mdash; dataretrieval 0.7 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script src="../_static/js/theme.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="USGS dataretrieval Python Package get_water_use() Examples" href="USGS_dataretrieval_WaterUse_Examples.html" />
     <link rel="prev" title="USGS dataretrieval Python Package get_iv() Examples" href="USGS_dataretrieval_UnitValues_Examples.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
+
+          
             <a href="../index.html" class="icon icon-home"> dataretrieval
+          
+
+          
           </a>
+
+          
+            
+            
               <div class="version">
                 0.7
               </div>
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -44,7 +82,18 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
@@ -80,31 +129,73 @@
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
 </ul>
 
+            
+          
         </div>
+        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">dataretrieval</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
-          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
-      <li class="breadcrumb-item active">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_qwdata()</span></code> Examples</li>
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Examples</a> &raquo;</li>
+        
+      <li>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_qwdata()</span></code> Examples</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
+          
             <a href="../_sources/examples/USGS_dataretrieval_WaterSamples_Examples.nblink.txt" rel="nofollow"> View page source</a>
+          
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
+            
   
 <style>
 /* CSS for nbsphinx extension */
@@ -385,16 +476,16 @@ div.rendered_html tbody tr:hover {
 }
 </style>
 <section id="USGS-dataretrieval-Python-Package-get_qwdata()-Examples">
-<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_qwdata()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-get_qwdata()-Examples" title="Permalink to this heading"></a></h1>
+<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_qwdata()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-get_qwdata()-Examples" title="Permalink to this heading">¶</a></h1>
 <p>This notebook provides examples of using the Python dataretrieval package to retrieve water quality sample data for United States Geological Survey (USGS) monitoring sites. The dataretrieval package provides a collection of functions to get data from the USGS National Water Information System (NWIS) and other online sources of hydrology and water quality data, including the United States Environmental Protection Agency (USEPA).</p>
 <section id="Install-the-Package">
-<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Permalink to this heading"></a></h2>
+<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Permalink to this heading">¶</a></h2>
 <p>Use the following code to install the package if it doesn’t exist already within your Jupyter Python environment.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>!pip install dataretrieval
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>dataretrieval
 </pre></div>
 </div>
 </div>
@@ -406,10 +497,10 @@ div.rendered_html tbody tr:hover {
 Defaulting to user installation because normal site-packages is not writeable
 Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.0.0)
 Requirement already satisfied: typing in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (3.7.4.3)
-Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.25.1)
 Requirement already satisfied: pandas in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (1.5.2)
-Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas-&gt;dataretrieval) (2022.1)
+Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.25.1)
 Requirement already satisfied: numpy&gt;=1.21.0 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (1.24.1)
+Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas-&gt;dataretrieval) (2022.1)
 Requirement already satisfied: python-dateutil&gt;=2.8.1 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2.8.2)
 Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.1-&gt;pandas-&gt;dataretrieval) (1.16.0)
 </pre></div></div>
@@ -419,14 +510,14 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from dataretrieval import nwis
-from IPython.display import display
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">nwis</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
 </pre></div>
 </div>
 </div>
 </section>
 <section id="Basic-Usage">
-<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Permalink to this heading"></a></h2>
+<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Permalink to this heading">¶</a></h2>
 <p>The dataretrieval package has several functions that allow you to retrieve data from different web services. This examples uses the <code class="docutils literal notranslate"><span class="pre">get_qwdata()</span></code> function to retrieve water quality sample data for USGS monitoring sites from NWIS. The following arguments are supported:</p>
 <p>Arguments (Additional arguments, if supplied, will be used as query parameters)</p>
 <ul class="simple">
@@ -438,14 +529,14 @@ from IPython.display import display
 <li><p><strong>wide_format</strong> (boolean): If True, return data in wide format with multiple samples per row and one row per time.</p></li>
 </ul>
 <section id="Example-1:-Get-all-water-quality-sample-data-for-a-single-monitoring-site">
-<h3>Example 1: Get all water quality sample data for a single monitoring site<a class="headerlink" href="#Example-1:-Get-all-water-quality-sample-data-for-a-single-monitoring-site" title="Permalink to this heading"></a></h3>
+<h3>Example 1: Get all water quality sample data for a single monitoring site<a class="headerlink" href="#Example-1:-Get-all-water-quality-sample-data-for-a-single-monitoring-site" title="Permalink to this heading">¶</a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>siteID = &#39;10109000&#39;
-wq_data = nwis.get_qwdata(sites=siteID)
-print(&#39;Retrieved data for &#39; + str(len(wq_data[0])) + &#39; samples.&#39;)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteID</span> <span class="o">=</span> <span class="s1">&#39;10109000&#39;</span>
+<span class="n">wq_data</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_qwdata</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteID</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved data for &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; samples.&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -454,7 +545,7 @@ print(&#39;Retrieved data for &#39; + str(len(wq_data[0])) + &#39; samples.&#39;
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved data for 333 samples.
+Retrieved data for 334 samples.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -469,7 +560,7 @@ Retrieved data for 333 samples.
 </section>
 </section>
 <section id="Interpreting-the-Result">
-<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Permalink to this heading"></a></h2>
+<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Permalink to this heading">¶</a></h2>
 <p>The result of calling the <code class="docutils literal notranslate"><span class="pre">get_qwdata()</span></code> function is an object that contains a Pandas data frame object and an associated metadata object. The Pandas data frame contains the water quality sample data for the requested site, and or observed variables and time frame.</p>
 <p>Once you’ve got the data frame, there’s several useful things you can do to explore the data.</p>
 <p>Display the data frame as a table. The default data frame for this function is a wide, cross-tabulated table, with columns for each observed variable and a row for each sample date (wide_format=True).</p>
@@ -477,7 +568,7 @@ Retrieved data for 333 samples.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>display(wq_data[0])
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">wq_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -817,7 +908,7 @@ Retrieved data for 333 samples.
     </tr>
   </tbody>
 </table>
-<p>333 rows × 58 columns</p>
+<p>334 rows × 58 columns</p>
 </div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
@@ -825,7 +916,7 @@ Retrieved data for 333 samples.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(wq_data[0].dtypes)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">wq_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtypes</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -900,7 +991,7 @@ dtype: object
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(&#39;The query URL used to retrieve the data from NWIS was: &#39; + wq_data[1].url)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The query URL used to retrieve the data from NWIS was: &#39;</span> <span class="o">+</span> <span class="n">wq_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -914,18 +1005,18 @@ The query URL used to retrieve the data from NWIS was: https://nwis.waterdata.us
 </div>
 </section>
 <section id="Additional-Examples">
-<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Permalink to this heading"></a></h2>
+<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Permalink to this heading">¶</a></h2>
 <section id="Example-2:-Get-water-quality-sample-data-for-multiple-sites-for-a-single-parameter">
-<h3>Example 2: Get water quality sample data for multiple sites for a single parameter<a class="headerlink" href="#Example-2:-Get-water-quality-sample-data-for-multiple-sites-for-a-single-parameter" title="Permalink to this heading"></a></h3>
+<h3>Example 2: Get water quality sample data for multiple sites for a single parameter<a class="headerlink" href="#Example-2:-Get-water-quality-sample-data-for-multiple-sites-for-a-single-parameter" title="Permalink to this heading">¶</a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>site_ids = [&#39;04024430&#39;, &#39;04024000&#39;]
-parameter_code = &#39;00065&#39;
-wq_multi_site = nwis.get_qwdata(sites=site_ids, parameterCd=parameter_code)
-print(&#39;Retrieved data for &#39; + str(len(wq_multi_site[0])) + &#39; samples.&#39;)
-display(wq_multi_site[0])
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;04024430&#39;</span><span class="p">,</span> <span class="s1">&#39;04024000&#39;</span><span class="p">]</span>
+<span class="n">parameter_code</span> <span class="o">=</span> <span class="s1">&#39;00065&#39;</span>
+<span class="n">wq_multi_site</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_qwdata</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameter_code</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved data for &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_multi_site</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; samples.&#39;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">wq_multi_site</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -1244,19 +1335,19 @@ Retrieved data for 267 samples.
 </div>
 </section>
 <section id="Example-3:-Retrieve-water-quality-sample-data-for-multiple-sites,-including-a-list-of-parameters,-within-a-time-period-defined-by-start-and-end-dates">
-<h3>Example 3: Retrieve water quality sample data for multiple sites, including a list of parameters, within a time period defined by start and end dates<a class="headerlink" href="#Example-3:-Retrieve-water-quality-sample-data-for-multiple-sites,-including-a-list-of-parameters,-within-a-time-period-defined-by-start-and-end-dates" title="Permalink to this heading"></a></h3>
+<h3>Example 3: Retrieve water quality sample data for multiple sites, including a list of parameters, within a time period defined by start and end dates<a class="headerlink" href="#Example-3:-Retrieve-water-quality-sample-data-for-multiple-sites,-including-a-list-of-parameters,-within-a-time-period-defined-by-start-and-end-dates" title="Permalink to this heading">¶</a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>site_ids = [&#39;04024430&#39;, &#39;04024000&#39;]
-parameterCd = [&#39;34247&#39;, &#39;30234&#39;, &#39;32104&#39;, &#39;34220&#39;]
-startDate = &#39;2012-01-01&#39;
-endDate = &#39;&#39;
-wq_data2 = nwis.get_qwdata(sites=site_ids, parameterCd=parameterCd,
-                           start=startDate, end=endDate)
-print(&#39;Retrieved data for &#39; + str(len(wq_multi_site[0])) + &#39; samples.&#39;)
-display(wq_data2[0])
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;04024430&#39;</span><span class="p">,</span> <span class="s1">&#39;04024000&#39;</span><span class="p">]</span>
+<span class="n">parameterCd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;34247&#39;</span><span class="p">,</span> <span class="s1">&#39;30234&#39;</span><span class="p">,</span> <span class="s1">&#39;32104&#39;</span><span class="p">,</span> <span class="s1">&#39;34220&#39;</span><span class="p">]</span>
+<span class="n">startDate</span> <span class="o">=</span> <span class="s1">&#39;2012-01-01&#39;</span>
+<span class="n">endDate</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<span class="n">wq_data2</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_qwdata</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
+                           <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved data for &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_multi_site</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; samples.&#39;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">wq_data2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 <br/></pre></div>
 </div>
 </div>
@@ -2261,16 +2352,16 @@ Retrieved data for 267 samples.
 </div>
 </section>
 <section id="Example-4:-Retrieve-water-quality-sample-data-for-one-site-in-serial-format">
-<h3>Example 4: Retrieve water quality sample data for one site in serial format<a class="headerlink" href="#Example-4:-Retrieve-water-quality-sample-data-for-one-site-in-serial-format" title="Permalink to this heading"></a></h3>
+<h3>Example 4: Retrieve water quality sample data for one site in serial format<a class="headerlink" href="#Example-4:-Retrieve-water-quality-sample-data-for-one-site-in-serial-format" title="Permalink to this heading">¶</a></h3>
 <p>Each row in the resulting table represents a single observation of a single parameters. Each sample may be analyzed for multiple parameters and so a single water quality sample can result in multiple rows in serial format.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>siteID = &#39;10109000&#39;
-wq_data = nwis.get_qwdata(sites=siteID, wide_format=False)
-print(&#39;Retrieved data for &#39; + str(len(wq_data[0])) + &#39; sample results.&#39;)
-display(wq_data[0])
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteID</span> <span class="o">=</span> <span class="s1">&#39;10109000&#39;</span>
+<span class="n">wq_data</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_qwdata</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteID</span><span class="p">,</span> <span class="n">wide_format</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved data for &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; sample results.&#39;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">wq_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -2279,7 +2370,7 @@ display(wq_data[0])
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved data for 2300 sample results.
+Retrieved data for 2311 sample results.
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -2627,7 +2718,7 @@ Retrieved data for 2300 sample results.
     </tr>
   </tbody>
 </table>
-<p>2300 rows × 33 columns</p>
+<p>2311 rows × 33 columns</p>
 </div></div>
 </div>
 </section>
@@ -2636,33 +2727,50 @@ Retrieved data for 2300 sample results.
 
 
            </div>
+           
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="USGS_dataretrieval_UnitValues_Examples.html" class="btn btn-neutral float-left" title="USGS dataretrieval Python Package get_iv() Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="USGS_dataretrieval_WaterUse_Examples.html" class="btn btn-neutral float-right" title="USGS dataretrieval Python Package get_water_use() Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="USGS_dataretrieval_UnitValues_Examples.html" class="btn btn-neutral float-left" title="USGS dataretrieval Python Package get_iv() Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright .</p>
-  </div>
+    <p>
+        &#169; Copyright .
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>
