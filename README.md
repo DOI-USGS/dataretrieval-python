@@ -115,5 +115,6 @@ This software is provided “AS IS.”
 ## Citation
 
 Hodson, T.O., Hariharan, J.A., and contributors, 2022, dataretrieval (Python): a Python package for discovering
-and retrieving water data available from U.S. federal hydrologic web services.
+and retrieving water data available from U.S. federal hydrologic web services:
+U.S. Geological Survey software release,
 https://doi.org/10.5066/P94I5TX3
