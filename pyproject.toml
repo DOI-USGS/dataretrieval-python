@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -39,3 +39,5 @@ doc = [
 homepage = "https://github.com/USGS-python/dataretrieval"
 documentation = "https://usgs-python.github.io/dataretrieval"
 repository = "https://github.com/USGS-python/dataretrieval.git"
+
+[tool.setuptools_scm]
