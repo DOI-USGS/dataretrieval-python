@@ -192,6 +192,10 @@ def query(url, payload, delimiter=','):
 
     if response.status_code == 400:
         raise ValueError("Bad Request, check that your parameters are correct. URL: {}".format(response.url))
+    elif response.status_code == 404:
+        raise ValueError(
+            "Page Not Found Error. May be the result of an empty query. " +
+            f"URL: {response.url}")
     elif response.status_code == 414:
         _reason = response.reason
         _example = """
