@@ -1,8 +1,10 @@
 # Contributing
 
-Contributions to dataretrieval are welcome and greatly appreciated, but please
-read this document before doing so.
+Contributions to `dataretrieval` are welcome and greatly appreciated, but please
+read this document for information on *how* to contribute.
 
+`dataretrieval` broadly follows a ["forking" workflow](https://docs.github.com/en/get-started/quickstart/contributing-to-projects),
+however writing code is not the only way to contribute.
 
 ## Ways to contribute
 
@@ -18,7 +20,7 @@ When reporting a bug, please include:
 
 ### Fixing Bugs
 
-Look through the GitHub issues for bugs. Anything tagged as a "bug" is open to 
+Look through the GitHub issues for bugs. Anything tagged as a "bug" is open to
 whomever wants to fix it.
 
 
@@ -54,7 +56,7 @@ If you are proposing a feature:
 
 Before you submit a pull request, check that it meets these guidelines:
 
-1. Any pull request should include tests. However, a contribution with 
+1. Any pull request should include tests. However, a contribution with
    no tests is preferablble to no contribution at all.
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
@@ -85,7 +87,7 @@ Before you submit a pull request, check that it meets these guidelines:
     -------
     bool
         True if successful, False otherwise.
-        
+
     Examples
     --------
     Examples should be written in doctest format and should demonstrate basic usage.
@@ -124,9 +126,7 @@ Before you submit a pull request, check that it meets these guidelines:
     ```
 
   * Write new code in Python 3.
-  
+
 Acknowledgements
 ================
-This document was adapted from the cookiecutter project's CONTRIBUTING file, which resides at
-https://github.com/audreyr/cookiecutter/blob/master/CONTRIBUTING.rst
-Thank you to the Cookiecutter team for helping streamline open-source development for the masses.
+This document was adapted from the cookiecutter project's [CONTRIBUTING file](https://github.com/audreyr/cookiecutter/blob/master/CONTRIBUTING.rst).
