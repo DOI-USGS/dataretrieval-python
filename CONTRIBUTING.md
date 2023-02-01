@@ -1,4 +1,4 @@
-# Contributing
+# Contributing Guidelines
 
 Contributions to `dataretrieval` are welcome and greatly appreciated, but please
 read this document for information on *how* to contribute.
@@ -6,7 +6,26 @@ read this document for information on *how* to contribute.
 `dataretrieval` broadly follows a ["forking" workflow](https://docs.github.com/en/get-started/quickstart/contributing-to-projects),
 however writing code is not the only way to contribute.
 
-## Ways to contribute
+---
+
+## Table of Contents
+
+- [Contributing Guidelines](#contributing-guidelines)
+  - [Table of Contents](#table-of-contents)
+  - [Bugs](#bugs)
+    - [Reporting Bugs](#reporting-bugs)
+    - [Fixing Bugs](#fixing-bugs)
+    - [Implementing Features](#implementing-features)
+    - [Writing Documentation](#writing-documentation)
+    - [Submiting Feedback](#submiting-feedback)
+  - [Code Contributions](#code-contributions)
+    - [Pull Request Guidelines](#pull-request-guidelines)
+    - [Coding Standards](#coding-standards)
+  - [Acknowledgements](#acknowledgements)
+
+---
+
+## Bugs
 
 ### Reporting Bugs
 
@@ -48,11 +67,12 @@ If you are proposing a feature:
 * Explain in detail how it would work.
 * Keep the scope as narrow as possible, to make it easier to implement.
 
+---
 
-# Contributor Guidelines
+## Code Contributions
 
 
-## Pull Request Guidelines
+### Pull Request Guidelines
 
 Before you submit a pull request, check that it meets these guidelines:
 
@@ -65,7 +85,7 @@ Before you submit a pull request, check that it meets these guidelines:
    Appveyor and Travis CI.
 
 
-## Coding Standards
+### Coding Standards
 
 * PEP8
 * Docstrings should follow the numpy standard:
@@ -127,6 +147,7 @@ Before you submit a pull request, check that it meets these guidelines:
 
   * Write new code in Python 3.
 
-Acknowledgements
-================
+---
+
+## Acknowledgements
 This document was adapted from the cookiecutter project's [CONTRIBUTING file](https://github.com/audreyr/cookiecutter/blob/master/CONTRIBUTING.rst).
