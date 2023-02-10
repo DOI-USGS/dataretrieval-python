@@ -161,6 +161,13 @@ def set_metadata(response):
     return md
 
 
+def set_useragent():
+    """Function to define a user-agent to include in the GET query."""
+    _version = "CALL FCT TO GET CURRENT VERSION"
+    user_agent = {'user-agent': f"python-dataretrieval/{_version}"}
+    return user_agent
+
+
 def query(url, payload, delimiter=','):
     """Send a query.
 
@@ -188,7 +195,7 @@ def query(url, payload, delimiter=','):
     #    key, value = payload[index]
     #    payload[index] = (key, to_str(value))
 
-    response = requests.get(url, params=payload)
+    response = requests.get(url, params=payload, header=set_useragent())
 
     if response.status_code == 400:
         raise ValueError("Bad Request, check that your parameters are correct. URL: {}".format(response.url))
