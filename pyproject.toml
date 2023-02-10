@@ -41,4 +41,4 @@ documentation = "https://usgs-python.github.io/dataretrieval"
 repository = "https://github.com/USGS-python/dataretrieval.git"
 
 [tool.setuptools_scm]
-write_to = "ratingcurve/_version.py"
+write_to = "dataretrieval/_version.py"
