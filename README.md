@@ -107,7 +107,7 @@ The software is provided on the condition that neither the USGS nor the U.S. Gov
 
 ## Citation
 
-Hodson, T.O., Hariharan, J.A., and contributors, 2022, dataretrieval (Python): a Python package for discovering
+Hodson, T.O., Hariharan, J.A., Black, S., and Horsburgh, J.S., 2022, dataretrieval (Python): a Python package for discovering
 and retrieving water data available from U.S. federal hydrologic web services:
 U.S. Geological Survey software release,
-https://doi.org/10.5066/P94I5TX3
+https://doi.org/10.5066/P94I5TX3.
