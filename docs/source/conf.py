@@ -12,10 +12,16 @@ import sys
 # path to repository head
 sys.path.insert(0, os.path.abspath('../..'))
 
+import dataretrieval
+try:
+    _version = dataretrieval.__version__
+except Exception:
+    _version = "Unknown"
+
 # Project Information
 project = 'dataretrieval'
-version = '0.7'
-release = '0.7'
+version = _version
+release = _version
 author = 'Hodson et al'
 
 # -- General configuration ------------------------------------------------
