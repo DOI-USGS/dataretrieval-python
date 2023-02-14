@@ -2,10 +2,9 @@
 Useful utilities for data munging.
 """
 import warnings
-from importlib.metadata import version
-from importlib.metadata import PackageNotFoundError
 import pandas as pd
 import requests
+import dataretrieval
 from dataretrieval.codes import tz
 
 
@@ -163,16 +162,6 @@ def set_metadata(response):
     return md
 
 
-def set_useragent():
-    """Function to define a user-agent to include in the GET query."""
-    try:
-        _version = version('dataretrieval')
-    except PackageNotFoundError:
-        _version = "version-unknown"
-    user_agent = {'user-agent': f"python-dataretrieval/{_version}"}
-    return user_agent
-
-
 def query(url, payload, delimiter=','):
     """Send a query.
 
@@ -200,7 +189,11 @@ def query(url, payload, delimiter=','):
     #    key, value = payload[index]
     #    payload[index] = (key, to_str(value))
 
-    response = requests.get(url, params=payload, headers=set_useragent())
+    # define the user agent for the query
+    user_agent = {
+        'user-agent': f"python-dataretrieval/{dataretrieval.__version__}"}
+
+    response = requests.get(url, params=payload, headers=user_agent)
 
     if response.status_code == 400:
         raise ValueError("Bad Request, check that your parameters are correct. URL: {}".format(response.url))

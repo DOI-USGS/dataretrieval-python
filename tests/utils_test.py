@@ -31,12 +31,3 @@ class Test_query:
         response = utils.query(url, payload)
         assert response.status_code == 200  # GET was successful
         assert 'user-agent' in response.request.headers
-
-
-def test_useragent():
-    """Test the useragent function."""
-    ua = utils.set_useragent()  # create the user-agent header object
-    # make assertions about it
-    assert isinstance(ua, dict)
-    assert len(ua.keys()) == 1
-    assert ua['user-agent'][:20] == 'python-dataretrieval'
