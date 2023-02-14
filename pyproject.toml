@@ -19,7 +19,6 @@ classifiers = [
 dependencies = [
     "requests",
     "pandas",
-    "typing"
 ]
 dynamic = ["version"]
 
