@@ -406,13 +406,12 @@ div.rendered_html tbody tr:hover {
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+gd005aa1)
-Requirement already satisfied: typing in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (3.7.4.3)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+g8b8bd52)
 Requirement already satisfied: pandas in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (1.5.3)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.25.1)
-Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas-&gt;dataretrieval) (2022.1)
-Requirement already satisfied: python-dateutil&gt;=2.8.1 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2.8.2)
 Requirement already satisfied: numpy&gt;=1.21.0 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (1.24.2)
+Requirement already satisfied: python-dateutil&gt;=2.8.1 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2.8.2)
+Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas-&gt;dataretrieval) (2022.1)
 Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.1-&gt;pandas-&gt;dataretrieval) (1.16.0)
 </pre></div></div>
 </div>
@@ -613,7 +612,7 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
       <td>...</td>
     </tr>
     <tr>
-      <th>1263</th>
+      <th>1272</th>
       <td>USGS</td>
       <td>414144084242500</td>
       <td>WM-103 OH</td>
@@ -628,7 +627,7 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
       <td>4100006.0</td>
     </tr>
     <tr>
-      <th>1264</th>
+      <th>1273</th>
       <td>USGS</td>
       <td>414150084331000</td>
       <td>WM-87-S14 OH</td>
@@ -643,7 +642,7 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
       <td>4100003.0</td>
     </tr>
     <tr>
-      <th>1265</th>
+      <th>1274</th>
       <td>USGS</td>
       <td>414214083151000</td>
       <td>Lake Erie at site WE12 near Toledo OH</td>
@@ -658,7 +657,7 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
       <td>4120200.0</td>
     </tr>
     <tr>
-      <th>1266</th>
+      <th>1275</th>
       <td>USGS</td>
       <td>414233083595500</td>
       <td>Little Bear Creek at HWY 120 nr Seward, OH</td>
@@ -673,7 +672,7 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
       <td>4100002.0</td>
     </tr>
     <tr>
-      <th>1267</th>
+      <th>1276</th>
       <td>USGS</td>
       <td>414937083112500</td>
       <td>Lake Erie at site WE4 near Toledo OH</td>
@@ -689,7 +688,7 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
     </tr>
   </tbody>
 </table>
-<p>1268 rows × 12 columns</p>
+<p>1277 rows × 12 columns</p>
 </div></div>
 </div>
 <p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.</p>
@@ -937,7 +936,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>NaN</td>
       <td>NaN</td>
       <td>...</td>
-      <td>3.0</td>
+      <td>3</td>
       <td>142731</td>
       <td>NaN</td>
       <td>wat</td>
@@ -961,7 +960,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>4165.00</td>
       <td>20.0</td>
       <td>...</td>
-      <td>1.0</td>
+      <td>1</td>
       <td>241055</td>
       <td>NaN</td>
       <td>wat</td>
@@ -969,8 +968,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>1645597</td>
       <td>0</td>
       <td>2006-07-18</td>
-      <td>2023-02-10</td>
-      <td>5981</td>
+      <td>2023-02-13</td>
+      <td>5984</td>
     </tr>
     <tr>
       <th>2</th>
@@ -985,7 +984,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>4165.00</td>
       <td>20.0</td>
       <td>...</td>
-      <td>2.0</td>
+      <td>2</td>
       <td>241056</td>
       <td>NaN</td>
       <td>wat</td>
@@ -993,8 +992,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>1645597</td>
       <td>0</td>
       <td>2006-07-19</td>
-      <td>2023-02-10</td>
-      <td>5964</td>
+      <td>2023-02-13</td>
+      <td>5967</td>
     </tr>
     <tr>
       <th>3</th>
@@ -1009,7 +1008,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>4165.00</td>
       <td>20.0</td>
       <td>...</td>
-      <td>3.0</td>
+      <td>3</td>
       <td>142732</td>
       <td>NaN</td>
       <td>wat</td>
@@ -1017,8 +1016,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>1645597</td>
       <td>0</td>
       <td>2006-07-19</td>
-      <td>2023-02-09</td>
-      <td>5958</td>
+      <td>2023-02-13</td>
+      <td>5962</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1033,7 +1032,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>4165.00</td>
       <td>20.0</td>
       <td>...</td>
-      <td>11.0</td>
+      <td>11</td>
       <td>142733</td>
       <td>NaN</td>
       <td>wat</td>
@@ -1069,7 +1068,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>...</td>
     </tr>
     <tr>
-      <th>1233</th>
+      <th>1217</th>
       <td>USGS</td>
       <td>414411112543701</td>
       <td>(B-12- 9)30cda- 1</td>
@@ -1081,7 +1080,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>4239.00</td>
       <td>0.5</td>
       <td>...</td>
-      <td>2.0</td>
+      <td>2</td>
       <td>144019</td>
       <td>NaN</td>
       <td>wat</td>
@@ -1089,11 +1088,11 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>1642008</td>
       <td>0</td>
       <td>1975-10-05</td>
-      <td>2022-10-04</td>
-      <td>8380</td>
+      <td>2023-02-12</td>
+      <td>8511</td>
     </tr>
     <tr>
-      <th>1234</th>
+      <th>1218</th>
       <td>USGS</td>
       <td>414500112000000</td>
       <td>COM FLOW BEAR AREA GSL INFLOW GROUP 1</td>
@@ -1105,7 +1104,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>NaN</td>
       <td>NaN</td>
       <td>...</td>
-      <td>3.0</td>
+      <td>3</td>
       <td>144020</td>
       <td>NaN</td>
       <td>wat</td>
@@ -1117,7 +1116,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>7303</td>
     </tr>
     <tr>
-      <th>1235</th>
+      <th>1219</th>
       <td>USGS</td>
       <td>414500112000100</td>
       <td>COM FLOW BEAR AREA GSL INFLOW GROUP 2</td>
@@ -1129,7 +1128,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>NaN</td>
       <td>NaN</td>
       <td>...</td>
-      <td>3.0</td>
+      <td>3</td>
       <td>144021</td>
       <td>NaN</td>
       <td>wat</td>
@@ -1141,7 +1140,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>6207</td>
     </tr>
     <tr>
-      <th>1236</th>
+      <th>1220</th>
       <td>USGS</td>
       <td>414500112000200</td>
       <td>COM FLOW BEAR AREA GSL INFLOW GROUP 3</td>
@@ -1153,7 +1152,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>NaN</td>
       <td>NaN</td>
       <td>...</td>
-      <td>3.0</td>
+      <td>3</td>
       <td>144022</td>
       <td>NaN</td>
       <td>wat</td>
@@ -1165,7 +1164,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>6573</td>
     </tr>
     <tr>
-      <th>1237</th>
+      <th>1221</th>
       <td>USGS</td>
       <td>415703112514501</td>
       <td>(B-14- 9) 9add- 1</td>
@@ -1177,7 +1176,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>4387.88</td>
       <td>0.1</td>
       <td>...</td>
-      <td>2.0</td>
+      <td>2</td>
       <td>144023</td>
       <td>NaN</td>
       <td>wat</td>
@@ -1190,7 +1189,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
     </tr>
   </tbody>
 </table>
-<p>1238 rows × 24 columns</p>
+<p>1222 rows × 24 columns</p>
 </div></div>
 </div>
 </section>
@@ -1417,8 +1416,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>1645423</td>
       <td>0</td>
       <td>1994-10-01</td>
-      <td>2023-02-10</td>
-      <td>10359</td>
+      <td>2023-02-13</td>
+      <td>10362</td>
     </tr>
     <tr>
       <th>403</th>
@@ -1441,8 +1440,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>17164583</td>
       <td>0</td>
       <td>2007-10-01</td>
-      <td>2023-02-10</td>
-      <td>5611</td>
+      <td>2023-02-13</td>
+      <td>5614</td>
     </tr>
     <tr>
       <th>404</th>
@@ -1513,8 +1512,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>1642503</td>
       <td>0</td>
       <td>2022-10-01</td>
-      <td>2023-02-10</td>
-      <td>132</td>
+      <td>2023-02-13</td>
+      <td>135</td>
     </tr>
   </tbody>
 </table>
