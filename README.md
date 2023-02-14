@@ -1,17 +1,22 @@
 # dataretrieval: Download hydrologic data
 
 ## What is dataretrieval?
+`dataretrieval` was created to simplify the process of loading hydrologic data into the Python environment.
+Like the original R version [`dataRetrieval`](https://github.com/DOI-USGS/dataRetrieval),
+it is designed to retrieve the major data types of U.S. Geological Survey (USGS) hydrology
+data that are available on the Web, as well as data from the Water
+Quality Portal (WQP), which currently houses water quality data from the
+Environmental Protection Agency (EPA), U.S. Department of Agriculture
+(USDA), and USGS. Direct USGS data is obtained from a service called the
+National Water Information System (NWIS).
 
-dataretrieval is a Python alternative to the R [dataRetrieval](https://github.com/DOI-USGS/dataRetrieval)
-package for obtaining USGS or EPA water quality data, streamflow data, and metadata
-directly from web services. Note that dataretrieval is an **alternative** to the
-R package, not a port, in that it attempts to reproduce the functionality of the R package,
-though its organization and functionality often differ.
+Note that the python version is not a direct port of the original: it attempts to reproduce the functionality of the R package,
+though its organization and interface often differ.
 
 If there's a hydrologic or environmental data portal that you'd like dataretrieval to 
 work with, raise it as an [issue](https://github.com/USGS-python/dataretrieval/issues).
 
-Here's an example of how to use dataRetrieval to retrieve data from the National Water Information System (NWIS).
+Here's an example using `dataretrieval` to retrieve data from the National Water Information System (NWIS).
 
 ```python
 # first import the functions for downloading data from NWIS
@@ -65,6 +70,7 @@ or conda:
 
     $ conda install -c conda-forge dataretrieval
 
+More examples of use are include in [`demos`](https://github.com/USGS-python/dataretrieval/tree/master/demos).
 
 ## Issue tracker
 
@@ -76,11 +82,9 @@ tracker:
 Feel free to also ask questions on the tracker.
 
 
-## Help wanted
+## Contributing
 
-Any help in testing, development, documentation and other tasks is
-highly appreciated and useful to the project. 
-
+Any help in testing, development, documentation and other tasks is welcome.
 For more details, see the file [CONTRIBUTING.md](CONTRIBUTING.md).
 
 
@@ -107,7 +111,7 @@ The software is provided on the condition that neither the USGS nor the U.S. Gov
 
 ## Citation
 
-Hodson, T.O., Hariharan, J.A., Black, S., and Horsburgh, J.S., 2022, dataretrieval (Python): a Python package for discovering
+Hodson, T.O., Hariharan, J.A., Black, S., and Horsburgh, J.S., 2023, dataretrieval (Python): a Python package for discovering
 and retrieving water data available from U.S. federal hydrologic web services:
 U.S. Geological Survey software release,
 https://doi.org/10.5066/P94I5TX3.
