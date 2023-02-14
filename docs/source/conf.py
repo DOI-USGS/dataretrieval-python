@@ -8,20 +8,15 @@
 # Relative paths so documentation can reference and include demos folder
 import os
 import sys
+from importlib.metadata import version
 
 # path to repository head
 sys.path.insert(0, os.path.abspath('../..'))
 
-import dataretrieval
-try:
-    _version = dataretrieval.__version__
-except Exception:
-    _version = "Unknown"
-
 # Project Information
 project = 'dataretrieval'
-version = _version
-release = _version
+release = version(project)
+version = '.'.join(release.split('.')[:2])
 author = 'Hodson et al'
 
 # -- General configuration ------------------------------------------------

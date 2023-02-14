@@ -2,9 +2,10 @@
 Useful utilities for data munging.
 """
 import warnings
+from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError
 import pandas as pd
 import requests
-import dataretrieval
 from dataretrieval.codes import tz
 
 
@@ -165,8 +166,8 @@ def set_metadata(response):
 def set_useragent():
     """Function to define a user-agent to include in the GET query."""
     try:
-        _version = dataretrieval.__version__
-    except Exception:
+        _version = version('dataretrieval')
+    except PackageNotFoundError:
         _version = "version-unknown"
     user_agent = {'user-agent': f"python-dataretrieval/{_version}"}
     return user_agent
