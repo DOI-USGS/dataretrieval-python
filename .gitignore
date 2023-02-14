@@ -11,7 +11,7 @@ __pycachr__
 *.so
 
 # Distribution / packaging
-._version.py
+*_version.py
 .Python
 env/
 build/
