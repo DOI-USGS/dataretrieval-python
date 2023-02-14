@@ -4,6 +4,7 @@ Useful utilities for data munging.
 import warnings
 import pandas as pd
 import requests
+import dataretrieval
 from dataretrieval.codes import tz
 
 
@@ -188,7 +189,11 @@ def query(url, payload, delimiter=','):
     #    key, value = payload[index]
     #    payload[index] = (key, to_str(value))
 
-    response = requests.get(url, params=payload)
+    # define the user agent for the query
+    user_agent = {
+        'user-agent': f"python-dataretrieval/{dataretrieval.__version__}"}
+
+    response = requests.get(url, params=payload, headers=user_agent)
 
     if response.status_code == 400:
         raise ValueError("Bad Request, check that your parameters are correct. URL: {}".format(response.url))

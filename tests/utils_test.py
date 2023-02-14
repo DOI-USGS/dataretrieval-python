@@ -19,3 +19,15 @@ class Test_query:
         # raise error by trying to query them all, so URL is way too long
         with pytest.raises(ValueError, match=_msg):
             nwis.get_iv(sites=sites.site_no.values.tolist())
+
+    def test_header(self):
+        """Test checking header info with user-agent is part of query."""
+        url = 'https://waterservices.usgs.gov/nwis/dv'
+        payload = {'format': 'json',
+                   'startDT': '2010-10-01',
+                   'endDT': '2010-10-10',
+                   'sites': '01646500',
+                   'multi_index': True}
+        response = utils.query(url, payload)
+        assert response.status_code == 200  # GET was successful
+        assert 'user-agent' in response.request.headers

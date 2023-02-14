@@ -8,14 +8,15 @@
 # Relative paths so documentation can reference and include demos folder
 import os
 import sys
+from importlib.metadata import version
 
 # path to repository head
 sys.path.insert(0, os.path.abspath('../..'))
 
 # Project Information
 project = 'dataretrieval'
-version = '0.7'
-release = '0.7'
+release = version(project)
+version = '.'.join(release.split('.')[:2])
 author = 'Hodson et al'
 
 # -- General configuration ------------------------------------------------
