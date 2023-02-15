@@ -17,7 +17,7 @@
     },
 
     "homepageURL": "https://code.usgs.gov/cmwsc/shwa/dataretrieval",
-    "downloadURL": "https://code.usgs.gov/cmwsc/shwa/dataretrieval/-/archive/v1.0.2/dataretrieval-master.zip",
+    "downloadURL": "https://code.usgs.gov/cmwsc/shwa/dataretrieval/-/archive/v1.0.2/dataretrieval-v1.0.2.zip",
     "disclaimerURL": "https://code.usgs.gov/cmwsc/shwa/dataretrieval/-/raw/v1.0.2/DISCLAIMER.md",
     "repositoryURL": "https://code.usgs.gov/cmwsc/shwa/dataretrieval.git",
     "vcs": "git",
