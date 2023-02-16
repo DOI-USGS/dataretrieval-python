@@ -12,6 +12,7 @@ National Water Information System (NWIS).
 
 Note that the python version is not a direct port of the original: it attempts to reproduce the functionality of the R package,
 though its organization and interface often differ.
+For additional information on `dataretrieval` visit the [documentation](https://rconnect.chs.usgs.gov/python-dataretrieval-docs/).
 
 If there's a hydrologic or environmental data portal that you'd like dataretrieval to 
 work with, raise it as an [issue](https://github.com/USGS-python/dataretrieval/issues).
