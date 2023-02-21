@@ -35,9 +35,9 @@ doc = [
 ]
 
 [project.urls]
-homepage = "https://github.com/USGS-python/dataretrieval"
+homepage = "https://github.com/DOI-USGS/dataretrieval-python"
 documentation = "https://doi-usgs.github.io/dataretrieval-python/"
-repository = "https://github.com/USGS-python/dataretrieval.git"
+repository = "https://github.com/DOI-USGS/dataretrieval-python.git"
 
 [tool.setuptools_scm]
 write_to = "dataretrieval/_version.py"
