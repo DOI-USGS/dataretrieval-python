@@ -11,7 +11,7 @@ Ways to contribute
 Reporting Bugs:
 ^^^^^^^^^^^^^^^
 
-Report bugs at https://github.com/USGS-python/dataretrieval/issues
+Report bugs at https://github.com/DOI-USGS/dataretrieval-python/issues
 
 When reporting a bug, please include:
 
@@ -44,7 +44,7 @@ Submitting Feedback:
 ^^^^^^^^^^^^^^^^^^^^
 
 The best way to send feedback is to file an issue at
-https://github.com/USGS-python/dataretrieval/issues
+https://github.com/DOI-USGS/dataretrieval-python/issues
 
 If you are proposing a feature:
 

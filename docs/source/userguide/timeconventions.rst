@@ -13,7 +13,7 @@ the exception to this is when incomplete datetime information is available, in
 these cases integers are used as the dataframe index (see `PR#58`_ for more
 details).
 
-.. _PR#58: https://github.com/USGS-python/dataretrieval/pull/58
+.. _PR#58: https://github.com/DOI-USGS/dataretrieval-python/pull/58
 
 
 Inspecting Timestamps

@@ -25,7 +25,7 @@ project repository.
 
 .. _Hydroshare: https://www.hydroshare.org/resource/c97c32ecf59b4dff90ef013030c54264/
 
-.. _demos/hydroshare: https://github.com/USGS-python/dataretrieval/tree/master/demos/hydroshare
+.. _demos/hydroshare: https://github.com/DOI-USGS/dataretrieval-python/tree/master/demos/hydroshare
 
 .. toctree::
     :maxdepth: 1
