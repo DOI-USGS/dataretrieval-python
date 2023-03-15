@@ -57,10 +57,6 @@ def test_get_record_validation():
         get_record(sites=['01491000'], service='not_a_service')
     assert 'Unrecognized service: not_a_service' == str(type_error.value)
 
-    with pytest.raises(TypeError) as type_error:
-        get_record(sites=['01491000'], service='stat')
-    assert 'stat service not yet implemented' == str(type_error.value)
-
 
 def test_get_dv(requests_mock):
     """Tests get_dv method correctly generates the request url and returns the result in a DataFrame"""
