@@ -939,6 +939,7 @@ def get_record(sites=None, start=None, end=None,
         - 'pmcodes': get parameter codes
         - 'water_use': get water use data
         - 'ratings': get rating table
+        - 'stat': get statistics
     **kwargs: optional
         If supplied, will be used as query parameters
 
@@ -987,6 +988,11 @@ def get_record(sites=None, start=None, end=None,
         >>> # Get rating table for USGS streamgage 01585200
         >>> df = dataretrieval.nwis.get_record(
         ...     sites='01585200', service='ratings')
+
+        >>> # Get annual statistics for USGS station 01646500
+        >>> df = dataretrieval.nwis.get_record(
+        ...     sites='01646500', service='stat', statReportType='annual',
+        ...     statYearType='water')
 
     """
     if service not in WATERSERVICES_SERVICES + WATERDATA_SERVICES:
@@ -1039,6 +1045,10 @@ def get_record(sites=None, start=None, end=None,
 
     elif service == 'ratings':
         df, _ = get_ratings(site=sites, **kwargs)
+        return df
+
+    elif service == 'stat':
+        df, _ = get_stats(sites=sites, **kwargs)
         return df
 
     else:

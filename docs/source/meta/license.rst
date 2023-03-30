@@ -7,6 +7,6 @@ States Geological Survey, an agency of the United States Department of
 Interior. For more information, see the `LICENSE.md`_ file. See the
 `Disclaimer.md`_ file for more information about the disclaimer.
 
-.. _LICENSE.md: https://github.com/USGS-python/dataretrieval/blob/master/LICENSE.md
+.. _LICENSE.md: https://github.com/DOI-USGS/dataretrieval-python/blob/master/LICENSE.md
 
-.. _Disclaimer.md: https://github.com/USGS-python/dataretrieval/blob/master/Disclaimer.md
+.. _Disclaimer.md: https://github.com/DOI-USGS/dataretrieval-python/blob/master/DISCLAIMER.md

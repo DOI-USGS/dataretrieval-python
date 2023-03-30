@@ -13,7 +13,7 @@ the resulting column names for the output dataframes (example prompted by
 
 .. _NWIS water services documentation: https://nwis.waterservices.usgs.gov/rest/Site-Service.html
 
-.. _GitHub Issue #34: https://github.com/USGS-python/dataretrieval/issues/34
+.. _GitHub Issue #34: https://github.com/DOI-USGS/dataretrieval-python/issues/34
 
 .. doctest::
 
