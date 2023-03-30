@@ -3,14 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g73f3ae8 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g7416a72 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/sphinx_highlight.js"></script>
@@ -1017,6 +1016,7 @@
 <span class="sd">        - &#39;pmcodes&#39;: get parameter codes</span>
 <span class="sd">        - &#39;water_use&#39;: get water use data</span>
 <span class="sd">        - &#39;ratings&#39;: get rating table</span>
+<span class="sd">        - &#39;stat&#39;: get statistics</span>
 <span class="sd">    **kwargs: optional</span>
 <span class="sd">        If supplied, will be used as query parameters</span>
 
@@ -1065,6 +1065,11 @@
 <span class="sd">        &gt;&gt;&gt; # Get rating table for USGS streamgage 01585200</span>
 <span class="sd">        &gt;&gt;&gt; df = dataretrieval.nwis.get_record(</span>
 <span class="sd">        ...     sites=&#39;01585200&#39;, service=&#39;ratings&#39;)</span>
+
+<span class="sd">        &gt;&gt;&gt; # Get annual statistics for USGS station 01646500</span>
+<span class="sd">        &gt;&gt;&gt; df = dataretrieval.nwis.get_record(</span>
+<span class="sd">        ...     sites=&#39;01646500&#39;, service=&#39;stat&#39;, statReportType=&#39;annual&#39;,</span>
+<span class="sd">        ...     statYearType=&#39;water&#39;)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">service</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">WATERSERVICES_SERVICES</span> <span class="o">+</span> <span class="n">WATERDATA_SERVICES</span><span class="p">:</span>
@@ -1117,6 +1122,10 @@
 
     <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;ratings&#39;</span><span class="p">:</span>
         <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;stat&#39;</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_stats</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="k">else</span><span class="p">:</span>

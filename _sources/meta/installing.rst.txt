@@ -7,9 +7,9 @@ or ``conda``. Package dependencies are listed in the `requirements.txt`_ file,
 a full list of dependencies necessary for development are listed in the
 `requirements-dev.txt`_ file.
 
-.. _requirements.txt: https://github.com/USGS-python/dataretrieval/blob/master/requirements.txt
+.. _requirements.txt: https://github.com/DOI-USGS/dataretrieval-python/blob/master/requirements.txt
 
-.. _requirements-dev.txt: https://github.com/USGS-python/dataretrieval/blob/master/requirements-dev.txt
+.. _requirements-dev.txt: https://github.com/DOI-USGS/dataretrieval-python/blob/master/requirements-dev.txt
 
 
 User Installation
@@ -51,7 +51,7 @@ The first step is to clone your fork of the repository:
 
 .. code-block:: bash
 
-    $ git clone https://github.com/USGS-python/dataretrieval.git
+    $ git clone https://github.com/DOI-USGS/dataretrieval-python.git
 
 Then, set the cloned repository as your current working directory in your
 terminal and run the following commands to get an "editable" installation of
@@ -74,7 +74,7 @@ defining the main repository as a remote `upstream` repository:
 
 .. code-block:: bash
 
-    $ git remote add upstream https://github.com/USGS-python/dataretrieval.git
+    $ git remote add upstream https://github.com/DOI-USGS/dataretrieval-python.git
 
 You can also build the documentation locally by running the following commands:
 
