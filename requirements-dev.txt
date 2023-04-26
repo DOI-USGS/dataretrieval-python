@@ -1,5 +1,5 @@
 numpy
-pandas
+pandas==1.*
 scipy
 python-dateutil
 requests
