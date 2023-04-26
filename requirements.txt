@@ -1,4 +1,4 @@
 numpy
-pandas
+pandas==2.*
 python-dateutil
 requests
