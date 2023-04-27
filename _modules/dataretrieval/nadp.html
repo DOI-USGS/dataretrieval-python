@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nadp &mdash; dataretrieval 0.1.dev1+g7326dfd documentation</title>
+  <title>dataretrieval.nadp &mdash; dataretrieval 0.1.dev1+g87351a1 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -110,20 +110,8 @@
 <span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">gdal</span>
-<span class="k">except</span><span class="p">:</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">osgeo</span> <span class="kn">import</span> <span class="n">gdal</span>
-    <span class="k">except</span><span class="p">:</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;GDAL not installed. Some functions will not work.&#39;</span><span class="p">)</span>
-        <span class="kn">import</span> <span class="nn">unittest.mock</span> <span class="k">as</span> <span class="nn">mock</span>
-        <span class="n">gdal</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
-
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">basename</span>
-<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">uuid4</span>
+
 
 <span class="n">NADP_URL</span> <span class="o">=</span> <span class="s1">&#39;https://nadp.slh.wisc.edu&#39;</span>
 <span class="n">NADP_MAP_EXT</span> <span class="o">=</span> <span class="s1">&#39;filelib/maps&#39;</span>
@@ -134,42 +122,6 @@
                    <span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="s1">&#39;Na&#39;</span><span class="p">,</span> <span class="s1">&#39;Cl&#39;</span><span class="p">,</span> <span class="s1">&#39;Br&#39;</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;SPlusN&#39;</span><span class="p">]</span>
 
 <span class="n">NTN_MEAS_TYPE</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;conc&#39;</span><span class="p">,</span> <span class="s1">&#39;dep&#39;</span><span class="p">,</span> <span class="s1">&#39;precip&#39;</span><span class="p">]</span>  <span class="c1"># concentration or deposition</span>
-
-
-<div class="viewcode-block" id="GDALMemFile"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.GDALMemFile">[docs]</a><span class="k">class</span> <span class="nc">GDALMemFile</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a GDAL memory-mapped file</span>
-
-<span class="sd">    Modeled after ``rasterio`` function of same name</span>
-
-<span class="sd">    .. code::</span>
-
-<span class="sd">        with GDALMemFile(buf).open() as dataset:</span>
-<span class="sd">            # do something</span>
-
-<span class="sd">    .. todo::</span>
-
-<span class="sd">        could this work on url, file, or buf?</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="GDALMemFile.__init__"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.GDALMemFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buf</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        buf : buffer</span>
-<span class="sd">            Buffer containing gdal formatted data.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">buf</span> <span class="o">=</span> <span class="n">buf</span></div>
-
-<div class="viewcode-block" id="GDALMemFile.open"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.GDALMemFile.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        see https://gist.github.com/jleinonen/5781308</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">mmap_name</span> <span class="o">=</span> <span class="s1">&#39;/vsimem/&#39;</span> <span class="o">+</span> <span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span>  <span class="c1"># vsimem is special GDAL string</span>
-        <span class="n">gdal</span><span class="o">.</span><span class="n">FileFromMemBuffer</span><span class="p">(</span><span class="n">mmap_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">buf</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">mmap_name</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="NADP_ZipFile"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.NADP_ZipFile">[docs]</a><span class="k">class</span> <span class="nc">NADP_ZipFile</span><span class="p">(</span><span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">):</span>
@@ -187,14 +139,13 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tif_name</span><span class="p">())</span></div></div>
 
 
-<div class="viewcode-block" id="get_annual_MDN_map"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.get_annual_MDN_map">[docs]</a><span class="k">def</span> <span class="nf">get_annual_MDN_map</span><span class="p">(</span><span class="n">measurement_type</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="get_annual_MDN_map"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.get_annual_MDN_map">[docs]</a><span class="k">def</span> <span class="nf">get_annual_MDN_map</span><span class="p">(</span><span class="n">measurement_type</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Download a MDN map from NDAP.</span>
 
 <span class="sd">    This function looks for a zip file containing gridded information at:</span>
 <span class="sd">    https://nadp.slh.wisc.edu/maps-data/mdn-gradient-maps/.</span>
 <span class="sd">    The function will download the zip file and extract it, exposing the tif</span>
-<span class="sd">    file if a path is provided. If not, then a</span>
-<span class="sd">    :obj:`dataretrieval.nadp.GDALMemFile` object is returned.</span>
+<span class="sd">    file if a path is provided.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -206,15 +157,12 @@
 <span class="sd">        Year as a string &#39;YYYY&#39;</span>
 
 <span class="sd">    path: string</span>
-<span class="sd">        Download directory</span>
+<span class="sd">        Download directory.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    path: string</span>
 <span class="sd">        Path that zip file was extracted into if path was specified.</span>
-
-<span class="sd">    GDALMemFile: :obj:`dataretrieval.nadp.GDALMemFile`</span>
-<span class="sd">        GDALMemFile containing in-memory GDAL object.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -223,10 +171,6 @@
 <span class="sd">        &gt;&gt;&gt; # get map of mercury concentration in 2010 and extract it to a path</span>
 <span class="sd">        &gt;&gt;&gt; data_path = dataretrieval.nadp.get_annual_MDN_map(</span>
 <span class="sd">        ...     measurement_type=&#39;conc&#39;, year=&#39;2010&#39;, path=&#39;somepath&#39;)</span>
-
-<span class="sd">        &gt;&gt;&gt; # get map of mercury deposition in 2008 as a GDALMemFile object</span>
-<span class="sd">        &gt;&gt;&gt; gmem = dataretrieval.nadp.get_annual_MDN_map(</span>
-<span class="sd">        ...     measurement_type=&#39;dep&#39;, year=&#39;2008&#39;)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">/MDN/grids/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">NADP_URL</span><span class="p">,</span> <span class="n">NADP_MAP_EXT</span><span class="p">)</span>
@@ -237,20 +181,18 @@
 
     <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
         <span class="n">z</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
 
-    <span class="c1"># else if no path return a buffer</span>
-    <span class="k">return</span> <span class="n">GDALMemFile</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">tif</span><span class="p">())</span></div>
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span></div>
 
 
-<div class="viewcode-block" id="get_annual_NTN_map"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.get_annual_NTN_map">[docs]</a><span class="k">def</span> <span class="nf">get_annual_NTN_map</span><span class="p">(</span><span class="n">measurement_type</span><span class="p">,</span> <span class="n">measurement</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="get_annual_NTN_map"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.get_annual_NTN_map">[docs]</a><span class="k">def</span> <span class="nf">get_annual_NTN_map</span><span class="p">(</span><span class="n">measurement_type</span><span class="p">,</span> <span class="n">measurement</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">path</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Download a NTN map from NDAP.</span>
 
 <span class="sd">    This function looks for a zip file containing gridded information at:</span>
 <span class="sd">    https://nadp.slh.wisc.edu/maps-data/ntn-gradient-maps/.</span>
 <span class="sd">    The function will download the zip file and extract it, exposing the tif</span>
-<span class="sd">    file if a path is provided. If not, then a</span>
-<span class="sd">    :obj:`dataretrieval.nadp.GDALMemFile` object is returned.</span>
+<span class="sd">    file at the provided path.</span>
 
 <span class="sd">    .. note::</span>
 
@@ -268,23 +210,16 @@
 <span class="sd">    year : string</span>
 <span class="sd">        Year as a string &#39;YYYY&#39;</span>
 <span class="sd">    path : string</span>
-<span class="sd">        Download directory</span>
+<span class="sd">        Download directory, defaults to current directory if not specified.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    path: string</span>
 <span class="sd">        Path that zip file was extracted into if path was specified.</span>
 
-<span class="sd">    GDALMemFile: :obj:`dataretrieval.nadp.GDALMemFile`</span>
-<span class="sd">        GDALMemFile containing in-memory GDAL object.</span>
-
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    .. code::</span>
-
-<span class="sd">        &gt;&gt;&gt; # get a map of nitrate concentration in 1996</span>
-<span class="sd">        &gt;&gt;&gt; gmem = dataretrieval.nadp.get_annual_NTN_map(</span>
-<span class="sd">        ...     measurement=&#39;NO3&#39;, measurement_type=&#39;conc&#39;, year=&#39;1996&#39;)</span>
 
 <span class="sd">        &gt;&gt;&gt; # get a map of precipitation in 2015 and extract it to a path</span>
 <span class="sd">        &gt;&gt;&gt; data_path = dataretrieval.nadp.get_annual_NTN_map(</span>
@@ -302,10 +237,8 @@
 
     <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
         <span class="n">z</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
 
-    <span class="c1"># else if no path return a buffer</span>
-    <span class="k">return</span> <span class="n">GDALMemFile</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">tif</span><span class="p">())</span></div>
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="get_zip"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.get_zip">[docs]</a><span class="k">def</span> <span class="nf">get_zip</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
