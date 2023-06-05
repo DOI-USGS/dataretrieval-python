@@ -31,7 +31,7 @@ WATERSERVICES_SERVICES = ['dv', 'iv', 'site', 'stat', 'gwlevels']
 WATERDATA_SERVICES = ['qwdata', 'measurements', 'peaks', 'pmcodes', 'water_use', 'ratings']
 
 
-def format_response(df: pd.DataFrame, service=None, **kwargs):
+def format_response(df: pd.DataFrame, service=None, **kwargs) -> pd.DataFrame:
     """Setup index for response from query.
 
     This function formats the response from the NWIS web services, in
