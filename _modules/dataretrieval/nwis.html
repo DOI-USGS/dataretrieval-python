@@ -3,13 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g87351a1 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g37f4190 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/sphinx_highlight.js"></script>
@@ -108,7 +110,7 @@
 <span class="n">WATERDATA_SERVICES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;qwdata&#39;</span><span class="p">,</span> <span class="s1">&#39;measurements&#39;</span><span class="p">,</span> <span class="s1">&#39;peaks&#39;</span><span class="p">,</span> <span class="s1">&#39;pmcodes&#39;</span><span class="p">,</span> <span class="s1">&#39;water_use&#39;</span><span class="p">,</span> <span class="s1">&#39;ratings&#39;</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="format_response"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.format_response">[docs]</a><span class="k">def</span> <span class="nf">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="format_response"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.format_response">[docs]</a><span class="k">def</span> <span class="nf">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Setup index for response from query.</span>
 
 <span class="sd">    This function formats the response from the NWIS web services, in</span>
@@ -156,7 +158,7 @@
     <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="preformat_peaks_response"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.preformat_peaks_response">[docs]</a><span class="k">def</span> <span class="nf">preformat_peaks_response</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+<div class="viewcode-block" id="preformat_peaks_response"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.preformat_peaks_response">[docs]</a><span class="k">def</span> <span class="nf">preformat_peaks_response</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Datetime formatting for the &#39;peaks&#39; service response.</span>
 
 <span class="sd">    Function to format the datetime column of the &#39;peaks&#39; service response.</span>

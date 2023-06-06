@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_discharge_measurements() Examples &mdash; dataretrieval 0.1.dev1+g87351a1 documentation</title>
+  <title>USGS dataretrieval Python Package get_discharge_measurements() Examples &mdash; dataretrieval 0.1.dev1+g37f4190 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/nbsphinx-code-cells.css" type="text/css" />
@@ -12,6 +12,8 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
@@ -127,7 +129,7 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+g87351a1)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+g37f4190)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.25.1)
 Requirement already satisfied: pandas in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (1.5.3)
 Requirement already satisfied: python-dateutil&gt;=2.8.1 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2.8.2)
@@ -171,7 +173,7 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 927 data values.
+Retrieved 931 data values.
 </pre></div></div>
 </div>
 </section>
@@ -242,7 +244,7 @@ Retrieved 927 data values.
       <td>17.0</td>
       <td>Excellent</td>
       <td>0.00</td>
-      <td>0.80</td>
+      <td>0.8</td>
       <td>Clear</td>
       <td>NONE</td>
     </tr>
@@ -260,7 +262,7 @@ Retrieved 927 data values.
       <td>12.5</td>
       <td>Unspecified</td>
       <td>0.00</td>
-      <td>0.70</td>
+      <td>0.7</td>
       <td>Clear</td>
       <td>NONE</td>
     </tr>
@@ -278,7 +280,7 @@ Retrieved 927 data values.
       <td>203.0</td>
       <td>Good</td>
       <td>-0.01</td>
-      <td>1.10</td>
+      <td>1.1</td>
       <td>Clear</td>
       <td>NONE</td>
     </tr>
@@ -296,7 +298,7 @@ Retrieved 927 data values.
       <td>506.0</td>
       <td>Excellent</td>
       <td>0.00</td>
-      <td>0.20</td>
+      <td>0.2</td>
       <td>Clear</td>
       <td>NONE</td>
     </tr>
@@ -314,7 +316,7 @@ Retrieved 927 data values.
       <td>652.0</td>
       <td>Good</td>
       <td>-0.03</td>
-      <td>1.00</td>
+      <td>1.0</td>
       <td>Clear</td>
       <td>NONE</td>
     </tr>
@@ -337,78 +339,6 @@ Retrieved 927 data values.
       <td>...</td>
     </tr>
     <tr>
-      <th>922</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1072</td>
-      <td>2022-10-28 10:57:49</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>NML/EHM</td>
-      <td>USGS</td>
-      <td>2.41</td>
-      <td>84.3</td>
-      <td>Good</td>
-      <td>-0.01</td>
-      <td>0.90</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>923</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1073</td>
-      <td>2022-10-28 11:11:52</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>NML/EHM</td>
-      <td>USGS</td>
-      <td>2.41</td>
-      <td>84.4</td>
-      <td>Good</td>
-      <td>-0.01</td>
-      <td>0.60</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>924</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1074</td>
-      <td>2023-01-03 12:09:45</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>MJF/EHQM</td>
-      <td>USGS</td>
-      <td>2.36</td>
-      <td>77.1</td>
-      <td>Fair</td>
-      <td>0.00</td>
-      <td>1.00</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>925</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1075</td>
-      <td>2023-03-13 13:45:45</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>EHQM/MJF</td>
-      <td>USGS</td>
-      <td>2.35</td>
-      <td>80.3</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>0.73</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
       <th>926</th>
       <td>USGS</td>
       <td>10109000</td>
@@ -422,13 +352,85 @@ Retrieved 927 data values.
       <td>76.6</td>
       <td>Good</td>
       <td>0.00</td>
-      <td>0.50</td>
+      <td>0.5</td>
       <td>Clear</td>
+      <td>NONE</td>
+    </tr>
+    <tr>
+      <th>927</th>
+      <td>USGS</td>
+      <td>10109000</td>
+      <td>1077</td>
+      <td>2023-05-02 16:52:07</td>
+      <td>MDT</td>
+      <td>Yes</td>
+      <td>EHQM</td>
+      <td>USGS</td>
+      <td>3.85</td>
+      <td>585.0</td>
+      <td>Fair</td>
+      <td>0.00</td>
+      <td>0.3</td>
+      <td>Clear</td>
+      <td>NONE</td>
+    </tr>
+    <tr>
+      <th>928</th>
+      <td>USGS</td>
+      <td>10109000</td>
+      <td>1078</td>
+      <td>2023-05-22 12:06:44</td>
+      <td>MDT</td>
+      <td>Yes</td>
+      <td>EHQM</td>
+      <td>USGS</td>
+      <td>4.81</td>
+      <td>1130.0</td>
+      <td>Fair</td>
+      <td>0.00</td>
+      <td>0.2</td>
+      <td>Clear</td>
+      <td>NONE</td>
+    </tr>
+    <tr>
+      <th>929</th>
+      <td>USGS</td>
+      <td>10109000</td>
+      <td>1079</td>
+      <td>2023-05-22 12:54:00</td>
+      <td>MDT</td>
+      <td>Yes</td>
+      <td>EHQM</td>
+      <td>USGS</td>
+      <td>4.83</td>
+      <td>1180.0</td>
+      <td>Fair</td>
+      <td>0.00</td>
+      <td>0.8</td>
+      <td>Clear</td>
+      <td>NONE</td>
+    </tr>
+    <tr>
+      <th>930</th>
+      <td>USGS</td>
+      <td>10109000</td>
+      <td>1080</td>
+      <td>2023-05-24 11:04:00</td>
+      <td>MDT</td>
+      <td>Yes</td>
+      <td>EHQM</td>
+      <td>USGS</td>
+      <td>5.41</td>
+      <td>1850.0</td>
+      <td>Fair</td>
+      <td>0.00</td>
+      <td>0.4</td>
+      <td>NaN</td>
       <td>NONE</td>
     </tr>
   </tbody>
 </table>
-<p>927 rows × 15 columns</p>
+<p>931 rows × 15 columns</p>
 </div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
