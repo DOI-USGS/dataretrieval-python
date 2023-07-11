@@ -14,11 +14,14 @@ from .utils import query, set_metadata as set_md
 import warnings
 
 
-def get_results(**kwargs):
+def get_results(ssl_check=True, **kwargs):
     """Query the WQP for results.
 
     Parameters
     ----------
+    ssl_check: bool
+        If True, check the SSL certificate. Default is True. If False, SSL
+        certificate is not checked.
     siteid: string
         Concatenate an agency code, a hyphen ("-"), and a site-identification
         number.
@@ -78,17 +81,21 @@ def get_results(**kwargs):
 
     """
     kwargs = _alter_kwargs(kwargs)
-    response = query(wqp_url('Result'), kwargs, delimiter=';')
+    response = query(wqp_url('Result'), kwargs, delimiter=';',
+                     ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
     return df, set_metadata(response)
 
 
-def what_sites(**kwargs):
+def what_sites(ssl_check=True, **kwargs):
     """Search WQP for sites within a region with specific data.
 
     Parameters
     ----------
+    ssl_check: bool
+        If True, check the SSL certificate. Default is True. If False, SSL
+        certificate is not checked.
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -111,18 +118,21 @@ def what_sites(**kwargs):
     kwargs = _alter_kwargs(kwargs)
 
     url = wqp_url('Station')
-    response = query(url, payload=kwargs, delimiter=';')
+    response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
 
     return df, set_metadata(response)
 
 
-def what_organizations(**kwargs):
+def what_organizations(ssl_check=True, **kwargs):
     """Search WQP for organizations within a region with specific data.
 
     Parameters
     ----------
+    ssl_check: bool
+        If True, check the SSL certificate. Default is True. If False, SSL
+        certificate is not checked.
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -144,18 +154,21 @@ def what_organizations(**kwargs):
     kwargs = _alter_kwargs(kwargs)
 
     url = wqp_url('Organization')
-    response = query(url, payload=kwargs, delimiter=';')
+    response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
 
     return df, set_metadata(response)
 
 
-def what_projects(**kwargs):
+def what_projects(ssl_check=True, **kwargs):
     """Search WQP for projects within a region with specific data.
 
     Parameters
     ----------
+    ssl_check: bool
+        If True, check the SSL certificate. Default is True. If False, SSL
+        certificate is not checked.
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -177,18 +190,21 @@ def what_projects(**kwargs):
     kwargs = _alter_kwargs(kwargs)
 
     url = wqp_url('Project')
-    response = query(url, payload=kwargs, delimiter=';')
+    response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
 
     return df, set_metadata(response)
 
 
-def what_activities(**kwargs):
+def what_activities(ssl_check=True, **kwargs):
     """Search WQP for activities within a region with specific data.
 
     Parameters
     ----------
+    ssl_check: bool
+        If True, check the SSL certificate. Default is True. If False, SSL
+        certificate is not checked.
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -213,19 +229,22 @@ def what_activities(**kwargs):
     kwargs = _alter_kwargs(kwargs)
 
     url = wqp_url('Activity')
-    response = query(url, payload=kwargs, delimiter=';')
+    response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
 
     return df, set_metadata(response)
 
 
-def what_detection_limits(**kwargs):
+def what_detection_limits(ssl_check=True, **kwargs):
     """Search WQP for result detection limits within a region with specific
     data.
 
     Parameters
     ----------
+    ssl_check: bool
+        If True, check the SSL certificate. Default is True. If False, SSL
+        certificate is not checked.
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -250,18 +269,21 @@ def what_detection_limits(**kwargs):
     kwargs = _alter_kwargs(kwargs)
 
     url = wqp_url('ResultDetectionQuantitationLimit')
-    response = query(url, payload=kwargs, delimiter=';')
+    response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
 
     return df, set_metadata(response)
 
 
-def what_habitat_metrics(**kwargs):
+def what_habitat_metrics(ssl_check=True, **kwargs):
     """Search WQP for habitat metrics within a region with specific data.
 
     Parameters
     ----------
+    ssl_check: bool
+        If True, check the SSL certificate. Default is True. If False, SSL
+        certificate is not checked.
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -284,18 +306,21 @@ def what_habitat_metrics(**kwargs):
     kwargs = _alter_kwargs(kwargs)
 
     url = wqp_url('BiologicalMetric')
-    response = query(url, payload=kwargs, delimiter=';')
+    response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
 
     return df, set_metadata(response)
 
 
-def what_project_weights(**kwargs):
+def what_project_weights(ssl_check=True, **kwargs):
     """Search WQP for project weights within a region with specific data.
 
     Parameters
     ----------
+    ssl_check: bool
+        If True, check the SSL certificate. Default is True. If False, SSL
+        certificate is not checked.
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -320,18 +345,21 @@ def what_project_weights(**kwargs):
     kwargs = _alter_kwargs(kwargs)
 
     url = wqp_url('ProjectMonitoringLocationWeighting')
-    response = query(url, payload=kwargs, delimiter=';')
+    response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
 
     return df, set_metadata(response)
 
 
-def what_activity_metrics(**kwargs):
+def what_activity_metrics(ssl_check=True, **kwargs):
     """Search WQP for activity metrics within a region with specific data.
 
     Parameters
     ----------
+    ssl_check: bool
+        If True, check the SSL certificate. Default is True. If False, SSL
+        certificate is not checked.
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -356,7 +384,7 @@ def what_activity_metrics(**kwargs):
     kwargs = _alter_kwargs(kwargs)
 
     url = wqp_url('ActivityMetric')
-    response = query(url, payload=kwargs, delimiter=';')
+    response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
 

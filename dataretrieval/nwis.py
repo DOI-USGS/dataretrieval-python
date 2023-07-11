@@ -102,7 +102,7 @@ def preformat_peaks_response(df: pd.DataFrame):
 
 def get_qwdata(sites=None, start=None, end=None,
                multi_index=True, wide_format=True, datetime_index=True,
-               **kwargs):
+               ssl_check=True, **kwargs):
     """
     Get water sample data from qwdata service.
 
@@ -132,6 +132,9 @@ def get_qwdata(sites=None, start=None, end=None,
         one row per time
     datetime_index : boolean
         If True, create a datetime index
+    ssl_check: bool
+        If True, check SSL certificates, if False, do not check SSL,
+        default is True
     **kwargs: optional
         If supplied, will be used as query parameters
 
@@ -158,10 +161,10 @@ def get_qwdata(sites=None, start=None, end=None,
     sites = kwargs.pop('site_no', sites)
     return _qwdata(site_no=sites, begin_date=start, end_date=end,
                    datetime_index=datetime_index,
-                   multi_index=multi_index, **kwargs)
+                   multi_index=multi_index, ssl_check=ssl_check, **kwargs)
 
 
-def _qwdata(datetime_index=True, **kwargs):
+def _qwdata(datetime_index=True, ssl_check=True, **kwargs):
     # check number of sites, may need to create multiindex
 
     payload = {'agency_cd': 'USGS',
@@ -200,7 +203,7 @@ def _qwdata(datetime_index=True, **kwargs):
         "See this note from the R package for more: " +
         "https://doi-usgs.github.io/dataRetrieval/articles/qwdata_changes.html",
         category=DeprecationWarning)
-    response = query_waterdata('qwdata', **kwargs)
+    response = query_waterdata('qwdata', ssl_check=ssl_check, **kwargs)
 
     df = _read_rdb(response.text)
 
@@ -211,7 +214,8 @@ def _qwdata(datetime_index=True, **kwargs):
     return format_response(df, **kwargs), _set_metadata(response, **kwargs)
 
 
-def get_discharge_measurements(sites=None, start=None, end=None, **kwargs):
+def get_discharge_measurements(sites=None, start=None, end=None,
+                               ssl_check=True, **kwargs):
     """
     Get discharge measurements from the waterdata service.
 
@@ -226,6 +230,9 @@ def get_discharge_measurements(sites=None, start=None, end=None, **kwargs):
     end: string
         If the qwdata parameter end_date is supplied, it will overwrite the
         end parameter (YYYY-MM-DD)
+    ssl_check: bool
+        If True, check SSL certificates, if False, do not check SSL,
+        default is True
     **kwargs: optional
         If supplied, will be used as query parameters
 
@@ -253,16 +260,18 @@ def get_discharge_measurements(sites=None, start=None, end=None, **kwargs):
     end = kwargs.pop('end_date', end)
     sites = kwargs.pop('site_no', sites)
     return _discharge_measurements(
-        site_no=sites, begin_date=start, end_date=end, **kwargs)
+        site_no=sites, begin_date=start, end_date=end,
+        ssl_check=ssl_check, **kwargs)
 
 
-def _discharge_measurements(**kwargs):
-    response = query_waterdata('measurements', format='rdb', **kwargs)
+def _discharge_measurements(ssl_check=True, **kwargs):
+    response = query_waterdata('measurements', format='rdb',
+                               ssl_check=ssl_check, **kwargs)
     return _read_rdb(response.text), _set_metadata(response, **kwargs)
 
 
 def get_discharge_peaks(sites=None, start=None, end=None,
-                        multi_index=True, **kwargs):
+                        multi_index=True, ssl_check=True, **kwargs):
     """
     Get discharge peaks from the waterdata service.
 
@@ -279,6 +288,9 @@ def get_discharge_peaks(sites=None, start=None, end=None,
         the end parameter (YYYY-MM-DD)
     multi_index: boolean
         If False, a dataframe with a single-level index (datetime) is returned
+    ssl_check: bool
+        If True, check SSL certificates, if False, do not check SSL,
+        default is True
     **kwargs: optional
         If supplied, will be used as query parameters
 
@@ -306,11 +318,13 @@ def get_discharge_peaks(sites=None, start=None, end=None,
     end = kwargs.pop('end_date', end)
     sites = kwargs.pop('site_no', sites)
     return _discharge_peaks(site_no=sites, begin_date=start, end_date=end,
-                            multi_index=multi_index, **kwargs)
+                            multi_index=multi_index, ssl_check=ssl_check,
+                            **kwargs)
 
 
-def _discharge_peaks(**kwargs):
-    response = query_waterdata('peaks', format='rdb', **kwargs)
+def _discharge_peaks(ssl_check=True, **kwargs):
+    response = query_waterdata('peaks', format='rdb',
+                               ssl_check=ssl_check, **kwargs)
 
     df = _read_rdb(response.text)
 
@@ -319,7 +333,8 @@ def _discharge_peaks(**kwargs):
 
 
 def get_gwlevels(sites=None, start='1851-01-01', end=None,
-                 multi_index=True, datetime_index=True, **kwargs):
+                 multi_index=True, datetime_index=True,
+                 ssl_check=True, **kwargs):
     """
     Queries the groundwater level service from waterservices
 
@@ -335,6 +350,9 @@ def get_gwlevels(sites=None, start='1851-01-01', end=None,
         If False, a dataframe with a single-level index (datetime) is returned
     datetime_index : boolean
         If True, create a datetime index
+    ssl_check: bool
+        If True, check SSL certificates, if False, do not check SSL,
+        default is True
     **kwargs: optional
         If supplied, will be used as query parameters
 
@@ -358,12 +376,12 @@ def get_gwlevels(sites=None, start='1851-01-01', end=None,
     sites = kwargs.pop('sites', sites)
     return _gwlevels(startDT=start, endDT=end,
                      datetime_index=datetime_index, sites=sites,
-                     multi_index=multi_index, **kwargs)
+                     multi_index=multi_index, ssl_check=ssl_check, **kwargs)
 
 
-def _gwlevels(datetime_index=True, **kwargs):
+def _gwlevels(datetime_index=True, ssl_check=True, **kwargs):
 
-    response = query_waterservices('gwlevels', **kwargs)
+    response = query_waterservices('gwlevels', ssl_check=ssl_check, **kwargs)
 
     df = _read_rdb(response.text)
 
@@ -373,7 +391,7 @@ def _gwlevels(datetime_index=True, **kwargs):
     return format_response(df, **kwargs), _set_metadata(response, **kwargs)
 
 
-def get_stats(sites, **kwargs):
+def get_stats(sites, ssl_check=True, **kwargs):
     """
     Queries water services statistics information.
 
@@ -384,6 +402,9 @@ def get_stats(sites, **kwargs):
     ----------
     sites: string or list
         USGS site number (or list of site numbers)
+    ssl_check: bool
+        If True, check SSL certificates, if False, do not check SSL,
+        default is True
 
     Additional Parameters
     ---------------------
@@ -419,12 +440,13 @@ def get_stats(sites, **kwargs):
         ...     sites='01646500', statReportType='monthly')
 
     """
-    response = query_waterservices('stat', sites=sites, **kwargs)
+    response = query_waterservices('stat', sites=sites,
+                                   ssl_check=ssl_check, **kwargs)
 
     return _read_rdb(response.text), _set_metadata(response, **kwargs)
 
 
-def query_waterdata(service, **kwargs):
+def query_waterdata(service, ssl_check=True, **kwargs):
     """
     Queries waterdata.
     """
@@ -444,10 +466,10 @@ def query_waterdata(service, **kwargs):
 
     url = WATERDATA_URL + service
 
-    return query(url, payload=kwargs)
+    return query(url, payload=kwargs, ssl_check=ssl_check)
 
 
-def query_waterservices(service, **kwargs):
+def query_waterservices(service, ssl_check=True, **kwargs):
     """
     Queries waterservices.usgs.gov
 
@@ -461,6 +483,9 @@ def query_waterservices(service, **kwargs):
     ----------
     service: string
         String specifying the service to query: 'site', 'stats', etc.
+    ssl_check: bool
+        If True, check SSL certificates, if False, do not check SSL,
+        default is True
     bBox: string
         7-digit Hydrologic Unit Code (HUC)
     startDT: string
@@ -472,6 +497,9 @@ def query_waterservices(service, **kwargs):
         have changed during the request period. String expected to be formatted
         in ISO-8601 duration format (e.g., 'P1D' for one day,
         'P1Y' for one year)
+    ssl_check: bool
+        If True, check SSL certificates, if False, do not check SSL,
+        default is True
 
     Other Parameters
     ----------------
@@ -495,10 +523,11 @@ def query_waterservices(service, **kwargs):
 
     url = WATERSERVICE_URL + service
 
-    return query(url, payload=kwargs)
+    return query(url, payload=kwargs, ssl_check=ssl_check)
 
 
-def get_dv(sites=None, start=None, end=None, multi_index=True, **kwargs):
+def get_dv(sites=None, start=None, end=None, multi_index=True,
+           ssl_check=True, **kwargs):
     """
     Get daily values data from NWIS and return it as a ``pandas.DataFrame``.
 
@@ -515,6 +544,12 @@ def get_dv(sites=None, start=None, end=None, multi_index=True, **kwargs):
     end: string
         If the waterdata parameter endDT is supplied, it will overwrite the
         end parameter (YYYY-MM-DD)
+    multi_index: bool
+        If True, return a multi-index dataframe, if False, return a
+        single-index dataframe, default is True
+    ssl_check: bool
+        If True, check SSL certificates, if False, do not check SSL,
+        default is True
     **kwargs: optional
         If supplied, will be used as query parameters
 
@@ -542,17 +577,18 @@ def get_dv(sites=None, start=None, end=None, multi_index=True, **kwargs):
     end = kwargs.pop('endDT', end)
     sites = kwargs.pop('sites', sites)
     return _dv(startDT=start, endDT=end, sites=sites,
-               multi_index=multi_index, **kwargs)
+               multi_index=multi_index, ssl_check=ssl_check, **kwargs)
 
 
-def _dv(**kwargs):
-    response = query_waterservices('dv', format='json', **kwargs)
+def _dv(ssl_check=True, **kwargs):
+    response = query_waterservices('dv', format='json',
+                                   ssl_check=ssl_check, **kwargs)
     df = _read_json(response.json())
 
     return format_response(df, **kwargs), _set_metadata(response, **kwargs)
 
 
-def get_info(**kwargs):
+def get_info(ssl_check=True, **kwargs):
     """
     Get site description information from NWIS.
 
@@ -584,6 +620,9 @@ def get_info(**kwargs):
         A list of county numbers, in a 5 digit numeric format. The first two
         digits of a county's code are the FIPS State Code.
         (url: https://help.waterdata.usgs.gov/code/county_query?fmt=html)
+    ssl_check: bool
+        If True, check SSL certificates, if False, do not check SSL,
+        default is True
     **kwargs: optional
         If supplied, will be used as query parameters
 
@@ -650,12 +689,13 @@ def get_info(**kwargs):
         # cannot have both seriesCatalogOutput and the expanded format
         kwargs['siteOutput'] = 'Expanded'
 
-    response = query_waterservices('site', **kwargs)
+    response = query_waterservices('site', ssl_check=ssl_check, **kwargs)
 
     return _read_rdb(response.text), _set_metadata(response, **kwargs)
 
 
-def get_iv(sites=None, start=None, end=None, multi_index=True, **kwargs):
+def get_iv(sites=None, start=None, end=None, multi_index=True,
+           ssl_check=True, **kwargs):
     """Get instantaneous values data from NWIS and return it as a DataFrame.
 
     .. note::
@@ -671,6 +711,9 @@ def get_iv(sites=None, start=None, end=None, multi_index=True, **kwargs):
     end: string
         If the waterdata parameter endDT is supplied, it will overwrite the
         end parameter (YYYY-MM-DD)
+    ssl_check: bool
+        If True, check SSL certificates, if False, do not check SSL,
+        default is True
 
     Returns
     -------
@@ -693,16 +736,17 @@ def get_iv(sites=None, start=None, end=None, multi_index=True, **kwargs):
     end = kwargs.pop('endDT', end)
     sites = kwargs.pop('sites', sites)
     return _iv(startDT=start, endDT=end, sites=sites,
-               multi_index=multi_index, **kwargs)
+               multi_index=multi_index, ssl_check=ssl_check, **kwargs)
 
 
-def _iv(**kwargs):
-    response = query_waterservices('iv', format='json', **kwargs)
+def _iv(ssl_check=True, **kwargs):
+    response = query_waterservices('iv', format='json',
+                                   ssl_check=ssl_check, **kwargs)
     df = _read_json(response.json())
     return format_response(df, **kwargs), _set_metadata(response, **kwargs)
 
 
-def get_pmcodes(parameterCd='All', partial=True):
+def get_pmcodes(parameterCd='All', partial=True, ssl_check=True):
     """
     Return a ``pandas.DataFrame`` containing all NWIS parameter codes.
 
@@ -713,6 +757,9 @@ def get_pmcodes(parameterCd='All', partial=True):
     partial: boolean
         Default is True (partial querying). If False, the function will query
         only exact matches
+    ssl_check: bool
+        If True, check SSL certificates, if False, do not check SSL,
+        default is True
 
     Returns
     -------
@@ -744,7 +791,7 @@ def get_pmcodes(parameterCd='All', partial=True):
         if parameterCd.lower() == "all":
             payload.update({'group_cd': '%'})
             url = ALLPARAMCODES_URL
-            response = query(url, payload)
+            response = query(url, payload, ssl_check=ssl_check)
             return _read_rdb(response.text), _set_metadata(response)
 
         else:
@@ -760,7 +807,7 @@ def get_pmcodes(parameterCd='All', partial=True):
             if partial:
                 param ='%{0}%'.format(param)
             payload.update({'parm_nm_cd': param})
-            response = query(url, payload)
+            response = query(url, payload, ssl_check=ssl_check)
             if len(response.text.splitlines()) < 10:  # empty query
                 raise TypeError('One of the parameter codes or names entered does not return any information,'\
                                 ' please try a different value')
@@ -770,7 +817,8 @@ def get_pmcodes(parameterCd='All', partial=True):
     return pd.concat(l), _set_metadata(response)
 
 
-def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
+def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL",
+                  ssl_check=True):
     """
     Water use data retrieval from USGS (NWIS).
 
@@ -785,6 +833,9 @@ def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
         County IDs from county lookup or "ALL"
     categories: list-like
         List or comma delimited string of Two-letter category abbreviations
+    ssl_check: bool
+        If True, check SSL certificates, if False, do not check SSL,
+        default is True
     **kwargs: optional
         If supplied, will be used as query parameters
 
@@ -822,11 +873,11 @@ def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL"):
     if state is not None:
         url = WATERDATA_BASE_URL + state + "/nwis/water_use"
         payload.update({"wu_area": "county"})
-    response = query(url, payload)
+    response = query(url, payload, ssl_check=ssl_check)
     return _read_rdb(response.text), _set_metadata(response)
 
 
-def get_ratings(site=None, file_type="base", **kwargs):
+def get_ratings(site=None, file_type="base", ssl_check=True, **kwargs):
     """
     Rating table for an active USGS streamgage retrieval.
 
@@ -845,6 +896,9 @@ def get_ratings(site=None, file_type="base", **kwargs):
         County IDs from county lookup or "ALL"
     categories: list-like
         List or comma delimited string of Two-letter category abbreviations
+    ssl_check: bool
+        If True, check SSL certificates, if False, do not check SSL,
+        default is True
     **kwargs: optional
         If supplied, will be used as query parameters
 
@@ -864,10 +918,11 @@ def get_ratings(site=None, file_type="base", **kwargs):
 
     """
     site = kwargs.pop('site_no', site)
-    return _ratings(site=site, file_type=file_type, **kwargs)
+    return _ratings(site=site, file_type=file_type, ssl_check=ssl_check,
+                    **kwargs)
 
 
-def _ratings(site, file_type):
+def _ratings(site, file_type, ssl_check=True):
     payload = {}
     url = WATERDATA_BASE_URL + 'nwisweb/get_ratings/'
     if site is not None:
@@ -876,16 +931,19 @@ def _ratings(site, file_type):
         if file_type not in ["base", "corr", "exsa"]:
             raise ValueError('Unrecognized file_type: {}, must be "base", "corr" or "exsa"'.format(file_type))
         payload.update({"file_type" : file_type})
-    response = query(url, payload)
+    response = query(url, payload, ssl_check=ssl_check)
     return _read_rdb(response.text), _set_metadata(response, site_no=site)
 
 
-def what_sites(**kwargs):
+def what_sites(ssl_check=True, **kwargs):
     """
     Search NWIS for sites within a region with specific data.
 
     Parameters
     ----------
+    ssl_check: bool
+        If True, check SSL certificates, if False, do not check SSL,
+        default is True
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.nwis.get_info`
 
@@ -902,7 +960,8 @@ def what_sites(**kwargs):
 
     """
 
-    response = query_waterservices(service='site', **kwargs)
+    response = query_waterservices(service='site', ssl_check=ssl_check,
+                                   **kwargs)
 
     df = _read_rdb(response.text)
 
@@ -911,7 +970,7 @@ def what_sites(**kwargs):
 
 def get_record(sites=None, start=None, end=None,
                multi_index=True, wide_format=True, datetime_index=True,
-               state=None, service='iv', **kwargs):
+               state=None, service='iv', ssl_check=True, **kwargs):
     """
     Get data from NWIS and return it as a ``pandas.DataFrame``.
 
@@ -940,6 +999,9 @@ def get_record(sites=None, start=None, end=None,
         - 'water_use': get water use data
         - 'ratings': get rating table
         - 'stat': get statistics
+    ssl_check: bool
+        If True, check SSL certificates, if False, do not check SSL,
+        default is True
     **kwargs: optional
         If supplied, will be used as query parameters
 
@@ -1000,55 +1062,59 @@ def get_record(sites=None, start=None, end=None,
 
     if service == 'iv':
         df, _ = get_iv(sites=sites, startDT=start, endDT=end,
-                       multi_index=multi_index, **kwargs)
+                       multi_index=multi_index, ssl_check=ssl_check, **kwargs)
         return df
 
     elif service == 'dv':
         df, _ = get_dv(sites=sites, startDT=start, endDT=end,
-                       multi_index=multi_index, **kwargs)
+                       multi_index=multi_index, ssl_check=ssl_check, **kwargs)
         return df
 
     elif service == 'qwdata':
         df, _ = get_qwdata(site_no=sites, begin_date=start, end_date=end,
                            multi_index=multi_index,
-                           wide_format=wide_format, **kwargs)
+                           wide_format=wide_format, ssl_check=ssl_check,
+                           **kwargs)
         return df
 
     elif service == 'site':
-        df, _ = get_info(sites=sites, **kwargs)
+        df, _ = get_info(sites=sites, ssl_check=ssl_check, **kwargs)
         return df
 
     elif service == 'measurements':
         df, _ = get_discharge_measurements(site_no=sites, begin_date=start,
-                                           end_date=end, **kwargs)
+                                           end_date=end, ssl_check=ssl_check,
+                                           **kwargs)
         return df
 
     elif service == 'peaks':
         df, _ = get_discharge_peaks(site_no=sites, begin_date=start,
                                     end_date=end,
-                                    multi_index=multi_index, **kwargs)
+                                    multi_index=multi_index,
+                                    ssl_check=ssl_check, **kwargs)
         return df
 
     elif service == 'gwlevels':
         df, _ = get_gwlevels(sites=sites, startDT=start, endDT=end,
                              multi_index=multi_index,
-                             datetime_index=datetime_index, **kwargs)
+                             datetime_index=datetime_index,
+                             ssl_check=ssl_check, **kwargs)
         return df
 
     elif service == 'pmcodes':
-        df, _ = get_pmcodes(**kwargs)
+        df, _ = get_pmcodes(ssl_check=ssl_check, **kwargs)
         return df
 
     elif service == 'water_use':
-        df, _ = get_water_use(state=state, **kwargs)
+        df, _ = get_water_use(state=state, ssl_check=ssl_check, **kwargs)
         return df
 
     elif service == 'ratings':
-        df, _ = get_ratings(site=sites, **kwargs)
+        df, _ = get_ratings(site=sites, ssl_check=ssl_check, **kwargs)
         return df
 
     elif service == 'stat':
-        df, _ = get_stats(sites=sites, **kwargs)
+        df, _ = get_stats(sites=sites, ssl_check=ssl_check, **kwargs)
         return df
 
     else:
@@ -1207,7 +1273,8 @@ def _set_metadata(response, **parameters):
 
     # define variable_info metadata based on parameterCd if available
     if 'parameterCd' in parameters:
-        md.variable_info = lambda: get_pmcodes(parameterCd=parameters['parameterCd'])
+        md.variable_info = lambda: get_pmcodes(
+            parameterCd=parameters['parameterCd'])
 
     comments = ""
     for line in response.text.splitlines():

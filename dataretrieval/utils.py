@@ -162,7 +162,7 @@ def set_metadata(response):
     return md
 
 
-def query(url, payload, delimiter=','):
+def query(url, payload, delimiter=',', ssl_check=True):
     """Send a query.
 
     Wrapper for requests.get that handles errors, converts listed
@@ -176,6 +176,9 @@ def query(url, payload, delimiter=','):
         query parameters passed to ``requests.get``
     delimiter: string
         delimiter to use with lists
+    ssl_check: bool
+        If True, check SSL certificates, if False, do not check SSL,
+        default is True
 
     Returns
     -------
@@ -193,7 +196,8 @@ def query(url, payload, delimiter=','):
     user_agent = {
         'user-agent': f"python-dataretrieval/{dataretrieval.__version__}"}
 
-    response = requests.get(url, params=payload, headers=user_agent)
+    response = requests.get(url, params=payload,
+                            headers=user_agent, verify=ssl_check)
 
     if response.status_code == 400:
         raise ValueError("Bad Request, check that your parameters are correct. URL: {}".format(response.url))
