@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g37f4190 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g0b12b48 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -181,7 +181,7 @@
 
 <div class="viewcode-block" id="get_qwdata"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_qwdata">[docs]</a><span class="k">def</span> <span class="nf">get_qwdata</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                <span class="n">multi_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">wide_format</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">datetime_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-               <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+               <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get water sample data from qwdata service.</span>
 
@@ -211,6 +211,9 @@
 <span class="sd">        one row per time</span>
 <span class="sd">    datetime_index : boolean</span>
 <span class="sd">        If True, create a datetime index</span>
+<span class="sd">    ssl_check: bool</span>
+<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
+<span class="sd">        default is True</span>
 <span class="sd">    **kwargs: optional</span>
 <span class="sd">        If supplied, will be used as query parameters</span>
 
@@ -237,10 +240,10 @@
     <span class="n">sites</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;site_no&#39;</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_qwdata</span><span class="p">(</span><span class="n">site_no</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">begin_date</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
                    <span class="n">datetime_index</span><span class="o">=</span><span class="n">datetime_index</span><span class="p">,</span>
-                   <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+                   <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">_qwdata</span><span class="p">(</span><span class="n">datetime_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_qwdata</span><span class="p">(</span><span class="n">datetime_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="c1"># check number of sites, may need to create multiindex</span>
 
     <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;agency_cd&#39;</span><span class="p">:</span> <span class="s1">&#39;USGS&#39;</span><span class="p">,</span>
@@ -279,7 +282,7 @@
         <span class="s2">&quot;See this note from the R package for more: &quot;</span> <span class="o">+</span>
         <span class="s2">&quot;https://doi-usgs.github.io/dataRetrieval/articles/qwdata_changes.html&quot;</span><span class="p">,</span>
         <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterdata</span><span class="p">(</span><span class="s1">&#39;qwdata&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterdata</span><span class="p">(</span><span class="s1">&#39;qwdata&#39;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 
@@ -290,7 +293,8 @@
     <span class="k">return</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="get_discharge_measurements"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_discharge_measurements">[docs]</a><span class="k">def</span> <span class="nf">get_discharge_measurements</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="get_discharge_measurements"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_discharge_measurements">[docs]</a><span class="k">def</span> <span class="nf">get_discharge_measurements</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                               <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get discharge measurements from the waterdata service.</span>
 
@@ -305,6 +309,9 @@
 <span class="sd">    end: string</span>
 <span class="sd">        If the qwdata parameter end_date is supplied, it will overwrite the</span>
 <span class="sd">        end parameter (YYYY-MM-DD)</span>
+<span class="sd">    ssl_check: bool</span>
+<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
+<span class="sd">        default is True</span>
 <span class="sd">    **kwargs: optional</span>
 <span class="sd">        If supplied, will be used as query parameters</span>
 
@@ -332,16 +339,18 @@
     <span class="n">end</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;end_date&#39;</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
     <span class="n">sites</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;site_no&#39;</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_discharge_measurements</span><span class="p">(</span>
-        <span class="n">site_no</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">begin_date</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="n">site_no</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">begin_date</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
+        <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">_discharge_measurements</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterdata</span><span class="p">(</span><span class="s1">&#39;measurements&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;rdb&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_discharge_measurements</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterdata</span><span class="p">(</span><span class="s1">&#39;measurements&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;rdb&#39;</span><span class="p">,</span>
+                               <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_discharge_peaks"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_discharge_peaks">[docs]</a><span class="k">def</span> <span class="nf">get_discharge_peaks</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                        <span class="n">multi_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                        <span class="n">multi_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get discharge peaks from the waterdata service.</span>
 
@@ -358,6 +367,9 @@
 <span class="sd">        the end parameter (YYYY-MM-DD)</span>
 <span class="sd">    multi_index: boolean</span>
 <span class="sd">        If False, a dataframe with a single-level index (datetime) is returned</span>
+<span class="sd">    ssl_check: bool</span>
+<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
+<span class="sd">        default is True</span>
 <span class="sd">    **kwargs: optional</span>
 <span class="sd">        If supplied, will be used as query parameters</span>
 
@@ -385,11 +397,13 @@
     <span class="n">end</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;end_date&#39;</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
     <span class="n">sites</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;site_no&#39;</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_discharge_peaks</span><span class="p">(</span><span class="n">site_no</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">begin_date</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
-                            <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+                            <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
+                            <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">_discharge_peaks</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterdata</span><span class="p">(</span><span class="s1">&#39;peaks&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;rdb&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_discharge_peaks</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterdata</span><span class="p">(</span><span class="s1">&#39;peaks&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;rdb&#39;</span><span class="p">,</span>
+                               <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 
@@ -398,7 +412,8 @@
 
 
 <div class="viewcode-block" id="get_gwlevels"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_gwlevels">[docs]</a><span class="k">def</span> <span class="nf">get_gwlevels</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;1851-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">multi_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">datetime_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                 <span class="n">multi_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">datetime_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Queries the groundwater level service from waterservices</span>
 
@@ -414,6 +429,9 @@
 <span class="sd">        If False, a dataframe with a single-level index (datetime) is returned</span>
 <span class="sd">    datetime_index : boolean</span>
 <span class="sd">        If True, create a datetime index</span>
+<span class="sd">    ssl_check: bool</span>
+<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
+<span class="sd">        default is True</span>
 <span class="sd">    **kwargs: optional</span>
 <span class="sd">        If supplied, will be used as query parameters</span>
 
@@ -437,12 +455,12 @@
     <span class="n">sites</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;sites&#39;</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_gwlevels</span><span class="p">(</span><span class="n">startDT</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">endDT</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
                      <span class="n">datetime_index</span><span class="o">=</span><span class="n">datetime_index</span><span class="p">,</span> <span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span>
-                     <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+                     <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">_gwlevels</span><span class="p">(</span><span class="n">datetime_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_gwlevels</span><span class="p">(</span><span class="n">datetime_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s1">&#39;gwlevels&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s1">&#39;gwlevels&#39;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 
@@ -452,7 +470,7 @@
     <span class="k">return</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="get_stats"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_stats">[docs]</a><span class="k">def</span> <span class="nf">get_stats</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="get_stats"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_stats">[docs]</a><span class="k">def</span> <span class="nf">get_stats</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Queries water services statistics information.</span>
 
@@ -463,6 +481,9 @@
 <span class="sd">    ----------</span>
 <span class="sd">    sites: string or list</span>
 <span class="sd">        USGS site number (or list of site numbers)</span>
+<span class="sd">    ssl_check: bool</span>
+<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
+<span class="sd">        default is True</span>
 
 <span class="sd">    Additional Parameters</span>
 <span class="sd">    ---------------------</span>
@@ -498,12 +519,13 @@
 <span class="sd">        ...     sites=&#39;01646500&#39;, statReportType=&#39;monthly&#39;)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s1">&#39;stat&#39;</span><span class="p">,</span> <span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s1">&#39;stat&#39;</span><span class="p">,</span> <span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span>
+                                   <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="query_waterdata"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.query_waterdata">[docs]</a><span class="k">def</span> <span class="nf">query_waterdata</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="query_waterdata"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.query_waterdata">[docs]</a><span class="k">def</span> <span class="nf">query_waterdata</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Queries waterdata.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -523,10 +545,10 @@
 
     <span class="n">url</span> <span class="o">=</span> <span class="n">WATERDATA_URL</span> <span class="o">+</span> <span class="n">service</span>
 
-    <span class="k">return</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="query_waterservices"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.query_waterservices">[docs]</a><span class="k">def</span> <span class="nf">query_waterservices</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="query_waterservices"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.query_waterservices">[docs]</a><span class="k">def</span> <span class="nf">query_waterservices</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Queries waterservices.usgs.gov</span>
 
@@ -540,6 +562,9 @@
 <span class="sd">    ----------</span>
 <span class="sd">    service: string</span>
 <span class="sd">        String specifying the service to query: &#39;site&#39;, &#39;stats&#39;, etc.</span>
+<span class="sd">    ssl_check: bool</span>
+<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
+<span class="sd">        default is True</span>
 <span class="sd">    bBox: string</span>
 <span class="sd">        7-digit Hydrologic Unit Code (HUC)</span>
 <span class="sd">    startDT: string</span>
@@ -551,6 +576,9 @@
 <span class="sd">        have changed during the request period. String expected to be formatted</span>
 <span class="sd">        in ISO-8601 duration format (e.g., &#39;P1D&#39; for one day,</span>
 <span class="sd">        &#39;P1Y&#39; for one year)</span>
+<span class="sd">    ssl_check: bool</span>
+<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
+<span class="sd">        default is True</span>
 
 <span class="sd">    Other Parameters</span>
 <span class="sd">    ----------------</span>
@@ -574,10 +602,11 @@
 
     <span class="n">url</span> <span class="o">=</span> <span class="n">WATERSERVICE_URL</span> <span class="o">+</span> <span class="n">service</span>
 
-    <span class="k">return</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="get_dv"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_dv">[docs]</a><span class="k">def</span> <span class="nf">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="get_dv"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_dv">[docs]</a><span class="k">def</span> <span class="nf">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+           <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get daily values data from NWIS and return it as a ``pandas.DataFrame``.</span>
 
@@ -594,6 +623,12 @@
 <span class="sd">    end: string</span>
 <span class="sd">        If the waterdata parameter endDT is supplied, it will overwrite the</span>
 <span class="sd">        end parameter (YYYY-MM-DD)</span>
+<span class="sd">    multi_index: bool</span>
+<span class="sd">        If True, return a multi-index dataframe, if False, return a</span>
+<span class="sd">        single-index dataframe, default is True</span>
+<span class="sd">    ssl_check: bool</span>
+<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
+<span class="sd">        default is True</span>
 <span class="sd">    **kwargs: optional</span>
 <span class="sd">        If supplied, will be used as query parameters</span>
 
@@ -621,17 +656,18 @@
     <span class="n">end</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;endDT&#39;</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
     <span class="n">sites</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;sites&#39;</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_dv</span><span class="p">(</span><span class="n">startDT</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">endDT</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span>
-               <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+               <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">_dv</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s1">&#39;dv&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_dv</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s1">&#39;dv&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">,</span>
+                                   <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">_read_json</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
 
     <span class="k">return</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="get_info"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_info">[docs]</a><span class="k">def</span> <span class="nf">get_info</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="get_info"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_info">[docs]</a><span class="k">def</span> <span class="nf">get_info</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get site description information from NWIS.</span>
 
@@ -663,6 +699,9 @@
 <span class="sd">        A list of county numbers, in a 5 digit numeric format. The first two</span>
 <span class="sd">        digits of a county&#39;s code are the FIPS State Code.</span>
 <span class="sd">        (url: https://help.waterdata.usgs.gov/code/county_query?fmt=html)</span>
+<span class="sd">    ssl_check: bool</span>
+<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
+<span class="sd">        default is True</span>
 <span class="sd">    **kwargs: optional</span>
 <span class="sd">        If supplied, will be used as query parameters</span>
 
@@ -729,12 +768,13 @@
         <span class="c1"># cannot have both seriesCatalogOutput and the expanded format</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;siteOutput&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Expanded&#39;</span>
 
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="get_iv"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_iv">[docs]</a><span class="k">def</span> <span class="nf">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="get_iv"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_iv">[docs]</a><span class="k">def</span> <span class="nf">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+           <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get instantaneous values data from NWIS and return it as a DataFrame.</span>
 
 <span class="sd">    .. note::</span>
@@ -750,6 +790,9 @@
 <span class="sd">    end: string</span>
 <span class="sd">        If the waterdata parameter endDT is supplied, it will overwrite the</span>
 <span class="sd">        end parameter (YYYY-MM-DD)</span>
+<span class="sd">    ssl_check: bool</span>
+<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
+<span class="sd">        default is True</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -772,16 +815,17 @@
     <span class="n">end</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;endDT&#39;</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
     <span class="n">sites</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;sites&#39;</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_iv</span><span class="p">(</span><span class="n">startDT</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">endDT</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span>
-               <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+               <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">_iv</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s1">&#39;iv&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_iv</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s1">&#39;iv&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">,</span>
+                                   <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">_read_json</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
     <span class="k">return</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="get_pmcodes"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_pmcodes">[docs]</a><span class="k">def</span> <span class="nf">get_pmcodes</span><span class="p">(</span><span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;All&#39;</span><span class="p">,</span> <span class="n">partial</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="get_pmcodes"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_pmcodes">[docs]</a><span class="k">def</span> <span class="nf">get_pmcodes</span><span class="p">(</span><span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;All&#39;</span><span class="p">,</span> <span class="n">partial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return a ``pandas.DataFrame`` containing all NWIS parameter codes.</span>
 
@@ -792,6 +836,9 @@
 <span class="sd">    partial: boolean</span>
 <span class="sd">        Default is True (partial querying). If False, the function will query</span>
 <span class="sd">        only exact matches</span>
+<span class="sd">    ssl_check: bool</span>
+<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
+<span class="sd">        default is True</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -823,7 +870,7 @@
         <span class="k">if</span> <span class="n">parameterCd</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span><span class="p">:</span>
             <span class="n">payload</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;group_cd&#39;</span><span class="p">:</span> <span class="s1">&#39;%&#39;</span><span class="p">})</span>
             <span class="n">url</span> <span class="o">=</span> <span class="n">ALLPARAMCODES_URL</span>
-            <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
@@ -839,7 +886,7 @@
             <span class="k">if</span> <span class="n">partial</span><span class="p">:</span>
                 <span class="n">param</span> <span class="o">=</span><span class="s1">&#39;%</span><span class="si">{0}</span><span class="s1">%&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
             <span class="n">payload</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;parm_nm_cd&#39;</span><span class="p">:</span> <span class="n">param</span><span class="p">})</span>
-            <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>  <span class="c1"># empty query</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;One of the parameter codes or names entered does not return any information,&#39;</span>\
                                 <span class="s1">&#39; please try a different value&#39;</span><span class="p">)</span>
@@ -849,7 +896,8 @@
     <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">l</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="get_water_use"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_water_use">[docs]</a><span class="k">def</span> <span class="nf">get_water_use</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="s2">&quot;ALL&quot;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">counties</span><span class="o">=</span><span class="s2">&quot;ALL&quot;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s2">&quot;ALL&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="get_water_use"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_water_use">[docs]</a><span class="k">def</span> <span class="nf">get_water_use</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="s2">&quot;ALL&quot;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">counties</span><span class="o">=</span><span class="s2">&quot;ALL&quot;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s2">&quot;ALL&quot;</span><span class="p">,</span>
+                  <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Water use data retrieval from USGS (NWIS).</span>
 
@@ -864,6 +912,9 @@
 <span class="sd">        County IDs from county lookup or &quot;ALL&quot;</span>
 <span class="sd">    categories: list-like</span>
 <span class="sd">        List or comma delimited string of Two-letter category abbreviations</span>
+<span class="sd">    ssl_check: bool</span>
+<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
+<span class="sd">        default is True</span>
 <span class="sd">    **kwargs: optional</span>
 <span class="sd">        If supplied, will be used as query parameters</span>
 
@@ -901,11 +952,11 @@
     <span class="k">if</span> <span class="n">state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">url</span> <span class="o">=</span> <span class="n">WATERDATA_BASE_URL</span> <span class="o">+</span> <span class="n">state</span> <span class="o">+</span> <span class="s2">&quot;/nwis/water_use&quot;</span>
         <span class="n">payload</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;wu_area&quot;</span><span class="p">:</span> <span class="s2">&quot;county&quot;</span><span class="p">})</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="get_ratings"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_ratings">[docs]</a><span class="k">def</span> <span class="nf">get_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="s2">&quot;base&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="get_ratings"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_ratings">[docs]</a><span class="k">def</span> <span class="nf">get_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="s2">&quot;base&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Rating table for an active USGS streamgage retrieval.</span>
 
@@ -924,6 +975,9 @@
 <span class="sd">        County IDs from county lookup or &quot;ALL&quot;</span>
 <span class="sd">    categories: list-like</span>
 <span class="sd">        List or comma delimited string of Two-letter category abbreviations</span>
+<span class="sd">    ssl_check: bool</span>
+<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
+<span class="sd">        default is True</span>
 <span class="sd">    **kwargs: optional</span>
 <span class="sd">        If supplied, will be used as query parameters</span>
 
@@ -943,10 +997,11 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">site</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;site_no&#39;</span><span class="p">,</span> <span class="n">site</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="n">file_type</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="n">file_type</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">_ratings</span><span class="p">(</span><span class="n">site</span><span class="p">,</span> <span class="n">file_type</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_ratings</span><span class="p">(</span><span class="n">site</span><span class="p">,</span> <span class="n">file_type</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">url</span> <span class="o">=</span> <span class="n">WATERDATA_BASE_URL</span> <span class="o">+</span> <span class="s1">&#39;nwisweb/get_ratings/&#39;</span>
     <span class="k">if</span> <span class="n">site</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -955,16 +1010,19 @@
         <span class="k">if</span> <span class="n">file_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;base&quot;</span><span class="p">,</span> <span class="s2">&quot;corr&quot;</span><span class="p">,</span> <span class="s2">&quot;exsa&quot;</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unrecognized file_type: </span><span class="si">{}</span><span class="s1">, must be &quot;base&quot;, &quot;corr&quot; or &quot;exsa&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file_type</span><span class="p">))</span>
         <span class="n">payload</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;file_type&quot;</span> <span class="p">:</span> <span class="n">file_type</span><span class="p">})</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">_set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">site_no</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="what_sites"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.what_sites">[docs]</a><span class="k">def</span> <span class="nf">what_sites</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="what_sites"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.what_sites">[docs]</a><span class="k">def</span> <span class="nf">what_sites</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Search NWIS for sites within a region with specific data.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
+<span class="sd">    ssl_check: bool</span>
+<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
+<span class="sd">        default is True</span>
 <span class="sd">    **kwargs: optional</span>
 <span class="sd">        Accepts the same parameters as :obj:`dataretrieval.nwis.get_info`</span>
 
@@ -981,7 +1039,8 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
+                                   <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 
@@ -990,7 +1049,7 @@
 
 <div class="viewcode-block" id="get_record"><a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_record">[docs]</a><span class="k">def</span> <span class="nf">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                <span class="n">multi_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">wide_format</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">datetime_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-               <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;iv&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+               <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;iv&#39;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get data from NWIS and return it as a ``pandas.DataFrame``.</span>
 
@@ -1019,6 +1078,9 @@
 <span class="sd">        - &#39;water_use&#39;: get water use data</span>
 <span class="sd">        - &#39;ratings&#39;: get rating table</span>
 <span class="sd">        - &#39;stat&#39;: get statistics</span>
+<span class="sd">    ssl_check: bool</span>
+<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
+<span class="sd">        default is True</span>
 <span class="sd">    **kwargs: optional</span>
 <span class="sd">        If supplied, will be used as query parameters</span>
 
@@ -1079,55 +1141,59 @@
 
     <span class="k">if</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;iv&#39;</span><span class="p">:</span>
         <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">startDT</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">endDT</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
-                       <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                       <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;dv&#39;</span><span class="p">:</span>
         <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">startDT</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">endDT</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
-                       <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                       <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;qwdata&#39;</span><span class="p">:</span>
         <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_qwdata</span><span class="p">(</span><span class="n">site_no</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">begin_date</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
                            <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span>
-                           <span class="n">wide_format</span><span class="o">=</span><span class="n">wide_format</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                           <span class="n">wide_format</span><span class="o">=</span><span class="n">wide_format</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
+                           <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;site&#39;</span><span class="p">:</span>
-        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_info</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_info</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;measurements&#39;</span><span class="p">:</span>
         <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_discharge_measurements</span><span class="p">(</span><span class="n">site_no</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">begin_date</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
-                                           <span class="n">end_date</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                                           <span class="n">end_date</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
+                                           <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;peaks&#39;</span><span class="p">:</span>
         <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_discharge_peaks</span><span class="p">(</span><span class="n">site_no</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">begin_date</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
                                     <span class="n">end_date</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
-                                    <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                                    <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span>
+                                    <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;gwlevels&#39;</span><span class="p">:</span>
         <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_gwlevels</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">startDT</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">endDT</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
                              <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span>
-                             <span class="n">datetime_index</span><span class="o">=</span><span class="n">datetime_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                             <span class="n">datetime_index</span><span class="o">=</span><span class="n">datetime_index</span><span class="p">,</span>
+                             <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;pmcodes&#39;</span><span class="p">:</span>
-        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_pmcodes</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_pmcodes</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;water_use&#39;</span><span class="p">:</span>
-        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_water_use</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_water_use</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;ratings&#39;</span><span class="p">:</span>
-        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;stat&#39;</span><span class="p">:</span>
-        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_stats</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_stats</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="k">else</span><span class="p">:</span>
@@ -1286,7 +1352,8 @@
 
     <span class="c1"># define variable_info metadata based on parameterCd if available</span>
     <span class="k">if</span> <span class="s1">&#39;parameterCd&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
-        <span class="n">md</span><span class="o">.</span><span class="n">variable_info</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">get_pmcodes</span><span class="p">(</span><span class="n">parameterCd</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;parameterCd&#39;</span><span class="p">])</span>
+        <span class="n">md</span><span class="o">.</span><span class="n">variable_info</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">get_pmcodes</span><span class="p">(</span>
+            <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;parameterCd&#39;</span><span class="p">])</span>
 
     <span class="n">comments</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>

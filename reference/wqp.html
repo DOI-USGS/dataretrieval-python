@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g37f4190 documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g0b12b48 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -122,11 +122,13 @@ user so they are aware of which are being hard-set.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.get_results">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">get_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#get_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.get_results" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">get_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#get_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.get_results" title="Permalink to this definition"></a></dt>
 <dd><p>Query the WQP for results.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
+certificate is not checked.</p></li>
 <li><p><strong>siteid</strong> (<em>string</em>) – Concatenate an agency code, a hyphen (“-“), and a site-identification
 number.</p></li>
 <li><p><strong>statecode</strong> (<em>string</em>) – Concatenate ‘US’, a colon (“:”), and a FIPS numeric code
@@ -180,11 +182,15 @@ if ‘no’. Default is ‘no’.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.what_activities">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_activities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_activities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_activities" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_activities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_activities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_activities" title="Permalink to this definition"></a></dt>
 <dd><p>Search WQP for activities within a region with specific data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
+certificate is not checked.</p></li>
+<li><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
@@ -206,11 +212,15 @@ if ‘no’. Default is ‘no’.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.what_activity_metrics">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_activity_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_activity_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_activity_metrics" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_activity_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_activity_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_activity_metrics" title="Permalink to this definition"></a></dt>
 <dd><p>Search WQP for activity metrics within a region with specific data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
+certificate is not checked.</p></li>
+<li><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
@@ -232,12 +242,16 @@ if ‘no’. Default is ‘no’.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.what_detection_limits">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_detection_limits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_detection_limits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_detection_limits" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_detection_limits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_detection_limits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_detection_limits" title="Permalink to this definition"></a></dt>
 <dd><p>Search WQP for result detection limits within a region with specific
 data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
+certificate is not checked.</p></li>
+<li><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
@@ -259,11 +273,15 @@ data.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.what_habitat_metrics">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_habitat_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_habitat_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_habitat_metrics" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_habitat_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_habitat_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_habitat_metrics" title="Permalink to this definition"></a></dt>
 <dd><p>Search WQP for habitat metrics within a region with specific data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
+certificate is not checked.</p></li>
+<li><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
@@ -283,11 +301,15 @@ data.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.what_organizations">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_organizations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_organizations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_organizations" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_organizations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_organizations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_organizations" title="Permalink to this definition"></a></dt>
 <dd><p>Search WQP for organizations within a region with specific data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
+certificate is not checked.</p></li>
+<li><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
@@ -306,11 +328,15 @@ data.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.what_project_weights">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_project_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_project_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_project_weights" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_project_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_project_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_project_weights" title="Permalink to this definition"></a></dt>
 <dd><p>Search WQP for project weights within a region with specific data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
+certificate is not checked.</p></li>
+<li><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
@@ -332,11 +358,15 @@ data.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.what_projects">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_projects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_projects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_projects" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_projects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_projects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_projects" title="Permalink to this definition"></a></dt>
 <dd><p>Search WQP for projects within a region with specific data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
+certificate is not checked.</p></li>
+<li><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
@@ -355,11 +385,15 @@ data.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.what_sites">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_sites</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_sites"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_sites" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_sites</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_sites"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_sites" title="Permalink to this definition"></a></dt>
 <dd><p>Search WQP for sites within a region with specific data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
+certificate is not checked.</p></li>
+<li><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">

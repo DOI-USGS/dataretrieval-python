@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g37f4190 documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g0b12b48 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -169,7 +169,7 @@ time zone fields.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.utils.query">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">','</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/utils.html#query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils.query" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/utils.html#query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils.query" title="Permalink to this definition"></a></dt>
 <dd><p>Send a query.</p>
 <p>Wrapper for requests.get that handles errors, converts listed
 query parameters to comma separated strings, and returns response.</p>
@@ -179,6 +179,8 @@ query parameters to comma separated strings, and returns response.</p>
 <li><p><strong>url</strong> (<em>string</em>) – URL to query</p></li>
 <li><p><strong>payload</strong> (<em>dict</em>) – query parameters passed to <code class="docutils literal notranslate"><span class="pre">requests.get</span></code></p></li>
 <li><p><strong>delimiter</strong> (<em>string</em>) – delimiter to use with lists</p></li>
+<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check SSL certificates, if False, do not check SSL,
+default is True</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
