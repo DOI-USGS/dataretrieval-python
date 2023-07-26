@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import dataretrieval
 from dataretrieval.codes import tz
-
+from dataclasses import dataclass
 
 def to_str(listlike, delimiter=','):
     """Translates list-like objects into strings.
@@ -135,7 +135,7 @@ def update_merge(left, right, na_only=False, on=None, **kwargs):
 
     return df
 
-
+@dataclass
 class Metadata:
     """Custom class for metadata.
     """
@@ -234,3 +234,6 @@ class NoSitesError(Exception):
 
     def __str__(self):
         return "No sites/data found using the selection criteria specified in url: {}".format(self.url)
+
+if __name__ == "__main__":
+    pass
