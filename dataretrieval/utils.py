@@ -235,5 +235,3 @@ class NoSitesError(Exception):
     def __str__(self):
         return "No sites/data found using the selection criteria specified in url: {}".format(self.url)
 
-if __name__ == "__main__":
-    pass
