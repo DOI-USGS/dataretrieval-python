@@ -134,7 +134,7 @@ def update_merge(left, right, na_only=False, on=None, **kwargs):
 
     return df
 
-class Metadata:
+class BaseMetadata:
     """Custom class for metadata.
     """
     
@@ -145,15 +145,14 @@ class Metadata:
         # These are built from the API response
         self.url = response.url
         self.query_time = response.elapsed
-        self.url = response.url
         self.header = response.headers
         
-        # These are set by the `nwis._set_metadata` or the `wqp.set_metadata`
+        # These are to be set by `nwis` or `wqp`-specific metadata classes
         self.site_info = None
         self.variable_info = None
         self.comment = None
 
-        # note sure what statistic_info is
+        # not sure what statistic_info is
         self.statistic_info = None
         
         # disclaimer seems to be only part of importWaterML1

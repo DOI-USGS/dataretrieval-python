@@ -10,7 +10,7 @@ See https://waterqualitydata.us/webservices_documentation for API reference
 """
 import pandas as pd
 from io import StringIO
-from .utils import query, Metadata
+from .utils import query, BaseMetadata
 import warnings
 
 
@@ -85,7 +85,7 @@ def get_results(ssl_check=True, **kwargs):
                      ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
-    return df, set_metadata(response)
+    return df, WQP_Metadata(response)
 
 
 def what_sites(ssl_check=True, **kwargs):
@@ -122,7 +122,7 @@ def what_sites(ssl_check=True, **kwargs):
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
 
-    return df, set_metadata(response)
+    return df, WQP_Metadata(response)
 
 
 def what_organizations(ssl_check=True, **kwargs):
@@ -158,7 +158,7 @@ def what_organizations(ssl_check=True, **kwargs):
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
 
-    return df, set_metadata(response)
+    return df, WQP_Metadata(response)
 
 
 def what_projects(ssl_check=True, **kwargs):
@@ -194,7 +194,7 @@ def what_projects(ssl_check=True, **kwargs):
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
 
-    return df, set_metadata(response)
+    return df, WQP_Metadata(response)
 
 
 def what_activities(ssl_check=True, **kwargs):
@@ -233,7 +233,7 @@ def what_activities(ssl_check=True, **kwargs):
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
 
-    return df, set_metadata(response)
+    return df, WQP_Metadata(response)
 
 
 def what_detection_limits(ssl_check=True, **kwargs):
@@ -273,7 +273,7 @@ def what_detection_limits(ssl_check=True, **kwargs):
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
 
-    return df, set_metadata(response)
+    return df, WQP_Metadata(response)
 
 
 def what_habitat_metrics(ssl_check=True, **kwargs):
@@ -310,7 +310,7 @@ def what_habitat_metrics(ssl_check=True, **kwargs):
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
 
-    return df, set_metadata(response)
+    return df, WQP_Metadata(response)
 
 
 def what_project_weights(ssl_check=True, **kwargs):
@@ -349,7 +349,7 @@ def what_project_weights(ssl_check=True, **kwargs):
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
 
-    return df, set_metadata(response)
+    return df, WQP_Metadata(response)
 
 
 def what_activity_metrics(ssl_check=True, **kwargs):
@@ -388,7 +388,7 @@ def what_activity_metrics(ssl_check=True, **kwargs):
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
 
-    return df, set_metadata(response)
+    return df, WQP_Metadata(response)
 
 
 def wqp_url(service):
@@ -398,18 +398,19 @@ def wqp_url(service):
     return '{}{}/Search?'.format(base_url, service)
 
 
-def set_metadata(response, **parameters):
-    """ Set metadata for WQP data.
-    """
-    md = Metadata(response)  # initialize dataretrieval metadata object
-    # populate the metadata using NWIS site information
-    if 'sites' in parameters:
-        md.site_info = lambda: what_sites(sites=parameters['sites'])
-    elif 'site' in parameters:
-        md.site_info = lambda: what_sites(sites=parameters['site'])
-    elif 'site_no' in parameters:
-        md.site_info = lambda: what_sites(sites=parameters['site_no'])
-    return md
+class WQP_Metadata(BaseMetadata):
+    def __init__(self, response, **parameters) -> None:
+        
+        # Initialize Metadata object using NWIS site information
+        super().__init__(response)
+
+        # Set specific metadata for WQP data
+        if 'sites' in parameters:
+            self.site_info = lambda: what_sites(sites=parameters['sites'])
+        elif 'site' in parameters:
+            self.site_info = lambda: what_sites(sites=parameters['site'])
+        elif 'site_no' in parameters:
+            self.site_info = lambda: what_sites(sites=parameters['site_no'])
 
 
 def _alter_kwargs(kwargs):
