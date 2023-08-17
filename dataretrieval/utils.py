@@ -6,7 +6,6 @@ import pandas as pd
 import requests
 import dataretrieval
 from dataretrieval.codes import tz
-from dataclasses import dataclass
 
 def to_str(listlike, delimiter=','):
     """Translates list-like objects into strings.
@@ -135,31 +134,30 @@ def update_merge(left, right, na_only=False, on=None, **kwargs):
 
     return df
 
-@dataclass
 class Metadata:
     """Custom class for metadata.
     """
-    url = None
-    query_time = None
-    site_info = None
-    header = None
-    variable_info = None
-    comment = None
+    
+    def __init__(self, response) -> None:
+        """Initialize Metadata object from an API response.
+        """
 
-    # note sure what statistic_info is
-    statistic_info = None
-    # disclaimer seems to be only part of importWaterML1
-    disclaimer = None
+        # These are built from the API response
+        self.url = response.url
+        self.query_time = response.elapsed
+        self.url = response.url
+        self.header = response.headers
+        
+        # These are set by the `nwis._set_metadata` function.
+        self.site_info = None
+        self.variable_info = None
+        self.comment = None
 
-
-def set_metadata(response):
-    """Function to initialize and set metadata from an API response.
-    """
-    md = Metadata()
-    md.url = response.url
-    md.query_time = response.elapsed
-    md.header = response.headers
-    return md
+        # note sure what statistic_info is
+        self.statistic_info = None
+        
+        # disclaimer seems to be only part of importWaterML1
+        self.disclaimer = None
 
 
 def query(url, payload, delimiter=',', ssl_check=True):

@@ -18,7 +18,7 @@ from io import StringIO
 import re
 
 from dataretrieval.utils import to_str, format_datetime, update_merge
-from dataretrieval.utils import set_metadata as set_md
+from dataretrieval.utils import Metadata
 from .utils import query
 
 WATERDATA_BASE_URL = 'https://nwis.waterdata.usgs.gov/'
@@ -1253,7 +1253,7 @@ def _set_metadata(response, **parameters):
         A ``dataretrieval`` custom :obj:`dataretrieval.utils.Metadata` object.
 
     """
-    md = set_md(response)
+    md = Metadata(response)
     # site_no is preferred over sites to set site_info if both are present,
     # matching behavior of the get_rating() function
     if 'site_no' in parameters:

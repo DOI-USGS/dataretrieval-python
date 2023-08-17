@@ -10,7 +10,7 @@ See https://waterqualitydata.us/webservices_documentation for API reference
 """
 import pandas as pd
 from io import StringIO
-from .utils import query, set_metadata as set_md
+from .utils import query, Metadata
 import warnings
 
 
@@ -401,7 +401,7 @@ def wqp_url(service):
 def set_metadata(response, **parameters):
     """ Set metadata for WQP data.
     """
-    md = set_md(response)  # initialize dataretrieval metadata object
+    md = Metadata(response)  # initialize dataretrieval metadata object
     # populate the metadata using NWIS site information
     if 'sites' in parameters:
         md.site_info = lambda: what_sites(sites=parameters['sites'])
