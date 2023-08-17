@@ -148,7 +148,7 @@ class Metadata:
         self.url = response.url
         self.header = response.headers
         
-        # These are set by the `nwis._set_metadata` function.
+        # These are set by the `nwis._set_metadata` or the `wqp.set_metadata`
         self.site_info = None
         self.variable_info = None
         self.comment = None
