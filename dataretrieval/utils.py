@@ -158,6 +158,10 @@ class BaseMetadata:
         # disclaimer seems to be only part of importWaterML1
         self.disclaimer = None
 
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(url={self.url})"
+        
+from dataclasses import dataclass
 
 def query(url, payload, delimiter=',', ssl_check=True):
     """Send a query.
