@@ -400,11 +400,26 @@ def wqp_url(service):
 
 class WQP_Metadata(BaseMetadata):
     def __init__(self, response, **parameters) -> None:
+        """Generates a standard set of metadata informed by the response with specific
+        metadata for WQP data.
         
-        # Initialize Metadata object using NWIS site information
+        Parameters
+        ----------
+        response: Response
+            Response object from requests module
+        
+        parameters: unpacked dictionary
+            Unpacked dictionary of the parameters supplied in the request
+
+        Returns
+        -------
+        md: :obj:`dataretrieval.wqp.WQP_Metadata`
+            A ``dataretrieval`` custom :obj:`dataretrieval.wqp.WQP_Metadata` object.
+
+        """
+        
         super().__init__(response)
 
-        # Set specific metadata for WQP data
         if 'sites' in parameters:
             self.site_info = lambda: what_sites(sites=parameters['sites'])
         elif 'site' in parameters:

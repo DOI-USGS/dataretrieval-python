@@ -1238,19 +1238,21 @@ def _read_rdb(rdb):
 
 class NWIS_Metadata(BaseMetadata):
     def __init__(self, response, **parameters) -> None:
-        """Generates a standard set of metadata informed by the response.
+        """Generates a standard set of metadata informed by the response with specific
+        metadata for NWIS data.
 
         Parameters
         ----------
         response: Response
             Response object from requests module
+        
         parameters: unpacked dictionary
             Unpacked dictionary of the parameters supplied in the request
 
         Returns
         -------
-        md: :obj:`dataretrieval.utils.Metadata`
-            A ``dataretrieval`` custom :obj:`dataretrieval.utils.Metadata` object.
+        md: :obj:`dataretrieval.nwis.NWIS_Metadata`
+            A ``dataretrieval`` custom :obj:`dataretrieval.nwis.NWIS_Metadata` object.
 
         """
         super().__init__(response)
