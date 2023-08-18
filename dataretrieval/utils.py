@@ -161,7 +161,6 @@ class BaseMetadata:
     def __repr__(self) -> str:
         return f"{type(self).__name__}(url={self.url})"
         
-from dataclasses import dataclass
 
 def query(url, payload, delimiter=',', ssl_check=True):
     """Send a query.
