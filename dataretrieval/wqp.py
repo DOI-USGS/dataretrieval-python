@@ -420,12 +420,16 @@ class WQP_Metadata(BaseMetadata):
         
         super().__init__(response)
 
-        if 'sites' in parameters:
-            self.site_info = lambda: what_sites(sites=parameters['sites'])
-        elif 'site' in parameters:
-            self.site_info = lambda: what_sites(sites=parameters['site'])
-        elif 'site_no' in parameters:
-            self.site_info = lambda: what_sites(sites=parameters['site_no'])
+        self._parameters = parameters
+
+        @property
+        def site_info(self):
+            if 'sites' in self._parameters:
+                return what_sites(sites=parameters['sites'])
+            elif 'site' in self._parameters:
+                return what_sites(sites=parameters['site'])
+            elif 'site_no' in self._parameters:
+                return what_sites(sites=parameters['site_no'])
 
 
 def _alter_kwargs(kwargs):
