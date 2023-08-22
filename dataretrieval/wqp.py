@@ -399,6 +399,22 @@ def wqp_url(service):
 
 
 class WQP_Metadata(BaseMetadata):
+    """Metadata class for WQP service, derived from BaseMetadata.
+    
+    Attributes
+    ----------
+    url : str
+        Response url
+    query_time: datetme.timedelta
+        Response elapsed time
+    header: requests.structures.CaseInsensitiveDict
+        Response headers
+    comments: None
+        Metadata comments. WQP does not return comments.
+    site_info: tuple[pd.DataFrame, NWIS_Metadata] | None
+        Site information if the query included `sites`, `site` or `site_no`.
+    """
+
     def __init__(self, response, **parameters) -> None:
         """Generates a standard set of metadata informed by the response with specific
         metadata for WQP data.
