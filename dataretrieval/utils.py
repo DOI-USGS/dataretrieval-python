@@ -135,28 +135,59 @@ def update_merge(left, right, na_only=False, on=None, **kwargs):
     return df
 
 class BaseMetadata:
-    """Custom class for metadata.
+    """Base class for metadata.
+    
+    Attributes
+    ----------
+    url : str
+        Response url
+    query_time: datetme.timedelta
+        Response elapsed time
+    header: requests.structures.CaseInsensitiveDict
+        Response headers
+    
     """
     
     def __init__(self, response) -> None:
-        """Initialize Metadata object from an API response.
+        """Generates a standard set of metadata informed by the response.
+
+        Parameters
+        ----------
+        response: Response
+            Response object from requests module
+
+        Returns
+        -------
+        md: :obj:`dataretrieval.utils.BaseMetadata`
+            A ``dataretrieval`` custom :obj:`dataretrieval.utils.BaseMetadata` object.
+
         """
 
         # These are built from the API response
         self.url = response.url
         self.query_time = response.elapsed
         self.header = response.headers
-        
-        # These are to be set by `nwis` or `wqp`-specific metadata classes
-        self.site_info = None
-        self.variable_info = None
         self.comment = None
-
-        # not sure what statistic_info is
-        self.statistic_info = None
         
-        # disclaimer seems to be only part of importWaterML1
-        self.disclaimer = None
+        # # not sure what statistic_info is
+        # self.statistic_info = None
+        
+        # # disclaimer seems to be only part of importWaterML1
+        # self.disclaimer = None
+    
+    # These properties are to be set by `nwis` or `wqp`-specific metadata classes.
+    @property
+    def site_info(self):
+        raise NotImplementedError(
+            "site_info must be implemented by utils.BaseMetadata children"
+        )
+    
+    @property
+    def variable_info(self):
+        raise NotImplementedError(
+            "variable_info must be implemented by utils.BaseMetadata children"
+        )
+
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(url={self.url})"
