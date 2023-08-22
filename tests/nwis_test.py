@@ -208,7 +208,14 @@ def test_empty_timeseries():
 
 
 class TestMetaData:
-    """Tests of NWIS metadata setting, based on GitHub Issue #73."""
+    """Tests of NWIS metadata setting, 
+
+    Notes
+    -----
+
+    - Originally based on GitHub Issue #73.
+    - Modified to site_info and variable_info as properties, not callables.
+    """
 
     def test_set_metadata_info_site(self):
         """Test metadata info is set when site parameter is supplied."""
@@ -216,21 +223,17 @@ class TestMetaData:
         response = mock.MagicMock()
         # make metadata call
         md = NWIS_Metadata(response, sites='01491000')
-        # assert that metadata info exists but don't execute lambda function
-        assert md.site_info is not None
-        # assert metadata site_info is callable
-        assert hasattr(md.site_info, '__call__')
-
+        # assert that site_info is implemented
+        assert md.site_info
+        
     def test_set_metadata_info_site_no(self):
         """Test metadata info is set when site_no parameter is supplied."""
         # mock the query response
         response = mock.MagicMock()
         # make metadata call
         md = NWIS_Metadata(response, site_no='01491000')
-        # assert that metadata info exists but don't execute lambda function
-        assert md.site_info is not None
-        # assert metadata site_info is callable
-        assert hasattr(md.site_info, '__call__')
+        # assert that site_info is implemented
+        assert md.site_info
 
     def test_set_metadata_info_stateCd(self):
         """Test metadata info is set when stateCd parameter is supplied."""
@@ -238,10 +241,8 @@ class TestMetaData:
         response = mock.MagicMock()
         # make metadata call
         md = NWIS_Metadata(response, stateCd='RI')
-        # assert that metadata info exists but don't execute lambda function
-        assert md.site_info is not None
-        # assert metadata site_info is callable
-        assert hasattr(md.site_info, '__call__')
+        # assert that site_info is implemented
+        assert md.site_info
 
     def test_set_metadata_info_huc(self):
         """Test metadata info is set when huc parameter is supplied."""
@@ -249,10 +250,8 @@ class TestMetaData:
         response = mock.MagicMock()
         # make metadata call
         md = NWIS_Metadata(response, huc='01')
-        # assert that metadata info exists but don't execute lambda function
-        assert md.site_info is not None
-        # assert metadata site_info is callable
-        assert hasattr(md.site_info, '__call__')
+        # assert that site_info is implemented
+        assert md.site_info
 
     def test_set_metadata_info_bbox(self):
         """Test metadata info is set when bbox parameter is supplied."""
@@ -260,10 +259,8 @@ class TestMetaData:
         response = mock.MagicMock()
         # make metadata call
         md = NWIS_Metadata(response, bBox='-92.8,44.2,-88.9,46.0')
-        # assert that metadata info exists but don't execute lambda function
-        assert md.site_info is not None
-        # assert metadata site_info is callable
-        assert hasattr(md.site_info, '__call__')
+        # assert that site_info is implemented
+        assert md.site_info
 
     def test_set_metadata_info_countyCd(self):
         """Test metadata info is set when countyCd parameter is supplied."""
@@ -271,7 +268,5 @@ class TestMetaData:
         response = mock.MagicMock()
         # make metadata call
         md = NWIS_Metadata(response, countyCd='01001')
-        # assert that metadata info exists but don't execute lambda function
-        assert md.site_info is not None
-        # assert metadata site_info is callable
-        assert hasattr(md.site_info, '__call__')
+        # assert that site_info is implemented
+        assert md.site_info
