@@ -1247,9 +1247,14 @@ class NWIS_Metadata(BaseMetadata):
         Response elapsed time
     header: requests.structures.CaseInsensitiveDict
         Response headers
-    site_info: tuple[pd.DataFrame, NWIS_Metadata]
-        `site_no` is preferred over `sites` if both are present.
-        # matching behavior of the get_rating() function
+    comments: str | None
+        Metadata comments, if any
+    site_info: tuple[pd.DataFrame, NWIS_Metadata] | None
+        Site information if the query included `site_no`, `sites`, `stateCd`,
+        `huc`, `countyCd` or `bBox`. `site_no` is preferred over `sites` if 
+        both are present.
+    variable_info: tuple[pd.DataFrame, NWIS_Metadata] | None
+        Variable information if the query included `parameterCd`. 
     
     """
     def __init__(self, response, **parameters) -> None:
