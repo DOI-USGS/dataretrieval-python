@@ -1237,6 +1237,21 @@ def _read_rdb(rdb):
     return df
 
 class NWIS_Metadata(BaseMetadata):
+    """Metadata class for NWIS service, derived from BaseMetadata.
+    
+    Attributes
+    ----------
+    url : str
+        Response url
+    query_time: datetme.timedelta
+        Response elapsed time
+    header: requests.structures.CaseInsensitiveDict
+        Response headers
+    site_info: tuple[pd.DataFrame, NWIS_Metadata]
+        `site_no` is preferred over `sites` if both are present.
+        # matching behavior of the get_rating() function
+    
+    """
     def __init__(self, response, **parameters) -> None:
         """Generates a standard set of metadata informed by the response with specific
         metadata for NWIS data.
@@ -1245,7 +1260,6 @@ class NWIS_Metadata(BaseMetadata):
         ----------
         response: Response
             Response object from requests module
-        
         parameters: unpacked dictionary
             Unpacked dictionary of the parameters supplied in the request
 
@@ -1257,29 +1271,6 @@ class NWIS_Metadata(BaseMetadata):
         """
         super().__init__(response)
 
-
-        # site_no is preferred over sites to set site_info if both are present,
-        # matching behavior of the get_rating() function
-        if 'site_no' in parameters:
-            self.site_info = lambda: what_sites(sites=parameters['site_no'])
-        elif 'sites' in parameters:
-            self.site_info = lambda: what_sites(sites=parameters['sites'])
-        elif 'stateCd' in parameters:
-            self.site_info = lambda: what_sites(stateCd=parameters['stateCd'])
-        elif 'huc' in parameters:
-            self.site_info = lambda: what_sites(huc=parameters['huc'])
-        elif 'countyCd' in parameters:
-            self.site_info = lambda: what_sites(countyCd=parameters['countyCd'])
-        elif 'bBox' in parameters:
-            self.site_info = lambda: what_sites(bBox=parameters['bBox'])
-        else:
-            pass  # don't set metadata site_info attribute
-
-        # define variable_info metadata based on parameterCd if available
-        if 'parameterCd' in parameters:
-            self.variable_info = lambda: get_pmcodes(
-                parameterCd=parameters['parameterCd'])
-
         comments = ""
         for line in response.text.splitlines():
             if line.startswith("#"):
@@ -1287,4 +1278,43 @@ class NWIS_Metadata(BaseMetadata):
         if comments:
             self.comment = comments
 
+        self._parameters = parameters
+
+    @property
+    def site_info(self):
+        """
+        Return
+        ------
+        df: ``pandas.DataFrame``
+            Formatted requested data from calling `nwis.what_sites`
+        md: :obj:`dataretrieval.nwis.NWIS_Metadata`
+            A NWIS_Metadata object        
+        """
+        if 'site_no' in self._parameters:
+            return what_sites(sites=self._parameters['site_no'])
+
+        elif 'sites' in self._parameters:
+            return what_sites(sites=self._parameters['sites'])
+
+        elif 'stateCd' in self._parameters:
+            return what_sites(stateCd=self._parameters['stateCd'])
+        
+        elif 'huc' in self._parameters:
+            return what_sites(huc=self._parameters['huc'])
+        
+        elif 'countyCd' in self._parameters:
+            return what_sites(countyCd=self._parameters['countyCd'])
+        
+        elif 'bBox' in self._parameters:
+            return what_sites(bBox=self._parameters['bBox'])
+        
+        else:
+            return None  # don't set metadata site_info attribute
+
+    @property
+    def variable_info(self):
+        
+        # define variable_info metadata based on parameterCd if available
+        if 'parameterCd' in self._parameters:
+            return get_pmcodes(parameterCd=self._parameters['parameterCd'])
         
