@@ -271,7 +271,7 @@ def assert_metadata(requests_mock, request_url, md, site, parameter_cd, format):
         site_request_url = "https://waterservices.usgs.gov/nwis/site?sites={}&format=rdb".format(site)
         with open('data/waterservices_site.txt') as text:
             requests_mock.get(site_request_url, text=text.read())
-        site_info, _ = md.site_info()
+        site_info, _ = md.site_info
         assert type(site_info) is DataFrame
     if parameter_cd is None:
         assert md.variable_info is None
@@ -280,7 +280,7 @@ def assert_metadata(requests_mock, request_url, md, site, parameter_cd, format):
             pcode_request_url = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?fmt=rdb&parm_nm_cd=%25{}%25".format(param)
             with open('data/waterdata_pmcodes.txt') as text:
                 requests_mock.get(pcode_request_url, text=text.read())
-        variable_info, _ = md.variable_info()
+        variable_info, _ = md.variable_info
         assert type(variable_info) is DataFrame
 
     if format == "rdb":
