@@ -7,7 +7,6 @@ import requests
 import dataretrieval
 from dataretrieval.codes import tz
 
-
 def to_str(listlike, delimiter=','):
     """Translates list-like objects into strings.
 
@@ -135,32 +134,64 @@ def update_merge(left, right, na_only=False, on=None, **kwargs):
 
     return df
 
-
-class Metadata:
-    """Custom class for metadata.
+class BaseMetadata:
+    """Base class for metadata.
+    
+    Attributes
+    ----------
+    url : str
+        Response url
+    query_time: datetme.timedelta
+        Response elapsed time
+    header: requests.structures.CaseInsensitiveDict
+        Response headers
+    
     """
-    url = None
-    query_time = None
-    site_info = None
-    header = None
-    variable_info = None
-    comment = None
+    
+    def __init__(self, response) -> None:
+        """Generates a standard set of metadata informed by the response.
 
-    # note sure what statistic_info is
-    statistic_info = None
-    # disclaimer seems to be only part of importWaterML1
-    disclaimer = None
+        Parameters
+        ----------
+        response: Response
+            Response object from requests module
+
+        Returns
+        -------
+        md: :obj:`dataretrieval.utils.BaseMetadata`
+            A ``dataretrieval`` custom :obj:`dataretrieval.utils.BaseMetadata` object.
+
+        """
+
+        # These are built from the API response
+        self.url = response.url
+        self.query_time = response.elapsed
+        self.header = response.headers
+        self.comment = None
+        
+        # # not sure what statistic_info is
+        # self.statistic_info = None
+        
+        # # disclaimer seems to be only part of importWaterML1
+        # self.disclaimer = None
+    
+    # These properties are to be set by `nwis` or `wqp`-specific metadata classes.
+    @property
+    def site_info(self):
+        raise NotImplementedError(
+            "site_info must be implemented by utils.BaseMetadata children"
+        )
+    
+    @property
+    def variable_info(self):
+        raise NotImplementedError(
+            "variable_info must be implemented by utils.BaseMetadata children"
+        )
 
 
-def set_metadata(response):
-    """Function to initialize and set metadata from an API response.
-    """
-    md = Metadata()
-    md.url = response.url
-    md.query_time = response.elapsed
-    md.header = response.headers
-    return md
-
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(url={self.url})"
+        
 
 def query(url, payload, delimiter=',', ssl_check=True):
     """Send a query.
@@ -234,3 +265,4 @@ class NoSitesError(Exception):
 
     def __str__(self):
         return "No sites/data found using the selection criteria specified in url: {}".format(self.url)
+

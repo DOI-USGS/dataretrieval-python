@@ -18,7 +18,7 @@ from io import StringIO
 import re
 
 from dataretrieval.utils import to_str, format_datetime, update_merge
-from dataretrieval.utils import set_metadata as set_md
+from dataretrieval.utils import BaseMetadata
 from .utils import query
 
 WATERDATA_BASE_URL = 'https://nwis.waterdata.usgs.gov/'
@@ -211,7 +211,7 @@ def _qwdata(datetime_index=True, ssl_check=True, **kwargs):
         df = format_datetime(df, 'sample_dt', 'sample_tm',
                              'sample_start_time_datum_cd')
 
-    return format_response(df, **kwargs), _set_metadata(response, **kwargs)
+    return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
 
 def get_discharge_measurements(sites=None, start=None, end=None,
@@ -267,7 +267,7 @@ def get_discharge_measurements(sites=None, start=None, end=None,
 def _discharge_measurements(ssl_check=True, **kwargs):
     response = query_waterdata('measurements', format='rdb',
                                ssl_check=ssl_check, **kwargs)
-    return _read_rdb(response.text), _set_metadata(response, **kwargs)
+    return _read_rdb(response.text), NWIS_Metadata(response, **kwargs)
 
 
 def get_discharge_peaks(sites=None, start=None, end=None,
@@ -328,7 +328,7 @@ def _discharge_peaks(ssl_check=True, **kwargs):
 
     df = _read_rdb(response.text)
 
-    return format_response(df, service='peaks', **kwargs), _set_metadata(
+    return format_response(df, service='peaks', **kwargs), NWIS_Metadata(
         response, **kwargs)
 
 
@@ -388,7 +388,7 @@ def _gwlevels(datetime_index=True, ssl_check=True, **kwargs):
     if datetime_index == True:
         df = format_datetime(df, 'lev_dt', 'lev_tm', 'lev_tz_cd')
 
-    return format_response(df, **kwargs), _set_metadata(response, **kwargs)
+    return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
 
 def get_stats(sites, ssl_check=True, **kwargs):
@@ -443,7 +443,7 @@ def get_stats(sites, ssl_check=True, **kwargs):
     response = query_waterservices('stat', sites=sites,
                                    ssl_check=ssl_check, **kwargs)
 
-    return _read_rdb(response.text), _set_metadata(response, **kwargs)
+    return _read_rdb(response.text), NWIS_Metadata(response, **kwargs)
 
 
 def query_waterdata(service, ssl_check=True, **kwargs):
@@ -585,7 +585,7 @@ def _dv(ssl_check=True, **kwargs):
                                    ssl_check=ssl_check, **kwargs)
     df = _read_json(response.json())
 
-    return format_response(df, **kwargs), _set_metadata(response, **kwargs)
+    return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
 
 def get_info(ssl_check=True, **kwargs):
@@ -691,7 +691,7 @@ def get_info(ssl_check=True, **kwargs):
 
     response = query_waterservices('site', ssl_check=ssl_check, **kwargs)
 
-    return _read_rdb(response.text), _set_metadata(response, **kwargs)
+    return _read_rdb(response.text), NWIS_Metadata(response, **kwargs)
 
 
 def get_iv(sites=None, start=None, end=None, multi_index=True,
@@ -743,7 +743,7 @@ def _iv(ssl_check=True, **kwargs):
     response = query_waterservices('iv', format='json',
                                    ssl_check=ssl_check, **kwargs)
     df = _read_json(response.json())
-    return format_response(df, **kwargs), _set_metadata(response, **kwargs)
+    return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
 
 def get_pmcodes(parameterCd='All', partial=True, ssl_check=True):
@@ -792,7 +792,7 @@ def get_pmcodes(parameterCd='All', partial=True, ssl_check=True):
             payload.update({'group_cd': '%'})
             url = ALLPARAMCODES_URL
             response = query(url, payload, ssl_check=ssl_check)
-            return _read_rdb(response.text), _set_metadata(response)
+            return _read_rdb(response.text), NWIS_Metadata(response)
 
         else:
             parameterCd = [parameterCd]
@@ -814,7 +814,7 @@ def get_pmcodes(parameterCd='All', partial=True, ssl_check=True):
             l.append(_read_rdb(response.text))
         else:
             raise TypeError('Parameter information (code or name) must be type string')
-    return pd.concat(l), _set_metadata(response)
+    return pd.concat(l), NWIS_Metadata(response)
 
 
 def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL",
@@ -874,7 +874,7 @@ def get_water_use(years="ALL", state=None, counties="ALL", categories="ALL",
         url = WATERDATA_BASE_URL + state + "/nwis/water_use"
         payload.update({"wu_area": "county"})
     response = query(url, payload, ssl_check=ssl_check)
-    return _read_rdb(response.text), _set_metadata(response)
+    return _read_rdb(response.text), NWIS_Metadata(response)
 
 
 def get_ratings(site=None, file_type="base", ssl_check=True, **kwargs):
@@ -932,7 +932,7 @@ def _ratings(site, file_type, ssl_check=True):
             raise ValueError('Unrecognized file_type: {}, must be "base", "corr" or "exsa"'.format(file_type))
         payload.update({"file_type" : file_type})
     response = query(url, payload, ssl_check=ssl_check)
-    return _read_rdb(response.text), _set_metadata(response, site_no=site)
+    return _read_rdb(response.text), NWIS_Metadata(response, site_no=site)
 
 
 def what_sites(ssl_check=True, **kwargs):
@@ -965,7 +965,7 @@ def what_sites(ssl_check=True, **kwargs):
 
     df = _read_rdb(response.text)
 
-    return df, _set_metadata(response, **kwargs)
+    return df, NWIS_Metadata(response, **kwargs)
 
 
 def get_record(sites=None, start=None, end=None,
@@ -1236,51 +1236,90 @@ def _read_rdb(rdb):
     df = format_response(df)
     return df
 
-
-def _set_metadata(response, **parameters):
-    """Generates a standard set of metadata informed by the response.
-
-    Parameters
+class NWIS_Metadata(BaseMetadata):
+    """Metadata class for NWIS service, derived from BaseMetadata.
+    
+    Attributes
     ----------
-    response: Response
-        Response object from requests module
-    parameters: unpacked dictionary
-        Unpacked dictionary of the parameters supplied in the request
-
-    Returns
-    -------
-    md: :obj:`dataretrieval.utils.Metadata`
-        A ``dataretrieval`` custom :obj:`dataretrieval.utils.Metadata` object.
-
+    url : str
+        Response url
+    query_time: datetme.timedelta
+        Response elapsed time
+    header: requests.structures.CaseInsensitiveDict
+        Response headers
+    comments: str | None
+        Metadata comments, if any
+    site_info: tuple[pd.DataFrame, NWIS_Metadata] | None
+        Site information if the query included `site_no`, `sites`, `stateCd`,
+        `huc`, `countyCd` or `bBox`. `site_no` is preferred over `sites` if 
+        both are present.
+    variable_info: tuple[pd.DataFrame, NWIS_Metadata] | None
+        Variable information if the query included `parameterCd`. 
+    
     """
-    md = set_md(response)
-    # site_no is preferred over sites to set site_info if both are present,
-    # matching behavior of the get_rating() function
-    if 'site_no' in parameters:
-        md.site_info = lambda: what_sites(sites=parameters['site_no'])
-    elif 'sites' in parameters:
-        md.site_info = lambda: what_sites(sites=parameters['sites'])
-    elif 'stateCd' in parameters:
-        md.site_info = lambda: what_sites(stateCd=parameters['stateCd'])
-    elif 'huc' in parameters:
-        md.site_info = lambda: what_sites(huc=parameters['huc'])
-    elif 'countyCd' in parameters:
-        md.site_info = lambda: what_sites(countyCd=parameters['countyCd'])
-    elif 'bBox' in parameters:
-        md.site_info = lambda: what_sites(bBox=parameters['bBox'])
-    else:
-        pass  # don't set metadata site_info attribute
+    def __init__(self, response, **parameters) -> None:
+        """Generates a standard set of metadata informed by the response with specific
+        metadata for NWIS data.
 
-    # define variable_info metadata based on parameterCd if available
-    if 'parameterCd' in parameters:
-        md.variable_info = lambda: get_pmcodes(
-            parameterCd=parameters['parameterCd'])
+        Parameters
+        ----------
+        response: Response
+            Response object from requests module
+        parameters: unpacked dictionary
+            Unpacked dictionary of the parameters supplied in the request
 
-    comments = ""
-    for line in response.text.splitlines():
-        if line.startswith("#"):
-            comments += line.lstrip("#") + "\n"
-    if comments != "":
-        md.comment = comments
+        Returns
+        -------
+        md: :obj:`dataretrieval.nwis.NWIS_Metadata`
+            A ``dataretrieval`` custom :obj:`dataretrieval.nwis.NWIS_Metadata` object.
 
-    return md
+        """
+        super().__init__(response)
+
+        comments = ""
+        for line in response.text.splitlines():
+            if line.startswith("#"):
+                comments += line.lstrip("#") + "\n"
+        if comments:
+            self.comment = comments
+
+        self._parameters = parameters
+
+    @property
+    def site_info(self):
+        """
+        Return
+        ------
+        df: ``pandas.DataFrame``
+            Formatted requested data from calling `nwis.what_sites`
+        md: :obj:`dataretrieval.nwis.NWIS_Metadata`
+            A NWIS_Metadata object        
+        """
+        if 'site_no' in self._parameters:
+            return what_sites(sites=self._parameters['site_no'])
+
+        elif 'sites' in self._parameters:
+            return what_sites(sites=self._parameters['sites'])
+
+        elif 'stateCd' in self._parameters:
+            return what_sites(stateCd=self._parameters['stateCd'])
+        
+        elif 'huc' in self._parameters:
+            return what_sites(huc=self._parameters['huc'])
+        
+        elif 'countyCd' in self._parameters:
+            return what_sites(countyCd=self._parameters['countyCd'])
+        
+        elif 'bBox' in self._parameters:
+            return what_sites(bBox=self._parameters['bBox'])
+        
+        else:
+            return None  # don't set metadata site_info attribute
+
+    @property
+    def variable_info(self):
+        
+        # define variable_info metadata based on parameterCd if available
+        if 'parameterCd' in self._parameters:
+            return get_pmcodes(parameterCd=self._parameters['parameterCd'])
+        
