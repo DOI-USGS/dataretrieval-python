@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package what_sites() Examples &mdash; dataretrieval 0.1.dev1+gdab0f51 documentation</title>
+  <title>USGS dataretrieval Python Package what_sites() Examples &mdash; dataretrieval 0.1.dev1+g6b6ad6a documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/nbsphinx-code-cells.css" type="text/css" />
@@ -12,11 +12,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=32b81ded"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -110,10 +110,10 @@
            <div itemprop="articleBody">
              
   <section id="USGS-dataretrieval-Python-Package-what_sites()-Examples">
-<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-what_sites()-Examples" title="Permalink to this heading"></a></h1>
+<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-what_sites()-Examples" title="Link to this heading"></a></h1>
 <p>This notebook provides examples of using the Python dataretrieval package to search NWIS for sites within a region with specific data. The dataretrieval package provides a collection of functions to get data from the USGS National Water Information System (NWIS) and other online sources of hydrology and water quality data, including the United States Environmental Protection Agency (USEPA).</p>
 <section id="Install-the-Package">
-<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Permalink to this heading"></a></h2>
+<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Link to this heading"></a></h2>
 <p>Use the following code to install the package if it doesn’t exist already within your Jupyter Python environment.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
@@ -129,13 +129,13 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+gdab0f51)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+g6b6ad6a)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.25.1)
 Requirement already satisfied: pandas in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.0.3)
 Requirement already satisfied: python-dateutil&gt;=2.8.2 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2.8.2)
 Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas-&gt;dataretrieval) (2022.1)
 Requirement already satisfied: tzdata&gt;=2022.1 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2023.3)
-Requirement already satisfied: numpy&gt;=1.21.0 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (1.25.1)
+Requirement already satisfied: numpy&gt;=1.21.0 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (1.25.2)
 Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.2-&gt;pandas-&gt;dataretrieval) (1.16.0)
 </pre></div></div>
 </div>
@@ -151,11 +151,11 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
 </div>
 </section>
 <section id="Basic-Usage">
-<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Permalink to this heading"></a></h2>
+<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Link to this heading"></a></h2>
 <p>The dataretrieval package has several functions that allow you to retrieve data from different web services. This examples uses the <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> function to search NWIS for sites within a region with specific data. The function has several arguments, depending on the result you want to retrieve.</p>
 <p>Note: Must specify one major argument.</p>
 <section id="Major-Arguments-(Additional-arguments,-if-supplied,-will-be-used-as-query-parameters)">
-<h3>Major Arguments (Additional arguments, if supplied, will be used as query parameters)<a class="headerlink" href="#Major-Arguments-(Additional-arguments,-if-supplied,-will-be-used-as-query-parameters)" title="Permalink to this heading"></a></h3>
+<h3>Major Arguments (Additional arguments, if supplied, will be used as query parameters)<a class="headerlink" href="#Major-Arguments-(Additional-arguments,-if-supplied,-will-be-used-as-query-parameters)" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>sites</strong> (string or list): A list of site numbers. Sites may be prefixed with an optional agency code followed by a colon.</p></li>
 <li><p><strong>stateCd</strong> (string): U.S. postal service (2-digit) state code. Only 1 state can be specified per request.</p></li>
@@ -165,7 +165,7 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
 </ul>
 </section>
 <section id="Minor-Arguments">
-<h3>Minor Arguments<a class="headerlink" href="#Minor-Arguments" title="Permalink to this heading"></a></h3>
+<h3>Minor Arguments<a class="headerlink" href="#Minor-Arguments" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>startDt</strong> (string): Selects sites based on whether data was collected at a point in time beginning after startDt (start date). Dates must be in ISO-8601 Calendar Date format (for example: 1990-01-01).</p></li>
 <li><p><strong>endDt</strong> (string)</p></li>
@@ -176,7 +176,7 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
 </ul>
 </section>
 <section id="Formatting-Parameters">
-<h3>Formatting Parameters<a class="headerlink" href="#Formatting-Parameters" title="Permalink to this heading"></a></h3>
+<h3>Formatting Parameters<a class="headerlink" href="#Formatting-Parameters" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>siteOutput</strong> (string ‘basic’ or ‘expanded’): Indicates the richness of metadata you want for site attributes. Note that for visually oriented formats like Google Map format, this argument has no meaning. Note: for performance reasons, siteOutput=’expanded’ cannot be used if seriesCatalogOutput=true or with any values for outputDataTypeCd.</p></li>
 <li><p><strong>seriesCatalogOutput</strong> (boolean): A switch that provides detailed period of record information for certain output formats. The period of record indicates date ranges for a certain kind of information about a site, for example the start and end dates for a site’s daily mean streamflow.</p></li>
@@ -184,7 +184,7 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
 <p>For additional parameter options see <a class="reference external" href="https://waterservices.usgs.gov/rest/Site-Service.html#stateCd">https://waterservices.usgs.gov/rest/Site-Service.html#stateCd</a></p>
 </section>
 <section id="Example-1:-Retrieve-information-about-sites-in-Ohio-where-phosphorus-data-was-collected">
-<h3>Example 1: Retrieve information about sites in Ohio where phosphorus data was collected<a class="headerlink" href="#Example-1:-Retrieve-information-about-sites-in-Ohio-where-phosphorus-data-was-collected" title="Permalink to this heading"></a></h3>
+<h3>Example 1: Retrieve information about sites in Ohio where phosphorus data was collected<a class="headerlink" href="#Example-1:-Retrieve-information-about-sites-in-Ohio-where-phosphorus-data-was-collected" title="Link to this heading"></a></h3>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
@@ -196,7 +196,7 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
 </section>
 </section>
 <section id="Interpreting-the-Result">
-<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Permalink to this heading"></a></h2>
+<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Link to this heading"></a></h2>
 <p>The result of calling the <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> function is an object that contains a Pandas data frame object and an associated metadata object. The Pandas data frame contains the requestes site inventory data.</p>
 <p>Once you’ve got the data frame, there’s several useful things you can do to explore the data.</p>
 <div class="nbinput docutils container">
@@ -434,9 +434,9 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
 </div>
 </section>
 <section id="Additional-Examples">
-<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Permalink to this heading"></a></h2>
+<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Link to this heading"></a></h2>
 <section id="Example-2:-Retrieve-site-information-for-a-single-site">
-<h3>Example 2: Retrieve site information for a single site<a class="headerlink" href="#Example-2:-Retrieve-site-information-for-a-single-site" title="Permalink to this heading"></a></h3>
+<h3>Example 2: Retrieve site information for a single site<a class="headerlink" href="#Example-2:-Retrieve-site-information-for-a-single-site" title="Link to this heading"></a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
@@ -504,7 +504,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
 </div>
 </section>
 <section id="Example-3:-Retrieve-site-information-for-a-single-site-and-show-the-result-with-expanded-output">
-<h3>Example 3: Retrieve site information for a single site and show the result with expanded output<a class="headerlink" href="#Example-3:-Retrieve-site-information-for-a-single-site-and-show-the-result-with-expanded-output" title="Permalink to this heading"></a></h3>
+<h3>Example 3: Retrieve site information for a single site and show the result with expanded output<a class="headerlink" href="#Example-3:-Retrieve-site-information-for-a-single-site-and-show-the-result-with-expanded-output" title="Link to this heading"></a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
@@ -591,7 +591,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
 </div>
 </section>
 <section id="Example-4:-Retrieve-site-information-for-sites-in-Utah-with-daily-values-data-falling-within-a-specified-date-range">
-<h3>Example 4: Retrieve site information for sites in Utah with daily values data falling within a specified date range<a class="headerlink" href="#Example-4:-Retrieve-site-information-for-sites-in-Utah-with-daily-values-data-falling-within-a-specified-date-range" title="Permalink to this heading"></a></h3>
+<h3>Example 4: Retrieve site information for sites in Utah with daily values data falling within a specified date range<a class="headerlink" href="#Example-4:-Retrieve-site-information-for-sites-in-Utah-with-daily-values-data-falling-within-a-specified-date-range" title="Link to this heading"></a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
@@ -692,8 +692,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>1645597</td>
       <td>0</td>
       <td>2006-07-18</td>
-      <td>2023-07-14</td>
-      <td>6135</td>
+      <td>2023-08-25</td>
+      <td>6177</td>
     </tr>
     <tr>
       <th>2</th>
@@ -716,8 +716,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>1645597</td>
       <td>0</td>
       <td>2006-07-19</td>
-      <td>2023-07-14</td>
-      <td>6118</td>
+      <td>2023-08-25</td>
+      <td>6160</td>
     </tr>
     <tr>
       <th>3</th>
@@ -740,8 +740,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>1645597</td>
       <td>0</td>
       <td>2006-07-19</td>
-      <td>2023-07-13</td>
-      <td>6112</td>
+      <td>2023-08-24</td>
+      <td>6154</td>
     </tr>
     <tr>
       <th>4</th>
@@ -792,7 +792,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>...</td>
     </tr>
     <tr>
-      <th>1225</th>
+      <th>1226</th>
       <td>USGS</td>
       <td>414411112543701</td>
       <td>(B-12- 9)30cda- 1</td>
@@ -812,11 +812,11 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>1642008</td>
       <td>0</td>
       <td>1975-10-05</td>
-      <td>2023-06-26</td>
-      <td>8645</td>
+      <td>2023-07-31</td>
+      <td>8680</td>
     </tr>
     <tr>
-      <th>1226</th>
+      <th>1227</th>
       <td>USGS</td>
       <td>414500112000000</td>
       <td>COM FLOW BEAR AREA GSL INFLOW GROUP 1</td>
@@ -840,7 +840,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>7303</td>
     </tr>
     <tr>
-      <th>1227</th>
+      <th>1228</th>
       <td>USGS</td>
       <td>414500112000100</td>
       <td>COM FLOW BEAR AREA GSL INFLOW GROUP 2</td>
@@ -864,7 +864,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>6207</td>
     </tr>
     <tr>
-      <th>1228</th>
+      <th>1229</th>
       <td>USGS</td>
       <td>414500112000200</td>
       <td>COM FLOW BEAR AREA GSL INFLOW GROUP 3</td>
@@ -888,7 +888,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>6573</td>
     </tr>
     <tr>
-      <th>1229</th>
+      <th>1230</th>
       <td>USGS</td>
       <td>415703112514501</td>
       <td>(B-14- 9) 9add- 1</td>
@@ -908,17 +908,17 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>1642008</td>
       <td>0</td>
       <td>1981-07-21</td>
-      <td>2023-06-26</td>
-      <td>14483</td>
+      <td>2023-07-31</td>
+      <td>14497</td>
     </tr>
   </tbody>
 </table>
-<p>1230 rows × 24 columns</p>
+<p>1231 rows × 24 columns</p>
 </div></div>
 </div>
 </section>
 <section id="Example-5:-Retrieve-site-information-for-a-single-site-and-show-the-series-catalog-output">
-<h3>Example 5: Retrieve site information for a single site and show the series catalog output<a class="headerlink" href="#Example-5:-Retrieve-site-information-for-a-single-site-and-show-the-series-catalog-output" title="Permalink to this heading"></a></h3>
+<h3>Example 5: Retrieve site information for a single site and show the series catalog output<a class="headerlink" href="#Example-5:-Retrieve-site-information-for-a-single-site-and-show-the-series-catalog-output" title="Link to this heading"></a></h3>
 <p>The series catalog output is a list of the parameters that have been collected at that site</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
@@ -1020,8 +1020,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>1645597</td>
       <td>0</td>
       <td>1983-08-11</td>
-      <td>2023-07-13</td>
-      <td>5812</td>
+      <td>2023-08-24</td>
+      <td>5854</td>
     </tr>
     <tr>
       <th>2</th>
@@ -1044,8 +1044,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>1645597</td>
       <td>0</td>
       <td>1983-08-11</td>
-      <td>2023-07-13</td>
-      <td>5812</td>
+      <td>2023-08-24</td>
+      <td>5854</td>
     </tr>
     <tr>
       <th>3</th>
@@ -1068,8 +1068,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>1645597</td>
       <td>0</td>
       <td>1983-08-11</td>
-      <td>2023-07-13</td>
-      <td>5812</td>
+      <td>2023-08-24</td>
+      <td>5854</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1140,8 +1140,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>1645423</td>
       <td>0</td>
       <td>1994-10-01</td>
-      <td>2023-07-14</td>
-      <td>10513</td>
+      <td>2023-08-25</td>
+      <td>10555</td>
     </tr>
     <tr>
       <th>403</th>
@@ -1164,8 +1164,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>17164583</td>
       <td>0</td>
       <td>2007-10-01</td>
-      <td>2023-07-14</td>
-      <td>5765</td>
+      <td>2023-08-25</td>
+      <td>5807</td>
     </tr>
     <tr>
       <th>404</th>
@@ -1188,8 +1188,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>1646694</td>
       <td>0</td>
       <td>2019-05-15</td>
-      <td>2023-07-14</td>
-      <td>1521</td>
+      <td>2023-08-25</td>
+      <td>1563</td>
     </tr>
     <tr>
       <th>405</th>
@@ -1212,8 +1212,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>154302</td>
       <td>0</td>
       <td>2019-05-15</td>
-      <td>2023-07-14</td>
-      <td>1521</td>
+      <td>2023-08-25</td>
+      <td>1563</td>
     </tr>
     <tr>
       <th>406</th>
@@ -1236,8 +1236,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>1642503</td>
       <td>0</td>
       <td>2023-01-01</td>
-      <td>2023-07-14</td>
-      <td>194</td>
+      <td>2023-08-25</td>
+      <td>236</td>
     </tr>
   </tbody>
 </table>

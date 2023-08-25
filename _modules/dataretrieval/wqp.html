@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+gdab0f51 documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g6b6ad6a documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=32b81ded"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -89,11 +89,13 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">query</span><span class="p">,</span> <span class="n">set_metadata</span> <span class="k">as</span> <span class="n">set_md</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">query</span><span class="p">,</span> <span class="n">BaseMetadata</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 
 
-<div class="viewcode-block" id="get_results"><a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.get_results">[docs]</a><span class="k">def</span> <span class="nf">get_results</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="get_results">
+<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.get_results">[docs]</a>
+<span class="k">def</span> <span class="nf">get_results</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Query the WQP for results.</span>
 
 <span class="sd">    Parameters</span>
@@ -164,10 +166,13 @@
                      <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="what_sites"><a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_sites">[docs]</a><span class="k">def</span> <span class="nf">what_sites</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="what_sites">
+<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_sites">[docs]</a>
+<span class="k">def</span> <span class="nf">what_sites</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for sites within a region with specific data.</span>
 
 <span class="sd">    Parameters</span>
@@ -201,10 +206,13 @@
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="what_organizations"><a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_organizations">[docs]</a><span class="k">def</span> <span class="nf">what_organizations</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="what_organizations">
+<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_organizations">[docs]</a>
+<span class="k">def</span> <span class="nf">what_organizations</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for organizations within a region with specific data.</span>
 
 <span class="sd">    Parameters</span>
@@ -237,10 +245,13 @@
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="what_projects"><a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_projects">[docs]</a><span class="k">def</span> <span class="nf">what_projects</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="what_projects">
+<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_projects">[docs]</a>
+<span class="k">def</span> <span class="nf">what_projects</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for projects within a region with specific data.</span>
 
 <span class="sd">    Parameters</span>
@@ -273,10 +284,13 @@
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="what_activities"><a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_activities">[docs]</a><span class="k">def</span> <span class="nf">what_activities</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="what_activities">
+<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_activities">[docs]</a>
+<span class="k">def</span> <span class="nf">what_activities</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for activities within a region with specific data.</span>
 
 <span class="sd">    Parameters</span>
@@ -312,10 +326,13 @@
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="what_detection_limits"><a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_detection_limits">[docs]</a><span class="k">def</span> <span class="nf">what_detection_limits</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="what_detection_limits">
+<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_detection_limits">[docs]</a>
+<span class="k">def</span> <span class="nf">what_detection_limits</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for result detection limits within a region with specific</span>
 <span class="sd">    data.</span>
 
@@ -352,10 +369,13 @@
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="what_habitat_metrics"><a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_habitat_metrics">[docs]</a><span class="k">def</span> <span class="nf">what_habitat_metrics</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="what_habitat_metrics">
+<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_habitat_metrics">[docs]</a>
+<span class="k">def</span> <span class="nf">what_habitat_metrics</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for habitat metrics within a region with specific data.</span>
 
 <span class="sd">    Parameters</span>
@@ -389,10 +409,13 @@
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="what_project_weights"><a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_project_weights">[docs]</a><span class="k">def</span> <span class="nf">what_project_weights</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="what_project_weights">
+<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_project_weights">[docs]</a>
+<span class="k">def</span> <span class="nf">what_project_weights</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for project weights within a region with specific data.</span>
 
 <span class="sd">    Parameters</span>
@@ -428,10 +451,13 @@
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="what_activity_metrics"><a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_activity_metrics">[docs]</a><span class="k">def</span> <span class="nf">what_activity_metrics</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="what_activity_metrics">
+<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_activity_metrics">[docs]</a>
+<span class="k">def</span> <span class="nf">what_activity_metrics</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for activity metrics within a region with specific data.</span>
 
 <span class="sd">    Parameters</span>
@@ -467,31 +493,79 @@
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="wqp_url"><a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.wqp_url">[docs]</a><span class="k">def</span> <span class="nf">wqp_url</span><span class="p">(</span><span class="n">service</span><span class="p">):</span>
+
+<div class="viewcode-block" id="wqp_url">
+<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.wqp_url">[docs]</a>
+<span class="k">def</span> <span class="nf">wqp_url</span><span class="p">(</span><span class="n">service</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct the WQP URL for a given service.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">base_url</span> <span class="o">=</span> <span class="s1">&#39;https://www.waterqualitydata.us/data/&#39;</span>
     <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}{}</span><span class="s1">/Search?&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_url</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="set_metadata"><a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.set_metadata">[docs]</a><span class="k">def</span> <span class="nf">set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Set metadata for WQP data.</span>
+
+<div class="viewcode-block" id="WQP_Metadata">
+<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.WQP_Metadata">[docs]</a>
+<span class="k">class</span> <span class="nc">WQP_Metadata</span><span class="p">(</span><span class="n">BaseMetadata</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Metadata class for WQP service, derived from BaseMetadata.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    url : str</span>
+<span class="sd">        Response url</span>
+<span class="sd">    query_time: datetme.timedelta</span>
+<span class="sd">        Response elapsed time</span>
+<span class="sd">    header: requests.structures.CaseInsensitiveDict</span>
+<span class="sd">        Response headers</span>
+<span class="sd">    comments: None</span>
+<span class="sd">        Metadata comments. WQP does not return comments.</span>
+<span class="sd">    site_info: tuple[pd.DataFrame, NWIS_Metadata] | None</span>
+<span class="sd">        Site information if the query included `sites`, `site` or `site_no`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">md</span> <span class="o">=</span> <span class="n">set_md</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>  <span class="c1"># initialize dataretrieval metadata object</span>
-    <span class="c1"># populate the metadata using NWIS site information</span>
-    <span class="k">if</span> <span class="s1">&#39;sites&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
-        <span class="n">md</span><span class="o">.</span><span class="n">site_info</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;sites&#39;</span><span class="p">])</span>
-    <span class="k">elif</span> <span class="s1">&#39;site&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
-        <span class="n">md</span><span class="o">.</span><span class="n">site_info</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">])</span>
-    <span class="k">elif</span> <span class="s1">&#39;site_no&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
-        <span class="n">md</span><span class="o">.</span><span class="n">site_info</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;site_no&#39;</span><span class="p">])</span>
-    <span class="k">return</span> <span class="n">md</span></div>
+
+<div class="viewcode-block" id="WQP_Metadata.__init__">
+<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.WQP_Metadata.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a standard set of metadata informed by the response with specific</span>
+<span class="sd">        metadata for WQP data.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        response: Response</span>
+<span class="sd">            Response object from requests module</span>
+<span class="sd">        </span>
+<span class="sd">        parameters: unpacked dictionary</span>
+<span class="sd">            Unpacked dictionary of the parameters supplied in the request</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        md: :obj:`dataretrieval.wqp.WQP_Metadata`</span>
+<span class="sd">            A ``dataretrieval`` custom :obj:`dataretrieval.wqp.WQP_Metadata` object.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span> <span class="o">=</span> <span class="n">parameters</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">site_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s1">&#39;sites&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;sites&#39;</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="s1">&#39;site&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="s1">&#39;site_no&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;site_no&#39;</span><span class="p">])</span></div>
+</div>
 
 
-<div class="viewcode-block" id="_alter_kwargs"><a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp._alter_kwargs">[docs]</a><span class="k">def</span> <span class="nf">_alter_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="_alter_kwargs">
+<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp._alter_kwargs">[docs]</a>
+<span class="k">def</span> <span class="nf">_alter_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Private function to manipulate **kwargs.</span>
 
 <span class="sd">    Not all query parameters are currently supported by ``dataretrieval``,</span>
@@ -508,6 +582,7 @@
     <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;mimeType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;csv&#39;</span>
 
     <span class="k">return</span> <span class="n">kwargs</span></div>
+
 </pre></div>
 
            </div>

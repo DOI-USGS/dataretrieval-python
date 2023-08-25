@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nadp &mdash; dataretrieval 0.1.dev1+gdab0f51 documentation</title>
+  <title>dataretrieval.nadp &mdash; dataretrieval 0.1.dev1+g6b6ad6a documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=32b81ded"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -126,22 +126,33 @@
 <span class="n">NTN_MEAS_TYPE</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;conc&#39;</span><span class="p">,</span> <span class="s1">&#39;dep&#39;</span><span class="p">,</span> <span class="s1">&#39;precip&#39;</span><span class="p">]</span>  <span class="c1"># concentration or deposition</span>
 
 
-<div class="viewcode-block" id="NADP_ZipFile"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.NADP_ZipFile">[docs]</a><span class="k">class</span> <span class="nc">NADP_ZipFile</span><span class="p">(</span><span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">):</span>
+<div class="viewcode-block" id="NADP_ZipFile">
+<a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.NADP_ZipFile">[docs]</a>
+<span class="k">class</span> <span class="nc">NADP_ZipFile</span><span class="p">(</span><span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extend zipfile.ZipFile for working on data from NADP</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="NADP_ZipFile.tif_name"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.NADP_ZipFile.tif_name">[docs]</a>    <span class="k">def</span> <span class="nf">tif_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="NADP_ZipFile.tif_name">
+<a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.NADP_ZipFile.tif_name">[docs]</a>
+    <span class="k">def</span> <span class="nf">tif_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the name of the tif file in the zip file.&quot;&quot;&quot;</span>
         <span class="n">filenames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">namelist</span><span class="p">()</span>
         <span class="n">r</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;.*tif$&quot;</span><span class="p">)</span>
         <span class="n">tif_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">match</span><span class="p">,</span> <span class="n">filenames</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">tif_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="NADP_ZipFile.tif"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.NADP_ZipFile.tif">[docs]</a>    <span class="k">def</span> <span class="nf">tif</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="NADP_ZipFile.tif">
+<a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.NADP_ZipFile.tif">[docs]</a>
+    <span class="k">def</span> <span class="nf">tif</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the tif file in the zip file.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tif_name</span><span class="p">())</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tif_name</span><span class="p">())</span></div>
+</div>
 
 
-<div class="viewcode-block" id="get_annual_MDN_map"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.get_annual_MDN_map">[docs]</a><span class="k">def</span> <span class="nf">get_annual_MDN_map</span><span class="p">(</span><span class="n">measurement_type</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+
+<div class="viewcode-block" id="get_annual_MDN_map">
+<a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.get_annual_MDN_map">[docs]</a>
+<span class="k">def</span> <span class="nf">get_annual_MDN_map</span><span class="p">(</span><span class="n">measurement_type</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Download a MDN map from NDAP.</span>
 
 <span class="sd">    This function looks for a zip file containing gridded information at:</span>
@@ -187,7 +198,10 @@
     <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span></div>
 
 
-<div class="viewcode-block" id="get_annual_NTN_map"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.get_annual_NTN_map">[docs]</a><span class="k">def</span> <span class="nf">get_annual_NTN_map</span><span class="p">(</span><span class="n">measurement_type</span><span class="p">,</span> <span class="n">measurement</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+
+<div class="viewcode-block" id="get_annual_NTN_map">
+<a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.get_annual_NTN_map">[docs]</a>
+<span class="k">def</span> <span class="nf">get_annual_NTN_map</span><span class="p">(</span><span class="n">measurement_type</span><span class="p">,</span> <span class="n">measurement</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                        <span class="n">path</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Download a NTN map from NDAP.</span>
 
@@ -243,7 +257,10 @@
     <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span></div>
 
 
-<div class="viewcode-block" id="get_zip"><a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.get_zip">[docs]</a><span class="k">def</span> <span class="nf">get_zip</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+
+<div class="viewcode-block" id="get_zip">
+<a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.get_zip">[docs]</a>
+<span class="k">def</span> <span class="nf">get_zip</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets a ZipFile at url and returns it</span>
 
 <span class="sd">    Parameters</span>
@@ -269,6 +286,7 @@
     <span class="c1"># z = zipfile.ZipFile(io.BytesIO(req.content))</span>
     <span class="n">z</span> <span class="o">=</span> <span class="n">NADP_ZipFile</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">content</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">z</span></div>
+
 </pre></div>
 
            </div>

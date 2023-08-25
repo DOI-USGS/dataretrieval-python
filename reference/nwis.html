@@ -4,18 +4,18 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+gdab0f51 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g6b6ad6a documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=32b81ded"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -55,9 +55,19 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">API reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="nadp.html">dataretrieval.nadp</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.nwis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata.url"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata.query_time"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.query_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata.header"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.header</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata.comments"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.comments</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata.site_info"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.site_info</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata.variable_info"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.variable_info</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata.__init__"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.site_info</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._read_json"><code class="docutils literal notranslate"><span class="pre">_read_json()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._read_rdb"><code class="docutils literal notranslate"><span class="pre">_read_rdb()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._set_metadata"><code class="docutils literal notranslate"><span class="pre">_set_metadata()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis.format_response"><code class="docutils literal notranslate"><span class="pre">format_response()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis.get_discharge_measurements"><code class="docutils literal notranslate"><span class="pre">get_discharge_measurements()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis.get_discharge_peaks"><code class="docutils literal notranslate"><span class="pre">get_discharge_peaks()</span></code></a></li>
@@ -110,9 +120,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-dataretrieval.nwis">
-<span id="dataretrieval-nwis"></span><h1>dataretrieval.nwis<a class="headerlink" href="#module-dataretrieval.nwis" title="Permalink to this heading"></a></h1>
-<p>Functions for downloading data from the <a class="reference external" href="https://waterdata.usgs.gov/nwis">National Water Information System (NWIS)</a>.</p>
+  <section id="dataretrieval-nwis">
+<h1>dataretrieval.nwis<a class="headerlink" href="#dataretrieval-nwis" title="Link to this heading"></a></h1>
+<p id="module-dataretrieval.nwis">Functions for downloading data from the <a class="reference external" href="https://waterdata.usgs.gov/nwis">National Water Information System (NWIS)</a>.</p>
 <div class="admonition-todo admonition" id="id1">
 <p class="admonition-title">Todo</p>
 <ul class="simple">
@@ -121,9 +131,118 @@
 <li><p>Check that all timezones are handled properly for each service.</p></li>
 </ul>
 </div>
+<dl class="py class">
+<dt class="sig sig-object py" id="dataretrieval.nwis.NWIS_Metadata">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">NWIS_Metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">response</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#NWIS_Metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.NWIS_Metadata" title="Link to this definition"></a></dt>
+<dd><p>Metadata class for NWIS service, derived from BaseMetadata.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dataretrieval.nwis.NWIS_Metadata.url">
+<span class="sig-name descname"><span class="pre">url</span></span><a class="headerlink" href="#dataretrieval.nwis.NWIS_Metadata.url" title="Link to this definition"></a></dt>
+<dd><p>Response url</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dataretrieval.nwis.NWIS_Metadata.query_time">
+<span class="sig-name descname"><span class="pre">query_time</span></span><a class="headerlink" href="#dataretrieval.nwis.NWIS_Metadata.query_time" title="Link to this definition"></a></dt>
+<dd><p>Response elapsed time</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>datetme.timedelta</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dataretrieval.nwis.NWIS_Metadata.header">
+<span class="sig-name descname"><span class="pre">header</span></span><a class="headerlink" href="#dataretrieval.nwis.NWIS_Metadata.header" title="Link to this definition"></a></dt>
+<dd><p>Response headers</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>requests.structures.CaseInsensitiveDict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dataretrieval.nwis.NWIS_Metadata.comments">
+<span class="sig-name descname"><span class="pre">comments</span></span><a class="headerlink" href="#dataretrieval.nwis.NWIS_Metadata.comments" title="Link to this definition"></a></dt>
+<dd><p>Metadata comments, if any</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dataretrieval.nwis.NWIS_Metadata.site_info">
+<span class="sig-name descname"><span class="pre">site_info</span></span><a class="headerlink" href="#dataretrieval.nwis.NWIS_Metadata.site_info" title="Link to this definition"></a></dt>
+<dd><p>Site information if the query included <cite>site_no</cite>, <cite>sites</cite>, <cite>stateCd</cite>,
+<cite>huc</cite>, <cite>countyCd</cite> or <cite>bBox</cite>. <cite>site_no</cite> is preferred over <cite>sites</cite> if
+both are present.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[pd.DataFrame, <a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata">NWIS_Metadata</a>] | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dataretrieval.nwis.NWIS_Metadata.variable_info">
+<span class="sig-name descname"><span class="pre">variable_info</span></span><a class="headerlink" href="#dataretrieval.nwis.NWIS_Metadata.variable_info" title="Link to this definition"></a></dt>
+<dd><p>Variable information if the query included <cite>parameterCd</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[pd.DataFrame, <a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata">NWIS_Metadata</a>] | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.nwis.NWIS_Metadata.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">response</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#NWIS_Metadata.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.NWIS_Metadata.__init__" title="Link to this definition"></a></dt>
+<dd><p>Generates a standard set of metadata informed by the response with specific
+metadata for NWIS data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>response</strong> (<em>Response</em>) – Response object from requests module</p></li>
+<li><p><strong>parameters</strong> (<em>unpacked dictionary</em>) – Unpacked dictionary of the parameters supplied in the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>md</strong> – A <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> custom <a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.nwis.NWIS_Metadata</span></code></a> object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.nwis.NWIS_Metadata</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id0">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">site_info</span></span><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted requested data from calling <cite>nwis.what_sites</cite></p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.nwis.NWIS_Metadata</span></code></a>) – A NWIS_Metadata object</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis._read_json">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_read_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_read_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._read_json" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_read_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_read_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._read_json" title="Link to this definition"></a></dt>
 <dd><p>Reads a NWIS Water Services formatted JSON into a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -132,7 +251,7 @@
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
-<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
 </ul>
 </p>
 </dd>
@@ -141,7 +260,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis._read_rdb">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_read_rdb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rdb</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_read_rdb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._read_rdb" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_read_rdb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rdb</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_read_rdb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._read_rdb" title="Link to this definition"></a></dt>
 <dd><p>Convert NWIS rdb table into a <code class="docutils literal notranslate"><span class="pre">pandas.dataframe</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -157,28 +276,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="dataretrieval.nwis._set_metadata">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_set_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">response</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_set_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._set_metadata" title="Permalink to this definition"></a></dt>
-<dd><p>Generates a standard set of metadata informed by the response.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>response</strong> (<em>Response</em>) – Response object from requests module</p></li>
-<li><p><strong>parameters</strong> (<em>unpacked dictionary</em>) – Unpacked dictionary of the parameters supplied in the request</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>md</strong> – A <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> custom <a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a> object.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.format_response">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">format_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#format_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.format_response" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">format_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#format_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.format_response" title="Link to this definition"></a></dt>
 <dd><p>Setup index for response from query.</p>
 <p>This function formats the response from the NWIS web services, in
 particular it sets the index of the data frame. This function tries to
@@ -204,7 +303,7 @@ service returns a different format than the other services.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_discharge_measurements">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_discharge_measurements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_discharge_measurements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_discharge_measurements" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_discharge_measurements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_discharge_measurements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_discharge_measurements" title="Link to this definition"></a></dt>
 <dd><p>Get discharge measurements from the waterdata service.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -223,7 +322,7 @@ default is True</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
-<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
 </ul>
 </p>
 </dd>
@@ -242,7 +341,7 @@ default is True</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_discharge_peaks">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_discharge_peaks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_discharge_peaks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_discharge_peaks" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_discharge_peaks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_discharge_peaks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_discharge_peaks" title="Link to this definition"></a></dt>
 <dd><p>Get discharge peaks from the waterdata service.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -262,7 +361,7 @@ default is True</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
-<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
 </ul>
 </p>
 </dd>
@@ -281,7 +380,7 @@ default is True</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_dv">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_dv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_dv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_dv" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_dv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_dv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_dv" title="Link to this definition"></a></dt>
 <dd><p>Get daily values data from NWIS and return it as a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -300,7 +399,7 @@ default is True</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
-<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
 </ul>
 </p>
 </dd>
@@ -319,7 +418,7 @@ default is True</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_gwlevels">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_gwlevels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'1851-01-01'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datetime_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_gwlevels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_gwlevels" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_gwlevels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'1851-01-01'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datetime_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_gwlevels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_gwlevels" title="Link to this definition"></a></dt>
 <dd><p>Queries the groundwater level service from waterservices</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -338,7 +437,7 @@ default is True</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
-<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
 </ul>
 </p>
 </dd>
@@ -352,7 +451,7 @@ default is True</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_info">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_info" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_info" title="Link to this definition"></a></dt>
 <dd><p>Get site description information from NWIS.</p>
 <p><strong>Note:</strong> <em>Must specify one major parameter.</em></p>
 <p>For additional parameter options see
@@ -409,7 +508,7 @@ end dates for a site’s daily mean streamflow.</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Site data from the NWIS web service</p></li>
-<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
 </ul>
 </p>
 </dd>
@@ -427,7 +526,7 @@ end dates for a site’s daily mean streamflow.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_iv">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_iv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_iv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_iv" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_iv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_iv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_iv" title="Link to this definition"></a></dt>
 <dd><p>Get instantaneous values data from NWIS and return it as a DataFrame.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -448,7 +547,7 @@ default is True</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
-<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
 </ul>
 </p>
 </dd>
@@ -464,7 +563,7 @@ default is True</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_pmcodes">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_pmcodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameterCd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'All'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_pmcodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_pmcodes" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_pmcodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameterCd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'All'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_pmcodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_pmcodes" title="Link to this definition"></a></dt>
 <dd><p>Return a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> containing all NWIS parameter codes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -479,7 +578,7 @@ default is True</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Data retrieved from the NWIS web service.</p></li>
-<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
 </ul>
 </p>
 </dd>
@@ -498,7 +597,7 @@ default is True</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_qwdata">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_qwdata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wide_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datetime_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_qwdata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_qwdata" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_qwdata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wide_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datetime_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_qwdata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_qwdata" title="Link to this definition"></a></dt>
 <dd><p>Get water sample data from qwdata service.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -529,7 +628,7 @@ default is True</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
-<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
 </ul>
 </p>
 </dd>
@@ -544,7 +643,7 @@ default is True</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_ratings">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_ratings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">site</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'base'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_ratings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_ratings" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_ratings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">site</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'base'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_ratings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_ratings" title="Link to this definition"></a></dt>
 <dd><p>Rating table for an active USGS streamgage retrieval.</p>
 <p>Reads current rating table for an active USGS streamgage from NWISweb.
 Data is retrieved from <a class="reference external" href="https://waterdata.usgs.gov/nwis">https://waterdata.usgs.gov/nwis</a>.</p>
@@ -565,7 +664,7 @@ default is True</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted requested data</p></li>
-<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
 </ul>
 </p>
 </dd>
@@ -579,7 +678,7 @@ default is True</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_record">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wide_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datetime_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_record" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wide_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datetime_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_record" title="Link to this definition"></a></dt>
 <dd><p>Get data from NWIS and return it as a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -664,7 +763,7 @@ default is True</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_stats">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_stats" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_stats" title="Link to this definition"></a></dt>
 <dd><p>Queries water services statistics information.</p>
 <p>For more information about the water services statistics service, visit
 <a class="reference external" href="https://waterservices.usgs.gov/rest/Statistics-Service.html">https://waterservices.usgs.gov/rest/Statistics-Service.html</a></p>
@@ -685,7 +784,7 @@ query parameters</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Statistics data from the statistics service</p></li>
-<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
 <li><p><em>.. todo::</em> – fix date parsing</p></li>
 </ul>
 </p>
@@ -705,7 +804,7 @@ query parameters</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_water_use">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_water_use</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">years</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counties</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_water_use"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_water_use" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_water_use</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">years</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counties</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_water_use"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_water_use" title="Link to this definition"></a></dt>
 <dd><p>Water use data retrieval from USGS (NWIS).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -723,7 +822,7 @@ default is True</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Data from NWIS</p></li>
-<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.Metadata" title="dataretrieval.utils.Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code></a>) – A custom metadata object</p></li>
+<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
 </ul>
 </p>
 </dd>
@@ -747,7 +846,7 @@ default is True</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.preformat_peaks_response">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">preformat_peaks_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#preformat_peaks_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.preformat_peaks_response" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">preformat_peaks_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#preformat_peaks_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.preformat_peaks_response" title="Link to this definition"></a></dt>
 <dd><p>Datetime formatting for the ‘peaks’ service response.</p>
 <p>Function to format the datetime column of the ‘peaks’ service response.</p>
 <dl class="field-list simple">
@@ -765,13 +864,13 @@ default is True</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.query_waterdata">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">query_waterdata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#query_waterdata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.query_waterdata" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">query_waterdata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#query_waterdata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.query_waterdata" title="Link to this definition"></a></dt>
 <dd><p>Queries waterdata.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.query_waterservices">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">query_waterservices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#query_waterservices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.query_waterservices" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">query_waterservices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#query_waterservices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.query_waterservices" title="Link to this definition"></a></dt>
 <dd><p>Queries waterservices.usgs.gov</p>
 <p>For more documentation see <a class="reference external" href="https://waterservices.usgs.gov/rest/">https://waterservices.usgs.gov/rest/</a></p>
 <div class="admonition note">
@@ -807,7 +906,7 @@ default is True</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.what_sites">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">what_sites</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#what_sites"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.what_sites" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">what_sites</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#what_sites"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.what_sites" title="Link to this definition"></a></dt>
 <dd><p>Search NWIS for sites within a region with specific data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>

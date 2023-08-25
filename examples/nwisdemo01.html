@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>National trends in peak annual streamflow &mdash; dataretrieval 0.1.dev1+gdab0f51 documentation</title>
+  <title>National trends in peak annual streamflow &mdash; dataretrieval 0.1.dev1+g6b6ad6a documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/nbsphinx-code-cells.css" type="text/css" />
@@ -12,11 +12,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=32b81ded"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -101,13 +101,13 @@
            <div itemprop="articleBody">
              
   <section id="National-trends-in-peak-annual-streamflow">
-<h1>National trends in peak annual streamflow<a class="headerlink" href="#National-trends-in-peak-annual-streamflow" title="Permalink to this heading"></a></h1>
+<h1>National trends in peak annual streamflow<a class="headerlink" href="#National-trends-in-peak-annual-streamflow" title="Link to this heading"></a></h1>
 <section id="Introduction">
-<h2>Introduction<a class="headerlink" href="#Introduction" title="Permalink to this heading"></a></h2>
+<h2>Introduction<a class="headerlink" href="#Introduction" title="Link to this heading"></a></h2>
 <p>This notebook demonstrates a slightly more advanced application of data_retrieval.nwis to collect using a national dataset of historical peak annual streamflow measurements. The objective is to use a regression of peak annual streamflow and time to identify any trends. But, not for a singile station,</p>
 </section>
 <section id="Setup">
-<h2>Setup<a class="headerlink" href="#Setup" title="Permalink to this heading"></a></h2>
+<h2>Setup<a class="headerlink" href="#Setup" title="Link to this heading"></a></h2>
 <p>Before we begin any analysis, we’ll need to setup our environment by importing any modules.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
@@ -125,7 +125,7 @@
 </div>
 </section>
 <section id="Basic-usage">
-<h2>Basic usage<a class="headerlink" href="#Basic-usage" title="Permalink to this heading"></a></h2>
+<h2>Basic usage<a class="headerlink" href="#Basic-usage" title="Link to this heading"></a></h2>
 <p>Recall that the basic way to download data from NWIS is through through the <code class="docutils literal notranslate"><span class="pre">nwis.get_record()</span></code> function, which returns a user-specified record as a <code class="docutils literal notranslate"><span class="pre">pandas</span></code> dataframe. The <code class="docutils literal notranslate"><span class="pre">nwis.get_record()</span></code> function is really a facade of sorts, that allows the user to download data from various NWIS services through a consistant interface. To get started, we require a few simple parameters: a list of site numbers or states codes, a service, and a start date.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
@@ -276,7 +276,7 @@
 <p>Note that when multiple sites are specified, <code class="docutils literal notranslate"><span class="pre">nwis.get_record()</span></code> will combine <code class="docutils literal notranslate"><span class="pre">datetime</span></code> and <code class="docutils literal notranslate"><span class="pre">site_no</span></code> fields to create a multi-index dataframe.</p>
 </section>
 <section id="Preparing-the-regression">
-<h2>Preparing the regression<a class="headerlink" href="#Preparing-the-regression" title="Permalink to this heading"></a></h2>
+<h2>Preparing the regression<a class="headerlink" href="#Preparing-the-regression" title="Link to this heading"></a></h2>
 <p>Next we’ll define a function that applies ordinary least squares on peak discharge and time. After grouping the dataset by <code class="docutils literal notranslate"><span class="pre">site_no</span></code>, we will apply the regression on a per-site basis. The results from each site, will be returned as a row that includes the slope, y-intercept, r<span class="math notranslate nohighlight">\(^2\)</span>, p value, and standard error of the regression.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
@@ -305,7 +305,7 @@
 </div>
 </section>
 <section id="Preparing-the-analysis">
-<h2>Preparing the analysis<a class="headerlink" href="#Preparing-the-analysis" title="Permalink to this heading"></a></h2>
+<h2>Preparing the analysis<a class="headerlink" href="#Preparing-the-analysis" title="Link to this heading"></a></h2>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
@@ -519,7 +519,7 @@
 </section>
 </section>
 <section id="Plotting-the-results">
-<h1>Plotting the results<a class="headerlink" href="#Plotting-the-results" title="Permalink to this heading"></a></h1>
+<h1>Plotting the results<a class="headerlink" href="#Plotting-the-results" title="Link to this heading"></a></h1>
 <p>Finally we’ll use <code class="docutils literal notranslate"><span class="pre">basemap</span></code> and <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>, along with the location information from NWIS, to plot the results on a map (shown below). Stations with increasing peak annual discharge are shown in red; whereas, stations with decreasing peaks are blue.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:

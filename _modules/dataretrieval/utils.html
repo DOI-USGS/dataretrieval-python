@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+gdab0f51 documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g6b6ad6a documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=32b81ded"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -86,8 +86,9 @@
 <span class="kn">import</span> <span class="nn">dataretrieval</span>
 <span class="kn">from</span> <span class="nn">dataretrieval.codes</span> <span class="kn">import</span> <span class="n">tz</span>
 
-
-<div class="viewcode-block" id="to_str"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.to_str">[docs]</a><span class="k">def</span> <span class="nf">to_str</span><span class="p">(</span><span class="n">listlike</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="to_str">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.to_str">[docs]</a>
+<span class="k">def</span> <span class="nf">to_str</span><span class="p">(</span><span class="n">listlike</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Translates list-like objects into strings.</span>
 
 <span class="sd">    Parameters</span>
@@ -128,7 +129,10 @@
         <span class="k">return</span> <span class="n">listlike</span></div>
 
 
-<div class="viewcode-block" id="format_datetime"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.format_datetime">[docs]</a><span class="k">def</span> <span class="nf">format_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">date_field</span><span class="p">,</span> <span class="n">time_field</span><span class="p">,</span> <span class="n">tz_field</span><span class="p">):</span>
+
+<div class="viewcode-block" id="format_datetime">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.format_datetime">[docs]</a>
+<span class="k">def</span> <span class="nf">format_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">date_field</span><span class="p">,</span> <span class="n">time_field</span><span class="p">,</span> <span class="n">tz_field</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a datetime field from separate date, time, and</span>
 <span class="sd">    time zone fields.</span>
 
@@ -170,8 +174,11 @@
     <span class="k">return</span> <span class="n">df</span></div>
 
 
+
 <span class="c1">#This function may be deprecated once pandas.update support joins besides left.</span>
-<div class="viewcode-block" id="update_merge"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.update_merge">[docs]</a><span class="k">def</span> <span class="nf">update_merge</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">na_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="update_merge">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.update_merge">[docs]</a>
+<span class="k">def</span> <span class="nf">update_merge</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">na_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs a combination update and merge.</span>
 
 <span class="sd">    Parameters</span>
@@ -215,33 +222,77 @@
     <span class="k">return</span> <span class="n">df</span></div>
 
 
-<div class="viewcode-block" id="Metadata"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.Metadata">[docs]</a><span class="k">class</span> <span class="nc">Metadata</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom class for metadata.</span>
+<div class="viewcode-block" id="BaseMetadata">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.BaseMetadata">[docs]</a>
+<span class="k">class</span> <span class="nc">BaseMetadata</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for metadata.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    url : str</span>
+<span class="sd">        Response url</span>
+<span class="sd">    query_time: datetme.timedelta</span>
+<span class="sd">        Response elapsed time</span>
+<span class="sd">    header: requests.structures.CaseInsensitiveDict</span>
+<span class="sd">        Response headers</span>
+<span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">query_time</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">site_info</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">header</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">variable_info</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">comment</span> <span class="o">=</span> <span class="kc">None</span>
+    
+<div class="viewcode-block" id="BaseMetadata.__init__">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.BaseMetadata.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a standard set of metadata informed by the response.</span>
 
-    <span class="c1"># note sure what statistic_info is</span>
-    <span class="n">statistic_info</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="c1"># disclaimer seems to be only part of importWaterML1</span>
-    <span class="n">disclaimer</span> <span class="o">=</span> <span class="kc">None</span></div>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        response: Response</span>
+<span class="sd">            Response object from requests module</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        md: :obj:`dataretrieval.utils.BaseMetadata`</span>
+<span class="sd">            A ``dataretrieval`` custom :obj:`dataretrieval.utils.BaseMetadata` object.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># These are built from the API response</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_time</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">elapsed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+        
+        <span class="c1"># # not sure what statistic_info is</span>
+        <span class="c1"># self.statistic_info = None</span>
+        
+        <span class="c1"># # disclaimer seems to be only part of importWaterML1</span>
+        <span class="c1"># self.disclaimer = None</span>
+    
+    <span class="c1"># These properties are to be set by `nwis` or `wqp`-specific metadata classes.</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">site_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">&quot;site_info must be implemented by utils.BaseMetadata children&quot;</span>
+        <span class="p">)</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">variable_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">&quot;variable_info must be implemented by utils.BaseMetadata children&quot;</span>
+        <span class="p">)</span>
 
 
-<div class="viewcode-block" id="set_metadata"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.set_metadata">[docs]</a><span class="k">def</span> <span class="nf">set_metadata</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Function to initialize and set metadata from an API response.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">md</span> <span class="o">=</span> <span class="n">Metadata</span><span class="p">()</span>
-    <span class="n">md</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">url</span>
-    <span class="n">md</span><span class="o">.</span><span class="n">query_time</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">elapsed</span>
-    <span class="n">md</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span>
-    <span class="k">return</span> <span class="n">md</span></div>
+<div class="viewcode-block" id="BaseMetadata.__repr__">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.BaseMetadata.__repr__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(url=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+</div>
 
+        
 
-<div class="viewcode-block" id="query"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.query">[docs]</a><span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="query">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.query">[docs]</a>
+<span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Send a query.</span>
 
 <span class="sd">    Wrapper for requests.get that handles errors, converts listed</span>
@@ -305,14 +356,25 @@
     <span class="k">return</span> <span class="n">response</span></div>
 
 
-<div class="viewcode-block" id="NoSitesError"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError">[docs]</a><span class="k">class</span> <span class="nc">NoSitesError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+
+<div class="viewcode-block" id="NoSitesError">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError">[docs]</a>
+<span class="k">class</span> <span class="nc">NoSitesError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom error class used when selection criteria returns no sites/data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="NoSitesError.__init__"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+<div class="viewcode-block" id="NoSitesError.__init__">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span></div>
 
-<div class="viewcode-block" id="NoSitesError.__str__"><a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError.__str__">[docs]</a>    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;No sites/data found using the selection criteria specified in url: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="NoSitesError.__str__">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError.__str__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;No sites/data found using the selection criteria specified in url: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span></div>
+</div>
+
+
 </pre></div>
 
            </div>

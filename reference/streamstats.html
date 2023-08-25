@@ -4,18 +4,18 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+gdab0f51 documentation</title>
+  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+g6b6ad6a documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=32b81ded"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -99,28 +99,28 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-dataretrieval.streamstats">
-<span id="dataretrieval-streamstats"></span><h1>dataretrieval.streamstats<a class="headerlink" href="#module-dataretrieval.streamstats" title="Permalink to this heading"></a></h1>
-<p>This module is a wrapper for the streamstats API (<a class="reference external" href="https://streamstats.usgs.gov/streamstatsservices/#/">streamstats documentation</a>).</p>
+  <section id="dataretrieval-streamstats">
+<h1>dataretrieval.streamstats<a class="headerlink" href="#dataretrieval-streamstats" title="Link to this heading"></a></h1>
+<p id="module-dataretrieval.streamstats">This module is a wrapper for the streamstats API (<a class="reference external" href="https://streamstats.usgs.gov/streamstatsservices/#/">streamstats documentation</a>).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="dataretrieval.streamstats.Watershed">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dataretrieval.streamstats.</span></span><span class="sig-name descname"><span class="pre">Watershed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rcode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlocation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylocation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#Watershed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.Watershed" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dataretrieval.streamstats.</span></span><span class="sig-name descname"><span class="pre">Watershed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rcode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlocation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylocation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#Watershed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.Watershed" title="Link to this definition"></a></dt>
 <dd><p>Class to extract information from the streamstats JSON object.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dataretrieval.streamstats.Watershed.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rcode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlocation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylocation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#Watershed.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.Watershed.__init__" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rcode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlocation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylocation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#Watershed.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.Watershed.__init__" title="Link to this definition"></a></dt>
 <dd><p>Init method that calls the <a class="reference internal" href="#dataretrieval.streamstats.Watershed.from_streamstats_json" title="dataretrieval.streamstats.Watershed.from_streamstats_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_streamstats_json</span></code></a> method.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dataretrieval.streamstats.Watershed.__weakref__">
-<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#dataretrieval.streamstats.Watershed.__weakref__" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#dataretrieval.streamstats.Watershed.__weakref__" title="Link to this definition"></a></dt>
 <dd><p>list of weak references to the object (if defined)</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dataretrieval.streamstats.Watershed.from_streamstats_json">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_streamstats_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">streamstats_json</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#Watershed.from_streamstats_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.Watershed.from_streamstats_json" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_streamstats_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">streamstats_json</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#Watershed.from_streamstats_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.Watershed.from_streamstats_json" title="Link to this definition"></a></dt>
 <dd><p>Method that creates a Watershed object from a streamstats JSON.</p>
 </dd></dl>
 
@@ -128,7 +128,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.streamstats.download_workspace">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.streamstats.</span></span><span class="sig-name descname"><span class="pre">download_workspace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workspaceID</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#download_workspace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.download_workspace" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.streamstats.</span></span><span class="sig-name descname"><span class="pre">download_workspace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workspaceID</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#download_workspace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.download_workspace" title="Link to this definition"></a></dt>
 <dd><p>Function to download streamstats workspace.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -150,7 +150,7 @@ geodatabase or shape files.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.streamstats.get_sample_watershed">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.streamstats.</span></span><span class="sig-name descname"><span class="pre">get_sample_watershed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#get_sample_watershed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.get_sample_watershed" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.streamstats.</span></span><span class="sig-name descname"><span class="pre">get_sample_watershed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#get_sample_watershed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.get_sample_watershed" title="Link to this definition"></a></dt>
 <dd><p>Sample function to get a watershed object for a location in NY.</p>
 <p>Makes the function call <a class="reference internal" href="#dataretrieval.streamstats.get_watershed" title="dataretrieval.streamstats.get_watershed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.streamstats.get_watershed</span></code></a>
 with the parameters ‘NY’, -74.524, 43.939, and returns the watershed
@@ -168,7 +168,7 @@ from the streamstats JSON object.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.streamstats.get_watershed">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.streamstats.</span></span><span class="sig-name descname"><span class="pre">get_watershed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rcode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlocation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylocation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4326</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">includeparameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">includeflowtypes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">includefeatures</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simplify</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'geojson'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#get_watershed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.get_watershed" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.streamstats.</span></span><span class="sig-name descname"><span class="pre">get_watershed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rcode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlocation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylocation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4326</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">includeparameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">includeflowtypes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">includefeatures</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simplify</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'geojson'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#get_watershed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.get_watershed" title="Link to this definition"></a></dt>
 <dd><p>Get watershed object based on location</p>
 <p><strong>Streamstats documentation:</strong>
 Returns a watershed object. The request configuration will determine the

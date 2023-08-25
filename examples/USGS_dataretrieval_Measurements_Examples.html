@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_discharge_measurements() Examples &mdash; dataretrieval 0.1.dev1+gdab0f51 documentation</title>
+  <title>USGS dataretrieval Python Package get_discharge_measurements() Examples &mdash; dataretrieval 0.1.dev1+g6b6ad6a documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/nbsphinx-code-cells.css" type="text/css" />
@@ -12,11 +12,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=32b81ded"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -110,10 +110,10 @@
            <div itemprop="articleBody">
              
   <section id="USGS-dataretrieval-Python-Package-get_discharge_measurements()-Examples">
-<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_discharge_measurements()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-get_discharge_measurements()-Examples" title="Permalink to this heading"></a></h1>
+<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_discharge_measurements()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-get_discharge_measurements()-Examples" title="Link to this heading"></a></h1>
 <p>This notebook provides examples of using the Python dataretrieval package to retrieve surface water discharge measurement data for a United States Geological Survey (USGS) monitoring site. The dataretrieval package provides a collection of functions to get data from the USGS National Water Information System (NWIS) and other online sources of hydrology and water quality data, including the United States Environmental Protection Agency (USEPA).</p>
 <section id="Install-the-Package">
-<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Permalink to this heading"></a></h2>
+<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Link to this heading"></a></h2>
 <p>Use the following code to install the package if it doesn’t exist already within your Jupyter Python environment.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
@@ -129,13 +129,13 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+gdab0f51)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+g6b6ad6a)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.25.1)
 Requirement already satisfied: pandas in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.0.3)
 Requirement already satisfied: python-dateutil&gt;=2.8.2 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2.8.2)
 Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas-&gt;dataretrieval) (2022.1)
 Requirement already satisfied: tzdata&gt;=2022.1 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2023.3)
-Requirement already satisfied: numpy&gt;=1.21.0 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (1.25.1)
+Requirement already satisfied: numpy&gt;=1.21.0 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (1.25.2)
 Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.2-&gt;pandas-&gt;dataretrieval) (1.16.0)
 </pre></div></div>
 </div>
@@ -151,7 +151,7 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
 </div>
 </section>
 <section id="Basic-Usage">
-<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Permalink to this heading"></a></h2>
+<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Link to this heading"></a></h2>
 <p>The dataretrieval package has several functions that allow you to retrieve data from different web services. This examples uses the <code class="docutils literal notranslate"><span class="pre">get_discharge_measurements()</span></code> function to retrieve surface water discharge measurements for a USGS monitoring site from NWIS. The function has the following arguments:</p>
 <p>Arguments (Additional arguments, if supplied, will be used as query parameters)</p>
 <ul class="simple">
@@ -174,12 +174,12 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 932 data values.
+Retrieved 933 data values.
 </pre></div></div>
 </div>
 </section>
 <section id="Interpreting-the-Result">
-<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Permalink to this heading"></a></h2>
+<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Link to this heading"></a></h2>
 <p>The result of calling the <code class="docutils literal notranslate"><span class="pre">get_discharge_measurements()</span></code> function is an object that contains a Pandas data frame object and an associated metadata object. The Pandas data frame contains the discharge measurements for the time period requested.</p>
 <p>Once you’ve got the data frame, there’s several useful things you can do to explore the data.</p>
 <p>Display the data frame as a table</p>
@@ -340,24 +340,6 @@ Retrieved 932 data values.
       <td>...</td>
     </tr>
     <tr>
-      <th>927</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1077</td>
-      <td>2023-05-02 16:52:07</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>EHQM</td>
-      <td>USGS</td>
-      <td>3.85</td>
-      <td>585.0</td>
-      <td>Fair</td>
-      <td>0.00</td>
-      <td>0.3</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
       <th>928</th>
       <td>USGS</td>
       <td>10109000</td>
@@ -429,9 +411,27 @@ Retrieved 932 data values.
       <td>Clear</td>
       <td>NONE</td>
     </tr>
+    <tr>
+      <th>932</th>
+      <td>USGS</td>
+      <td>10109000</td>
+      <td>1082</td>
+      <td>2023-08-02 09:07:07</td>
+      <td>MDT</td>
+      <td>Yes</td>
+      <td>EHQM</td>
+      <td>USGS</td>
+      <td>3.06</td>
+      <td>255.0</td>
+      <td>Good</td>
+      <td>0.00</td>
+      <td>0.2</td>
+      <td>Clear</td>
+      <td>NONE</td>
+    </tr>
   </tbody>
 </table>
-<p>932 rows × 15 columns</p>
+<p>933 rows × 15 columns</p>
 </div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
@@ -485,7 +485,7 @@ The query URL used to retrieve the data from NWIS was: https://nwis.waterdata.us
 </div>
 </section>
 <section id="Additional-Examples">
-<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Permalink to this heading"></a></h2>
+<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Link to this heading"></a></h2>
 <p>Example 2: Get all of the surface water measurements between a start and end date</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
@@ -727,7 +727,7 @@ Retrieved 9 data values.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 474 data values.
+Retrieved 475 data values.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -879,7 +879,7 @@ Retrieved 474 data values.
       <td>...</td>
     </tr>
     <tr>
-      <th>469</th>
+      <th>470</th>
       <td>USGS</td>
       <td>040851325</td>
       <td>93</td>
@@ -897,7 +897,7 @@ Retrieved 474 data values.
       <td>NONE</td>
     </tr>
     <tr>
-      <th>470</th>
+      <th>471</th>
       <td>USGS</td>
       <td>040851325</td>
       <td>94</td>
@@ -915,7 +915,7 @@ Retrieved 474 data values.
       <td>NONE</td>
     </tr>
     <tr>
-      <th>471</th>
+      <th>472</th>
       <td>USGS</td>
       <td>040851325</td>
       <td>95</td>
@@ -933,7 +933,7 @@ Retrieved 474 data values.
       <td>NONE</td>
     </tr>
     <tr>
-      <th>472</th>
+      <th>473</th>
       <td>USGS</td>
       <td>040851325</td>
       <td>96</td>
@@ -951,7 +951,7 @@ Retrieved 474 data values.
       <td>NONE</td>
     </tr>
     <tr>
-      <th>473</th>
+      <th>474</th>
       <td>USGS</td>
       <td>040851325</td>
       <td>97</td>
@@ -970,7 +970,7 @@ Retrieved 474 data values.
     </tr>
   </tbody>
 </table>
-<p>474 rows × 15 columns</p>
+<p>475 rows × 15 columns</p>
 </div></div>
 </div>
 </section>
