@@ -1171,7 +1171,7 @@ def _read_json(json):
 
             # read json, converting all values to float64 and all qualifiers
             # Lists can't be hashed, thus we cannot df.merge on a list column
-            record_df = pd.read_json(record_json,
+            record_df = pd.read_json(StringIO(record_json),
                                      orient='records',
                                      dtype={'value': 'float64',
                                             'qualifiers': 'unicode'},
