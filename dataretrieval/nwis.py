@@ -12,13 +12,15 @@
 
 """
 
-import warnings
-import pandas as pd
-from io import StringIO
 import re
+import warnings
+from io import StringIO
+from typing import List, Optional, Union
 
-from dataretrieval.utils import to_str, format_datetime, update_merge
+import pandas as pd
+
 from dataretrieval.utils import BaseMetadata
+from dataretrieval.utils import format_datetime, to_str, update_merge
 from .utils import query
 
 WATERDATA_BASE_URL = 'https://nwis.waterdata.usgs.gov/'
@@ -270,28 +272,31 @@ def _discharge_measurements(ssl_check=True, **kwargs):
     return _read_rdb(response.text), NWIS_Metadata(response, **kwargs)
 
 
-def get_discharge_peaks(sites=None, start=None, end=None,
-                        multi_index=True, ssl_check=True, **kwargs):
+def get_discharge_peaks(sites: Optional[Union[List[str], str]] = None,
+                        start: Optional[str] = None, end: Optional[str] = None,
+                        multi_index: bool = True,
+                        ssl_check: bool = True, **kwargs) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Get discharge peaks from the waterdata service.
 
     Parameters
     ----------
-    sites: array of strings
+    sites: list of strings, string, Optional
         If the waterdata parameter site_no is supplied, it will overwrite the
         sites parameter
-    start: string
+    start: string, Optional
         If the waterdata parameter begin_date is supplied, it will overwrite
         the start parameter (YYYY-MM-DD)
-    end: string
+    end: string, Optional
         If the waterdata parameter end_date is supplied, it will overwrite
         the end parameter (YYYY-MM-DD)
-    multi_index: boolean
-        If False, a dataframe with a single-level index (datetime) is returned
-    ssl_check: bool
+    multi_index: boolean, Optional
+        If False, a dataframe with a single-level index (datetime) is returned,
+        default is True
+    ssl_check: boolean, Optional
         If True, check SSL certificates, if False, do not check SSL,
         default is True
-    **kwargs: optional
+    **kwargs: Optional
         If supplied, will be used as query parameters
 
     Returns
@@ -314,6 +319,9 @@ def get_discharge_peaks(sites=None, start=None, end=None,
         ...     start='1980-01-01', end='1980-01-02', stateCd='HI')
 
     """
+    if sites and not isinstance(sites, str):
+        assert isinstance(sites, list), "sites must be a string or a list of strings"
+
     start = kwargs.pop('begin_date', start)
     end = kwargs.pop('end_date', end)
     sites = kwargs.pop('site_no', sites)
