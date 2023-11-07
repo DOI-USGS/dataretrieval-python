@@ -135,7 +135,6 @@ def test_get_gwlevels(requests_mock):
     assert df.size == 16
     assert_metadata(requests_mock, request_url, md, site, None, format)
 
-
 def test_get_discharge_peaks(requests_mock):
     """Tests get_discharge_peaks method correctly generates the request url and returns the result in a DataFrame"""
     format = "rdb"
@@ -148,6 +147,25 @@ def test_get_discharge_peaks(requests_mock):
     assert type(df) is DataFrame
     assert df.size == 240
     assert_metadata(requests_mock, request_url, md, site, None, format)
+
+@pytest.mark.parametrize("site_input_type_list", [True, False])
+def test_get_discharge_peaks_sites_value_types(requests_mock, site_input_type_list):
+    """Tests get_discharge_peaks for valid input types of the 'sites' parameter"""
+
+    format = "rdb"
+    site = '01594440'
+    request_url = 'https://nwis.waterdata.usgs.gov/nwis/peaks?format={}&site_no={}' \
+                  '&begin_date=2000-02-14&end_date=2020-02-15'.format(format, site)
+    response_file_path = 'data/waterservices_peaks.txt'
+    mock_request(requests_mock, request_url, response_file_path)
+    if site_input_type_list:
+        sites = [site]
+    else:
+        sites = site
+
+    df, md = get_discharge_peaks(sites=sites, start='2000-02-14', end='2020-02-15')
+    assert type(df) is DataFrame
+    assert df.size == 240
 
 
 def test_get_discharge_measurements(requests_mock):
