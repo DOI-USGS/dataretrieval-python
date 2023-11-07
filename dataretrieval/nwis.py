@@ -15,7 +15,7 @@
 import re
 import warnings
 from io import StringIO
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Tuple
 
 import pandas as pd
 
@@ -275,7 +275,7 @@ def _discharge_measurements(ssl_check=True, **kwargs):
 def get_discharge_peaks(sites: Optional[Union[List[str], str]] = None,
                         start: Optional[str] = None, end: Optional[str] = None,
                         multi_index: bool = True,
-                        ssl_check: bool = True, **kwargs) -> tuple[pd.DataFrame, BaseMetadata]:
+                        ssl_check: bool = True, **kwargs) -> Tuple[pd.DataFrame, BaseMetadata]:
     """
     Get discharge peaks from the waterdata service.
 
