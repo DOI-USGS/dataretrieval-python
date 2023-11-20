@@ -956,14 +956,17 @@ def get_water_use(
         ...     counties='001', categories='DO')
 
     """
-    if years and not isinstance(years, str):
-        assert isinstance(years, list), "years must be a string or a list of strings"
+    if years:
+        if not isinstance(years, list) and not isinstance(years, str):
+            raise TypeError('years must be a string or a list of strings')
 
-    if counties and not isinstance(counties, str):
-        assert isinstance(counties, list), "counties must be a string or a list of strings"
+    if counties:
+        if not isinstance(counties, list) and not isinstance(counties, str):
+            raise TypeError('counties must be a string or a list of strings')
 
-    if categories and not isinstance(categories, str):
-        assert isinstance(categories, list), "categories must be a string or a list of strings"
+    if categories:
+        if not isinstance(categories, list) and not isinstance(categories, str):
+            raise TypeError('categories must be a string or a list of strings')
 
     payload = {'rdb_compression': 'value',
                'format': 'rdb',
@@ -1367,8 +1370,9 @@ def _read_rdb(rdb):
 
 
 def _check_sites_value_types(sites):
-    if sites and not isinstance(sites, str):
-        assert isinstance(sites, list), "sites must be a string or a list of strings"
+    if sites:
+        if not isinstance(sites, list) and not isinstance(sites, str):
+            raise TypeError('sites must be a string or a list of strings')
 
 
 class NWIS_Metadata(BaseMetadata):
