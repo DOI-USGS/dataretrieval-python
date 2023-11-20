@@ -1,16 +1,15 @@
+import datetime
+import unittest.mock as mock
+
 import numpy as np
 import pandas as pd
 import pytest
-import requests
-import datetime
-from dataretrieval.nwis import get_record, preformat_peaks_response, get_info
-from dataretrieval.nwis import what_sites, get_iv, get_dv, get_discharge_peaks
-from dataretrieval.nwis import NWIS_Metadata
-import unittest.mock as mock
 
+from dataretrieval.nwis import NWIS_Metadata
+from dataretrieval.nwis import get_info, get_record, preformat_peaks_response, get_iv, what_sites
 
 START_DATE = '2018-01-24'
-END_DATE   = '2018-01-25'
+END_DATE = '2018-01-25'
 
 DATETIME_COL = 'datetime'
 SITENO_COL = 'site_no'
@@ -20,30 +19,34 @@ def test_measurements_service():
     """Test measurement service
     """
     start = '2018-01-24'
-    end   = '2018-01-25'
+    end = '2018-01-25'
     service = 'measurements'
     site = '03339000'
     df = get_record(site, start, end, service=service)
     return df
+
 
 def test_measurements_service_answer():
     df = test_measurements_service()
     # check parsing
     assert df.iloc[0]['measurement_nu'] == 801
 
+
 def test_iv_service():
     """Unit test of instantaneous value service
     """
     start = START_DATE
-    end   = END_DATE
+    end = END_DATE
     service = 'iv'
     site = ['03339000', '05447500', '03346500']
     return get_record(site, start, end, service=service)
+
 
 def test_iv_service_answer():
     df = test_iv_service()
     # check multiindex function
     assert df.index.names == [SITENO_COL, DATETIME_COL], "iv service returned incorrect index: {}".format(df.index.names)
+
 
 def test_preformat_peaks_response():
     # make a data frame with a "peak_dt" datetime column
@@ -63,9 +66,25 @@ def test_preformat_peaks_response():
     assert 'datetime' in df.columns
     assert df['datetime'].isna().sum() == 0
 
-if __name__=='__main__':
-     test_measurements_service_answer()
-     test_iv_service_answer()
+
+@pytest.mark.parametrize("site_input_type_list", [True, False])
+def test_get_record_site_value_types(site_input_type_list):
+    """Test that get_record method for valid input types for the 'sites' parameter."""
+    start = '2018-01-24'
+    end = '2018-01-25'
+    service = 'measurements'
+    site = '03339000'
+    if site_input_type_list:
+        sites = [site]
+    else:
+        sites = site
+    df = get_record(sites=sites, start=start, end=end, service=service)
+    assert df.iloc[0]['measurement_nu'] == 801
+
+
+if __name__ == '__main__':
+    test_measurements_service_answer()
+    test_iv_service_answer()
 
 
 # tests using real queries to USGS webservices
