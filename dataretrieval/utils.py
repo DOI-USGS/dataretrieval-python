@@ -84,8 +84,8 @@ def format_datetime(df, date_field, time_field, tz_field):
     )
 
     # if there are any incomplete dates, warn the user
-    if any(pd.isna(df['datetime'])):
-        count = sum(pd.isna(df['datetime']) is True)
+    if df['datetime'].isna().any():
+        count = df['datetime'].isna().sum()
         warnings.warn(
             f'Warning: {count} incomplete dates found, '
             + 'consider setting datetime_index to False.',
