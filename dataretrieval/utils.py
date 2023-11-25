@@ -2,10 +2,13 @@
 Useful utilities for data munging.
 """
 import warnings
+
 import pandas as pd
 import requests
+
 import dataretrieval
 from dataretrieval.codes import tz
+
 
 def to_str(listlike, delimiter=','):
     """Translates list-like objects into strings.
@@ -74,23 +77,25 @@ def format_datetime(df, date_field, time_field, tz_field):
     # create a datetime index from the columns in qwdata response
     df[tz_field] = df[tz_field].map(tz)
 
-    df['datetime'] = pd.to_datetime(df[date_field] + ' ' +
-                                    df[time_field] + ' ' +
-                                    df[tz_field],
-                                    format='ISO8601',
-                                    utc=True)
+    df['datetime'] = pd.to_datetime(
+        df[date_field] + ' ' + df[time_field] + ' ' + df[tz_field],
+        format='ISO8601',
+        utc=True,
+    )
 
     # if there are any incomplete dates, warn the user
     if any(pd.isna(df['datetime'])):
-        count = sum(pd.isna(df['datetime']) == True)
+        count = sum(pd.isna(df['datetime']) is True)
         warnings.warn(
-            f'Warning: {count} incomplete dates found, ' +
-            'consider setting datetime_index to False.', UserWarning)
+            f'Warning: {count} incomplete dates found, '
+            + 'consider setting datetime_index to False.',
+            UserWarning,
+        )
 
     return df
 
 
-#This function may be deprecated once pandas.update support joins besides left.
+# This function may be deprecated once pandas.update support joins besides left.
 def update_merge(left, right, na_only=False, on=None, **kwargs):
     """Performs a combination update and merge.
 
@@ -113,30 +118,30 @@ def update_merge(left, right, na_only=False, on=None, **kwargs):
         add na_only parameter support
 
     """
-    #df = left.merge(right, how='outer',
+    # df = left.merge(right, how='outer',
     #                left_index=True, right_index=True)
     df = left.merge(right, how='outer', on=on, **kwargs)
 
-
     # check for column overlap and resolve update
     for column in df.columns:
-        #if duplicated column, use the value from right
+        # if duplicated column, use the value from right
         if column[-2:] == '_x':
-            name = column[:-2] # find column name
+            name = column[:-2]  # find column name
 
             if na_only:
-                df[name] = df[name+'_x'].fillna(df[name+'_y'])
+                df[name] = df[name + '_x'].fillna(df[name + '_y'])
 
             else:
-                df[name] = df[name+'_x'].update(df[name+'_y'])
+                df[name] = df[name + '_x'].update(df[name + '_y'])
 
             df.drop([name + '_x', name + '_y'], axis=1, inplace=True)
 
     return df
 
+
 class BaseMetadata:
     """Base class for metadata.
-    
+
     Attributes
     ----------
     url : str
@@ -145,9 +150,9 @@ class BaseMetadata:
         Response elapsed time
     header: requests.structures.CaseInsensitiveDict
         Response headers
-    
+
     """
-    
+
     def __init__(self, response) -> None:
         """Generates a standard set of metadata informed by the response.
 
@@ -168,30 +173,29 @@ class BaseMetadata:
         self.query_time = response.elapsed
         self.header = response.headers
         self.comment = None
-        
+
         # # not sure what statistic_info is
         # self.statistic_info = None
-        
+
         # # disclaimer seems to be only part of importWaterML1
         # self.disclaimer = None
-    
+
     # These properties are to be set by `nwis` or `wqp`-specific metadata classes.
     @property
     def site_info(self):
         raise NotImplementedError(
-            "site_info must be implemented by utils.BaseMetadata children"
+            'site_info must be implemented by utils.BaseMetadata children'
         )
-    
+
     @property
     def variable_info(self):
         raise NotImplementedError(
-            "variable_info must be implemented by utils.BaseMetadata children"
+            'variable_info must be implemented by utils.BaseMetadata children'
         )
 
-
     def __repr__(self) -> str:
-        return f"{type(self).__name__}(url={self.url})"
-        
+        return f'{type(self).__name__}(url={self.url})'
+
 
 def query(url, payload, delimiter=',', ssl_check=True):
     """Send a query.
@@ -219,37 +223,40 @@ def query(url, payload, delimiter=',', ssl_check=True):
 
     for key, value in payload.items():
         payload[key] = to_str(value, delimiter)
-    #for index in range(len(payload)):
+    # for index in range(len(payload)):
     #    key, value = payload[index]
     #    payload[index] = (key, to_str(value))
 
     # define the user agent for the query
-    user_agent = {
-        'user-agent': f"python-dataretrieval/{dataretrieval.__version__}"}
+    user_agent = {'user-agent': f'python-dataretrieval/{dataretrieval.__version__}'}
 
-    response = requests.get(url, params=payload,
-                            headers=user_agent, verify=ssl_check)
+    response = requests.get(url, params=payload, headers=user_agent, verify=ssl_check)
 
     if response.status_code == 400:
-        raise ValueError("Bad Request, check that your parameters are correct. URL: {}".format(response.url))
+        raise ValueError(
+            f'Bad Request, check that your parameters are correct. URL: {response.url}'
+        )
     elif response.status_code == 404:
         raise ValueError(
-            "Page Not Found Error. May be the result of an empty query. " +
-            f"URL: {response.url}")
+            'Page Not Found Error. May be the result of an empty query. '
+            + f'URL: {response.url}'
+        )
     elif response.status_code == 414:
         _reason = response.reason
         _example = """
-                    split_list = np.array_split(site_list, n)  # n is number of chunks to divide query into \n
+                    # n is the number of chunks to divide the query into \n
+                    split_list = np.array_split(site_list, n)
                     data_list = []  # list to store chunk results in \n
                     # loop through chunks and make requests \n
                     for site_list in split_list: \n
-                        data = nwis.get_record(sites=site_list, service='dv', start=start, end=end) \n
+                        data = nwis.get_record(sites=site_list, service='dv', \n
+                                               start=start, end=end) \n
                         data_list.append(data)  # append results to list"""
         raise ValueError(
-            "Request URL too long. Modify your query to use fewer sites. " +
-            f"API response reason: {_reason}. Pseudo-code example of how to " +
-            f"split your query: \n {_example}"
-            )
+            'Request URL too long. Modify your query to use fewer sites. '
+            + f'API response reason: {_reason}. Pseudo-code example of how to '
+            + f'split your query: \n {_example}'
+        )
 
     if response.text.startswith('No sites/data'):
         raise NoSitesError(response.url)
@@ -258,11 +265,13 @@ def query(url, payload, delimiter=',', ssl_check=True):
 
 
 class NoSitesError(Exception):
-    """Custom error class used when selection criteria returns no sites/data.
-    """
+    """Custom error class used when selection criteria returns no sites/data."""
+
     def __init__(self, url):
         self.url = url
 
     def __str__(self):
-        return "No sites/data found using the selection criteria specified in url: {}".format(self.url)
-
+        return (
+            'No sites/data found using the selection criteria specified in url: '
+            '{url}'
+        ).format(url=self.url)

@@ -6,6 +6,7 @@ This module is a wrapper for the streamstats API (`streamstats documentation`_).
 """
 
 import json
+
 import requests
 
 
@@ -35,12 +36,12 @@ def download_workspace(workspaceID, format=''):
 
     r.raise_for_status()
     return r
-    #data = r.raw.read()
+    # data = r.raw.read()
 
-    #with open(filepath, 'wb') as f:
+    # with open(filepath, 'wb') as f:
     #    f.write(data)
 
-    #return
+    # return
 
 
 def get_sample_watershed():
@@ -60,10 +61,18 @@ def get_sample_watershed():
     return get_watershed('NY', -74.524, 43.939)
 
 
-def get_watershed(rcode, xlocation, ylocation, crs=4326,
-                  includeparameters=True, includeflowtypes=False,
-                  includefeatures=True, simplify=True, format='geojson'):
-    """ Get watershed object based on location
+def get_watershed(
+    rcode,
+    xlocation,
+    ylocation,
+    crs=4326,
+    includeparameters=True,
+    includeflowtypes=False,
+    includefeatures=True,
+    simplify=True,
+    format='geojson',
+):
+    """Get watershed object based on location
 
     **Streamstats documentation:**
     Returns a watershed object. The request configuration will determine the
@@ -104,10 +113,16 @@ def get_watershed(rcode, xlocation, ylocation, crs=4326,
         from the streamstats JSON object.
 
     """
-    payload = {'rcode': rcode, 'xlocation': xlocation, 'ylocation': ylocation,
-               'crs': crs, 'includeparameters': includeparameters,
-               'includeflowtypes': includeflowtypes,
-               'includefeatures': includefeatures, 'simplify': simplify}
+    payload = {
+        'rcode': rcode,
+        'xlocation': xlocation,
+        'ylocation': ylocation,
+        'crs': crs,
+        'includeparameters': includeparameters,
+        'includeflowtypes': includeflowtypes,
+        'includefeatures': includefeatures,
+        'simplify': simplify,
+    }
     url = 'https://streamstats.usgs.gov/streamstatsservices/watershed.geojson'
 
     r = requests.get(url, params=payload)
@@ -131,6 +146,7 @@ def get_watershed(rcode, xlocation, ylocation, crs=4326,
 
 class Watershed:
     """Class to extract information from the streamstats JSON object."""
+
     @classmethod
     def from_streamstats_json(cls, streamstats_json):
         """Method that creates a Watershed object from a streamstats JSON."""
