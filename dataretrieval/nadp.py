@@ -1,6 +1,7 @@
 """
-Tools for retrieving data from the National Atmospheric Deposition Program (NADP) including
-the National Trends Network (NTN), the Mercury Deposition Network (MDN).
+Tools for retrieving data from the National Atmospheric Deposition Program
+(NADP) including the National Trends Network (NTN), the Mercury Deposition
+Network (MDN).
 
 National Trends Network
 -----------------------
@@ -28,32 +29,43 @@ the data as a GDAL memory-mapped file when no path is specified.
 
 """
 
-import requests
-import zipfile
 import io
 import os
 import re
+import zipfile
 from os.path import basename
 
+import requests
 
 NADP_URL = 'https://nadp.slh.wisc.edu'
 NADP_MAP_EXT = 'filelib/maps'
 
-NTN_CONC_PARAMS = ['pH', 'So4', 'NO3', 'NH4', 'Ca',
-                   'Mg', 'K', 'Na', 'Cl', 'Br']
-NTN_DEP_PARAMS  = ['H', 'So4', 'NO3', 'NH4', 'Ca', 'Mg',
-                   'K', 'Na', 'Cl', 'Br', 'N', 'SPlusN']
+NTN_CONC_PARAMS = ['pH', 'So4', 'NO3', 'NH4', 'Ca', 'Mg', 'K', 'Na', 'Cl', 'Br']
+NTN_DEP_PARAMS = [
+    'H',
+    'So4',
+    'NO3',
+    'NH4',
+    'Ca',
+    'Mg',
+    'K',
+    'Na',
+    'Cl',
+    'Br',
+    'N',
+    'SPlusN',
+]
 
 NTN_MEAS_TYPE = ['conc', 'dep', 'precip']  # concentration or deposition
 
 
 class NADP_ZipFile(zipfile.ZipFile):
-    """Extend zipfile.ZipFile for working on data from NADP
-    """
+    """Extend zipfile.ZipFile for working on data from NADP"""
+
     def tif_name(self):
         """Get the name of the tif file in the zip file."""
         filenames = self.namelist()
-        r = re.compile(".*tif$")
+        r = re.compile('.*tif$')
         tif_list = list(filter(r.match, filenames))
         return tif_list[0]
 
@@ -93,23 +105,23 @@ def get_annual_MDN_map(measurement_type, year, path):
 
         >>> # get map of mercury concentration in 2010 and extract it to a path
         >>> data_path = dataretrieval.nadp.get_annual_MDN_map(
-        ...     measurement_type='conc', year='2010', path='somepath')
+        ...     measurement_type='conc', year='2010', path='somepath'
+        ... )
 
     """
-    url = '{}/{}/MDN/grids/'.format(NADP_URL, NADP_MAP_EXT)
+    url = f'{NADP_URL}/{NADP_MAP_EXT}/MDN/grids/'
 
-    filename = 'Hg_{}_{}.zip'.format(measurement_type, year)
+    filename = f'Hg_{measurement_type}_{year}.zip'
 
     z = get_zip(url, filename)
 
     if path:
         z.extractall(path)
 
-    return '{}{}{}'.format(path, os.sep, basename(filename))
+    return f'{path}{os.sep}{basename(filename)}'
 
 
-def get_annual_NTN_map(measurement_type, measurement=None, year=None,
-                       path="."):
+def get_annual_NTN_map(measurement_type, measurement=None, year=None, path='.'):
     """Download a NTN map from NDAP.
 
     This function looks for a zip file containing gridded information at:
@@ -146,22 +158,23 @@ def get_annual_NTN_map(measurement_type, measurement=None, year=None,
 
         >>> # get a map of precipitation in 2015 and extract it to a path
         >>> data_path = dataretrieval.nadp.get_annual_NTN_map(
-        ...     measurement_type='Precip', year='2015', path='somepath')
+        ...     measurement_type='Precip', year='2015', path='somepath'
+        ... )
 
     """
-    url = '{}/{}/NTN/grids/{}/'.format(NADP_URL, NADP_MAP_EXT, year)
+    url = f'{NADP_URL}/{NADP_MAP_EXT}/NTN/grids/{year}/'
 
-    filename = '{}_{}.zip'.format(measurement_type, year)
+    filename = f'{measurement_type}_{year}.zip'
 
     if measurement:
-        filename = '{}_{}'.format(measurement, filename)
+        filename = f'{measurement}_{filename}'
 
     z = get_zip(url, filename)
 
     if path:
         z.extractall(path)
 
-    return '{}{}{}'.format(path, os.sep, basename(filename))
+    return f'{path}{os.sep}{basename(filename)}'
 
 
 def get_zip(url, filename):

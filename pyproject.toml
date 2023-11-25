@@ -41,3 +41,9 @@ repository = "https://github.com/DOI-USGS/dataretrieval-python.git"
 
 [tool.setuptools_scm]
 write_to = "dataretrieval/_version.py"
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+skip-string-normalization = true

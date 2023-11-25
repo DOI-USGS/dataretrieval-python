@@ -8,10 +8,12 @@ See https://waterqualitydata.us/webservices_documentation for API reference
     - implement other services like Organization, Activity, etc.
 
 """
-import pandas as pd
-from io import StringIO
-from .utils import query, BaseMetadata
 import warnings
+from io import StringIO
+
+import pandas as pd
+
+from .utils import BaseMetadata, query
 
 
 def get_results(ssl_check=True, **kwargs):
@@ -73,16 +75,15 @@ def get_results(ssl_check=True, **kwargs):
 
         >>> # Get results within a radial distance of a point
         >>> df, md = dataretrieval.wqp.get_results(
-        ...     lat='44.2', long='-88.9', within='0.5')
+        ...     lat='44.2', long='-88.9', within='0.5'
+        ... )
 
         >>> # Get results within a bounding box
-        >>> df, md = dataretrieval.wqp.get_results(
-        ...     bBox='-92.8,44.2,-88.9,46.0')
+        >>> df, md = dataretrieval.wqp.get_results(bBox='-92.8,44.2,-88.9,46.0')
 
     """
     kwargs = _alter_kwargs(kwargs)
-    response = query(wqp_url('Result'), kwargs, delimiter=';',
-                     ssl_check=ssl_check)
+    response = query(wqp_url('Result'), kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
     return df, WQP_Metadata(response)
@@ -112,7 +113,8 @@ def what_sites(ssl_check=True, **kwargs):
 
         >>> # Get sites within a radial distance of a point
         >>> df, md = dataretrieval.wqp.what_sites(
-        ...     lat='44.2', long='-88.9', within='2.5')
+        ...     lat='44.2', long='-88.9', within='2.5'
+        ... )
 
     """
     kwargs = _alter_kwargs(kwargs)
@@ -222,8 +224,8 @@ def what_activities(ssl_check=True, **kwargs):
         >>> # Get activities within Washington D.C.
         >>> # during a specific time period
         >>> df, md = dataretrieval.wqp.what_activities(
-        ...     statecode='US:11', startDateLo='12-30-2019',
-        ...     startDateHi='01-01-2020')
+        ...     statecode='US:11', startDateLo='12-30-2019', startDateHi='01-01-2020'
+        ... )
 
     """
     kwargs = _alter_kwargs(kwargs)
@@ -262,8 +264,11 @@ def what_detection_limits(ssl_check=True, **kwargs):
         >>> # Get detection limits for Nitrite measurements in Rhode Island
         >>> # between specific dates
         >>> df, md = dataretrieval.wqp.what_detection_limits(
-        ...     statecode='US:44', characteristicName='Nitrite',
-        ...     startDateLo='01-01-2021', startDateHi='02-20-2021')
+        ...     statecode='US:44',
+        ...     characteristicName='Nitrite',
+        ...     startDateLo='01-01-2021',
+        ...     startDateHi='02-20-2021',
+        ... )
 
     """
     kwargs = _alter_kwargs(kwargs)
@@ -299,8 +304,7 @@ def what_habitat_metrics(ssl_check=True, **kwargs):
     .. code::
 
         >>> # Get habitat metrics for a state (Rhode Island in this case)
-        >>> df, md = dataretrieval.wqp.what_habitat_metrics(
-        ...     statecode='US:44')
+        >>> df, md = dataretrieval.wqp.what_habitat_metrics(statecode='US:44')
 
     """
     kwargs = _alter_kwargs(kwargs)
@@ -338,8 +342,8 @@ def what_project_weights(ssl_check=True, **kwargs):
         >>> # Get project weights for a state (North Dakota in this case)
         >>> # within a set time period
         >>> df, md = dataretrieval.wqp.what_project_weights(
-        ...     statecode='US:38', startDateLo='01-01-2006',
-        ...     startDateHi='01-01-2009')
+        ...     statecode='US:38', startDateLo='01-01-2006', startDateHi='01-01-2009'
+        ... )
 
     """
     kwargs = _alter_kwargs(kwargs)
@@ -377,8 +381,8 @@ def what_activity_metrics(ssl_check=True, **kwargs):
         >>> # Get activity metrics for a state (North Dakota in this case)
         >>> # within a set time period
         >>> df, md = dataretrieval.wqp.what_activity_metrics(
-        ...     statecode='US:38', startDateLo='07-01-2006',
-        ...     startDateHi='12-01-2006')
+        ...     statecode='US:38', startDateLo='07-01-2006', startDateHi='12-01-2006'
+        ... )
 
     """
     kwargs = _alter_kwargs(kwargs)
@@ -392,15 +396,14 @@ def what_activity_metrics(ssl_check=True, **kwargs):
 
 
 def wqp_url(service):
-    """Construct the WQP URL for a given service.
-    """
+    """Construct the WQP URL for a given service."""
     base_url = 'https://www.waterqualitydata.us/data/'
-    return '{}{}/Search?'.format(base_url, service)
+    return f'{base_url}{service}/Search?'
 
 
 class WQP_Metadata(BaseMetadata):
     """Metadata class for WQP service, derived from BaseMetadata.
-    
+
     Attributes
     ----------
     url : str
@@ -418,12 +421,12 @@ class WQP_Metadata(BaseMetadata):
     def __init__(self, response, **parameters) -> None:
         """Generates a standard set of metadata informed by the response with specific
         metadata for WQP data.
-        
+
         Parameters
         ----------
         response: Response
             Response object from requests module
-        
+
         parameters: unpacked dictionary
             Unpacked dictionary of the parameters supplied in the request
 
@@ -433,7 +436,7 @@ class WQP_Metadata(BaseMetadata):
             A ``dataretrieval`` custom :obj:`dataretrieval.wqp.WQP_Metadata` object.
 
         """
-        
+
         super().__init__(response)
 
         self._parameters = parameters
