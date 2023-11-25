@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g2747f0d documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g741c727 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -12,7 +12,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=843a151a"></script>
+        <script src="../../_static/documentation_options.js?v=a1f34f49"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -87,10 +87,12 @@
 <span class="sd">    - implement other services like Organization, Activity, etc.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">query</span><span class="p">,</span> <span class="n">BaseMetadata</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">BaseMetadata</span><span class="p">,</span> <span class="n">query</span>
 
 
 <div class="viewcode-block" id="get_results">
@@ -154,16 +156,15 @@
 
 <span class="sd">        &gt;&gt;&gt; # Get results within a radial distance of a point</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.get_results(</span>
-<span class="sd">        ...     lat=&#39;44.2&#39;, long=&#39;-88.9&#39;, within=&#39;0.5&#39;)</span>
+<span class="sd">        ...     lat=&#39;44.2&#39;, long=&#39;-88.9&#39;, within=&#39;0.5&#39;</span>
+<span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get results within a bounding box</span>
-<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.get_results(</span>
-<span class="sd">        ...     bBox=&#39;-92.8,44.2,-88.9,46.0&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.get_results(bBox=&#39;-92.8,44.2,-88.9,46.0&#39;)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_alter_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">wqp_url</span><span class="p">(</span><span class="s1">&#39;Result&#39;</span><span class="p">),</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;;&#39;</span><span class="p">,</span>
-                     <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">wqp_url</span><span class="p">(</span><span class="s1">&#39;Result&#39;</span><span class="p">),</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;;&#39;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
@@ -196,7 +197,8 @@
 
 <span class="sd">        &gt;&gt;&gt; # Get sites within a radial distance of a point</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_sites(</span>
-<span class="sd">        ...     lat=&#39;44.2&#39;, long=&#39;-88.9&#39;, within=&#39;2.5&#39;)</span>
+<span class="sd">        ...     lat=&#39;44.2&#39;, long=&#39;-88.9&#39;, within=&#39;2.5&#39;</span>
+<span class="sd">        ... )</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_alter_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
@@ -315,8 +317,8 @@
 <span class="sd">        &gt;&gt;&gt; # Get activities within Washington D.C.</span>
 <span class="sd">        &gt;&gt;&gt; # during a specific time period</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_activities(</span>
-<span class="sd">        ...     statecode=&#39;US:11&#39;, startDateLo=&#39;12-30-2019&#39;,</span>
-<span class="sd">        ...     startDateHi=&#39;01-01-2020&#39;)</span>
+<span class="sd">        ...     statecode=&#39;US:11&#39;, startDateLo=&#39;12-30-2019&#39;, startDateHi=&#39;01-01-2020&#39;</span>
+<span class="sd">        ... )</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_alter_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
@@ -358,8 +360,11 @@
 <span class="sd">        &gt;&gt;&gt; # Get detection limits for Nitrite measurements in Rhode Island</span>
 <span class="sd">        &gt;&gt;&gt; # between specific dates</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_detection_limits(</span>
-<span class="sd">        ...     statecode=&#39;US:44&#39;, characteristicName=&#39;Nitrite&#39;,</span>
-<span class="sd">        ...     startDateLo=&#39;01-01-2021&#39;, startDateHi=&#39;02-20-2021&#39;)</span>
+<span class="sd">        ...     statecode=&#39;US:44&#39;,</span>
+<span class="sd">        ...     characteristicName=&#39;Nitrite&#39;,</span>
+<span class="sd">        ...     startDateLo=&#39;01-01-2021&#39;,</span>
+<span class="sd">        ...     startDateHi=&#39;02-20-2021&#39;,</span>
+<span class="sd">        ... )</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_alter_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
@@ -398,8 +403,7 @@
 <span class="sd">    .. code::</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get habitat metrics for a state (Rhode Island in this case)</span>
-<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_habitat_metrics(</span>
-<span class="sd">        ...     statecode=&#39;US:44&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_habitat_metrics(statecode=&#39;US:44&#39;)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_alter_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
@@ -440,8 +444,8 @@
 <span class="sd">        &gt;&gt;&gt; # Get project weights for a state (North Dakota in this case)</span>
 <span class="sd">        &gt;&gt;&gt; # within a set time period</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_project_weights(</span>
-<span class="sd">        ...     statecode=&#39;US:38&#39;, startDateLo=&#39;01-01-2006&#39;,</span>
-<span class="sd">        ...     startDateHi=&#39;01-01-2009&#39;)</span>
+<span class="sd">        ...     statecode=&#39;US:38&#39;, startDateLo=&#39;01-01-2006&#39;, startDateHi=&#39;01-01-2009&#39;</span>
+<span class="sd">        ... )</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_alter_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
@@ -482,8 +486,8 @@
 <span class="sd">        &gt;&gt;&gt; # Get activity metrics for a state (North Dakota in this case)</span>
 <span class="sd">        &gt;&gt;&gt; # within a set time period</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_activity_metrics(</span>
-<span class="sd">        ...     statecode=&#39;US:38&#39;, startDateLo=&#39;07-01-2006&#39;,</span>
-<span class="sd">        ...     startDateHi=&#39;12-01-2006&#39;)</span>
+<span class="sd">        ...     statecode=&#39;US:38&#39;, startDateLo=&#39;07-01-2006&#39;, startDateHi=&#39;12-01-2006&#39;</span>
+<span class="sd">        ... )</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_alter_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
@@ -500,10 +504,9 @@
 <div class="viewcode-block" id="wqp_url">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.wqp_url">[docs]</a>
 <span class="k">def</span> <span class="nf">wqp_url</span><span class="p">(</span><span class="n">service</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct the WQP URL for a given service.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct the WQP URL for a given service.&quot;&quot;&quot;</span>
     <span class="n">base_url</span> <span class="o">=</span> <span class="s1">&#39;https://www.waterqualitydata.us/data/&#39;</span>
-    <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}{}</span><span class="s1">/Search?&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_url</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}{</span><span class="n">service</span><span class="si">}</span><span class="s1">/Search?&#39;</span></div>
 
 
 
@@ -511,7 +514,7 @@
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.WQP_Metadata">[docs]</a>
 <span class="k">class</span> <span class="nc">WQP_Metadata</span><span class="p">(</span><span class="n">BaseMetadata</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Metadata class for WQP service, derived from BaseMetadata.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    url : str</span>
@@ -531,12 +534,12 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a standard set of metadata informed by the response with specific</span>
 <span class="sd">        metadata for WQP data.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        response: Response</span>
 <span class="sd">            Response object from requests module</span>
-<span class="sd">        </span>
+
 <span class="sd">        parameters: unpacked dictionary</span>
 <span class="sd">            Unpacked dictionary of the parameters supplied in the request</span>
 
@@ -546,7 +549,7 @@
 <span class="sd">            A ``dataretrieval`` custom :obj:`dataretrieval.wqp.WQP_Metadata` object.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span> <span class="o">=</span> <span class="n">parameters</span>

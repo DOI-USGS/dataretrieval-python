@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g2747f0d documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g741c727 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -13,7 +13,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=843a151a"></script>
+        <script src="../_static/documentation_options.js?v=a1f34f49"></script>
         <script src="../_static/doctools.js?v=888ff710"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -330,11 +330,13 @@ default is True</p></li>
 <p class="rubric">Examples</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge measurements for site 05114000</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_discharge_measurements</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;05114000&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2000-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2000-01-30&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;05114000&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2000-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2000-01-30&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge measurements for sites in Alaska</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_discharge_measurements</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2012-01-09&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2012-01-10&#39;</span><span class="p">,</span> <span class="n">stateCd</span><span class="o">=</span><span class="s1">&#39;AK&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2012-01-09&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2012-01-10&#39;</span><span class="p">,</span> <span class="n">stateCd</span><span class="o">=</span><span class="s1">&#39;AK&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -370,11 +372,13 @@ default is True</p></li>
 <p class="rubric">Examples</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge peaks for site 01491000</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_discharge_peaks</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01491000&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;1980-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;1990-01-01&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01491000&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;1980-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;1990-01-01&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge peaks for sites in Hawaii</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_discharge_peaks</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">start</span><span class="o">=</span><span class="s1">&#39;1980-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;1980-01-02&#39;</span><span class="p">,</span> <span class="n">stateCd</span><span class="o">=</span><span class="s1">&#39;HI&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">start</span><span class="o">=</span><span class="s1">&#39;1980-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;1980-01-02&#39;</span><span class="p">,</span> <span class="n">stateCd</span><span class="o">=</span><span class="s1">&#39;HI&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -409,8 +413,8 @@ default is True</p></li>
 <p class="rubric">Examples</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get mean statistic daily values for site 04085427</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;04085427&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2012-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2012-06-30&#39;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">statCd</span><span class="o">=</span><span class="s1">&#39;00003&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;04085427&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2012-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2012-06-30&#39;</span><span class="p">,</span> <span class="n">statCd</span><span class="o">=</span><span class="s1">&#39;00003&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get the latest daily values for site 01646500</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01646500&#39;</span><span class="p">)</span>
@@ -527,8 +531,7 @@ end dates for a site’s daily mean streamflow.</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;05114000&#39;</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get site information for multiple sites</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;05114000&#39;</span><span class="p">,</span> <span class="s1">&#39;09423350&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;05114000&#39;</span><span class="p">,</span> <span class="s1">&#39;09423350&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -569,8 +572,11 @@ default is True</p></li>
 <p class="rubric">Examples</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get instantaneous discharge data for site 05114000</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;05114000&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2013-11-03&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2013-11-03&#39;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;00060&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;05114000&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2013-11-03&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2013-11-03&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;00060&#39;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -599,12 +605,12 @@ default is True</p></li>
 </dl>
 <p class="rubric">Examples</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get information about the &#39;00060&#39; pcode</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_pmcodes</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;00060&#39;</span><span class="p">,</span> <span class="n">partial</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_pmcodes</span><span class="p">(</span><span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;00060&#39;</span><span class="p">,</span> <span class="n">partial</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get information about all &#39;Discharge&#39; pcodes</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_pmcodes</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;Discharge&#39;</span><span class="p">,</span> <span class="n">partial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;Discharge&#39;</span><span class="p">,</span> <span class="n">partial</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -651,7 +657,8 @@ default is True</p></li>
 <p class="rubric">Examples</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># get water sample information for site 11447650</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_qwdata</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;11447650&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2010-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2010-02-01&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;11447650&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2010-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2010-02-01&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -741,41 +748,40 @@ default is True</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;dv&#39;</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get all discrete sample data from site 01585200</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;qwdata&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;qwdata&#39;</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get site description for site 01585200</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge measurements for site 01585200</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;measurements&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;measurements&#39;</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge peaks for site 01585200</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;peaks&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;peaks&#39;</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get latest groundwater level for site 434400121275801</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;434400121275801&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;gwlevels&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;434400121275801&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;gwlevels&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get information about the discharge parameter code</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">service</span><span class="o">=</span><span class="s1">&#39;pmcodes&#39;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;00060&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="s1">&#39;pmcodes&#39;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;00060&#39;</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get water use data for livestock nationally in 2010</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">service</span><span class="o">=</span><span class="s1">&#39;water_use&#39;</span><span class="p">,</span> <span class="n">years</span><span class="o">=</span><span class="s1">&#39;2010&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s1">&#39;L&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">service</span><span class="o">=</span><span class="s1">&#39;water_use&#39;</span><span class="p">,</span> <span class="n">years</span><span class="o">=</span><span class="s1">&#39;2010&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s1">&#39;L&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get rating table for USGS streamgage 01585200</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;ratings&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01585200&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;ratings&#39;</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get annual statistics for USGS station 01646500</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01646500&#39;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;stat&#39;</span><span class="p">,</span> <span class="n">statReportType</span><span class="o">=</span><span class="s1">&#39;annual&#39;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">statYearType</span><span class="o">=</span><span class="s1">&#39;water&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01646500&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">service</span><span class="o">=</span><span class="s1">&#39;stat&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">statReportType</span><span class="o">=</span><span class="s1">&#39;annual&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">statYearType</span><span class="o">=</span><span class="s1">&#39;water&#39;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -813,11 +819,13 @@ default is True</p></li>
 <p class="rubric">Examples</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get annual water statistics for a site</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01646500&#39;</span><span class="p">,</span> <span class="n">statReportType</span><span class="o">=</span><span class="s1">&#39;annual&#39;</span><span class="p">,</span> <span class="n">statYearType</span><span class="o">=</span><span class="s1">&#39;water&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01646500&#39;</span><span class="p">,</span> <span class="n">statReportType</span><span class="o">=</span><span class="s1">&#39;annual&#39;</span><span class="p">,</span> <span class="n">statYearType</span><span class="o">=</span><span class="s1">&#39;water&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get monthly statistics for a site</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01646500&#39;</span><span class="p">,</span> <span class="n">statReportType</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s1">&#39;01646500&#39;</span><span class="p">,</span> <span class="n">statReportType</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -833,7 +841,8 @@ default is True</p></li>
 5, or “ALL”, which retrieves all available years, default is “ALL”</p></li>
 <li><p><strong>state</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default is None</em>) – full name, abbreviation or id</p></li>
 <li><p><strong>counties</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em>) – County IDs from county lookup or “ALL”, default is “ALL”</p></li>
-<li><p><strong>categories</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em>) – List or comma delimited string of Two-letter category abbreviations, default is “ALL”</p></li>
+<li><p><strong>categories</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em>) – List or comma delimited string of Two-letter category abbreviations,
+default is “ALL”</p></li>
 <li><p><strong>ssl_check</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, check SSL certificates, if False, do not check SSL,
 default is True</p></li>
 </ul>
@@ -849,16 +858,16 @@ default is True</p></li>
 <p class="rubric">Examples</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get total population for RI from the NWIS water use service</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_water_use</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">years</span><span class="o">=</span><span class="s1">&#39;2000&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s1">&#39;RI&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s1">&#39;TP&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">years</span><span class="o">=</span><span class="s1">&#39;2000&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s1">&#39;RI&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s1">&#39;TP&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get the national total water use for livestock in Bgal/day</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_water_use</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">years</span><span class="o">=</span><span class="s1">&#39;2010&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s1">&#39;L&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_water_use</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="s1">&#39;2010&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s1">&#39;L&#39;</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get 2005 domestic water use for Apache County in Arizona</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_water_use</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">years</span><span class="o">=</span><span class="s1">&#39;2005&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s1">&#39;Arizona&#39;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">counties</span><span class="o">=</span><span class="s1">&#39;001&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s1">&#39;DO&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">years</span><span class="o">=</span><span class="s1">&#39;2005&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s1">&#39;Arizona&#39;</span><span class="p">,</span> <span class="n">counties</span><span class="o">=</span><span class="s1">&#39;001&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s1">&#39;DO&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -968,8 +977,7 @@ default is True</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;05114000&#39;</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># get information about sites with phosphorus in Ohio</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">stateCd</span><span class="o">=</span><span class="s1">&#39;OH&#39;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;00665&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">stateCd</span><span class="o">=</span><span class="s1">&#39;OH&#39;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;00665&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>

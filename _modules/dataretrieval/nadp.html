@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nadp &mdash; dataretrieval 0.1.dev1+g2747f0d documentation</title>
+  <title>dataretrieval.nadp &mdash; dataretrieval 0.1.dev1+g741c727 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -12,7 +12,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=843a151a"></script>
+        <script src="../../_static/documentation_options.js?v=a1f34f49"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -78,8 +78,9 @@
              
   <h1>Source code for dataretrieval.nadp</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Tools for retrieving data from the National Atmospheric Deposition Program (NADP) including</span>
-<span class="sd">the National Trends Network (NTN), the Mercury Deposition Network (MDN).</span>
+<span class="sd">Tools for retrieving data from the National Atmospheric Deposition Program</span>
+<span class="sd">(NADP) including the National Trends Network (NTN), the Mercury Deposition</span>
+<span class="sd">Network (MDN).</span>
 
 <span class="sd">National Trends Network</span>
 <span class="sd">-----------------------</span>
@@ -107,21 +108,32 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">import</span> <span class="nn">zipfile</span>
 <span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">zipfile</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">basename</span>
 
+<span class="kn">import</span> <span class="nn">requests</span>
 
 <span class="n">NADP_URL</span> <span class="o">=</span> <span class="s1">&#39;https://nadp.slh.wisc.edu&#39;</span>
 <span class="n">NADP_MAP_EXT</span> <span class="o">=</span> <span class="s1">&#39;filelib/maps&#39;</span>
 
-<span class="n">NTN_CONC_PARAMS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;pH&#39;</span><span class="p">,</span> <span class="s1">&#39;So4&#39;</span><span class="p">,</span> <span class="s1">&#39;NO3&#39;</span><span class="p">,</span> <span class="s1">&#39;NH4&#39;</span><span class="p">,</span> <span class="s1">&#39;Ca&#39;</span><span class="p">,</span>
-                   <span class="s1">&#39;Mg&#39;</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="s1">&#39;Na&#39;</span><span class="p">,</span> <span class="s1">&#39;Cl&#39;</span><span class="p">,</span> <span class="s1">&#39;Br&#39;</span><span class="p">]</span>
-<span class="n">NTN_DEP_PARAMS</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="s1">&#39;So4&#39;</span><span class="p">,</span> <span class="s1">&#39;NO3&#39;</span><span class="p">,</span> <span class="s1">&#39;NH4&#39;</span><span class="p">,</span> <span class="s1">&#39;Ca&#39;</span><span class="p">,</span> <span class="s1">&#39;Mg&#39;</span><span class="p">,</span>
-                   <span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="s1">&#39;Na&#39;</span><span class="p">,</span> <span class="s1">&#39;Cl&#39;</span><span class="p">,</span> <span class="s1">&#39;Br&#39;</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;SPlusN&#39;</span><span class="p">]</span>
+<span class="n">NTN_CONC_PARAMS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;pH&#39;</span><span class="p">,</span> <span class="s1">&#39;So4&#39;</span><span class="p">,</span> <span class="s1">&#39;NO3&#39;</span><span class="p">,</span> <span class="s1">&#39;NH4&#39;</span><span class="p">,</span> <span class="s1">&#39;Ca&#39;</span><span class="p">,</span> <span class="s1">&#39;Mg&#39;</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="s1">&#39;Na&#39;</span><span class="p">,</span> <span class="s1">&#39;Cl&#39;</span><span class="p">,</span> <span class="s1">&#39;Br&#39;</span><span class="p">]</span>
+<span class="n">NTN_DEP_PARAMS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;H&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;So4&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NO3&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NH4&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Ca&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Mg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;K&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Na&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Cl&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Br&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;N&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SPlusN&#39;</span><span class="p">,</span>
+<span class="p">]</span>
 
 <span class="n">NTN_MEAS_TYPE</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;conc&#39;</span><span class="p">,</span> <span class="s1">&#39;dep&#39;</span><span class="p">,</span> <span class="s1">&#39;precip&#39;</span><span class="p">]</span>  <span class="c1"># concentration or deposition</span>
 
@@ -129,14 +141,14 @@
 <div class="viewcode-block" id="NADP_ZipFile">
 <a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.NADP_ZipFile">[docs]</a>
 <span class="k">class</span> <span class="nc">NADP_ZipFile</span><span class="p">(</span><span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extend zipfile.ZipFile for working on data from NADP</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extend zipfile.ZipFile for working on data from NADP&quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="NADP_ZipFile.tif_name">
 <a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.NADP_ZipFile.tif_name">[docs]</a>
     <span class="k">def</span> <span class="nf">tif_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the name of the tif file in the zip file.&quot;&quot;&quot;</span>
         <span class="n">filenames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">namelist</span><span class="p">()</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;.*tif$&quot;</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;.*tif$&#39;</span><span class="p">)</span>
         <span class="n">tif_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">match</span><span class="p">,</span> <span class="n">filenames</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">tif_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
 
@@ -183,26 +195,26 @@
 
 <span class="sd">        &gt;&gt;&gt; # get map of mercury concentration in 2010 and extract it to a path</span>
 <span class="sd">        &gt;&gt;&gt; data_path = dataretrieval.nadp.get_annual_MDN_map(</span>
-<span class="sd">        ...     measurement_type=&#39;conc&#39;, year=&#39;2010&#39;, path=&#39;somepath&#39;)</span>
+<span class="sd">        ...     measurement_type=&#39;conc&#39;, year=&#39;2010&#39;, path=&#39;somepath&#39;</span>
+<span class="sd">        ... )</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">/MDN/grids/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">NADP_URL</span><span class="p">,</span> <span class="n">NADP_MAP_EXT</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">NADP_URL</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">NADP_MAP_EXT</span><span class="si">}</span><span class="s1">/MDN/grids/&#39;</span>
 
-    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;Hg_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">.zip&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">measurement_type</span><span class="p">,</span> <span class="n">year</span><span class="p">)</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Hg_</span><span class="si">{</span><span class="n">measurement_type</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">year</span><span class="si">}</span><span class="s1">.zip&#39;</span>
 
     <span class="n">z</span> <span class="o">=</span> <span class="n">get_zip</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
         <span class="n">z</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}{</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="si">}{</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span></div>
 
 
 
 <div class="viewcode-block" id="get_annual_NTN_map">
 <a class="viewcode-back" href="../../reference/nadp.html#dataretrieval.nadp.get_annual_NTN_map">[docs]</a>
-<span class="k">def</span> <span class="nf">get_annual_NTN_map</span><span class="p">(</span><span class="n">measurement_type</span><span class="p">,</span> <span class="n">measurement</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                       <span class="n">path</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_annual_NTN_map</span><span class="p">(</span><span class="n">measurement_type</span><span class="p">,</span> <span class="n">measurement</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Download a NTN map from NDAP.</span>
 
 <span class="sd">    This function looks for a zip file containing gridded information at:</span>
@@ -239,22 +251,23 @@
 
 <span class="sd">        &gt;&gt;&gt; # get a map of precipitation in 2015 and extract it to a path</span>
 <span class="sd">        &gt;&gt;&gt; data_path = dataretrieval.nadp.get_annual_NTN_map(</span>
-<span class="sd">        ...     measurement_type=&#39;Precip&#39;, year=&#39;2015&#39;, path=&#39;somepath&#39;)</span>
+<span class="sd">        ...     measurement_type=&#39;Precip&#39;, year=&#39;2015&#39;, path=&#39;somepath&#39;</span>
+<span class="sd">        ... )</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">/NTN/grids/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">NADP_URL</span><span class="p">,</span> <span class="n">NADP_MAP_EXT</span><span class="p">,</span> <span class="n">year</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">NADP_URL</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">NADP_MAP_EXT</span><span class="si">}</span><span class="s1">/NTN/grids/</span><span class="si">{</span><span class="n">year</span><span class="si">}</span><span class="s1">/&#39;</span>
 
-    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">.zip&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">measurement_type</span><span class="p">,</span> <span class="n">year</span><span class="p">)</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">measurement_type</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">year</span><span class="si">}</span><span class="s1">.zip&#39;</span>
 
     <span class="k">if</span> <span class="n">measurement</span><span class="p">:</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">measurement</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">measurement</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">&#39;</span>
 
     <span class="n">z</span> <span class="o">=</span> <span class="n">get_zip</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
         <span class="n">z</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}{</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="si">}{</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span></div>
 
 
 

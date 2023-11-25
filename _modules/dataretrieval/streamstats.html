@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+g2747f0d documentation</title>
+  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+g741c727 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -12,7 +12,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=843a151a"></script>
+        <script src="../../_static/documentation_options.js?v=a1f34f49"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -85,6 +85,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">json</span>
+
 <span class="kn">import</span> <span class="nn">requests</span>
 
 
@@ -117,12 +118,12 @@
     <span class="n">r</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">r</span></div>
 
-    <span class="c1">#data = r.raw.read()</span>
+    <span class="c1"># data = r.raw.read()</span>
 
-    <span class="c1">#with open(filepath, &#39;wb&#39;) as f:</span>
+    <span class="c1"># with open(filepath, &#39;wb&#39;) as f:</span>
     <span class="c1">#    f.write(data)</span>
 
-    <span class="c1">#return</span>
+    <span class="c1"># return</span>
 
 
 <div class="viewcode-block" id="get_sample_watershed">
@@ -147,10 +148,18 @@
 
 <div class="viewcode-block" id="get_watershed">
 <a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.get_watershed">[docs]</a>
-<span class="k">def</span> <span class="nf">get_watershed</span><span class="p">(</span><span class="n">rcode</span><span class="p">,</span> <span class="n">xlocation</span><span class="p">,</span> <span class="n">ylocation</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="mi">4326</span><span class="p">,</span>
-                  <span class="n">includeparameters</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">includeflowtypes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                  <span class="n">includefeatures</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">simplify</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;geojson&#39;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Get watershed object based on location</span>
+<span class="k">def</span> <span class="nf">get_watershed</span><span class="p">(</span>
+    <span class="n">rcode</span><span class="p">,</span>
+    <span class="n">xlocation</span><span class="p">,</span>
+    <span class="n">ylocation</span><span class="p">,</span>
+    <span class="n">crs</span><span class="o">=</span><span class="mi">4326</span><span class="p">,</span>
+    <span class="n">includeparameters</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">includeflowtypes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">includefeatures</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">simplify</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;geojson&#39;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get watershed object based on location</span>
 
 <span class="sd">    **Streamstats documentation:**</span>
 <span class="sd">    Returns a watershed object. The request configuration will determine the</span>
@@ -191,10 +200,16 @@
 <span class="sd">        from the streamstats JSON object.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;rcode&#39;</span><span class="p">:</span> <span class="n">rcode</span><span class="p">,</span> <span class="s1">&#39;xlocation&#39;</span><span class="p">:</span> <span class="n">xlocation</span><span class="p">,</span> <span class="s1">&#39;ylocation&#39;</span><span class="p">:</span> <span class="n">ylocation</span><span class="p">,</span>
-               <span class="s1">&#39;crs&#39;</span><span class="p">:</span> <span class="n">crs</span><span class="p">,</span> <span class="s1">&#39;includeparameters&#39;</span><span class="p">:</span> <span class="n">includeparameters</span><span class="p">,</span>
-               <span class="s1">&#39;includeflowtypes&#39;</span><span class="p">:</span> <span class="n">includeflowtypes</span><span class="p">,</span>
-               <span class="s1">&#39;includefeatures&#39;</span><span class="p">:</span> <span class="n">includefeatures</span><span class="p">,</span> <span class="s1">&#39;simplify&#39;</span><span class="p">:</span> <span class="n">simplify</span><span class="p">}</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;rcode&#39;</span><span class="p">:</span> <span class="n">rcode</span><span class="p">,</span>
+        <span class="s1">&#39;xlocation&#39;</span><span class="p">:</span> <span class="n">xlocation</span><span class="p">,</span>
+        <span class="s1">&#39;ylocation&#39;</span><span class="p">:</span> <span class="n">ylocation</span><span class="p">,</span>
+        <span class="s1">&#39;crs&#39;</span><span class="p">:</span> <span class="n">crs</span><span class="p">,</span>
+        <span class="s1">&#39;includeparameters&#39;</span><span class="p">:</span> <span class="n">includeparameters</span><span class="p">,</span>
+        <span class="s1">&#39;includeflowtypes&#39;</span><span class="p">:</span> <span class="n">includeflowtypes</span><span class="p">,</span>
+        <span class="s1">&#39;includefeatures&#39;</span><span class="p">:</span> <span class="n">includefeatures</span><span class="p">,</span>
+        <span class="s1">&#39;simplify&#39;</span><span class="p">:</span> <span class="n">simplify</span><span class="p">,</span>
+    <span class="p">}</span>
     <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://streamstats.usgs.gov/streamstatsservices/watershed.geojson&#39;</span>
 
     <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
@@ -221,6 +236,7 @@
 <a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.Watershed">[docs]</a>
 <span class="k">class</span> <span class="nc">Watershed</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to extract information from the streamstats JSON object.&quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="Watershed.from_streamstats_json">
 <a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.Watershed.from_streamstats_json">[docs]</a>
     <span class="nd">@classmethod</span>

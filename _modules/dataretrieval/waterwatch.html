@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterwatch &mdash; dataretrieval 0.1.dev1+g2747f0d documentation</title>
+  <title>dataretrieval.waterwatch &mdash; dataretrieval 0.1.dev1+g741c727 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -12,7 +12,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=843a151a"></script>
+        <script src="../../_static/documentation_options.js?v=a1f34f49"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -79,21 +79,24 @@
   <h1>Source code for dataretrieval.waterwatch</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">requests</span>
 
-<span class="n">ResponseFormat</span> <span class="o">=</span> <span class="s2">&quot;json&quot;</span>  <span class="c1"># json, xml</span>
+<span class="n">ResponseFormat</span> <span class="o">=</span> <span class="s1">&#39;json&#39;</span>  <span class="c1"># json, xml</span>
 
 <span class="c1"># WaterWatch won&#39;t receive any new features but it will continue to operate.</span>
-<span class="n">waterwatch_url</span> <span class="o">=</span> <span class="s2">&quot;https://waterwatch.usgs.gov/webservices/&quot;</span>
+<span class="n">waterwatch_url</span> <span class="o">=</span> <span class="s1">&#39;https://waterwatch.usgs.gov/webservices/&#39;</span>
 
 
 <span class="k">def</span> <span class="nf">_read_json</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 
+
 <div class="viewcode-block" id="get_flood_stage">
 <a class="viewcode-back" href="../../reference/waterwatch.html#dataretrieval.waterwatch.get_flood_stage">[docs]</a>
-<span class="k">def</span> <span class="nf">get_flood_stage</span><span class="p">(</span><span class="n">sites</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span> <span class="s2">&quot;DF&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Dict</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">get_flood_stage</span><span class="p">(</span>
+    <span class="n">sites</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;DF&#39;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Dict</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Retrieves flood stages for a list of station numbers.</span>
 
@@ -118,7 +121,10 @@
 <span class="sd">        &gt;&gt; stations = [&quot;07144100&quot;, &quot;07144101&quot;]</span>
 <span class="sd">        &gt;&gt; res = get_flood_stage(stations, fmt=&quot;dict&quot;)  # dictionary output</span>
 <span class="sd">        &gt;&gt; print(res)</span>
-<span class="sd">        {&#39;07144100&#39;: {&#39;action_stage&#39;: &#39;20&#39;, &#39;flood_stage&#39;: &#39;22&#39;, &#39;moderate_flood_stage&#39;: &#39;25&#39;, &#39;major_flood_stage&#39;: &#39;26&#39;},</span>
+<span class="sd">        {&#39;07144100&#39;: {&#39;action_stage&#39;: &#39;20&#39;,</span>
+<span class="sd">                      &#39;flood_stage&#39;: &#39;22&#39;,</span>
+<span class="sd">                      &#39;moderate_flood_stage&#39;: &#39;25&#39;,</span>
+<span class="sd">                      &#39;major_flood_stage&#39;: &#39;26&#39;},</span>
 <span class="sd">         &#39;07144101&#39;: None}</span>
 <span class="sd">        &gt;&gt; print(get_flood_stage(stations))</span>
 <span class="sd">        &gt;&gt; print(res)</span>
@@ -128,13 +134,16 @@
 <span class="sd">        50057000           16          20                   24                30</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">waterwatch_url</span> <span class="o">+</span> <span class="s1">&#39;floodstage&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="n">ResponseFormat</span><span class="p">})</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">waterwatch_url</span> <span class="o">+</span> <span class="s1">&#39;floodstage&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="n">ResponseFormat</span><span class="p">})</span>
 
     <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
         <span class="n">json_res</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-        <span class="n">stages</span> <span class="o">=</span> <span class="p">{</span><span class="n">site</span><span class="p">[</span><span class="s1">&#39;site_no&#39;</span><span class="p">]:</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">site</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;site_no&#39;</span><span class="p">}</span> <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">json_res</span><span class="p">[</span><span class="s1">&#39;sites&#39;</span><span class="p">]}</span>
+        <span class="n">stages</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">site</span><span class="p">[</span><span class="s1">&#39;site_no&#39;</span><span class="p">]:</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">site</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;site_no&#39;</span><span class="p">}</span>
+            <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">json_res</span><span class="p">[</span><span class="s1">&#39;sites&#39;</span><span class="p">]</span>
+        <span class="p">}</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">requests</span><span class="o">.</span><span class="n">RequestException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">res</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">] - </span><span class="si">{</span><span class="n">res</span><span class="o">.</span><span class="n">reason</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">requests</span><span class="o">.</span><span class="n">RequestException</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;[</span><span class="si">{</span><span class="n">res</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s1">] - </span><span class="si">{</span><span class="n">res</span><span class="o">.</span><span class="n">reason</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">sites</span><span class="p">:</span>
         <span class="n">stations_stages</span> <span class="o">=</span> <span class="n">stages</span>
@@ -146,7 +155,7 @@
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                 <span class="n">stations_stages</span><span class="p">[</span><span class="n">site</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">if</span> <span class="n">fmt</span> <span class="o">==</span> <span class="s2">&quot;dict&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">fmt</span> <span class="o">==</span> <span class="s1">&#39;dict&#39;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">stations_stages</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">_read_json</span><span class="p">(</span><span class="n">stations_stages</span><span class="p">)</span></div>

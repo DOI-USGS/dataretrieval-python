@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g2747f0d documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g741c727 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -13,7 +13,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=843a151a"></script>
+        <script src="../_static/documentation_options.js?v=a1f34f49"></script>
         <script src="../_static/doctools.js?v=888ff710"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -255,11 +255,11 @@ if ‘no’. Default is ‘no’.</p></li>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get results within a radial distance of a point</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">lat</span><span class="o">=</span><span class="s1">&#39;44.2&#39;</span><span class="p">,</span> <span class="n">long</span><span class="o">=</span><span class="s1">&#39;-88.9&#39;</span><span class="p">,</span> <span class="n">within</span><span class="o">=</span><span class="s1">&#39;0.5&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">lat</span><span class="o">=</span><span class="s1">&#39;44.2&#39;</span><span class="p">,</span> <span class="n">long</span><span class="o">=</span><span class="s1">&#39;-88.9&#39;</span><span class="p">,</span> <span class="n">within</span><span class="o">=</span><span class="s1">&#39;0.5&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get results within a bounding box</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">bBox</span><span class="o">=</span><span class="s1">&#39;-92.8,44.2,-88.9,46.0&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span><span class="n">bBox</span><span class="o">=</span><span class="s1">&#39;-92.8,44.2,-88.9,46.0&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -288,8 +288,8 @@ certificate is not checked.</p></li>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get activities within Washington D.C.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># during a specific time period</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_activities</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s1">&#39;US:11&#39;</span><span class="p">,</span> <span class="n">startDateLo</span><span class="o">=</span><span class="s1">&#39;12-30-2019&#39;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s1">&#39;01-01-2020&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s1">&#39;US:11&#39;</span><span class="p">,</span> <span class="n">startDateLo</span><span class="o">=</span><span class="s1">&#39;12-30-2019&#39;</span><span class="p">,</span> <span class="n">startDateHi</span><span class="o">=</span><span class="s1">&#39;01-01-2020&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -318,8 +318,8 @@ certificate is not checked.</p></li>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get activity metrics for a state (North Dakota in this case)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># within a set time period</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_activity_metrics</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s1">&#39;US:38&#39;</span><span class="p">,</span> <span class="n">startDateLo</span><span class="o">=</span><span class="s1">&#39;07-01-2006&#39;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s1">&#39;12-01-2006&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s1">&#39;US:38&#39;</span><span class="p">,</span> <span class="n">startDateLo</span><span class="o">=</span><span class="s1">&#39;07-01-2006&#39;</span><span class="p">,</span> <span class="n">startDateHi</span><span class="o">=</span><span class="s1">&#39;12-01-2006&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -349,8 +349,11 @@ certificate is not checked.</p></li>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get detection limits for Nitrite measurements in Rhode Island</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># between specific dates</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_detection_limits</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s1">&#39;US:44&#39;</span><span class="p">,</span> <span class="n">characteristicName</span><span class="o">=</span><span class="s1">&#39;Nitrite&#39;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">startDateLo</span><span class="o">=</span><span class="s1">&#39;01-01-2021&#39;</span><span class="p">,</span> <span class="n">startDateHi</span><span class="o">=</span><span class="s1">&#39;02-20-2021&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s1">&#39;US:44&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">characteristicName</span><span class="o">=</span><span class="s1">&#39;Nitrite&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateLo</span><span class="o">=</span><span class="s1">&#39;01-01-2021&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s1">&#39;02-20-2021&#39;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -377,8 +380,7 @@ certificate is not checked.</p></li>
 </dl>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get habitat metrics for a state (Rhode Island in this case)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_habitat_metrics</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s1">&#39;US:44&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_habitat_metrics</span><span class="p">(</span><span class="n">statecode</span><span class="o">=</span><span class="s1">&#39;US:44&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -434,8 +436,8 @@ certificate is not checked.</p></li>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get project weights for a state (North Dakota in this case)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># within a set time period</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_project_weights</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s1">&#39;US:38&#39;</span><span class="p">,</span> <span class="n">startDateLo</span><span class="o">=</span><span class="s1">&#39;01-01-2006&#39;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s1">&#39;01-01-2009&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s1">&#39;US:38&#39;</span><span class="p">,</span> <span class="n">startDateLo</span><span class="o">=</span><span class="s1">&#39;01-01-2006&#39;</span><span class="p">,</span> <span class="n">startDateHi</span><span class="o">=</span><span class="s1">&#39;01-01-2009&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -490,7 +492,8 @@ certificate is not checked.</p></li>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get sites within a radial distance of a point</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">lat</span><span class="o">=</span><span class="s1">&#39;44.2&#39;</span><span class="p">,</span> <span class="n">long</span><span class="o">=</span><span class="s1">&#39;-88.9&#39;</span><span class="p">,</span> <span class="n">within</span><span class="o">=</span><span class="s1">&#39;2.5&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">lat</span><span class="o">=</span><span class="s1">&#39;44.2&#39;</span><span class="p">,</span> <span class="n">long</span><span class="o">=</span><span class="s1">&#39;-88.9&#39;</span><span class="p">,</span> <span class="n">within</span><span class="o">=</span><span class="s1">&#39;2.5&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
