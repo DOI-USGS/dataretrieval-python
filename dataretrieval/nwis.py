@@ -472,7 +472,7 @@ def get_stats(
     Queries water services statistics information.
 
     For more information about the water services statistics service, visit
-    https://waterservices.usgs.gov/rest/Statistics-Service.html
+    https://waterservices.usgs.gov/docs/statistics/statistics-details/
 
     Parameters
     ----------
@@ -577,7 +577,7 @@ def query_waterservices(
     """
     Queries waterservices.usgs.gov
 
-    For more documentation see https://waterservices.usgs.gov/rest/
+    For more documentation see https://waterservices.usgs.gov/docs/
 
     .. note::
 
@@ -718,7 +718,7 @@ def get_info(ssl_check: bool = True, **kwargs) -> Tuple[pd.DataFrame, BaseMetada
     **Note:** *Must specify one major parameter.*
 
     For additional parameter options see
-    https://waterservices.usgs.gov/rest/Site-Service.html#stateCd
+    https://waterservices.usgs.gov/docs/site-service/site-service-details/
 
     Parameters
     ----------
