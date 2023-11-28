@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_info() Examples &mdash; dataretrieval 0.1.dev1+g741c727 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/nbsphinx-code-cells.css" type="text/css" />
+  <title>&lt;no title&gt; &mdash; dataretrieval 0.1.dev1+g185ebe4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=a1f34f49"></script>
+        <script src="../_static/documentation_options.js?v=af4ea64b"></script>
         <script src="../_static/doctools.js?v=888ff710"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -23,7 +24,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="USGS dataretrieval Python Package what_sites() Examples" href="USGS_dataretrieval_SiteInventory_Examples.html" />
+    <link rel="next" title="&lt;no title&gt;" href="USGS_dataretrieval_SiteInventory_Examples.html" />
     <link rel="prev" title="USGS dataretrieval Python Package get_ratings() Examples" href="USGS_dataretrieval_Ratings_Examples.html" /> 
 </head>
 
@@ -49,37 +50,10 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_DailyValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_dv()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_gwlevels()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Measurements_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_discharge_measurements()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_ParameterCodes_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_pmcodes()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Peaks_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_discharge_peaks()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Ratings_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_ratings()</span></code> Examples</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_info()</span></code> Examples</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#Install-the-Package">Install the Package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Basic-Usage">Basic Usage</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Example-1:-Get-site-information-for-a-USGS-NWIS-monitoring-site">Example 1: Get site information for a USGS NWIS monitoring site</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Interpreting-the-Result">Interpreting the Result</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Additional-Examples">Additional Examples</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_SiteInventory_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Statistics_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_stats()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_UnitValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_iv()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_WaterSamples_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_qwdata()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_WaterUse_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_water_use()</span></code> Examples</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
@@ -100,7 +74,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
-      <li class="breadcrumb-item active">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_info()</span></code> Examples</li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/examples/USGS_dataretrieval_SiteInfo_Examples.nblink.txt" rel="nofollow"> View page source</a>
       </li>
@@ -110,1551 +84,452 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="USGS-dataretrieval-Python-Package-get_info()-Examples">
-<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_info()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-get_info()-Examples" title="Link to this heading"></a></h1>
-<p>This notebook provides examples of using the Python dataretrieval package to retrieve information about a United States Geological Survey (USGS) monitoring site. The dataretrieval package provides a collection of functions to get data from the USGS National Water Information System (NWIS) and other online sources of hydrology and water quality data, including the United States Environmental Protection Agency (USEPA).</p>
-<section id="Install-the-Package">
-<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Link to this heading"></a></h2>
-<p>Use the following code to install the package if it doesn’t exist already within your Jupyter Python environment.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>dataretrieval
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+g741c727)
-Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.25.1)
-Requirement already satisfied: pandas in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.1.3)
-Requirement already satisfied: numpy&lt;2,&gt;=1.22.4 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (1.26.2)
-Requirement already satisfied: python-dateutil&gt;=2.8.2 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2.8.2)
-Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas-&gt;dataretrieval) (2022.1)
-Requirement already satisfied: tzdata&gt;=2022.1 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2023.3)
-Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.2-&gt;pandas-&gt;dataretrieval) (1.16.0)
-</pre></div></div>
-</div>
-<p>Load the package so you can use it along with other packages used in this notebook.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">nwis</span>
-<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
-</pre></div>
-</div>
-</div>
-</section>
-<section id="Basic-Usage">
-<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Link to this heading"></a></h2>
-<p>The dataretrieval package has several functions that allow you to retrieve data from different web services. This examples uses the <code class="docutils literal notranslate"><span class="pre">get_info()</span></code> function to retrieve information about USGS monitoring sites. The function has several arguments, depending on the result you want to retrieve:</p>
-<section id="Major-Arguments-(Additional-arguments,-if-supplied,-will-be-used-as-query-parameters)">
-<h3>Major Arguments (Additional arguments, if supplied, will be used as query parameters)<a class="headerlink" href="#Major-Arguments-(Additional-arguments,-if-supplied,-will-be-used-as-query-parameters)" title="Link to this heading"></a></h3>
-<p>Note: Must specify one major argument.</p>
-<ul class="simple">
-<li><p><strong>sites</strong> (string or list of strings): A list of site numbers. Sites may be prefixed with an optional agency code followed by a colon.</p></li>
-<li><p><strong>stateCd</strong> (string): U.S. postal service (2-digit) state code. Only 1 state can be specified per request.</p></li>
-<li><p><strong>huc</strong> (string or list of strings): A list of hydrologic unit codes (HUC) or aggregated watersheds. Only 1 major HUC can be specified per request, or up to 10 minor HUCs. A major HUC has two digits.</p></li>
-<li><p><strong>bBox</strong> (list): A contiguous range of decimal latitude and longitude, starting with the west longitude, then the south latitude, then the east longitude, and then the north latitude with each value separated by a comma. The product of the range of latitude range and longitude cannot exceed 25 degrees. Whole or decimal degrees must be specified, up to six digits of precision. Minutes and seconds are not allowed.</p></li>
-<li><p><strong>countyCd</strong> (string or list of strings): A list of county numbers, in a 5 digit numeric format. The first two digits of a county’s code are the FIPS State Code. (url: <a class="reference external" href="https://help.waterdata.usgs.gov/code/county_query?fmt=html">https://help.waterdata.usgs.gov/code/county_query?fmt=html</a>)</p></li>
-</ul>
-</section>
-<section id="Minor-Arguments">
-<h3>Minor Arguments<a class="headerlink" href="#Minor-Arguments" title="Link to this heading"></a></h3>
-<ul class="simple">
-<li><p><strong>startDt</strong> (string): Selects sites based on whether data was collected at a point in time beginning after startDt (start date). Dates must be in ISO-8601 Calendar Date format (for example: 1990-01-01).</p></li>
-<li><p><strong>endDt</strong> (string)</p></li>
-<li><p><strong>period</strong> (string): Selects sites based on whether or not they were active between now and a time in the past. For example, period=P10W will select sites active in the last ten weeks.</p></li>
-<li><p><strong>modifiedSince</strong> (string): Returns only sites where site attributes or period of record data have changed during the request period.</p></li>
-<li><p><strong>parameterCd</strong> (string or list of strings): Returns only site data for those sites containing the requested USGS parameter codes.</p></li>
-<li><p><strong>siteType</strong> (string or list of strings): Restricts sites to those having one or more major and/or minor site types, such as stream, spring or well. For a list of all valid site types see <a class="reference external" href="https://help.waterdata.usgs.gov/site_tp_cd">https://help.waterdata.usgs.gov/site_tp_cd</a>. For example, siteType=’ST’ returns streams only.</p></li>
-</ul>
-</section>
-<section id="Formatting-Parameters">
-<h3>Formatting Parameters<a class="headerlink" href="#Formatting-Parameters" title="Link to this heading"></a></h3>
-<p>NOTE: The following parameters are available via the USGS data retrieval services, but are not yet functional in the dataretrieval Python package</p>
-<ul class="simple">
-<li><p><strong>siteOutput</strong> (string ‘basic’ or ‘expanded’): Indicates the richness of metadata you want for site attributes. Note that for visually oriented formats like Google Map format, this argument has no meaning. Note: for performance reasons, siteOutput=’expanded’ cannot be used if seriesCatalogOutput=true or with any values for outputDataTypeCd.</p></li>
-<li><p><strong>seriesCatalogOutput</strong> (boolean): A switch that provides detailed period of record information for certain output formats. The period of record indicates date ranges for a certain kind of information about a site, for example the start and end dates for a site’s daily mean streamflow.</p></li>
-</ul>
-<p>For additional parameter options see <a class="reference external" href="https://waterservices.usgs.gov/rest/Site-Service.html#stateCd">https://waterservices.usgs.gov/rest/Site-Service.html#stateCd</a></p>
-</section>
-</section>
-<section id="Example-1:-Get-site-information-for-a-USGS-NWIS-monitoring-site">
-<h2>Example 1: Get site information for a USGS NWIS monitoring site<a class="headerlink" href="#Example-1:-Get-site-information-for-a-USGS-NWIS-monitoring-site" title="Link to this heading"></a></h2>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Specify the site you want to retrieve information for</span>
-<span class="n">siteID</span> <span class="o">=</span> <span class="s2">&quot;10109000&quot;</span>
-
-<span class="c1"># Get the site information</span>
-<span class="n">siteINFO</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteID</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</section>
-<section id="Interpreting-the-Result">
-<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Link to this heading"></a></h2>
-<p>The result of calling the <code class="docutils literal notranslate"><span class="pre">get_info()</span></code> function is an object that contains a Pandas data frame object and an associated metadata object. The Pandas data frame contains the site information for the requested site.</p>
-<p>Once you’ve got the data frame, there’s several useful things you can do to explore the information about the site.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Display the data frame as a table</span>
-<span class="n">display</span><span class="p">(</span><span class="n">siteINFO</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>station_nm</th>
-      <th>site_tp_cd</th>
-      <th>lat_va</th>
-      <th>long_va</th>
-      <th>dec_lat_va</th>
-      <th>dec_long_va</th>
-      <th>coord_meth_cd</th>
-      <th>coord_acy_cd</th>
-      <th>...</th>
-      <th>local_time_fg</th>
-      <th>reliability_cd</th>
-      <th>gw_file_cd</th>
-      <th>nat_aqfr_cd</th>
-      <th>aqfr_cd</th>
-      <th>aqfr_type_cd</th>
-      <th>well_depth_va</th>
-      <th>hole_depth_va</th>
-      <th>depth_src_cd</th>
-      <th>project_no</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
-      <td>ST</td>
-      <td>414436</td>
-      <td>1114655</td>
-      <td>41.743264</td>
-      <td>-111.78272</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-  </tbody>
-</table>
-<p>1 rows × 42 columns</p>
-</div></div>
-</div>
-<p>Show the data types of the columns in the resulting data frame.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">siteINFO</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtypes</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-agency_cd                 object
-site_no                   object
-station_nm                object
-site_tp_cd                object
-lat_va                     int64
-long_va                    int64
-dec_lat_va               float64
-dec_long_va              float64
-coord_meth_cd             object
-coord_acy_cd              object
-coord_datum_cd            object
-dec_coord_datum_cd        object
-district_cd                int64
-state_cd                   int64
-county_cd                  int64
-country_cd                object
-land_net_ds               object
-map_nm                   float64
-map_scale_fc             float64
-alt_va                   float64
-alt_meth_cd               object
-alt_acy_va                 int64
-alt_datum_cd              object
-huc_cd                     int64
-basin_cd                   int64
-topo_cd                  float64
-instruments_cd            object
-construction_dt          float64
-inventory_dt             float64
-drain_area_va              int64
-contrib_drain_area_va    float64
-tz_cd                     object
-local_time_fg             object
-reliability_cd           float64
-gw_file_cd                object
-nat_aqfr_cd              float64
-aqfr_cd                  float64
-aqfr_type_cd             float64
-well_depth_va            float64
-hole_depth_va            float64
-depth_src_cd             float64
-project_no               float64
-dtype: object
-</pre></div></div>
-</div>
-<p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_info()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The query URL used to retrieve the data from NWIS was: &quot;</span> <span class="o">+</span> <span class="n">siteINFO</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-The query URL used to retrieve the data from NWIS was: https://waterservices.usgs.gov/nwis/site?sites=10109000&amp;siteOutput=Expanded&amp;format=rdb
-</pre></div></div>
-</div>
-</section>
-<section id="Additional-Examples">
-<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Link to this heading"></a></h2>
-<section id="Example-2:-Get-site-information-for-multiple-sites-in-a-list">
-<h3>Example 2: Get site information for multiple sites in a list<a class="headerlink" href="#Example-2:-Get-site-information-for-multiple-sites-in-a-list" title="Link to this heading"></a></h3>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a list of the site identifiers you want to retrieve information for</span>
-<span class="n">siteIDs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;05114000&quot;</span><span class="p">,</span> <span class="s2">&quot;09423350&quot;</span><span class="p">]</span>
-
-<span class="c1"># Get the site information</span>
-<span class="n">siteINFO_multi</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteIDs</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">siteINFO_multi</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>station_nm</th>
-      <th>site_tp_cd</th>
-      <th>lat_va</th>
-      <th>long_va</th>
-      <th>dec_lat_va</th>
-      <th>dec_long_va</th>
-      <th>coord_meth_cd</th>
-      <th>coord_acy_cd</th>
-      <th>...</th>
-      <th>local_time_fg</th>
-      <th>reliability_cd</th>
-      <th>gw_file_cd</th>
-      <th>nat_aqfr_cd</th>
-      <th>aqfr_cd</th>
-      <th>aqfr_type_cd</th>
-      <th>well_depth_va</th>
-      <th>hole_depth_va</th>
-      <th>depth_src_cd</th>
-      <th>project_no</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>USGS</td>
-      <td>05114000</td>
-      <td>SOURIS RIVER NR SHERWOOD, ND</td>
-      <td>ST</td>
-      <td>485924.00</td>
-      <td>1015728.00</td>
-      <td>48.990016</td>
-      <td>-101.958221</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>USGS</td>
-      <td>09423350</td>
-      <td>CARUTHERS C NR IVANPAH CA</td>
-      <td>ST</td>
-      <td>351442.02</td>
-      <td>1151756.36</td>
-      <td>35.245006</td>
-      <td>-115.298989</td>
-      <td>M</td>
-      <td>5</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-  </tbody>
-</table>
-<p>2 rows × 42 columns</p>
-</div></div>
-</div>
-</section>
-<section id="Example-3:-Get-site-information-for-all-sites-within-a-state">
-<h3>Example 3: Get site information for all sites within a state<a class="headerlink" href="#Example-3:-Get-site-information-for-all-sites-within-a-state" title="Link to this heading"></a></h3>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get the site information for a state</span>
-<span class="n">siteINFO_state</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span><span class="n">stateCd</span><span class="o">=</span><span class="s1">&#39;UT&#39;</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">siteINFO_state</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>station_nm</th>
-      <th>site_tp_cd</th>
-      <th>lat_va</th>
-      <th>long_va</th>
-      <th>dec_lat_va</th>
-      <th>dec_long_va</th>
-      <th>coord_meth_cd</th>
-      <th>coord_acy_cd</th>
-      <th>...</th>
-      <th>local_time_fg</th>
-      <th>reliability_cd</th>
-      <th>gw_file_cd</th>
-      <th>nat_aqfr_cd</th>
-      <th>aqfr_cd</th>
-      <th>aqfr_type_cd</th>
-      <th>well_depth_va</th>
-      <th>hole_depth_va</th>
-      <th>depth_src_cd</th>
-      <th>project_no</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>USGS</td>
-      <td>09163527</td>
-      <td>WEST BITTER CREEK NEAR HARLEY DOME, UTAH</td>
-      <td>ST</td>
-      <td>392035.0</td>
-      <td>1090848.0</td>
-      <td>39.343032</td>
-      <td>-109.147336</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>USGS</td>
-      <td>09163530</td>
-      <td>COLORADO RIVER BELOW COLORADO-UTAH STATE LINE</td>
-      <td>ST</td>
-      <td>390518.0</td>
-      <td>1090601.0</td>
-      <td>39.088317</td>
-      <td>-109.100945</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>USGS</td>
-      <td>09163550</td>
-      <td>HARLEY DOME WASH NEAR HARLEY DOME, UTAH</td>
-      <td>ST</td>
-      <td>390925.0</td>
-      <td>1090840.0</td>
-      <td>39.156927</td>
-      <td>-109.145114</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>USGS</td>
-      <td>09163675</td>
-      <td>COTTONWOOD WASH AT I-70, NEAR CISCO, UTAH</td>
-      <td>ST</td>
-      <td>390454.0</td>
-      <td>1091301.0</td>
-      <td>39.081652</td>
-      <td>-109.217615</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>USGS</td>
-      <td>09163700</td>
-      <td>CISCO WASH NEAR CISCO, UTAH</td>
-      <td>ST</td>
-      <td>385750.0</td>
-      <td>1092010.0</td>
-      <td>38.963873</td>
-      <td>-109.336784</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>32725</th>
-      <td>USGS</td>
-      <td>415956112525201</td>
-      <td>(B-15- 9)28cbc- 1</td>
-      <td>GW</td>
-      <td>415956.0</td>
-      <td>1125252.0</td>
-      <td>41.998808</td>
-      <td>-112.881929</td>
-      <td>M</td>
-      <td>S</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>C</td>
-      <td>YNNNNNNN</td>
-      <td>NaN</td>
-      <td>100VLFL</td>
-      <td>NaN</td>
-      <td>400.0</td>
-      <td>NaN</td>
-      <td>O</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>32726</th>
-      <td>USGS</td>
-      <td>415956112532501</td>
-      <td>(B-15- 9)29dbc- 1</td>
-      <td>GW</td>
-      <td>415956.0</td>
-      <td>1125325.0</td>
-      <td>41.998808</td>
-      <td>-112.891096</td>
-      <td>M</td>
-      <td>S</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>C</td>
-      <td>YNNNNNNN</td>
-      <td>NaN</td>
-      <td>100VLFL</td>
-      <td>NaN</td>
-      <td>480.0</td>
-      <td>NaN</td>
-      <td>O</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>32727</th>
-      <td>USGS</td>
-      <td>415957112411001</td>
-      <td>(B-15- 7)30cbc- 1</td>
-      <td>GW</td>
-      <td>415957.0</td>
-      <td>1124110.0</td>
-      <td>41.999086</td>
-      <td>-112.686923</td>
-      <td>M</td>
-      <td>S</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>C</td>
-      <td>YNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>228.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>32728</th>
-      <td>USGS</td>
-      <td>415958111242901</td>
-      <td>(A-15- 5)32dbb- 1</td>
-      <td>GW</td>
-      <td>415958.0</td>
-      <td>1112429.0</td>
-      <td>41.999377</td>
-      <td>-111.408818</td>
-      <td>M</td>
-      <td>T</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>U</td>
-      <td>NYNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>191.0</td>
-      <td>191.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>32729</th>
-      <td>USGS</td>
-      <td>415958112390301</td>
-      <td>(B-15- 7)29dac- 1</td>
-      <td>GW</td>
-      <td>415958.0</td>
-      <td>1123903.0</td>
-      <td>41.999364</td>
-      <td>-112.651644</td>
-      <td>M</td>
-      <td>S</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>C</td>
-      <td>YNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>175.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-  </tbody>
-</table>
-<p>32730 rows × 42 columns</p>
-</div></div>
-</div>
-</section>
-<section id="Example-4:-Get-site-information-for-all-%22stream%22-sites-within-a-USGS-HUC">
-<h3>Example 4: Get site information for all “stream” sites within a USGS HUC<a class="headerlink" href="#Example-4:-Get-site-information-for-all-%22stream%22-sites-within-a-USGS-HUC" title="Link to this heading"></a></h3>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a list of hucs for which to query sites</span>
-<span class="n">huc_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;16010203&#39;</span><span class="p">]</span>
-
-<span class="c1"># Get the site information - limit to stream sites</span>
-<span class="n">siteINFO_huc</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span><span class="n">huc</span><span class="o">=</span><span class="n">huc_list</span><span class="p">,</span> <span class="n">siteType</span><span class="o">=</span><span class="s1">&#39;ST&#39;</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">siteINFO_huc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>station_nm</th>
-      <th>site_tp_cd</th>
-      <th>lat_va</th>
-      <th>long_va</th>
-      <th>dec_lat_va</th>
-      <th>dec_long_va</th>
-      <th>coord_meth_cd</th>
-      <th>coord_acy_cd</th>
-      <th>...</th>
-      <th>local_time_fg</th>
-      <th>reliability_cd</th>
-      <th>gw_file_cd</th>
-      <th>nat_aqfr_cd</th>
-      <th>aqfr_cd</th>
-      <th>aqfr_type_cd</th>
-      <th>well_depth_va</th>
-      <th>hole_depth_va</th>
-      <th>depth_src_cd</th>
-      <th>project_no</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>USGS</td>
-      <td>10104600</td>
-      <td>SOUTH FORK LITTLE BEAR RIVER NEAR AVON, UTAH</td>
-      <td>ST</td>
-      <td>413001.00</td>
-      <td>1114857.00</td>
-      <td>41.500214</td>
-      <td>-111.816607</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>USGS</td>
-      <td>10104700</td>
-      <td>LITTLE BEAR R BL DAVENPORT C NR AVON UT</td>
-      <td>ST</td>
-      <td>413045.00</td>
-      <td>1114840.00</td>
-      <td>41.512436</td>
-      <td>-111.811885</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4.649001e+08</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>USGS</td>
-      <td>10104900</td>
-      <td>EAST FK LT BEAR RIV AB RESV NR AVON UTAH</td>
-      <td>ST</td>
-      <td>413106.00</td>
-      <td>1114249.00</td>
-      <td>41.518270</td>
-      <td>-111.714382</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>USGS</td>
-      <td>10105000</td>
-      <td>EAST FORK LITTLE BEAR R NR AVON UTAH</td>
-      <td>ST</td>
-      <td>413100.00</td>
-      <td>1114500.00</td>
-      <td>41.516603</td>
-      <td>-111.750772</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>USGS</td>
-      <td>10105900</td>
-      <td>LITTLE BEAR RIVER AT PARADISE, UT</td>
-      <td>ST</td>
-      <td>413432.00</td>
-      <td>1115116.00</td>
-      <td>41.575490</td>
-      <td>-111.855220</td>
-      <td>M</td>
-      <td>S</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>2.474900e+09</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>USGS</td>
-      <td>10106000</td>
-      <td>LITTLE BEAR RIVER NEAR PARADISE, UTAH</td>
-      <td>ST</td>
-      <td>413525.00</td>
-      <td>1115110.00</td>
-      <td>41.590212</td>
-      <td>-111.853554</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>USGS</td>
-      <td>10107400</td>
-      <td>WELLSVILLE-MENDON LOWER CANAL AT WELLSVILLE, UT</td>
-      <td>ST-CA</td>
-      <td>413855.00</td>
-      <td>1115630.00</td>
-      <td>41.648543</td>
-      <td>-111.942446</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>USGS</td>
-      <td>10107500</td>
-      <td>LITTLE BEAR RIVER NEAR HYRUM, UTAH</td>
-      <td>ST</td>
-      <td>413800.00</td>
-      <td>1115300.00</td>
-      <td>41.633266</td>
-      <td>-111.884111</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>USGS</td>
-      <td>10107600</td>
-      <td>LITTLE BEAR RIV AT WELLSVILLE UTAH</td>
-      <td>ST</td>
-      <td>413851.00</td>
-      <td>1115522.00</td>
-      <td>41.647432</td>
-      <td>-111.923556</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>USGS</td>
-      <td>10107700</td>
-      <td>LOGAN RIVER NR GARDEN CITY, UTAH</td>
-      <td>ST</td>
-      <td>415600.00</td>
-      <td>1113400.00</td>
-      <td>41.933264</td>
-      <td>-111.567436</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>10</th>
-      <td>USGS</td>
-      <td>10107800</td>
-      <td>TEMPLE FORK NEAR LOGAN, UTAH</td>
-      <td>ST</td>
-      <td>415000.00</td>
-      <td>1113500.00</td>
-      <td>41.833266</td>
-      <td>-111.584103</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>11</th>
-      <td>USGS</td>
-      <td>10108000</td>
-      <td>UTAH POWER AND LIGHT TAILRACE NR LOGAN UTAH</td>
-      <td>ST</td>
-      <td>414440.00</td>
-      <td>1114700.00</td>
-      <td>41.744375</td>
-      <td>-111.784109</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4.649001e+08</td>
-    </tr>
-    <tr>
-      <th>12</th>
-      <td>USGS</td>
-      <td>10108400</td>
-      <td>CACHE HIGHLINE CANAL NEAR LOGAN, UTAH</td>
-      <td>ST-CA</td>
-      <td>414435.00</td>
-      <td>1114540.00</td>
-      <td>41.742987</td>
-      <td>-111.761886</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>13</th>
-      <td>USGS</td>
-      <td>10108500</td>
-      <td>LOGAN HYD P AN SM CA N LOGAN UTAH</td>
-      <td>ST</td>
-      <td>414445.00</td>
-      <td>1114705.00</td>
-      <td>41.745764</td>
-      <td>-111.785498</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>14</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
-      <td>ST</td>
-      <td>414436.00</td>
-      <td>1114655.00</td>
-      <td>41.743264</td>
-      <td>-111.782720</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>15</th>
-      <td>USGS</td>
-      <td>10109001</td>
-      <td>COM F LOGAN R AB ST D AND CACHE HL CAN NR LOGA...</td>
-      <td>ST</td>
-      <td>414440.00</td>
-      <td>1114701.00</td>
-      <td>41.744375</td>
-      <td>-111.784387</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>16</th>
-      <td>USGS</td>
-      <td>10111700</td>
-      <td>BLACKSMITH F B MILL C N HYRUM UT</td>
-      <td>ST</td>
-      <td>413540.00</td>
-      <td>1113400.00</td>
-      <td>41.594381</td>
-      <td>-111.567433</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4.649001e+08</td>
-    </tr>
-    <tr>
-      <th>17</th>
-      <td>USGS</td>
-      <td>10112000</td>
-      <td>BLACKSMITH F A H RAN N HYRUM UTAH</td>
-      <td>ST</td>
-      <td>413700.00</td>
-      <td>1113700.00</td>
-      <td>41.616603</td>
-      <td>-111.617435</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>18</th>
-      <td>USGS</td>
-      <td>10112500</td>
-      <td>BLACKSMITH FK AT MUN. POWERPLANT, NR HYRUM, UT</td>
-      <td>ST</td>
-      <td>413740.00</td>
-      <td>1114120.00</td>
-      <td>41.627713</td>
-      <td>-111.689660</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>19</th>
-      <td>USGS</td>
-      <td>10113500</td>
-      <td>BLACKSMITH FORK AB UP and L CO.'S DAM NR HYRUM...</td>
-      <td>ST</td>
-      <td>413725.00</td>
-      <td>1114417.00</td>
-      <td>41.623545</td>
-      <td>-111.738829</td>
-      <td>M</td>
-      <td>S</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>20</th>
-      <td>USGS</td>
-      <td>10114500</td>
-      <td>BLACKSMITH FK BL UP&amp;L PLANT, NR HYRUM, UT</td>
-      <td>ST</td>
-      <td>413740.00</td>
-      <td>1114800.00</td>
-      <td>41.627711</td>
-      <td>-111.800775</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>21</th>
-      <td>USGS</td>
-      <td>10115200</td>
-      <td>LOGAN RIVER BLW BLACKSMITH FORK NR LOGAN, UTAH</td>
-      <td>ST</td>
-      <td>414315.00</td>
-      <td>1115308.00</td>
-      <td>41.720764</td>
-      <td>-111.886334</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>22</th>
-      <td>USGS</td>
-      <td>413900111520003</td>
-      <td>Ditch 675 ft DS outfall pipe nr Miller Rd,Hyru...</td>
-      <td>ST-DCH</td>
-      <td>413927.14</td>
-      <td>1115208.36</td>
-      <td>41.657539</td>
-      <td>-111.868989</td>
-      <td>G</td>
-      <td>S</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>C</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>23</th>
-      <td>USGS</td>
-      <td>414048111495101</td>
-      <td>Blacksmithsfork at 2900 S. nr Millville, UT</td>
-      <td>ST</td>
-      <td>414048.00</td>
-      <td>1114951.00</td>
-      <td>41.680000</td>
-      <td>-111.830833</td>
-      <td>G</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4.749224e+08</td>
-    </tr>
-    <tr>
-      <th>24</th>
-      <td>USGS</td>
-      <td>414258111502001</td>
-      <td>Logan River at golf course road</td>
-      <td>ST</td>
-      <td>414258.00</td>
-      <td>1115020.00</td>
-      <td>41.716111</td>
-      <td>-111.838889</td>
-      <td>G</td>
-      <td>5</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4.749224e+08</td>
-    </tr>
-    <tr>
-      <th>25</th>
-      <td>USGS</td>
-      <td>414308111564101</td>
-      <td>Little Bear at 600 S. nr Mendon, UT</td>
-      <td>ST</td>
-      <td>414308.00</td>
-      <td>1115641.00</td>
-      <td>41.718889</td>
-      <td>-111.944722</td>
-      <td>G</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4.749224e+08</td>
-    </tr>
-    <tr>
-      <th>26</th>
-      <td>USGS</td>
-      <td>414314111553801</td>
-      <td>Spring Creek at 600 S. near Logan, UT</td>
-      <td>ST</td>
-      <td>414314.00</td>
-      <td>1115538.00</td>
-      <td>41.720556</td>
-      <td>-111.927222</td>
-      <td>G</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4.749224e+08</td>
-    </tr>
-    <tr>
-      <th>27</th>
-      <td>USGS</td>
-      <td>414500112000000</td>
-      <td>COM FLOW BEAR AREA GSL INFLOW GROUP 1</td>
-      <td>ST</td>
-      <td>414500.00</td>
-      <td>1120000.00</td>
-      <td>41.749928</td>
-      <td>-112.000782</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>28</th>
-      <td>USGS</td>
-      <td>414500112000100</td>
-      <td>COM FLOW BEAR AREA GSL INFLOW GROUP 2</td>
-      <td>ST</td>
-      <td>414500.00</td>
-      <td>1120001.00</td>
-      <td>41.749928</td>
-      <td>-112.001059</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>29</th>
-      <td>USGS</td>
-      <td>414500112000200</td>
-      <td>COM FLOW BEAR AREA GSL INFLOW GROUP 3</td>
-      <td>ST</td>
-      <td>414500.00</td>
-      <td>1120002.00</td>
-      <td>41.749928</td>
-      <td>-112.001337</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>30</th>
-      <td>USGS</td>
-      <td>414541111544201</td>
-      <td>Logan WWTP Outflow nr Logan, UT</td>
-      <td>ST</td>
-      <td>414541.00</td>
-      <td>1115442.00</td>
-      <td>41.761389</td>
-      <td>-111.911667</td>
-      <td>G</td>
-      <td>F</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4.749224e+08</td>
-    </tr>
-    <tr>
-      <th>31</th>
-      <td>USGS</td>
-      <td>414615111544301</td>
-      <td>Swift Slough at 1300 East nr Logan UT</td>
-      <td>ST</td>
-      <td>414614.85</td>
-      <td>1115442.77</td>
-      <td>41.770792</td>
-      <td>-111.911881</td>
-      <td>G</td>
-      <td>5</td>
-      <td>...</td>
-      <td>Y</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4.749224e+08</td>
-    </tr>
-  </tbody>
-</table>
-<p>32 rows × 42 columns</p>
-</div></div>
-</div>
-</section>
-</section>
-</section>
+  <dl>
+<dt>{</dt><dd><dl>
+<dt>“cells”: [</dt><dd><dl>
+<dt>{</dt><dd><p>“cell_type”: “markdown”,
+“metadata”: {</p>
+<blockquote>
+<div><dl class="simple">
+<dt>“pycharm”: {</dt><dd><p>“name”: “#%% mdn”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>},
+“source”: [</p>
+<blockquote>
+<div><p>“# USGS dataretrieval Python Package <cite>get_info()</cite> Examplesn”,
+“n”,
+“This notebook provides examples of using the Python dataretrieval package to retrieve information about a United States Geological Survey (USGS) monitoring site. The dataretrieval package provides a collection of functions to get data from the USGS National Water Information System (NWIS) and other online sources of hydrology and water quality data, including the United States Environmental Protection Agency (USEPA).”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“### Install the Packagen”,
+“n”,
+“Use the following code to install the package if it doesn’t exist already within your Jupyter Python environment.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“metadata”: {</p>
+<blockquote>
+<div><p>“collapsed”: false,
+“jupyter”: {</p>
+<blockquote>
+<div><p>“outputs_hidden”: false</p>
+</div></blockquote>
+<p>},
+“pycharm”: {</p>
+<blockquote>
+<div><p>“name”: “#%%n”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“!pip install dataretrieval”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Load the package so you can use it along with other packages used in this notebook.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“metadata”: {</p>
+<blockquote>
+<div><p>“collapsed”: false,
+“jupyter”: {</p>
+<blockquote>
+<div><p>“outputs_hidden”: false</p>
+</div></blockquote>
+<p>},
+“pycharm”: {</p>
+<blockquote>
+<div><p>“name”: “#%%n”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“from dataretrieval import nwisn”,
+“from IPython.display import display”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“### Basic Usagen”,
+“n”,
+“The dataretrieval package has several functions that allow you to retrieve data from different web services. This examples uses the <cite>get_info()</cite> function to retrieve information about USGS monitoring sites. The function has several arguments, depending on the result you want to retrieve:n”,
+“n”,
+“#### Major Arguments (Additional arguments, if supplied, will be used as query parameters)n”,
+“n”,
+“Note: Must specify one major argument.n”,
+“n”,
+“* <strong>sites</strong> (string or list of strings): A list of site numbers. Sites may be prefixed with an optional agency code followed by a colon.n”,
+“* <strong>stateCd</strong> (string): U.S. postal service (2-digit) state code. Only 1 state can be specified per request.n”,
+“* <strong>huc</strong> (string or list of strings): A list of hydrologic unit codes (HUC) or aggregated watersheds. Only 1 major HUC can be specified per request, or up to 10 minor HUCs. A major HUC has two digits.n”,
+“* <strong>bBox</strong> (list): A contiguous range of decimal latitude and longitude, starting with the west longitude, then the south latitude, then the east longitude, and then the north latitude with each value separated by a comma. The product of the range of latitude range and longitude cannot exceed 25 degrees. Whole or decimal degrees must be specified, up to six digits of precision. Minutes and seconds are not allowed.n”,
+“* <strong>countyCd</strong> (string or list of strings): A list of county numbers, in a 5 digit numeric format. The first two digits of a county’s code are the FIPS State Code. (url: <a class="reference external" href="https://help.waterdata.usgs.gov/code/county_query?fmt=html)n">https://help.waterdata.usgs.gov/code/county_query?fmt=html)n</a>”,
+“n”,
+“#### Minor Argumentsn”,
+“n”,
+“* <strong>startDt</strong> (string): Selects sites based on whether data was collected at a point in time beginning after startDt (start date). Dates must be in ISO-8601 Calendar Date format (for example: 1990-01-01).n”,
+“* <strong>endDt</strong> (string)n”,
+“* <strong>period</strong> (string): Selects sites based on whether or not they were active between now and a time in the past. For example, period=P10W will select sites active in the last ten weeks.n”,
+“* <strong>modifiedSince</strong> (string): Returns only sites where site attributes or period of record data have changed during the request period.n”,
+“* <strong>parameterCd</strong> (string or list of strings): Returns only site data for those sites containing the requested USGS parameter codes.n”,
+“* <strong>siteType</strong> (string or list of strings): Restricts sites to those having one or more major and/or minor site types, such as stream, spring or well. For a list of all valid site types see <a class="reference external" href="https://help.waterdata.usgs.gov/site_tp_cd">https://help.waterdata.usgs.gov/site_tp_cd</a>. For example, siteType=’ST’ returns streams only.n”,
+“n”,
+“#### Formatting Parametersn”,
+“n”,
+“NOTE: The following parameters are available via the USGS data retrieval services, but are not yet functional in the dataretrieval Python packagen”,
+“n”,
+“* <strong>siteOutput</strong> (string ‘basic’ or ‘expanded’): Indicates the richness of metadata you want for site attributes. Note that for visually oriented formats like Google Map format, this argument has no meaning. Note: for performance reasons, siteOutput=’expanded’ cannot be used if seriesCatalogOutput=true or with any values for outputDataTypeCd.n”,
+“* <strong>seriesCatalogOutput</strong> (boolean): A switch that provides detailed period of record information for certain output formats. The period of record indicates date ranges for a certain kind of information about a site, for example the start and end dates for a site’s daily mean streamflow.n”,
+“n”,
+“For additional parameter options see <a class="reference external" href="https://waterservices.usgs.gov/docs/site-service/site-service-details/">https://waterservices.usgs.gov/docs/site-service/site-service-details/</a></p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“### Example 1: Get site information for a USGS NWIS monitoring site”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“metadata”: {</p>
+<blockquote>
+<div><p>“collapsed”: false,
+“jupyter”: {</p>
+<blockquote>
+<div><p>“outputs_hidden”: false</p>
+</div></blockquote>
+<p>},
+“pycharm”: {</p>
+<blockquote>
+<div><p>“name”: “#%%n”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“# Specify the site you want to retrieve information forn”,
+“siteID = &quot;10109000&quot;n”,
+“n”,
+“# Get the site informationn”,
+“siteINFO = nwis.get_info(sites=siteID)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“### Interpreting the Resultn”,
+“n”,
+“The result of calling the <cite>get_info()</cite> function is an object that contains a Pandas data frame object and an associated metadata object. The Pandas data frame contains the site information for the requested site.n”,
+“n”,
+“Once you’ve got the data frame, there’s several useful things you can do to explore the information about the site.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“metadata”: {</p>
+<blockquote>
+<div><p>“collapsed”: false,
+“jupyter”: {</p>
+<blockquote>
+<div><p>“outputs_hidden”: false</p>
+</div></blockquote>
+<p>},
+“pycharm”: {</p>
+<blockquote>
+<div><p>“name”: “#%%n”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“# Display the data frame as a tablen”,
+“display(siteINFO[0])”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Show the data types of the columns in the resulting data frame.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“metadata”: {</p>
+<blockquote>
+<div><p>“collapsed”: false,
+“jupyter”: {</p>
+<blockquote>
+<div><p>“outputs_hidden”: false</p>
+</div></blockquote>
+<p>},
+“pycharm”: {</p>
+<blockquote>
+<div><p>“name”: “#%%n”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“print(siteINFO[0].dtypes)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“The other part of the result returned from the <cite>get_info()</cite> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“metadata”: {</p>
+<blockquote>
+<div><p>“collapsed”: false,
+“jupyter”: {</p>
+<blockquote>
+<div><p>“outputs_hidden”: false</p>
+</div></blockquote>
+<p>},
+“pycharm”: {</p>
+<blockquote>
+<div><p>“name”: “#%%n”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“print(&quot;The query URL used to retrieve the data from NWIS was: &quot; + siteINFO[1].url)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“### Additional Examplesn”,
+“n”,
+“#### Example 2: Get site information for multiple sites in a list”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“metadata”: {</p>
+<blockquote>
+<div><p>“collapsed”: false,
+“jupyter”: {</p>
+<blockquote>
+<div><p>“outputs_hidden”: false</p>
+</div></blockquote>
+<p>},
+“pycharm”: {</p>
+<blockquote>
+<div><p>“name”: “#%%n”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“# Create a list of the site identifiers you want to retrieve information forn”,
+“siteIDs = [&quot;05114000&quot;, &quot;09423350&quot;]n”,
+“n”,
+“# Get the site informationn”,
+“siteINFO_multi = nwis.get_info(sites=siteIDs)n”,
+“display(siteINFO_multi[0])”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“#### Example 3: Get site information for all sites within a state”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“metadata”: {},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“# Get the site information for a staten”,
+“siteINFO_state = nwis.get_info(stateCd=’UT’)n”,
+“display(siteINFO_state[0])”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“#### Example 4: Get site information for all &quot;stream&quot; sites within a USGS HUC”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“metadata”: {},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“# Create a list of hucs for which to query sitesn”,
+“huc_list = [‘16010203’]n”,
+“n”,
+“# Get the site information - limit to stream sitesn”,
+“siteINFO_huc = nwis.get_info(huc=huc_list, siteType=’ST’)n”,
+“display(siteINFO_huc[0])”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>}</p>
+</dd>
+</dl>
+<p>],
+“metadata”: {</p>
+<blockquote>
+<div><dl class="simple">
+<dt>“kernelspec”: {</dt><dd><p>“display_name”: “Python 3 (ipykernel)”,
+“language”: “python”,
+“name”: “python3”</p>
+</dd>
+</dl>
+<p>},
+“language_info”: {</p>
+<blockquote>
+<div><dl class="simple">
+<dt>“codemirror_mode”: {</dt><dd><p>“name”: “ipython”,
+“version”: 3</p>
+</dd>
+</dl>
+<p>},
+“file_extension”: “.py”,
+“mimetype”: “text/x-python”,
+“name”: “python”,
+“nbconvert_exporter”: “python”,
+“pygments_lexer”: “ipython3”,
+“version”: “3.9.7”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>},
+“nbformat”: 4,
+“nbformat_minor”: 4</p>
+</dd>
+</dl>
+<p>}</p>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="USGS_dataretrieval_Ratings_Examples.html" class="btn btn-neutral float-left" title="USGS dataretrieval Python Package get_ratings() Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="USGS_dataretrieval_SiteInventory_Examples.html" class="btn btn-neutral float-right" title="USGS dataretrieval Python Package what_sites() Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="USGS_dataretrieval_SiteInventory_Examples.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

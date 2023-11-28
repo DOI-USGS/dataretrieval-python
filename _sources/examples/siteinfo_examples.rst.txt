@@ -11,7 +11,7 @@ example illustrates the use of the ``seriesCatalogOutput`` switch and displays
 the resulting column names for the output dataframes (example prompted by
 `GitHub Issue #34`_).
 
-.. _NWIS water services documentation: https://nwis.waterservices.usgs.gov/rest/Site-Service.html
+.. _NWIS water services documentation: https://waterservices.usgs.gov/docs/site-service/site-service-details/
 
 .. _GitHub Issue #34: https://github.com/DOI-USGS/dataretrieval-python/issues/34
 
