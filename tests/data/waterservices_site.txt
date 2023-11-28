@@ -8,7 +8,7 @@
 # for sites in USA.
 #
 # File-format description:  http://help.waterdata.usgs.gov/faq/about-tab-delimited-output
-# Automated-retrieval info: http://waterservices.usgs.gov/rest/Site-Service.html
+# Automated-retrieval info: https://waterservices.usgs.gov/docs/site-service/site-service-details/
 #
 # Contact:   gs-w_support_nwisweb@usgs.gov
 #
