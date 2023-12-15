@@ -176,24 +176,12 @@ def get_qwdata(
     """
     _check_sites_value_types(sites)
 
+    kwargs['site_no'] = kwargs.pop('site_no', sites)
+    kwargs['begin_date'] = kwargs.pop('begin_date', start)
+    kwargs['end_date'] = kwargs.pop('end_date', end)
+    kwargs['multi_index'] = multi_index
     if wide_format:
         kwargs['qw_sample_wide'] = 'qw_sample_wide'
-    start = kwargs.pop('begin_date', start)
-    end = kwargs.pop('end_date', end)
-    sites = kwargs.pop('site_no', sites)
-    return _qwdata(
-        site_no=sites,
-        begin_date=start,
-        end_date=end,
-        datetime_index=datetime_index,
-        multi_index=multi_index,
-        ssl_check=ssl_check,
-        **kwargs,
-    )
-
-
-def _qwdata(datetime_index=True, ssl_check=True, **kwargs):
-    # check number of sites, may need to create multiindex
 
     payload = {
         'agency_cd': 'USGS',
@@ -207,7 +195,6 @@ def _qwdata(datetime_index=True, ssl_check=True, **kwargs):
         'rdb_compression': 'value',
         'submitted_form': 'brief_list',
     }
-    # 'qw_sample_wide': 'separated_wide'}
 
     # check for parameter codes, and reformat query args
     qwdata_parameter_code_field = 'parameterCd'
@@ -224,9 +211,7 @@ def _qwdata(datetime_index=True, ssl_check=True, **kwargs):
             )
         else:
             kwargs['list_of_search_criteria'] = 'multiple_parameter_cds'
-        # search_criteria = kwargs.get('list_of_search_criteria
 
-    # kwargs = {**payload, **kwargs}
     kwargs.update(payload)
 
     warnings.warn(
@@ -296,15 +281,10 @@ def get_discharge_measurements(
     """
     _check_sites_value_types(sites)
 
-    start = kwargs.pop('begin_date', start)
-    end = kwargs.pop('end_date', end)
-    sites = kwargs.pop('site_no', sites)
-    return _discharge_measurements(
-        site_no=sites, begin_date=start, end_date=end, ssl_check=ssl_check, **kwargs
-    )
+    kwargs['site_no'] = kwargs.pop('site_no', sites)
+    kwargs['begin_date'] = kwargs.pop('begin_date', start)
+    kwargs['end_date'] = kwargs.pop('end_date', end)
 
-
-def _discharge_measurements(ssl_check=True, **kwargs):
     response = query_waterdata(
         'measurements', format='rdb', ssl_check=ssl_check, **kwargs
     )
@@ -366,20 +346,11 @@ def get_discharge_peaks(
     """
     _check_sites_value_types(sites)
 
-    start = kwargs.pop('begin_date', start)
-    end = kwargs.pop('end_date', end)
-    sites = kwargs.pop('site_no', sites)
-    return _discharge_peaks(
-        site_no=sites,
-        begin_date=start,
-        end_date=end,
-        multi_index=multi_index,
-        ssl_check=ssl_check,
-        **kwargs,
-    )
+    kwargs['site_no'] = kwargs.pop('site_no', sites)
+    kwargs['begin_date'] = kwargs.pop('begin_date', start)
+    kwargs['end_date'] = kwargs.pop('end_date', end)
+    kwargs['multi_index'] = multi_index
 
-
-def _discharge_peaks(ssl_check=True, **kwargs):
     response = query_waterdata('peaks', format='rdb', ssl_check=ssl_check, **kwargs)
 
     df = _read_rdb(response.text)
@@ -440,21 +411,11 @@ def get_gwlevels(
     """
     _check_sites_value_types(sites)
 
-    start = kwargs.pop('startDT', start)
-    end = kwargs.pop('endDT', end)
-    sites = kwargs.pop('sites', sites)
-    return _gwlevels(
-        startDT=start,
-        endDT=end,
-        datetime_index=datetime_index,
-        sites=sites,
-        multi_index=multi_index,
-        ssl_check=ssl_check,
-        **kwargs,
-    )
+    kwargs['startDT'] = kwargs.pop('startDT', start)
+    kwargs['endDT'] = kwargs.pop('endDT', end)
+    kwargs['sites'] = kwargs.pop('sites', sites)
+    kwargs['multi_index'] = multi_index
 
-
-def _gwlevels(datetime_index=True, ssl_check=True, **kwargs):
     response = query_waterservices('gwlevels', ssl_check=ssl_check, **kwargs)
 
     df = _read_rdb(response.text)
@@ -691,20 +652,11 @@ def get_dv(
     """
     _check_sites_value_types(sites)
 
-    start = kwargs.pop('startDT', start)
-    end = kwargs.pop('endDT', end)
-    sites = kwargs.pop('sites', sites)
-    return _dv(
-        startDT=start,
-        endDT=end,
-        sites=sites,
-        multi_index=multi_index,
-        ssl_check=ssl_check,
-        **kwargs,
-    )
+    kwargs['startDT'] = kwargs.pop('startDT', start)
+    kwargs['endDT'] = kwargs.pop('endDT', end)
+    kwargs['sites'] = kwargs.pop('sites', sites)
+    kwargs['multi_index'] = multi_index
 
-
-def _dv(ssl_check=True, **kwargs):
     response = query_waterservices('dv', format='json', ssl_check=ssl_check, **kwargs)
     df = _read_json(response.json())
 
@@ -873,21 +825,14 @@ def get_iv(
     """
     _check_sites_value_types(sites)
 
-    start = kwargs.pop('startDT', start)
-    end = kwargs.pop('endDT', end)
-    sites = kwargs.pop('sites', sites)
-    return _iv(
-        startDT=start,
-        endDT=end,
-        sites=sites,
-        multi_index=multi_index,
-        ssl_check=ssl_check,
-        **kwargs,
+    kwargs['startDT'] = kwargs.pop('startDT', start)
+    kwargs['endDT'] = kwargs.pop('endDT', end)
+    kwargs['sites'] = kwargs.pop('sites', sites)
+    kwargs['multi_index'] = multi_index
+
+    response = query_waterservices(
+        service='iv', format='json', ssl_check=ssl_check, **kwargs
     )
-
-
-def _iv(ssl_check=True, **kwargs):
-    response = query_waterservices('iv', format='json', ssl_check=ssl_check, **kwargs)
     df = _read_json(response.json())
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
@@ -1089,10 +1034,7 @@ def get_ratings(
 
     """
     site = kwargs.pop('site_no', site)
-    return _ratings(site=site, file_type=file_type, ssl_check=ssl_check)
 
-
-def _ratings(site, file_type, ssl_check=True):
     payload = {}
     url = WATERDATA_BASE_URL + 'nwisweb/get_ratings/'
     if site is not None:
