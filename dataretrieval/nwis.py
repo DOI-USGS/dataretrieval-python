@@ -19,7 +19,7 @@ from typing import List, Optional, Tuple, Union
 import pandas as pd
 import requests
 
-from dataretrieval.utils import BaseMetadata, format_datetime, to_str, update_merge
+from dataretrieval.utils import BaseMetadata, format_datetime, to_str
 
 from .utils import query
 
@@ -833,6 +833,7 @@ def get_iv(
     response = query_waterservices(
         service='iv', format='json', ssl_check=ssl_check, **kwargs
     )
+
     df = _read_json(response.json())
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
@@ -1303,7 +1304,7 @@ def _read_json(json):
         A custom metadata object
 
     """
-    merged_df = pd.DataFrame()
+    merged_df = pd.DataFrame(columns=['site_no', 'datetime'])
 
     for timeseries in json['value']['timeSeries']:
         site_no = timeseries['sourceInfo']['siteCode'][0]['value']
@@ -1356,13 +1357,9 @@ def _read_json(json):
                 inplace=True,
             )
 
-            if merged_df.empty:
-                merged_df = record_df
-
-            else:
-                merged_df = update_merge(
-                    merged_df, record_df, na_only=True, on=['site_no', 'datetime']
-                )
+            merged_df = merged_df.merge(
+                record_df, how='outer', on=['site_no', 'datetime']
+            )
 
     # convert to datetime, normalizing the timezone to UTC when doing so
     if 'datetime' in merged_df.columns:
