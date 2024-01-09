@@ -1306,60 +1306,85 @@ def _read_json(json):
     """
     merged_df = pd.DataFrame(columns=['site_no', 'datetime'])
 
-    for timeseries in json['value']['timeSeries']:
-        site_no = timeseries['sourceInfo']['siteCode'][0]['value']
-        param_cd = timeseries['variable']['variableCode'][0]['value']
-        # check whether min, max, mean record XXX
-        option = timeseries['variable']['options']['option'][0].get('value')
+    site_list = [
+        ts['sourceInfo']['siteCode'][0]['value'] for ts in json['value']['timeSeries']
+    ]
 
-        # loop through each parameter in timeseries.
-        for parameter in timeseries['values']:
-            col_name = param_cd
-            method = parameter['method'][0]['methodDescription']
+    # create a list of indexes for each change in site no
+    # for example, [0, 21, 22] would be the first and last indeces
+    index_list = [0]
+    index_list.extend(
+        [i + 1 for i, (a, b) in enumerate(zip(site_list[:-1], site_list[1:])) if a != b]
+    )
+    index_list.append(len(site_list))
 
-            # if len(timeseries['values']) > 1 and method:
-            if method:
-                # get method, format it, and append to column name
-                method = method.strip('[]()').lower()
-                col_name = f'{col_name}_{method}'
+    for i in range(len(index_list) - 1):
+        start = index_list[i]  # [0]
+        end = index_list[i + 1]  # [21]
 
-            if option:
-                col_name = f'{col_name}_{option}'
+        # grab a block containing timeseries 0:21,
+        # which are all from the same site
+        site_block = json['value']['timeSeries'][start:end]
+        if not site_block:
+            continue
 
-            record_json = parameter['value']
+        site_no = site_block[0]['sourceInfo']['siteCode'][0]['value']
+        site_df = pd.DataFrame(columns=['datetime'])
 
-            if not record_json:
-                # no data in record
-                continue
-            # should be able to avoid this by dumping
-            record_json = str(record_json).replace("'", '"')
+        for timeseries in site_block:
+            param_cd = timeseries['variable']['variableCode'][0]['value']
+            # check whether min, max, mean record XXX
+            option = timeseries['variable']['options']['option'][0].get('value')
 
-            # read json, converting all values to float64 and all qualifiers
-            # Lists can't be hashed, thus we cannot df.merge on a list column
-            record_df = pd.read_json(
-                StringIO(record_json),
-                orient='records',
-                dtype={'value': 'float64', 'qualifiers': 'unicode'},
-                convert_dates=False,
-            )
+            # loop through each parameter in timeseries, then concat to the merged_df
+            for parameter in timeseries['values']:
+                col_name = param_cd
+                method = parameter['method'][0]['methodDescription']
 
-            record_df['qualifiers'] = (
-                record_df['qualifiers'].str.strip('[]').str.replace("'", '')
-            )
-            record_df['site_no'] = site_no
+                # if len(timeseries['values']) > 1 and method:
+                if method:
+                    # get method, format it, and append to column name
+                    method = method.strip('[]()').lower()
+                    col_name = f'{col_name}_{method}'
 
-            record_df.rename(
-                columns={
-                    'value': col_name,
-                    'dateTime': 'datetime',
-                    'qualifiers': col_name + '_cd',
-                },
-                inplace=True,
-            )
+                if option:
+                    col_name = f'{col_name}_{option}'
 
-            merged_df = merged_df.merge(
-                record_df, how='outer', on=['site_no', 'datetime']
-            )
+                record_json = parameter['value']
+
+                if not record_json:
+                    # no data in record
+                    continue
+                # should be able to avoid this by dumping
+                record_json = str(record_json).replace("'", '"')
+
+                # read json, converting all values to float64 and all qualifiers
+                # Lists can't be hashed, thus we cannot df.merge on a list column
+                record_df = pd.read_json(
+                    StringIO(record_json),
+                    orient='records',
+                    dtype={'value': 'float64', 'qualifiers': 'unicode'},
+                    convert_dates=False,
+                )
+
+                record_df['qualifiers'] = (
+                    record_df['qualifiers'].str.strip('[]').str.replace("'", '')
+                )
+
+                record_df.rename(
+                    columns={
+                        'value': col_name,
+                        'dateTime': 'datetime',
+                        'qualifiers': col_name + '_cd',
+                    },
+                    inplace=True,
+                )
+
+                site_df = site_df.merge(record_df, how='outer', on='datetime')
+
+        # end of site loop
+        site_df['site_no'] = site_no
+        merged_df = pd.concat([merged_df, site_df])
 
     # convert to datetime, normalizing the timezone to UTC when doing so
     if 'datetime' in merged_df.columns:
