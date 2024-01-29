@@ -126,11 +126,12 @@ def get_qwdata(
 
     .. warning::
 
-        The NWIS qw data service is being deprecated. See this note from the
-        R package for more information:
-        https://doi-usgs.github.io/dataRetrieval/articles/qwdata_changes.html
-        If you have additional questions about the qw data service,
-        email gs-w-IOW_PO_team@usgs.gov.
+        WARNING: Beginning in February 2024 the NWIS qw data endpoint will not deliver new data or updates to existing data.
+        Eventually the endpoint will be retired. For updated information visit:
+        https://waterdata.usgs.gov.nwis/qwdata
+        For additional details, see the R package vignette:
+        https://doi-usgs.github.io/dataRetrieval/articles/Status.html
+        If you have additional questions about the qw data service, email CompTools@usgs.gov.
 
     Parameters
     ----------
