@@ -1,5 +1,8 @@
 # dataretrieval: Download hydrologic data
 
+:warning: USGS data availability and format are changing. Beginning in February 2024 the data obtained from legacy profiles will not include new USGS data or recent updates to existing data. To view the status of changes in data availability and code functionality, visit: https://doi-usgs.github.io/dataRetrieval/articles/Status.html
+If you have additional questions about these changes, email CompTools@usgs.gov.
+
 ## What is dataretrieval?
 `dataretrieval` was created to simplify the process of loading hydrologic data into the Python environment.
 Like the original R version [`dataRetrieval`](https://github.com/DOI-USGS/dataRetrieval),
@@ -15,9 +18,6 @@ though its organization and interface often differ.
 
 If there's a hydrologic or environmental data portal that you'd like dataretrieval to 
 work with, raise it as an [issue](https://github.com/USGS-python/dataretrieval/issues).
-
-:warning: USGS data availability and format are changing. Beginning in February 2024 the data obtained from legacy profiles will not include new USGS data or recent updates to existing data. To view the status of changes in data availability and code functionality, visit: https://doi-usgs.github.io/dataRetrieval/articles/Status.html
-If you have additional questions about these changes, email CompTools@usgs.gov.
 
 Here's an example using `dataretrieval` to retrieve data from the National Water Information System (NWIS).
 
