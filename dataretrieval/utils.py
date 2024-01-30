@@ -95,50 +95,6 @@ def format_datetime(df, date_field, time_field, tz_field):
     return df
 
 
-# This function may be deprecated once pandas.update support joins besides left.
-def update_merge(left, right, na_only=False, on=None, **kwargs):
-    """Performs a combination update and merge.
-
-    Parameters
-    ----------
-    left: ``pandas.DataFrame``
-        Original data
-    right: ``pandas.DataFrame``
-        Updated data
-    na_only: bool
-        If True, only update na values
-
-    Returns
-    -------
-    df: ``pandas.DataFrame``
-        Updated data frame
-
-    .. todo::
-
-        add na_only parameter support
-
-    """
-    # df = left.merge(right, how='outer',
-    #                left_index=True, right_index=True)
-    df = left.merge(right, how='outer', on=on, **kwargs)
-
-    # check for column overlap and resolve update
-    for column in df.columns:
-        # if duplicated column, use the value from right
-        if column[-2:] == '_x':
-            name = column[:-2]  # find column name
-
-            if na_only:
-                df[name] = df[name + '_x'].fillna(df[name + '_y'])
-
-            else:
-                df[name] = df[name + '_x'].update(df[name + '_y'])
-
-            df.drop([name + '_x', name + '_y'], axis=1, inplace=True)
-
-    return df
-
-
 class BaseMetadata:
     """Base class for metadata.
 
