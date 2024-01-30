@@ -1,5 +1,8 @@
 # dataretrieval: Download hydrologic data
 
+:warning: USGS data availability and format are changing on Water Quality Portal (WQP). Beginning in February 2024 data obtained from WQP legacy profiles will not include new USGS data or recent updates to existing data. 
+To view the status of changes in data availability and code functionality, visit: https://doi-usgs.github.io/dataRetrieval/articles/Status.html
+
 ## What is dataretrieval?
 `dataretrieval` was created to simplify the process of loading hydrologic data into the Python environment.
 Like the original R version [`dataRetrieval`](https://github.com/DOI-USGS/dataRetrieval),
