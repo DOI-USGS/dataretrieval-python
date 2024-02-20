@@ -492,7 +492,7 @@ def _warn_v3_profiles_outage():
     """
 
     warnings.warn(('NEWS: USGS discrete water quality data availability '
-                   'and format are changing. Beginning in February 2024 '
+                   'and format are changing. Beginning in March 2024 '
                    'the data obtained from legacy profiles will not '
                    'include new USGS data or recent updates to existing '
                    'data. To view the status of changes in data '
