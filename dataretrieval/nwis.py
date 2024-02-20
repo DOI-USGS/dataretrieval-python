@@ -175,6 +175,15 @@ def get_qwdata(
         ... )
 
     """
+    warnings.warn(('WARNING: Beginning in late February 2024 the NWIS qw data '
+                   'endpoint will not deliver new data or updates to existing data. '
+                   'Eventually the endpoint will be retired. For updated information '
+                   'visit https://waterdata.usgs.gov.nwis/qwdata '
+                   'For additional details, see the R package vignette: '
+                   'https://doi-usgs.github.io/dataRetrieval/articles/Status.html '
+                   'If you have additional questions about the qw data service, email '
+                   'CompTools@usgs.gov.'))
+    
     _check_sites_value_types(sites)
 
     kwargs['site_no'] = kwargs.pop('site_no', sites)
@@ -758,6 +767,15 @@ def get_info(ssl_check: bool = True, **kwargs) -> Tuple[pd.DataFrame, BaseMetada
     """
     seriesCatalogOutput = kwargs.pop('seriesCatalogOutput', None)
     if seriesCatalogOutput in ['True', 'TRUE', 'true', True]:
+
+        warnings.warn(('WARNING: Beginning in late February 2024 the NWIS qw data '
+                       'endpoint will not deliver new data or updates to existing data. '
+                       'Eventually the endpoint will be retired. For updated information '
+                       'visit https://waterdata.usgs.gov.nwis/qwdata '
+                       'For additional details, see the R package vignette: '
+                       'https://doi-usgs.github.io/dataRetrieval/articles/Status.html '
+                       'If you have additional questions about the qw data service, email '
+                       'CompTools@usgs.gov.'))
         # convert bool to string if necessary
         kwargs['seriesCatalogOutput'] = 'True'
     else:
