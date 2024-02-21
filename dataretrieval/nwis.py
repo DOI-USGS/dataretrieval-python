@@ -767,8 +767,8 @@ def get_info(ssl_check: bool = True, **kwargs) -> Tuple[pd.DataFrame, BaseMetada
     seriesCatalogOutput = kwargs.pop('seriesCatalogOutput', None)
     if seriesCatalogOutput in ['True', 'TRUE', 'true', True]:
 
-        warnings.warn(('WARNING: The NWIS qw data endpoint is retiring and '
-                       'no longer receives updates. For additional information, '
+        warnings.warn(('WARNING: Starting in March 2024, the NWIS qw data endpoint is '
+                       'retiring and no longer receives updates. For more information, '
                        'refer to https://waterdata.usgs.gov.nwis/qwdata and '
                        'https://doi-usgs.github.io/dataRetrieval/articles/Status.html '
                        'or email CompTools@usgs.gov.'))
