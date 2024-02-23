@@ -177,11 +177,11 @@ def get_qwdata(
         ... )
 
     """
-    warnings.warn(('WARNING: The NWIS qw data endpoint is retiring and '
-                    'no longer receives updates. For additional information, '
-                    'refer to https://waterdata.usgs.gov.nwis/qwdata and '
-                    'https://doi-usgs.github.io/dataRetrieval/articles/Status.html '
-                    'or email CompTools@usgs.gov.'))
+    warnings.warn(('WARNING: Starting in March 2024, the NWIS qw data endpoint is '
+                       'retiring and no longer receives updates. For more information, '
+                       'refer to https://waterdata.usgs.gov.nwis/qwdata and '
+                       'https://doi-usgs.github.io/dataRetrieval/articles/Status.html '
+                       'or email CompTools@usgs.gov.'))
 
     _check_sites_value_types(sites)
 
