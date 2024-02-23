@@ -126,7 +126,7 @@ def get_qwdata(
 
     .. warning::
 
-        WARNING: Beginning in late February 2024 the NWIS qw data endpoint will
+        WARNING: Beginning in March 2024 the NWIS qw data endpoint will
         not deliver new data or updates to existing data.
         Eventually the endpoint will be retired. For updated information visit:
         https://waterdata.usgs.gov.nwis/qwdata
