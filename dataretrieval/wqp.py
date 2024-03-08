@@ -491,8 +491,8 @@ def _warn_v3_profiles_outage():
     """Private function for warning message about WQX 3.0 profiles
     """
 
-    warnings.warn(('NEWS: USGS discrete water quality data availability '
-                   'and format are changing. Beginning in February 2024 '
+    warnings.warn(('USGS discrete water quality data availability '
+                   'and format are changing. Beginning in March 2024 '
                    'the data obtained from legacy profiles will not '
                    'include new USGS data or recent updates to existing '
                    'data. To view the status of changes in data '
