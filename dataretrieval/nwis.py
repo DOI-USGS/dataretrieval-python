@@ -19,7 +19,7 @@ from typing import List, Optional, Tuple, Union
 import pandas as pd
 import requests
 
-from dataretrieval.utils import BaseMetadata, format_datetime, to_str, update_merge
+from dataretrieval.utils import BaseMetadata, format_datetime, to_str
 
 from .utils import query
 
@@ -126,11 +126,14 @@ def get_qwdata(
 
     .. warning::
 
-        The NWIS qw data service is being deprecated. See this note from the
-        R package for more information:
-        https://doi-usgs.github.io/dataRetrieval/articles/qwdata_changes.html
+        WARNING: Beginning in March 2024 the NWIS qw data endpoint will
+        not deliver new data or updates to existing data.
+        Eventually the endpoint will be retired. For updated information visit:
+        https://waterdata.usgs.gov.nwis/qwdata
+        For additional details, see the R package vignette:
+        https://doi-usgs.github.io/dataRetrieval/articles/Status.html
         If you have additional questions about the qw data service,
-        email gs-w-IOW_PO_team@usgs.gov.
+        email CompTools@usgs.gov.
 
     Parameters
     ----------
@@ -174,26 +177,20 @@ def get_qwdata(
         ... )
 
     """
+    warnings.warn(('WARNING: Starting in March 2024, the NWIS qw data endpoint is '
+                       'retiring and no longer receives updates. For more information, '
+                       'refer to https://waterdata.usgs.gov.nwis/qwdata and '
+                       'https://doi-usgs.github.io/dataRetrieval/articles/Status.html '
+                       'or email CompTools@usgs.gov.'))
+
     _check_sites_value_types(sites)
 
+    kwargs['site_no'] = kwargs.pop('site_no', sites)
+    kwargs['begin_date'] = kwargs.pop('begin_date', start)
+    kwargs['end_date'] = kwargs.pop('end_date', end)
+    kwargs['multi_index'] = multi_index
     if wide_format:
         kwargs['qw_sample_wide'] = 'qw_sample_wide'
-    start = kwargs.pop('begin_date', start)
-    end = kwargs.pop('end_date', end)
-    sites = kwargs.pop('site_no', sites)
-    return _qwdata(
-        site_no=sites,
-        begin_date=start,
-        end_date=end,
-        datetime_index=datetime_index,
-        multi_index=multi_index,
-        ssl_check=ssl_check,
-        **kwargs,
-    )
-
-
-def _qwdata(datetime_index=True, ssl_check=True, **kwargs):
-    # check number of sites, may need to create multiindex
 
     payload = {
         'agency_cd': 'USGS',
@@ -207,7 +204,6 @@ def _qwdata(datetime_index=True, ssl_check=True, **kwargs):
         'rdb_compression': 'value',
         'submitted_form': 'brief_list',
     }
-    # 'qw_sample_wide': 'separated_wide'}
 
     # check for parameter codes, and reformat query args
     qwdata_parameter_code_field = 'parameterCd'
@@ -224,9 +220,7 @@ def _qwdata(datetime_index=True, ssl_check=True, **kwargs):
             )
         else:
             kwargs['list_of_search_criteria'] = 'multiple_parameter_cds'
-        # search_criteria = kwargs.get('list_of_search_criteria
 
-    # kwargs = {**payload, **kwargs}
     kwargs.update(payload)
 
     warnings.warn(
@@ -296,15 +290,10 @@ def get_discharge_measurements(
     """
     _check_sites_value_types(sites)
 
-    start = kwargs.pop('begin_date', start)
-    end = kwargs.pop('end_date', end)
-    sites = kwargs.pop('site_no', sites)
-    return _discharge_measurements(
-        site_no=sites, begin_date=start, end_date=end, ssl_check=ssl_check, **kwargs
-    )
+    kwargs['site_no'] = kwargs.pop('site_no', sites)
+    kwargs['begin_date'] = kwargs.pop('begin_date', start)
+    kwargs['end_date'] = kwargs.pop('end_date', end)
 
-
-def _discharge_measurements(ssl_check=True, **kwargs):
     response = query_waterdata(
         'measurements', format='rdb', ssl_check=ssl_check, **kwargs
     )
@@ -366,20 +355,11 @@ def get_discharge_peaks(
     """
     _check_sites_value_types(sites)
 
-    start = kwargs.pop('begin_date', start)
-    end = kwargs.pop('end_date', end)
-    sites = kwargs.pop('site_no', sites)
-    return _discharge_peaks(
-        site_no=sites,
-        begin_date=start,
-        end_date=end,
-        multi_index=multi_index,
-        ssl_check=ssl_check,
-        **kwargs,
-    )
+    kwargs['site_no'] = kwargs.pop('site_no', sites)
+    kwargs['begin_date'] = kwargs.pop('begin_date', start)
+    kwargs['end_date'] = kwargs.pop('end_date', end)
+    kwargs['multi_index'] = multi_index
 
-
-def _discharge_peaks(ssl_check=True, **kwargs):
     response = query_waterdata('peaks', format='rdb', ssl_check=ssl_check, **kwargs)
 
     df = _read_rdb(response.text)
@@ -440,21 +420,11 @@ def get_gwlevels(
     """
     _check_sites_value_types(sites)
 
-    start = kwargs.pop('startDT', start)
-    end = kwargs.pop('endDT', end)
-    sites = kwargs.pop('sites', sites)
-    return _gwlevels(
-        startDT=start,
-        endDT=end,
-        datetime_index=datetime_index,
-        sites=sites,
-        multi_index=multi_index,
-        ssl_check=ssl_check,
-        **kwargs,
-    )
+    kwargs['startDT'] = kwargs.pop('startDT', start)
+    kwargs['endDT'] = kwargs.pop('endDT', end)
+    kwargs['sites'] = kwargs.pop('sites', sites)
+    kwargs['multi_index'] = multi_index
 
-
-def _gwlevels(datetime_index=True, ssl_check=True, **kwargs):
     response = query_waterservices('gwlevels', ssl_check=ssl_check, **kwargs)
 
     df = _read_rdb(response.text)
@@ -691,20 +661,11 @@ def get_dv(
     """
     _check_sites_value_types(sites)
 
-    start = kwargs.pop('startDT', start)
-    end = kwargs.pop('endDT', end)
-    sites = kwargs.pop('sites', sites)
-    return _dv(
-        startDT=start,
-        endDT=end,
-        sites=sites,
-        multi_index=multi_index,
-        ssl_check=ssl_check,
-        **kwargs,
-    )
+    kwargs['startDT'] = kwargs.pop('startDT', start)
+    kwargs['endDT'] = kwargs.pop('endDT', end)
+    kwargs['sites'] = kwargs.pop('sites', sites)
+    kwargs['multi_index'] = multi_index
 
-
-def _dv(ssl_check=True, **kwargs):
     response = query_waterservices('dv', format='json', ssl_check=ssl_check, **kwargs)
     df = _read_json(response.json())
 
@@ -805,6 +766,12 @@ def get_info(ssl_check: bool = True, **kwargs) -> Tuple[pd.DataFrame, BaseMetada
     """
     seriesCatalogOutput = kwargs.pop('seriesCatalogOutput', None)
     if seriesCatalogOutput in ['True', 'TRUE', 'true', True]:
+
+        warnings.warn(('WARNING: Starting in March 2024, the NWIS qw data endpoint is '
+                       'retiring and no longer receives updates. For more information, '
+                       'refer to https://waterdata.usgs.gov.nwis/qwdata and '
+                       'https://doi-usgs.github.io/dataRetrieval/articles/Status.html '
+                       'or email CompTools@usgs.gov.'))
         # convert bool to string if necessary
         kwargs['seriesCatalogOutput'] = 'True'
     else:
@@ -873,21 +840,15 @@ def get_iv(
     """
     _check_sites_value_types(sites)
 
-    start = kwargs.pop('startDT', start)
-    end = kwargs.pop('endDT', end)
-    sites = kwargs.pop('sites', sites)
-    return _iv(
-        startDT=start,
-        endDT=end,
-        sites=sites,
-        multi_index=multi_index,
-        ssl_check=ssl_check,
-        **kwargs,
+    kwargs['startDT'] = kwargs.pop('startDT', start)
+    kwargs['endDT'] = kwargs.pop('endDT', end)
+    kwargs['sites'] = kwargs.pop('sites', sites)
+    kwargs['multi_index'] = multi_index
+
+    response = query_waterservices(
+        service='iv', format='json', ssl_check=ssl_check, **kwargs
     )
 
-
-def _iv(ssl_check=True, **kwargs):
-    response = query_waterservices('iv', format='json', ssl_check=ssl_check, **kwargs)
     df = _read_json(response.json())
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
@@ -1089,10 +1050,7 @@ def get_ratings(
 
     """
     site = kwargs.pop('site_no', site)
-    return _ratings(site=site, file_type=file_type, ssl_check=ssl_check)
 
-
-def _ratings(site, file_type, ssl_check=True):
     payload = {}
     url = WATERDATA_BASE_URL + 'nwisweb/get_ratings/'
     if site is not None:
@@ -1361,66 +1319,87 @@ def _read_json(json):
         A custom metadata object
 
     """
-    merged_df = pd.DataFrame()
+    merged_df = pd.DataFrame(columns=['site_no', 'datetime'])
 
-    for timeseries in json['value']['timeSeries']:
-        site_no = timeseries['sourceInfo']['siteCode'][0]['value']
-        param_cd = timeseries['variable']['variableCode'][0]['value']
-        # check whether min, max, mean record XXX
-        option = timeseries['variable']['options']['option'][0].get('value')
+    site_list = [
+        ts['sourceInfo']['siteCode'][0]['value'] for ts in json['value']['timeSeries']
+    ]
 
-        # loop through each parameter in timeseries.
-        for parameter in timeseries['values']:
-            col_name = param_cd
-            method = parameter['method'][0]['methodDescription']
+    # create a list of indexes for each change in site no
+    # for example, [0, 21, 22] would be the first and last indeces
+    index_list = [0]
+    index_list.extend(
+        [i + 1 for i, (a, b) in enumerate(zip(site_list[:-1], site_list[1:])) if a != b]
+    )
+    index_list.append(len(site_list))
 
-            # if len(timeseries['values']) > 1 and method:
-            if method:
-                # get method, format it, and append to column name
-                method = method.strip('[]()').lower()
-                col_name = f'{col_name}_{method}'
+    for i in range(len(index_list) - 1):
+        start = index_list[i]  # [0]
+        end = index_list[i + 1]  # [21]
 
-            if option:
-                col_name = f'{col_name}_{option}'
+        # grab a block containing timeseries 0:21,
+        # which are all from the same site
+        site_block = json['value']['timeSeries'][start:end]
+        if not site_block:
+            continue
 
-            record_json = parameter['value']
+        site_no = site_block[0]['sourceInfo']['siteCode'][0]['value']
+        site_df = pd.DataFrame(columns=['datetime'])
 
-            if not record_json:
-                # no data in record
-                continue
-            # should be able to avoid this by dumping
-            record_json = str(record_json).replace("'", '"')
+        for timeseries in site_block:
+            param_cd = timeseries['variable']['variableCode'][0]['value']
+            # check whether min, max, mean record XXX
+            option = timeseries['variable']['options']['option'][0].get('value')
 
-            # read json, converting all values to float64 and all qualifiers
-            # Lists can't be hashed, thus we cannot df.merge on a list column
-            record_df = pd.read_json(
-                StringIO(record_json),
-                orient='records',
-                dtype={'value': 'float64', 'qualifiers': 'unicode'},
-                convert_dates=False,
-            )
+            # loop through each parameter in timeseries, then concat to the merged_df
+            for parameter in timeseries['values']:
+                col_name = param_cd
+                method = parameter['method'][0]['methodDescription']
 
-            record_df['qualifiers'] = (
-                record_df['qualifiers'].str.strip('[]').str.replace("'", '')
-            )
-            record_df['site_no'] = site_no
+                # if len(timeseries['values']) > 1 and method:
+                if method:
+                    # get method, format it, and append to column name
+                    method = method.strip('[]()').lower()
+                    col_name = f'{col_name}_{method}'
 
-            record_df.rename(
-                columns={
-                    'value': col_name,
-                    'dateTime': 'datetime',
-                    'qualifiers': col_name + '_cd',
-                },
-                inplace=True,
-            )
+                if option:
+                    col_name = f'{col_name}_{option}'
 
-            if merged_df.empty:
-                merged_df = record_df
+                record_json = parameter['value']
 
-            else:
-                merged_df = update_merge(
-                    merged_df, record_df, na_only=True, on=['site_no', 'datetime']
+                if not record_json:
+                    # no data in record
+                    continue
+                # should be able to avoid this by dumping
+                record_json = str(record_json).replace("'", '"')
+
+                # read json, converting all values to float64 and all qualifiers
+                # Lists can't be hashed, thus we cannot df.merge on a list column
+                record_df = pd.read_json(
+                    StringIO(record_json),
+                    orient='records',
+                    dtype={'value': 'float64', 'qualifiers': 'unicode'},
+                    convert_dates=False,
                 )
+
+                record_df['qualifiers'] = (
+                    record_df['qualifiers'].str.strip('[]').str.replace("'", '')
+                )
+
+                record_df.rename(
+                    columns={
+                        'value': col_name,
+                        'dateTime': 'datetime',
+                        'qualifiers': col_name + '_cd',
+                    },
+                    inplace=True,
+                )
+
+                site_df = site_df.merge(record_df, how='outer', on='datetime')
+
+        # end of site loop
+        site_df['site_no'] = site_no
+        merged_df = pd.concat([merged_df, site_df])
 
     # convert to datetime, normalizing the timezone to UTC when doing so
     if 'datetime' in merged_df.columns:

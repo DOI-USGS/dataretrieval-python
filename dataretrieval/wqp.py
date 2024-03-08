@@ -82,6 +82,8 @@ def get_results(ssl_check=True, **kwargs):
         >>> df, md = dataretrieval.wqp.get_results(bBox='-92.8,44.2,-88.9,46.0')
 
     """
+    _warn_v3_profiles_outage()
+
     kwargs = _alter_kwargs(kwargs)
     response = query(wqp_url('Result'), kwargs, delimiter=';', ssl_check=ssl_check)
 
@@ -117,6 +119,8 @@ def what_sites(ssl_check=True, **kwargs):
         ... )
 
     """
+    _warn_v3_profiles_outage()
+
     kwargs = _alter_kwargs(kwargs)
 
     url = wqp_url('Station')
@@ -153,6 +157,8 @@ def what_organizations(ssl_check=True, **kwargs):
         >>> df, md = dataretrieval.wqp.what_organizations()
 
     """
+    _warn_v3_profiles_outage()
+
     kwargs = _alter_kwargs(kwargs)
 
     url = wqp_url('Organization')
@@ -189,6 +195,8 @@ def what_projects(ssl_check=True, **kwargs):
         >>> df, md = dataretrieval.wqp.what_projects(huc='19')
 
     """
+    _warn_v3_profiles_outage()
+
     kwargs = _alter_kwargs(kwargs)
 
     url = wqp_url('Project')
@@ -228,6 +236,8 @@ def what_activities(ssl_check=True, **kwargs):
         ... )
 
     """
+    _warn_v3_profiles_outage()
+
     kwargs = _alter_kwargs(kwargs)
 
     url = wqp_url('Activity')
@@ -271,6 +281,8 @@ def what_detection_limits(ssl_check=True, **kwargs):
         ... )
 
     """
+    _warn_v3_profiles_outage()
+
     kwargs = _alter_kwargs(kwargs)
 
     url = wqp_url('ResultDetectionQuantitationLimit')
@@ -307,6 +319,8 @@ def what_habitat_metrics(ssl_check=True, **kwargs):
         >>> df, md = dataretrieval.wqp.what_habitat_metrics(statecode='US:44')
 
     """
+    _warn_v3_profiles_outage()
+
     kwargs = _alter_kwargs(kwargs)
 
     url = wqp_url('BiologicalMetric')
@@ -346,6 +360,8 @@ def what_project_weights(ssl_check=True, **kwargs):
         ... )
 
     """
+    _warn_v3_profiles_outage()
+
     kwargs = _alter_kwargs(kwargs)
 
     url = wqp_url('ProjectMonitoringLocationWeighting')
@@ -385,6 +401,8 @@ def what_activity_metrics(ssl_check=True, **kwargs):
         ... )
 
     """
+    _warn_v3_profiles_outage()
+
     kwargs = _alter_kwargs(kwargs)
 
     url = wqp_url('ActivityMetric')
@@ -468,3 +486,17 @@ def _alter_kwargs(kwargs):
     kwargs['mimeType'] = 'csv'
 
     return kwargs
+
+def _warn_v3_profiles_outage():
+    """Private function for warning message about WQX 3.0 profiles
+    """
+
+    warnings.warn(('USGS discrete water quality data availability '
+                   'and format are changing. Beginning in March 2024 '
+                   'the data obtained from legacy profiles will not '
+                   'include new USGS data or recent updates to existing '
+                   'data. To view the status of changes in data '
+                   'availability and code functionality, visit: '
+                   'https://doi-usgs.github.io/dataRetrieval/articles/Status.html. '
+                   'If you have additional questions about these changes, '
+                   'email CompTools@usgs.gov.'))
