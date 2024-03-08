@@ -1,5 +1,6 @@
 numpy<2
 pandas==2.*
+geopandas==0.14.*
 scipy
 python-dateutil
 requests
