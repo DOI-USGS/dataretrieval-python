@@ -27,7 +27,7 @@ def _query_nldi(url, query_params, error_message):
 
 def get_flowlines(
     navigation_mode: str,
-    distance: int = 50,
+    distance: int = 5,
     feature_source: Optional[str] = None,
     feature_id: Optional[str] = None,
     comid: Optional[int] = None,
@@ -41,7 +41,7 @@ def get_flowlines(
     Parameters
     ----------
     navigation_mode: string, navigation mode, allowed values are 'UM', 'DM', 'UT', 'DD'
-    distance: int, distance in kilometers, default is 50
+    distance: int, distance in kilometers, default is 5
     feature_source: string, optional, name of the feature source,
                     required if comid is not provided
     feature_id: string, optional, identifier of the feature,
