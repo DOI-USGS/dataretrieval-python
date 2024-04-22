@@ -11,7 +11,7 @@ _AVAILABLE_DATA_SOURCES = None
 
 def _query_nldi(url, query_params, error_message):
     # A helper function to query the NLDI API
-    response = query(url, query_params)
+    response = query(url, payload=query_params)
     if response.status_code != 200:
         raise ValueError(f'{error_message}. Error reason: {response.reason}')
 
@@ -141,6 +141,8 @@ def get_basin(
         raise ValueError('feature_id is required')
 
     url = f'{NLDI_API_BASE_URL}/{feature_source}/{feature_id}/basin'
+    simplified = str(simplified).lower()
+    split_catchment = str(split_catchment).lower()
     query_params = {'simplified': simplified, 'splitCatchment': split_catchment}
     err_msg = (
         f"Error getting basin for feature source '{feature_source}' and "
