@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "dataretrieval"
 description = "Discover and retrieve water data from U.S. federal hydrologic web services."
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 keywords = ["USGS", "water data"]
 license = {file = "LICENSE.md"}
 maintainers = [
