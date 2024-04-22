@@ -1,0 +1,185 @@
+{
+  "features": [
+    {
+      "geometry": {
+        "coordinates": [-89.5361111, 43.1111111],
+        "type": "Point"
+      },
+      "type": "Feature",
+      "properties": {
+        "identifier": "USGS-05427943",
+        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-05427943/navigation",
+        "measure": 0,
+        "reachcode": "07090002007651",
+        "name": "PHEASANT BRANCH AT AIRPORT ROAD NEAR MIDDLETON, WI",
+        "source": "nwissite",
+        "sourceName": "NWIS Surface Water Sites",
+        "comid": "13293676",
+        "type": "hydrolocation",
+        "uri": "https://waterdata.usgs.gov/monitoring-location/05427943",
+        "mainstem": "https://geoconnex.us/ref/mainstems/575519"
+      }
+    },
+    {
+      "geometry": {
+        "coordinates": [-89.4555556, 43.0998611],
+        "type": "Point"
+      },
+      "type": "Feature",
+      "properties": {
+        "identifier": "USGS-430600089272001",
+        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-430600089272001/navigation",
+        "measure": 59.3341,
+        "reachcode": "07090002008384",
+        "name": "LAKE MENDOTA, WEST BAY, AT MADISON, WI",
+        "source": "nwissite",
+        "sourceName": "NWIS Surface Water Sites",
+        "comid": "13294314",
+        "type": "hydrolocation",
+        "uri": "https://waterdata.usgs.gov/monitoring-location/430600089272001",
+        "mainstem": "https://geoconnex.us/ref/mainstems/575519"
+      }
+    },
+    {
+      "geometry": {
+        "coordinates": [-89.52151, 43.09860617],
+        "type": "Point"
+      },
+      "type": "Feature",
+      "properties": {
+        "identifier": "USGS-054279465",
+        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-054279465/navigation",
+        "measure": 53.7958,
+        "reachcode": "07090002007650",
+        "name": "S FORK PHEASANT BRANCH @ DEMING WAY @ MIDDLETON,WI",
+        "source": "nwissite",
+        "sourceName": "NWIS Surface Water Sites",
+        "comid": "13294264",
+        "type": "hydrolocation",
+        "uri": "https://waterdata.usgs.gov/monitoring-location/054279465",
+        "mainstem": "https://geoconnex.us/ref/mainstems/575519"
+      }
+    },
+    {
+      "geometry": {
+        "coordinates": [-89.493454, 43.10443947],
+        "type": "Point"
+      },
+      "type": "Feature",
+      "properties": {
+        "identifier": "USGS-05427950",
+        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-05427950/navigation",
+        "measure": 2.32298,
+        "reachcode": "07090002007650",
+        "name": "PHEASANT BRANCH AT CENTURY AVE AT MIDDLETON, WI",
+        "source": "nwissite",
+        "sourceName": "NWIS Surface Water Sites",
+        "comid": "13294264",
+        "type": "hydrolocation",
+        "uri": "https://waterdata.usgs.gov/monitoring-location/05427950",
+        "mainstem": "https://geoconnex.us/ref/mainstems/575519"
+      }
+    },
+    {
+      "geometry": {
+        "coordinates": [-89.5287322, 43.1044393],
+        "type": "Point"
+      },
+      "type": "Feature",
+      "properties": {
+        "identifier": "USGS-054279435",
+        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-054279435/navigation",
+        "measure": 72.0559,
+        "reachcode": "07090002007650",
+        "name": "PHEASANT BR W. OF CONFLUENCE POND @ MIDDLETON, WI",
+        "source": "nwissite",
+        "sourceName": "NWIS Surface Water Sites",
+        "comid": "13294264",
+        "type": "hydrolocation",
+        "uri": "https://waterdata.usgs.gov/monitoring-location/054279435",
+        "mainstem": "https://geoconnex.us/ref/mainstems/575519"
+      }
+    },
+    {
+      "geometry": {
+        "coordinates": [-89.5116667, 43.1033333],
+        "type": "Point"
+      },
+      "type": "Feature",
+      "properties": {
+        "identifier": "USGS-05427948",
+        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-05427948/navigation",
+        "measure": 40.6051151144,
+        "reachcode": "07090002007650",
+        "name": "PHEASANT BRANCH AT MIDDLETON, WI",
+        "source": "nwissite",
+        "sourceName": "NWIS Surface Water Sites",
+        "comid": "13294264",
+        "type": "hydrolocation",
+        "uri": "https://waterdata.usgs.gov/monitoring-location/05427948",
+        "mainstem": "https://geoconnex.us/ref/mainstems/575519"
+      }
+    },
+    {
+      "geometry": {
+        "coordinates": [-89.5167877, 43.1030505],
+        "type": "Point"
+      },
+      "type": "Feature",
+      "properties": {
+        "identifier": "USGS-054279475",
+        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-054279475/navigation",
+        "measure": 48.974,
+        "reachcode": "07090002007650",
+        "name": "PHEASANT BRANCH UPSTREAM OF HWY 12 @ MIDDLETON, WI",
+        "source": "nwissite",
+        "sourceName": "NWIS Surface Water Sites",
+        "comid": "13294264",
+        "type": "hydrolocation",
+        "uri": "https://waterdata.usgs.gov/monitoring-location/054279475",
+        "mainstem": "https://geoconnex.us/ref/mainstems/575519"
+      }
+    },
+    {
+      "geometry": {
+        "coordinates": [-89.5138889, 43.10777778],
+        "type": "Point"
+      },
+      "type": "Feature",
+      "properties": {
+        "identifier": "USGS-430628089305001",
+        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-430628089305001/navigation",
+        "measure": 43.532,
+        "reachcode": "07090002007650",
+        "name": "GW QUALITY ASSURANCE-NAWQA WAREHOUSE-MIDDLETON, WI",
+        "source": "nwissite",
+        "sourceName": "NWIS Surface Water Sites",
+        "comid": "13294264",
+        "type": "hydrolocation",
+        "uri": "https://waterdata.usgs.gov/monitoring-location/430628089305001",
+        "mainstem": "https://geoconnex.us/ref/mainstems/575519"
+      }
+    },
+    {
+      "geometry": {
+        "coordinates": [-89.4837316, 43.10607834],
+        "type": "Point"
+      },
+      "type": "Feature",
+      "properties": {
+        "identifier": "USGS-05427952",
+        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-05427952/navigation",
+        "measure": 46.391,
+        "reachcode": "07090002007647",
+        "name": "PHEASANT BRANCH AT MOUTH AT MIDDLETON, WI",
+        "source": "nwissite",
+        "sourceName": "NWIS Surface Water Sites",
+        "comid": "13293696",
+        "type": "hydrolocation",
+        "uri": "https://waterdata.usgs.gov/monitoring-location/05427952",
+        "mainstem": "https://geoconnex.us/ref/mainstems/575519"
+      }
+    }
+  ],
+  "type": "FeatureCollection"
+}
