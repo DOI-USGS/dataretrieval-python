@@ -1,0 +1,23 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-89.5098433, 43.0872176]
+      },
+      "properties": {
+        "identifier": "USGS-054279485",
+        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/WQP/USGS-054279485/navigation",
+        "name": "STRICKER'S POND AT MIDDLETON, WI",
+        "source": "WQP",
+        "sourceName": "Water Quality Portal",
+        "comid": "13294314",
+        "type": "varies",
+        "uri": "https://www.waterqualitydata.us/provider/NWIS/USGS-WI/USGS-054279485/",
+        "mainstem": "https://geoconnex.us/ref/mainstems/575519"
+      }
+    }
+  ]
+}

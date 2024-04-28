@@ -11,14 +11,13 @@ keywords = ["USGS", "water data"]
 license = {file = "LICENSE.md"}
 maintainers = [
   {name = "Timothy Hodson", email = "thodson@usgs.gov"},
-  {name = "Jayaram Hariharan", email = "jhariharan@usgs.gov"},
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
     "requests",
-    "pandas",
+    "pandas==2.*",
 ]
 dynamic = ["version"]
 
@@ -28,10 +27,19 @@ packages = ["dataretrieval", "dataretrieval.codes"]
 [project.optional-dependencies]
 test = [
   "pytest > 5.0.0",
-  "pytest-cov[all]"
+  "pytest-cov[all]",
+  "coverage",
+  "requests-mock",
+  "flake8",
 ]
 doc = [
   "sphinx",
+  "sphinx_rtd_theme",
+  "nbsphinx",
+  "nbsphinx_link",
+]
+nldi = [
+  'geopandas>=0.10'
 ]
 
 [project.urls]
