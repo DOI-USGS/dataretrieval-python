@@ -1,9 +1,12 @@
 from json import JSONDecodeError
 from typing import Literal, Optional, Union
 
-import geopandas as gpd
-
 from dataretrieval.utils import query
+
+try:
+    import geopandas as gpd
+except ImportError:
+    raise ImportError('Install geopandas to use the NLDI module.')
 
 NLDI_API_BASE_URL = 'https://labs.waterdata.usgs.gov/api/nldi/linked-data'
 _AVAILABLE_DATA_SOURCES = None
