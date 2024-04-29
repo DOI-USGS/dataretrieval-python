@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -32,7 +30,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'nbsphinx',
-    'nbsphinx_link'
+    'nbsphinx_link',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -85,7 +83,7 @@ automodapi_inheritance_diagram = False
 autodoc_default_options = {
     'members': True,
     'inherited-members': False,
-    'private-members': True
+    'private-members': True,
 }
 
 # doctest
@@ -108,8 +106,8 @@ html_theme = 'sphinx_rtd_theme'
 # documentation.
 
 html_theme_options = {
-    "logo_only": False,
-    "display_version": True,
+    'logo_only': False,
+    'display_version': True,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -124,5 +122,8 @@ linkcheck_ignore = [
     r'https://streamstats.usgs.gov/streamstatsservices/#/',
     r'https://www.waterqualitydata.us/public_srsnames/',
     r'https://waterqualitydata.us',
-    r'https://github.com/USGS-python/dataretrieval/tree/master/demos/hydroshare'
+    r'https://github.com/USGS-python/dataretrieval/tree/master/demos/hydroshare',
 ]
+
+# Some notebooks have warnings, which nbsphinx should ignore
+nbsphinx_allow_errors = True
