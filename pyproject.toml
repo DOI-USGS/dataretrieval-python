@@ -34,9 +34,12 @@ test = [
 ]
 doc = [
   "sphinx",
-  "sphinx_rtd_theme",
+  "sphinx-rtd-theme",
   "nbsphinx",
   "nbsphinx_link",
+  "ipython",
+  "ipykernel",
+  "matplotlib",
 ]
 nldi = [
   'geopandas>=0.10'
