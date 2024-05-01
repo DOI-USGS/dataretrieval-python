@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_iv() Examples &mdash; dataretrieval 0.1.dev1+ga436816 documentation</title>
+  <title>USGS dataretrieval Python Package get_iv() Examples &mdash; dataretrieval 0.1.dev1+ge8b508b documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css" />
@@ -16,8 +16,8 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=8fe84a43"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/documentation_options.js?v=bb3a15cd"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
@@ -129,14 +129,14 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+ga436816)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+ge8b508b)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.25.1)
-Requirement already satisfied: pandas in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.1.4)
-Requirement already satisfied: numpy&lt;2,&gt;=1.22.4 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (1.26.2)
-Requirement already satisfied: python-dateutil&gt;=2.8.2 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2.8.2)
-Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas-&gt;dataretrieval) (2022.1)
-Requirement already satisfied: tzdata&gt;=2022.1 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2023.3)
-Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.2-&gt;pandas-&gt;dataretrieval) (1.16.0)
+Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.2.2)
+Requirement already satisfied: numpy&gt;=1.22.4 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (1.26.4)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2.9.0.post0)
+Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2022.1)
+Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2024.1)
+Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.2-&gt;pandas==2.*-&gt;dataretrieval) (1.16.0)
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
@@ -223,9 +223,9 @@ Retrieved 2880 data values.
   <thead>
     <tr style="text-align: right;">
       <th></th>
+      <th>site_no</th>
       <th>00060</th>
       <th>00060_cd</th>
-      <th>site_no</th>
     </tr>
     <tr>
       <th>datetime</th>
@@ -237,33 +237,33 @@ Retrieved 2880 data values.
   <tbody>
     <tr>
       <th>2021-09-01 06:00:00+00:00</th>
+      <td>10109000</td>
       <td>55.9</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>2021-09-01 06:15:00+00:00</th>
+      <td>10109000</td>
       <td>55.9</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>2021-09-01 06:30:00+00:00</th>
+      <td>10109000</td>
       <td>55.9</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>2021-09-01 06:45:00+00:00</th>
+      <td>10109000</td>
       <td>55.9</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>2021-09-01 07:00:00+00:00</th>
+      <td>10109000</td>
       <td>55.9</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>...</th>
@@ -273,33 +273,33 @@ Retrieved 2880 data values.
     </tr>
     <tr>
       <th>2021-10-01 04:45:00+00:00</th>
+      <td>10109000</td>
       <td>53.2</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>2021-10-01 05:00:00+00:00</th>
+      <td>10109000</td>
       <td>53.2</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>2021-10-01 05:15:00+00:00</th>
+      <td>10109000</td>
       <td>53.2</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>2021-10-01 05:30:00+00:00</th>
+      <td>10109000</td>
       <td>54.6</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>2021-10-01 05:45:00+00:00</th>
+      <td>10109000</td>
       <td>54.6</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
   </tbody>
 </table>
@@ -320,9 +320,9 @@ Retrieved 2880 data values.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
+site_no      object
 00060       float64
 00060_cd     object
-site_no      object
 dtype: object
 </pre></div></div>
 </div>
@@ -492,9 +492,9 @@ Retrieved 96 data values.
   <thead>
     <tr style="text-align: right;">
       <th></th>
+      <th>site_no</th>
       <th>00060</th>
       <th>00060_cd</th>
-      <th>site_no</th>
     </tr>
     <tr>
       <th>datetime</th>
@@ -506,33 +506,33 @@ Retrieved 96 data values.
   <tbody>
     <tr>
       <th>2014-10-10 05:00:00+00:00</th>
+      <td>05114000</td>
       <td>478.0</td>
       <td>A</td>
-      <td>05114000</td>
     </tr>
     <tr>
       <th>2014-10-10 05:15:00+00:00</th>
+      <td>05114000</td>
       <td>478.0</td>
       <td>A</td>
-      <td>05114000</td>
     </tr>
     <tr>
       <th>2014-10-10 05:30:00+00:00</th>
+      <td>05114000</td>
       <td>478.0</td>
       <td>A</td>
-      <td>05114000</td>
     </tr>
     <tr>
       <th>2014-10-10 05:45:00+00:00</th>
+      <td>05114000</td>
       <td>478.0</td>
       <td>A</td>
-      <td>05114000</td>
     </tr>
     <tr>
       <th>2014-10-10 06:00:00+00:00</th>
+      <td>05114000</td>
       <td>478.0</td>
       <td>A</td>
-      <td>05114000</td>
     </tr>
     <tr>
       <th>...</th>
@@ -542,33 +542,33 @@ Retrieved 96 data values.
     </tr>
     <tr>
       <th>2014-10-11 03:45:00+00:00</th>
+      <td>05114000</td>
       <td>480.0</td>
       <td>A</td>
-      <td>05114000</td>
     </tr>
     <tr>
       <th>2014-10-11 04:00:00+00:00</th>
+      <td>05114000</td>
       <td>480.0</td>
       <td>A</td>
-      <td>05114000</td>
     </tr>
     <tr>
       <th>2014-10-11 04:15:00+00:00</th>
+      <td>05114000</td>
       <td>480.0</td>
       <td>A</td>
-      <td>05114000</td>
     </tr>
     <tr>
       <th>2014-10-11 04:30:00+00:00</th>
+      <td>05114000</td>
       <td>480.0</td>
       <td>A</td>
-      <td>05114000</td>
     </tr>
     <tr>
       <th>2014-10-11 04:45:00+00:00</th>
+      <td>05114000</td>
       <td>480.0</td>
       <td>A</td>
-      <td>05114000</td>
     </tr>
   </tbody>
 </table>
@@ -594,7 +594,7 @@ Retrieved 96 data values.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 41 data values.
+Retrieved 48 data values.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -619,9 +619,9 @@ Retrieved 41 data values.
   <thead>
     <tr style="text-align: right;">
       <th></th>
+      <th>site_no</th>
       <th>00060</th>
       <th>00060_cd</th>
-      <th>site_no</th>
     </tr>
     <tr>
       <th>datetime</th>
@@ -632,250 +632,292 @@ Retrieved 41 data values.
   </thead>
   <tbody>
     <tr>
-      <th>2023-12-15 06:00:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 05:00:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 06:15:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 05:15:00+00:00</th>
       <td>05114000</td>
+      <td>127.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 06:30:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 05:30:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 06:45:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 05:45:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 07:00:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 06:00:00+00:00</th>
       <td>05114000</td>
+      <td>127.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 07:15:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 06:15:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 07:30:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 06:30:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 07:45:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 06:45:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 08:00:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 07:00:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 08:15:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 07:15:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 08:30:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 07:30:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 08:45:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 07:45:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 09:00:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 08:00:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 09:15:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 08:15:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 09:30:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 08:30:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 09:45:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 08:45:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 10:00:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 09:00:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 10:15:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 09:15:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 10:30:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 09:30:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 10:45:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 09:45:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 11:00:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 10:00:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 11:15:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 10:15:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 11:30:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 10:30:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 11:45:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 10:45:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 12:00:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 11:00:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 12:15:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 11:15:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 12:30:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 11:30:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 12:45:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 11:45:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 13:00:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 12:00:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 13:15:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 12:15:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 13:30:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 12:30:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 13:45:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 12:45:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 14:00:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 13:00:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 14:15:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 13:15:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 14:30:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 13:30:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 14:45:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 13:45:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 15:00:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 14:00:00+00:00</th>
       <td>05114000</td>
+      <td>129.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 15:15:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 14:15:00+00:00</th>
       <td>05114000</td>
+      <td>129.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 15:30:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 14:30:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 15:45:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 14:45:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
     <tr>
-      <th>2023-12-15 16:00:00+00:00</th>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
+      <th>2024-05-01 15:00:00+00:00</th>
       <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-05-01 15:15:00+00:00</th>
+      <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-05-01 15:30:00+00:00</th>
+      <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-05-01 15:45:00+00:00</th>
+      <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-05-01 16:00:00+00:00</th>
+      <td>05114000</td>
+      <td>129.0</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-05-01 16:15:00+00:00</th>
+      <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-05-01 16:30:00+00:00</th>
+      <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-05-01 16:45:00+00:00</th>
+      <td>05114000</td>
+      <td>128.0</td>
+      <td>P</td>
     </tr>
   </tbody>
 </table>
@@ -926,9 +968,9 @@ Retrieved 96 data values.
   <thead>
     <tr style="text-align: right;">
       <th></th>
+      <th>site_no</th>
       <th>00060</th>
       <th>00060_cd</th>
-      <th>site_no</th>
     </tr>
     <tr>
       <th>datetime</th>
@@ -939,34 +981,34 @@ Retrieved 96 data values.
   </thead>
   <tbody>
     <tr>
-      <th>2014-10-09 23:00:00+00:00</th>
-      <td>481.0</td>
-      <td>A</td>
-      <td>05114000</td>
-    </tr>
-    <tr>
-      <th>2014-10-09 23:15:00+00:00</th>
-      <td>481.0</td>
-      <td>A</td>
-      <td>05114000</td>
-    </tr>
-    <tr>
-      <th>2014-10-09 23:30:00+00:00</th>
-      <td>481.0</td>
-      <td>A</td>
-      <td>05114000</td>
-    </tr>
-    <tr>
-      <th>2014-10-09 23:45:00+00:00</th>
-      <td>481.0</td>
-      <td>A</td>
-      <td>05114000</td>
-    </tr>
-    <tr>
       <th>2014-10-10 00:00:00+00:00</th>
+      <td>05114000</td>
       <td>481.0</td>
       <td>A</td>
+    </tr>
+    <tr>
+      <th>2014-10-10 00:15:00+00:00</th>
       <td>05114000</td>
+      <td>481.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2014-10-10 00:30:00+00:00</th>
+      <td>05114000</td>
+      <td>480.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2014-10-10 00:45:00+00:00</th>
+      <td>05114000</td>
+      <td>480.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2014-10-10 01:00:00+00:00</th>
+      <td>05114000</td>
+      <td>480.0</td>
+      <td>A</td>
     </tr>
     <tr>
       <th>...</th>
@@ -975,34 +1017,34 @@ Retrieved 96 data values.
       <td>...</td>
     </tr>
     <tr>
-      <th>2014-10-10 21:45:00+00:00</th>
-      <td>478.0</td>
-      <td>A</td>
-      <td>05114000</td>
-    </tr>
-    <tr>
-      <th>2014-10-10 22:00:00+00:00</th>
-      <td>478.0</td>
-      <td>A</td>
-      <td>05114000</td>
-    </tr>
-    <tr>
-      <th>2014-10-10 22:15:00+00:00</th>
-      <td>478.0</td>
-      <td>A</td>
-      <td>05114000</td>
-    </tr>
-    <tr>
-      <th>2014-10-10 22:30:00+00:00</th>
-      <td>478.0</td>
-      <td>A</td>
-      <td>05114000</td>
-    </tr>
-    <tr>
       <th>2014-10-10 22:45:00+00:00</th>
+      <td>05114000</td>
       <td>478.0</td>
       <td>A</td>
+    </tr>
+    <tr>
+      <th>2014-10-10 23:00:00+00:00</th>
       <td>05114000</td>
+      <td>478.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2014-10-10 23:15:00+00:00</th>
+      <td>05114000</td>
+      <td>478.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2014-10-10 23:30:00+00:00</th>
+      <td>05114000</td>
+      <td>478.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2014-10-10 23:45:00+00:00</th>
+      <td>05114000</td>
+      <td>478.0</td>
+      <td>A</td>
     </tr>
   </tbody>
 </table>

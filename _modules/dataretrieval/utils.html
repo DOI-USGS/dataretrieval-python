@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+ga436816 documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+ge8b508b documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,8 +14,8 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=8fe84a43"></script>
-        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/documentation_options.js?v=bb3a15cd"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -177,53 +177,6 @@
             <span class="o">+</span> <span class="s1">&#39;consider setting datetime_index to False.&#39;</span><span class="p">,</span>
             <span class="ne">UserWarning</span><span class="p">,</span>
         <span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">df</span></div>
-
-
-
-<span class="c1"># This function may be deprecated once pandas.update support joins besides left.</span>
-<div class="viewcode-block" id="update_merge">
-<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.update_merge">[docs]</a>
-<span class="k">def</span> <span class="nf">update_merge</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">na_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs a combination update and merge.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    left: ``pandas.DataFrame``</span>
-<span class="sd">        Original data</span>
-<span class="sd">    right: ``pandas.DataFrame``</span>
-<span class="sd">        Updated data</span>
-<span class="sd">    na_only: bool</span>
-<span class="sd">        If True, only update na values</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        Updated data frame</span>
-
-<span class="sd">    .. todo::</span>
-
-<span class="sd">        add na_only parameter support</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># df = left.merge(right, how=&#39;outer&#39;,</span>
-    <span class="c1">#                left_index=True, right_index=True)</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">left</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="n">on</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="c1"># check for column overlap and resolve update</span>
-    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-        <span class="c1"># if duplicated column, use the value from right</span>
-        <span class="k">if</span> <span class="n">column</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">==</span> <span class="s1">&#39;_x&#39;</span><span class="p">:</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="n">column</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># find column name</span>
-
-            <span class="k">if</span> <span class="n">na_only</span><span class="p">:</span>
-                <span class="n">df</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_y&#39;</span><span class="p">])</span>
-
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">df</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_y&#39;</span><span class="p">])</span>
-
-            <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_x&#39;</span><span class="p">,</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_y&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">df</span></div>
 

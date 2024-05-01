@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_gwlevels() Examples &mdash; dataretrieval 0.1.dev1+ga436816 documentation</title>
+  <title>USGS dataretrieval Python Package get_gwlevels() Examples &mdash; dataretrieval 0.1.dev1+ge8b508b documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css" />
@@ -16,8 +16,8 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=8fe84a43"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/documentation_options.js?v=bb3a15cd"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
@@ -129,14 +129,14 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+ga436816)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+ge8b508b)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.25.1)
-Requirement already satisfied: pandas in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.1.4)
-Requirement already satisfied: numpy&lt;2,&gt;=1.22.4 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (1.26.2)
-Requirement already satisfied: python-dateutil&gt;=2.8.2 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2.8.2)
-Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas-&gt;dataretrieval) (2022.1)
-Requirement already satisfied: tzdata&gt;=2022.1 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2023.3)
-Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.2-&gt;pandas-&gt;dataretrieval) (1.16.0)
+Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.2.2)
+Requirement already satisfied: numpy&gt;=1.22.4 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (1.26.4)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2.9.0.post0)
+Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2022.1)
+Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2024.1)
+Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.2-&gt;pandas==2.*-&gt;dataretrieval) (1.16.0)
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
@@ -278,7 +278,7 @@ Retrieved 248 data values.
       <td>1</td>
       <td>USGS</td>
       <td>m</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>S</td>
       <td>O</td>
       <td>A</td>
@@ -297,7 +297,7 @@ Retrieved 248 data values.
       <td>1</td>
       <td>USGS</td>
       <td>m</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>S</td>
       <td>S</td>
       <td>A</td>
@@ -316,7 +316,7 @@ Retrieved 248 data values.
       <td>1</td>
       <td>USGS</td>
       <td>m</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>S</td>
       <td>V</td>
       <td>A</td>
@@ -335,7 +335,7 @@ Retrieved 248 data values.
       <td>1</td>
       <td>USGS</td>
       <td>m</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>S</td>
       <td>S</td>
       <td>A</td>
@@ -354,7 +354,7 @@ Retrieved 248 data values.
       <td>1</td>
       <td>USGS</td>
       <td>m</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>S</td>
       <td>S</td>
       <td>A</td>
@@ -392,7 +392,7 @@ Retrieved 248 data values.
       <td>1</td>
       <td>NaN</td>
       <td>D</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>NaN</td>
       <td>S</td>
       <td>A</td>
@@ -411,7 +411,7 @@ Retrieved 248 data values.
       <td>1</td>
       <td>USGS</td>
       <td>D</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>S</td>
       <td>S</td>
       <td>A</td>
@@ -430,7 +430,7 @@ Retrieved 248 data values.
       <td>1</td>
       <td>USGS</td>
       <td>D</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>S</td>
       <td>S</td>
       <td>A</td>
@@ -449,7 +449,7 @@ Retrieved 248 data values.
       <td>1</td>
       <td>NaN</td>
       <td>D</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>NaN</td>
       <td>S</td>
       <td>A</td>
@@ -468,7 +468,7 @@ Retrieved 248 data values.
       <td>1</td>
       <td>USGS</td>
       <td>D</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>S</td>
       <td>S</td>
       <td>A</td>
@@ -504,7 +504,7 @@ sl_datum_cd      float64
 lev_status_cd     object
 lev_agency_cd     object
 lev_dt_acy_cd     object
-lev_acy_cd       float64
+lev_acy_cd         int64
 lev_src_cd        object
 lev_meth_cd       object
 lev_age_cd        object
@@ -549,12 +549,229 @@ Name: lev_va, dtype: float64
 </div>
 </div>
 <div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
-</pre></div>
+<div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Text(0, 0.5, &#39;Water Level (feet below land surface)&#39;)
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/matplotlib/axis.py:1769</span>, in <span class="ansi-cyan-fg">Axis.convert_units</span><span class="ansi-blue-fg">(self, x)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1768</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">-&gt; 1769</span>     ret <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">converter</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">convert</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">x</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">units</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1770</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">Exception</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> e:
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/pandas/plotting/_matplotlib/converter.py:295</span>, in <span class="ansi-cyan-fg">DatetimeConverter.convert</span><span class="ansi-blue-fg">(values, unit, axis)</span>
+<span class="ansi-green-intense-fg ansi-bold">    294</span> <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">--&gt; 295</span>     values <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg">DatetimeConverter</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">_convert_1d</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">values</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">unit</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">axis</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    296</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> values
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/pandas/plotting/_matplotlib/converter.py:330</span>, in <span class="ansi-cyan-fg">DatetimeConverter._convert_1d</span><span class="ansi-blue-fg">(values, unit, axis)</span>
+<span class="ansi-green-intense-fg ansi-bold">    328</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">pass</span>
+<span class="ansi-green-fg">--&gt; 330</span>     values <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg">mdates</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">date2num</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">values</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    332</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> values
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/matplotlib/dates.py:459</span>, in <span class="ansi-cyan-fg">date2num</span><span class="ansi-blue-fg">(d)</span>
+<span class="ansi-green-intense-fg ansi-bold">    457</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> tzi <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
+<span class="ansi-green-intense-fg ansi-bold">    458</span>     <span style="color: rgb(95,135,135)"># make datetime naive:</span>
+<span class="ansi-green-fg">--&gt; 459</span>     d <span style="color: rgb(98,98,98)">=</span> [dt<span style="color: rgb(98,98,98)">.</span>astimezone(UTC)<span style="color: rgb(98,98,98)">.</span>replace(tzinfo<span style="color: rgb(98,98,98)">=</span><span class="ansi-bold" style="color: rgb(0,135,0)">None</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> dt <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> d]
+<span class="ansi-green-intense-fg ansi-bold">    460</span>     d <span style="color: rgb(98,98,98)">=</span> np<span style="color: rgb(98,98,98)">.</span>asarray(d)
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/matplotlib/dates.py:459</span>, in <span class="ansi-cyan-fg">&lt;listcomp&gt;</span><span class="ansi-blue-fg">(.0)</span>
+<span class="ansi-green-intense-fg ansi-bold">    457</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> tzi <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
+<span class="ansi-green-intense-fg ansi-bold">    458</span>     <span style="color: rgb(95,135,135)"># make datetime naive:</span>
+<span class="ansi-green-fg">--&gt; 459</span>     d <span style="color: rgb(98,98,98)">=</span> [<span class="ansi-yellow-bg">dt</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">astimezone</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">UTC</span><span class="ansi-yellow-bg">)</span><span style="color: rgb(98,98,98)">.</span>replace(tzinfo<span style="color: rgb(98,98,98)">=</span><span class="ansi-bold" style="color: rgb(0,135,0)">None</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> dt <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> d]
+<span class="ansi-green-intense-fg ansi-bold">    460</span>     d <span style="color: rgb(98,98,98)">=</span> np<span style="color: rgb(98,98,98)">.</span>asarray(d)
+
+File <span class="ansi-green-fg">nattype.pyx:54</span>, in <span class="ansi-cyan-fg">pandas._libs.tslibs.nattype._make_error_func.f</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-red-fg">ValueError</span>: NaTType does not support astimezone
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">ConversionError</span>                           Traceback (most recent call last)
+Cell <span class="ansi-green-fg">In[7], line 1</span>
+<span class="ansi-green-fg">----&gt; 1</span> ax <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg">data</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">0</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">plot</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">y</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#39;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">lev_va</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#39;</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> ax<span style="color: rgb(98,98,98)">.</span>set_xlabel(<span style="color: rgb(175,0,0)">&#39;</span><span style="color: rgb(175,0,0)">Date</span><span style="color: rgb(175,0,0)">&#39;</span>)
+<span class="ansi-green-intense-fg ansi-bold">      3</span> ax<span style="color: rgb(98,98,98)">.</span>set_ylabel(<span style="color: rgb(175,0,0)">&#39;</span><span style="color: rgb(175,0,0)">Water Level (feet below land surface)</span><span style="color: rgb(175,0,0)">&#39;</span>)
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/pandas/plotting/_core.py:1030</span>, in <span class="ansi-cyan-fg">PlotAccessor.__call__</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1027</span>             label_name <span style="color: rgb(98,98,98)">=</span> label_kw <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> data<span style="color: rgb(98,98,98)">.</span>columns
+<span class="ansi-green-intense-fg ansi-bold">   1028</span>             data<span style="color: rgb(98,98,98)">.</span>columns <span style="color: rgb(98,98,98)">=</span> label_name
+<span class="ansi-green-fg">-&gt; 1030</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">plot_backend</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">plot</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">data</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">kind</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">kind</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg">kwargs</span><span class="ansi-yellow-bg">)</span>
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/pandas/plotting/_matplotlib/__init__.py:71</span>, in <span class="ansi-cyan-fg">plot</span><span class="ansi-blue-fg">(data, kind, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">     69</span>         kwargs[<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">ax</span><span style="color: rgb(175,0,0)">&#34;</span>] <span style="color: rgb(98,98,98)">=</span> <span style="color: rgb(0,135,0)">getattr</span>(ax, <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">left_ax</span><span style="color: rgb(175,0,0)">&#34;</span>, ax)
+<span class="ansi-green-intense-fg ansi-bold">     70</span> plot_obj <span style="color: rgb(98,98,98)">=</span> PLOT_CLASSES[kind](data, <span style="color: rgb(98,98,98)">*</span><span style="color: rgb(98,98,98)">*</span>kwargs)
+<span class="ansi-green-fg">---&gt; 71</span> <span class="ansi-yellow-bg">plot_obj</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">generate</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     72</span> plot_obj<span style="color: rgb(98,98,98)">.</span>draw()
+<span class="ansi-green-intense-fg ansi-bold">     73</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> plot_obj<span style="color: rgb(98,98,98)">.</span>result
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/pandas/plotting/_matplotlib/core.py:501</span>, in <span class="ansi-cyan-fg">MPLPlot.generate</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    499</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_compute_plot_data()
+<span class="ansi-green-intense-fg ansi-bold">    500</span> fig <span style="color: rgb(98,98,98)">=</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>fig
+<span class="ansi-green-fg">--&gt; 501</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">_make_plot</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">fig</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    502</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_add_table()
+<span class="ansi-green-intense-fg ansi-bold">    503</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_make_legend()
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/pandas/plotting/_matplotlib/core.py:1544</span>, in <span class="ansi-cyan-fg">LinePlot._make_plot</span><span class="ansi-blue-fg">(self, fig)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1541</span> label <span style="color: rgb(98,98,98)">=</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_mark_right_label(label, index<span style="color: rgb(98,98,98)">=</span>i)
+<span class="ansi-green-intense-fg ansi-bold">   1542</span> kwds[<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">label</span><span style="color: rgb(175,0,0)">&#34;</span>] <span style="color: rgb(98,98,98)">=</span> label
+<span class="ansi-green-fg">-&gt; 1544</span> newlines <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg">plotf</span><span class="ansi-yellow-bg">(</span>
+<span class="ansi-green-intense-fg ansi-bold">   1545</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">ax</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   1546</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">x</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   1547</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">y</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   1548</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">style</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">style</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   1549</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">column_num</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">i</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   1550</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">stacking_id</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">stacking_id</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   1551</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">is_errorbar</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">is_errorbar</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   1552</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg">kwds</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   1553</span> <span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1554</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_append_legend_handles_labels(newlines[<span style="color: rgb(98,98,98)">0</span>], label)
+<span class="ansi-green-intense-fg ansi-bold">   1556</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_is_ts_plot():
+<span class="ansi-green-intense-fg ansi-bold">   1557</span>     <span style="color: rgb(95,135,135)"># reset of xlim should be used for ts data</span>
+<span class="ansi-green-intense-fg ansi-bold">   1558</span>     <span style="color: rgb(95,135,135)"># TODO: GH28021, should find a way to change view limit on xaxis</span>
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/pandas/plotting/_matplotlib/core.py:1580</span>, in <span class="ansi-cyan-fg">LinePlot._plot</span><span class="ansi-blue-fg">(cls, ax, x, y, style, column_num, stacking_id, **kwds)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1578</span>     <span style="color: rgb(0,135,0)">cls</span><span style="color: rgb(98,98,98)">.</span>_initialize_stacker(ax, stacking_id, <span style="color: rgb(0,135,0)">len</span>(y))
+<span class="ansi-green-intense-fg ansi-bold">   1579</span> y_values <span style="color: rgb(98,98,98)">=</span> <span style="color: rgb(0,135,0)">cls</span><span style="color: rgb(98,98,98)">.</span>_get_stacked_values(ax, stacking_id, y, kwds[<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">label</span><span style="color: rgb(175,0,0)">&#34;</span>])
+<span class="ansi-green-fg">-&gt; 1580</span> lines <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg">MPLPlot</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">_plot</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">ax</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">x</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">y_values</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">style</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">style</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg">kwds</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1581</span> <span style="color: rgb(0,135,0)">cls</span><span style="color: rgb(98,98,98)">.</span>_update_stacker(ax, stacking_id, y)
+<span class="ansi-green-intense-fg ansi-bold">   1582</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> lines
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/pandas/plotting/_matplotlib/converter.py:95</span>, in <span class="ansi-cyan-fg">register_pandas_matplotlib_converters.&lt;locals&gt;.wrapper</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">     92</span> <span style="color: rgb(175,0,255)">@functools</span><span style="color: rgb(98,98,98)">.</span>wraps(func)
+<span class="ansi-green-intense-fg ansi-bold">     93</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span> <span style="color: rgb(0,0,255)">wrapper</span>(<span style="color: rgb(98,98,98)">*</span>args, <span style="color: rgb(98,98,98)">*</span><span style="color: rgb(98,98,98)">*</span>kwargs):
+<span class="ansi-green-intense-fg ansi-bold">     94</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> pandas_converters():
+<span class="ansi-green-fg">---&gt; 95</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">func</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg">args</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg">kwargs</span><span class="ansi-yellow-bg">)</span>
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/pandas/plotting/_matplotlib/core.py:975</span>, in <span class="ansi-cyan-fg">MPLPlot._plot</span><span class="ansi-blue-fg">(cls, ax, x, y, style, is_errorbar, **kwds)</span>
+<span class="ansi-green-intense-fg ansi-bold">    972</span> <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
+<span class="ansi-green-intense-fg ansi-bold">    973</span>     <span style="color: rgb(95,135,135)"># prevent style kwarg from going to errorbar, where it is unsupported</span>
+<span class="ansi-green-intense-fg ansi-bold">    974</span>     args <span style="color: rgb(98,98,98)">=</span> (x, y, style) <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> style <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span> <span class="ansi-bold" style="color: rgb(0,135,0)">else</span> (x, y)
+<span class="ansi-green-fg">--&gt; 975</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">ax</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">plot</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg">args</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg">kwds</span><span class="ansi-yellow-bg">)</span>
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/matplotlib/axes/_axes.py:1726</span>, in <span class="ansi-cyan-fg">Axes.plot</span><span class="ansi-blue-fg">(self, scalex, scaley, data, *args, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1724</span> lines <span style="color: rgb(98,98,98)">=</span> [<span style="color: rgb(98,98,98)">*</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_get_lines(<span style="color: rgb(0,135,0)">self</span>, <span style="color: rgb(98,98,98)">*</span>args, data<span style="color: rgb(98,98,98)">=</span>data, <span style="color: rgb(98,98,98)">*</span><span style="color: rgb(98,98,98)">*</span>kwargs)]
+<span class="ansi-green-intense-fg ansi-bold">   1725</span> <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> line <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> lines:
+<span class="ansi-green-fg">-&gt; 1726</span>     <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">add_line</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">line</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1727</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> scalex:
+<span class="ansi-green-intense-fg ansi-bold">   1728</span>     <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_request_autoscale_view(<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">x</span><span style="color: rgb(175,0,0)">&#34;</span>)
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/matplotlib/axes/_base.py:2309</span>, in <span class="ansi-cyan-fg">_AxesBase.add_line</span><span class="ansi-blue-fg">(self, line)</span>
+<span class="ansi-green-intense-fg ansi-bold">   2306</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> line<span style="color: rgb(98,98,98)">.</span>get_clip_path() <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
+<span class="ansi-green-intense-fg ansi-bold">   2307</span>     line<span style="color: rgb(98,98,98)">.</span>set_clip_path(<span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>patch)
+<span class="ansi-green-fg">-&gt; 2309</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">_update_line_limits</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">line</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   2310</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> line<span style="color: rgb(98,98,98)">.</span>get_label():
+<span class="ansi-green-intense-fg ansi-bold">   2311</span>     line<span style="color: rgb(98,98,98)">.</span>set_label(<span style="color: rgb(175,0,0)">f</span><span style="color: rgb(175,0,0)">&#39;</span><span style="color: rgb(175,0,0)">_child</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span><span style="color: rgb(0,135,0)">len</span>(<span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_children)<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span style="color: rgb(175,0,0)">&#39;</span>)
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/matplotlib/axes/_base.py:2332</span>, in <span class="ansi-cyan-fg">_AxesBase._update_line_limits</span><span class="ansi-blue-fg">(self, line)</span>
+<span class="ansi-green-intense-fg ansi-bold">   2328</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span> <span style="color: rgb(0,0,255)">_update_line_limits</span>(<span style="color: rgb(0,135,0)">self</span>, line):
+<span class="ansi-green-intense-fg ansi-bold">   2329</span> <span style="color: rgb(188,188,188)">    </span><span style="color: rgb(175,0,0)">&#34;&#34;&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">   2330</span> <span style="color: rgb(175,0,0)">    Figures out the data limit of the given line, updating self.dataLim.</span>
+<span class="ansi-green-intense-fg ansi-bold">   2331</span> <span style="color: rgb(175,0,0)">    &#34;&#34;&#34;</span>
+<span class="ansi-green-fg">-&gt; 2332</span>     path <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg">line</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">get_path</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   2333</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> path<span style="color: rgb(98,98,98)">.</span>vertices<span style="color: rgb(98,98,98)">.</span>size <span style="color: rgb(98,98,98)">==</span> <span style="color: rgb(98,98,98)">0</span>:
+<span class="ansi-green-intense-fg ansi-bold">   2334</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">return</span>
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/matplotlib/lines.py:1032</span>, in <span class="ansi-cyan-fg">Line2D.get_path</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1030</span> <span style="color: rgb(175,0,0)">&#34;&#34;&#34;Return the `~matplotlib.path.Path` associated with this line.&#34;&#34;&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">   1031</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_invalidy <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_invalidx:
+<span class="ansi-green-fg">-&gt; 1032</span>     <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">recache</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1033</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_path
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/matplotlib/lines.py:668</span>, in <span class="ansi-cyan-fg">Line2D.recache</span><span class="ansi-blue-fg">(self, always)</span>
+<span class="ansi-green-intense-fg ansi-bold">    666</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span> <span style="color: rgb(0,0,255)">recache</span>(<span style="color: rgb(0,135,0)">self</span>, always<span style="color: rgb(98,98,98)">=</span><span class="ansi-bold" style="color: rgb(0,135,0)">False</span>):
+<span class="ansi-green-intense-fg ansi-bold">    667</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> always <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_invalidx:
+<span class="ansi-green-fg">--&gt; 668</span>         xconv <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">convert_xunits</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">_xorig</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    669</span>         x <span style="color: rgb(98,98,98)">=</span> _to_unmasked_float_array(xconv)<span style="color: rgb(98,98,98)">.</span>ravel()
+<span class="ansi-green-intense-fg ansi-bold">    670</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/matplotlib/artist.py:279</span>, in <span class="ansi-cyan-fg">Artist.convert_xunits</span><span class="ansi-blue-fg">(self, x)</span>
+<span class="ansi-green-intense-fg ansi-bold">    277</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> ax <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span> <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> ax<span style="color: rgb(98,98,98)">.</span>xaxis <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
+<span class="ansi-green-intense-fg ansi-bold">    278</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> x
+<span class="ansi-green-fg">--&gt; 279</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">ax</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">xaxis</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">convert_units</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">x</span><span class="ansi-yellow-bg">)</span>
+
+File <span class="ansi-green-fg">~/.local/lib/python3.10/site-packages/matplotlib/axis.py:1771</span>, in <span class="ansi-cyan-fg">Axis.convert_units</span><span class="ansi-blue-fg">(self, x)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1769</span>     ret <span style="color: rgb(98,98,98)">=</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>converter<span style="color: rgb(98,98,98)">.</span>convert(x, <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>units, <span style="color: rgb(0,135,0)">self</span>)
+<span class="ansi-green-intense-fg ansi-bold">   1770</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">Exception</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> e:
+<span class="ansi-green-fg">-&gt; 1771</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> munits<span style="color: rgb(98,98,98)">.</span>ConversionError(<span style="color: rgb(175,0,0)">&#39;</span><span style="color: rgb(175,0,0)">Failed to convert value(s) to axis </span><span style="color: rgb(175,0,0)">&#39;</span>
+<span class="ansi-green-intense-fg ansi-bold">   1772</span>                                  <span style="color: rgb(175,0,0)">f</span><span style="color: rgb(175,0,0)">&#39;</span><span style="color: rgb(175,0,0)">units: </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>x<span class="ansi-bold" style="color: rgb(175,95,135)">!r}</span><span style="color: rgb(175,0,0)">&#39;</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-bold" style="color: rgb(0,0,255)">e</span>
+<span class="ansi-green-intense-fg ansi-bold">   1773</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> ret
+
+<span class="ansi-red-fg">ConversionError</span>: Failed to convert value(s) to axis units: array([Timestamp(&#39;1945-10-12 22:35:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;1999-06-04 18:00:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;1999-08-19 17:25:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;1999-11-19 18:40:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2000-02-11 17:25:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2000-03-09 22:30:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2000-05-26 16:00:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2000-08-22 21:55:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2000-11-15 21:59:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2001-03-21 00:03:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2001-05-05 01:10:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2001-05-30 20:13:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2001-07-18 17:15:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2001-08-30 15:34:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2001-09-26 15:49:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2001-10-30 23:09:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2001-11-29 18:00:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2001-12-27 22:33:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2002-01-28 22:09:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2002-02-25 22:50:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2002-03-25 22:01:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2002-04-30 16:50:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2002-05-30 22:05:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2002-08-14 18:24:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2002-09-12 15:41:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2002-11-13 22:45:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2003-02-11 22:57:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2003-05-13 21:23:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2003-09-09 23:29:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2003-12-01 22:59:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2004-01-18 22:42:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2004-04-30 19:46:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2004-07-15 17:53:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2004-10-15 17:38:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2005-01-07 18:24:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2005-04-08 17:13:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2005-07-15 16:47:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2005-10-07 17:52:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2006-01-13 19:23:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2006-05-26 14:16:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2006-07-14 18:22:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2006-10-19 23:15:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2007-01-12 19:10:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2007-04-06 15:34:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2007-10-04 23:40:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2008-04-03 21:55:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2008-10-29 21:33:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2009-05-20 18:29:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2009-06-09 16:33:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2009-11-25 17:33:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2010-05-28 16:50:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2010-11-29 23:20:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2011-10-07 18:58:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2012-10-11 21:24:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2012-10-12 01:49:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2013-10-31 17:42:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2014-10-15 21:07:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2015-10-22 17:52:00+0000&#39;, tz=&#39;UTC&#39;),
+       Timestamp(&#39;2016-10-26 16:22:00+0000&#39;, tz=&#39;UTC&#39;), NaT, NaT, NaT,
+       NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT,
+       NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT,
+       NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT,
+       NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT,
+       NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT,
+       NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT,
+       NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT,
+       NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT,
+       NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT,
+       NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT,
+       NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT,
+       NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT,
+       NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT,
+       NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT, NaT,
+       NaT, NaT, NaT, NaT], dtype=object)
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -688,7 +905,7 @@ Retrieved 311 data values.
       <td>1</td>
       <td>USGS</td>
       <td>m</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>S</td>
       <td>V</td>
       <td>A</td>
@@ -706,7 +923,7 @@ Retrieved 311 data values.
       <td>1</td>
       <td>MO005</td>
       <td>m</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>A</td>
       <td>T</td>
       <td>A</td>
@@ -724,7 +941,7 @@ Retrieved 311 data values.
       <td>1</td>
       <td>MO005</td>
       <td>m</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>A</td>
       <td>T</td>
       <td>A</td>
@@ -742,7 +959,7 @@ Retrieved 311 data values.
       <td>1</td>
       <td>MO005</td>
       <td>m</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>A</td>
       <td>T</td>
       <td>A</td>
@@ -760,7 +977,7 @@ Retrieved 311 data values.
       <td>1</td>
       <td>MO005</td>
       <td>m</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>A</td>
       <td>T</td>
       <td>A</td>
@@ -798,7 +1015,7 @@ Retrieved 311 data values.
       <td>1</td>
       <td>NaN</td>
       <td>D</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>NaN</td>
       <td>S</td>
       <td>A</td>
@@ -816,7 +1033,7 @@ Retrieved 311 data values.
       <td>1</td>
       <td>USGS</td>
       <td>D</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>S</td>
       <td>S</td>
       <td>A</td>
@@ -834,7 +1051,7 @@ Retrieved 311 data values.
       <td>1</td>
       <td>USGS</td>
       <td>D</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>S</td>
       <td>S</td>
       <td>A</td>
@@ -852,7 +1069,7 @@ Retrieved 311 data values.
       <td>1</td>
       <td>NaN</td>
       <td>D</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>NaN</td>
       <td>S</td>
       <td>A</td>
@@ -870,7 +1087,7 @@ Retrieved 311 data values.
       <td>1</td>
       <td>USGS</td>
       <td>D</td>
-      <td>NaN</td>
+      <td>2</td>
       <td>S</td>
       <td>S</td>
       <td>A</td>

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_dv() Examples &mdash; dataretrieval 0.1.dev1+ga436816 documentation</title>
+  <title>USGS dataretrieval Python Package get_dv() Examples &mdash; dataretrieval 0.1.dev1+ge8b508b documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css" />
@@ -16,8 +16,8 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=8fe84a43"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/documentation_options.js?v=bb3a15cd"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
@@ -129,14 +129,14 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+ga436816)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+ge8b508b)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.25.1)
-Requirement already satisfied: pandas in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.1.4)
-Requirement already satisfied: numpy&lt;2,&gt;=1.22.4 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (1.26.2)
-Requirement already satisfied: python-dateutil&gt;=2.8.2 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2.8.2)
-Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas-&gt;dataretrieval) (2022.1)
-Requirement already satisfied: tzdata&gt;=2022.1 in /home/runner/.local/lib/python3.10/site-packages (from pandas-&gt;dataretrieval) (2023.3)
-Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.2-&gt;pandas-&gt;dataretrieval) (1.16.0)
+Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.2.2)
+Requirement already satisfied: numpy&gt;=1.22.4 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (1.26.4)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2.9.0.post0)
+Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2022.1)
+Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2024.1)
+Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.2-&gt;pandas==2.*-&gt;dataretrieval) (1.16.0)
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
@@ -222,9 +222,9 @@ Retrieved 365 data values.
   <thead>
     <tr style="text-align: right;">
       <th></th>
+      <th>site_no</th>
       <th>00060_Mean</th>
       <th>00060_Mean_cd</th>
-      <th>site_no</th>
     </tr>
     <tr>
       <th>datetime</th>
@@ -236,33 +236,33 @@ Retrieved 365 data values.
   <tbody>
     <tr>
       <th>2020-10-01 00:00:00+00:00</th>
+      <td>10109000</td>
       <td>88.8</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>2020-10-02 00:00:00+00:00</th>
+      <td>10109000</td>
       <td>90.5</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>2020-10-03 00:00:00+00:00</th>
+      <td>10109000</td>
       <td>92.7</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>2020-10-04 00:00:00+00:00</th>
+      <td>10109000</td>
       <td>91.8</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>2020-10-05 00:00:00+00:00</th>
+      <td>10109000</td>
       <td>91.0</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>...</th>
@@ -272,33 +272,33 @@ Retrieved 365 data values.
     </tr>
     <tr>
       <th>2021-09-26 00:00:00+00:00</th>
+      <td>10109000</td>
       <td>54.2</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>2021-09-27 00:00:00+00:00</th>
+      <td>10109000</td>
       <td>54.5</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>2021-09-28 00:00:00+00:00</th>
+      <td>10109000</td>
       <td>54.1</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>2021-09-29 00:00:00+00:00</th>
+      <td>10109000</td>
       <td>53.5</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
     <tr>
       <th>2021-09-30 00:00:00+00:00</th>
+      <td>10109000</td>
       <td>54.0</td>
       <td>A</td>
-      <td>10109000</td>
     </tr>
   </tbody>
 </table>
@@ -319,9 +319,9 @@ Retrieved 365 data values.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
+site_no           object
 00060_Mean       float64
 00060_Mean_cd     object
-site_no           object
 dtype: object
 </pre></div></div>
 </div>
@@ -482,9 +482,9 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
   <thead>
     <tr style="text-align: right;">
       <th></th>
+      <th>site_no</th>
       <th>00010_Maximum</th>
       <th>00010_Maximum_cd</th>
-      <th>site_no</th>
       <th>00010_Mean</th>
       <th>00010_Mean_cd</th>
       <th>00060_Mean</th>
@@ -504,9 +504,9 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
   <tbody>
     <tr>
       <th>2020-10-01 00:00:00+00:00</th>
-      <td>NaN</td>
-      <td>NaN</td>
       <td>04085427</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>96.2</td>
@@ -514,9 +514,9 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
     </tr>
     <tr>
       <th>2020-10-02 00:00:00+00:00</th>
-      <td>NaN</td>
-      <td>NaN</td>
       <td>04085427</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>90.4</td>
@@ -524,9 +524,9 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
     </tr>
     <tr>
       <th>2020-10-03 00:00:00+00:00</th>
-      <td>NaN</td>
-      <td>NaN</td>
       <td>04085427</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>84.7</td>
@@ -534,9 +534,9 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
     </tr>
     <tr>
       <th>2020-10-04 00:00:00+00:00</th>
-      <td>NaN</td>
-      <td>NaN</td>
       <td>04085427</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>84.9</td>
@@ -544,9 +544,9 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
     </tr>
     <tr>
       <th>2020-10-05 00:00:00+00:00</th>
-      <td>NaN</td>
-      <td>NaN</td>
       <td>04085427</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>93.4</td>
@@ -564,9 +564,9 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
     </tr>
     <tr>
       <th>2021-09-26 00:00:00+00:00</th>
+      <td>04085427</td>
       <td>17.4</td>
       <td>A</td>
-      <td>04085427</td>
       <td>15.9</td>
       <td>A</td>
       <td>127.0</td>
@@ -574,9 +574,9 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
     </tr>
     <tr>
       <th>2021-09-27 00:00:00+00:00</th>
+      <td>04085427</td>
       <td>18.4</td>
       <td>A</td>
-      <td>04085427</td>
       <td>16.8</td>
       <td>A</td>
       <td>110.0</td>
@@ -584,9 +584,9 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
     </tr>
     <tr>
       <th>2021-09-28 00:00:00+00:00</th>
+      <td>04085427</td>
       <td>18.1</td>
       <td>A</td>
-      <td>04085427</td>
       <td>16.1</td>
       <td>A</td>
       <td>100.0</td>
@@ -594,9 +594,9 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
     </tr>
     <tr>
       <th>2021-09-29 00:00:00+00:00</th>
+      <td>04085427</td>
       <td>18.4</td>
       <td>A</td>
-      <td>04085427</td>
       <td>16.2</td>
       <td>A</td>
       <td>96.2</td>
@@ -604,9 +604,9 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
     </tr>
     <tr>
       <th>2021-09-30 00:00:00+00:00</th>
+      <td>04085427</td>
       <td>19.0</td>
       <td>A</td>
-      <td>04085427</td>
       <td>16.9</td>
       <td>A</td>
       <td>92.9</td>
@@ -809,6 +809,11 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
+      <th></th>
+      <th>site_no</th>
+    </tr>
+    <tr>
+      <th>datetime</th>
       <th></th>
     </tr>
   </thead>

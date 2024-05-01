@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+ga436816 documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+ge8b508b documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -15,14 +15,14 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=8fe84a43"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/documentation_options.js?v=bb3a15cd"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="dataretrieval.waterwatch" href="waterwatch.html" />
+    <link rel="next" title="dataretrieval.wqp" href="wqp.html" />
     <link rel="prev" title="dataretrieval.streamstats" href="streamstats.html" /> 
 </head>
 
@@ -77,10 +77,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils.format_datetime"><code class="docutils literal notranslate"><span class="pre">format_datetime()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils.query"><code class="docutils literal notranslate"><span class="pre">query()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils.to_str"><code class="docutils literal notranslate"><span class="pre">to_str()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils.update_merge"><code class="docutils literal notranslate"><span class="pre">update_merge()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="waterwatch.html">dataretrieval.waterwatch</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wqp.html">dataretrieval.wqp</a></li>
 </ul>
 </li>
@@ -284,28 +282,6 @@ turned into a string. Default value is a comma.</p></li>
 </div>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="dataretrieval.utils.update_merge">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">update_merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">left</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">na_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/utils.html#update_merge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils.update_merge" title="Link to this definition"></a></dt>
-<dd><p>Performs a combination update and merge.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>left</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Original data</p></li>
-<li><p><strong>right</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Updated data</p></li>
-<li><p><strong>na_only</strong> (<em>bool</em>) – If True, only update na values</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Updated data frame</p></li>
-<li><p><em>.. todo::</em> – add na_only parameter support</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 
 
@@ -313,7 +289,7 @@ turned into a string. Default value is a comma.</p></li>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="streamstats.html" class="btn btn-neutral float-left" title="dataretrieval.streamstats" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="waterwatch.html" class="btn btn-neutral float-right" title="dataretrieval.waterwatch" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="wqp.html" class="btn btn-neutral float-right" title="dataretrieval.wqp" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

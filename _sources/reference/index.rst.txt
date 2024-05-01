@@ -11,5 +11,4 @@ API reference
     nwis
     streamstats
     utils
-    waterwatch
     wqp

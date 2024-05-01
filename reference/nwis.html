@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+ga436816 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+ge8b508b documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -15,8 +15,8 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=8fe84a43"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/documentation_options.js?v=bb3a15cd"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
@@ -91,7 +91,6 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="streamstats.html">dataretrieval.streamstats</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html">dataretrieval.utils</a></li>
-<li class="toctree-l2"><a class="reference internal" href="waterwatch.html">dataretrieval.waterwatch</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wqp.html">dataretrieval.wqp</a></li>
 </ul>
 </li>
@@ -623,11 +622,14 @@ default is True</p></li>
 <dd><p>Get water sample data from qwdata service.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>The NWIS qw data service is being deprecated. See this note from the
-R package for more information:
-<a class="reference external" href="https://doi-usgs.github.io/dataRetrieval/articles/qwdata_changes.html">https://doi-usgs.github.io/dataRetrieval/articles/qwdata_changes.html</a>
+<p>WARNING: Beginning in March 2024 the NWIS qw data endpoint will
+not deliver new data or updates to existing data.
+Eventually the endpoint will be retired. For updated information visit:
+<a class="reference external" href="https://waterdata.usgs.gov.nwis/qwdata">https://waterdata.usgs.gov.nwis/qwdata</a>
+For additional details, see the R package vignette:
+<a class="reference external" href="https://doi-usgs.github.io/dataRetrieval/articles/Status.html">https://doi-usgs.github.io/dataRetrieval/articles/Status.html</a>
 If you have additional questions about the qw data service,
-email <a class="reference external" href="mailto:gs-w-IOW_PO_team&#37;&#52;&#48;usgs&#46;gov">gs-w-IOW_PO_team<span>&#64;</span>usgs<span>&#46;</span>gov</a>.</p>
+email <a class="reference external" href="mailto:CompTools&#37;&#52;&#48;usgs&#46;gov">CompTools<span>&#64;</span>usgs<span>&#46;</span>gov</a>.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
