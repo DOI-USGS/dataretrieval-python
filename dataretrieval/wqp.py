@@ -19,6 +19,12 @@ from .utils import BaseMetadata, query
 def get_results(ssl_check=True, **kwargs):
     """Query the WQP for results.
 
+    Any WQP API parameter can be passed as a keyword argument to this function.
+    More information about the API can be found at:
+    https://www.waterqualitydata.us/#advanced=true
+    or the Swagger documentation at:
+    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
+
     Parameters
     ----------
     ssl_check: bool
@@ -94,6 +100,12 @@ def get_results(ssl_check=True, **kwargs):
 def what_sites(ssl_check=True, **kwargs):
     """Search WQP for sites within a region with specific data.
 
+    Any WQP API parameter can be passed as a keyword argument to this function.
+    More information about the API can be found at:
+    https://www.waterqualitydata.us/#advanced=true
+    or the Swagger documentation at:
+    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
+
     Parameters
     ----------
     ssl_check: bool
@@ -134,6 +146,12 @@ def what_sites(ssl_check=True, **kwargs):
 def what_organizations(ssl_check=True, **kwargs):
     """Search WQP for organizations within a region with specific data.
 
+    Any WQP API parameter can be passed as a keyword argument to this function.
+    More information about the API can be found at:
+    https://www.waterqualitydata.us/#advanced=true
+    or the Swagger documentation at:
+    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
+
     Parameters
     ----------
     ssl_check: bool
@@ -172,6 +190,12 @@ def what_organizations(ssl_check=True, **kwargs):
 def what_projects(ssl_check=True, **kwargs):
     """Search WQP for projects within a region with specific data.
 
+    Any WQP API parameter can be passed as a keyword argument to this function.
+    More information about the API can be found at:
+    https://www.waterqualitydata.us/#advanced=true
+    or the Swagger documentation at:
+    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
+
     Parameters
     ----------
     ssl_check: bool
@@ -209,6 +233,12 @@ def what_projects(ssl_check=True, **kwargs):
 
 def what_activities(ssl_check=True, **kwargs):
     """Search WQP for activities within a region with specific data.
+
+    Any WQP API parameter can be passed as a keyword argument to this function.
+    More information about the API can be found at:
+    https://www.waterqualitydata.us/#advanced=true
+    or the Swagger documentation at:
+    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
 
     Parameters
     ----------
@@ -251,6 +281,12 @@ def what_activities(ssl_check=True, **kwargs):
 def what_detection_limits(ssl_check=True, **kwargs):
     """Search WQP for result detection limits within a region with specific
     data.
+
+    Any WQP API parameter can be passed as a keyword argument to this function.
+    More information about the API can be found at:
+    https://www.waterqualitydata.us/#advanced=true
+    or the Swagger documentation at:
+    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
 
     Parameters
     ----------
@@ -296,6 +332,12 @@ def what_detection_limits(ssl_check=True, **kwargs):
 def what_habitat_metrics(ssl_check=True, **kwargs):
     """Search WQP for habitat metrics within a region with specific data.
 
+    Any WQP API parameter can be passed as a keyword argument to this function.
+    More information about the API can be found at:
+    https://www.waterqualitydata.us/#advanced=true
+    or the Swagger documentation at:
+    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
+
     Parameters
     ----------
     ssl_check: bool
@@ -333,6 +375,12 @@ def what_habitat_metrics(ssl_check=True, **kwargs):
 
 def what_project_weights(ssl_check=True, **kwargs):
     """Search WQP for project weights within a region with specific data.
+
+    Any WQP API parameter can be passed as a keyword argument to this function.
+    More information about the API can be found at:
+    https://www.waterqualitydata.us/#advanced=true
+    or the Swagger documentation at:
+    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
 
     Parameters
     ----------
@@ -374,6 +422,12 @@ def what_project_weights(ssl_check=True, **kwargs):
 
 def what_activity_metrics(ssl_check=True, **kwargs):
     """Search WQP for activity metrics within a region with specific data.
+
+    Any WQP API parameter can be passed as a keyword argument to this function.
+    More information about the API can be found at:
+    https://www.waterqualitydata.us/#advanced=true
+    or the Swagger documentation at:
+    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
 
     Parameters
     ----------
@@ -487,16 +541,19 @@ def _alter_kwargs(kwargs):
 
     return kwargs
 
+
 def _warn_v3_profiles_outage():
     """Private function for warning message about WQX 3.0 profiles
     """
 
-    warnings.warn(('USGS discrete water quality data availability '
-                   'and format are changing. Beginning in March 2024 '
-                   'the data obtained from legacy profiles will not '
-                   'include new USGS data or recent updates to existing '
-                   'data. To view the status of changes in data '
-                   'availability and code functionality, visit: '
-                   'https://doi-usgs.github.io/dataRetrieval/articles/Status.html. '
-                   'If you have additional questions about these changes, '
-                   'email CompTools@usgs.gov.'))
+    warnings.warn(
+        'USGS discrete water quality data availability '
+        'and format are changing. Beginning in March 2024 '
+        'the data obtained from legacy profiles will not '
+        'include new USGS data or recent updates to existing '
+        'data. To view the status of changes in data '
+        'availability and code functionality, visit: '
+        'https://doi-usgs.github.io/dataRetrieval/articles/Status.html. '
+        'If you have additional questions about these changes, '
+        'email CompTools@usgs.gov.'
+    )
