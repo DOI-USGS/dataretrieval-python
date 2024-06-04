@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+ge8b508b documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g3ae36b3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=bb3a15cd"></script>
+        <script src="../../_static/documentation_options.js?v=37f94c02"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -102,6 +102,12 @@
 <span class="k">def</span> <span class="nf">get_results</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Query the WQP for results.</span>
 
+<span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
+<span class="sd">    More information about the API can be found at:</span>
+<span class="sd">    https://www.waterqualitydata.us/#advanced=true</span>
+<span class="sd">    or the Swagger documentation at:</span>
+<span class="sd">    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    ssl_check: bool</span>
@@ -180,6 +186,12 @@
 <span class="k">def</span> <span class="nf">what_sites</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for sites within a region with specific data.</span>
 
+<span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
+<span class="sd">    More information about the API can be found at:</span>
+<span class="sd">    https://www.waterqualitydata.us/#advanced=true</span>
+<span class="sd">    or the Swagger documentation at:</span>
+<span class="sd">    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    ssl_check: bool</span>
@@ -223,6 +235,12 @@
 <span class="k">def</span> <span class="nf">what_organizations</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for organizations within a region with specific data.</span>
 
+<span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
+<span class="sd">    More information about the API can be found at:</span>
+<span class="sd">    https://www.waterqualitydata.us/#advanced=true</span>
+<span class="sd">    or the Swagger documentation at:</span>
+<span class="sd">    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    ssl_check: bool</span>
@@ -264,6 +282,12 @@
 <span class="k">def</span> <span class="nf">what_projects</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for projects within a region with specific data.</span>
 
+<span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
+<span class="sd">    More information about the API can be found at:</span>
+<span class="sd">    https://www.waterqualitydata.us/#advanced=true</span>
+<span class="sd">    or the Swagger documentation at:</span>
+<span class="sd">    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    ssl_check: bool</span>
@@ -304,6 +328,12 @@
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_activities">[docs]</a>
 <span class="k">def</span> <span class="nf">what_activities</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for activities within a region with specific data.</span>
+
+<span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
+<span class="sd">    More information about the API can be found at:</span>
+<span class="sd">    https://www.waterqualitydata.us/#advanced=true</span>
+<span class="sd">    or the Swagger documentation at:</span>
+<span class="sd">    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -349,6 +379,12 @@
 <span class="k">def</span> <span class="nf">what_detection_limits</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for result detection limits within a region with specific</span>
 <span class="sd">    data.</span>
+
+<span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
+<span class="sd">    More information about the API can be found at:</span>
+<span class="sd">    https://www.waterqualitydata.us/#advanced=true</span>
+<span class="sd">    or the Swagger documentation at:</span>
+<span class="sd">    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -397,6 +433,12 @@
 <span class="k">def</span> <span class="nf">what_habitat_metrics</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for habitat metrics within a region with specific data.</span>
 
+<span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
+<span class="sd">    More information about the API can be found at:</span>
+<span class="sd">    https://www.waterqualitydata.us/#advanced=true</span>
+<span class="sd">    or the Swagger documentation at:</span>
+<span class="sd">    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    ssl_check: bool</span>
@@ -437,6 +479,12 @@
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_project_weights">[docs]</a>
 <span class="k">def</span> <span class="nf">what_project_weights</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for project weights within a region with specific data.</span>
+
+<span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
+<span class="sd">    More information about the API can be found at:</span>
+<span class="sd">    https://www.waterqualitydata.us/#advanced=true</span>
+<span class="sd">    or the Swagger documentation at:</span>
+<span class="sd">    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -481,6 +529,12 @@
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_activity_metrics">[docs]</a>
 <span class="k">def</span> <span class="nf">what_activity_metrics</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for activity metrics within a region with specific data.</span>
+
+<span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
+<span class="sd">    More information about the API can be found at:</span>
+<span class="sd">    https://www.waterqualitydata.us/#advanced=true</span>
+<span class="sd">    or the Swagger documentation at:</span>
+<span class="sd">    https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -607,21 +661,24 @@
     <span class="k">return</span> <span class="n">kwargs</span></div>
 
 
+
 <div class="viewcode-block" id="_warn_v3_profiles_outage">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp._warn_v3_profiles_outage">[docs]</a>
 <span class="k">def</span> <span class="nf">_warn_v3_profiles_outage</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Private function for warning message about WQX 3.0 profiles</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">((</span><span class="s1">&#39;USGS discrete water quality data availability &#39;</span>
-                   <span class="s1">&#39;and format are changing. Beginning in March 2024 &#39;</span>
-                   <span class="s1">&#39;the data obtained from legacy profiles will not &#39;</span>
-                   <span class="s1">&#39;include new USGS data or recent updates to existing &#39;</span>
-                   <span class="s1">&#39;data. To view the status of changes in data &#39;</span>
-                   <span class="s1">&#39;availability and code functionality, visit: &#39;</span>
-                   <span class="s1">&#39;https://doi-usgs.github.io/dataRetrieval/articles/Status.html. &#39;</span>
-                   <span class="s1">&#39;If you have additional questions about these changes, &#39;</span>
-                   <span class="s1">&#39;email CompTools@usgs.gov.&#39;</span><span class="p">))</span></div>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="s1">&#39;USGS discrete water quality data availability &#39;</span>
+        <span class="s1">&#39;and format are changing. Beginning in March 2024 &#39;</span>
+        <span class="s1">&#39;the data obtained from legacy profiles will not &#39;</span>
+        <span class="s1">&#39;include new USGS data or recent updates to existing &#39;</span>
+        <span class="s1">&#39;data. To view the status of changes in data &#39;</span>
+        <span class="s1">&#39;availability and code functionality, visit: &#39;</span>
+        <span class="s1">&#39;https://doi-usgs.github.io/dataRetrieval/articles/Status.html. &#39;</span>
+        <span class="s1">&#39;If you have additional questions about these changes, &#39;</span>
+        <span class="s1">&#39;email CompTools@usgs.gov.&#39;</span>
+    <span class="p">)</span></div>
 
 </pre></div>
 
