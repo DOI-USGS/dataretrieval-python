@@ -10,6 +10,7 @@ except ImportError:
 
 NLDI_API_BASE_URL = 'https://labs.waterdata.usgs.gov/api/nldi/linked-data'
 _AVAILABLE_DATA_SOURCES = None
+_CRS = "EPSG:4326"
 
 
 def _query_nldi(url, query_params, error_message):
@@ -101,7 +102,7 @@ def get_flowlines(
     feature_collection = _query_nldi(url, query_params, err_msg)
     if as_json:
         return feature_collection
-    gdf = gpd.GeoDataFrame.from_features(feature_collection)
+    gdf = gpd.GeoDataFrame.from_features(feature_collection, crs=_CRS)
     return gdf
 
 
@@ -154,7 +155,7 @@ def get_basin(
     feature_collection = _query_nldi(url, query_params, err_msg)
     if as_json:
         return feature_collection
-    gdf = gpd.GeoDataFrame.from_features(feature_collection)
+    gdf = gpd.GeoDataFrame.from_features(feature_collection, crs=_CRS)
     return gdf
 
 
@@ -291,7 +292,7 @@ def get_features(
     feature_collection = _query_nldi(url, query_params, err_msg)
     if as_json:
         return feature_collection
-    gdf = gpd.GeoDataFrame.from_features(feature_collection)
+    gdf = gpd.GeoDataFrame.from_features(feature_collection, crs=_CRS)
     return gdf
 
 
@@ -322,7 +323,7 @@ def get_features_by_data_source(data_source: str) -> gpd.GeoDataFrame:
     url = f'{NLDI_API_BASE_URL}/{data_source}'
     err_msg = f"Error getting features for data source '{data_source}'"
     feature_collection = _query_nldi(url, {}, err_msg)
-    gdf = gpd.GeoDataFrame.from_features(feature_collection)
+    gdf = gpd.GeoDataFrame.from_features(feature_collection, crs=_CRS)
     return gdf
 
 
