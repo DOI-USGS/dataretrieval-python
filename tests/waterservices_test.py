@@ -22,6 +22,10 @@ from dataretrieval.nwis import (
 )
 from dataretrieval.utils import NoSitesError
 
+try:
+    import geopandas as gpd
+except ImportError:
+    gpd = None
 
 def test_query_waterdata_validation():
     """Tests the validation parameters of the query_waterservices method"""
@@ -80,7 +84,10 @@ def test_get_dv(requests_mock):
     response_file_path = 'data/waterservices_dv.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_dv(sites=["01491000", "01645000"], start='2020-02-14', end='2020-02-15')
-    assert type(df) is DataFrame
+
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+
     assert df.size == 8
     assert_metadata(requests_mock, request_url, md, site, None, format)
 
@@ -99,7 +106,9 @@ def test_get_dv_site_value_types(requests_mock, site_input_type_list):
     else:
         sites = site
     df, md = get_dv(sites=sites, start='2020-02-14', end='2020-02-15')
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+
     assert df.size == 8
 
 
@@ -112,7 +121,9 @@ def test_get_iv(requests_mock):
     response_file_path = 'data/waterservices_iv.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_iv(sites=["01491000", "01645000"], start='2019-02-14', end='2020-02-15')
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+
     assert df.size == 563380
     assert md.url == request_url
     assert_metadata(requests_mock, request_url, md, site, None, format)
@@ -132,7 +143,8 @@ def test_get_iv_site_value_types(requests_mock, site_input_type_list):
     else:
         sites = site
     df, md = get_iv(sites=sites, start='2019-02-14', end='2020-02-15')
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 563380
     assert md.url == request_url
 
@@ -142,6 +154,7 @@ def test_get_info(requests_mock):
     Tests get_info method correctly generates the request url and returns the result in a DataFrame.
     Note that only sites and format are passed as query params
     """
+    size = 24
     format = "rdb"
     site = '01491000%2C01645000'
     parameter_cd = "00618"
@@ -149,8 +162,18 @@ def test_get_info(requests_mock):
     response_file_path = 'data/waterservices_site.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_info(sites=["01491000", "01645000"], parameterCd="00618")
-    assert type(df) is DataFrame
-    assert df.size == 24
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+
+    if "geometry" in list(df):
+        geom_type = df.geom_type.unique()
+        if len(geom_type) > 1 or geom_type[0] != "Point":
+            raise AssertionError(
+                f"Geometry type {geom_type} not valid, expecting Point"
+            )
+        size += len(df)
+
+    assert df.size == size
     assert md.url == request_url
     assert_metadata(requests_mock, request_url, md, site, [parameter_cd], format)
 
@@ -167,7 +190,19 @@ def test_get_qwdata(requests_mock):
     mock_request(requests_mock, request_url, response_file_path)
     with pytest.warns(DeprecationWarning):
         df, md = get_qwdata(sites=["01491000", "01645000"])
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+
+    if "geometry" in list(df):
+        if not isinstance(df, gpd.GeoDataFrame):
+            raise AssertionError(f"{type(df)} is not a GeoDataFrame")
+
+        geom_type = df.geom_type.unique()
+        if len(geom_type) > 1 or geom_type[0] != "Point":
+            raise AssertionError(
+                f"Geometry type {geom_type} not valid, expecting Point"
+            )
+
     assert df.size == 1821472
     assert_metadata(requests_mock, request_url, md, site, None, format)
 
@@ -202,7 +237,9 @@ def test_get_gwlevels(requests_mock):
     response_file_path = 'data/waterservices_gwlevels.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_gwlevels(sites=[site])
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+
     assert df.size == 16
     assert_metadata(requests_mock, request_url, md, site, None, format)
 
@@ -221,7 +258,8 @@ def test_get_gwlevels_site_value_types(requests_mock, site_input_type_list):
     else:
         sites = site
     df, md = get_gwlevels(sites=sites)
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 16
 
 
@@ -234,7 +272,9 @@ def test_get_discharge_peaks(requests_mock):
     response_file_path = 'data/waterservices_peaks.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_discharge_peaks(sites=[site], start='2000-02-14', end='2020-02-15')
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+
     assert df.size == 240
     assert_metadata(requests_mock, request_url, md, site, None, format)
 
@@ -255,7 +295,9 @@ def test_get_discharge_peaks_sites_value_types(requests_mock, site_input_type_li
         sites = site
 
     df, md = get_discharge_peaks(sites=sites, start='2000-02-14', end='2020-02-15')
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+
     assert df.size == 240
 
 
@@ -269,7 +311,9 @@ def test_get_discharge_measurements(requests_mock):
     response_file_path = 'data/waterdata_measurements.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_discharge_measurements(sites=[site], start='2000-02-14', end='2020-02-15')
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+
     assert df.size == 2130
     assert_metadata(requests_mock, request_url, md, site, None, format)
 
@@ -288,7 +332,8 @@ def test_get_discharge_measurements_sites_value_types(requests_mock, site_input_
     else:
         sites = site
     df, md = get_discharge_measurements(sites=sites, start='2000-02-14', end='2020-02-15')
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 2130
 
 
@@ -300,7 +345,8 @@ def test_get_pmcodes(requests_mock):
     response_file_path = 'data/waterdata_pmcodes.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_pmcodes(parameterCd='00618')
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 13
     assert_metadata(requests_mock, request_url, md, None, None, format)
 
@@ -319,7 +365,8 @@ def test_get_pmcodes_parameterCd_value_types(requests_mock, parameterCd_input_ty
     else:
         parameterCd = parameterCd
     df, md = get_pmcodes(parameterCd=parameterCd)
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 13
 
 
@@ -332,7 +379,8 @@ def test_get_water_use_national(requests_mock):
     response_file_path = 'data/water_use_national.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_water_use()
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 225
     assert_metadata(requests_mock, request_url, md, None, None, format)
 
@@ -369,7 +417,8 @@ def test_get_water_use_national_county_value_types(requests_mock, county_input_t
     else:
         counties = county
     df, md = get_water_use(counties=counties)
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 225
 
 
@@ -387,7 +436,8 @@ def test_get_water_use_national_county_value_types(requests_mock, category_input
     else:
         categories = category
     df, md = get_water_use(categories=categories)
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 225
 
 
@@ -400,7 +450,8 @@ def test_get_water_use_allegheny(requests_mock):
     response_file_path = 'data/water_use_allegheny.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_water_use(state="PA", counties="003")
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 1981
     assert_metadata(requests_mock, request_url, md, None, None, format)
 
@@ -421,13 +472,16 @@ def test_get_ratings(requests_mock):
     response_file_path = 'data/waterservices_ratings.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_ratings(site_no=site)
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+
     assert df.size == 33
     assert_metadata(requests_mock, request_url, md, site, None, format)
 
 
 def test_what_sites(requests_mock):
     """Tests what_sites method correctly generates the request url and returns the result in a DataFrame"""
+    size = 2472
     format = "rdb"
     parameter_cd = '00010%2C00060'
     parameter_cd_list = ["00010","00060"]
@@ -437,8 +491,22 @@ def test_what_sites(requests_mock):
     mock_request(requests_mock, request_url, response_file_path)
 
     df, md = what_sites(bBox=[-83.0,36.5,-81.0,38.5], parameterCd=parameter_cd_list, hasDataTypeCd="dv")
-    assert type(df) is DataFrame
-    assert df.size == 2472
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+
+    if gpd is not None:
+        if not isinstance(df, gpd.GeoDataFrame):
+            raise AssertionError(f"{type(df)} is not a GeoDataFrame")
+
+        geom_type = df.geom_type.unique()
+        if len(geom_type) > 1 or geom_type[0] != "Point":
+            raise AssertionError(
+                f"Geometry type {geom_type} not valid, expecting Point"
+            )
+
+        size += len(df)
+
+    assert df.size == size
     assert_metadata(requests_mock, request_url, md, None, parameter_cd_list, format)
 
 
@@ -450,7 +518,8 @@ def test_get_stats(requests_mock):
     mock_request(requests_mock, request_url, response_file_path)
 
     df, md = get_stats(sites=["01491000", "01645000"])
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 51936
     assert_metadata(requests_mock, request_url, md, None, None, format)
 
@@ -468,7 +537,8 @@ def test_get_stats_site_value_types(requests_mock, site_input_type_list):
     else:
         sites = site
     df, md = get_stats(sites=sites)
-    assert type(df) is DataFrame
+    if not isinstance(df, DataFrame):
+        raise AssertionError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 51936
 
 
@@ -486,7 +556,10 @@ def assert_metadata(requests_mock, request_url, md, site, parameter_cd, format):
         with open('data/waterservices_site.txt') as text:
             requests_mock.get(site_request_url, text=text.read())
         site_info, _ = md.site_info
-        assert type(site_info) is DataFrame
+        if not isinstance(site_info, DataFrame):
+            raise AssertionError(
+                f"{type(site_info)} is not DataFrame base class type"
+            )
     if parameter_cd is None:
         assert md.variable_info is None
     else:
