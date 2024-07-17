@@ -91,8 +91,6 @@ Any help in testing, development, documentation and other tasks is welcome.
 For more details, see the file [CONTRIBUTING.md](CONTRIBUTING.md).
 
 
-[![Coverage Status](https://coveralls.io/repos/github/thodson-usgs/data_retrieval/badge.svg?branch=master)](https://coveralls.io/github/thodson-usgs/data_retrieval?branch=master)
-
 ## Package Support
 The Water Mission Area of the USGS supports the development and maintenance of `dataretrieval`
 and most likely further into the future.
