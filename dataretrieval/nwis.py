@@ -23,6 +23,11 @@ from dataretrieval.utils import BaseMetadata, format_datetime, to_str
 
 from .utils import query
 
+try:
+    import geopandas as gpd
+except ImportError:
+    gpd = None
+
 WATERDATA_BASE_URL = 'https://nwis.waterdata.usgs.gov/'
 WATERDATA_URL = WATERDATA_BASE_URL + 'nwis/'
 WATERSERVICE_URL = 'https://waterservices.usgs.gov/nwis/'
@@ -38,6 +43,7 @@ WATERDATA_SERVICES = [
     'water_use',
     'ratings',
 ]
+_CRS = "EPSG:4236"
 
 
 def format_response(
@@ -70,6 +76,14 @@ def format_response(
 
     if service == 'peaks':
         df = preformat_peaks_response(df)
+
+    if gpd is not None:
+        if "dec_lat_va" in list(df):
+            geoms = gpd.points_from_xy(
+                df.dec_long_va.values,
+                df.dec_lat_va.values
+            )
+            df = gpd.GeoDataFrame(df, geometry=geoms, crs=_CRS)
 
     # check for multiple sites:
     if 'datetime' not in df.columns:
