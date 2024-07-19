@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+gc434b13 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g64a575d documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=60a65f28"></script>
+        <script src="../../_static/documentation_options.js?v=2e42a2e3"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -104,6 +104,11 @@
 
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">query</span>
 
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">gpd</span> <span class="o">=</span> <span class="kc">None</span>
+
 <span class="n">WATERDATA_BASE_URL</span> <span class="o">=</span> <span class="s1">&#39;https://nwis.waterdata.usgs.gov/&#39;</span>
 <span class="n">WATERDATA_URL</span> <span class="o">=</span> <span class="n">WATERDATA_BASE_URL</span> <span class="o">+</span> <span class="s1">&#39;nwis/&#39;</span>
 <span class="n">WATERSERVICE_URL</span> <span class="o">=</span> <span class="s1">&#39;https://waterservices.usgs.gov/nwis/&#39;</span>
@@ -119,6 +124,7 @@
     <span class="s1">&#39;water_use&#39;</span><span class="p">,</span>
     <span class="s1">&#39;ratings&#39;</span><span class="p">,</span>
 <span class="p">]</span>
+<span class="n">_CRS</span> <span class="o">=</span> <span class="s2">&quot;EPSG:4236&quot;</span>
 
 
 <div class="viewcode-block" id="format_response">
@@ -153,6 +159,14 @@
 
     <span class="k">if</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;peaks&#39;</span><span class="p">:</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">preformat_peaks_response</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">gpd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;dec_lat_va&quot;</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+            <span class="n">geoms</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">points_from_xy</span><span class="p">(</span>
+                <span class="n">df</span><span class="o">.</span><span class="n">dec_long_va</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                <span class="n">df</span><span class="o">.</span><span class="n">dec_lat_va</span><span class="o">.</span><span class="n">values</span>
+            <span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="n">geoms</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">_CRS</span><span class="p">)</span>
 
     <span class="c1"># check for multiple sites:</span>
     <span class="k">if</span> <span class="s1">&#39;datetime&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
