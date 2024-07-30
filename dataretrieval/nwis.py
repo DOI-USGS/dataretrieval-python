@@ -435,12 +435,16 @@ def get_gwlevels(
     """
     _check_sites_value_types(sites)
 
+    # Make kwargs backwards compatible with waterservices
+    # vocabulary
     if 'startDT' in kwargs:
         kwargs['begin_date'] = kwargs.pop('startDT')
     if 'endDT' in kwargs:
         kwargs['end_date'] = kwargs.pop('endDT')
     if 'sites' in kwargs:
         kwargs['site_no'] = kwargs.pop('sites')
+    if 'stateCd'in kwargs:
+        kwargs['state_cd'] = kwargs.pop('stateCd')
 
     kwargs['begin_date'] = kwargs.pop('begin_date', start)
     kwargs['end_date'] = kwargs.pop('end_date', end)
