@@ -233,7 +233,7 @@ def test_get_gwlevels(requests_mock):
     format = "rdb"
     site = '434400121275801'
     request_url = 'https://nwis.waterdata.usgs.gov/nwis/gwlevels?format={}&begin_date=1851-01-01' \
-                  '&site_no={}'.format(site, format)
+                  '&site_no={}'.format(format, site)
     response_file_path = 'data/waterdata_gwlevels.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_gwlevels(sites=site)
@@ -250,7 +250,7 @@ def test_get_gwlevels_site_value_types(requests_mock, site_input_type_list):
     _format = "rdb"
     site = '434400121275801'
     request_url = 'https://nwis.waterdata.usgs.gov/nwis/gwlevels?format={}&begin_date=1851-01-01' \
-                  '&site_no={}'.format(site, _format)
+                  '&site_no={}'.format(_format, site)
     response_file_path = 'data/waterdata_gwlevels.txt'
     mock_request(requests_mock, request_url, response_file_path)
     if site_input_type_list:
