@@ -430,7 +430,7 @@ def get_gwlevels(
     .. doctest::
 
         >>> # Get groundwater levels for site 434400121275801
-        >>> df, md = dataretrieval.nwis.get_gwlevels(site_no='434400121275801')
+        >>> df, md = dataretrieval.nwis.get_gwlevels(sites='434400121275801')
 
     """
     _check_sites_value_types(sites)
