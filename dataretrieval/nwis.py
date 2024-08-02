@@ -34,9 +34,10 @@ WATERSERVICE_URL = 'https://waterservices.usgs.gov/nwis/'
 PARAMCODES_URL = 'https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?'
 ALLPARAMCODES_URL = 'https://help.waterdata.usgs.gov/code/parameter_cd_query?'
 
-WATERSERVICES_SERVICES = ['dv', 'iv', 'site', 'stat', 'gwlevels']
+WATERSERVICES_SERVICES = ['dv', 'iv', 'site', 'stat']
 WATERDATA_SERVICES = [
     'qwdata',
+    'gwlevels',
     'measurements',
     'peaks',
     'pmcodes',
@@ -434,12 +435,23 @@ def get_gwlevels(
     """
     _check_sites_value_types(sites)
 
-    kwargs['startDT'] = kwargs.pop('startDT', start)
-    kwargs['endDT'] = kwargs.pop('endDT', end)
-    kwargs['sites'] = kwargs.pop('sites', sites)
+    # Make kwargs backwards compatible with waterservices
+    # vocabulary
+    if 'startDT' in kwargs:
+        kwargs['begin_date'] = kwargs.pop('startDT')
+    if 'endDT' in kwargs:
+        kwargs['end_date'] = kwargs.pop('endDT')
+    if 'sites' in kwargs:
+        kwargs['site_no'] = kwargs.pop('sites')
+    if 'stateCd'in kwargs:
+        kwargs['state_cd'] = kwargs.pop('stateCd')
+
+    kwargs['begin_date'] = kwargs.pop('begin_date', start)
+    kwargs['end_date'] = kwargs.pop('end_date', end)
+    kwargs['site_no'] = kwargs.pop('site_no', sites)
     kwargs['multi_index'] = multi_index
 
-    response = query_waterservices('gwlevels', ssl_check=ssl_check, **kwargs)
+    response = query_waterdata('gwlevels', format = 'rdb', ssl_check=ssl_check, **kwargs)
 
     df = _read_rdb(response.text)
 
