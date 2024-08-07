@@ -1,5 +1,5 @@
 boto3
-dataretrieval
+dataretrieval[nldi]
 lithops
 pika
 ps_mem
