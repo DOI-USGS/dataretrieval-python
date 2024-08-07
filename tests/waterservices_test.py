@@ -79,8 +79,8 @@ def test_get_dv(requests_mock):
     """Tests get_dv method correctly generates the request url and returns the result in a DataFrame"""
     format = "json"
     site = '01491000%2C01645000'
-    request_url = 'https://waterservices.usgs.gov/nwis/dv?format={}' \
-                  '&startDT=2020-02-14&endDT=2020-02-15&sites={}'.format(format, site)
+    request_url = f'https://waterservices.usgs.gov/nwis/dv?format={format}' \
+                  f'&startDT=2020-02-14&endDT=2020-02-15&sites={site}'
     response_file_path = 'data/waterservices_dv.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_dv(sites=["01491000", "01645000"], start='2020-02-14', end='2020-02-15')
@@ -95,10 +95,10 @@ def test_get_dv(requests_mock):
 @pytest.mark.parametrize("site_input_type_list", [True, False])
 def test_get_dv_site_value_types(requests_mock, site_input_type_list):
     """Tests get_dv method for valid input types for the 'sites' parameter"""
-    _format = "json"
+    format = "json"
     site = '01491000'
-    request_url = 'https://waterservices.usgs.gov/nwis/dv?format={}' \
-                  '&startDT=2020-02-14&endDT=2020-02-15&sites={}'.format(_format, site)
+    request_url = f'https://waterservices.usgs.gov/nwis/dv?format={format}' \
+                  f'&startDT=2020-02-14&endDT=2020-02-15&sites={site}'
     response_file_path = 'data/waterservices_dv.txt'
     mock_request(requests_mock, request_url, response_file_path)
     if site_input_type_list:
@@ -116,8 +116,8 @@ def test_get_iv(requests_mock):
     """Tests get_iv method correctly generates the request url and returns the result in a DataFrame"""
     format = "json"
     site = '01491000%2C01645000'
-    request_url = 'https://waterservices.usgs.gov/nwis/iv?format={}' \
-                  '&startDT=2019-02-14&endDT=2020-02-15&sites={}'.format(format, site)
+    request_url = f'https://waterservices.usgs.gov/nwis/iv?format={format}' \
+                  f'&startDT=2019-02-14&endDT=2020-02-15&sites={site}'
     response_file_path = 'data/waterservices_iv.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_iv(sites=["01491000", "01645000"], start='2019-02-14', end='2020-02-15')
@@ -132,10 +132,10 @@ def test_get_iv(requests_mock):
 @pytest.mark.parametrize("site_input_type_list", [True, False])
 def test_get_iv_site_value_types(requests_mock, site_input_type_list):
     """Tests get_iv method for valid input type for the 'sites' parameter"""
-    _format = "json"
+    format = "json"
     site = '01491000'
-    request_url = 'https://waterservices.usgs.gov/nwis/iv?format={}' \
-                  '&startDT=2019-02-14&endDT=2020-02-15&sites={}'.format(_format, site)
+    request_url = f'https://waterservices.usgs.gov/nwis/iv?format={format}' \
+                  f'&startDT=2019-02-14&endDT=2020-02-15&sites={site}'
     response_file_path = 'data/waterservices_iv.txt'
     mock_request(requests_mock, request_url, response_file_path)
     if site_input_type_list:
@@ -158,7 +158,7 @@ def test_get_info(requests_mock):
     format = "rdb"
     site = '01491000%2C01645000'
     parameter_cd = "00618"
-    request_url = 'https://waterservices.usgs.gov/nwis/site?sites={}&parameterCd={}&siteOutput=Expanded&format={}'.format(site, parameter_cd, format)
+    request_url = f'https://waterservices.usgs.gov/nwis/site?sites={site}&parameterCd={parameter_cd}&siteOutput=Expanded&format={format}'
     response_file_path = 'data/waterservices_site.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_info(sites=["01491000", "01645000"], parameterCd="00618")
@@ -182,10 +182,10 @@ def test_get_qwdata(requests_mock):
     """Tests get_qwdata method correctly generates the request url and returns the result in a DataFrame"""
     format = "rdb"
     site = '01491000%2C01645000'
-    request_url = 'https://nwis.waterdata.usgs.gov/nwis/qwdata?site_no={}' \
-                  '&qw_sample_wide=qw_sample_wide&agency_cd=USGS&format={}&pm_cd_compare=Greater+than' \
-                  '&inventory_output=0&rdb_inventory_output=file&TZoutput=0&rdb_qw_attributes=expanded' \
-                  '&date_format=YYYY-MM-DD&rdb_compression=value&submitted_form=brief_list'.format(site, format)
+    request_url = f'https://nwis.waterdata.usgs.gov/nwis/qwdata?site_no={site}' \
+                  f'&qw_sample_wide=qw_sample_wide&agency_cd=USGS&format={format}&pm_cd_compare=Greater+than' \
+                  f'&inventory_output=0&rdb_inventory_output=file&TZoutput=0&rdb_qw_attributes=expanded' \
+                  f'&date_format=YYYY-MM-DD&rdb_compression=value&submitted_form=brief_list'
     response_file_path = 'data/waterdata_qwdata.txt'
     mock_request(requests_mock, request_url, response_file_path)
     with pytest.warns(DeprecationWarning):
@@ -212,10 +212,10 @@ def test_get_qwdata_site_value_types(requests_mock, site_input_type_list):
     """Tests get_qwdata method for valid input types for the 'sites' parameter"""
     _format = "rdb"
     site = '01491000'
-    request_url = 'https://nwis.waterdata.usgs.gov/nwis/qwdata?site_no={}' \
-                  '&qw_sample_wide=qw_sample_wide&agency_cd=USGS&format={}&pm_cd_compare=Greater+than' \
-                  '&inventory_output=0&rdb_inventory_output=file&TZoutput=0&rdb_qw_attributes=expanded' \
-                  '&date_format=YYYY-MM-DD&rdb_compression=value&submitted_form=brief_list'.format(site, _format)
+    request_url = f'https://nwis.waterdata.usgs.gov/nwis/qwdata?site_no={site}' \
+                  f'&qw_sample_wide=qw_sample_wide&agency_cd=USGS&format={format}&pm_cd_compare=Greater+than' \
+                  f'&inventory_output=0&rdb_inventory_output=file&TZoutput=0&rdb_qw_attributes=expanded' \
+                  f'&date_format=YYYY-MM-DD&rdb_compression=value&submitted_form=brief_list'
     response_file_path = 'data/waterdata_qwdata.txt'
     mock_request(requests_mock, request_url, response_file_path)
     if site_input_type_list:
@@ -232,8 +232,8 @@ def test_get_gwlevels(requests_mock):
     """Tests get_gwlevels method correctly generates the request url and returns the result in a DataFrame."""
     format = "rdb"
     site = '434400121275801'
-    request_url = 'https://nwis.waterdata.usgs.gov/nwis/gwlevels?format={}&begin_date=1851-01-01' \
-                  '&site_no={}'.format(format, site)
+    request_url = f'https://nwis.waterdata.usgs.gov/nwis/gwlevels?format={format}&begin_date=1851-01-01' \
+                  f'&site_no={site}'
     response_file_path = 'data/waterdata_gwlevels.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_gwlevels(sites=site)
@@ -247,10 +247,10 @@ def test_get_gwlevels(requests_mock):
 @pytest.mark.parametrize("site_input_type_list", [True, False])
 def test_get_gwlevels_site_value_types(requests_mock, site_input_type_list):
     """Tests get_gwlevels method for valid input types for the 'sites' parameter."""
-    _format = "rdb"
+    format = "rdb"
     site = '434400121275801'
-    request_url = 'https://nwis.waterdata.usgs.gov/nwis/gwlevels?format={}&begin_date=1851-01-01' \
-                  '&site_no={}'.format(_format, site)
+    request_url = f'https://nwis.waterdata.usgs.gov/nwis/gwlevels?format={format}&begin_date=1851-01-01' \
+                  f'&site_no={site}'
     response_file_path = 'data/waterdata_gwlevels.txt'
     mock_request(requests_mock, request_url, response_file_path)
     if site_input_type_list:
@@ -267,8 +267,8 @@ def test_get_discharge_peaks(requests_mock):
     """Tests get_discharge_peaks method correctly generates the request url and returns the result in a DataFrame"""
     format = "rdb"
     site = '01594440'
-    request_url = 'https://nwis.waterdata.usgs.gov/nwis/peaks?format={}&site_no={}' \
-                  '&begin_date=2000-02-14&end_date=2020-02-15'.format(format, site)
+    request_url = f'https://nwis.waterdata.usgs.gov/nwis/peaks?format={format}&site_no={site}' \
+                  f'&begin_date=2000-02-14&end_date=2020-02-15'
     response_file_path = 'data/waterservices_peaks.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_discharge_peaks(sites=[site], start='2000-02-14', end='2020-02-15')
@@ -283,10 +283,10 @@ def test_get_discharge_peaks(requests_mock):
 def test_get_discharge_peaks_sites_value_types(requests_mock, site_input_type_list):
     """Tests get_discharge_peaks for valid input types of the 'sites' parameter"""
 
-    _format = "rdb"
+    format = "rdb"
     site = '01594440'
-    request_url = 'https://nwis.waterdata.usgs.gov/nwis/peaks?format={}&site_no={}' \
-                  '&begin_date=2000-02-14&end_date=2020-02-15'.format(_format, site)
+    request_url = f'https://nwis.waterdata.usgs.gov/nwis/peaks?format={format}&site_no={site}' \
+                  f'&begin_date=2000-02-14&end_date=2020-02-15'
     response_file_path = 'data/waterservices_peaks.txt'
     mock_request(requests_mock, request_url, response_file_path)
     if site_input_type_list:
@@ -306,8 +306,8 @@ def test_get_discharge_measurements(requests_mock):
     DataFrame"""
     format = "rdb"
     site = "01594440"
-    request_url = 'https://nwis.waterdata.usgs.gov/nwis/measurements?format={}&site_no={}' \
-                  '&begin_date=2000-02-14&end_date=2020-02-15'.format(format, site)
+    request_url = f'https://nwis.waterdata.usgs.gov/nwis/measurements?site_no={site}' \
+                  f'&begin_date=2000-02-14&end_date=2020-02-15&format={format}'
     response_file_path = 'data/waterdata_measurements.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_discharge_measurements(sites=[site], start='2000-02-14', end='2020-02-15')
@@ -323,8 +323,8 @@ def test_get_discharge_measurements_sites_value_types(requests_mock, site_input_
     """Tests get_discharge_measurements method for valid input types for 'sites' parameter"""
     _format = "rdb"
     site = "01594440"
-    request_url = 'https://nwis.waterdata.usgs.gov/nwis/measurements?format={}&site_no={}' \
-                  '&begin_date=2000-02-14&end_date=2020-02-15'.format(_format, site)
+    request_url = f'https://nwis.waterdata.usgs.gov/nwis/measurements?site_no={site}' \
+                  f'&begin_date=2000-02-14&end_date=2020-02-15&format={format}'
     response_file_path = 'data/waterdata_measurements.txt'
     mock_request(requests_mock, request_url, response_file_path)
     if site_input_type_list:
