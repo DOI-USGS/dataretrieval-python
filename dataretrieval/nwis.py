@@ -309,8 +309,11 @@ def get_discharge_measurements(
     kwargs['begin_date'] = kwargs.pop('begin_date', start)
     kwargs['end_date'] = kwargs.pop('end_date', end)
 
+    if 'format' not in kwargs:
+       kwargs['format'] = 'rdb'
+
     response = query_waterdata(
-        'measurements', format='rdb', ssl_check=ssl_check, **kwargs
+        'measurements', ssl_check=ssl_check, **kwargs
     )
     return _read_rdb(response.text), NWIS_Metadata(response, **kwargs)
 
