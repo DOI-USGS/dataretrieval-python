@@ -1,6 +1,5 @@
 boto3
 dataretrieval
-discontinuum git+ssh://git@github.com/thodson-usgs/discontinuum.git
 lithops
 pika
 ps_mem

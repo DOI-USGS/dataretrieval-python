@@ -31,7 +31,7 @@ export DESTINATION_BUCKET=<path/to/bucket>
 
 1. Run the script
 ```bash
-python retrieve-nawqa-with-lithops.py
+python retrieve_nawqa_with_lithops.py
 ```
 
 ## Cleaning up
