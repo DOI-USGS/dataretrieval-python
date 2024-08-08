@@ -1,9 +1,9 @@
 # Retrieva data from the National Water Quality Assessment Program (NAWQA)
 
 This examples walks through using lithops to retrieve data from every NAWQA
-monitoring site, then write the results to a parquet filel on s3. Also
-searches the NLDI for neighboring sites with NAWQA data and merges those
-data assuming the monitoring site was relocated.
+monitoring site, then writes the results to a parquet files on s3. Each
+retrieval also searches the NLDI for neighboring sites with NAWQA data and
+merges those data assuming the monitoring site was relocated.
 
 1. Set up a Python environment
 ```bash
