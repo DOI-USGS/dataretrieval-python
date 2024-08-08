@@ -27,6 +27,7 @@ try:
 except ImportError:
     gpd = None
 
+
 def test_query_waterdata_validation():
     """Tests the validation parameters of the query_waterservices method"""
     with pytest.raises(TypeError) as type_error:
@@ -179,7 +180,8 @@ def test_get_info(requests_mock):
 
 
 def test_get_qwdata(requests_mock):
-    """Tests get_qwdata method correctly generates the request url and returns the result in a DataFrame"""
+    """Tests get_qwdata method correctly generates the request url and returns
+    the result in a DataFrame"""
     format = "rdb"
     site = '01491000%2C01645000'
     request_url = 'https://nwis.waterdata.usgs.gov/nwis/qwdata?site_no={}' \
@@ -306,8 +308,8 @@ def test_get_discharge_measurements(requests_mock):
     DataFrame"""
     format = "rdb"
     site = "01594440"
-    request_url = 'https://nwis.waterdata.usgs.gov/nwis/measurements?format={}&site_no={}' \
-                  '&begin_date=2000-02-14&end_date=2020-02-15'.format(format, site)
+    request_url = 'https://nwis.waterdata.usgs.gov/nwis/measurements?site_no={}' \
+                  '&begin_date=2000-02-14&end_date=2020-02-15&format={}'.format(site, format)
     response_file_path = 'data/waterdata_measurements.txt'
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_discharge_measurements(sites=[site], start='2000-02-14', end='2020-02-15')
@@ -321,10 +323,10 @@ def test_get_discharge_measurements(requests_mock):
 @pytest.mark.parametrize("site_input_type_list", [True, False])
 def test_get_discharge_measurements_sites_value_types(requests_mock, site_input_type_list):
     """Tests get_discharge_measurements method for valid input types for 'sites' parameter"""
-    _format = "rdb"
+    format = "rdb"
     site = "01594440"
-    request_url = 'https://nwis.waterdata.usgs.gov/nwis/measurements?format={}&site_no={}' \
-                  '&begin_date=2000-02-14&end_date=2020-02-15'.format(_format, site)
+    request_url = 'https://nwis.waterdata.usgs.gov/nwis/measurements?site_no={}' \
+                  '&begin_date=2000-02-14&end_date=2020-02-15&format={}'.format(site, format)
     response_file_path = 'data/waterdata_measurements.txt'
     mock_request(requests_mock, request_url, response_file_path)
     if site_input_type_list:
