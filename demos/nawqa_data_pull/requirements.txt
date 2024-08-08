@@ -1,0 +1,8 @@
+boto3
+dataretrieval[nldi]
+lithops
+pika
+ps_mem
+pyarrow
+s3fs
+tblib
