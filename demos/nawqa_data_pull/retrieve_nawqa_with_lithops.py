@@ -43,13 +43,16 @@ def find_neighboring_sites(site, search_factor=0.05):
     """
     site_df, _ = nwis.get_info(sites=site)
     drain_area_sq_mi = site_df["drain_area_va"].values[0]
-    distance = _estimate_watershed_length_km(drain_area_sq_mi)
+    length = _estimate_watershed_length_km(drain_area_sq_mi)
+    search_distance = length * search_factor
+    # clip between 1 and 9999km
+    search_distance = max(1.0, min(9999.0, search_distance))
 
     upstream_gdf = nldi.get_features(
         feature_source="WQP",
         feature_id=f"USGS-{site}",
         navigation_mode="UM",
-        distance=distance * search_factor,
+        distance=search_distance,
         data_source="nwissite",
         )
 
@@ -57,7 +60,7 @@ def find_neighboring_sites(site, search_factor=0.05):
         feature_source="WQP",
         feature_id=f"USGS-{site}",
         navigation_mode="DM",
-        distance=distance * search_factor,
+        distance=search_distance,
         data_source="nwissite",
         )
 
@@ -101,7 +104,7 @@ if __name__ == "__main__":
         )
 
     site_list = site_df['SITE_QW_ID'].to_list()
-    site_list = site_list[:4]  # prune for testing
+    # site_list = site_list[:4]  # prune for testing
 
     fexec = lithops.FunctionExecutor(config_file="lithops.yaml")
     futures = fexec.map(map_retrieval, site_list)

@@ -7,7 +7,7 @@ aws:
 
 aws_lambda:
     execution_role: arn:aws:iam::807615458658:role/lambdaLithopsExecutionRole
-    runtime: discontinuum-runtime
+    runtime: dataretrieval-runtime
     runtime_memory: 2000
 
 aws_s3:
