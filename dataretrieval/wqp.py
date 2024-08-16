@@ -16,7 +16,7 @@ import pandas as pd
 from .utils import BaseMetadata, query
 
 
-def get_results(ssl_check=True, **kwargs):
+def get_results(ssl_check=True, legacy=False, **kwargs):
     """Query the WQP for results.
 
     Any WQP API parameter can be passed as a keyword argument to this function.
@@ -30,6 +30,12 @@ def get_results(ssl_check=True, **kwargs):
     ssl_check: bool
         If True, check the SSL certificate. Default is True. If False, SSL
         certificate is not checked.
+    legacy: Boolean
+        Defaults to False and returns the new WQX3 Result profile. 
+        If set to True, returns data using the legacy WQX version 2 profiles.
+    dataProfile: string
+        Describes the type of columns to return with the result dataset.
+        Includes 'fullPhysChem', 'biological', 'narrow', and 'basicPhysChem'. 
     siteid: string
         Concatenate an agency code, a hyphen ("-"), and a site-identification
         number.
@@ -63,10 +69,7 @@ def get_results(ssl_check=True, **kwargs):
         for available characteristic names)
     mimeType: string
         String specifying the output format which is 'csv' by default but can
-        be 'geojson'
-    zip: string
-        Parameter to stream compressed data, if 'yes', or uncompressed data
-        if 'no'. Default is 'no'.
+        be 'geojson' 
 
     Returns
     -------
@@ -91,7 +94,19 @@ def get_results(ssl_check=True, **kwargs):
     _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
-    response = query(wqp_url('Result'), kwargs, delimiter=';', ssl_check=ssl_check)
+
+    if legacy is True:
+        warnings.warn('Legacy profiles return stale USGS data as of '
+                      'March 2024. Please set legacy=True to use the WQX3 '
+                      'data profiles and obtain the latest USGS data.')
+        url = wqp_url('Result')
+
+    else:
+        url = wqx3_url('Result')
+        if 'dataProfile' not in kwargs:
+            kwargs['dataProfile'] = 'basicPhysChem'
+    
+    response = query(url, kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
     return df, WQP_Metadata(response)
@@ -472,6 +487,11 @@ def wqp_url(service):
     base_url = 'https://www.waterqualitydata.us/data/'
     return f'{base_url}{service}/Search?'
 
+def wqx3_url(service):
+    """Construct the WQP URL for a given WQX 3.0 service."""
+    base_url = 'https://www.waterqualitydata.us/wqx3/'
+    return f'{base_url}{service}/search?'
+
 
 class WQP_Metadata(BaseMetadata):
     """Metadata class for WQP service, derived from BaseMetadata.
@@ -531,9 +551,6 @@ def _alter_kwargs(kwargs):
     user so they are aware of which are being hard-set.
 
     """
-    if kwargs.get('zip', 'no') == 'yes':
-        warnings.warn('Compressed data not yet supported, zip set to no.')
-    kwargs['zip'] = 'no'
 
     if kwargs.get('mimeType', 'csv') == 'geojson':
         warnings.warn('GeoJSON not yet supported, mimeType set to csv.')
