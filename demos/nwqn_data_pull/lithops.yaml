@@ -8,7 +8,8 @@ aws:
 aws_lambda:
     execution_role: arn:aws:iam::807615458658:role/lambdaLithopsExecutionRole
     runtime: dataretrieval-runtime
-    runtime_memory: 2000
+    runtime_memory: 1024
+    runtime_timeout: 900
 
 aws_s3:
     bucket: arn:aws:s3:::cubed-thodson-temp

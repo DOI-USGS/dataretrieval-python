@@ -1,9 +1,11 @@
-# Retrieva data from the National Water Quality Assessment Program (NAWQA)
+# Retrieva data from the National Water Quality Network (NWQN)
 
-This examples walks through using lithops to retrieve data from every NAWQA
+This examples walks through using lithops to retrieve data from every NWQN
 monitoring site, then writes the results to a parquet files on s3. Each
-retrieval also searches the NLDI for neighboring sites with NAWQA data and
-merges those data assuming the monitoring site was relocated.
+retrieval also searches the NLDI for neighboring sites with NWQN data and
+merges those data. In the streamflow example, the neighborhood search is
+used to progressively fill in gaps in the record by taking data from the
+nearest streamgage and rescaling it by the drainage area ratio.
 
 1. Set up a Python environment
 ```bash
@@ -32,9 +34,11 @@ wget https://www.sciencebase.gov/catalog/file/get/655d2063d34ee4b6e05cc9e6?f=__d
 export DESTINATION_BUCKET=<path/to/bucket>
 ```
 
-1. Run the script
+1. Run the scripts
 ```bash
-python retrieve_nawqa_with_lithops.py
+python retrieve_nwqn_samples.py
+
+python retrieve_nwqn_streamflow.py
 ```
 
 ## Cleaning up
