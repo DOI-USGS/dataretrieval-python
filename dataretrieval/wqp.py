@@ -20,7 +20,8 @@ result_profiles_legacy = ['resultPhysChem', 'biological',
                         'narrowResult']
 activity_profiles_legacy = ['activityAll']
 services_wqx3 = ['Result', 'Station', 'Activity']
-services_legacy = ['Organization', 'Project',
+services_legacy = ['Result', 'Station', 'Activity',
+                   'Organization', 'Project',
                    'ProjectMonitoringLocationWeighting',
                    'ActivityMetric',
                    'ResultDetectionQuantitationLimit',
@@ -507,11 +508,15 @@ def what_activity_metrics(ssl_check=True, **kwargs):
 
 def wqp_url(service):
     """Construct the WQP URL for a given service."""
+    if service not in services_legacy:
+        raise TypeError('Legacy service not recognized')
     base_url = 'https://www.waterqualitydata.us/data/'
     return f'{base_url}{service}/Search?'
 
 def wqx3_url(service):
     """Construct the WQP URL for a given WQX 3.0 service."""
+    if service not in services_wqx3:
+        raise TypeError('WQX3 service not recognized')
     base_url = 'https://www.waterqualitydata.us/wqx3/'
     return f'{base_url}{service}/search?'
 
