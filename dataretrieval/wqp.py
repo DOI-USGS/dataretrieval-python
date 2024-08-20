@@ -15,8 +15,18 @@ import pandas as pd
 
 from .utils import BaseMetadata, query
 
+result_profiles_wqx3 = ['fullPhysChem', 'narrow', 'basicPhysChem']
+result_profiles_legacy = ['resultPhysChem', 'biological',
+                        'narrowResult']
+activity_profiles_legacy = ['activityAll']
+services_wqx3 = ['Result', 'Station', 'Activity']
+services_legacy = ['Organization', 'Project',
+                   'ProjectMonitoringLocationWeighting',
+                   'ActivityMetric',
+                   'ResultDetectionQuantitationLimit',
+                   'BiologicalMetric']
 
-def get_results(ssl_check=True, legacy=False, **kwargs):
+def get_results(ssl_check=True, **kwargs):
     """Query the WQP for results.
 
     Any WQP API parameter can be passed as a keyword argument to this function.
@@ -30,12 +40,11 @@ def get_results(ssl_check=True, legacy=False, **kwargs):
     ssl_check: bool
         If True, check the SSL certificate. Default is True. If False, SSL
         certificate is not checked.
-    legacy: Boolean
-        Defaults to False and returns the new WQX3 Result profile. 
-        If set to True, returns data using the legacy WQX version 2 profiles.
     dataProfile: string
         Describes the type of columns to return with the result dataset.
-        Includes 'fullPhysChem', 'biological', 'narrow', and 'basicPhysChem'. 
+        Most recent WQX3 profiles include 'fullPhysChem', 'narrow', and
+        'basicPhysChem'. Legacy profiles include 'resultPhysChem',
+        'biological', and 'narrowResult'. 
     siteid: string
         Concatenate an agency code, a hyphen ("-"), and a site-identification
         number.
@@ -91,20 +100,23 @@ def get_results(ssl_check=True, legacy=False, **kwargs):
         >>> df, md = dataretrieval.wqp.get_results(bBox='-92.8,44.2,-88.9,46.0')
 
     """
-    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
-    if legacy is True:
-        warnings.warn('Legacy profiles return stale USGS data as of '
-                      'March 2024. Please set legacy=True to use the WQX3 '
-                      'data profiles and obtain the latest USGS data.')
+    if 'dataProfile' not in kwargs:
+        # set to wqx3 full result profile
+        kwargs['dataProfile'] = 'fullPhysChem'
+    # check to ensure profile is available in either legacy
+    # or wqx3
+    elif kwargs['dataProfile'] not in (result_profiles_legacy + result_profiles_wqx3):
+        raise TypeError('dataProfile not recognized')
+    
+    # warn user when selecting a legacy profile
+    if kwargs['dataProfile'] in result_profiles_legacy:
+        _warn_legacy_use('dataProfile')
         url = wqp_url('Result')
-
     else:
         url = wqx3_url('Result')
-        if 'dataProfile' not in kwargs:
-            kwargs['dataProfile'] = 'basicPhysChem'
     
     response = query(url, kwargs, delimiter=';', ssl_check=ssl_check)
 
@@ -146,11 +158,10 @@ def what_sites(ssl_check=True, **kwargs):
         ... )
 
     """
-    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
-    url = wqp_url('Station')
+    url = wqx3_url('Station')
     response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
@@ -190,7 +201,8 @@ def what_organizations(ssl_check=True, **kwargs):
         >>> df, md = dataretrieval.wqp.what_organizations()
 
     """
-    _warn_v3_profiles_outage()
+
+    _warn_legacy_use('service')
 
     kwargs = _alter_kwargs(kwargs)
 
@@ -234,7 +246,7 @@ def what_projects(ssl_check=True, **kwargs):
         >>> df, md = dataretrieval.wqp.what_projects(huc='19')
 
     """
-    _warn_v3_profiles_outage()
+    _warn_legacy_use('service')
 
     kwargs = _alter_kwargs(kwargs)
 
@@ -260,6 +272,10 @@ def what_activities(ssl_check=True, **kwargs):
     ssl_check: bool
         If True, check the SSL certificate. Default is True. If False, SSL
         certificate is not checked.
+    dataProfile: string
+        Describes the type of columns to return with the result dataset.
+        Currently, only the legacy services have a single data profile:
+        'activityAll'. 
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -281,11 +297,18 @@ def what_activities(ssl_check=True, **kwargs):
         ... )
 
     """
-    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
-    url = wqp_url('Activity')
+    if 'dataProfile' not in kwargs:
+        url = wqx3_url('Activity')
+    elif kwargs['dataProfile'] not in activity_profiles_legacy:
+        raise TypeError('dataProfile not recognized')
+    else:
+        _warn_legacy_use('service')
+        url = wqp_url('Activity')
+        
+    
     response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
@@ -332,7 +355,7 @@ def what_detection_limits(ssl_check=True, **kwargs):
         ... )
 
     """
-    _warn_v3_profiles_outage()
+    _warn_legacy_use('service')
 
     kwargs = _alter_kwargs(kwargs)
 
@@ -376,7 +399,7 @@ def what_habitat_metrics(ssl_check=True, **kwargs):
         >>> df, md = dataretrieval.wqp.what_habitat_metrics(statecode='US:44')
 
     """
-    _warn_v3_profiles_outage()
+    _warn_legacy_use('service')
 
     kwargs = _alter_kwargs(kwargs)
 
@@ -423,7 +446,7 @@ def what_project_weights(ssl_check=True, **kwargs):
         ... )
 
     """
-    _warn_v3_profiles_outage()
+    _warn_legacy_use('service')
 
     kwargs = _alter_kwargs(kwargs)
 
@@ -470,7 +493,7 @@ def what_activity_metrics(ssl_check=True, **kwargs):
         ... )
 
     """
-    _warn_v3_profiles_outage()
+    _warn_legacy_use('service')
 
     kwargs = _alter_kwargs(kwargs)
 
@@ -573,4 +596,18 @@ def _warn_v3_profiles_outage():
         'https://doi-usgs.github.io/dataRetrieval/articles/Status.html. '
         'If you have additional questions about these changes, '
         'email CompTools@usgs.gov.'
+    )
+
+def _warn_legacy_use(type):
+    """Private function for warning message about using legacy profiles
+    or services
+    """
+
+    warnings.warn(
+        f'The {type} you have selected is currently only '
+        'available in the legacy Water Quality Portal '
+        'profiles. This means that any USGS data served '
+        'are stale as of March 2024. Please review the '
+        f'updated WQX3.0 {type}s in the dataretrieval-python '
+        'documentation.'
     )
