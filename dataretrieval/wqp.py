@@ -27,7 +27,7 @@ services_legacy = ['Result', 'Station', 'Activity',
                    'ResultDetectionQuantitationLimit',
                    'BiologicalMetric']
 
-def get_results(ssl_check=True, **kwargs):
+def get_results(ssl_check=True, legacy=True, **kwargs):
     """Query the WQP for results.
 
     Any WQP API parameter can be passed as a keyword argument to this function.
@@ -41,6 +41,10 @@ def get_results(ssl_check=True, **kwargs):
     ssl_check: bool
         If True, check the SSL certificate. Default is True. If False, SSL
         certificate is not checked.
+    legacy: bool
+        If True, returns the legacy WQX data profile and warns the user of
+        the issues associated with it. If False, returns the new WQX3.0
+        profile, if available. Defaults to True.
     dataProfile: string
         Describes the type of columns to return with the result dataset.
         Most recent WQX3 profiles include 'fullPhysChem', 'narrow', and
@@ -101,31 +105,33 @@ def get_results(ssl_check=True, **kwargs):
         >>> df, md = dataretrieval.wqp.get_results(bBox='-92.8,44.2,-88.9,46.0')
 
     """
+    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
-    if 'dataProfile' not in kwargs:
-        # set to wqx3 full result profile
-        kwargs['dataProfile'] = 'fullPhysChem'
-    # check to ensure profile is available in either legacy
-    # or wqx3
-    elif kwargs['dataProfile'] not in (result_profiles_legacy + result_profiles_wqx3):
-        raise TypeError('dataProfile not recognized')
-    
-    # warn user when selecting a legacy profile
-    if kwargs['dataProfile'] in result_profiles_legacy:
-        _warn_legacy_use('dataProfile')
+    if legacy is True:
+        if 'dataProfile' in kwargs:
+            if kwargs['dataProfile'] not in result_profiles_legacy:
+                raise TypeError('dataProfile is not a legacy profile name')
+        
         url = wqp_url('Result')
-    else:
-        url = wqx3_url('Result')
     
+    else:
+        if 'dataProfile' in kwargs:
+            if kwargs['dataProfile'] not in result_profiles_wqx3:
+                raise TypeError('dataProfile is not a WQX3.0 profile name')
+        else:
+            kwargs['dataProfile'] = 'fullPhysChem'
+        
+        url = wqx3_url('Result')
+
     response = query(url, kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
     return df, WQP_Metadata(response)
 
 
-def what_sites(ssl_check=True, **kwargs):
+def what_sites(ssl_check=True, legacy=True, **kwargs):
     """Search WQP for sites within a region with specific data.
 
     Any WQP API parameter can be passed as a keyword argument to this function.
@@ -139,6 +145,10 @@ def what_sites(ssl_check=True, **kwargs):
     ssl_check: bool
         If True, check the SSL certificate. Default is True. If False, SSL
         certificate is not checked.
+    legacy: bool
+        If True, returns the legacy WQX data profile and warns the user of
+        the issues associated with it. If False, returns the new WQX3.0
+        profile, if available. Defaults to True.
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -159,10 +169,15 @@ def what_sites(ssl_check=True, **kwargs):
         ... )
 
     """
+    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
-    url = wqx3_url('Station')
+    if legacy is True:
+        url = wqp_url('Station')
+    else:
+        url = wqx3_url('Station')
+    
     response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
@@ -170,7 +185,7 @@ def what_sites(ssl_check=True, **kwargs):
     return df, WQP_Metadata(response)
 
 
-def what_organizations(ssl_check=True, **kwargs):
+def what_organizations(ssl_check=True, legacy=True, **kwargs):
     """Search WQP for organizations within a region with specific data.
 
     Any WQP API parameter can be passed as a keyword argument to this function.
@@ -184,6 +199,10 @@ def what_organizations(ssl_check=True, **kwargs):
     ssl_check: bool
         If True, check the SSL certificate. Default is True. If False, SSL
         certificate is not checked.
+    legacy: bool
+        If True, returns the legacy WQX data profile and warns the user of
+        the issues associated with it. If False, returns the new WQX3.0
+        profile, if available. Defaults to True.
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -202,12 +221,16 @@ def what_organizations(ssl_check=True, **kwargs):
         >>> df, md = dataretrieval.wqp.what_organizations()
 
     """
-
-    _warn_legacy_use('service')
+    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
-    url = wqp_url('Organization')
+    if legacy is True:
+        url = wqp_url('Organization')
+    else:
+        print('No WQX3.0 profile currently available, returning legacy profile.')
+        url = wqp_url('Organization')
+
     response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
@@ -215,7 +238,7 @@ def what_organizations(ssl_check=True, **kwargs):
     return df, WQP_Metadata(response)
 
 
-def what_projects(ssl_check=True, **kwargs):
+def what_projects(ssl_check=True, legacy=True, **kwargs):
     """Search WQP for projects within a region with specific data.
 
     Any WQP API parameter can be passed as a keyword argument to this function.
@@ -229,6 +252,10 @@ def what_projects(ssl_check=True, **kwargs):
     ssl_check: bool
         If True, check the SSL certificate. Default is True. If False, SSL
         certificate is not checked.
+    legacy: bool
+        If True, returns the legacy WQX data profile and warns the user of
+        the issues associated with it. If False, returns the new WQX3.0
+        profile, if available. Defaults to True.
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -247,11 +274,16 @@ def what_projects(ssl_check=True, **kwargs):
         >>> df, md = dataretrieval.wqp.what_projects(huc='19')
 
     """
-    _warn_legacy_use('service')
+    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
-    url = wqp_url('Project')
+    if legacy is True:
+        url = wqp_url('Project')
+    else:
+        print('No WQX3.0 profile currently available, returning legacy profile.')
+        url = wqp_url('Project')
+
     response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
@@ -259,7 +291,7 @@ def what_projects(ssl_check=True, **kwargs):
     return df, WQP_Metadata(response)
 
 
-def what_activities(ssl_check=True, **kwargs):
+def what_activities(ssl_check=True, legacy=True, **kwargs):
     """Search WQP for activities within a region with specific data.
 
     Any WQP API parameter can be passed as a keyword argument to this function.
@@ -273,10 +305,10 @@ def what_activities(ssl_check=True, **kwargs):
     ssl_check: bool
         If True, check the SSL certificate. Default is True. If False, SSL
         certificate is not checked.
-    dataProfile: string
-        Describes the type of columns to return with the result dataset.
-        Currently, only the legacy services have a single data profile:
-        'activityAll'. 
+    legacy: bool
+        If True, returns the legacy WQX data profile and warns the user of
+        the issues associated with it. If False, returns the new WQX3.0
+        profile, if available. Defaults to True.
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -299,17 +331,15 @@ def what_activities(ssl_check=True, **kwargs):
 
     """
 
+    _warn_v3_profiles_outage()
+
     kwargs = _alter_kwargs(kwargs)
 
-    if 'dataProfile' not in kwargs:
-        url = wqx3_url('Activity')
-    elif kwargs['dataProfile'] not in activity_profiles_legacy:
-        raise TypeError('dataProfile not recognized')
-    else:
-        _warn_legacy_use('service')
+    if legacy is True:
         url = wqp_url('Activity')
-        
-    
+    else:
+        url = wqx3_url('Activity')
+
     response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
@@ -317,7 +347,7 @@ def what_activities(ssl_check=True, **kwargs):
     return df, WQP_Metadata(response)
 
 
-def what_detection_limits(ssl_check=True, **kwargs):
+def what_detection_limits(ssl_check=True, legacy=True, **kwargs):
     """Search WQP for result detection limits within a region with specific
     data.
 
@@ -332,6 +362,10 @@ def what_detection_limits(ssl_check=True, **kwargs):
     ssl_check: bool
         If True, check the SSL certificate. Default is True. If False, SSL
         certificate is not checked.
+    legacy: bool
+        If True, returns the legacy WQX data profile and warns the user of
+        the issues associated with it. If False, returns the new WQX3.0
+        profile, if available. Defaults to True.
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -356,11 +390,16 @@ def what_detection_limits(ssl_check=True, **kwargs):
         ... )
 
     """
-    _warn_legacy_use('service')
+    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
-    url = wqp_url('ResultDetectionQuantitationLimit')
+    if legacy is True:
+        url = wqp_url('ResultDetectionQuantitationLimit')
+    else:
+        print('No WQX3.0 profile currently available, returning legacy profile.')
+        url = wqp_url('ResultDetectionQuantitationLimit')
+
     response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
@@ -368,7 +407,7 @@ def what_detection_limits(ssl_check=True, **kwargs):
     return df, WQP_Metadata(response)
 
 
-def what_habitat_metrics(ssl_check=True, **kwargs):
+def what_habitat_metrics(ssl_check=True, legacy=True, **kwargs):
     """Search WQP for habitat metrics within a region with specific data.
 
     Any WQP API parameter can be passed as a keyword argument to this function.
@@ -382,6 +421,10 @@ def what_habitat_metrics(ssl_check=True, **kwargs):
     ssl_check: bool
         If True, check the SSL certificate. Default is True. If False, SSL
         certificate is not checked.
+    legacy: bool
+        If True, returns the legacy WQX data profile and warns the user of
+        the issues associated with it. If False, returns the new WQX3.0
+        profile, if available. Defaults to True.
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -400,11 +443,16 @@ def what_habitat_metrics(ssl_check=True, **kwargs):
         >>> df, md = dataretrieval.wqp.what_habitat_metrics(statecode='US:44')
 
     """
-    _warn_legacy_use('service')
+    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
-    url = wqp_url('BiologicalMetric')
+    if legacy is True:
+        url = wqp_url('BiologicalMetric')
+    else:
+        print('No WQX3.0 profile currently available, returning legacy profile.')
+        url = wqp_url('BiologicalMetric')
+
     response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
@@ -412,7 +460,7 @@ def what_habitat_metrics(ssl_check=True, **kwargs):
     return df, WQP_Metadata(response)
 
 
-def what_project_weights(ssl_check=True, **kwargs):
+def what_project_weights(ssl_check=True, legacy=True, **kwargs):
     """Search WQP for project weights within a region with specific data.
 
     Any WQP API parameter can be passed as a keyword argument to this function.
@@ -426,6 +474,10 @@ def what_project_weights(ssl_check=True, **kwargs):
     ssl_check: bool
         If True, check the SSL certificate. Default is True. If False, SSL
         certificate is not checked.
+    legacy: bool
+        If True, returns the legacy WQX data profile and warns the user of
+        the issues associated with it. If False, returns the new WQX3.0
+        profile, if available. Defaults to True.
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -447,11 +499,16 @@ def what_project_weights(ssl_check=True, **kwargs):
         ... )
 
     """
-    _warn_legacy_use('service')
+    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
-    url = wqp_url('ProjectMonitoringLocationWeighting')
+    if legacy is True:
+        url = wqp_url('ProjectMonitoringLocationWeighting')
+    else:
+        print('No WQX3.0 profile currently available, returning legacy profile.')
+        url = wqp_url('ProjectMonitoringLocationWeighting')
+
     response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
@@ -459,7 +516,7 @@ def what_project_weights(ssl_check=True, **kwargs):
     return df, WQP_Metadata(response)
 
 
-def what_activity_metrics(ssl_check=True, **kwargs):
+def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
     """Search WQP for activity metrics within a region with specific data.
 
     Any WQP API parameter can be passed as a keyword argument to this function.
@@ -473,6 +530,10 @@ def what_activity_metrics(ssl_check=True, **kwargs):
     ssl_check: bool
         If True, check the SSL certificate. Default is True. If False, SSL
         certificate is not checked.
+    legacy: bool
+        If True, returns the legacy WQX data profile and warns the user of
+        the issues associated with it. If False, returns the new WQX3.0
+        profile, if available. Defaults to True.
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -494,11 +555,16 @@ def what_activity_metrics(ssl_check=True, **kwargs):
         ... )
 
     """
-    _warn_legacy_use('service')
+    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
-    url = wqp_url('ActivityMetric')
+    if legacy is True:
+        url = wqp_url('ActivityMetric')
+    else:
+        print('No WQX3.0 profile currently available, returning legacy profile.')
+        url = wqp_url('ActivityMetric')
+
     response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=',')
@@ -508,6 +574,9 @@ def what_activity_metrics(ssl_check=True, **kwargs):
 
 def wqp_url(service):
     """Construct the WQP URL for a given service."""
+
+    _warn_legacy_use()
+
     if service not in services_legacy:
         raise TypeError('Legacy service not recognized')
     base_url = 'https://www.waterqualitydata.us/data/'
@@ -516,7 +585,7 @@ def wqp_url(service):
 def wqx3_url(service):
     """Construct the WQP URL for a given WQX 3.0 service."""
     if service not in services_wqx3:
-        raise TypeError('WQX3 service not recognized')
+        raise TypeError('WQX3.0 service not recognized')
     base_url = 'https://www.waterqualitydata.us/wqx3/'
     return f'{base_url}{service}/search?'
 
@@ -593,7 +662,7 @@ def _warn_v3_profiles_outage():
 
     warnings.warn(
         'USGS discrete water quality data availability '
-        'and format are changing. Beginning in March 2024 '
+        'and format are changing. As of March 2024, '
         'the data obtained from legacy profiles will not '
         'include new USGS data or recent updates to existing '
         'data. To view the status of changes in data '
@@ -603,16 +672,14 @@ def _warn_v3_profiles_outage():
         'email CompTools@usgs.gov.'
     )
 
-def _warn_legacy_use(type):
+def _warn_legacy_use():
     """Private function for warning message about using legacy profiles
     or services
     """
 
     warnings.warn(
-        f'The {type} you have selected is currently only '
-        'available in the legacy Water Quality Portal '
-        'profiles. This means that any USGS data served '
-        'are stale as of March 2024. Please review the '
-        f'updated WQX3.0 {type}s in the dataretrieval-python '
-        'documentation.'
+        'This function call is currently returning the legacy WQX format. '
+        'This means that any USGS data served are stale as of March 2024. '
+        'Please review the dataretrieval-python documentation for more '
+        'information on updated WQX3.0 profiles.'
     )
