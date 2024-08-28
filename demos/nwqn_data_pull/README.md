@@ -24,7 +24,7 @@ export LITHOPS_CONFIG_FILE=$(pwd)/lithops.yaml
 lithops runtime build -b aws_lambda -f Dockerfile_dataretrieval dataretrieval-runtime
 ```
 
-1. Download site list
+1. Download the site list from ScienceBase using `wget` or navigate to the url and copying the csv to nwqn_data_pull/.
 ```bash
 wget https://www.sciencebase.gov/catalog/file/get/655d2063d34ee4b6e05cc9e6?f=__disk__b3%2F3e%2F5b%2Fb33e5b0038f004c2a48818d0fcc88a0921f3f689 -O NWQN_sites.csv
 ```
