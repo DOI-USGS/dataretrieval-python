@@ -1,7 +1,7 @@
 # Retrieva data from the National Water Quality Network (NWQN)
 
-This examples walks through using lithops to retrieve data from every NWQN
-monitoring site, then writes the results to a parquet files on s3. Each
+This example walks through using lithops to retrieve data from every NWQN
+monitoring site, then writes the results to parquet files on s3. Each
 retrieval also searches the NLDI for neighboring sites with NWQN data and
 merges those data. In the streamflow example, the neighborhood search is
 used to progressively fill in gaps in the record by taking data from the

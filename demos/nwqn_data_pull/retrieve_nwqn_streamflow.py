@@ -34,6 +34,9 @@ def map_retrieval(site):
         parameterCd="00060",
     )
 
+    # drop rows with missing values; neglect other 00060_* columns
+    df = df.dropna(subset=["00060_Mean"])
+
     # by default, site_no is not in the index if a single site is queried
     if "site_no" in df.columns:
         index_name = df.index.names[0]
@@ -65,7 +68,7 @@ def map_retrieval(site):
         df = pd.merge(df, site_info, left_index=True, right_index=True)
         df["00060_Mean"] *= site_info.loc[df.index.get_level_values("site_no"), "drain_fraction"].values
 
-        # order sites for filling in missing data
+        # order sites by the difference in drainage area fraction
         fill_order = site_info.sort_values("fraction_diff", ascending=True)
         fill_order = fill_order.index.values
 
@@ -74,7 +77,8 @@ def map_retrieval(site):
 
         output = pd.DataFrame()
 
-        # loop through sites, updating the best data first
+        # loop through sites and fill in missing flow values
+        # going from most to least-similar drainage areas.
         for fill_site in fill_order:
             fill_data = df.loc[fill_site]
             output = update_dataframe(output, fill_data)
@@ -100,18 +104,14 @@ def update_dataframe(
         overwrite: bool = False,
 ) -> pd.DataFrame:
     """Update a DataFrame with values from another DataFrame.
+
+    NOTE: this fuction does not handle MultiIndex DataFrames.
     """
     # Identify new rows in new_df that are not in original_df
     new_rows = new_df[~new_df.index.isin(original_df.index)]
 
     # Concatenate new rows to original_df
-    original_df = pd.concat([original_df, new_rows]).drop_duplicates(keep="first")
-
-    # Sort the DataFrame by index
-    original_df.sort_index(inplace=True)
-
-    # Update the original DataFrame with values from the new DataFrame
-    original_df.update(new_df, overwrite=overwrite)
+    original_df = pd.concat([original_df, new_rows]).sort_index()
 
     return original_df
 
