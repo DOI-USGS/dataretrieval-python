@@ -18,7 +18,7 @@ END_DATE = "2023-12-31"
 
 def map_retrieval(site):
     """Map function to pull data from NWIS and WQP"""
-    print(f"Retrieving samples from site {site}")
+    print(f"Retrieving daily streamflow from site {site}")
 
     if site in BAD_NLDI_SITES:
         site_list = [site]
@@ -85,6 +85,10 @@ def map_retrieval(site):
         output = output.drop(columns=["drain_area_va", "drain_fraction", "fraction_diff"])
         output["site_no"] = site
 
+    else:
+        print(f"No data retrieved for site {site}")
+        return
+
     try:
         # merge sites
         output.astype(str).to_parquet(f's3://{DESTINATION_BUCKET}/nwqn-streamflow.parquet',
@@ -94,7 +98,7 @@ def map_retrieval(site):
         # optionally, `return df` for further processing
 
     except Exception as e:
-        print(f"No streamflow returned from site {site}: {e}")
+        print(f"Failed to write parquet: {e}")
 
 
 def update_dataframe(
