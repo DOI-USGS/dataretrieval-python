@@ -34,9 +34,6 @@ def map_retrieval(site):
         parameterCd="00060",
     )
 
-    # drop rows with missing values; neglect other 00060_* columns
-    df = df.dropna(subset=["00060_Mean"])
-
     # by default, site_no is not in the index if a single site is queried
     if "site_no" in df.columns:
         index_name = df.index.names[0]
@@ -46,6 +43,8 @@ def map_retrieval(site):
     print(len(df), "records retrieved")
     # process the results
     if not df.empty:
+        # drop rows with missing values; neglect other 00060_* columns
+        df = df.dropna(subset=["00060_Mean"])
         # fill missing codes to enable string operations
         df["00060_Mean_cd"] = df["00060_Mean_cd"].fillna("M")
         df = df[df["00060_Mean_cd"].str.contains("A")]
