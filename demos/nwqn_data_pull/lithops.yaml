@@ -1,0 +1,15 @@
+lithops:
+    backend: aws_lambda
+    storage: aws_s3
+
+aws:
+    region: us-west-2
+
+aws_lambda:
+    execution_role: arn:aws:iam::account-id:role/lambdaLithopsExecutionRole
+    runtime: dataretrieval-runtime
+    runtime_memory: 1024
+    runtime_timeout: 900
+
+aws_s3:
+    bucket: arn:aws:s3:::the-name-of-your-bucket
