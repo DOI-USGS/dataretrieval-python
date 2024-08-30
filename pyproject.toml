@@ -9,8 +9,11 @@ readme = "README.md"
 requires-python = ">=3.8"
 keywords = ["USGS", "water data"]
 license = {file = "LICENSE.md"}
-maintainers = [
+authors = [
   {name = "Timothy Hodson", email = "thodson@usgs.gov"},
+]
+maintainers = [
+  {name = "Elise Hinman", email = "ehinman@usgs.gov"},
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
