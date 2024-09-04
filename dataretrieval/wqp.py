@@ -33,6 +33,8 @@ def get_results(ssl_check=True, legacy=True, **kwargs):
     Any WQP API parameter can be passed as a keyword argument to this function.
     More information about the API can be found at:
     https://www.waterqualitydata.us/#advanced=true
+    or the beta version of the WQX3.0 API at:
+    https://www.waterqualitydata.us/beta/#mimeType=csv&providers=NWIS&providers=STORET
     or the Swagger documentation at:
     https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
 
@@ -104,22 +106,28 @@ def get_results(ssl_check=True, legacy=True, **kwargs):
         >>> # Get results within a bounding box
         >>> df, md = dataretrieval.wqp.get_results(bBox='-92.8,44.2,-88.9,46.0')
 
+        >>> # Get results using a new WQX3.0 profile
+        >>> df, md = dataretrieval.wqp.get_results(
+        ...     legacy=False, siteid='UTAHDWQ_WQX-4993795', dataProfile='narrow'
+        ... )
+
     """
-    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
     if legacy is True:
         if 'dataProfile' in kwargs:
             if kwargs['dataProfile'] not in result_profiles_legacy:
-                raise TypeError('dataProfile is not a legacy profile name')
+                raise TypeError(f'dataProfile {kwargs['dataProfile']} is not a legacy profile name. '
+                                'Please choose from "resultPhysChem", "biological", or "narrowResult"')
         
         url = wqp_url('Result')
     
     else:
         if 'dataProfile' in kwargs:
             if kwargs['dataProfile'] not in result_profiles_wqx3:
-                raise TypeError('dataProfile is not a WQX3.0 profile name')
+                raise TypeError(f'dataProfile {kwargs['dataProfile']} is not a WQX3.0 profile name. '
+                                'Please choose from "fullPhysChem", "narrow", or "basicPhysChem"')
         else:
             kwargs['dataProfile'] = 'fullPhysChem'
         
@@ -137,6 +145,8 @@ def what_sites(ssl_check=True, legacy=True, **kwargs):
     Any WQP API parameter can be passed as a keyword argument to this function.
     More information about the API can be found at:
     https://www.waterqualitydata.us/#advanced=true
+    or the beta version of the WQX3.0 API at:
+    https://www.waterqualitydata.us/beta/#mimeType=csv&providers=NWIS&providers=STORET
     or the Swagger documentation at:
     https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
 
@@ -169,7 +179,6 @@ def what_sites(ssl_check=True, legacy=True, **kwargs):
         ... )
 
     """
-    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
@@ -191,6 +200,8 @@ def what_organizations(ssl_check=True, legacy=True, **kwargs):
     Any WQP API parameter can be passed as a keyword argument to this function.
     More information about the API can be found at:
     https://www.waterqualitydata.us/#advanced=true
+    or the beta version of the WQX3.0 API at:
+    https://www.waterqualitydata.us/beta/#mimeType=csv&providers=NWIS&providers=STORET
     or the Swagger documentation at:
     https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
 
@@ -221,7 +232,6 @@ def what_organizations(ssl_check=True, legacy=True, **kwargs):
         >>> df, md = dataretrieval.wqp.what_organizations()
 
     """
-    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
@@ -244,6 +254,8 @@ def what_projects(ssl_check=True, legacy=True, **kwargs):
     Any WQP API parameter can be passed as a keyword argument to this function.
     More information about the API can be found at:
     https://www.waterqualitydata.us/#advanced=true
+    or the beta version of the WQX3.0 API at:
+    https://www.waterqualitydata.us/beta/#mimeType=csv&providers=NWIS&providers=STORET
     or the Swagger documentation at:
     https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
 
@@ -274,7 +286,6 @@ def what_projects(ssl_check=True, legacy=True, **kwargs):
         >>> df, md = dataretrieval.wqp.what_projects(huc='19')
 
     """
-    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
@@ -297,6 +308,8 @@ def what_activities(ssl_check=True, legacy=True, **kwargs):
     Any WQP API parameter can be passed as a keyword argument to this function.
     More information about the API can be found at:
     https://www.waterqualitydata.us/#advanced=true
+    or the beta version of the WQX3.0 API at:
+    https://www.waterqualitydata.us/beta/#mimeType=csv&providers=NWIS&providers=STORET
     or the Swagger documentation at:
     https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
 
@@ -329,9 +342,15 @@ def what_activities(ssl_check=True, legacy=True, **kwargs):
         ...     statecode='US:11', startDateLo='12-30-2019', startDateHi='01-01-2020'
         ... )
 
+        >>> # Get activities within Washington D.C.
+        >>> # using the WQX3.0 profile during a specific time period
+        >>> df, md = dataretrieval.wqp.what_activities(
+        ...     legacy=False,
+        ...     statecode='US:11',
+        ...     startDateLo='12-30-2019',
+        ...     startDateHi='01-01-2020'
+        ... )
     """
-
-    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
@@ -354,6 +373,8 @@ def what_detection_limits(ssl_check=True, legacy=True, **kwargs):
     Any WQP API parameter can be passed as a keyword argument to this function.
     More information about the API can be found at:
     https://www.waterqualitydata.us/#advanced=true
+    or the beta version of the WQX3.0 API at:
+    https://www.waterqualitydata.us/beta/#mimeType=csv&providers=NWIS&providers=STORET
     or the Swagger documentation at:
     https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
 
@@ -390,7 +411,6 @@ def what_detection_limits(ssl_check=True, legacy=True, **kwargs):
         ... )
 
     """
-    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
@@ -413,6 +433,8 @@ def what_habitat_metrics(ssl_check=True, legacy=True, **kwargs):
     Any WQP API parameter can be passed as a keyword argument to this function.
     More information about the API can be found at:
     https://www.waterqualitydata.us/#advanced=true
+    or the beta version of the WQX3.0 API at:
+    https://www.waterqualitydata.us/beta/#mimeType=csv&providers=NWIS&providers=STORET
     or the Swagger documentation at:
     https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
 
@@ -443,7 +465,6 @@ def what_habitat_metrics(ssl_check=True, legacy=True, **kwargs):
         >>> df, md = dataretrieval.wqp.what_habitat_metrics(statecode='US:44')
 
     """
-    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
@@ -466,6 +487,8 @@ def what_project_weights(ssl_check=True, legacy=True, **kwargs):
     Any WQP API parameter can be passed as a keyword argument to this function.
     More information about the API can be found at:
     https://www.waterqualitydata.us/#advanced=true
+    or the beta version of the WQX3.0 API at:
+    https://www.waterqualitydata.us/beta/#mimeType=csv&providers=NWIS&providers=STORET
     or the Swagger documentation at:
     https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
 
@@ -499,7 +522,6 @@ def what_project_weights(ssl_check=True, legacy=True, **kwargs):
         ... )
 
     """
-    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
@@ -522,6 +544,8 @@ def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
     Any WQP API parameter can be passed as a keyword argument to this function.
     More information about the API can be found at:
     https://www.waterqualitydata.us/#advanced=true
+    or the beta version of the WQX3.0 API at:
+    https://www.waterqualitydata.us/beta/#mimeType=csv&providers=NWIS&providers=STORET
     or the Swagger documentation at:
     https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&url=/data/v3/api-docs#/
 
@@ -555,7 +579,6 @@ def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
         ... )
 
     """
-    _warn_v3_profiles_outage()
 
     kwargs = _alter_kwargs(kwargs)
 
@@ -681,5 +704,6 @@ def _warn_legacy_use():
         'This function call is currently returning the legacy WQX format. '
         'This means that any USGS data served are stale as of March 2024. '
         'Please review the dataretrieval-python documentation for more '
-        'information on updated WQX3.0 profiles.'
+        'information on updated WQX3.0 profiles. When WQX3.0 profiles are '
+        'available, setting legacy=False will return the freshest data.'
     )

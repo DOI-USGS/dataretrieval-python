@@ -11,8 +11,8 @@ from dataretrieval.wqp import (get_results, what_sites, what_organizations,
                                _alter_kwargs)
 
 
-def test_get_ratings(requests_mock):
-    """Tests water quality portal ratings query"""
+def test_get_results(requests_mock):
+    """Tests water quality portal results query"""
     request_url = "https://www.waterqualitydata.us/data/Result/Search?siteid=WIDNR_WQX-10032762" \
                   "&characteristicName=Specific+conductance&startDateLo=05-01-2011&startDateHi=09-30-2011" \
                   "&mimeType=csv"
@@ -23,6 +23,23 @@ def test_get_ratings(requests_mock):
                           startDateLo='05-01-2011', startDateHi='09-30-2011')
     assert type(df) is DataFrame
     assert df.size == 315
+    assert md.url == request_url
+    assert isinstance(md.query_time, datetime.timedelta)
+    assert md.header == {"mock_header": "value"}
+    assert md.comment is None
+
+def test_get_results_WQX3(requests_mock):
+    """Tests water quality portal results query with new WQX3.0 profile"""
+    request_url = "https://www.waterqualitydata.us/wqx3/Result/search?siteid=WIDNR_WQX-10032762" \
+                  "&characteristicName=Specific+conductance&startDateLo=05-01-2011&startDateHi=09-30-2011" \
+                  "&mimeType=csv&dataProfile=fullPhysChem"
+    response_file_path = 'data/wqp3_results.txt'
+    mock_request(requests_mock, request_url, response_file_path)
+    df, md = get_results(legacy=False, siteid='WIDNR_WQX-10032762',
+                          characteristicName = 'Specific conductance',
+                          startDateLo='05-01-2011', startDateHi='09-30-2011')
+    assert type(df) is DataFrame
+    assert df.size == 900
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
     assert md.header == {"mock_header": "value"}
