@@ -1,7 +1,9 @@
 # dataretrieval: Download hydrologic data
 
-:warning: USGS data availability and format are changing on Water Quality Portal (WQP). Beginning in February 2024 data obtained from WQP legacy profiles will not include new USGS data or recent updates to existing data. 
+:warning: USGS data availability and format are changing on Water Quality Portal (WQP). Since March 2024, data obtained from WQP legacy profiles will not include new USGS data or recent updates to existing data. 
 To view the status of changes in data availability and code functionality, visit: https://doi-usgs.github.io/dataRetrieval/articles/Status.html
+
+:mega: **09/03/2024:** The groundwater levels service has switched endpoints, and `dataretrieval` was updated accordingly in [`v1.0.10`](https://github.com/DOI-USGS/dataretrieval-python/releases/tag/v1.0.10). Older versions using the discontinued endpoint will return 503 errors for `nwis.get_gwlevels` or the `service='gwlevels'` argument. Visit [Water Data For the Nation](https://waterdata.usgs.gov/blog/wdfn-waterservices-2024/) for more information.
 
 ## What is dataretrieval?
 `dataretrieval` was created to simplify the process of loading hydrologic data into the Python environment.
