@@ -11,15 +11,15 @@
       "licenses": [
         {
           "name": "Public Domain, CC0-1.0",
-          "URL": "https://code.usgs.gov/cmwsc/shwa/dataretrieval/-/raw/v1.0.2/LICENSE.md"
+          "URL": "https://code.usgs.gov/water/dataretrieval-python/-/raw/v1.0.2/LICENSE.md"
         }
       ]
     },
 
-    "homepageURL": "https://code.usgs.gov/cmwsc/shwa/dataretrieval",
-    "downloadURL": "https://code.usgs.gov/cmwsc/shwa/dataretrieval/-/archive/v1.0.2/dataretrieval-v1.0.2.zip",
-    "disclaimerURL": "https://code.usgs.gov/cmwsc/shwa/dataretrieval/-/raw/v1.0.2/DISCLAIMER.md",
-    "repositoryURL": "https://code.usgs.gov/cmwsc/shwa/dataretrieval.git",
+    "homepageURL": "https://code.usgs.gov/water/dataretrieval-python",
+    "downloadURL": "https://code.usgs.gov/water/dataretrieval-python/-/archive/v1.0.2/dataretrieval-python-v1.0.2.zip",
+    "disclaimerURL": "https://code.usgs.gov/water/dataretrieval-python/-/raw/v1.0.2/DISCLAIMER.md",
+    "repositoryURL": "https://code.usgs.gov/water/dataretrieval-python.git",
     "vcs": "git",
 
     "laborHours": 0,
