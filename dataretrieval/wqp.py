@@ -118,16 +118,20 @@ def get_results(ssl_check=True, legacy=True, **kwargs):
     if legacy is True:
         if 'dataProfile' in kwargs:
             if kwargs['dataProfile'] not in result_profiles_legacy:
-                raise TypeError(f'dataProfile {kwargs['dataProfile']} is not a legacy profile name. '
-                                'Please choose from "resultPhysChem", "biological", or "narrowResult"')
+                raise TypeError(f"""
+                                dataProfile "{kwargs['dataProfile']}" is not a legacy profile name. 
+                                Please choose from "resultPhysChem", "biological", or "narrowResult"
+                                """)
         
         url = wqp_url('Result')
     
     else:
         if 'dataProfile' in kwargs:
             if kwargs['dataProfile'] not in result_profiles_wqx3:
-                raise TypeError(f'dataProfile {kwargs['dataProfile']} is not a WQX3.0 profile name. '
-                                'Please choose from "fullPhysChem", "narrow", or "basicPhysChem"')
+                raise TypeError(f"""
+                                dataProfile "{kwargs['dataProfile']}" is not a WQX3.0 profile name. 
+                                Please choose from "fullPhysChem", "narrow", or "basicPhysChem"
+                                """)
         else:
             kwargs['dataProfile'] = 'fullPhysChem'
         
