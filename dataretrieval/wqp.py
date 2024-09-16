@@ -12,6 +12,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import warnings
+from warnings import DeprecationWarning, UserWarning
 from io import StringIO
 
 import pandas as pd
@@ -99,9 +100,9 @@ def get_results(
 
     Returns
     -------
-    df: ``pandas.DataFrame``
+    df : ``pandas.DataFrame``
         Formatted data returned from the API query.
-    md: :obj:`dataretrieval.utils.Metadata`
+    md : :obj:`dataretrieval.utils.Metadata`
         Custom ``dataretrieval`` metadata object pertaining to the query.
 
     Examples
@@ -123,14 +124,14 @@ def get_results(
 
     """
 
-    kwargs = _alter_kwargs(kwargs)
+    _check_mimetype(kwargs)
 
     if legacy is True:
         if "dataProfile" in kwargs:
             if kwargs["dataProfile"] not in result_profiles_legacy:
                 raise TypeError(
                     f"dataProfile '{kwargs["dataProfile"]}' is not a legacy profile.",
-                    f"Please choose from {result_profiles_legacy}.",
+                    f"Valid options are {result_profiles_legacy}.",
                 )
 
         url = wqp_url("Result")
@@ -140,7 +141,7 @@ def get_results(
             if kwargs['dataProfile'] not in result_profiles_wqx3:
                 raise TypeError(
                     f"dataProfile '{kwargs["dataProfile"]}' is not a valid WQX3.0"
-                    f"profile. Please choose {result_profiles_wqx3}.",
+                    f"profile. Valid options are {result_profiles_wqx3}.",
                     )
         else:
             kwargs["dataProfile"] = "fullPhysChem"
@@ -176,14 +177,14 @@ def what_sites(
         If True, returns the legacy WQX data profile and warns the user of
         the issues associated with it. If False, returns the new WQX3.0
         profile, if available. Defaults to True.
-    **kwargs: optional
+    **kwargs : optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
     Returns
     -------
-    df: ``pandas.DataFrame``
+    df : ``pandas.DataFrame``
         Formatted data returned from the API query.
-    md: :obj:`dataretrieval.utils.Metadata`
+    md : :obj:`dataretrieval.utils.Metadata`
         Custom metadata object pertaining to the query.
 
     Examples
@@ -197,7 +198,7 @@ def what_sites(
 
     """
 
-    kwargs = _alter_kwargs(kwargs)
+    _check_mimetype(kwargs)
 
     if legacy is True:
         url = wqp_url('Station')
@@ -251,12 +252,12 @@ def what_organizations(
 
     """
 
-    kwargs = _alter_kwargs(kwargs)
+    _check_mimetype(kwargs)
 
     if legacy is True:
         url = wqp_url('Organization')
     else:
-        print('No WQX3.0 profile currently available, returning legacy profile.')
+        print('WQX3.0 profile not available, returning legacy profile.')
         url = wqp_url('Organization')
 
     response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
@@ -302,12 +303,12 @@ def what_projects(ssl_check=True, legacy=True, **kwargs):
 
     """
 
-    kwargs = _alter_kwargs(kwargs)
+    _check_mimetype(kwargs)
 
     if legacy is True:
         url = wqp_url('Project')
     else:
-        print('No WQX3.0 profile currently available, returning legacy profile.')
+        print('WQX3.0 profile not available, returning legacy profile.')
         url = wqp_url('Project')
 
     response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
@@ -368,7 +369,7 @@ def what_activities(
         ... )
     """
 
-    kwargs = _alter_kwargs(kwargs)
+    _check_mimetype(kwargs)
 
     if legacy is True:
         url = wqp_url("Activity")
@@ -429,12 +430,12 @@ def what_detection_limits(
 
     """
 
-    kwargs = _alter_kwargs(kwargs)
+    _check_mimetype(kwargs)
 
     if legacy is True:
         url = wqp_url('ResultDetectionQuantitationLimit')
     else:
-        print('No WQX3.0 profile currently available, returning legacy profile.')
+        print('WQX3.0 profile not available, returning legacy profile.')
         url = wqp_url('ResultDetectionQuantitationLimit')
 
     response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
@@ -484,12 +485,12 @@ def what_habitat_metrics(
 
     """
 
-    kwargs = _alter_kwargs(kwargs)
+    _check_mimetype(kwargs)
 
     if legacy is True:
         url = wqp_url('BiologicalMetric')
     else:
-        print('No WQX3.0 profile currently available, returning legacy profile.')
+        print('WQX3.0 profile not available, returning legacy profile.')
         url = wqp_url('BiologicalMetric')
 
     response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
@@ -538,12 +539,12 @@ def what_project_weights(ssl_check=True, legacy=True, **kwargs):
 
     """
 
-    kwargs = _alter_kwargs(kwargs)
+    _check_mimetype(kwargs)
 
     if legacy is True:
         url = wqp_url('ProjectMonitoringLocationWeighting')
     else:
-        print('No WQX3.0 profile currently available, returning legacy profile.')
+        print('WQX3.0 profile not available, returning legacy profile.')
         url = wqp_url('ProjectMonitoringLocationWeighting')
 
     response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
@@ -592,12 +593,12 @@ def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
 
     """
 
-    kwargs = _alter_kwargs(kwargs)
+    _check_mimetype(kwargs)
 
     if legacy is True:
         url = wqp_url('ActivityMetric')
     else:
-        print('No WQX3.0 profile currently available, returning legacy profile.')
+        print('WQX3.0 profile not available, returning legacy profile.')
         url = wqp_url('ActivityMetric')
 
     response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
@@ -610,19 +611,30 @@ def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
 def wqp_url(service):
     """Construct the WQP URL for a given service."""
 
+    base_url = 'https://www.waterqualitydata.us/data/'
     _warn_legacy_use()
 
     if service not in services_legacy:
-        raise TypeError('Legacy service not recognized')
-    base_url = 'https://www.waterqualitydata.us/data/'
+        raise TypeError(
+            'Legacy service not recognized. Valid options are',
+            f'{services_legacy}.',
+            )
+
     return f'{base_url}{service}/Search?'
 
 
 def wqx3_url(service):
     """Construct the WQP URL for a given WQX 3.0 service."""
-    if service not in services_wqx3:
-        raise TypeError('WQX3.0 service not recognized')
+
     base_url = 'https://www.waterqualitydata.us/wqx3/'
+    _warn_wqx3_use()
+
+    if service not in services_wqx3:
+        raise TypeError(
+            'WQX3.0 service not recognized. Valid options are',
+            f'{services_wqx3}.',
+            )
+
     return f'{base_url}{service}/search?'
 
 
@@ -633,13 +645,13 @@ class WQP_Metadata(BaseMetadata):
     ----------
     url : str
         Response url
-    query_time: datetme.timedelta
+    query_time : datetme.timedelta
         Response elapsed time
-    header: requests.structures.CaseInsensitiveDict
+    header : requests.structures.CaseInsensitiveDict
         Response headers
-    comments: None
+    comments : None
         Metadata comments. WQP does not return comments.
-    site_info: tuple[pd.DataFrame, NWIS_Metadata] | None
+    site_info : tuple[pd.DataFrame, NWIS_Metadata] | None
         Site information if the query included `sites`, `site` or `site_no`.
     """
 
@@ -649,10 +661,10 @@ class WQP_Metadata(BaseMetadata):
 
         Parameters
         ----------
-        response: Response
+        response : Response
             Response object from requests module
 
-        parameters: dict
+        parameters : dict
             Unpacked dictionary of the parameters supplied in the request
 
         Returns
@@ -676,19 +688,20 @@ class WQP_Metadata(BaseMetadata):
                 return what_sites(sites=parameters["site_no"])
 
 
-def _alter_kwargs(kwargs):
-    """Private function to manipulate **kwargs.
+def _check_mimetype(kwargs):
+    mimetype = kwargs.get("mimeType")
+    if mimetype == "geojson":
+        raise NotImplementedError("GeoJSON not yet supported. Set 'mimeType=csv'.")
+    elif mimetype != "csv":
+        raise ValueError("Invalid mimeType. Set 'mimeType=csv'.")
 
-    Not all query parameters are currently supported by ``dataretrieval``,
-    so this function is used to set some of them and raise warnings to the
-    user so they are aware of which are being hard-set.
-    """
 
-    if kwargs.get("mimeType", "csv") == "geojson":
-        warnings.warn("GeoJSON not yet supported, mimeType set to csv.")
-    kwargs["mimeType"] = "csv"
-
-    return kwargs
+def _warn_wqx3_use():
+    message = (
+        "Support for the WQX3.0 profiles is experimental. "
+        "Queries may be slow or fail intermitttently."
+    )
+    warnings.warn(message, UserWarning)
 
 
 def _warn_legacy_use():
@@ -699,4 +712,4 @@ def _warn_legacy_use():
         "information on updated WQX3.0 profiles. Setting `legacy=False` "
         "will remove this warning."
     )
-    warnings.warn(message)
+    warnings.warn(message, DeprecationWarning)
