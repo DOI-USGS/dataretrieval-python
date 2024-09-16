@@ -22,10 +22,10 @@ if TYPE_CHECKING:
     from pandas import DataFrame
 
 
-result_profiles_wqx3 = ['fullPhysChem', 'narrow', 'basicPhysChem']
+result_profiles_wqx3 = ['basicPhysChem', 'fullPhysChem', 'narrow']
 result_profiles_legacy = ['resultPhysChem', 'biological', 'narrowResult']
 activity_profiles_legacy = ['activityAll']
-services_wqx3 = ['Result', 'Station', 'Activity']
+services_wqx3 = ['Activity', 'Result', 'Station']
 services_legacy = [
     'Activity',
     'ActivityMetric',
