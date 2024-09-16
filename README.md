@@ -1,5 +1,9 @@
 # dataretrieval: Download hydrologic data
 
+![PyPI - Version](https://img.shields.io/pypi/v/dataretrieval)
+![Conda Version](https://img.shields.io/conda/v/conda-forge/dataretrieval)
+![Downloads](https://static.pepy.tech/badge/dataretrieval)
+
 :warning: USGS data availability and format are changing on Water Quality Portal (WQP). Since March 2024, data obtained from WQP legacy profiles will not include new USGS data or recent updates to existing data. 
 To view the status of changes in data availability and code functionality, visit: https://doi-usgs.github.io/dataRetrieval/articles/Status.html
 
