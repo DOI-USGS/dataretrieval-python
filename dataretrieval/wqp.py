@@ -12,7 +12,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import warnings
-from warnings import DeprecationWarning, UserWarning
 from io import StringIO
 
 import pandas as pd
@@ -692,7 +691,7 @@ def _check_mimetype(kwargs):
     mimetype = kwargs.get("mimeType")
     if mimetype == "geojson":
         raise NotImplementedError("GeoJSON not yet supported. Set 'mimeType=csv'.")
-    elif mimetype != "csv":
+    elif mimetype != "csv" and mimetype is not None:
         raise ValueError("Invalid mimeType. Set 'mimeType=csv'.")
 
 
