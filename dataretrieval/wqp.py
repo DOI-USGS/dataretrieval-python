@@ -129,7 +129,7 @@ def get_results(
         if "dataProfile" in kwargs:
             if kwargs["dataProfile"] not in result_profiles_legacy:
                 raise TypeError(
-                    f"dataProfile '{kwargs["dataProfile"]}' is not a legacy profile.",
+                    f"dataProfile {kwargs["dataProfile"]} is not a legacy profile.",
                     f"Valid options are {result_profiles_legacy}.",
                 )
 
@@ -139,7 +139,7 @@ def get_results(
         if 'dataProfile' in kwargs:
             if kwargs['dataProfile'] not in result_profiles_wqx3:
                 raise TypeError(
-                    f"dataProfile '{kwargs["dataProfile"]}' is not a valid WQX3.0"
+                    f"dataProfile {kwargs["dataProfile"]} is not a valid WQX3.0"
                     f"profile. Valid options are {result_profiles_wqx3}.",
                     )
         else:
