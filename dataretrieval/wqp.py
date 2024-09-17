@@ -123,7 +123,7 @@ def get_results(
 
     """
 
-    _check_mimetype(kwargs)
+    kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
         if "dataProfile" in kwargs:
@@ -197,7 +197,7 @@ def what_sites(
 
     """
 
-    _check_mimetype(kwargs)
+    kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
         url = wqp_url('Station')
@@ -251,7 +251,7 @@ def what_organizations(
 
     """
 
-    _check_mimetype(kwargs)
+    kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
         url = wqp_url('Organization')
@@ -302,7 +302,7 @@ def what_projects(ssl_check=True, legacy=True, **kwargs):
 
     """
 
-    _check_mimetype(kwargs)
+    kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
         url = wqp_url('Project')
@@ -368,7 +368,7 @@ def what_activities(
         ... )
     """
 
-    _check_mimetype(kwargs)
+    kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
         url = wqp_url("Activity")
@@ -429,7 +429,7 @@ def what_detection_limits(
 
     """
 
-    _check_mimetype(kwargs)
+    kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
         url = wqp_url('ResultDetectionQuantitationLimit')
@@ -484,7 +484,7 @@ def what_habitat_metrics(
 
     """
 
-    _check_mimetype(kwargs)
+    kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
         url = wqp_url('BiologicalMetric')
@@ -538,7 +538,7 @@ def what_project_weights(ssl_check=True, legacy=True, **kwargs):
 
     """
 
-    _check_mimetype(kwargs)
+    kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
         url = wqp_url('ProjectMonitoringLocationWeighting')
@@ -592,7 +592,7 @@ def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
 
     """
 
-    _check_mimetype(kwargs)
+    kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
         url = wqp_url('ActivityMetric')
@@ -687,12 +687,18 @@ class WQP_Metadata(BaseMetadata):
                 return what_sites(sites=parameters["site_no"])
 
 
-def _check_mimetype(kwargs):
+def _check_kwargs(kwargs):
+    """Private function to check kwargs for unsupported parameters.
+    """
     mimetype = kwargs.get("mimeType")
     if mimetype == "geojson":
         raise NotImplementedError("GeoJSON not yet supported. Set 'mimeType=csv'.")
     elif mimetype != "csv" and mimetype is not None:
         raise ValueError("Invalid mimeType. Set 'mimeType=csv'.")
+    else:
+        kwargs["mimeType"] = "csv"
+
+    return kwargs
 
 
 def _warn_wqx3_use():
