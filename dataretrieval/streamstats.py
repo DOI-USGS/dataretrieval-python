@@ -10,7 +10,7 @@ import json
 import requests
 
 
-def download_workspace(workspaceID, format=''):
+def download_workspace(workspaceID, format=""):
     """Function to download streamstats workspace.
 
     Parameters
@@ -29,8 +29,8 @@ def download_workspace(workspaceID, format=''):
         geodatabase or shape files.
 
     """
-    payload = {'workspaceID': workspaceID, 'format': format}
-    url = 'https://streamstats.usgs.gov/streamstatsservices/download'
+    payload = {"workspaceID": workspaceID, "format": format}
+    url = "https://streamstats.usgs.gov/streamstatsservices/download"
 
     r = requests.get(url, params=payload)
 
@@ -58,7 +58,7 @@ def get_sample_watershed():
         from the streamstats JSON object.
 
     """
-    return get_watershed('NY', -74.524, 43.939)
+    return get_watershed("NY", -74.524, 43.939)
 
 
 def get_watershed(
@@ -70,7 +70,7 @@ def get_watershed(
     includeflowtypes=False,
     includefeatures=True,
     simplify=True,
-    format='geojson',
+    format="geojson",
 ):
     """Get watershed object based on location
 
@@ -114,29 +114,29 @@ def get_watershed(
 
     """
     payload = {
-        'rcode': rcode,
-        'xlocation': xlocation,
-        'ylocation': ylocation,
-        'crs': crs,
-        'includeparameters': includeparameters,
-        'includeflowtypes': includeflowtypes,
-        'includefeatures': includefeatures,
-        'simplify': simplify,
+        "rcode": rcode,
+        "xlocation": xlocation,
+        "ylocation": ylocation,
+        "crs": crs,
+        "includeparameters": includeparameters,
+        "includeflowtypes": includeflowtypes,
+        "includefeatures": includefeatures,
+        "simplify": simplify,
     }
-    url = 'https://streamstats.usgs.gov/streamstatsservices/watershed.geojson'
+    url = "https://streamstats.usgs.gov/streamstatsservices/watershed.geojson"
 
     r = requests.get(url, params=payload)
 
     r.raise_for_status()
 
-    if format == 'geojson':
+    if format == "geojson":
         return r
 
-    if format == 'shape':
+    if format == "shape":
         # use Fiona to return a shape object
         pass
 
-    if format == 'object':
+    if format == "object":
         # return a python object
         pass
 
@@ -150,10 +150,10 @@ class Watershed:
     @classmethod
     def from_streamstats_json(cls, streamstats_json):
         """Method that creates a Watershed object from a streamstats JSON."""
-        cls.watershed_point = streamstats_json['featurecollection'][0]['feature']
-        cls.watershed_polygon = streamstats_json['featurecollection'][1]['feature']
-        cls.parameters = streamstats_json['parameters']
-        cls._workspaceID = streamstats_json['workspaceID']
+        cls.watershed_point = streamstats_json["featurecollection"][0]["feature"]
+        cls.watershed_polygon = streamstats_json["featurecollection"][1]["feature"]
+        cls.parameters = streamstats_json["parameters"]
+        cls._workspaceID = streamstats_json["workspaceID"]
         return cls
 
     def __init__(self, rcode, xlocation, ylocation):

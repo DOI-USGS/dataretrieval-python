@@ -1,6 +1,7 @@
 """
 Useful utilities for data munging.
 """
+
 import warnings
 
 import pandas as pd
@@ -10,7 +11,7 @@ import dataretrieval
 from dataretrieval.codes import tz
 
 
-def to_str(listlike, delimiter=','):
+def to_str(listlike, delimiter=","):
     """Translates list-like objects into strings.
 
     Parameters
@@ -31,10 +32,10 @@ def to_str(listlike, delimiter=','):
     --------
     .. doctest::
 
-        >>> dataretrieval.utils.to_str([1, 'a', 2])
+        >>> dataretrieval.utils.to_str([1, "a", 2])
         '1,a,2'
 
-        >>> dataretrieval.utils.to_str([0, 10, 42], delimiter='+')
+        >>> dataretrieval.utils.to_str([0, 10, 42], delimiter="+")
         '0+10+42'
 
     """
@@ -77,18 +78,18 @@ def format_datetime(df, date_field, time_field, tz_field):
     # create a datetime index from the columns in qwdata response
     df[tz_field] = df[tz_field].map(tz)
 
-    df['datetime'] = pd.to_datetime(
-        df[date_field] + ' ' + df[time_field] + ' ' + df[tz_field],
-        format='ISO8601',
+    df["datetime"] = pd.to_datetime(
+        df[date_field] + " " + df[time_field] + " " + df[tz_field],
+        format="ISO8601",
         utc=True,
     )
 
     # if there are any incomplete dates, warn the user
-    if df['datetime'].isna().any():
-        count = df['datetime'].isna().sum()
+    if df["datetime"].isna().any():
+        count = df["datetime"].isna().sum()
         warnings.warn(
-            f'Warning: {count} incomplete dates found, '
-            + 'consider setting datetime_index to False.',
+            f"Warning: {count} incomplete dates found, "
+            + "consider setting datetime_index to False.",
             UserWarning,
         )
 
@@ -140,20 +141,20 @@ class BaseMetadata:
     @property
     def site_info(self):
         raise NotImplementedError(
-            'site_info must be implemented by utils.BaseMetadata children'
+            "site_info must be implemented by utils.BaseMetadata children"
         )
 
     @property
     def variable_info(self):
         raise NotImplementedError(
-            'variable_info must be implemented by utils.BaseMetadata children'
+            "variable_info must be implemented by utils.BaseMetadata children"
         )
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}(url={self.url})'
+        return f"{type(self).__name__}(url={self.url})"
 
 
-def query(url, payload, delimiter=',', ssl_check=True):
+def query(url, payload, delimiter=",", ssl_check=True):
     """Send a query.
 
     Wrapper for requests.get that handles errors, converts listed
@@ -184,18 +185,18 @@ def query(url, payload, delimiter=',', ssl_check=True):
     #    payload[index] = (key, to_str(value))
 
     # define the user agent for the query
-    user_agent = {'user-agent': f'python-dataretrieval/{dataretrieval.__version__}'}
+    user_agent = {"user-agent": f"python-dataretrieval/{dataretrieval.__version__}"}
 
     response = requests.get(url, params=payload, headers=user_agent, verify=ssl_check)
 
     if response.status_code == 400:
         raise ValueError(
-            f'Bad Request, check that your parameters are correct. URL: {response.url}'
+            f"Bad Request, check that your parameters are correct. URL: {response.url}"
         )
     elif response.status_code == 404:
         raise ValueError(
-            'Page Not Found Error. May be the result of an empty query. '
-            + f'URL: {response.url}'
+            "Page Not Found Error. May be the result of an empty query. "
+            + f"URL: {response.url}"
         )
     elif response.status_code == 414:
         _reason = response.reason
@@ -209,12 +210,12 @@ def query(url, payload, delimiter=',', ssl_check=True):
                                                start=start, end=end) \n
                         data_list.append(data)  # append results to list"""
         raise ValueError(
-            'Request URL too long. Modify your query to use fewer sites. '
-            + f'API response reason: {_reason}. Pseudo-code example of how to '
-            + f'split your query: \n {_example}'
+            "Request URL too long. Modify your query to use fewer sites. "
+            + f"API response reason: {_reason}. Pseudo-code example of how to "
+            + f"split your query: \n {_example}"
         )
 
-    if response.text.startswith('No sites/data'):
+    if response.text.startswith("No sites/data"):
         raise NoSitesError(response.url)
 
     return response
@@ -228,6 +229,6 @@ class NoSitesError(Exception):
 
     def __str__(self):
         return (
-            'No sites/data found using the selection criteria specified in url: '
-            '{url}'
+            "No sites/data found using the selection criteria specified in url: "
+            "{url}"
         ).format(url=self.url)
