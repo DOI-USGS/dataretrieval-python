@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+gee5dacd documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g9f09525 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=44de87e1"></script>
+        <script src="../_static/documentation_options.js?v=946d3331"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -68,8 +68,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata.__init__"><code class="docutils literal notranslate"><span class="pre">WQP_Metadata.__init__()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp._alter_kwargs"><code class="docutils literal notranslate"><span class="pre">_alter_kwargs()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp._warn_v3_profiles_outage"><code class="docutils literal notranslate"><span class="pre">_warn_v3_profiles_outage()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp._check_kwargs"><code class="docutils literal notranslate"><span class="pre">_check_kwargs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.get_results"><code class="docutils literal notranslate"><span class="pre">get_results()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.what_activities"><code class="docutils literal notranslate"><span class="pre">what_activities()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.what_activity_metrics"><code class="docutils literal notranslate"><span class="pre">what_activity_metrics()</span></code></a></li>
@@ -80,6 +79,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.what_projects"><code class="docutils literal notranslate"><span class="pre">what_projects()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.what_sites"><code class="docutils literal notranslate"><span class="pre">what_sites()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.wqp_url"><code class="docutils literal notranslate"><span class="pre">wqp_url()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.wqx3_url"><code class="docutils literal notranslate"><span class="pre">wqx3_url()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -189,7 +189,7 @@ metadata for WQP data.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>response</strong> (<em>Response</em>) – Response object from requests module</p></li>
-<li><p><strong>parameters</strong> (<em>unpacked dictionary</em>) – Unpacked dictionary of the parameters supplied in the request</p></li>
+<li><p><strong>parameters</strong> (<em>dict</em>) – Unpacked dictionary of the parameters supplied in the request</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -204,57 +204,49 @@ metadata for WQP data.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="dataretrieval.wqp._alter_kwargs">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">_alter_kwargs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#_alter_kwargs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp._alter_kwargs" title="Link to this definition"></a></dt>
-<dd><p>Private function to manipulate <a href="#id2"><span class="problematic" id="id3">**</span></a>kwargs.</p>
-<p>Not all query parameters are currently supported by <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code>,
-so this function is used to set some of them and raise warnings to the
-user so they are aware of which are being hard-set.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="dataretrieval.wqp._warn_v3_profiles_outage">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">_warn_v3_profiles_outage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#_warn_v3_profiles_outage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp._warn_v3_profiles_outage" title="Link to this definition"></a></dt>
-<dd><p>Private function for warning message about WQX 3.0 profiles</p>
+<dt class="sig sig-object py" id="dataretrieval.wqp._check_kwargs">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">_check_kwargs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#_check_kwargs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp._check_kwargs" title="Link to this definition"></a></dt>
+<dd><p>Private function to check kwargs for unsupported parameters.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.get_results">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">get_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#get_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.get_results" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">get_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legacy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><span class="pre">WQP_Metadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#get_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.get_results" title="Link to this definition"></a></dt>
 <dd><p>Query the WQP for results.</p>
 <p>Any WQP API parameter can be passed as a keyword argument to this function.
 More information about the API can be found at:
 <a class="reference external" href="https://www.waterqualitydata.us/#advanced=true">https://www.waterqualitydata.us/#advanced=true</a>
+or the beta version of the WQX3.0 API at:
+<a class="reference external" href="https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET">https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET</a>
 or the Swagger documentation at:
 <a class="reference external" href="https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/">https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
-certificate is not checked.</p></li>
-<li><p><strong>siteid</strong> (<em>string</em>) – Concatenate an agency code, a hyphen (“-“), and a site-identification
-number.</p></li>
-<li><p><strong>statecode</strong> (<em>string</em>) – Concatenate ‘US’, a colon (“:”), and a FIPS numeric code
-(Example: Illinois is US:17)</p></li>
-<li><p><strong>countycode</strong> (<em>string</em>) – A FIPS county code</p></li>
-<li><p><strong>huc</strong> (<em>string</em>) – One or more eight-digit hydrologic units, delimited by semicolons.</p></li>
-<li><p><strong>bBox</strong> (<em>string</em>) – Bounding box (Example: bBox=-92.8,44.2,-88.9,46.0)</p></li>
-<li><p><strong>lat</strong> (<em>string</em>) – Latitude for radial search, expressed in decimal degrees, WGS84</p></li>
-<li><p><strong>long</strong> (<em>string</em>) – Longitude for radial search</p></li>
-<li><p><strong>within</strong> (<em>string</em>) – Distance for a radial search, expressed in decimal miles</p></li>
-<li><p><strong>pCode</strong> (<em>string</em>) – One or more five-digit USGS parameter codes, separated by semicolons.
+<li><p><strong>ssl_check</strong> (<em>bool</em><em>, </em><em>optional</em>) – Check the SSL certificate.</p></li>
+<li><p><strong>legacy</strong> (<em>bool</em><em>, </em><em>optional</em>) – Return the legacy WQX data profile. Default is True.</p></li>
+<li><p><strong>dataProfile</strong> (<em>string</em><em>, </em><em>optional</em>) – Specifies the data fields returned by the query.
+WQX3.0 profiles include ‘fullPhysChem’, ‘narrow’, and ‘basicPhysChem’.
+Legacy profiles include ‘resultPhysChem’,’biological’, and
+‘narrowResult’. Default is ‘fullPhysChem’.</p></li>
+<li><p><strong>siteid</strong> (<em>string</em>) – Monitoring location identified by agency code, a hyphen, and
+identification number (Example: “USGS-05586100”).</p></li>
+<li><p><strong>statecode</strong> (<em>string</em>) – US state FIPS code (Example: Illinois is “US:17”).</p></li>
+<li><p><strong>countycode</strong> (<em>string</em>) – US county FIPS code.</p></li>
+<li><p><strong>huc</strong> (<em>string</em>) – Eight-digit hydrologic unit (HUC), delimited by semicolons.</p></li>
+<li><p><strong>bBox</strong> (<em>string</em>) – Search bounding box (Example: bBox=-92.8,44.2,-88.9,46.0)</p></li>
+<li><p><strong>lat</strong> (<em>string</em>) – Radial-search central latitude in WGS84 decimal degrees.</p></li>
+<li><p><strong>long</strong> (<em>string</em>) – Radial-search central longitude in WGS84 decimal degrees.</p></li>
+<li><p><strong>within</strong> (<em>string</em>) – Radial-search distance in decimal miles.</p></li>
+<li><p><strong>pCode</strong> (<em>string</em>) – Five-digit USGS parameter code, delimited by semicolons.
 NWIS only.</p></li>
 <li><p><strong>startDateLo</strong> (<em>string</em>) – Date of earliest desired data-collection activity,
 expressed as ‘MM-DD-YYYY’</p></li>
 <li><p><strong>startDateHi</strong> (<em>string</em>) – Date of last desired data-collection activity,
 expressed as ‘MM-DD-YYYY’</p></li>
 <li><p><strong>characteristicName</strong> (<em>string</em>) – One or more case-sensitive characteristic names, separated by
-semicolons. (See <a class="reference external" href="https://www.waterqualitydata.us/public_srsnames/">https://www.waterqualitydata.us/public_srsnames/</a>
-for available characteristic names)</p></li>
-<li><p><strong>mimeType</strong> (<em>string</em>) – String specifying the output format which is ‘csv’ by default but can
-be ‘geojson’</p></li>
-<li><p><strong>zip</strong> (<em>string</em>) – Parameter to stream compressed data, if ‘yes’, or uncompressed data
-if ‘no’. Default is ‘no’.</p></li>
+semicolons (<a class="reference external" href="https://www.waterqualitydata.us/public_srsnames/">https://www.waterqualitydata.us/public_srsnames/</a>).</p></li>
+<li><p><strong>mimeType</strong> (<em>string</em>) – Output format. Only ‘csv’ is supported at this time.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -273,24 +265,31 @@ if ‘no’. Default is ‘no’.</p></li>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get results within a bounding box</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span><span class="n">bBox</span><span class="o">=</span><span class="s1">&#39;-92.8,44.2,-88.9,46.0&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get results using a new WQX3.0 profile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">legacy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">siteid</span><span class="o">=</span><span class="s1">&#39;UTAHDWQ_WQX-4993795&#39;</span><span class="p">,</span> <span class="n">dataProfile</span><span class="o">=</span><span class="s1">&#39;narrow&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.what_activities">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_activities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_activities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_activities" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_activities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legacy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><span class="pre">WQP_Metadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_activities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_activities" title="Link to this definition"></a></dt>
 <dd><p>Search WQP for activities within a region with specific data.</p>
 <p>Any WQP API parameter can be passed as a keyword argument to this function.
 More information about the API can be found at:
 <a class="reference external" href="https://www.waterqualitydata.us/#advanced=true">https://www.waterqualitydata.us/#advanced=true</a>
+or the beta version of the WQX3.0 API at:
+<a class="reference external" href="https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET">https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET</a>
 or the Swagger documentation at:
 <a class="reference external" href="https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/">https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
-certificate is not checked.</p></li>
+<li><p><strong>ssl_check</strong> (<em>bool</em><em>, </em><em>optional</em>) – Check the SSL certificate. Default is True.</p></li>
+<li><p><strong>legacy</strong> (<em>bool</em><em>, </em><em>optional</em>) – Return the legacy WQX data profile. Default is True.</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p></li>
 </ul>
 </dd>
@@ -308,24 +307,35 @@ certificate is not checked.</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_activities</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s1">&#39;US:11&#39;</span><span class="p">,</span> <span class="n">startDateLo</span><span class="o">=</span><span class="s1">&#39;12-30-2019&#39;</span><span class="p">,</span> <span class="n">startDateHi</span><span class="o">=</span><span class="s1">&#39;01-01-2020&#39;</span>
 <span class="gp">... </span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get activities within Washington D.C.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># using the WQX3.0 profile during a specific time period</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_activities</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">legacy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s1">&#39;US:11&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateLo</span><span class="o">=</span><span class="s1">&#39;12-30-2019&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s1">&#39;01-01-2020&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.what_activity_metrics">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_activity_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_activity_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_activity_metrics" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_activity_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legacy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_activity_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_activity_metrics" title="Link to this definition"></a></dt>
 <dd><p>Search WQP for activity metrics within a region with specific data.</p>
 <p>Any WQP API parameter can be passed as a keyword argument to this function.
 More information about the API can be found at:
 <a class="reference external" href="https://www.waterqualitydata.us/#advanced=true">https://www.waterqualitydata.us/#advanced=true</a>
+or the beta version of the WQX3.0 API at:
+<a class="reference external" href="https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET">https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET</a>
 or the Swagger documentation at:
 <a class="reference external" href="https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/">https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
-certificate is not checked.</p></li>
+<li><p><strong>ssl_check</strong> (<em>bool</em>) – Check the SSL certificate. Default is True.</p></li>
+<li><p><strong>legacy</strong> (<em>bool</em>) – Return the legacy WQX data profile. Default is True.</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p></li>
 </ul>
 </dd>
@@ -349,19 +359,21 @@ certificate is not checked.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.what_detection_limits">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_detection_limits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_detection_limits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_detection_limits" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_detection_limits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legacy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><span class="pre">WQP_Metadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_detection_limits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_detection_limits" title="Link to this definition"></a></dt>
 <dd><p>Search WQP for result detection limits within a region with specific
 data.</p>
 <p>Any WQP API parameter can be passed as a keyword argument to this function.
 More information about the API can be found at:
 <a class="reference external" href="https://www.waterqualitydata.us/#advanced=true">https://www.waterqualitydata.us/#advanced=true</a>
+or the beta version of the WQX3.0 API at:
+<a class="reference external" href="https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET">https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET</a>
 or the Swagger documentation at:
 <a class="reference external" href="https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/">https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
-certificate is not checked.</p></li>
+<li><p><strong>ssl_check</strong> (<em>bool</em>) – Check the SSL certificate. Default is True.</p></li>
+<li><p><strong>legacy</strong> (<em>bool</em>) – Return the legacy WQX data profile. Default is True.</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p></li>
 </ul>
 </dd>
@@ -388,18 +400,20 @@ certificate is not checked.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.what_habitat_metrics">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_habitat_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_habitat_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_habitat_metrics" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_habitat_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legacy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><span class="pre">WQP_Metadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_habitat_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_habitat_metrics" title="Link to this definition"></a></dt>
 <dd><p>Search WQP for habitat metrics within a region with specific data.</p>
 <p>Any WQP API parameter can be passed as a keyword argument to this function.
 More information about the API can be found at:
 <a class="reference external" href="https://www.waterqualitydata.us/#advanced=true">https://www.waterqualitydata.us/#advanced=true</a>
+or the beta version of the WQX3.0 API at:
+<a class="reference external" href="https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET">https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET</a>
 or the Swagger documentation at:
 <a class="reference external" href="https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/">https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
-certificate is not checked.</p></li>
+<li><p><strong>ssl_check</strong> (<em>bool</em>) – Check the SSL certificate. Default is True.</p></li>
+<li><p><strong>legacy</strong> (<em>bool</em>) – Return the legacy WQX data profile. Default is True.</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p></li>
 </ul>
 </dd>
@@ -420,18 +434,20 @@ certificate is not checked.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.what_organizations">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_organizations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_organizations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_organizations" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_organizations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legacy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><span class="pre">WQP_Metadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_organizations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_organizations" title="Link to this definition"></a></dt>
 <dd><p>Search WQP for organizations within a region with specific data.</p>
 <p>Any WQP API parameter can be passed as a keyword argument to this function.
 More information about the API can be found at:
 <a class="reference external" href="https://www.waterqualitydata.us/#advanced=true">https://www.waterqualitydata.us/#advanced=true</a>
+or the beta version of the WQX3.0 API at:
+<a class="reference external" href="https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET">https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET</a>
 or the Swagger documentation at:
 <a class="reference external" href="https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/">https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
-certificate is not checked.</p></li>
+<li><p><strong>ssl_check</strong> (<em>bool</em><em>, </em><em>optional</em>) – Check the SSL certificate. Default is True.</p></li>
+<li><p><strong>legacy</strong> (<em>bool</em><em>, </em><em>optional</em>) – Return the legacy WQX data profile. Default is True.</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p></li>
 </ul>
 </dd>
@@ -452,18 +468,20 @@ certificate is not checked.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.what_project_weights">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_project_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_project_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_project_weights" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_project_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legacy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_project_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_project_weights" title="Link to this definition"></a></dt>
 <dd><p>Search WQP for project weights within a region with specific data.</p>
 <p>Any WQP API parameter can be passed as a keyword argument to this function.
 More information about the API can be found at:
 <a class="reference external" href="https://www.waterqualitydata.us/#advanced=true">https://www.waterqualitydata.us/#advanced=true</a>
+or the beta version of the WQX3.0 API at:
+<a class="reference external" href="https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET">https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET</a>
 or the Swagger documentation at:
 <a class="reference external" href="https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/">https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
-certificate is not checked.</p></li>
+<li><p><strong>ssl_check</strong> (<em>bool</em>) – Check the SSL certificate. Default is True.</p></li>
+<li><p><strong>legacy</strong> (<em>bool</em>) – Retrun the legacy WQX data profile. Default is True.</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p></li>
 </ul>
 </dd>
@@ -487,18 +505,20 @@ certificate is not checked.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.what_projects">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_projects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_projects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_projects" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_projects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legacy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_projects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_projects" title="Link to this definition"></a></dt>
 <dd><p>Search WQP for projects within a region with specific data.</p>
 <p>Any WQP API parameter can be passed as a keyword argument to this function.
 More information about the API can be found at:
 <a class="reference external" href="https://www.waterqualitydata.us/#advanced=true">https://www.waterqualitydata.us/#advanced=true</a>
+or the beta version of the WQX3.0 API at:
+<a class="reference external" href="https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET">https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET</a>
 or the Swagger documentation at:
 <a class="reference external" href="https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/">https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
-certificate is not checked.</p></li>
+<li><p><strong>ssl_check</strong> (<em>bool</em><em>, </em><em>optional</em>) – Check the SSL certificate. Default is True.</p></li>
+<li><p><strong>legacy</strong> (<em>bool</em><em>, </em><em>optional</em>) – Return the legacy WQX data profile. Default is True.</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p></li>
 </ul>
 </dd>
@@ -519,18 +539,22 @@ certificate is not checked.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp.what_sites">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_sites</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_sites"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_sites" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">what_sites</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legacy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><span class="pre">WQP_Metadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#what_sites"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.what_sites" title="Link to this definition"></a></dt>
 <dd><p>Search WQP for sites within a region with specific data.</p>
 <p>Any WQP API parameter can be passed as a keyword argument to this function.
 More information about the API can be found at:
 <a class="reference external" href="https://www.waterqualitydata.us/#advanced=true">https://www.waterqualitydata.us/#advanced=true</a>
+or the beta version of the WQX3.0 API at:
+<a class="reference external" href="https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET">https://www.waterqualitydata.us/beta/#mimeType=csv&amp;providers=NWIS&amp;providers=STORET</a>
 or the Swagger documentation at:
 <a class="reference external" href="https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/">https://www.waterqualitydata.us/data/swagger-ui/index.html?docExpansion=none&amp;url=/data/v3/api-docs#/</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check the SSL certificate. Default is True. If False, SSL
-certificate is not checked.</p></li>
+<li><p><strong>ssl_check</strong> (<em>bool</em><em>, </em><em>optional</em>) – Check the SSL certificate. Default is True.</p></li>
+<li><p><strong>legacy</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, returns the legacy WQX data profile and warns the user of
+the issues associated with it. If False, returns the new WQX3.0
+profile, if available. Defaults to True.</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p></li>
 </ul>
 </dd>
@@ -555,6 +579,12 @@ certificate is not checked.</p></li>
 <dt class="sig sig-object py" id="dataretrieval.wqp.wqp_url">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">wqp_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#wqp_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.wqp_url" title="Link to this definition"></a></dt>
 <dd><p>Construct the WQP URL for a given service.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.wqp.wqx3_url">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">wqx3_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#wqx3_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp.wqx3_url" title="Link to this definition"></a></dt>
+<dd><p>Construct the WQP URL for a given WQX 3.0 service.</p>
 </dd></dl>
 
 </section>
