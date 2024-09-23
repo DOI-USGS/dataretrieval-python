@@ -3,8 +3,51 @@
     "name": "dataretrieval",
     "organization": "U.S. Geological Survey",
     "description": "A Python package for discovering and retrieving water data from U.S. federal hydrologic web services.",
-    "version": "v1.0.2",
+    "version": "master",
     "status": "Development",
+
+    "permissions": {
+      "usageType": "openSource",
+      "licenses": [
+        {
+          "name": "Public Domain, CC0-1.0",
+          "URL": "https://code.usgs.gov/water/dataretrieval-python/-/raw/master/LICENSE.md"
+        }
+      ]
+    },
+
+    "homepageURL": "https://code.usgs.gov/water/dataretrieval-python",
+    "downloadURL": "https://code.usgs.gov/water/dataretrieval-python/-/archive/master/dataretrieval-python-master.zip",
+    "disclaimerURL": "https://code.usgs.gov/water/dataretrieval-python/-/raw/master/DISCLAIMER.md",
+    "repositoryURL": "https://code.usgs.gov/water/dataretrieval-python.git",
+    "vcs": "git",
+
+    "laborHours": 0,
+
+    "tags": [
+      "Python",
+      "USGS"
+    ],
+
+    "languages": [
+      "Python"
+    ],
+
+    "contact": {
+      "name": "Timothy 0. Hodson",
+      "email": "thodson@usgs.gov"
+    },
+
+    "date": {
+      "metadataLastUpdated": "2024-09-17"
+    }
+  },
+  {
+    "name": "dataretrieval",
+    "organization": "U.S. Geological Survey",
+    "description": "A Python package for discovering and retrieving water data from U.S. federal hydrologic web services.",
+    "version": "v1.0.2",
+    "status": "Production",
 
     "permissions": {
       "usageType": "openSource",
@@ -39,7 +82,7 @@
     },
 
     "date": {
-      "metadataLastUpdated": "2022-02-13"
+      "metadataLastUpdated": "2024-08-30"
     }
   }
 ]
