@@ -7,9 +7,9 @@ or ``conda``. Package dependencies are listed in the `requirements.txt`_ file,
 a full list of dependencies necessary for development are listed in the
 `requirements-dev.txt`_ file.
 
-.. _requirements.txt: https://github.com/DOI-USGS/dataretrieval-python/blob/master/requirements.txt
+.. _requirements.txt: https://github.com/DOI-USGS/dataretrieval-python/blob/main/requirements.txt
 
-.. _requirements-dev.txt: https://github.com/DOI-USGS/dataretrieval-python/blob/master/requirements-dev.txt
+.. _requirements-dev.txt: https://github.com/DOI-USGS/dataretrieval-python/blob/main/requirements-dev.txt
 
 
 User Installation

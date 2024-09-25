@@ -3,7 +3,7 @@
     "name": "dataretrieval",
     "organization": "U.S. Geological Survey",
     "description": "A Python package for discovering and retrieving water data from U.S. federal hydrologic web services.",
-    "version": "master",
+    "version": "main",
     "status": "Development",
 
     "permissions": {
@@ -11,14 +11,14 @@
       "licenses": [
         {
           "name": "Public Domain, CC0-1.0",
-          "URL": "https://code.usgs.gov/water/dataretrieval-python/-/raw/master/LICENSE.md"
+          "URL": "https://code.usgs.gov/water/dataretrieval-python/-/raw/main/LICENSE.md"
         }
       ]
     },
 
     "homepageURL": "https://code.usgs.gov/water/dataretrieval-python",
-    "downloadURL": "https://code.usgs.gov/water/dataretrieval-python/-/archive/master/dataretrieval-python-master.zip",
-    "disclaimerURL": "https://code.usgs.gov/water/dataretrieval-python/-/raw/master/DISCLAIMER.md",
+    "downloadURL": "https://code.usgs.gov/water/dataretrieval-python/-/archive/main/dataretrieval-python-main.zip",
+    "disclaimerURL": "https://code.usgs.gov/water/dataretrieval-python/-/raw/main/DISCLAIMER.md",
     "repositoryURL": "https://code.usgs.gov/water/dataretrieval-python.git",
     "vcs": "git",
 
