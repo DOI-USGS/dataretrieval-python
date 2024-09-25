@@ -37,26 +37,26 @@ from os.path import basename
 
 import requests
 
-NADP_URL = 'https://nadp.slh.wisc.edu'
-NADP_MAP_EXT = 'filelib/maps'
+NADP_URL = "https://nadp.slh.wisc.edu"
+NADP_MAP_EXT = "filelib/maps"
 
-NTN_CONC_PARAMS = ['pH', 'So4', 'NO3', 'NH4', 'Ca', 'Mg', 'K', 'Na', 'Cl', 'Br']
+NTN_CONC_PARAMS = ["pH", "So4", "NO3", "NH4", "Ca", "Mg", "K", "Na", "Cl", "Br"]
 NTN_DEP_PARAMS = [
-    'H',
-    'So4',
-    'NO3',
-    'NH4',
-    'Ca',
-    'Mg',
-    'K',
-    'Na',
-    'Cl',
-    'Br',
-    'N',
-    'SPlusN',
+    "H",
+    "So4",
+    "NO3",
+    "NH4",
+    "Ca",
+    "Mg",
+    "K",
+    "Na",
+    "Cl",
+    "Br",
+    "N",
+    "SPlusN",
 ]
 
-NTN_MEAS_TYPE = ['conc', 'dep', 'precip']  # concentration or deposition
+NTN_MEAS_TYPE = ["conc", "dep", "precip"]  # concentration or deposition
 
 
 class NADP_ZipFile(zipfile.ZipFile):
@@ -65,7 +65,7 @@ class NADP_ZipFile(zipfile.ZipFile):
     def tif_name(self):
         """Get the name of the tif file in the zip file."""
         filenames = self.namelist()
-        r = re.compile('.*tif$')
+        r = re.compile(".*tif$")
         tif_list = list(filter(r.match, filenames))
         return tif_list[0]
 
@@ -105,23 +105,23 @@ def get_annual_MDN_map(measurement_type, year, path):
 
         >>> # get map of mercury concentration in 2010 and extract it to a path
         >>> data_path = dataretrieval.nadp.get_annual_MDN_map(
-        ...     measurement_type='conc', year='2010', path='somepath'
+        ...     measurement_type="conc", year="2010", path="somepath"
         ... )
 
     """
-    url = f'{NADP_URL}/{NADP_MAP_EXT}/MDN/grids/'
+    url = f"{NADP_URL}/{NADP_MAP_EXT}/MDN/grids/"
 
-    filename = f'Hg_{measurement_type}_{year}.zip'
+    filename = f"Hg_{measurement_type}_{year}.zip"
 
     z = get_zip(url, filename)
 
     if path:
         z.extractall(path)
 
-    return f'{path}{os.sep}{basename(filename)}'
+    return f"{path}{os.sep}{basename(filename)}"
 
 
-def get_annual_NTN_map(measurement_type, measurement=None, year=None, path='.'):
+def get_annual_NTN_map(measurement_type, measurement=None, year=None, path="."):
     """Download a NTN map from NDAP.
 
     This function looks for a zip file containing gridded information at:
@@ -158,23 +158,23 @@ def get_annual_NTN_map(measurement_type, measurement=None, year=None, path='.'):
 
         >>> # get a map of precipitation in 2015 and extract it to a path
         >>> data_path = dataretrieval.nadp.get_annual_NTN_map(
-        ...     measurement_type='Precip', year='2015', path='somepath'
+        ...     measurement_type="Precip", year="2015", path="somepath"
         ... )
 
     """
-    url = f'{NADP_URL}/{NADP_MAP_EXT}/NTN/grids/{year}/'
+    url = f"{NADP_URL}/{NADP_MAP_EXT}/NTN/grids/{year}/"
 
-    filename = f'{measurement_type}_{year}.zip'
+    filename = f"{measurement_type}_{year}.zip"
 
     if measurement:
-        filename = f'{measurement}_{filename}'
+        filename = f"{measurement}_{filename}"
 
     z = get_zip(url, filename)
 
     if path:
         z.extractall(path)
 
-    return f'{path}{os.sep}{basename(filename)}'
+    return f"{path}{os.sep}{basename(filename)}"
 
 
 def get_zip(url, filename):

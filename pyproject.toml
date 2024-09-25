@@ -61,3 +61,18 @@ profile = "black"
 
 [tool.black]
 skip-string-normalization = true
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true
+docstring-code-line-length = 72
+
+[tool.ruff.lint]
+preview = true
+# Default ["E4", "E7", "E9", and "F"] --> Pyflakes ("F") and pycodestyle ("E")
+extend-select = [
+  "B", "I", "Q",
+  "W291", "W292", "W293", "W605",
+  "E231", "E252", "E261", "E262", "E303", "E501",
+]
+

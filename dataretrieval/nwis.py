@@ -28,21 +28,21 @@ try:
 except ImportError:
     gpd = None
 
-WATERDATA_BASE_URL = 'https://nwis.waterdata.usgs.gov/'
-WATERDATA_URL = WATERDATA_BASE_URL + 'nwis/'
-WATERSERVICE_URL = 'https://waterservices.usgs.gov/nwis/'
-PARAMCODES_URL = 'https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?'
-ALLPARAMCODES_URL = 'https://help.waterdata.usgs.gov/code/parameter_cd_query?'
+WATERDATA_BASE_URL = "https://nwis.waterdata.usgs.gov/"
+WATERDATA_URL = WATERDATA_BASE_URL + "nwis/"
+WATERSERVICE_URL = "https://waterservices.usgs.gov/nwis/"
+PARAMCODES_URL = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?"
+ALLPARAMCODES_URL = "https://help.waterdata.usgs.gov/code/parameter_cd_query?"
 
-WATERSERVICES_SERVICES = ['dv', 'iv', 'site', 'stat']
+WATERSERVICES_SERVICES = ["dv", "iv", "site", "stat"]
 WATERDATA_SERVICES = [
-    'qwdata',
-    'gwlevels',
-    'measurements',
-    'peaks',
-    'pmcodes',
-    'water_use',
-    'ratings',
+    "qwdata",
+    "gwlevels",
+    "measurements",
+    "peaks",
+    "pmcodes",
+    "water_use",
+    "ratings",
 ]
 _CRS = "EPSG:4236"
 
@@ -73,34 +73,31 @@ def format_response(
         The formatted data frame
 
     """
-    mi = kwargs.pop('multi_index', True)
+    mi = kwargs.pop("multi_index", True)
 
-    if service == 'peaks':
+    if service == "peaks":
         df = preformat_peaks_response(df)
 
     if gpd is not None:
         if "dec_lat_va" in list(df):
-            geoms = gpd.points_from_xy(
-                df.dec_long_va.values,
-                df.dec_lat_va.values
-            )
+            geoms = gpd.points_from_xy(df.dec_long_va.values, df.dec_lat_va.values)
             df = gpd.GeoDataFrame(df, geometry=geoms, crs=_CRS)
 
     # check for multiple sites:
-    if 'datetime' not in df.columns:
+    if "datetime" not in df.columns:
         # XXX: consider making site_no index
         return df
 
-    elif len(df['site_no'].unique()) > 1 and mi:
+    elif len(df["site_no"].unique()) > 1 and mi:
         # setup multi-index
-        df.set_index(['site_no', 'datetime'], inplace=True)
-        if hasattr(df.index.levels[1], 'tzinfo') and df.index.levels[1].tzinfo is None:
-            df = df.tz_localize('UTC', level=1)
+        df.set_index(["site_no", "datetime"], inplace=True)
+        if hasattr(df.index.levels[1], "tzinfo") and df.index.levels[1].tzinfo is None:
+            df = df.tz_localize("UTC", level=1)
 
     else:
-        df.set_index(['datetime'], inplace=True)
-        if hasattr(df.index, 'tzinfo') and df.index.tzinfo is None:
-            df = df.tz_localize('UTC')
+        df.set_index(["datetime"], inplace=True)
+        if hasattr(df.index, "tzinfo") and df.index.tzinfo is None:
+            df = df.tz_localize("UTC")
 
     return df.sort_index()
 
@@ -121,8 +118,8 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
         The formatted data frame
 
     """
-    df['datetime'] = pd.to_datetime(df.pop('peak_dt'), errors='coerce')
-    df.dropna(subset=['datetime'], inplace=True)
+    df["datetime"] = pd.to_datetime(df.pop("peak_dt"), errors="coerce")
+    df.dropna(subset=["datetime"], inplace=True)
     return df
 
 
@@ -188,68 +185,72 @@ def get_qwdata(
 
         >>> # get water sample information for site 11447650
         >>> df, md = dataretrieval.nwis.get_qwdata(
-        ...     sites='11447650', start='2010-01-01', end='2010-02-01'
+        ...     sites="11447650", start="2010-01-01", end="2010-02-01"
         ... )
 
     """
-    warnings.warn(('WARNING: Starting in March 2024, the NWIS qw data endpoint is '
-                       'retiring and no longer receives updates. For more information, '
-                       'refer to https://waterdata.usgs.gov.nwis/qwdata and '
-                       'https://doi-usgs.github.io/dataRetrieval/articles/Status.html '
-                       'or email CompTools@usgs.gov.'))
+    warnings.warn(
+        (
+            "WARNING: Starting in March 2024, the NWIS qw data endpoint is "
+            "retiring and no longer receives updates. For more information, "
+            "refer to https://waterdata.usgs.gov.nwis/qwdata and "
+            "https://doi-usgs.github.io/dataRetrieval/articles/Status.html "
+            "or email CompTools@usgs.gov."
+        )
+    )
 
     _check_sites_value_types(sites)
 
-    kwargs['site_no'] = kwargs.pop('site_no', sites)
-    kwargs['begin_date'] = kwargs.pop('begin_date', start)
-    kwargs['end_date'] = kwargs.pop('end_date', end)
-    kwargs['multi_index'] = multi_index
+    kwargs["site_no"] = kwargs.pop("site_no", sites)
+    kwargs["begin_date"] = kwargs.pop("begin_date", start)
+    kwargs["end_date"] = kwargs.pop("end_date", end)
+    kwargs["multi_index"] = multi_index
     if wide_format:
-        kwargs['qw_sample_wide'] = 'qw_sample_wide'
+        kwargs["qw_sample_wide"] = "qw_sample_wide"
 
     payload = {
-        'agency_cd': 'USGS',
-        'format': 'rdb',
-        'pm_cd_compare': 'Greater than',
-        'inventory_output': '0',
-        'rdb_inventory_output': 'file',
-        'TZoutput': '0',
-        'rdb_qw_attributes': 'expanded',
-        'date_format': 'YYYY-MM-DD',
-        'rdb_compression': 'value',
-        'submitted_form': 'brief_list',
+        "agency_cd": "USGS",
+        "format": "rdb",
+        "pm_cd_compare": "Greater than",
+        "inventory_output": "0",
+        "rdb_inventory_output": "file",
+        "TZoutput": "0",
+        "rdb_qw_attributes": "expanded",
+        "date_format": "YYYY-MM-DD",
+        "rdb_compression": "value",
+        "submitted_form": "brief_list",
     }
 
     # check for parameter codes, and reformat query args
-    qwdata_parameter_code_field = 'parameterCd'
+    qwdata_parameter_code_field = "parameterCd"
     if kwargs.get(qwdata_parameter_code_field):
         parameter_codes = kwargs.pop(qwdata_parameter_code_field)
         parameter_codes = to_str(parameter_codes)
-        kwargs['multiple_parameter_cds'] = parameter_codes
-        kwargs['param_cd_operator'] = 'OR'
+        kwargs["multiple_parameter_cds"] = parameter_codes
+        kwargs["param_cd_operator"] = "OR"
 
-        search_criteria = kwargs.get('list_of_search_criteria')
+        search_criteria = kwargs.get("list_of_search_criteria")
         if search_criteria:
-            kwargs['list_of_search_criteria'] = '{},{}'.format(
-                search_criteria, 'multiple_parameter_cds'
+            kwargs["list_of_search_criteria"] = "{},{}".format(
+                search_criteria, "multiple_parameter_cds"
             )
         else:
-            kwargs['list_of_search_criteria'] = 'multiple_parameter_cds'
+            kwargs["list_of_search_criteria"] = "multiple_parameter_cds"
 
     kwargs.update(payload)
 
     warnings.warn(
-        'NWIS qw web services are being retired. '
-        + 'See this note from the R package for more: '
-        + 'https://doi-usgs.github.io/dataRetrieval/articles/qwdata_changes.html',
+        "NWIS qw web services are being retired. "
+        + "See this note from the R package for more: "
+        + "https://doi-usgs.github.io/dataRetrieval/articles/qwdata_changes.html",
         category=DeprecationWarning,
     )
-    response = query_waterdata('qwdata', ssl_check=ssl_check, **kwargs)
+    response = query_waterdata("qwdata", ssl_check=ssl_check, **kwargs)
 
     df = _read_rdb(response.text)
 
     if datetime_index is True:
-        df = format_datetime(df, 'sample_dt', 'sample_tm', 'sample_start_time_datum_cd')
+        df = format_datetime(df, "sample_dt", "sample_tm", "sample_start_time_datum_cd")
 
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
@@ -294,27 +295,25 @@ def get_discharge_measurements(
 
         >>> # Get discharge measurements for site 05114000
         >>> df, md = dataretrieval.nwis.get_discharge_measurements(
-        ...     sites='05114000', start='2000-01-01', end='2000-01-30'
+        ...     sites="05114000", start="2000-01-01", end="2000-01-30"
         ... )
 
         >>> # Get discharge measurements for sites in Alaska
         >>> df, md = dataretrieval.nwis.get_discharge_measurements(
-        ...     start='2012-01-09', end='2012-01-10', stateCd='AK'
+        ...     start="2012-01-09", end="2012-01-10", stateCd="AK"
         ... )
 
     """
     _check_sites_value_types(sites)
 
-    kwargs['site_no'] = kwargs.pop('site_no', sites)
-    kwargs['begin_date'] = kwargs.pop('begin_date', start)
-    kwargs['end_date'] = kwargs.pop('end_date', end)
+    kwargs["site_no"] = kwargs.pop("site_no", sites)
+    kwargs["begin_date"] = kwargs.pop("begin_date", start)
+    kwargs["end_date"] = kwargs.pop("end_date", end)
 
-    if 'format' not in kwargs:
-       kwargs['format'] = 'rdb'
+    if "format" not in kwargs:
+        kwargs["format"] = "rdb"
 
-    response = query_waterdata(
-        'measurements', ssl_check=ssl_check, **kwargs
-    )
+    response = query_waterdata("measurements", ssl_check=ssl_check, **kwargs)
     return _read_rdb(response.text), NWIS_Metadata(response, **kwargs)
 
 
@@ -362,34 +361,34 @@ def get_discharge_peaks(
 
         >>> # Get discharge peaks for site 01491000
         >>> df, md = dataretrieval.nwis.get_discharge_peaks(
-        ...     sites='01491000', start='1980-01-01', end='1990-01-01'
+        ...     sites="01491000", start="1980-01-01", end="1990-01-01"
         ... )
 
         >>> # Get discharge peaks for sites in Hawaii
         >>> df, md = dataretrieval.nwis.get_discharge_peaks(
-        ...     start='1980-01-01', end='1980-01-02', stateCd='HI'
+        ...     start="1980-01-01", end="1980-01-02", stateCd="HI"
         ... )
 
     """
     _check_sites_value_types(sites)
 
-    kwargs['site_no'] = kwargs.pop('site_no', sites)
-    kwargs['begin_date'] = kwargs.pop('begin_date', start)
-    kwargs['end_date'] = kwargs.pop('end_date', end)
-    kwargs['multi_index'] = multi_index
+    kwargs["site_no"] = kwargs.pop("site_no", sites)
+    kwargs["begin_date"] = kwargs.pop("begin_date", start)
+    kwargs["end_date"] = kwargs.pop("end_date", end)
+    kwargs["multi_index"] = multi_index
 
-    response = query_waterdata('peaks', format='rdb', ssl_check=ssl_check, **kwargs)
+    response = query_waterdata("peaks", format="rdb", ssl_check=ssl_check, **kwargs)
 
     df = _read_rdb(response.text)
 
-    return format_response(df, service='peaks', **kwargs), NWIS_Metadata(
+    return format_response(df, service="peaks", **kwargs), NWIS_Metadata(
         response, **kwargs
     )
 
 
 def get_gwlevels(
     sites: Optional[Union[List[str], str]] = None,
-    start: str = '1851-01-01',
+    start: str = "1851-01-01",
     end: Optional[str] = None,
     multi_index: bool = True,
     datetime_index: bool = True,
@@ -433,33 +432,33 @@ def get_gwlevels(
     .. doctest::
 
         >>> # Get groundwater levels for site 434400121275801
-        >>> df, md = dataretrieval.nwis.get_gwlevels(sites='434400121275801')
+        >>> df, md = dataretrieval.nwis.get_gwlevels(sites="434400121275801")
 
     """
     _check_sites_value_types(sites)
 
     # Make kwargs backwards compatible with waterservices
     # vocabulary
-    if 'startDT' in kwargs:
-        kwargs['begin_date'] = kwargs.pop('startDT')
-    if 'endDT' in kwargs:
-        kwargs['end_date'] = kwargs.pop('endDT')
-    if 'sites' in kwargs:
-        kwargs['site_no'] = kwargs.pop('sites')
-    if 'stateCd'in kwargs:
-        kwargs['state_cd'] = kwargs.pop('stateCd')
+    if "startDT" in kwargs:
+        kwargs["begin_date"] = kwargs.pop("startDT")
+    if "endDT" in kwargs:
+        kwargs["end_date"] = kwargs.pop("endDT")
+    if "sites" in kwargs:
+        kwargs["site_no"] = kwargs.pop("sites")
+    if "stateCd" in kwargs:
+        kwargs["state_cd"] = kwargs.pop("stateCd")
 
-    kwargs['begin_date'] = kwargs.pop('begin_date', start)
-    kwargs['end_date'] = kwargs.pop('end_date', end)
-    kwargs['site_no'] = kwargs.pop('site_no', sites)
-    kwargs['multi_index'] = multi_index
+    kwargs["begin_date"] = kwargs.pop("begin_date", start)
+    kwargs["end_date"] = kwargs.pop("end_date", end)
+    kwargs["site_no"] = kwargs.pop("site_no", sites)
+    kwargs["multi_index"] = multi_index
 
-    response = query_waterdata('gwlevels', format = 'rdb', ssl_check=ssl_check, **kwargs)
+    response = query_waterdata("gwlevels", format="rdb", ssl_check=ssl_check, **kwargs)
 
     df = _read_rdb(response.text)
 
     if datetime_index is True:
-        df = format_datetime(df, 'lev_dt', 'lev_tm', 'lev_tz_cd')
+        df = format_datetime(df, "lev_dt", "lev_tm", "lev_tz_cd")
 
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
@@ -507,19 +506,19 @@ def get_stats(
 
         >>> # Get annual water statistics for a site
         >>> df, md = dataretrieval.nwis.get_stats(
-        ...     sites='01646500', statReportType='annual', statYearType='water'
+        ...     sites="01646500", statReportType="annual", statYearType="water"
         ... )
 
         >>> # Get monthly statistics for a site
         >>> df, md = dataretrieval.nwis.get_stats(
-        ...     sites='01646500', statReportType='monthly'
+        ...     sites="01646500", statReportType="monthly"
         ... )
 
     """
     _check_sites_value_types(sites)
 
     response = query_waterservices(
-        service='stat', sites=sites, ssl_check=ssl_check, **kwargs
+        service="stat", sites=sites, ssl_check=ssl_check, **kwargs
     )
 
     return _read_rdb(response.text), NWIS_Metadata(response, **kwargs)
@@ -546,24 +545,24 @@ def query_waterdata(
     request: ``requests.models.Response``
         The response object from the API request to the web service
     """
-    major_params = ['site_no', 'state_cd']
+    major_params = ["site_no", "state_cd"]
     bbox_params = [
-        'nw_longitude_va',
-        'nw_latitude_va',
-        'se_longitude_va',
-        'se_latitude_va',
+        "nw_longitude_va",
+        "nw_latitude_va",
+        "se_longitude_va",
+        "se_latitude_va",
     ]
 
     if not any(key in kwargs for key in major_params + bbox_params):
-        raise TypeError('Query must specify a major filter: site_no, stateCd, bBox')
+        raise TypeError("Query must specify a major filter: site_no, stateCd, bBox")
 
     elif any(key in kwargs for key in bbox_params) and not all(
         key in kwargs for key in bbox_params
     ):
-        raise TypeError('One or more lat/long coordinates missing or invalid.')
+        raise TypeError("One or more lat/long coordinates missing or invalid.")
 
     if service not in WATERDATA_SERVICES:
-        raise TypeError('Service not recognized')
+        raise TypeError("Service not recognized")
 
     url = WATERDATA_URL + service
 
@@ -616,17 +615,17 @@ def query_waterservices(
 
     """
     if not any(
-        key in kwargs for key in ['sites', 'stateCd', 'bBox', 'huc', 'countyCd']
+        key in kwargs for key in ["sites", "stateCd", "bBox", "huc", "countyCd"]
     ):
         raise TypeError(
-            'Query must specify a major filter: sites, stateCd, bBox, huc, or countyCd'
+            "Query must specify a major filter: sites, stateCd, bBox, huc, or countyCd"
         )
 
     if service not in WATERSERVICES_SERVICES:
-        raise TypeError('Service not recognized')
+        raise TypeError("Service not recognized")
 
-    if 'format' not in kwargs:
-        kwargs['format'] = 'rdb'
+    if "format" not in kwargs:
+        kwargs["format"] = "rdb"
 
     url = WATERSERVICE_URL + service
 
@@ -681,21 +680,24 @@ def get_dv(
 
         >>> # Get mean statistic daily values for site 04085427
         >>> df, md = dataretrieval.nwis.get_dv(
-        ...     sites='04085427', start='2012-01-01', end='2012-06-30', statCd='00003'
+        ...     sites="04085427",
+        ...     start="2012-01-01",
+        ...     end="2012-06-30",
+        ...     statCd="00003",
         ... )
 
         >>> # Get the latest daily values for site 01646500
-        >>> df, md = dataretrieval.nwis.get_dv(sites='01646500')
+        >>> df, md = dataretrieval.nwis.get_dv(sites="01646500")
 
     """
     _check_sites_value_types(sites)
 
-    kwargs['startDT'] = kwargs.pop('startDT', start)
-    kwargs['endDT'] = kwargs.pop('endDT', end)
-    kwargs['sites'] = kwargs.pop('sites', sites)
-    kwargs['multi_index'] = multi_index
+    kwargs["startDT"] = kwargs.pop("startDT", start)
+    kwargs["endDT"] = kwargs.pop("endDT", end)
+    kwargs["sites"] = kwargs.pop("sites", sites)
+    kwargs["multi_index"] = multi_index
 
-    response = query_waterservices('dv', format='json', ssl_check=ssl_check, **kwargs)
+    response = query_waterservices("dv", format="json", ssl_check=ssl_check, **kwargs)
     df = _read_json(response.json())
 
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
@@ -787,27 +789,30 @@ def get_info(ssl_check: bool = True, **kwargs) -> Tuple[pd.DataFrame, BaseMetada
     .. doctest::
 
         >>> # Get site information for a single site
-        >>> df, md = dataretrieval.nwis.get_info(sites='05114000')
+        >>> df, md = dataretrieval.nwis.get_info(sites="05114000")
 
         >>> # Get site information for multiple sites
-        >>> df, md = dataretrieval.nwis.get_info(sites=['05114000', '09423350'])
+        >>> df, md = dataretrieval.nwis.get_info(sites=["05114000", "09423350"])
 
     """
-    seriesCatalogOutput = kwargs.pop('seriesCatalogOutput', None)
-    if seriesCatalogOutput in ['True', 'TRUE', 'true', True]:
-
-        warnings.warn(('WARNING: Starting in March 2024, the NWIS qw data endpoint is '
-                       'retiring and no longer receives updates. For more information, '
-                       'refer to https://waterdata.usgs.gov.nwis/qwdata and '
-                       'https://doi-usgs.github.io/dataRetrieval/articles/Status.html '
-                       'or email CompTools@usgs.gov.'))
+    seriesCatalogOutput = kwargs.pop("seriesCatalogOutput", None)
+    if seriesCatalogOutput in ["True", "TRUE", "true", True]:
+        warnings.warn(
+            (
+                "WARNING: Starting in March 2024, the NWIS qw data endpoint is "
+                "retiring and no longer receives updates. For more information, "
+                "refer to https://waterdata.usgs.gov.nwis/qwdata and "
+                "https://doi-usgs.github.io/dataRetrieval/articles/Status.html "
+                "or email CompTools@usgs.gov."
+            )
+        )
         # convert bool to string if necessary
-        kwargs['seriesCatalogOutput'] = 'True'
+        kwargs["seriesCatalogOutput"] = "True"
     else:
         # cannot have both seriesCatalogOutput and the expanded format
-        kwargs['siteOutput'] = 'Expanded'
+        kwargs["siteOutput"] = "Expanded"
 
-    response = query_waterservices('site', ssl_check=ssl_check, **kwargs)
+    response = query_waterservices("site", ssl_check=ssl_check, **kwargs)
 
     return _read_rdb(response.text), NWIS_Metadata(response, **kwargs)
 
@@ -860,22 +865,22 @@ def get_iv(
 
         >>> # Get instantaneous discharge data for site 05114000
         >>> df, md = dataretrieval.nwis.get_iv(
-        ...     sites='05114000',
-        ...     start='2013-11-03',
-        ...     end='2013-11-03',
-        ...     parameterCd='00060',
+        ...     sites="05114000",
+        ...     start="2013-11-03",
+        ...     end="2013-11-03",
+        ...     parameterCd="00060",
         ... )
 
     """
     _check_sites_value_types(sites)
 
-    kwargs['startDT'] = kwargs.pop('startDT', start)
-    kwargs['endDT'] = kwargs.pop('endDT', end)
-    kwargs['sites'] = kwargs.pop('sites', sites)
-    kwargs['multi_index'] = multi_index
+    kwargs["startDT"] = kwargs.pop("startDT", start)
+    kwargs["endDT"] = kwargs.pop("endDT", end)
+    kwargs["sites"] = kwargs.pop("sites", sites)
+    kwargs["multi_index"] = multi_index
 
     response = query_waterservices(
-        service='iv', format='json', ssl_check=ssl_check, **kwargs
+        service="iv", format="json", ssl_check=ssl_check, **kwargs
     )
 
     df = _read_json(response.json())
@@ -883,7 +888,7 @@ def get_iv(
 
 
 def get_pmcodes(
-    parameterCd: Union[str, List[str]] = 'All',
+    parameterCd: Union[str, List[str]] = "All",
     partial: bool = True,
     ssl_check: bool = True,
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
@@ -913,21 +918,23 @@ def get_pmcodes(
     .. doctest::
 
         >>> # Get information about the '00060' pcode
-        >>> df, md = dataretrieval.nwis.get_pmcodes(parameterCd='00060', partial=False)
+        >>> df, md = dataretrieval.nwis.get_pmcodes(
+        ...     parameterCd="00060", partial=False
+        ... )
 
         >>> # Get information about all 'Discharge' pcodes
         >>> df, md = dataretrieval.nwis.get_pmcodes(
-        ...     parameterCd='Discharge', partial=True
+        ...     parameterCd="Discharge", partial=True
         ... )
 
     """
 
-    payload = {'fmt': 'rdb'}
+    payload = {"fmt": "rdb"}
     url = PARAMCODES_URL
 
     if isinstance(parameterCd, str):  # when a single code or name is given
-        if parameterCd.lower() == 'all':
-            payload.update({'group_cd': '%'})
+        if parameterCd.lower() == "all":
+            payload.update({"group_cd": "%"})
             url = ALLPARAMCODES_URL
             response = query(url, payload, ssl_check=ssl_check)
             return _read_rdb(response.text), NWIS_Metadata(response)
@@ -937,7 +944,7 @@ def get_pmcodes(
 
     if not isinstance(parameterCd, list):
         raise TypeError(
-            'Parameter information (code or name) must be type string or list'
+            "Parameter information (code or name) must be type string or list"
         )
 
     # Querying with a list of parameters names, codes, or mixed
@@ -945,25 +952,25 @@ def get_pmcodes(
     for param in parameterCd:
         if isinstance(param, str):
             if partial:
-                param = f'%{param}%'
-            payload.update({'parm_nm_cd': param})
+                param = f"%{param}%"
+            payload.update({"parm_nm_cd": param})
             response = query(url, payload, ssl_check=ssl_check)
             if len(response.text.splitlines()) < 10:  # empty query
                 raise TypeError(
-                    'One of the parameter codes or names entered does not'
-                    'return any information, please try a different value'
+                    "One of the parameter codes or names entered does not"
+                    "return any information, please try a different value"
                 )
             return_list.append(_read_rdb(response.text))
         else:
-            raise TypeError('Parameter information (code or name) must be type string')
+            raise TypeError("Parameter information (code or name) must be type string")
     return pd.concat(return_list), NWIS_Metadata(response)
 
 
 def get_water_use(
-    years: Union[str, List[str]] = 'ALL',
+    years: Union[str, List[str]] = "ALL",
     state: Optional[str] = None,
-    counties: Union[str, List[str]] = 'ALL',
-    categories: Union[str, List[str]] = 'ALL',
+    counties: Union[str, List[str]] = "ALL",
+    categories: Union[str, List[str]] = "ALL",
     ssl_check: bool = True,
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """
@@ -998,48 +1005,48 @@ def get_water_use(
 
         >>> # Get total population for RI from the NWIS water use service
         >>> df, md = dataretrieval.nwis.get_water_use(
-        ...     years='2000', state='RI', categories='TP'
+        ...     years="2000", state="RI", categories="TP"
         ... )
 
         >>> # Get the national total water use for livestock in Bgal/day
-        >>> df, md = dataretrieval.nwis.get_water_use(years='2010', categories='L')
+        >>> df, md = dataretrieval.nwis.get_water_use(years="2010", categories="L")
 
         >>> # Get 2005 domestic water use for Apache County in Arizona
         >>> df, md = dataretrieval.nwis.get_water_use(
-        ...     years='2005', state='Arizona', counties='001', categories='DO'
+        ...     years="2005", state="Arizona", counties="001", categories="DO"
         ... )
 
     """
     if years:
         if not isinstance(years, list) and not isinstance(years, str):
-            raise TypeError('years must be a string or a list of strings')
+            raise TypeError("years must be a string or a list of strings")
 
     if counties:
         if not isinstance(counties, list) and not isinstance(counties, str):
-            raise TypeError('counties must be a string or a list of strings')
+            raise TypeError("counties must be a string or a list of strings")
 
     if categories:
         if not isinstance(categories, list) and not isinstance(categories, str):
-            raise TypeError('categories must be a string or a list of strings')
+            raise TypeError("categories must be a string or a list of strings")
 
     payload = {
-        'rdb_compression': 'value',
-        'format': 'rdb',
-        'wu_year': years,
-        'wu_category': categories,
-        'wu_county': counties,
+        "rdb_compression": "value",
+        "format": "rdb",
+        "wu_year": years,
+        "wu_category": categories,
+        "wu_county": counties,
     }
-    url = WATERDATA_URL + 'water_use'
+    url = WATERDATA_URL + "water_use"
     if state is not None:
-        url = WATERDATA_BASE_URL + state + '/nwis/water_use'
-        payload.update({'wu_area': 'county'})
+        url = WATERDATA_BASE_URL + state + "/nwis/water_use"
+        payload.update({"wu_area": "county"})
     response = query(url, payload, ssl_check=ssl_check)
     return _read_rdb(response.text), NWIS_Metadata(response)
 
 
 def get_ratings(
     site: Optional[str] = None,
-    file_type: str = 'base',
+    file_type: str = "base",
     ssl_check: bool = True,
     **kwargs,
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
@@ -1075,21 +1082,21 @@ def get_ratings(
     .. doctest::
 
         >>> # Get the rating table for USGS streamgage 01594440
-        >>> df, md = dataretrieval.nwis.get_ratings(site='01594440')
+        >>> df, md = dataretrieval.nwis.get_ratings(site="01594440")
 
     """
-    site = kwargs.pop('site_no', site)
+    site = kwargs.pop("site_no", site)
 
     payload = {}
-    url = WATERDATA_BASE_URL + 'nwisweb/get_ratings/'
+    url = WATERDATA_BASE_URL + "nwisweb/get_ratings/"
     if site is not None:
-        payload.update({'site_no': site})
+        payload.update({"site_no": site})
     if file_type is not None:
-        if file_type not in ['base', 'corr', 'exsa']:
+        if file_type not in ["base", "corr", "exsa"]:
             raise ValueError(
                 f'Unrecognized file_type: {file_type}, must be "base", "corr" or "exsa"'
             )
-        payload.update({'file_type': file_type})
+        payload.update({"file_type": file_type})
     response = query(url, payload, ssl_check=ssl_check)
     return _read_rdb(response.text), NWIS_Metadata(response, site_no=site)
 
@@ -1118,14 +1125,16 @@ def what_sites(ssl_check: bool = True, **kwargs) -> Tuple[pd.DataFrame, BaseMeta
     .. doctest::
 
         >>> # get information about a single site
-        >>> df, md = dataretrieval.nwis.what_sites(sites='05114000')
+        >>> df, md = dataretrieval.nwis.what_sites(sites="05114000")
 
         >>> # get information about sites with phosphorus in Ohio
-        >>> df, md = dataretrieval.nwis.what_sites(stateCd='OH', parameterCd='00665')
+        >>> df, md = dataretrieval.nwis.what_sites(
+        ...     stateCd="OH", parameterCd="00665"
+        ... )
 
     """
 
-    response = query_waterservices(service='site', ssl_check=ssl_check, **kwargs)
+    response = query_waterservices(service="site", ssl_check=ssl_check, **kwargs)
 
     df = _read_rdb(response.text)
 
@@ -1140,7 +1149,7 @@ def get_record(
     wide_format: bool = True,
     datetime_index: bool = True,
     state: Optional[str] = None,
-    service: str = 'iv',
+    service: str = "iv",
     ssl_check: bool = True,
     **kwargs,
 ) -> pd.DataFrame:
@@ -1197,54 +1206,58 @@ def get_record(
     .. doctest::
 
         >>> # Get latest instantaneous data from site 01585200
-        >>> df = dataretrieval.nwis.get_record(sites='01585200', service='iv')
+        >>> df = dataretrieval.nwis.get_record(sites="01585200", service="iv")
 
         >>> # Get latest daily mean data from site 01585200
-        >>> df = dataretrieval.nwis.get_record(sites='01585200', service='dv')
+        >>> df = dataretrieval.nwis.get_record(sites="01585200", service="dv")
 
         >>> # Get all discrete sample data from site 01585200
-        >>> df = dataretrieval.nwis.get_record(sites='01585200', service='qwdata')
+        >>> df = dataretrieval.nwis.get_record(sites="01585200", service="qwdata")
 
         >>> # Get site description for site 01585200
-        >>> df = dataretrieval.nwis.get_record(sites='01585200', service='site')
+        >>> df = dataretrieval.nwis.get_record(sites="01585200", service="site")
 
         >>> # Get discharge measurements for site 01585200
-        >>> df = dataretrieval.nwis.get_record(sites='01585200', service='measurements')
+        >>> df = dataretrieval.nwis.get_record(
+        ...     sites="01585200", service="measurements"
+        ... )
 
         >>> # Get discharge peaks for site 01585200
-        >>> df = dataretrieval.nwis.get_record(sites='01585200', service='peaks')
+        >>> df = dataretrieval.nwis.get_record(sites="01585200", service="peaks")
 
         >>> # Get latest groundwater level for site 434400121275801
         >>> df = dataretrieval.nwis.get_record(
-        ...     sites='434400121275801', service='gwlevels'
+        ...     sites="434400121275801", service="gwlevels"
         ... )
 
         >>> # Get information about the discharge parameter code
-        >>> df = dataretrieval.nwis.get_record(service='pmcodes', parameterCd='00060')
+        >>> df = dataretrieval.nwis.get_record(
+        ...     service="pmcodes", parameterCd="00060"
+        ... )
 
         >>> # Get water use data for livestock nationally in 2010
         >>> df = dataretrieval.nwis.get_record(
-        ...     service='water_use', years='2010', categories='L'
+        ...     service="water_use", years="2010", categories="L"
         ... )
 
         >>> # Get rating table for USGS streamgage 01585200
-        >>> df = dataretrieval.nwis.get_record(sites='01585200', service='ratings')
+        >>> df = dataretrieval.nwis.get_record(sites="01585200", service="ratings")
 
         >>> # Get annual statistics for USGS station 01646500
         >>> df = dataretrieval.nwis.get_record(
-        ...     sites='01646500',
-        ...     service='stat',
-        ...     statReportType='annual',
-        ...     statYearType='water',
+        ...     sites="01646500",
+        ...     service="stat",
+        ...     statReportType="annual",
+        ...     statYearType="water",
         ... )
 
     """
     _check_sites_value_types(sites)
 
     if service not in WATERSERVICES_SERVICES + WATERDATA_SERVICES:
-        raise TypeError(f'Unrecognized service: {service}')
+        raise TypeError(f"Unrecognized service: {service}")
 
-    if service == 'iv':
+    if service == "iv":
         df, _ = get_iv(
             sites=sites,
             startDT=start,
@@ -1255,7 +1268,7 @@ def get_record(
         )
         return df
 
-    elif service == 'dv':
+    elif service == "dv":
         df, _ = get_dv(
             sites=sites,
             startDT=start,
@@ -1266,7 +1279,7 @@ def get_record(
         )
         return df
 
-    elif service == 'qwdata':
+    elif service == "qwdata":
         df, _ = get_qwdata(
             site_no=sites,
             begin_date=start,
@@ -1278,17 +1291,17 @@ def get_record(
         )
         return df
 
-    elif service == 'site':
+    elif service == "site":
         df, _ = get_info(sites=sites, ssl_check=ssl_check, **kwargs)
         return df
 
-    elif service == 'measurements':
+    elif service == "measurements":
         df, _ = get_discharge_measurements(
             site_no=sites, begin_date=start, end_date=end, ssl_check=ssl_check, **kwargs
         )
         return df
 
-    elif service == 'peaks':
+    elif service == "peaks":
         df, _ = get_discharge_peaks(
             site_no=sites,
             begin_date=start,
@@ -1299,7 +1312,7 @@ def get_record(
         )
         return df
 
-    elif service == 'gwlevels':
+    elif service == "gwlevels":
         df, _ = get_gwlevels(
             sites=sites,
             startDT=start,
@@ -1311,24 +1324,24 @@ def get_record(
         )
         return df
 
-    elif service == 'pmcodes':
+    elif service == "pmcodes":
         df, _ = get_pmcodes(ssl_check=ssl_check, **kwargs)
         return df
 
-    elif service == 'water_use':
+    elif service == "water_use":
         df, _ = get_water_use(state=state, ssl_check=ssl_check, **kwargs)
         return df
 
-    elif service == 'ratings':
+    elif service == "ratings":
         df, _ = get_ratings(site=sites, ssl_check=ssl_check, **kwargs)
         return df
 
-    elif service == 'stat':
+    elif service == "stat":
         df, _ = get_stats(sites=sites, ssl_check=ssl_check, **kwargs)
         return df
 
     else:
-        raise TypeError(f'{service} service not yet implemented')
+        raise TypeError(f"{service} service not yet implemented")
 
 
 def _read_json(json):
@@ -1348,10 +1361,10 @@ def _read_json(json):
         A custom metadata object
 
     """
-    merged_df = pd.DataFrame(columns=['site_no', 'datetime'])
+    merged_df = pd.DataFrame(columns=["site_no", "datetime"])
 
     site_list = [
-        ts['sourceInfo']['siteCode'][0]['value'] for ts in json['value']['timeSeries']
+        ts["sourceInfo"]["siteCode"][0]["value"] for ts in json["value"]["timeSeries"]
     ]
 
     # create a list of indexes for each change in site no
@@ -1368,33 +1381,33 @@ def _read_json(json):
 
         # grab a block containing timeseries 0:21,
         # which are all from the same site
-        site_block = json['value']['timeSeries'][start:end]
+        site_block = json["value"]["timeSeries"][start:end]
         if not site_block:
             continue
 
-        site_no = site_block[0]['sourceInfo']['siteCode'][0]['value']
-        site_df = pd.DataFrame(columns=['datetime'])
+        site_no = site_block[0]["sourceInfo"]["siteCode"][0]["value"]
+        site_df = pd.DataFrame(columns=["datetime"])
 
         for timeseries in site_block:
-            param_cd = timeseries['variable']['variableCode'][0]['value']
+            param_cd = timeseries["variable"]["variableCode"][0]["value"]
             # check whether min, max, mean record XXX
-            option = timeseries['variable']['options']['option'][0].get('value')
+            option = timeseries["variable"]["options"]["option"][0].get("value")
 
             # loop through each parameter in timeseries, then concat to the merged_df
-            for parameter in timeseries['values']:
+            for parameter in timeseries["values"]:
                 col_name = param_cd
-                method = parameter['method'][0]['methodDescription']
+                method = parameter["method"][0]["methodDescription"]
 
                 # if len(timeseries['values']) > 1 and method:
                 if method:
                     # get method, format it, and append to column name
-                    method = method.strip('[]()').lower()
-                    col_name = f'{col_name}_{method}'
+                    method = method.strip("[]()").lower()
+                    col_name = f"{col_name}_{method}"
 
                 if option:
-                    col_name = f'{col_name}_{option}'
+                    col_name = f"{col_name}_{option}"
 
-                record_json = parameter['value']
+                record_json = parameter["value"]
 
                 if not record_json:
                     # no data in record
@@ -1406,33 +1419,33 @@ def _read_json(json):
                 # Lists can't be hashed, thus we cannot df.merge on a list column
                 record_df = pd.read_json(
                     StringIO(record_json),
-                    orient='records',
-                    dtype={'value': 'float64', 'qualifiers': 'unicode'},
+                    orient="records",
+                    dtype={"value": "float64", "qualifiers": "unicode"},
                     convert_dates=False,
                 )
 
-                record_df['qualifiers'] = (
-                    record_df['qualifiers'].str.strip('[]').str.replace("'", '')
+                record_df["qualifiers"] = (
+                    record_df["qualifiers"].str.strip("[]").str.replace("'", "")
                 )
 
                 record_df.rename(
                     columns={
-                        'value': col_name,
-                        'dateTime': 'datetime',
-                        'qualifiers': col_name + '_cd',
+                        "value": col_name,
+                        "dateTime": "datetime",
+                        "qualifiers": col_name + "_cd",
                     },
                     inplace=True,
                 )
 
-                site_df = site_df.merge(record_df, how='outer', on='datetime')
+                site_df = site_df.merge(record_df, how="outer", on="datetime")
 
         # end of site loop
-        site_df['site_no'] = site_no
+        site_df["site_no"] = site_no
         merged_df = pd.concat([merged_df, site_df])
 
     # convert to datetime, normalizing the timezone to UTC when doing so
-    if 'datetime' in merged_df.columns:
-        merged_df['datetime'] = pd.to_datetime(merged_df['datetime'], utc=True)
+    if "datetime" in merged_df.columns:
+        merged_df["datetime"] = pd.to_datetime(merged_df["datetime"], utc=True)
 
     return merged_df
 
@@ -1456,28 +1469,28 @@ def _read_rdb(rdb):
 
     for line in rdb.splitlines():
         # ignore comment lines
-        if line.startswith('#'):
+        if line.startswith("#"):
             count = count + 1
 
         else:
             break
 
-    fields = re.split('[\t]', rdb.splitlines()[count])
-    fields = [field.replace(',', '') for field in fields]
+    fields = re.split("[\t]", rdb.splitlines()[count])
+    fields = [field.replace(",", "") for field in fields]
     dtypes = {
-        'site_no': str,
-        'dec_long_va': float,
-        'dec_lat_va': float,
-        'parm_cd': str,
-        'parameter_cd': str,
+        "site_no": str,
+        "dec_long_va": float,
+        "dec_lat_va": float,
+        "parm_cd": str,
+        "parameter_cd": str,
     }
 
     df = pd.read_csv(
         StringIO(rdb),
-        delimiter='\t',
+        delimiter="\t",
         skiprows=count + 2,
         names=fields,
-        na_values='NaN',
+        na_values="NaN",
         dtype=dtypes,
     )
 
@@ -1488,7 +1501,7 @@ def _read_rdb(rdb):
 def _check_sites_value_types(sites):
     if sites:
         if not isinstance(sites, list) and not isinstance(sites, str):
-            raise TypeError('sites must be a string or a list of strings')
+            raise TypeError("sites must be a string or a list of strings")
 
 
 class NWIS_Metadata(BaseMetadata):
@@ -1532,10 +1545,10 @@ class NWIS_Metadata(BaseMetadata):
         """
         super().__init__(response)
 
-        comments = ''
+        comments = ""
         for line in response.text.splitlines():
-            if line.startswith('#'):
-                comments += line.lstrip('#') + '\n'
+            if line.startswith("#"):
+                comments += line.lstrip("#") + "\n"
         if comments:
             self.comment = comments
 
@@ -1551,23 +1564,23 @@ class NWIS_Metadata(BaseMetadata):
         md: :obj:`dataretrieval.nwis.NWIS_Metadata`
             A NWIS_Metadata object
         """
-        if 'site_no' in self._parameters:
-            return what_sites(sites=self._parameters['site_no'])
+        if "site_no" in self._parameters:
+            return what_sites(sites=self._parameters["site_no"])
 
-        elif 'sites' in self._parameters:
-            return what_sites(sites=self._parameters['sites'])
+        elif "sites" in self._parameters:
+            return what_sites(sites=self._parameters["sites"])
 
-        elif 'stateCd' in self._parameters:
-            return what_sites(stateCd=self._parameters['stateCd'])
+        elif "stateCd" in self._parameters:
+            return what_sites(stateCd=self._parameters["stateCd"])
 
-        elif 'huc' in self._parameters:
-            return what_sites(huc=self._parameters['huc'])
+        elif "huc" in self._parameters:
+            return what_sites(huc=self._parameters["huc"])
 
-        elif 'countyCd' in self._parameters:
-            return what_sites(countyCd=self._parameters['countyCd'])
+        elif "countyCd" in self._parameters:
+            return what_sites(countyCd=self._parameters["countyCd"])
 
-        elif 'bBox' in self._parameters:
-            return what_sites(bBox=self._parameters['bBox'])
+        elif "bBox" in self._parameters:
+            return what_sites(bBox=self._parameters["bBox"])
 
         else:
             return None  # don't set metadata site_info attribute
@@ -1575,5 +1588,5 @@ class NWIS_Metadata(BaseMetadata):
     @property
     def variable_info(self) -> Optional[Tuple[pd.DataFrame, BaseMetadata]]:
         # define variable_info metadata based on parameterCd if available
-        if 'parameterCd' in self._parameters:
-            return get_pmcodes(parameterCd=self._parameters['parameterCd'])
+        if "parameterCd" in self._parameters:
+            return get_pmcodes(parameterCd=self._parameters["parameterCd"])

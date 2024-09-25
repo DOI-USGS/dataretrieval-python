@@ -3,10 +3,10 @@ from typing import Dict, List, Union
 import pandas as pd
 import requests
 
-ResponseFormat = 'json'  # json, xml
+ResponseFormat = "json"  # json, xml
 
 # WaterWatch won't receive any new features but it will continue to operate.
-waterwatch_url = 'https://waterwatch.usgs.gov/webservices/'
+waterwatch_url = "https://waterwatch.usgs.gov/webservices/"
 
 
 def _read_json(data: Dict) -> pd.DataFrame:
@@ -14,7 +14,7 @@ def _read_json(data: Dict) -> pd.DataFrame:
 
 
 def get_flood_stage(
-    sites: List[str] = None, fmt: str = 'DF'
+    sites: List[str] = None, fmt: str = "DF"
 ) -> Union[pd.DataFrame, Dict]:
     """
     Retrieves flood stages for a list of station numbers.
@@ -53,16 +53,16 @@ def get_flood_stage(
         50057000           16          20                   24                30
 
     """
-    res = requests.get(waterwatch_url + 'floodstage', params={'format': ResponseFormat})
+    res = requests.get(waterwatch_url + "floodstage", params={"format": ResponseFormat})
 
     if res.ok:
         json_res = res.json()
         stages = {
-            site['site_no']: {k: v for k, v in site.items() if k != 'site_no'}
-            for site in json_res['sites']
+            site["site_no"]: {k: v for k, v in site.items() if k != "site_no"}
+            for site in json_res["sites"]
         }
     else:
-        raise requests.RequestException(f'[{res.status_code}] - {res.reason}')
+        raise requests.RequestException(f"[{res.status_code}] - {res.reason}")
 
     if not sites:
         stations_stages = stages
@@ -74,7 +74,7 @@ def get_flood_stage(
             except KeyError:
                 stations_stages[site] = None
 
-    if fmt == 'dict':
+    if fmt == "dict":
         return stations_stages
     else:
         return _read_json(stations_stages)

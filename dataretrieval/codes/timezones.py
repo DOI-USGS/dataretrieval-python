@@ -2,7 +2,7 @@
 Time zone information
 """
 
-tz_str = '''-1200 Y
+tz_str = """-1200 Y
 -1100 X NUT SST
 -1000 W CKT HAST HST TAHT TKT
 -0900 V AKST GAMT GIT HADT HNY
@@ -39,10 +39,10 @@ tz_str = '''-1200 Y
 -0230 HAT NDT
 -0330 HNT NST NT
 -0430 HLV VET
--0930 MART MIT'''
+-0930 MART MIT"""
 
 tz = {}
-for tz_descr in map(str.split, tz_str.split('\n')):
+for tz_descr in map(str.split, tz_str.split("\n")):
     tz_offset = tz_descr[0]
     for tz_code in tz_descr[1:]:
         tz[tz_code] = tz_offset

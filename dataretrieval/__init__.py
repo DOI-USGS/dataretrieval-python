@@ -8,6 +8,6 @@ from dataretrieval.waterwatch import *
 from dataretrieval.wqp import *
 
 try:
-    __version__ = version('dataretrieval')
+    __version__ = version("dataretrieval")
 except PackageNotFoundError:
-    __version__ = 'version-unknown'
+    __version__ = "version-unknown"

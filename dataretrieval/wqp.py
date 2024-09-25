@@ -8,11 +8,12 @@ See https://waterqualitydata.us/webservices_documentation for API reference
     - implement other services like Organization, Activity, etc.
 
 """
+
 from __future__ import annotations
-from typing import TYPE_CHECKING
 
 import warnings
 from io import StringIO
+from typing import TYPE_CHECKING
 
 import pandas as pd
 
@@ -22,27 +23,27 @@ if TYPE_CHECKING:
     from pandas import DataFrame
 
 
-result_profiles_wqx3 = ['basicPhysChem', 'fullPhysChem', 'narrow']
-result_profiles_legacy = ['resultPhysChem', 'biological', 'narrowResult']
-activity_profiles_legacy = ['activityAll']
-services_wqx3 = ['Activity', 'Result', 'Station']
+result_profiles_wqx3 = ["basicPhysChem", "fullPhysChem", "narrow"]
+result_profiles_legacy = ["biological", "narrowResult","resultPhysChem"] 
+activity_profiles_legacy = ["activityAll"]
+services_wqx3 = ["Activity", "Result", "Station"]
 services_legacy = [
-    'Activity',
-    'ActivityMetric',
-    'BiologicalMetric',
-    'Organization',
-    'Project',
-    'ProjectMonitoringLocationWeighting',
-    'Result',
-    'ResultDetectionQuantitationLimit',
-    'Station',
-    ]
+    "Activity",
+    "ActivityMetric",
+    "BiologicalMetric",
+    "Organization",
+    "Project",
+    "ProjectMonitoringLocationWeighting",
+    "Result",
+    "ResultDetectionQuantitationLimit",
+    "Station",
+]
 
 
 def get_results(
-        ssl_check=True,
-        legacy=True,
-        **kwargs,
+    ssl_check=True,
+    legacy=True,
+    **kwargs,
 ) -> tuple[DataFrame, WQP_Metadata]:
     """Query the WQP for results.
 
@@ -73,7 +74,7 @@ def get_results(
     countycode : string
         US county FIPS code.
     huc : string
-        Eight-digit hydrologic unit (HUC), delimited by semicolons. 
+        Eight-digit hydrologic unit (HUC), delimited by semicolons.
     bBox : string
         Search bounding box (Example: bBox=-92.8,44.2,-88.9,46.0)
     lat : string
@@ -110,15 +111,15 @@ def get_results(
 
         >>> # Get results within a radial distance of a point
         >>> df, md = dataretrieval.wqp.get_results(
-        ...     lat='44.2', long='-88.9', within='0.5'
+        ...     lat="44.2", long="-88.9", within="0.5"
         ... )
 
         >>> # Get results within a bounding box
-        >>> df, md = dataretrieval.wqp.get_results(bBox='-92.8,44.2,-88.9,46.0')
+        >>> df, md = dataretrieval.wqp.get_results(bBox="-92.8,44.2,-88.9,46.0")
 
         >>> # Get results using a new WQX3.0 profile
         >>> df, md = dataretrieval.wqp.get_results(
-        ...     legacy=False, siteid='UTAHDWQ_WQX-4993795', dataProfile='narrow'
+        ...     legacy=False, siteid="UTAHDWQ_WQX-4993795", dataProfile="narrow"
         ... )
 
     """
@@ -136,16 +137,16 @@ def get_results(
         url = wqp_url("Result")
 
     else:
-        if 'dataProfile' in kwargs:
-            if kwargs['dataProfile'] not in result_profiles_wqx3:
+        if "dataProfile" in kwargs:
+            if kwargs["dataProfile"] not in result_profiles_wqx3:
                 raise TypeError(
                     f"dataProfile {kwargs['dataProfile']} is not a valid WQX3.0"
                     f"profile. Valid options are {result_profiles_wqx3}.",
-                    )
+                )
         else:
             kwargs["dataProfile"] = "fullPhysChem"
 
-        url = wqx3_url('Result')
+        url = wqx3_url("Result")
 
     response = query(url, kwargs, delimiter=";", ssl_check=ssl_check)
 
@@ -154,9 +155,9 @@ def get_results(
 
 
 def what_sites(
-        ssl_check=True,
-        legacy=True,
-        **kwargs,
+    ssl_check=True,
+    legacy=True,
+    **kwargs,
 ) -> tuple[DataFrame, WQP_Metadata]:
     """Search WQP for sites within a region with specific data.
 
@@ -192,7 +193,7 @@ def what_sites(
 
         >>> # Get sites within a radial distance of a point
         >>> df, md = dataretrieval.wqp.what_sites(
-        ...     lat='44.2', long='-88.9', within='2.5'
+        ...     lat="44.2", long="-88.9", within="2.5"
         ... )
 
     """
@@ -200,21 +201,21 @@ def what_sites(
     kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
-        url = wqp_url('Station')
+        url = wqp_url("Station")
     else:
-        url = wqx3_url('Station')
+        url = wqx3_url("Station")
 
-    response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
+    response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=',')
+    df = pd.read_csv(StringIO(response.text), delimiter=",")
 
     return df, WQP_Metadata(response)
 
 
 def what_organizations(
-        ssl_check=True,
-        legacy=True,
-        **kwargs,
+    ssl_check=True,
+    legacy=True,
+    **kwargs,
 ) -> tuple[DataFrame, WQP_Metadata]:
     """Search WQP for organizations within a region with specific data.
 
@@ -254,14 +255,14 @@ def what_organizations(
     kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
-        url = wqp_url('Organization')
+        url = wqp_url("Organization")
     else:
-        print('WQX3.0 profile not available, returning legacy profile.')
-        url = wqp_url('Organization')
+        print("WQX3.0 profile not available, returning legacy profile.")
+        url = wqp_url("Organization")
 
-    response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
+    response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=',')
+    df = pd.read_csv(StringIO(response.text), delimiter=",")
 
     return df, WQP_Metadata(response)
 
@@ -298,29 +299,29 @@ def what_projects(ssl_check=True, legacy=True, **kwargs):
     .. code::
 
         >>> # Get projects within a HUC region
-        >>> df, md = dataretrieval.wqp.what_projects(huc='19')
+        >>> df, md = dataretrieval.wqp.what_projects(huc="19")
 
     """
 
     kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
-        url = wqp_url('Project')
+        url = wqp_url("Project")
     else:
-        print('WQX3.0 profile not available, returning legacy profile.')
-        url = wqp_url('Project')
+        print("WQX3.0 profile not available, returning legacy profile.")
+        url = wqp_url("Project")
 
-    response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
+    response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=',')
+    df = pd.read_csv(StringIO(response.text), delimiter=",")
 
     return df, WQP_Metadata(response)
 
 
 def what_activities(
-        ssl_check=True,
-        legacy=True,
-        **kwargs,
+    ssl_check=True,
+    legacy=True,
+    **kwargs,
 ) -> tuple[DataFrame, WQP_Metadata]:
     """Search WQP for activities within a region with specific data.
 
@@ -355,16 +356,18 @@ def what_activities(
         >>> # Get activities within Washington D.C.
         >>> # during a specific time period
         >>> df, md = dataretrieval.wqp.what_activities(
-        ...     statecode='US:11', startDateLo='12-30-2019', startDateHi='01-01-2020'
+        ...     statecode="US:11",
+        ...     startDateLo="12-30-2019",
+        ...     startDateHi="01-01-2020",
         ... )
 
         >>> # Get activities within Washington D.C.
         >>> # using the WQX3.0 profile during a specific time period
         >>> df, md = dataretrieval.wqp.what_activities(
         ...     legacy=False,
-        ...     statecode='US:11',
-        ...     startDateLo='12-30-2019',
-        ...     startDateHi='01-01-2020'
+        ...     statecode="US:11",
+        ...     startDateLo="12-30-2019",
+        ...     startDateHi="01-01-2020",
         ... )
     """
 
@@ -383,9 +386,9 @@ def what_activities(
 
 
 def what_detection_limits(
-        ssl_check=True,
-        legacy=True,
-        **kwargs,
+    ssl_check=True,
+    legacy=True,
+    **kwargs,
 ) -> tuple[DataFrame, WQP_Metadata]:
     """Search WQP for result detection limits within a region with specific
     data.
@@ -421,10 +424,10 @@ def what_detection_limits(
         >>> # Get detection limits for Nitrite measurements in Rhode Island
         >>> # between specific dates
         >>> df, md = dataretrieval.wqp.what_detection_limits(
-        ...     statecode='US:44',
-        ...     characteristicName='Nitrite',
-        ...     startDateLo='01-01-2021',
-        ...     startDateHi='02-20-2021',
+        ...     statecode="US:44",
+        ...     characteristicName="Nitrite",
+        ...     startDateLo="01-01-2021",
+        ...     startDateHi="02-20-2021",
         ... )
 
     """
@@ -432,22 +435,22 @@ def what_detection_limits(
     kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
-        url = wqp_url('ResultDetectionQuantitationLimit')
+        url = wqp_url("ResultDetectionQuantitationLimit")
     else:
-        print('WQX3.0 profile not available, returning legacy profile.')
-        url = wqp_url('ResultDetectionQuantitationLimit')
+        print("WQX3.0 profile not available, returning legacy profile.")
+        url = wqp_url("ResultDetectionQuantitationLimit")
 
-    response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
+    response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=',')
+    df = pd.read_csv(StringIO(response.text), delimiter=",")
 
     return df, WQP_Metadata(response)
 
 
 def what_habitat_metrics(
-        ssl_check=True,
-        legacy=True,
-        **kwargs,
+    ssl_check=True,
+    legacy=True,
+    **kwargs,
 ) -> tuple[DataFrame, WQP_Metadata]:
     """Search WQP for habitat metrics within a region with specific data.
 
@@ -480,21 +483,21 @@ def what_habitat_metrics(
     .. code::
 
         >>> # Get habitat metrics for a state (Rhode Island in this case)
-        >>> df, md = dataretrieval.wqp.what_habitat_metrics(statecode='US:44')
+        >>> df, md = dataretrieval.wqp.what_habitat_metrics(statecode="US:44")
 
     """
 
     kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
-        url = wqp_url('BiologicalMetric')
+        url = wqp_url("BiologicalMetric")
     else:
-        print('WQX3.0 profile not available, returning legacy profile.')
-        url = wqp_url('BiologicalMetric')
+        print("WQX3.0 profile not available, returning legacy profile.")
+        url = wqp_url("BiologicalMetric")
 
-    response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
+    response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=',')
+    df = pd.read_csv(StringIO(response.text), delimiter=",")
 
     return df, WQP_Metadata(response)
 
@@ -533,7 +536,9 @@ def what_project_weights(ssl_check=True, legacy=True, **kwargs):
         >>> # Get project weights for a state (North Dakota in this case)
         >>> # within a set time period
         >>> df, md = dataretrieval.wqp.what_project_weights(
-        ...     statecode='US:38', startDateLo='01-01-2006', startDateHi='01-01-2009'
+        ...     statecode="US:38",
+        ...     startDateLo="01-01-2006",
+        ...     startDateHi="01-01-2009",
         ... )
 
     """
@@ -541,14 +546,14 @@ def what_project_weights(ssl_check=True, legacy=True, **kwargs):
     kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
-        url = wqp_url('ProjectMonitoringLocationWeighting')
+        url = wqp_url("ProjectMonitoringLocationWeighting")
     else:
-        print('WQX3.0 profile not available, returning legacy profile.')
-        url = wqp_url('ProjectMonitoringLocationWeighting')
+        print("WQX3.0 profile not available, returning legacy profile.")
+        url = wqp_url("ProjectMonitoringLocationWeighting")
 
-    response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
+    response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=',')
+    df = pd.read_csv(StringIO(response.text), delimiter=",")
 
     return df, WQP_Metadata(response)
 
@@ -587,7 +592,9 @@ def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
         >>> # Get activity metrics for a state (North Dakota in this case)
         >>> # within a set time period
         >>> df, md = dataretrieval.wqp.what_activity_metrics(
-        ...     statecode='US:38', startDateLo='07-01-2006', startDateHi='12-01-2006'
+        ...     statecode="US:38",
+        ...     startDateLo="07-01-2006",
+        ...     startDateHi="12-01-2006",
         ... )
 
     """
@@ -595,14 +602,14 @@ def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
     kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
-        url = wqp_url('ActivityMetric')
+        url = wqp_url("ActivityMetric")
     else:
-        print('WQX3.0 profile not available, returning legacy profile.')
-        url = wqp_url('ActivityMetric')
+        print("WQX3.0 profile not available, returning legacy profile.")
+        url = wqp_url("ActivityMetric")
 
-    response = query(url, payload=kwargs, delimiter=';', ssl_check=ssl_check)
+    response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=',')
+    df = pd.read_csv(StringIO(response.text), delimiter=",")
 
     return df, WQP_Metadata(response)
 
@@ -610,31 +617,31 @@ def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
 def wqp_url(service):
     """Construct the WQP URL for a given service."""
 
-    base_url = 'https://www.waterqualitydata.us/data/'
+    base_url = "https://www.waterqualitydata.us/data/"
     _warn_legacy_use()
 
     if service not in services_legacy:
         raise TypeError(
-            'Legacy service not recognized. Valid options are',
-            f'{services_legacy}.',
-            )
+            "Legacy service not recognized. Valid options are",
+            f"{services_legacy}.",
+        )
 
-    return f'{base_url}{service}/Search?'
+    return f"{base_url}{service}/Search?"
 
 
 def wqx3_url(service):
     """Construct the WQP URL for a given WQX 3.0 service."""
 
-    base_url = 'https://www.waterqualitydata.us/wqx3/'
+    base_url = "https://www.waterqualitydata.us/wqx3/"
     _warn_wqx3_use()
 
     if service not in services_wqx3:
         raise TypeError(
-            'WQX3.0 service not recognized. Valid options are',
-            f'{services_wqx3}.',
-            )
+            "WQX3.0 service not recognized. Valid options are",
+            f"{services_wqx3}.",
+        )
 
-    return f'{base_url}{service}/search?'
+    return f"{base_url}{service}/search?"
 
 
 class WQP_Metadata(BaseMetadata):
@@ -688,8 +695,7 @@ class WQP_Metadata(BaseMetadata):
 
 
 def _check_kwargs(kwargs):
-    """Private function to check kwargs for unsupported parameters.
-    """
+    """Private function to check kwargs for unsupported parameters."""
     mimetype = kwargs.get("mimeType")
     if mimetype == "geojson":
         raise NotImplementedError("GeoJSON not yet supported. Set 'mimeType=csv'.")
