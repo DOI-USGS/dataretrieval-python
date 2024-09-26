@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+g9f09525 documentation</title>
+  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+gbaa65e5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=946d3331"></script>
+        <script src="../../_static/documentation_options.js?v=309a1821"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -93,7 +93,7 @@
 
 <div class="viewcode-block" id="download_workspace">
 <a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.download_workspace">[docs]</a>
-<span class="k">def</span> <span class="nf">download_workspace</span><span class="p">(</span><span class="n">workspaceID</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">download_workspace</span><span class="p">(</span><span class="n">workspaceID</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Function to download streamstats workspace.</span>
 
 <span class="sd">    Parameters</span>
@@ -112,8 +112,8 @@
 <span class="sd">        geodatabase or shape files.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;workspaceID&#39;</span><span class="p">:</span> <span class="n">workspaceID</span><span class="p">,</span> <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="nb">format</span><span class="p">}</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://streamstats.usgs.gov/streamstatsservices/download&#39;</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;workspaceID&quot;</span><span class="p">:</span> <span class="n">workspaceID</span><span class="p">,</span> <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="nb">format</span><span class="p">}</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://streamstats.usgs.gov/streamstatsservices/download&quot;</span>
 
     <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
 
@@ -144,7 +144,7 @@
 <span class="sd">        from the streamstats JSON object.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">get_watershed</span><span class="p">(</span><span class="s1">&#39;NY&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mf">74.524</span><span class="p">,</span> <span class="mf">43.939</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_watershed</span><span class="p">(</span><span class="s2">&quot;NY&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">74.524</span><span class="p">,</span> <span class="mf">43.939</span><span class="p">)</span></div>
 
 
 
@@ -159,7 +159,7 @@
     <span class="n">includeflowtypes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">includefeatures</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">simplify</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;geojson&#39;</span><span class="p">,</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;geojson&quot;</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get watershed object based on location</span>
 
@@ -203,29 +203,29 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;rcode&#39;</span><span class="p">:</span> <span class="n">rcode</span><span class="p">,</span>
-        <span class="s1">&#39;xlocation&#39;</span><span class="p">:</span> <span class="n">xlocation</span><span class="p">,</span>
-        <span class="s1">&#39;ylocation&#39;</span><span class="p">:</span> <span class="n">ylocation</span><span class="p">,</span>
-        <span class="s1">&#39;crs&#39;</span><span class="p">:</span> <span class="n">crs</span><span class="p">,</span>
-        <span class="s1">&#39;includeparameters&#39;</span><span class="p">:</span> <span class="n">includeparameters</span><span class="p">,</span>
-        <span class="s1">&#39;includeflowtypes&#39;</span><span class="p">:</span> <span class="n">includeflowtypes</span><span class="p">,</span>
-        <span class="s1">&#39;includefeatures&#39;</span><span class="p">:</span> <span class="n">includefeatures</span><span class="p">,</span>
-        <span class="s1">&#39;simplify&#39;</span><span class="p">:</span> <span class="n">simplify</span><span class="p">,</span>
+        <span class="s2">&quot;rcode&quot;</span><span class="p">:</span> <span class="n">rcode</span><span class="p">,</span>
+        <span class="s2">&quot;xlocation&quot;</span><span class="p">:</span> <span class="n">xlocation</span><span class="p">,</span>
+        <span class="s2">&quot;ylocation&quot;</span><span class="p">:</span> <span class="n">ylocation</span><span class="p">,</span>
+        <span class="s2">&quot;crs&quot;</span><span class="p">:</span> <span class="n">crs</span><span class="p">,</span>
+        <span class="s2">&quot;includeparameters&quot;</span><span class="p">:</span> <span class="n">includeparameters</span><span class="p">,</span>
+        <span class="s2">&quot;includeflowtypes&quot;</span><span class="p">:</span> <span class="n">includeflowtypes</span><span class="p">,</span>
+        <span class="s2">&quot;includefeatures&quot;</span><span class="p">:</span> <span class="n">includefeatures</span><span class="p">,</span>
+        <span class="s2">&quot;simplify&quot;</span><span class="p">:</span> <span class="n">simplify</span><span class="p">,</span>
     <span class="p">}</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://streamstats.usgs.gov/streamstatsservices/watershed.geojson&#39;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://streamstats.usgs.gov/streamstatsservices/watershed.geojson&quot;</span>
 
     <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
 
     <span class="n">r</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
 
-    <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;geojson&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;geojson&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">r</span>
 
-    <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;shape&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;shape&quot;</span><span class="p">:</span>
         <span class="c1"># use Fiona to return a shape object</span>
         <span class="k">pass</span>
 
-    <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;object&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;object&quot;</span><span class="p">:</span>
         <span class="c1"># return a python object</span>
         <span class="k">pass</span>
 
@@ -244,10 +244,10 @@
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_streamstats_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">streamstats_json</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Method that creates a Watershed object from a streamstats JSON.&quot;&quot;&quot;</span>
-        <span class="bp">cls</span><span class="o">.</span><span class="n">watershed_point</span> <span class="o">=</span> <span class="n">streamstats_json</span><span class="p">[</span><span class="s1">&#39;featurecollection&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;feature&#39;</span><span class="p">]</span>
-        <span class="bp">cls</span><span class="o">.</span><span class="n">watershed_polygon</span> <span class="o">=</span> <span class="n">streamstats_json</span><span class="p">[</span><span class="s1">&#39;featurecollection&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;feature&#39;</span><span class="p">]</span>
-        <span class="bp">cls</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">streamstats_json</span><span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">]</span>
-        <span class="bp">cls</span><span class="o">.</span><span class="n">_workspaceID</span> <span class="o">=</span> <span class="n">streamstats_json</span><span class="p">[</span><span class="s1">&#39;workspaceID&#39;</span><span class="p">]</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">watershed_point</span> <span class="o">=</span> <span class="n">streamstats_json</span><span class="p">[</span><span class="s2">&quot;featurecollection&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;feature&quot;</span><span class="p">]</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">watershed_polygon</span> <span class="o">=</span> <span class="n">streamstats_json</span><span class="p">[</span><span class="s2">&quot;featurecollection&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;feature&quot;</span><span class="p">]</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">streamstats_json</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">]</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_workspaceID</span> <span class="o">=</span> <span class="n">streamstats_json</span><span class="p">[</span><span class="s2">&quot;workspaceID&quot;</span><span class="p">]</span>
         <span class="k">return</span> <span class="bp">cls</span></div>
 
 

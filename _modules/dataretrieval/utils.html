@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g9f09525 documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+gbaa65e5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=946d3331"></script>
+        <script src="../../_static/documentation_options.js?v=309a1821"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -82,6 +82,7 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Useful utilities for data munging.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">warnings</span>
 
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
@@ -93,7 +94,7 @@
 
 <div class="viewcode-block" id="to_str">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.to_str">[docs]</a>
-<span class="k">def</span> <span class="nf">to_str</span><span class="p">(</span><span class="n">listlike</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">to_str</span><span class="p">(</span><span class="n">listlike</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Translates list-like objects into strings.</span>
 
 <span class="sd">    Parameters</span>
@@ -114,10 +115,10 @@
 <span class="sd">    --------</span>
 <span class="sd">    .. doctest::</span>
 
-<span class="sd">        &gt;&gt;&gt; dataretrieval.utils.to_str([1, &#39;a&#39;, 2])</span>
+<span class="sd">        &gt;&gt;&gt; dataretrieval.utils.to_str([1, &quot;a&quot;, 2])</span>
 <span class="sd">        &#39;1,a,2&#39;</span>
 
-<span class="sd">        &gt;&gt;&gt; dataretrieval.utils.to_str([0, 10, 42], delimiter=&#39;+&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; dataretrieval.utils.to_str([0, 10, 42], delimiter=&quot;+&quot;)</span>
 <span class="sd">        &#39;0+10+42&#39;</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -163,18 +164,18 @@
     <span class="c1"># create a datetime index from the columns in qwdata response</span>
     <span class="n">df</span><span class="p">[</span><span class="n">tz_field</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">tz_field</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">tz</span><span class="p">)</span>
 
-    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span>
-        <span class="n">df</span><span class="p">[</span><span class="n">date_field</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="n">time_field</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="n">tz_field</span><span class="p">],</span>
-        <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;ISO8601&#39;</span><span class="p">,</span>
+    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span>
+        <span class="n">df</span><span class="p">[</span><span class="n">date_field</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="n">time_field</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="n">tz_field</span><span class="p">],</span>
+        <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;ISO8601&quot;</span><span class="p">,</span>
         <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="c1"># if there are any incomplete dates, warn the user</span>
-    <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-        <span class="n">count</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s1">&#39;Warning: </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s1"> incomplete dates found, &#39;</span>
-            <span class="o">+</span> <span class="s1">&#39;consider setting datetime_index to False.&#39;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Warning: </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> incomplete dates found, &quot;</span>
+            <span class="o">+</span> <span class="s2">&quot;consider setting datetime_index to False.&quot;</span><span class="p">,</span>
             <span class="ne">UserWarning</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -232,26 +233,26 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">site_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="s1">&#39;site_info must be implemented by utils.BaseMetadata children&#39;</span>
+            <span class="s2">&quot;site_info must be implemented by utils.BaseMetadata children&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">variable_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="s1">&#39;variable_info must be implemented by utils.BaseMetadata children&#39;</span>
+            <span class="s2">&quot;variable_info must be implemented by utils.BaseMetadata children&quot;</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="BaseMetadata.__repr__">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.BaseMetadata.__repr__">[docs]</a>
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">(url=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s1">)&#39;</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(url=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">)&quot;</span></div>
 </div>
 
 
 
 <div class="viewcode-block" id="query">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.query">[docs]</a>
-<span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Send a query.</span>
 
 <span class="sd">    Wrapper for requests.get that handles errors, converts listed</span>
@@ -282,18 +283,18 @@
     <span class="c1">#    payload[index] = (key, to_str(value))</span>
 
     <span class="c1"># define the user agent for the query</span>
-    <span class="n">user_agent</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;user-agent&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;python-dataretrieval/</span><span class="si">{</span><span class="n">dataretrieval</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">}</span>
+    <span class="n">user_agent</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;user-agent&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;python-dataretrieval/</span><span class="si">{</span><span class="n">dataretrieval</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}</span>
 
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">user_agent</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s1">&#39;Bad Request, check that your parameters are correct. URL: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="sa">f</span><span class="s2">&quot;Bad Request, check that your parameters are correct. URL: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
     <span class="k">elif</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s1">&#39;Page Not Found Error. May be the result of an empty query. &#39;</span>
-            <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39;URL: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="s2">&quot;Page Not Found Error. May be the result of an empty query. &quot;</span>
+            <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;URL: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
     <span class="k">elif</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">414</span><span class="p">:</span>
         <span class="n">_reason</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">reason</span>
@@ -307,12 +308,12 @@
 <span class="s2">                                               start=start, end=end) </span><span class="se">\n</span>
 <span class="s2">                        data_list.append(data)  # append results to list&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s1">&#39;Request URL too long. Modify your query to use fewer sites. &#39;</span>
-            <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39;API response reason: </span><span class="si">{</span><span class="n">_reason</span><span class="si">}</span><span class="s1">. Pseudo-code example of how to &#39;</span>
-            <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39;split your query: </span><span class="se">\n</span><span class="s1"> </span><span class="si">{</span><span class="n">_example</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="s2">&quot;Request URL too long. Modify your query to use fewer sites. &quot;</span>
+            <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;API response reason: </span><span class="si">{</span><span class="n">_reason</span><span class="si">}</span><span class="s2">. Pseudo-code example of how to &quot;</span>
+            <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;split your query: </span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">_example</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;No sites/data&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;No sites/data&quot;</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">NoSitesError</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">response</span></div>
@@ -334,8 +335,8 @@
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError.__str__">[docs]</a>
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="s1">&#39;No sites/data found using the selection criteria specified in url: &#39;</span>
-            <span class="s1">&#39;</span><span class="si">{url}</span><span class="s1">&#39;</span>
+            <span class="s2">&quot;No sites/data found using the selection criteria specified in url: &quot;</span>
+            <span class="s2">&quot;</span><span class="si">{url}</span><span class="s2">&quot;</span>
         <span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span></div>
 </div>
 
