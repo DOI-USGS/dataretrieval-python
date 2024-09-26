@@ -39,8 +39,8 @@ templates_path = ['_templates']
 # suffix of source documents
 source_suffix = '.rst'
 
-# The master toctree document.
-master_doc = 'index'
+# The main toctree document.
+main_doc = 'index'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -122,7 +122,7 @@ linkcheck_ignore = [
     r'https://streamstats.usgs.gov/streamstatsservices/#/',
     r'https://www.waterqualitydata.us/public_srsnames/',
     r'https://waterqualitydata.us',
-    r'https://github.com/USGS-python/dataretrieval/tree/master/demos/hydroshare',
+    r'https://github.com/USGS-python/dataretrieval/tree/main/demos/hydroshare',
 ]
 
 # Some notebooks have warnings, which nbsphinx should ignore

@@ -79,7 +79,7 @@ or conda:
 
     $ conda install -c conda-forge dataretrieval
 
-More examples of use are include in [`demos`](https://github.com/USGS-python/dataretrieval/tree/master/demos).
+More examples of use are include in [`demos`](https://github.com/USGS-python/dataretrieval/tree/main/demos).
 
 ## Issue tracker
 
