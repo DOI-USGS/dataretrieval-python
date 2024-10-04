@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_iv() Examples &mdash; dataretrieval 0.1.dev1+gbaa65e5 documentation</title>
+  <title>USGS dataretrieval Python Package get_iv() Examples &mdash; dataretrieval 0.1.dev1+g103724b documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -16,7 +16,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=309a1821"></script>
+        <script src="../_static/documentation_options.js?v=13213d38"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -63,6 +63,8 @@
 <li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_ParameterCodes_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_pmcodes()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Peaks_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_discharge_peaks()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Ratings_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_ratings()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_SiteInfo_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_info()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_SiteInventory_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Statistics_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_stats()</span></code> Examples</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_iv()</span></code> Examples</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#Install-the-Package">Install the Package</a></li>
@@ -129,7 +131,7 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+gbaa65e5)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+g103724b)
 Requirement already satisfied: requests in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.32.3)
 Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.2.3)
 Requirement already satisfied: numpy&gt;=1.22.4 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2.1.1)
@@ -598,7 +600,7 @@ Retrieved 96 data values.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 0 data values.
+Retrieved 37 data values.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -624,13 +626,239 @@ Retrieved 0 data values.
     <tr style="text-align: right;">
       <th></th>
       <th>site_no</th>
+      <th>00060</th>
+      <th>00060_cd</th>
     </tr>
     <tr>
       <th>datetime</th>
       <th></th>
+      <th></th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <th>2024-10-04 05:00:00+00:00</th>
+      <td>05114000</td>
+      <td>34.6</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 05:15:00+00:00</th>
+      <td>05114000</td>
+      <td>34.5</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 05:30:00+00:00</th>
+      <td>05114000</td>
+      <td>34.1</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 05:45:00+00:00</th>
+      <td>05114000</td>
+      <td>34.5</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 06:00:00+00:00</th>
+      <td>05114000</td>
+      <td>34.5</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 06:15:00+00:00</th>
+      <td>05114000</td>
+      <td>34.0</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 06:30:00+00:00</th>
+      <td>05114000</td>
+      <td>34.0</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 06:45:00+00:00</th>
+      <td>05114000</td>
+      <td>34.0</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 07:00:00+00:00</th>
+      <td>05114000</td>
+      <td>34.0</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 07:15:00+00:00</th>
+      <td>05114000</td>
+      <td>34.1</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 07:30:00+00:00</th>
+      <td>05114000</td>
+      <td>33.7</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 07:45:00+00:00</th>
+      <td>05114000</td>
+      <td>33.9</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 08:00:00+00:00</th>
+      <td>05114000</td>
+      <td>34.0</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 08:15:00+00:00</th>
+      <td>05114000</td>
+      <td>33.7</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 08:30:00+00:00</th>
+      <td>05114000</td>
+      <td>33.4</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 08:45:00+00:00</th>
+      <td>05114000</td>
+      <td>33.5</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 09:00:00+00:00</th>
+      <td>05114000</td>
+      <td>33.4</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 09:15:00+00:00</th>
+      <td>05114000</td>
+      <td>33.7</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 09:30:00+00:00</th>
+      <td>05114000</td>
+      <td>33.4</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 09:45:00+00:00</th>
+      <td>05114000</td>
+      <td>33.4</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 10:00:00+00:00</th>
+      <td>05114000</td>
+      <td>33.1</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 10:15:00+00:00</th>
+      <td>05114000</td>
+      <td>33.2</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 10:30:00+00:00</th>
+      <td>05114000</td>
+      <td>33.4</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 10:45:00+00:00</th>
+      <td>05114000</td>
+      <td>33.0</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 11:00:00+00:00</th>
+      <td>05114000</td>
+      <td>33.3</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 11:15:00+00:00</th>
+      <td>05114000</td>
+      <td>32.8</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 11:30:00+00:00</th>
+      <td>05114000</td>
+      <td>33.0</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 11:45:00+00:00</th>
+      <td>05114000</td>
+      <td>32.6</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 12:00:00+00:00</th>
+      <td>05114000</td>
+      <td>32.7</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 12:15:00+00:00</th>
+      <td>05114000</td>
+      <td>32.9</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 12:30:00+00:00</th>
+      <td>05114000</td>
+      <td>32.6</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 12:45:00+00:00</th>
+      <td>05114000</td>
+      <td>32.3</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 13:00:00+00:00</th>
+      <td>05114000</td>
+      <td>32.5</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 13:15:00+00:00</th>
+      <td>05114000</td>
+      <td>32.2</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 13:30:00+00:00</th>
+      <td>05114000</td>
+      <td>32.3</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 13:45:00+00:00</th>
+      <td>05114000</td>
+      <td>32.0</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2024-10-04 14:00:00+00:00</th>
+      <td>05114000</td>
+      <td>32.0</td>
+      <td>P</td>
+    </tr>
   </tbody>
 </table>
 </div></div>
@@ -880,6 +1108,131 @@ Retrieved 192 data values.
   </tbody>
 </table>
 <p>192 rows × 2 columns</p>
+</div></div>
+</div>
+<p>The following example is the same as the previous example but with multi index turned off (multi_index=False)</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">discharge_multisite</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;04024430&#39;</span><span class="p">,</span> <span class="s1">&#39;04024000&#39;</span><span class="p">],</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span>
+                                  <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2013-10-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2013-10-01&#39;</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge_multisite</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; data values.&#39;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">discharge_multisite</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Retrieved 192 data values.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>site_no</th>
+      <th>00060</th>
+      <th>00060_cd</th>
+    </tr>
+    <tr>
+      <th>datetime</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2013-10-01 05:00:00+00:00</th>
+      <td>04024000</td>
+      <td>567.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2013-10-01 05:00:00+00:00</th>
+      <td>04024430</td>
+      <td>61.3</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2013-10-01 05:15:00+00:00</th>
+      <td>04024430</td>
+      <td>60.4</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2013-10-01 05:15:00+00:00</th>
+      <td>04024000</td>
+      <td>567.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2013-10-01 05:30:00+00:00</th>
+      <td>04024430</td>
+      <td>60.4</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2013-10-02 04:15:00+00:00</th>
+      <td>04024000</td>
+      <td>592.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2013-10-02 04:30:00+00:00</th>
+      <td>04024430</td>
+      <td>59.5</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2013-10-02 04:30:00+00:00</th>
+      <td>04024000</td>
+      <td>592.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2013-10-02 04:45:00+00:00</th>
+      <td>04024000</td>
+      <td>592.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2013-10-02 04:45:00+00:00</th>
+      <td>04024430</td>
+      <td>59.5</td>
+      <td>A</td>
+    </tr>
+  </tbody>
+</table>
+<p>192 rows × 3 columns</p>
 </div></div>
 </div>
 </section>

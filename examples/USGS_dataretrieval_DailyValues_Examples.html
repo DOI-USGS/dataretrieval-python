@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_dv() Examples &mdash; dataretrieval 0.1.dev1+gbaa65e5 documentation</title>
+  <title>USGS dataretrieval Python Package get_dv() Examples &mdash; dataretrieval 0.1.dev1+g103724b documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -16,7 +16,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=309a1821"></script>
+        <script src="../_static/documentation_options.js?v=13213d38"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -69,6 +69,8 @@
 <li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_ParameterCodes_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_pmcodes()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Peaks_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_discharge_peaks()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Ratings_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_ratings()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_SiteInfo_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_info()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_SiteInventory_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Statistics_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_stats()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_UnitValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_iv()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_WaterSamples_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_qwdata()</span></code> Examples</a></li>
@@ -129,7 +131,7 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+gbaa65e5)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+g103724b)
 Requirement already satisfied: requests in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.32.3)
 Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.2.3)
 Requirement already satisfied: numpy&gt;=1.22.4 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2.1.1)
@@ -781,9 +783,178 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
 <p>364 rows × 6 columns</p>
 </div></div>
 </div>
-<p>Example 4: Test for a site that is not active - returns an empty DataFrame.</p>
+<p>The following example is the same as the previous example but with multi index turned off (multi_index=False)</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dailyMultiSites</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;01491000&quot;</span><span class="p">,</span> <span class="s2">&quot;01645000&quot;</span><span class="p">],</span> <span class="n">parameterCd</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00010&quot;</span><span class="p">,</span> <span class="s2">&quot;00060&quot;</span><span class="p">],</span>
+                              <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2012-01-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2012-06-30&quot;</span><span class="p">,</span> <span class="n">statCd</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00001&quot;</span><span class="p">,</span><span class="s2">&quot;00003&quot;</span><span class="p">],</span>
+                              <span class="n">multi_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">dailyMultiSites</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>site_no</th>
+      <th>00010_discontinued_Maximum</th>
+      <th>00010_discontinued_Maximum_cd</th>
+      <th>00010_discontinued_Mean</th>
+      <th>00010_discontinued_Mean_cd</th>
+      <th>00060_Mean</th>
+      <th>00060_Mean_cd</th>
+    </tr>
+    <tr>
+      <th>datetime</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2012-01-01 00:00:00+00:00</th>
+      <td>01491000</td>
+      <td>8.4</td>
+      <td>A</td>
+      <td>7.7</td>
+      <td>A</td>
+      <td>205.00</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-01-01 00:00:00+00:00</th>
+      <td>01645000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>175.00</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-01-02 00:00:00+00:00</th>
+      <td>01645000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>168.00</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-01-02 00:00:00+00:00</th>
+      <td>01491000</td>
+      <td>8.5</td>
+      <td>A</td>
+      <td>7.3</td>
+      <td>A</td>
+      <td>193.00</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-01-03 00:00:00+00:00</th>
+      <td>01491000</td>
+      <td>6.0</td>
+      <td>A</td>
+      <td>4.6</td>
+      <td>A</td>
+      <td>180.00</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2012-06-28 00:00:00+00:00</th>
+      <td>01491000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>12.10</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-06-29 00:00:00+00:00</th>
+      <td>01645000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>53.10</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-06-29 00:00:00+00:00</th>
+      <td>01491000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>8.58</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-06-30 00:00:00+00:00</th>
+      <td>01491000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>7.15</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-06-30 00:00:00+00:00</th>
+      <td>01645000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>129.00</td>
+      <td>A</td>
+    </tr>
+  </tbody>
+</table>
+<p>364 rows × 7 columns</p>
+</div></div>
+</div>
+<p>Example 4: Test for a site that is not active - returns an empty DataFrame.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteID</span> <span class="o">=</span> <span class="s2">&quot;05212700&quot;</span>
