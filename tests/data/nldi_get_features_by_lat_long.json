@@ -37,7 +37,7 @@
       },
       "properties": {
         "identifier": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/comid/13294314/navigation",
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/comid/13294314/navigation",
         "source": "comid",
         "sourceName": "NHDPlus comid",
         "comid": "13294314"

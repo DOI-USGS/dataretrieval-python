@@ -8,7 +8,7 @@
       "type": "Feature",
       "properties": {
         "identifier": "USGS-05427943",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-05427943/navigation",
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/nwissite/USGS-05427943/navigation",
         "measure": 0,
         "reachcode": "07090002007651",
         "name": "PHEASANT BRANCH AT AIRPORT ROAD NEAR MIDDLETON, WI",
@@ -28,7 +28,7 @@
       "type": "Feature",
       "properties": {
         "identifier": "USGS-430600089272001",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-430600089272001/navigation",
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/nwissite/USGS-430600089272001/navigation",
         "measure": 59.3341,
         "reachcode": "07090002008384",
         "name": "LAKE MENDOTA, WEST BAY, AT MADISON, WI",
@@ -48,7 +48,7 @@
       "type": "Feature",
       "properties": {
         "identifier": "USGS-054279465",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-054279465/navigation",
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/nwissite/USGS-054279465/navigation",
         "measure": 53.7958,
         "reachcode": "07090002007650",
         "name": "S FORK PHEASANT BRANCH @ DEMING WAY @ MIDDLETON,WI",
@@ -68,7 +68,7 @@
       "type": "Feature",
       "properties": {
         "identifier": "USGS-05427950",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-05427950/navigation",
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/nwissite/USGS-05427950/navigation",
         "measure": 2.32298,
         "reachcode": "07090002007650",
         "name": "PHEASANT BRANCH AT CENTURY AVE AT MIDDLETON, WI",
@@ -88,7 +88,7 @@
       "type": "Feature",
       "properties": {
         "identifier": "USGS-054279435",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-054279435/navigation",
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/nwissite/USGS-054279435/navigation",
         "measure": 72.0559,
         "reachcode": "07090002007650",
         "name": "PHEASANT BR W. OF CONFLUENCE POND @ MIDDLETON, WI",
@@ -108,7 +108,7 @@
       "type": "Feature",
       "properties": {
         "identifier": "USGS-05427948",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-05427948/navigation",
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/nwissite/USGS-05427948/navigation",
         "measure": 40.6051151144,
         "reachcode": "07090002007650",
         "name": "PHEASANT BRANCH AT MIDDLETON, WI",
@@ -128,7 +128,7 @@
       "type": "Feature",
       "properties": {
         "identifier": "USGS-054279475",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-054279475/navigation",
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/nwissite/USGS-054279475/navigation",
         "measure": 48.974,
         "reachcode": "07090002007650",
         "name": "PHEASANT BRANCH UPSTREAM OF HWY 12 @ MIDDLETON, WI",
@@ -148,7 +148,7 @@
       "type": "Feature",
       "properties": {
         "identifier": "USGS-430628089305001",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-430628089305001/navigation",
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/nwissite/USGS-430628089305001/navigation",
         "measure": 43.532,
         "reachcode": "07090002007650",
         "name": "GW QUALITY ASSURANCE-NAWQA WAREHOUSE-MIDDLETON, WI",
@@ -168,7 +168,7 @@
       "type": "Feature",
       "properties": {
         "identifier": "USGS-05427952",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-05427952/navigation",
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/nwissite/USGS-05427952/navigation",
         "measure": 46.391,
         "reachcode": "07090002007647",
         "name": "PHEASANT BRANCH AT MOUTH AT MIDDLETON, WI",

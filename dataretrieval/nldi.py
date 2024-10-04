@@ -8,7 +8,7 @@ try:
 except ImportError:
     raise ImportError("Install geopandas to use the NLDI module.")
 
-NLDI_API_BASE_URL = "https://labs.waterdata.usgs.gov/api/nldi/linked-data"
+NLDI_API_BASE_URL = "https://api.water.usgs.gov/nldi/linked-data"
 _AVAILABLE_DATA_SOURCES = None
 _CRS = "EPSG:4326"
 
