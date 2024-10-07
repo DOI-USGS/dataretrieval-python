@@ -15,7 +15,7 @@
         "name": "STRICKER'S POND AT MIDDLETON, WI",
         "uri": "https://www.waterqualitydata.us/provider/NWIS/USGS-WI/USGS-054279485/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/USGS-054279485/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/USGS-054279485/navigation"
       }
     },
     {
@@ -32,7 +32,7 @@
         "name": "UN LAKE - UN LAKE",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-10001231/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-10001231/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-10001231/navigation"
       }
     },
     {
@@ -49,7 +49,7 @@
         "name": "South Kenosha Drive Storm Sewer in Madison (USGS 430402089282000)",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-10034975/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-10034975/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-10034975/navigation"
       }
     },
     {
@@ -66,7 +66,7 @@
         "name": "Lake Mendota - Marshall Park Beach",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-10037966/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-10037966/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-10037966/navigation"
       }
     },
     {
@@ -83,7 +83,7 @@
         "name": "Lake Mendota at Upham Ct",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-10043400/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-10043400/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-10043400/navigation"
       }
     },
     {
@@ -100,7 +100,7 @@
         "name": "Stricker Pond - Deep Hole",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-133461/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-133461/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-133461/navigation"
       }
     },
     {
@@ -117,7 +117,7 @@
         "name": "Tiedeman Pond - E Side Gammon Rd",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-133524/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-133524/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-133524/navigation"
       }
     },
     {
@@ -134,7 +134,7 @@
         "name": "Lake Mendota -- Middleton Boat Ramp",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-133464/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-133464/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-133464/navigation"
       }
     },
     {
@@ -151,7 +151,7 @@
         "name": "Lake Mendota -- Marshall Park Boat Park",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-10017941/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-10017941/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-10017941/navigation"
       }
     },
     {
@@ -168,7 +168,7 @@
         "name": "Lake Mendota - Pheasant Branch Deep Area",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-10031991/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-10031991/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-10031991/navigation"
       }
     },
     {
@@ -185,7 +185,7 @@
         "name": "Lake Mendota - Lake Mendota Beach",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-10033468/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-10033468/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-10033468/navigation"
       }
     },
     {
@@ -202,7 +202,7 @@
         "name": "SPRING HARBOR STORM SEWER AT MADISON, WI",
         "uri": "https://www.waterqualitydata.us/provider/NWIS/USGS-WI/USGS-05427965/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/USGS-05427965/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/USGS-05427965/navigation"
       }
     },
     {
@@ -219,7 +219,7 @@
         "name": "Lake Mendota -- Mendota County Park Boat Launch",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-10017575/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-10017575/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-10017575/navigation"
       }
     },
     {
@@ -236,7 +236,7 @@
         "name": "Lake Mendota - east end St. Cyr Rd",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-10043399/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-10043399/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-10043399/navigation"
       }
     },
     {
@@ -253,7 +253,7 @@
         "name": "Stonefield Infilitration Pond At Middleton WI",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-133532/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-133532/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-133532/navigation"
       }
     },
     {
@@ -270,7 +270,7 @@
         "name": "OWEN PARK RAIN GARDEN AT MADISON, WI",
         "uri": "https://www.waterqualitydata.us/provider/NWIS/USGS-WI/USGS-430423089291401/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/USGS-430423089291401/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/USGS-430423089291401/navigation"
       }
     },
     {
@@ -287,7 +287,7 @@
         "name": "Lake Mendota - Picnic Point Beach",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-10039736/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-10039736/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-10039736/navigation"
       }
     },
     {
@@ -304,7 +304,7 @@
         "name": "SOUTH KENOSHA DRIVE STORM SEWER AT MADISON, WI",
         "uri": "https://www.waterqualitydata.us/provider/NWIS/USGS-WI/USGS-430402089282000/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/USGS-430402089282000/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/USGS-430402089282000/navigation"
       }
     },
     {
@@ -321,7 +321,7 @@
         "name": "TIEDEMAN'S POND AT MIDDLETON, WI",
         "uri": "https://www.waterqualitydata.us/provider/NWIS/USGS-WI/USGS-05427949/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/USGS-05427949/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/USGS-05427949/navigation"
       }
     },
     {
@@ -338,7 +338,7 @@
         "name": "SOUTH YELLOWSTONE DRIVE STORM SEWER AT MADISON, WI",
         "uri": "https://www.waterqualitydata.us/provider/NWIS/USGS-WI/USGS-430356089293601/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/USGS-430356089293601/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/USGS-430356089293601/navigation"
       }
     },
     {
@@ -355,7 +355,7 @@
         "name": "DN-07/09E/16-0303",
         "uri": "https://www.waterqualitydata.us/provider/NWIS/USGS-WI/USGS-430519089263001/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/USGS-430519089263001/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/USGS-430519089263001/navigation"
       }
     },
     {
@@ -372,7 +372,7 @@
         "name": "South Kenosha Drive (East) Storm Sewer at Madison WI",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-10040786/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-10040786/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-10040786/navigation"
       }
     },
     {
@@ -389,7 +389,7 @@
         "name": "STONEFIELD INFILTRATION POND AT MIDDLETON",
         "uri": "https://www.waterqualitydata.us/provider/NWIS/USGS-WI/USGS-430515089300601/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/USGS-430515089300601/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/USGS-430515089300601/navigation"
       }
     },
     {
@@ -406,7 +406,7 @@
         "name": "DN-07/09E/18-0003SP",
         "uri": "https://www.waterqualitydata.us/provider/NWIS/USGS-WI/USGS-430453089280001/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/USGS-430453089280001/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/USGS-430453089280001/navigation"
       }
     },
     {
@@ -423,7 +423,7 @@
         "name": "LAKE MENDOTA - SPRING HARBOR BEACH",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-133542/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-133542/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-133542/navigation"
       }
     },
     {
@@ -440,7 +440,7 @@
         "name": "Lake Mendota - West Side",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-133536/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-133536/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-133536/navigation"
       }
     },
     {
@@ -457,7 +457,7 @@
         "name": "LAKE MENDOTA, WEST BAY, AT MADISON, WI",
         "uri": "https://www.waterqualitydata.us/provider/NWIS/USGS-WI/USGS-430600089272001/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/USGS-430600089272001/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/USGS-430600089272001/navigation"
       }
     },
     {
@@ -474,7 +474,7 @@
         "name": "Tiedman Pond - Deep Hole",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-133460/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-133460/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-133460/navigation"
       }
     },
     {
@@ -491,7 +491,7 @@
         "name": "SALERNO CT. MIDDLETON - ARBOR LAKES",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-133515/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-133515/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-133515/navigation"
       }
     },
     {
@@ -508,7 +508,7 @@
         "name": "TIEDMAN POND AT MIDDLETON",
         "uri": "https://www.waterqualitydata.us/provider/NWIS/USGS-WI/USGS-430524089301901/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/USGS-430524089301901/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/USGS-430524089301901/navigation"
       }
     },
     {
@@ -525,7 +525,7 @@
         "name": "DN-07/08E/12-0921",
         "uri": "https://www.waterqualitydata.us/provider/NWIS/USGS-WI/USGS-430540089294001/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/USGS-430540089294001/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/USGS-430540089294001/navigation"
       }
     },
     {
@@ -542,7 +542,7 @@
         "name": "South Yellowstone Drive Storm Sewer at Madison WI",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-10040785/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-10040785/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-10040785/navigation"
       }
     },
     {
@@ -559,7 +559,7 @@
         "name": "Lake Mendota - Madison Water Dist",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-133221/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-133221/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-133221/navigation"
       }
     },
     {
@@ -576,7 +576,7 @@
         "name": "Lake Mendota -- Spring Harbor",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-10017443/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-10017443/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-10017443/navigation"
       }
     },
     {
@@ -593,7 +593,7 @@
         "name": "Storm Sewer at Kenosha Dr in Madison [KENARM-1]",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-10033592/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-10033592/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-10033592/navigation"
       }
     },
     {
@@ -610,7 +610,7 @@
         "name": "Tiedemans Pond, Dane County, WI, USA",
         "uri": "https://www.waterqualitydata.us/provider/STORET/NALMS/NALMS-F1842718/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/NALMS-F1842718/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/NALMS-F1842718/navigation"
       }
     },
     {
@@ -627,7 +627,7 @@
         "name": "DN-07/08E/01-0214",
         "uri": "https://www.waterqualitydata.us/provider/NWIS/USGS-WI/USGS-430615089285701/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/USGS-430615089285701/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/USGS-430615089285701/navigation"
       }
     },
     {
@@ -644,7 +644,7 @@
         "name": "Stricker Pond  Nw Corner",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-10022809/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-10022809/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-10022809/navigation"
       }
     },
     {
@@ -661,7 +661,7 @@
         "name": "University Ave storm sewer at Spring Harbor",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-10032770/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-10032770/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-10032770/navigation"
       }
     },
     {
@@ -678,7 +678,7 @@
         "name": "DN-07/09E/19-0064",
         "uri": "https://www.waterqualitydata.us/provider/NWIS/USGS-WI/USGS-430427089284901/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/USGS-430427089284901/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/USGS-430427089284901/navigation"
       }
     },
     {
@@ -695,7 +695,7 @@
         "name": "Strickers Pond",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-10001232/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-10001232/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-10001232/navigation"
       }
     },
     {
@@ -712,7 +712,7 @@
         "name": "Lake Mendota - Central Deep Hole",
         "uri": "https://www.waterqualitydata.us/provider/STORET/WIDNR_WQX/WIDNR_WQX-133318/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/WIDNR_WQX-133318/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/WIDNR_WQX-133318/navigation"
       }
     },
     {
@@ -729,7 +729,7 @@
         "name": "SOUTH KENOSHA DRIVE (EAST) STORM SEWR @ MADISON,WI",
         "uri": "https://www.waterqualitydata.us/provider/NWIS/USGS-WI/USGS-430358089281901/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/USGS-430358089281901/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/USGS-430358089281901/navigation"
       }
     },
     {
@@ -746,7 +746,7 @@
         "name": "DN-07/09E/18-0715",
         "uri": "https://www.waterqualitydata.us/provider/NWIS/USGS-WI/USGS-430440089281001/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/USGS-430440089281001/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/USGS-430440089281001/navigation"
       }
     },
     {
@@ -763,7 +763,7 @@
         "name": "Lake Mendota, Dane County, WI, USA",
         "uri": "https://www.waterqualitydata.us/provider/STORET/NALMS/NALMS-F1569337/",
         "comid": "13294314",
-        "navigation": "https://labs.waterdata.usgs.gov/api/nldi/linked-data/wqp/NALMS-F1569337/navigation"
+        "navigation": "https://api.water.usgs.gov/nldi/linked-data/wqp/NALMS-F1569337/navigation"
       }
     }
   ]
