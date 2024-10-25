@@ -44,7 +44,8 @@ WATERDATA_SERVICES = [
     "water_use",
     "ratings",
 ]
-_CRS = "EPSG:4236"
+# NAD83
+_CRS = "EPSG:4269"
 
 
 def format_response(
