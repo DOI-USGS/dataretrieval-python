@@ -12,6 +12,7 @@ See https://waterqualitydata.us/webservices_documentation for API reference
 from __future__ import annotations
 
 import warnings
+import requests
 from io import StringIO
 from typing import TYPE_CHECKING
 
@@ -90,7 +91,8 @@ def get_USGS_samples(
        pointLocationLongitude=None,
        pointLocationWithinMiles=None,
        projectIdentifier=None,
-       recordIdentifierUserSupplied=None
+       recordIdentifierUserSupplied=None,
+       mimeType="text/csv"
 ):
     """Search Samples database for USGS water quality data.
     This is a wrapper function for the Samples database API. All potential
@@ -109,105 +111,118 @@ def get_USGS_samples(
 
     Parameters
     ----------
-       service : string
+    service : string
         One of the available Samples services: "results", "locations", "activities",
         "projects", or "organizations". Defaults to "results".
-       profile : string
-            One of the available profiles associated with a service. Options for each
-            service are:
-            "results" - "fullphyschem", "basicphyschem",
-                        "fullbio", "basicbio", "narrow",
-                        "resultdetectionquantitationlimit",
-                        "labsampleprep", "count"
-            "locations" - "site", "count"
-            "activities" - "sampact", "actmetric",
-                            "actgroup", "count"
-            "projects" - "project", "projectmonitoringlocationweight"
-            "organizations" - "organization", "count"
-       activityMediaName : string or list of strings, optional
-            Name or code indicating environmental medium sample was taken.
-            Example: "Water".
-       activityStartDateLower : string, optional
-            The start date if using a date range. Takes the format YYYY-MM-DD.
-            The logic is inclusive, i.e. it will also return results that
-            match the date. 
-       activityStartDateUpper : string, optional
-            The end date if using a date range. Takes the format YYYY-MM-DD.
-            The logic is inclusive, i.e. it will also return results that
-            match the date. If left as None, will pull all data before
-            activityStartDateLower up to the most recent available results.
-       activityTypeCode : string or list of strings, optional
-            Text code that describes type of field activity performed.
-            Example: "Sample-Routine, regular".
-       characteristicGroup : string or list of strings, optional
-            Characteristic group is a broad category describing one or more
-            of results.
-            Example: "Organics, PFAS"
-       characteristc : string or list of strings, optional
-            Characteristic is a specific category describing one or more results.
-            Example: "Suspended Sediment Discharge"
-       characteristicUserSupplied : string or list of strings, optional
-            A user supplied characteristic name describing one or more results.
-       boundingBox: list of four floats, optional
-            Filters on the the associated monitoring location's point location
-            by checking if it is located within the specified geographic area. 
-            The logic is inclusive, i.e. it will include locations that overlap
-            with the edge of the bounding box. Values are separated by commas,
-            expressed in decimal degrees, NAD83, and longitudes west of Greenwich
-            are negative.
-            The format is a string consisting of:
-            - Western-most longitude
-            - Southern-most latitude
-            - Eastern-most longitude
-            - Northern-most longitude 
-            Example: [-92.8,44.2,-88.9,46.0]
-       countryFips : string or list of strings, optional
-            Example: "US" (United States)
-       stateFips : string or list of strings, optional
-            Check out the code service for FIPS codes:
-            https://api.waterdata.usgs.gov/samples-data/codeservice/docs#/
-            Example: "US:15" (United States: Hawaii)
-        countyFips : string or list of strings, optional
-            Check out the code service for FIPS codes:
-            https://api.waterdata.usgs.gov/samples-data/codeservice/docs#/
-            Example: "US:15:001" (United States: Hawaii, Hawaii County)
-       siteTypeCode : string or list of strings, optional
-            An abbreviation for a certain site type. 
-            Example: "GW" (Groundwater site)
-       siteTypeName : string or list of strings, optional
-            A full name for a certain site type.
-            Example: "Well"
-       usgsPCode : string or list of strings, optional
-            5-digit number used in the US Geological Survey computerized
-            data system, National Water Information System (NWIS), to
-            uniquely identify a specific constituent
-            Example: "00060" (Discharge, cubic feet per second)
-       hydrologicUnit : string or list of strings, optional
-            Max 12-digit number used to describe a hydrologic unit.
-            Example: "070900020502"
-       monitoringLocationIdentifier : string or list of strings, optional
-            A monitoring location identifier has two parts: the agency code
-            and the location number, separated by a dash (-).
-            Example: "USGS-040851385"
-       organizationIdentifier : string or list of strings, optional
-            Designator used to uniquely identify a specific organization.
-            Currently only accepting the organization "USGS".
-       pointLocationLatitude : float, optional
-            Latitude for a point/radius query (decimal degrees). Must be used
-            with pointLocationLongitude and pointLocationWithinMiles.
-       pointLocationLongitude : float, optional
-            Longitude for a point/radius query (decimal degrees). Must be used
-            with pointLocationLatitude and pointLocationWithinMiles.
-       pointLocationWithinMiles : float, optional
-            Radius for a point/radius query. Must be used with
-            pointLocationLatitude and pointLocationLongitude
-       projectIdentifier : string or list of strings, optional
-            Designator used to uniquely id a data collection project in
-            organization context. 
-       recordIdentifierUserSupplied : string or list of strings, optional
-            Internal AQS record identifier that returns 1 entry. Only available
-            for the "results" service.
+    profile : string
+        One of the available profiles associated with a service. Options for each
+        service are:
+        "results" - "fullphyschem", "basicphyschem",
+                    "fullbio", "basicbio", "narrow",
+                    "resultdetectionquantitationlimit",
+                    "labsampleprep", "count"
+        "locations" - "site", "count"
+        "activities" - "sampact", "actmetric",
+                        "actgroup", "count"
+        "projects" - "project", "projectmonitoringlocationweight"
+        "organizations" - "organization", "count"
+    activityMediaName : string or list of strings, optional
+        Name or code indicating environmental medium sample was taken.
+        Example: "Water".
+    activityStartDateLower : string, optional
+        The start date if using a date range. Takes the format YYYY-MM-DD.
+        The logic is inclusive, i.e. it will also return results that
+        match the date. 
+    activityStartDateUpper : string, optional
+        The end date if using a date range. Takes the format YYYY-MM-DD.
+        The logic is inclusive, i.e. it will also return results that
+        match the date. If left as None, will pull all data before
+        activityStartDateLower up to the most recent available results.
+    activityTypeCode : string or list of strings, optional
+        Text code that describes type of field activity performed.
+        Example: "Sample-Routine, regular".
+    characteristicGroup : string or list of strings, optional
+        Characteristic group is a broad category describing one or more
+        of results.
+        Example: "Organics, PFAS"
+    characteristc : string or list of strings, optional
+        Characteristic is a specific category describing one or more results.
+        Example: "Suspended Sediment Discharge"
+    characteristicUserSupplied : string or list of strings, optional
+        A user supplied characteristic name describing one or more results.
+    boundingBox: list of four floats, optional
+        Filters on the the associated monitoring location's point location
+        by checking if it is located within the specified geographic area. 
+        The logic is inclusive, i.e. it will include locations that overlap
+        with the edge of the bounding box. Values are separated by commas,
+        expressed in decimal degrees, NAD83, and longitudes west of Greenwich
+        are negative.
+        The format is a string consisting of:
+        - Western-most longitude
+        - Southern-most latitude
+        - Eastern-most longitude
+        - Northern-most longitude 
+        Example: [-92.8,44.2,-88.9,46.0]
+    countryFips : string or list of strings, optional
+        Example: "US" (United States)
+    stateFips : string or list of strings, optional
+        Check out the code service for FIPS codes:
+        https://api.waterdata.usgs.gov/samples-data/codeservice/docs#/
+        Example: "US:15" (United States: Hawaii)
+    countyFips : string or list of strings, optional
+        Check out the code service for FIPS codes:
+        https://api.waterdata.usgs.gov/samples-data/codeservice/docs#/
+        Example: "US:15:001" (United States: Hawaii, Hawaii County)
+    siteTypeCode : string or list of strings, optional
+        An abbreviation for a certain site type. 
+        Example: "GW" (Groundwater site)
+    siteTypeName : string or list of strings, optional
+        A full name for a certain site type.
+        Example: "Well"
+    usgsPCode : string or list of strings, optional
+        5-digit number used in the US Geological Survey computerized
+        data system, National Water Information System (NWIS), to
+        uniquely identify a specific constituent
+        Example: "00060" (Discharge, cubic feet per second)
+    hydrologicUnit : string or list of strings, optional
+        Max 12-digit number used to describe a hydrologic unit.
+        Example: "070900020502"
+    monitoringLocationIdentifier : string or list of strings, optional
+        A monitoring location identifier has two parts: the agency code
+        and the location number, separated by a dash (-).
+        Example: "USGS-040851385"
+    organizationIdentifier : string or list of strings, optional
+        Designator used to uniquely identify a specific organization.
+        Currently only accepting the organization "USGS".
+    pointLocationLatitude : float, optional
+        Latitude for a point/radius query (decimal degrees). Must be used
+        with pointLocationLongitude and pointLocationWithinMiles.
+    pointLocationLongitude : float, optional
+        Longitude for a point/radius query (decimal degrees). Must be used
+        with pointLocationLatitude and pointLocationWithinMiles.
+    pointLocationWithinMiles : float, optional
+        Radius for a point/radius query. Must be used with
+        pointLocationLatitude and pointLocationLongitude
+    projectIdentifier : string or list of strings, optional
+        Designator used to uniquely id a data collection project in
+        organization context. 
+    recordIdentifierUserSupplied : string or list of strings, optional
+        Internal AQS record identifier that returns 1 entry. Only available
+        for the "results" service.
+    mimeType : string, optional
+
+
     """
     _check_profiles(service, profile)
 
-    
+    # Get all not-None inputs
+    params = {key: value for key, value in locals().items() if value is not None and key not in ['service', 'profile']}
+
+    # Build URL with service and profile
+    url = BASE_URL + service + "/" + profile
+    # Make a GET request with the filtered parameters
+    response = requests.get(url, params=params)
+
+    return response
+
+
