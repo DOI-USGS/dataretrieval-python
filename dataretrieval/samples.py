@@ -1,11 +1,7 @@
 """
-Tool for downloading data from the Water Quality Portal (https://waterqualitydata.us)
+Tool for downloading data from the USGS Aquarius Samples database (https://waterqualitydata.us)
 
-See https://waterqualitydata.us/webservices_documentation for API reference
-
-.. todo::
-
-    - implement other services like Organization, Activity, etc.
+See https://api.waterdata.usgs.gov/samples-data/docs#/ for API reference
 
 """
 
@@ -13,12 +9,13 @@ from __future__ import annotations
 
 import warnings
 import requests
+from requests.models import PreparedRequest
 from io import StringIO
 from typing import TYPE_CHECKING
 
 import pandas as pd
 
-#from .utils import BaseMetadata, query
+from utils import BaseMetadata, query
 
 if TYPE_CHECKING:
     from pandas import DataFrame
@@ -68,31 +65,32 @@ def _check_profiles(
         )
 
 def get_USGS_samples(
-       service="results",
-       profile="fullphyschem",
-       activityMediaName=None,
-       activityStartDateLower=None,
-       activityStartDateUpper=None,
-       activityTypeCode=None,
-       characteristicGroup=None,
-       characteristc=None,
-       characteristicUserSupplied=None,
-       boundingBox=None,
-       countryFips=None,
-       stateFips=None,
-       countyFips=None,
-       siteTypeCode=None,
-       siteTypeName=None,
-       usgsPCode=None,
-       hydrologicUnit=None,
-       monitoringLocationIdentifier=None,
-       organizationIdentifier=None,
-       pointLocationLatitude=None,
-       pointLocationLongitude=None,
-       pointLocationWithinMiles=None,
-       projectIdentifier=None,
-       recordIdentifierUserSupplied=None,
-       mimeType="text/csv"
+        ssl_check=True,
+        service="results",
+        profile="fullphyschem",
+        activityMediaName=None,
+        activityStartDateLower=None,
+        activityStartDateUpper=None,
+        activityTypeCode=None,
+        characteristicGroup=None,
+        characteristc=None,
+        characteristicUserSupplied=None,
+        boundingBox=None,
+        countryFips=None,
+        stateFips=None,
+        countyFips=None,
+        siteTypeCode=None,
+        siteTypeName=None,
+        usgsPCode=None,
+        hydrologicUnit=None,
+        monitoringLocationIdentifier=None,
+        organizationIdentifier=None,
+        pointLocationLatitude=None,
+        pointLocationLongitude=None,
+        pointLocationWithinMiles=None,
+        projectIdentifier=None,
+        recordIdentifierUserSupplied=None,
+        mimeType="text/csv"
 ):
     """Search Samples database for USGS water quality data.
     This is a wrapper function for the Samples database API. All potential
@@ -111,21 +109,23 @@ def get_USGS_samples(
 
     Parameters
     ----------
+    ssl_check : bool, optional
+        Check the SSL certificate.
     service : string
         One of the available Samples services: "results", "locations", "activities",
         "projects", or "organizations". Defaults to "results".
     profile : string
         One of the available profiles associated with a service. Options for each
         service are:
-        "results" - "fullphyschem", "basicphyschem",
+        results - "fullphyschem", "basicphyschem",
                     "fullbio", "basicbio", "narrow",
                     "resultdetectionquantitationlimit",
                     "labsampleprep", "count"
-        "locations" - "site", "count"
-        "activities" - "sampact", "actmetric",
+        locations - "site", "count"
+        activities - "sampact", "actmetric",
                         "actgroup", "count"
-        "projects" - "project", "projectmonitoringlocationweight"
-        "organizations" - "organization", "count"
+        projects - "project", "projectmonitoringlocationweight"
+        organizations - "organization", "count"
     activityMediaName : string or list of strings, optional
         Name or code indicating environmental medium sample was taken.
         Example: "Water".
@@ -150,7 +150,7 @@ def get_USGS_samples(
         Example: "Suspended Sediment Discharge"
     characteristicUserSupplied : string or list of strings, optional
         A user supplied characteristic name describing one or more results.
-    boundingBox: list of four floats, optional
+    boundingBox: string of four floats, optional
         Filters on the the associated monitoring location's point location
         by checking if it is located within the specified geographic area. 
         The logic is inclusive, i.e. it will include locations that overlap
@@ -162,7 +162,7 @@ def get_USGS_samples(
         - Southern-most latitude
         - Eastern-most longitude
         - Northern-most longitude 
-        Example: [-92.8,44.2,-88.9,46.0]
+        Example: '-92.8,44.2,-88.9,46.0'
     countryFips : string or list of strings, optional
         Example: "US" (United States)
     stateFips : string or list of strings, optional
@@ -210,19 +210,55 @@ def get_USGS_samples(
         Internal AQS record identifier that returns 1 entry. Only available
         for the "results" service.
     mimeType : string, optional
+    
+    Returns
+    -------
+    df : ``pandas.DataFrame``
+        Formatted data returned from the API query.
+    md : :obj:`dataretrieval.utils.Metadata`
+        Custom ``dataretrieval`` metadata object pertaining to the query.
 
+    Examples
+    --------
+    .. code::
+
+        >>> # Get PFAS results within a bounding box
+        >>> df, md = dataretrieval.samples.get_USGS_samples(
+        ...     boundingBox="-90.2,42.6,-88.7,43.2",
+        ...     characteristicGroup="Organics, PFAS"
+        ... )
+
+        >>> # Get all activities for the Commonwealth of Virginia over a date range
+        >>> df, md = dataretrieval.samples.get_USGS_samples(
+        ...     service="activities",
+        ...     profile="sampact",
+        ...     activityStartDateLower="2023-10-01",
+        ...     activityStartDateUpper="2024-01-01",
+        ...     stateFips="US:51")
 
     """
     _check_profiles(service, profile)
 
     # Get all not-None inputs
-    params = {key: value for key, value in locals().items() if value is not None and key not in ['service', 'profile']}
+    params = {key: value for key, value in locals().items() if value is not None and key not in ['service', 'profile', 'ssl_check']}
+
+    if len(params) == 1 and 'mimeType' in params:
+        raise TypeError("No filter parameters provided. You must add at least " 
+                        "one filter parameter beyond a service, profile, and format argument.")
 
     # Build URL with service and profile
     url = BASE_URL + service + "/" + profile
-    # Make a GET request with the filtered parameters
-    response = requests.get(url, params=params)
 
-    return response
+    # Print URL
+    req = PreparedRequest()
+    req.prepare_url(url, params=params)
+    print(f"Request: {req.url}")
+
+    # Make a GET request with the filtered parameters
+    response = query(url, params, delimiter=";", ssl_check=ssl_check)
+
+    df = pd.read_csv(StringIO(response.text), delimiter=",")
+
+    return df, BaseMetadata(response)
 
 
