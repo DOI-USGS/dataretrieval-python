@@ -255,10 +255,11 @@ def get_USGS_samples(
     print(f"Request: {req.url}")
 
     # Make a GET request with the filtered parameters
-    response = query(url, params, delimiter=";", ssl_check=ssl_check)
+    response = query(url, params, ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=",")
 
-    return df, BaseMetadata(response)
+    #return response
 
+    return df, BaseMetadata(response)
 
