@@ -3,6 +3,10 @@ Tool for downloading data from the USGS Aquarius Samples database (https://water
 
 See https://api.waterdata.usgs.gov/samples-data/docs#/ for API reference
 
+Not sure about avilable site types, characteristics, state codes, or other
+input parameters? Check out the samples data code service API reference:
+https://api.waterdata.usgs.gov/samples-data/codeservice/docs
+
 """
 
 from __future__ import annotations
@@ -127,16 +131,17 @@ def get_USGS_samples(
         projects - "project", "projectmonitoringlocationweight"
         organizations - "organization", "count"
     activityMediaName : string or list of strings, optional
-        Name or code indicating environmental medium sample was taken.
+        Name or code indicating environmental medium in which sample was taken.
         Example: "Water".
     activityStartDateLower : string, optional
         The start date if using a date range. Takes the format YYYY-MM-DD.
         The logic is inclusive, i.e. it will also return results that
-        match the date. 
+        match the date. If left as None, will pull all data on or before
+        activityStartDateUpper, of populated.
     activityStartDateUpper : string, optional
         The end date if using a date range. Takes the format YYYY-MM-DD.
         The logic is inclusive, i.e. it will also return results that
-        match the date. If left as None, will pull all data before
+        match the date. If left as None, will pull all data after
         activityStartDateLower up to the most recent available results.
     activityTypeCode : string or list of strings, optional
         Text code that describes type of field activity performed.
