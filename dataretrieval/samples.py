@@ -236,6 +236,11 @@ def get_USGS_samples(
         ...     activityStartDateUpper="2024-01-01",
         ...     stateFips="US:51")
 
+        >>> # Get all pH samples for two sites in Utah
+        >>> df, md = dataretrieval.samples.get_USGS_samples(
+        ...     monitoringLocationIdentifier=['USGS-393147111462301', 'USGS-393343111454101'],
+        ...     usgsPCode='00400')
+
     """
     _check_profiles(service, profile)
 
