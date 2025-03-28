@@ -10,12 +10,13 @@ from __future__ import annotations
 import warnings
 import requests
 from requests.models import PreparedRequest
+from typing import List, Optional, Tuple, Union
 from io import StringIO
 from typing import TYPE_CHECKING
 
 import pandas as pd
 
-from utils import BaseMetadata, query
+from utils import BaseMetadata, query, to_str
 
 if TYPE_CHECKING:
     from pandas import DataFrame
@@ -89,9 +90,8 @@ def get_USGS_samples(
         pointLocationLongitude=None,
         pointLocationWithinMiles=None,
         projectIdentifier=None,
-        recordIdentifierUserSupplied=None,
-        mimeType="text/csv"
-):
+        recordIdentifierUserSupplied=None
+) -> Tuple[pd.DataFrame, BaseMetadata]:
     """Search Samples database for USGS water quality data.
     This is a wrapper function for the Samples database API. All potential
     filters are provided as arguments to the function, but please do not
@@ -150,7 +150,7 @@ def get_USGS_samples(
         Example: "Suspended Sediment Discharge"
     characteristicUserSupplied : string or list of strings, optional
         A user supplied characteristic name describing one or more results.
-    boundingBox: string of four floats, optional
+    boundingBox: list of four floats, optional
         Filters on the the associated monitoring location's point location
         by checking if it is located within the specified geographic area. 
         The logic is inclusive, i.e. it will include locations that overlap
@@ -162,7 +162,7 @@ def get_USGS_samples(
         - Southern-most latitude
         - Eastern-most longitude
         - Northern-most longitude 
-        Example: '-92.8,44.2,-88.9,46.0'
+        Example: [-92.8,44.2,-88.9,46.0]
     countryFips : string or list of strings, optional
         Example: "US" (United States)
     stateFips : string or list of strings, optional
@@ -224,7 +224,7 @@ def get_USGS_samples(
 
         >>> # Get PFAS results within a bounding box
         >>> df, md = dataretrieval.samples.get_USGS_samples(
-        ...     boundingBox="-90.2,42.6,-88.7,43.2",
+        ...     boundingBox=[-90.2,42.6,-88.7,43.2],
         ...     characteristicGroup="Organics, PFAS"
         ... )
 
@@ -242,9 +242,16 @@ def get_USGS_samples(
     # Get all not-None inputs
     params = {key: value for key, value in locals().items() if value is not None and key not in ['service', 'profile', 'ssl_check']}
 
-    if len(params) == 1 and 'mimeType' in params:
+    if len(params) == 0:
         raise TypeError("No filter parameters provided. You must add at least " 
                         "one filter parameter beyond a service, profile, and format argument.")
+    
+    # Add in file format (could be an input, too, though not sure about other formats)
+    params['mimeType'] = "text/csv"
+
+    # Convert bounding box to a string
+    if "boundingBox" in params:
+        params['boundingBox'] = to_str(params['boundingBox'])
 
     # Build URL with service and profile
     url = BASE_URL + service + "/" + profile
@@ -255,11 +262,12 @@ def get_USGS_samples(
     print(f"Request: {req.url}")
 
     # Make a GET request with the filtered parameters
-    response = query(url, params, ssl_check=ssl_check)
+    response = requests.get(url, params=params, verify=ssl_check)
+
+    response.raise_for_status
 
     df = pd.read_csv(StringIO(response.text), delimiter=",")
 
     #return response
 
     return df, BaseMetadata(response)
-
