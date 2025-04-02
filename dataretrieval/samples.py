@@ -3,7 +3,7 @@ Tool for downloading data from the USGS Aquarius Samples database (https://water
 
 See https://api.waterdata.usgs.gov/samples-data/docs#/ for API reference
 
-Not sure about avilable site types, characteristics, state codes, or other
+Not sure about available site types, characteristics, state codes, or other
 input parameters? Check out the samples data code service API reference:
 https://api.waterdata.usgs.gov/samples-data/codeservice/docs
 
