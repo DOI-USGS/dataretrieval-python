@@ -137,7 +137,7 @@ def get_USGS_samples(
         The start date if using a date range. Takes the format YYYY-MM-DD.
         The logic is inclusive, i.e. it will also return results that
         match the date. If left as None, will pull all data on or before
-        activityStartDateUpper, of populated.
+        activityStartDateUpper, if populated.
     activityStartDateUpper : string, optional
         The end date if using a date range. Takes the format YYYY-MM-DD.
         The logic is inclusive, i.e. it will also return results that
@@ -147,10 +147,10 @@ def get_USGS_samples(
         Text code that describes type of field activity performed.
         Example: "Sample-Routine, regular".
     characteristicGroup : string or list of strings, optional
-        Characteristic group is a broad category describing one or more
-        of results.
+        Characteristic group is a broad category of characteristics
+        describing one or more results.
         Example: "Organics, PFAS"
-    characteristc : string or list of strings, optional
+    characteristic : string or list of strings, optional
         Characteristic is a specific category describing one or more results.
         Example: "Suspended Sediment Discharge"
     characteristicUserSupplied : string or list of strings, optional
