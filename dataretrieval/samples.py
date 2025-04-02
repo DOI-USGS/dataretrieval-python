@@ -209,8 +209,9 @@ def get_USGS_samples(
         Radius for a point/radius query. Must be used with
         pointLocationLatitude and pointLocationLongitude
     projectIdentifier : string or list of strings, optional
-        Designator used to uniquely id a data collection project in
-        organization context. 
+        Designator used to uniquely identify a data collection project. Project
+        identifiers are specific to an organization (e.g. USGS).
+        Example: "ZH003QW03"
     recordIdentifierUserSupplied : string or list of strings, optional
         Internal AQS record identifier that returns 1 entry. Only available
         for the "results" service.
