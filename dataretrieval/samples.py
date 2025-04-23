@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING
 
 import pandas as pd
 
-from utils import BaseMetadata, query, to_str
+from dataretrieval.utils import BaseMetadata, to_str
 
 if TYPE_CHECKING:
     from pandas import DataFrame
