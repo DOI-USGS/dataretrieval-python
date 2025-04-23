@@ -9,6 +9,7 @@ API reference
 
     nadp
     nwis
+    samples
     streamstats
     utils
     wqp

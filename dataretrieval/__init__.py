@@ -6,6 +6,7 @@ from dataretrieval.streamstats import *
 from dataretrieval.utils import *
 from dataretrieval.waterwatch import *
 from dataretrieval.wqp import *
+from dataretrieval.samples import *
 
 try:
     __version__ = version("dataretrieval")
