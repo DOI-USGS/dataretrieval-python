@@ -16,6 +16,7 @@ import requests
 from requests.models import PreparedRequest
 from typing import List, Optional, Tuple, Union
 from io import StringIO
+import json
 from typing import TYPE_CHECKING
 
 import pandas as pd
@@ -68,6 +69,137 @@ def _check_profiles(
             f"the {service} service. Valid options are " 
             f"{services_dict[service]}."
         )
+
+def _get_codeservice(input_name):
+    """Grab dataframe from Samples code service.
+    
+    Parameters
+    ----------
+    input_name : string
+        One of the following options: "states", "counties",
+        "sitetype", "samplemedia", "characteristicgroup",
+        "characteristics", or "observedproperty"
+    """
+    
+    url = "https://api.waterdata.usgs.gov/samples-data/codeservice/" + input_name + "?mimeType=application%2Fjson"
+    
+    response = requests.get(url)
+    
+    response.raise_for_status
+
+    # Extract json
+    data_dict = json.loads(response.text)
+    
+    # Convert to list
+    data_list = data_dict['data']
+
+    # Create lookup dataFrame
+    df = pd.DataFrame(data_list)
+
+    return df
+    
+def stateFips_lookup():
+    """Code service that returns a dataframe of all possible stateFips codes to be used
+    in `get_USGS_samples()`
+
+    Parameters
+    ----------
+    None, returns a standard pandas dataframe of all FIPS codes.
+
+    """
+    df = _get_codeservice(input_name="states")
+
+    df['stateFips'] = "US:" + df['fipsCode']
+
+    df = df[['stateName', 'stateFips']]
+
+    return df
+
+def countyFips_lookup():
+    """Code service that returns a dataframe of all possible countyFips codes to be used
+    in `get_USGS_samples()`
+
+    Parameters
+    ----------
+    None, returns a standard pandas dataframe of all FIPS codes.
+     
+    """
+    counties = _get_codeservice(input_name="counties")
+    states = _get_codeservice(input_name="states")
+
+    county_states = pd.merge(counties[['countyCode', 'countyName', 'stateAbbrev']], states[['stateAbbrev', 'fipsCode', 'stateName']], on="stateAbbrev", how="left")
+
+    county_states['countyFips'] = "US:" + county_states['fipsCode'] + ":" + county_states['countyCode']
+
+    df = county_states[['stateName', 'countyName', 'countyFips']]
+
+    return df
+
+def siteType_lookup():
+    """Code service that returns a dataframe of all possible siteType values and
+    siteTypeName values to be used in `get_USGS_samples()`
+
+    Parameters
+    ----------
+    None, returns a standard pandas dataframe of all FIPS codes.
+
+    """
+    df = _get_codeservice(input_name="sitetype")
+
+    df.rename(columns={'typeCode': 'siteTypeCode', 
+                       'typeName': 'siteTypeName'},
+                       inplace=True)
+
+    df = df[['siteTypeCode', 'siteTypeName', 'typeDescription']]
+
+    return df
+
+def activityMediaName_lookup():
+    """Code service that returns a dataframe of all possible activityMediaName values
+    to be used in `get_USGS_samples()`
+
+    Parameters
+    ----------
+    None, returns a standard pandas dataframe of all activityMediaName values.
+
+    """
+    df = _get_codeservice(input_name="samplemedia")
+
+    df.rename(columns={'activityMedia': 'activityMediaName'},
+                       inplace=True)
+
+    df = df[['activityMediaName']]
+
+    return df
+
+def characteristicGroup_lookup():
+    """Code service that returns a dataframe of all possible characteristicGroup values
+    to be used in `get_USGS_samples()`
+
+    Parameters
+    ----------
+    None, returns a standard pandas dataframe of all characteristicGroup values.
+
+    """
+    df = _get_codeservice(input_name="characteristicgroup")
+
+    return df
+
+def characteristic_lookup():
+    """Code service that returns a dataframe of all possible characteristic values,
+    USGS pcodes, and their associated characteristicGroup to be used in `get_USGS_samples()`
+
+    Parameters
+    ----------
+    None, returns a standard pandas dataframe of all characteristic values.
+
+    """
+    df = _get_codeservice(input_name="characteristics")
+
+    df.rename(columns={'parameterCode': 'usgsPCode'},
+                       inplace=True)
+
+    return df
 
 def get_USGS_samples(
         ssl_check=True,
