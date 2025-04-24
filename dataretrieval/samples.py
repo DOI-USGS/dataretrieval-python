@@ -264,6 +264,8 @@ def get_USGS_samples(
         organizations - "organization", "count"
     activityMediaName : string or list of strings, optional
         Name or code indicating environmental medium in which sample was taken.
+        Check the `activityMediaName_lookup()` function in this module for all
+        possible inputs.
         Example: "Water".
     activityStartDateLower : string, optional
         The start date if using a date range. Takes the format YYYY-MM-DD.
@@ -280,10 +282,13 @@ def get_USGS_samples(
         Example: "Sample-Routine, regular".
     characteristicGroup : string or list of strings, optional
         Characteristic group is a broad category of characteristics
-        describing one or more results.
+        describing one or more results. Check the `characteristicGroup_lookup()`
+        function in this module for all possible inputs.
         Example: "Organics, PFAS"
     characteristic : string or list of strings, optional
         Characteristic is a specific category describing one or more results.
+        Check the `characteristic_lookup()` function in this module for all
+        possible inputs.
         Example: "Suspended Sediment Discharge"
     characteristicUserSupplied : string or list of strings, optional
         A user supplied characteristic name describing one or more results.
@@ -303,23 +308,27 @@ def get_USGS_samples(
     countryFips : string or list of strings, optional
         Example: "US" (United States)
     stateFips : string or list of strings, optional
-        Check out the code service for FIPS codes:
-        https://api.waterdata.usgs.gov/samples-data/codeservice/docs#/
+        Check the `stateFips_lookup()` function in this module for all
+        possible inputs.
         Example: "US:15" (United States: Hawaii)
     countyFips : string or list of strings, optional
-        Check out the code service for FIPS codes:
-        https://api.waterdata.usgs.gov/samples-data/codeservice/docs#/
+        Check the `countyFips_lookup()` function in this module for all
+        possible inputs.
         Example: "US:15:001" (United States: Hawaii, Hawaii County)
     siteTypeCode : string or list of strings, optional
-        An abbreviation for a certain site type. 
+        An abbreviation for a certain site type. Check the `siteType_lookup()`
+        function in this module for all possible inputs.
         Example: "GW" (Groundwater site)
     siteTypeName : string or list of strings, optional
-        A full name for a certain site type.
+        A full name for a certain site type. Check the `siteType_lookup()`
+        function in this module for all possible inputs.
         Example: "Well"
     usgsPCode : string or list of strings, optional
         5-digit number used in the US Geological Survey computerized
         data system, National Water Information System (NWIS), to
-        uniquely identify a specific constituent
+        uniquely identify a specific constituent. Check the 
+        `characteristic_lookup()` function in this module for all possible
+        inputs.
         Example: "00060" (Discharge, cubic feet per second)
     hydrologicUnit : string or list of strings, optional
         Max 12-digit number used to describe a hydrologic unit.
@@ -347,7 +356,6 @@ def get_USGS_samples(
     recordIdentifierUserSupplied : string or list of strings, optional
         Internal AQS record identifier that returns 1 entry. Only available
         for the "results" service.
-    mimeType : string, optional
     
     Returns
     -------
