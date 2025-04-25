@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 BASE_URL = "https://api.waterdata.usgs.gov/samples-data"
 
-_SERVICES = Literal["activites", "locations", "organizations", "projects", "results"]
+_SERVICES = Literal["activities", "locations", "organizations", "projects", "results"]
 
 _PROFILES = {
     "activities": Literal["sampact", "actmetric", "actgroup", "count"],
@@ -49,7 +49,7 @@ _CODE_SERVICES = Literal[
     "characteristicgroup",
     "characteristics",
     "counties",
-    "countries"
+    "countries",
     "observedproperty",
     "samplemedia",
     "sitetype",
@@ -102,7 +102,7 @@ def get_codes(code_service: _CODE_SERVICES) -> DataFrame:
     
     response = requests.get(url)
     
-    response.raise_for_status
+    response.raise_for_status()
 
     data_dict = json.loads(response.text)
     data_list = data_dict['data']
@@ -303,7 +303,7 @@ def get_usgs_samples(
 
     response = requests.get(url, params=params, verify=ssl_check)
 
-    response.raise_for_status
+    response.raise_for_status()
 
     df = pd.read_csv(StringIO(response.text), delimiter=",")
 
