@@ -1,234 +1,124 @@
-"""
-Tool for downloading data from the USGS Aquarius Samples database (https://waterqualitydata.us)
+"""Functions for downloading data from the USGS Aquarius Samples database (https://waterqualitydata.us)
 
 See https://api.waterdata.usgs.gov/samples-data/docs#/ for API reference
-
-Not sure about available site types, characteristics, state codes, or other
-input parameters? Check out the samples data code service API reference:
-https://api.waterdata.usgs.gov/samples-data/codeservice/docs
 
 """
 
 from __future__ import annotations
 
-import warnings
-import requests
-from requests.models import PreparedRequest
-from typing import List, Optional, Tuple, Union
-from io import StringIO
 import json
-from typing import TYPE_CHECKING
+from io import StringIO
+from typing import TYPE_CHECKING, Literal, get_args
 
 import pandas as pd
+import requests
+from requests.models import PreparedRequest
 
 from dataretrieval.utils import BaseMetadata, to_str
 
 if TYPE_CHECKING:
+    from typing import Tuple
+
     from pandas import DataFrame
 
-BASE_URL = "https://api.waterdata.usgs.gov/samples-data/"
 
-services_dict = {
-    "results" : ["fullphyschem", "basicphyschem",
-                    "fullbio", "basicbio", "narrow",
-                    "resultdetectionquantitationlimit",
-                    "labsampleprep", "count"],
-    "locations" : ["site", "count"],
-    "activities" : ["sampact", "actmetric",
-                       "actgroup", "count"],
-    "projects" : ["project", "projectmonitoringlocationweight"],
-    "organizations" : ["organization", "count"]
+BASE_URL = "https://api.waterdata.usgs.gov/samples-data"
+
+_SERVICES = Literal["activites", "locations", "organizations", "projects", "results"]
+
+_PROFILES = {
+    "activities": Literal["sampact", "actmetric", "actgroup", "count"],
+    "locations": Literal["site", "count"],
+    "organizations": Literal["organization", "count"],
+    "projects": Literal["project", "projectmonitoringlocationweight"],
+    "results": Literal[
+        "fullphyschem",
+        "basicphyschem",
+        "fullbio",
+        "basicbio",
+        "narrow",
+        "resultdetectionquantitationlimit",
+        "labsampleprep",
+        "count",
+    ],
 }
 
+_ALL_PROFILES = Literal[*[v for k,v in _PROFILES.items()]]
 
-def _check_profiles(
-        service,
-        profile
-):
-    """Check that services are paired correctly with profile in
-    a service call.
+_CODE_SERVICES = Literal[
+    "characteristicgroup",
+    "characteristics",
+    "counties",
+    "countries"
+    "observedproperty",
+    "samplemedia",
+    "sitetype",
+    "states",
+]
 
+_SAMPLES_KWARGS = Literal[
+    "activityMediaName",
+    "activityStartDateLower",
+    "activityStartDateUpper",
+    "activityTypeCode",
+    "boundingBox",
+    "characteristic",
+    "characteristicGroup",
+    "characteristicUserSupplied",
+    "countyFips",
+    "countryFips",
+    "hydrologicUnit",
+    "monitoringLocationIdentifier",
+    "organizationIdentifier",
+    "pointLocationLatitude",
+    "pointLocationLongitude",
+    "pointLocationWithinMiles",
+    "projectIdentifier",
+    "recordIdentifierUserSupplied",
+    "siteTypeCode",
+    "siteTypeName",
+    "stateFips",
+    "usgsPCode",
+]
+  
+def get_codes(code_service: _CODE_SERVICES) -> DataFrame:
+    """Return codes from a Samples code service.
+    
     Parameters
     ----------
-    service : string
-        One of the service names from the "services" list.
-    profile : string
-        One of the profile names from "results_profiles",
-        "locations_profiles", "activities_profiles",
-        "projects_profiles" or "organizations_profiles". 
+    code_service : string
+        One of the following options: "states", "counties", "countries"
+        "sitetype", "samplemedia", "characteristicgroup", "characteristics",
+        or "observedproperty"
     """
-
-    if service not in services_dict.keys():
-        raise TypeError(
-            f"{service} is not a Samples service. "
-            f"Valid options are {list(services_dict.keys())}."
-            )
-    if profile not in services_dict[service]:
-        raise TypeError(
-            f"{profile} is not a profile associated with "
-            f"the {service} service. Valid options are " 
-            f"{services_dict[service]}."
+    valid_code_services = get_args(_CODE_SERVICES)
+    if code_service not in valid_code_services:
+        raise ValueError(
+            f"Invalid code service: '{code_service}'. "
+            f"Valid options are: {valid_code_services}."
         )
 
-def _get_codeservice(input_name):
-    """Grab dataframe from Samples code service.
-    
-    Parameters
-    ----------
-    input_name : string
-        One of the following options: "states", "counties",
-        "sitetype", "samplemedia", "characteristicgroup",
-        "characteristics", or "observedproperty"
-    """
-    
-    url = "https://api.waterdata.usgs.gov/samples-data/codeservice/" + input_name + "?mimeType=application%2Fjson"
+    url = f"{BASE_URL}/codeservice/{code_service}?mimeType=application%2Fjson"
     
     response = requests.get(url)
     
     response.raise_for_status
 
-    # Extract json
     data_dict = json.loads(response.text)
-    
-    # Convert to list
     data_list = data_dict['data']
 
-    # Create lookup dataFrame
     df = pd.DataFrame(data_list)
 
     return df
-    
-def stateFips_lookup():
-    """Code service that returns a dataframe of all possible stateFips codes to be used
-    in `get_USGS_samples()`
 
-    Parameters
-    ----------
-    None, returns a standard pandas dataframe of all FIPS codes.
-
-    """
-    df = _get_codeservice(input_name="states")
-
-    df['stateFips'] = "US:" + df['fipsCode']
-
-    df = df[['stateName', 'stateFips']]
-
-    return df
-
-def countyFips_lookup():
-    """Code service that returns a dataframe of all possible countyFips codes to be used
-    in `get_USGS_samples()`
-
-    Parameters
-    ----------
-    None, returns a standard pandas dataframe of all FIPS codes.
-     
-    """
-    counties = _get_codeservice(input_name="counties")
-    states = _get_codeservice(input_name="states")
-
-    county_states = pd.merge(counties[['countyCode', 'countyName', 'stateAbbrev']], states[['stateAbbrev', 'fipsCode', 'stateName']], on="stateAbbrev", how="left")
-
-    county_states['countyFips'] = "US:" + county_states['fipsCode'] + ":" + county_states['countyCode']
-
-    df = county_states[['stateName', 'countyName', 'countyFips']]
-
-    return df
-
-def siteType_lookup():
-    """Code service that returns a dataframe of all possible siteType values and
-    siteTypeName values to be used in `get_USGS_samples()`
-
-    Parameters
-    ----------
-    None, returns a standard pandas dataframe of all FIPS codes.
-
-    """
-    df = _get_codeservice(input_name="sitetype")
-
-    df.rename(columns={'typeCode': 'siteTypeCode', 
-                       'typeName': 'siteTypeName'},
-                       inplace=True)
-
-    df = df[['siteTypeCode', 'siteTypeName', 'typeDescription']]
-
-    return df
-
-def activityMediaName_lookup():
-    """Code service that returns a dataframe of all possible activityMediaName values
-    to be used in `get_USGS_samples()`
-
-    Parameters
-    ----------
-    None, returns a standard pandas dataframe of all activityMediaName values.
-
-    """
-    df = _get_codeservice(input_name="samplemedia")
-
-    df.rename(columns={'activityMedia': 'activityMediaName'},
-                       inplace=True)
-
-    df = df[['activityMediaName']]
-
-    return df
-
-def characteristicGroup_lookup():
-    """Code service that returns a dataframe of all possible characteristicGroup values
-    to be used in `get_USGS_samples()`
-
-    Parameters
-    ----------
-    None, returns a standard pandas dataframe of all characteristicGroup values.
-
-    """
-    df = _get_codeservice(input_name="characteristicgroup")
-
-    return df
-
-def characteristic_lookup():
-    """Code service that returns a dataframe of all possible characteristic values,
-    USGS pcodes, and their associated characteristicGroup to be used in `get_USGS_samples()`
-
-    Parameters
-    ----------
-    None, returns a standard pandas dataframe of all characteristic values.
-
-    """
-    df = _get_codeservice(input_name="characteristics")
-
-    df.rename(columns={'parameterCode': 'usgsPCode'},
-                       inplace=True)
-
-    return df
-
-def get_USGS_samples(
+def get_usgs_samples(
         ssl_check=True,
-        service="results",
-        profile="fullphyschem",
-        activityMediaName=None,
-        activityStartDateLower=None,
-        activityStartDateUpper=None,
-        activityTypeCode=None,
-        characteristicGroup=None,
-        characteristc=None,
-        characteristicUserSupplied=None,
-        boundingBox=None,
-        countryFips=None,
-        stateFips=None,
-        countyFips=None,
-        siteTypeCode=None,
-        siteTypeName=None,
-        usgsPCode=None,
-        hydrologicUnit=None,
-        monitoringLocationIdentifier=None,
-        organizationIdentifier=None,
-        pointLocationLatitude=None,
-        pointLocationLongitude=None,
-        pointLocationWithinMiles=None,
-        projectIdentifier=None,
-        recordIdentifierUserSupplied=None
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+        service: _SERVICES = "results",
+        profile= "fullphyschem",
+        **kwargs,
+        ) -> Tuple[DataFrame, BaseMetadata]:
     """Search Samples database for USGS water quality data.
+
     This is a wrapper function for the Samples database API. All potential
     filters are provided as arguments to the function, but please do not
     populate all possible filters; leave as many as feasible with their default
@@ -253,13 +143,10 @@ def get_USGS_samples(
     profile : string
         One of the available profiles associated with a service. Options for each
         service are:
-        results - "fullphyschem", "basicphyschem",
-                    "fullbio", "basicbio", "narrow",
-                    "resultdetectionquantitationlimit",
-                    "labsampleprep", "count"
+        results - "fullphyschem", "basicphyschem", "fullbio", "basicbio", "narrow",
+                  "resultdetectionquantitationlimit", "labsampleprep", "count"
         locations - "site", "count"
-        activities - "sampact", "actmetric",
-                        "actgroup", "count"
+        activities - "sampact", "actmetric", "actgroup", "count"
         projects - "project", "projectmonitoringlocationweight"
         organizations - "organization", "count"
     activityMediaName : string or list of strings, optional
@@ -390,35 +277,64 @@ def get_USGS_samples(
     """
     _check_profiles(service, profile)
 
-    # Get all not-None inputs
-    params = {key: value for key, value in locals().items() if value is not None and key not in ['service', 'profile', 'ssl_check']}
+    valid_kwargs = get_args(_SAMPLES_KWARGS)
+    if not all(key in valid_kwargs for key in kwargs):
+        raise ValueError(
+            f"Invalid keyword arguments. Valid options are: {valid_kwargs}."
+        )
 
-    if len(params) == 0:
-        raise TypeError("No filter parameters provided. You must add at least " 
-                        "one filter parameter beyond a service, profile, and format argument.")
+    if len(kwargs) == 0:
+        raise TypeError(
+            "No filter parameters provided. You must add at least " 
+            "one filter parameter beyond a service, profile, and format argument."
+            )
     
-    # Add in file format (could be an input, too, though not sure about other formats)
-    params['mimeType'] = "text/csv"
+    params = {"mimeType": "text/csv"}
+    params.update(kwargs)
 
-    # Convert bounding box to a string
     if "boundingBox" in params:
         params['boundingBox'] = to_str(params['boundingBox'])
 
-    # Build URL with service and profile
-    url = BASE_URL + service + "/" + profile
+    url = f"{BASE_URL}/{service}/{profile}"
 
-    # Print URL
     req = PreparedRequest()
     req.prepare_url(url, params=params)
     print(f"Request: {req.url}")
 
-    # Make a GET request with the filtered parameters
     response = requests.get(url, params=params, verify=ssl_check)
 
     response.raise_for_status
 
     df = pd.read_csv(StringIO(response.text), delimiter=",")
 
-    #return response
-
     return df, BaseMetadata(response)
+
+def _check_profiles(
+        service: str,
+        profile: str,
+) -> None:
+    """Check whether a service profile is valid.
+
+    Parameters
+    ----------
+    service : string
+        One of the service names from the "services" list.
+    profile : string
+        One of the profile names from "results_profiles",
+        "locations_profiles", "activities_profiles",
+        "projects_profiles" or "organizations_profiles". 
+    """
+    valid_services = get_args(_SERVICES)
+    if service not in valid_services:
+        raise ValueError(
+            f"Invalid service: '{service}'. "
+            f"Valid options are: {valid_services}."
+        )
+
+    valid_profiles = get_args(_PROFILES[service])
+    if profile not in valid_profiles:
+        raise ValueError(
+            f"Invalid profile: '{profile}' for service '{service}'. "
+            f"Valid options are: {valid_profiles}."
+        )
+
