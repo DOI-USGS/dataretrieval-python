@@ -1,7 +1,7 @@
-"""Functions for downloading data from the USGS Aquarius Samples database (https://waterqualitydata.us)
+"""Functions for downloading data from the USGS Aquarius Samples database
+(https://waterdata.usgs.gov/download-samples/#dataProfile=site).
 
 See https://api.waterdata.usgs.gov/samples-data/docs#/ for API reference
-
 """
 
 from __future__ import annotations
@@ -17,33 +17,12 @@ from requests.models import PreparedRequest
 from dataretrieval.utils import BaseMetadata, to_str
 
 if TYPE_CHECKING:
-    from typing import Tuple
+    from typing import Optional, Tuple, Union
 
     from pandas import DataFrame
 
 
-BASE_URL = "https://api.waterdata.usgs.gov/samples-data"
-
-_SERVICES = Literal["activities", "locations", "organizations", "projects", "results"]
-
-_PROFILES = {
-    "activities": Literal["sampact", "actmetric", "actgroup", "count"],
-    "locations": Literal["site", "count"],
-    "organizations": Literal["organization", "count"],
-    "projects": Literal["project", "projectmonitoringlocationweight"],
-    "results": Literal[
-        "fullphyschem",
-        "basicphyschem",
-        "fullbio",
-        "basicbio",
-        "narrow",
-        "resultdetectionquantitationlimit",
-        "labsampleprep",
-        "count",
-    ],
-}
-
-_ALL_PROFILES = Literal[*[v for k,v in _PROFILES.items()]]
+_BASE_URL = "https://api.waterdata.usgs.gov/samples-data"
 
 _CODE_SERVICES = Literal[
     "characteristicgroup",
@@ -56,31 +35,45 @@ _CODE_SERVICES = Literal[
     "states",
 ]
 
-_SAMPLES_KWARGS = Literal[
-    "activityMediaName",
-    "activityStartDateLower",
-    "activityStartDateUpper",
-    "activityTypeCode",
-    "boundingBox",
-    "characteristic",
-    "characteristicGroup",
-    "characteristicUserSupplied",
-    "countyFips",
-    "countryFips",
-    "hydrologicUnit",
-    "monitoringLocationIdentifier",
-    "organizationIdentifier",
-    "pointLocationLatitude",
-    "pointLocationLongitude",
-    "pointLocationWithinMiles",
-    "projectIdentifier",
-    "recordIdentifierUserSupplied",
-    "siteTypeCode",
-    "siteTypeName",
-    "stateFips",
-    "usgsPCode",
+
+_SERVICES = Literal["activities", "locations", "organizations", "projects", "results"]
+
+_PROFILES = Literal[
+    "actgroup",
+    "actmetric",
+    "basicbio",
+    "basicphyschem",
+    "count",
+    "fullbio",
+    "fullphyschem",
+    "labsampleprep",
+    "narrow",
+    "organization",
+    "project",
+    "projectmonitoringlocationweight",
+    "resultdetectionquantitationlimit",
+    "sampact",
+    "site",
 ]
-  
+
+_PROFILE_LOOKUP = {
+    "activities": ["sampact", "actmetric", "actgroup", "count"],
+    "locations": ["site", "count"],
+    "organizations": ["organization", "count"],
+    "projects": ["project", "projectmonitoringlocationweight"],
+    "results": [
+        "fullphyschem",
+        "basicphyschem",
+        "fullbio",
+        "basicbio",
+        "narrow",
+        "resultdetectionquantitationlimit",
+        "labsampleprep",
+        "count",
+    ],
+}
+
+ 
 def get_codes(code_service: _CODE_SERVICES) -> DataFrame:
     """Return codes from a Samples code service.
     
@@ -98,7 +91,7 @@ def get_codes(code_service: _CODE_SERVICES) -> DataFrame:
             f"Valid options are: {valid_code_services}."
         )
 
-    url = f"{BASE_URL}/codeservice/{code_service}?mimeType=application%2Fjson"
+    url = f"{_BASE_URL}/codeservice/{code_service}?mimeType=application%2Fjson"
     
     response = requests.get(url)
     
@@ -112,13 +105,33 @@ def get_codes(code_service: _CODE_SERVICES) -> DataFrame:
     return df
 
 def get_usgs_samples(
-        ssl_check=True,
-        service: _SERVICES = "results",
-        profile= "fullphyschem",
-        **kwargs,
-        ) -> Tuple[DataFrame, BaseMetadata]:
+    ssl_check: bool = True,
+    service: _SERVICES = "results",
+    profile: _PROFILES = "fullphyschem",
+    activityMediaName: Optional[Union[str, list[str]]] = None,
+    activityStartDateLower: Optional[str] = None,
+    activityStartDateUpper: Optional[str] = None,
+    activityTypeCode: Optional[Union[str, list[str]]] = None,
+    characteristicGroup: Optional[Union[str, list[str]]] = None,
+    characteristic: Optional[Union[str, list[str]]] = None,
+    characteristicUserSupplied: Optional[Union[str, list[str]]] = None,
+    boundingBox: Optional[list[float]] = None,
+    countryFips: Optional[Union[str, list[str]]] = None,
+    stateFips: Optional[Union[str, list[str]]] = None,
+    countyFips: Optional[Union[str, list[str]]] = None,
+    siteTypeCode: Optional[Union[str, list[str]]] = None,
+    siteTypeName: Optional[Union[str, list[str]]] = None,
+    usgsPCode: Optional[Union[str, list[str]]] = None,
+    hydrologicUnit: Optional[Union[str, list[str]]] = None,
+    monitoringLocationIdentifier: Optional[Union[str, list[str]]] = None,
+    organizationIdentifier: Optional[Union[str, list[str]]] = None,
+    pointLocationLatitude: Optional[float] = None,
+    pointLocationLongitude: Optional[float] = None,
+    pointLocationWithinMiles: Optional[float] = None,
+    projectIdentifier: Optional[Union[str, list[str]]] = None,
+    recordIdentifierUserSupplied: Optional[Union[str, list[str]]] = None,
+) -> Tuple[DataFrame, BaseMetadata]:
     """Search Samples database for USGS water quality data.
-
     This is a wrapper function for the Samples database API. All potential
     filters are provided as arguments to the function, but please do not
     populate all possible filters; leave as many as feasible with their default
@@ -143,10 +156,13 @@ def get_usgs_samples(
     profile : string
         One of the available profiles associated with a service. Options for each
         service are:
-        results - "fullphyschem", "basicphyschem", "fullbio", "basicbio", "narrow",
-                  "resultdetectionquantitationlimit", "labsampleprep", "count"
+        results - "fullphyschem", "basicphyschem",
+                    "fullbio", "basicbio", "narrow",
+                    "resultdetectionquantitationlimit",
+                    "labsampleprep", "count"
         locations - "site", "count"
-        activities - "sampact", "actmetric", "actgroup", "count"
+        activities - "sampact", "actmetric",
+                        "actgroup", "count"
         projects - "project", "projectmonitoringlocationweight"
         organizations - "organization", "count"
     activityMediaName : string or list of strings, optional
@@ -275,27 +291,22 @@ def get_usgs_samples(
         ...     usgsPCode='00400')
 
     """
+
     _check_profiles(service, profile)
 
-    valid_kwargs = get_args(_SAMPLES_KWARGS)
-    if not all(key in valid_kwargs for key in kwargs):
-        raise ValueError(
-            f"Invalid keyword arguments. Valid options are: {valid_kwargs}."
-        )
+    params = {
+        k: v for k, v in locals().items()
+        if k not in ["ssl_check", "service", "profile"]
+        and v is not None
+        }
 
-    if len(kwargs) == 0:
-        raise TypeError(
-            "No filter parameters provided. You must add at least " 
-            "one filter parameter beyond a service, profile, and format argument."
-            )
-    
-    params = {"mimeType": "text/csv"}
-    params.update(kwargs)
+
+    params.update({"mimeType": "text/csv"})
 
     if "boundingBox" in params:
-        params['boundingBox'] = to_str(params['boundingBox'])
+        params["boundingBox"] = to_str(params["boundingBox"])
 
-    url = f"{BASE_URL}/{service}/{profile}"
+    url = f"{_BASE_URL}/{service}/{profile}"
 
     req = PreparedRequest()
     req.prepare_url(url, params=params)
@@ -331,7 +342,7 @@ def _check_profiles(
             f"Valid options are: {valid_services}."
         )
 
-    valid_profiles = get_args(_PROFILES[service])
+    valid_profiles = _PROFILE_LOOKUP[service]
     if profile not in valid_profiles:
         raise ValueError(
             f"Invalid profile: '{profile}' for service '{service}'. "
