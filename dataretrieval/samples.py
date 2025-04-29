@@ -1,5 +1,5 @@
 """Functions for downloading data from the USGS Aquarius Samples database
-(https://waterdata.usgs.gov/download-samples/#dataProfile=site).
+(https://waterdata.usgs.gov/download-samples/).
 
 See https://api.waterdata.usgs.gov/samples-data/docs#/ for API reference
 """
