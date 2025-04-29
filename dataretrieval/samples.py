@@ -321,8 +321,8 @@ def get_usgs_samples(
     return df, BaseMetadata(response)
 
 def _check_profiles(
-        service: str,
-        profile: str,
+        service: _SERVICES,
+        profile: _PROFILES,
 ) -> None:
     """Check whether a service profile is valid.
 
