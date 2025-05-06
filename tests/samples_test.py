@@ -5,7 +5,7 @@ from pandas import DataFrame
 
 from dataretrieval.samples import (
     _check_profiles,
-    get_USGS_samples
+    get_usgs_samples
 )
 
 def mock_request(requests_mock, request_url, file_path):
@@ -15,7 +15,7 @@ def mock_request(requests_mock, request_url, file_path):
             request_url, text=text.read(), headers={"mock_header": "value"}
         )
 
-def test_mock_get_USGS_samples(requests_mock):
+def test_mock_get_usgs_samples(requests_mock):
     """Tests USGS Samples query"""
     request_url = (
         "https://api.waterdata.usgs.gov/samples-data/results/fullphyschem?"
@@ -24,14 +24,14 @@ def test_mock_get_USGS_samples(requests_mock):
     )
     response_file_path = "data/samples_results.txt"
     mock_request(requests_mock, request_url, response_file_path)
-    df, md = get_USGS_samples(
-    service="results",
-    profile="fullphyschem",
-    activityMediaName="Water",
-    activityStartDateLower="2020-01-01",
-    activityStartDateUpper="2024-12-31",
-    monitoringLocationIdentifier="USGS-05406500"
-    )
+    df, md = get_usgs_samples(
+        service="results",
+        profile="fullphyschem",
+        activityMediaName="Water",
+        activityStartDateLower="2020-01-01",
+        activityStartDateUpper="2024-12-31",
+        monitoringLocationIdentifier="USGS-05406500",
+        )
     assert type(df) is DataFrame
     assert df.size == 12127
     assert md.url == request_url
@@ -41,14 +41,14 @@ def test_mock_get_USGS_samples(requests_mock):
 
 def test_check_profiles():
     """Tests that correct errors are raised for invalid profiles."""
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         _check_profiles(service="foo", profile="bar")
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         _check_profiles(service="results", profile="foo")
 
 def test_samples_results():
     """Test results call for proper columns"""
-    df,_ = get_USGS_samples(
+    df,_ = get_usgs_samples(
         service="results",
         profile="narrow",
         monitoringLocationIdentifier="USGS-05288705",
@@ -60,7 +60,7 @@ def test_samples_results():
 
 def test_samples_activity():
     """Test activity call for proper columns"""
-    df,_ = get_USGS_samples(
+    df,_ = get_usgs_samples(
         service="activities",
         profile="sampact",
         monitoringLocationIdentifier="USGS-06719505"
@@ -71,7 +71,7 @@ def test_samples_activity():
 
 def test_samples_locations():
     """Test locations call for proper columns"""
-    df,_ = get_USGS_samples(
+    df,_ = get_usgs_samples(
         service="locations",
         profile="site",
         stateFips="US:55",
@@ -84,7 +84,7 @@ def test_samples_locations():
 
 def test_samples_projects():
     """Test projects call for proper columns"""
-    df,_ = get_USGS_samples(
+    df,_ = get_usgs_samples(
         service="projects",
         profile="project",
         stateFips="US:15",
@@ -96,7 +96,7 @@ def test_samples_projects():
 
 def test_samples_organizations():
     """Test organizations call for proper columns"""
-    df,_ = get_USGS_samples(
+    df,_ = get_usgs_samples(
         service="organizations",
         profile="count",
         stateFips="US:01"
