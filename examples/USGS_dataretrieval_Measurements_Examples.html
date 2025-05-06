@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_discharge_measurements() Examples &mdash; dataretrieval 0.1.dev1+g3ba0c83 documentation</title>
+  <title>USGS dataretrieval Python Package get_discharge_measurements() Examples &mdash; dataretrieval 0.1.dev1+g4b3a3e8 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=c1fc3a19"></script>
+      <script src="../_static/documentation_options.js?v=44675f88"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -126,18 +126,13 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+g3ba0c83)
-Requirement already satisfied: requests in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.32.3)
-Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.2.3)
-Requirement already satisfied: numpy&gt;=1.22.4 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2.1.2)
-Requirement already satisfied: python-dateutil&gt;=2.8.2 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2.9.0.post0)
-Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2022.1)
-Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2024.2)
-Requirement already satisfied: charset-normalizer&lt;4,&gt;=2 in /home/runner/.local/lib/python3.10/site-packages (from requests-&gt;dataretrieval) (3.4.0)
-Requirement already satisfied: idna&lt;4,&gt;=2.5 in /usr/lib/python3/dist-packages (from requests-&gt;dataretrieval) (3.3)
-Requirement already satisfied: urllib3&lt;3,&gt;=1.21.1 in /usr/lib/python3/dist-packages (from requests-&gt;dataretrieval) (1.26.5)
-Requirement already satisfied: certifi&gt;=2017.4.17 in /usr/lib/python3/dist-packages (from requests-&gt;dataretrieval) (2020.6.20)
-Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.2-&gt;pandas==2.*-&gt;dataretrieval) (1.16.0)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g4b3a3e8)
+Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
+Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.2.3)
+Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.2.5)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2.8.2)
+Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2024.1)
+Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2025.2)
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
@@ -175,7 +170,7 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 946 data values.
+Retrieved 951 data values.
 </pre></div></div>
 </div>
 </section>
@@ -341,71 +336,35 @@ Retrieved 946 data values.
       <td>...</td>
     </tr>
     <tr>
-      <th>941</th>
+      <th>946</th>
       <td>USGS</td>
       <td>10109000</td>
-      <td>1091</td>
-      <td>2024-06-07 09:35:00</td>
-      <td>MDT</td>
+      <td>1096</td>
+      <td>2024-11-06 11:52:06</td>
+      <td>MST</td>
       <td>Yes</td>
       <td>EHQM</td>
       <td>USGS</td>
-      <td>4.67</td>
-      <td>1060.0</td>
-      <td>Good</td>
+      <td>2.74</td>
+      <td>151.0</td>
+      <td>Fair</td>
       <td>0.00</td>
       <td>0.6</td>
       <td>Clear</td>
       <td>NONE</td>
     </tr>
     <tr>
-      <th>942</th>
+      <th>947</th>
       <td>USGS</td>
       <td>10109000</td>
-      <td>1092</td>
-      <td>2024-07-02 08:35:04</td>
-      <td>MDT</td>
+      <td>1097</td>
+      <td>2024-12-11 16:46:44</td>
+      <td>MST</td>
       <td>Yes</td>
       <td>EHQM</td>
       <td>USGS</td>
-      <td>3.41</td>
-      <td>379.0</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>0.3</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>943</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1093</td>
-      <td>2024-08-07 13:52:00</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>EHQM</td>
-      <td>USGS</td>
-      <td>2.90</td>
-      <td>194.0</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>0.3</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>944</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1094</td>
-      <td>2024-09-11 13:34:04</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>EHQM</td>
-      <td>USGS</td>
-      <td>2.67</td>
-      <td>119.0</td>
+      <td>2.66</td>
+      <td>125.0</td>
       <td>Fair</td>
       <td>0.00</td>
       <td>0.5</td>
@@ -413,26 +372,62 @@ Retrieved 946 data values.
       <td>NONE</td>
     </tr>
     <tr>
-      <th>945</th>
+      <th>948</th>
       <td>USGS</td>
       <td>10109000</td>
-      <td>1095</td>
-      <td>2024-09-11 14:19:00</td>
+      <td>1098</td>
+      <td>2025-02-03 17:20:48</td>
+      <td>MST</td>
+      <td>Yes</td>
+      <td>EHQM</td>
+      <td>USGS</td>
+      <td>2.63</td>
+      <td>116.0</td>
+      <td>Fair</td>
+      <td>0.00</td>
+      <td>0.8</td>
+      <td>Clear</td>
+      <td>NONE</td>
+    </tr>
+    <tr>
+      <th>949</th>
+      <td>USGS</td>
+      <td>10109000</td>
+      <td>1099</td>
+      <td>2025-03-26 15:46:04</td>
       <td>MDT</td>
       <td>Yes</td>
       <td>EHQM</td>
       <td>USGS</td>
-      <td>2.67</td>
-      <td>119.0</td>
-      <td>Good</td>
-      <td>0.02</td>
-      <td>0.3</td>
+      <td>2.71</td>
+      <td>125.0</td>
+      <td>Fair</td>
+      <td>0.00</td>
+      <td>1.0</td>
+      <td>Clear</td>
+      <td>NONE</td>
+    </tr>
+    <tr>
+      <th>950</th>
+      <td>USGS</td>
+      <td>10109000</td>
+      <td>1100</td>
+      <td>2025-03-26 17:22:07</td>
+      <td>MDT</td>
+      <td>Yes</td>
+      <td>EHQM</td>
+      <td>USGS</td>
+      <td>2.71</td>
+      <td>127.0</td>
+      <td>Fair</td>
+      <td>0.01</td>
+      <td>0.7</td>
       <td>Clear</td>
       <td>NONE</td>
     </tr>
   </tbody>
 </table>
-<p>946 rows × 15 columns</p>
+<p>951 rows × 15 columns</p>
 </div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
@@ -728,7 +723,7 @@ Retrieved 9 data values.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 482 data values.
+Retrieved 484 data values.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -880,7 +875,7 @@ Retrieved 482 data values.
       <td>...</td>
     </tr>
     <tr>
-      <th>477</th>
+      <th>479</th>
       <td>USGS</td>
       <td>040851325</td>
       <td>93</td>
@@ -898,7 +893,7 @@ Retrieved 482 data values.
       <td>NONE</td>
     </tr>
     <tr>
-      <th>478</th>
+      <th>480</th>
       <td>USGS</td>
       <td>040851325</td>
       <td>94</td>
@@ -916,7 +911,7 @@ Retrieved 482 data values.
       <td>NONE</td>
     </tr>
     <tr>
-      <th>479</th>
+      <th>481</th>
       <td>USGS</td>
       <td>040851325</td>
       <td>95</td>
@@ -934,7 +929,7 @@ Retrieved 482 data values.
       <td>NONE</td>
     </tr>
     <tr>
-      <th>480</th>
+      <th>482</th>
       <td>USGS</td>
       <td>040851325</td>
       <td>96</td>
@@ -952,7 +947,7 @@ Retrieved 482 data values.
       <td>NONE</td>
     </tr>
     <tr>
-      <th>481</th>
+      <th>483</th>
       <td>USGS</td>
       <td>040851325</td>
       <td>97</td>
@@ -971,7 +966,7 @@ Retrieved 482 data values.
     </tr>
   </tbody>
 </table>
-<p>482 rows × 15 columns</p>
+<p>484 rows × 15 columns</p>
 </div></div>
 </div>
 </section>

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_qwdata() Examples &mdash; dataretrieval 0.1.dev1+g3ba0c83 documentation</title>
+  <title>USGS dataretrieval Python Package get_qwdata() Examples &mdash; dataretrieval 0.1.dev1+g4b3a3e8 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=c1fc3a19"></script>
+      <script src="../_static/documentation_options.js?v=44675f88"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -126,18 +126,13 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+g3ba0c83)
-Requirement already satisfied: requests in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.32.3)
-Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.2.3)
-Requirement already satisfied: numpy&gt;=1.22.4 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2.1.2)
-Requirement already satisfied: python-dateutil&gt;=2.8.2 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2.9.0.post0)
-Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2022.1)
-Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2024.2)
-Requirement already satisfied: charset-normalizer&lt;4,&gt;=2 in /home/runner/.local/lib/python3.10/site-packages (from requests-&gt;dataretrieval) (3.4.0)
-Requirement already satisfied: idna&lt;4,&gt;=2.5 in /usr/lib/python3/dist-packages (from requests-&gt;dataretrieval) (3.3)
-Requirement already satisfied: urllib3&lt;3,&gt;=1.21.1 in /usr/lib/python3/dist-packages (from requests-&gt;dataretrieval) (1.26.5)
-Requirement already satisfied: certifi&gt;=2017.4.17 in /usr/lib/python3/dist-packages (from requests-&gt;dataretrieval) (2020.6.20)
-Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.2-&gt;pandas==2.*-&gt;dataretrieval) (1.16.0)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g4b3a3e8)
+Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
+Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.2.3)
+Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.2.5)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2.8.2)
+Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2024.1)
+Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2025.2)
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
@@ -180,25 +175,82 @@ Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (fr
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/home/runner/.local/lib/python3.10/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
+/home/runner/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
   warnings.warn(
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Retrieved data for 345 samples.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area stderr docutils container">
+<div class="output_area docutils container">
 <div class="highlight"><pre>
-/home/runner/.local/lib/python3.10/site-packages/dataretrieval/utils.py:90: UserWarning: Warning: 7 incomplete dates found, consider setting datetime_index to False.
-  warnings.warn(
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3805</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3804</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3805</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   3806</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">index.pyx:167</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">index.pyx:196</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7081</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7089</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 2</span>
+<span class="ansi-green-fg">      1</span> siteID = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">10109000</span><span class="ansi-yellow-fg">&#39;</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> wq_data = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_qwdata</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">siteID</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">      3</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved data for </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(wq_data[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> samples.</span><span class="ansi-yellow-fg">&#39;</span>)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:254</span>, in <span class="ansi-cyan-fg">get_qwdata</span><span class="ansi-blue-fg">(sites, start, end, multi_index, wide_format, datetime_index, ssl_check, **kwargs)</span>
+<span class="ansi-green-fg">    251</span> df = _read_rdb(response.text)
+<span class="ansi-green-fg">    253</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">254</span>     df = <span class="ansi-yellow-bg">format_datetime</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_tm</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_start_time_datum_cd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    256</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/utils.py:79</span>, in <span class="ansi-cyan-fg">format_datetime</span><span class="ansi-blue-fg">(df, date_field, time_field, tz_field)</span>
+<span class="ansi-green-fg">     56</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Creates a datetime field from separate date, time, and</span>
+<span class="ansi-green-fg">     57</span> <span class="ansi-yellow-fg">time zone fields.</span>
+<span class="ansi-green-fg">     58</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     76</span>
+<span class="ansi-green-fg">     77</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">     78</span> <span style="color: rgb(95,135,135)"># create a datetime index from the columns in qwdata response</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">79</span> df[tz_field] = <span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">tz_field</span><span class="ansi-yellow-bg">]</span>.map(tz)
+<span class="ansi-green-fg">     81</span> df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#34;</span>] = pd.to_datetime(
+<span class="ansi-green-fg">     82</span>     df[date_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[time_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[tz_field],
+<span class="ansi-green-fg">     83</span>     <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">ISO8601</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">     84</span>     utc=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
+<span class="ansi-green-fg">     85</span> )
+<span class="ansi-green-fg">     87</span> <span style="color: rgb(95,135,135)"># if there are any incomplete dates, warn the user</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/frame.py:4102</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   4100</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
+<span class="ansi-green-fg">   4101</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4102</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   4103</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
+<span class="ansi-green-fg">   4104</span>     indexer = [indexer]
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3812</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3807</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
+<span class="ansi-green-fg">   3808</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
+<span class="ansi-green-fg">   3809</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
+<span class="ansi-green-fg">   3810</span>     ):
+<span class="ansi-green-fg">   3811</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3812</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">err</span>
+<span class="ansi-green-fg">   3813</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
+<span class="ansi-green-fg">   3814</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
+<span class="ansi-green-fg">   3815</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
+<span class="ansi-green-fg">   3816</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
+<span class="ansi-green-fg">   3817</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
+
+<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
 </pre></div></div>
 </div>
 </section>
@@ -219,341 +271,15 @@ Retrieved data for 345 samples.
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[4]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> display(<span class="ansi-yellow-bg">wq_data</span>[<span class="ansi-green-fg">0</span>])
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>sample_dt</th>
-      <th>sample_tm</th>
-      <th>sample_end_dt</th>
-      <th>sample_end_tm</th>
-      <th>sample_start_time_datum_cd</th>
-      <th>tm_datum_rlbty_cd</th>
-      <th>coll_ent_cd</th>
-      <th>medium_cd</th>
-      <th>...</th>
-      <th>p70300</th>
-      <th>p70301</th>
-      <th>p70302</th>
-      <th>p70303</th>
-      <th>p71851</th>
-      <th>p71999</th>
-      <th>p81903</th>
-      <th>p82398</th>
-      <th>p84164</th>
-      <th>p99111</th>
-    </tr>
-    <tr>
-      <th>datetime</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>1967-09-13 13:35:00+00:00</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1967-09-13</td>
-      <td>07:35</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>NaN</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>196.0</td>
-      <td>NaN</td>
-      <td>108.0</td>
-      <td>0.27</td>
-      <td>0.1</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>1968-01-18 19:20:00+00:00</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1968-01-18</td>
-      <td>12:20</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0700</td>
-      <td>T</td>
-      <td>NaN</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>210.0</td>
-      <td>NaN</td>
-      <td>63.5</td>
-      <td>0.29</td>
-      <td>0.5</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>1968-05-15 18:30:00+00:00</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1968-05-15</td>
-      <td>12:30</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>NaN</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>155.0</td>
-      <td>156.0</td>
-      <td>151.0</td>
-      <td>0.21</td>
-      <td>0.6</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>1968-07-26 20:40:00+00:00</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1968-07-26</td>
-      <td>14:40</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>NaN</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>189.0</td>
-      <td>188.0</td>
-      <td>135.0</td>
-      <td>0.26</td>
-      <td>0.3</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>1972-12-08 23:15:00+00:00</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1972-12-08</td>
-      <td>16:15</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0700</td>
-      <td>T</td>
-      <td>NaN</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1988-11-28</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0700</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1989-04-27</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1989-07-28</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1989-08-31</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1989-10-05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-  </tbody>
-</table>
-<p>345 rows × 60 columns</p>
-</div></div>
+<span class="ansi-red-fg">NameError</span>: name &#39;wq_data&#39; is not defined
+</pre></div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
 <div class="nbinput docutils container">
@@ -569,67 +295,12 @@ Retrieved data for 345 samples.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-agency_cd                      object
-site_no                        object
-sample_dt                      object
-sample_tm                      object
-sample_end_dt                 float64
-sample_end_tm                 float64
-sample_start_time_datum_cd     object
-tm_datum_rlbty_cd              object
-coll_ent_cd                    object
-medium_cd                      object
-project_cd                     object
-aqfr_cd                       float64
-tu_id                         float64
-body_part_id                  float64
-hyd_cond_cd                    object
-samp_type_cd                    int64
-hyd_event_cd                    int64
-sample_lab_cm_txt             float64
-p00003                        float64
-p00004                        float64
-p00009                        float64
-p00010                        float64
-p00020                         object
-p00028                        float64
-p00060                        float64
-p00061                        float64
-p00065                        float64
-p00095                        float64
-p00191                        float64
-p00400                        float64
-p00405                        float64
-p00410                        float64
-p00440                        float64
-p00445                        float64
-p00618                        float64
-p00660                        float64
-p00900                        float64
-p00902                        float64
-p00915                        float64
-p00925                        float64
-p00931                        float64
-p00932                        float64
-p00933                        float64
-p00940                        float64
-p00945                        float64
-p00955                        float64
-p30207                        float64
-p30208                        float64
-p30209                        float64
-p50280                         object
-p70300                        float64
-p70301                        float64
-p70302                        float64
-p70303                        float64
-p71851                        float64
-p71999                        float64
-p81903                        float64
-p82398                        float64
-p84164                        float64
-p99111                        float64
-dtype: object
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[5]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-bg">wq_data</span>[<span class="ansi-green-fg">0</span>].dtypes)
+
+<span class="ansi-red-fg">NameError</span>: name &#39;wq_data&#39; is not defined
 </pre></div></div>
 </div>
 <p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_qwdata()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.</p>
@@ -646,7 +317,12 @@ dtype: object
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-The query URL used to retrieve the data from NWIS was: https://nwis.waterdata.usgs.gov/nwis/qwdata?site_no=10109000&amp;qw_sample_wide=qw_sample_wide&amp;agency_cd=USGS&amp;format=rdb&amp;pm_cd_compare=Greater+than&amp;inventory_output=0&amp;rdb_inventory_output=file&amp;TZoutput=0&amp;rdb_qw_attributes=expanded&amp;date_format=YYYY-MM-DD&amp;rdb_compression=value&amp;submitted_form=brief_list
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">The query URL used to retrieve the data from NWIS was: </span><span class="ansi-yellow-fg">&#39;</span> + <span class="ansi-yellow-bg">wq_data</span>[<span class="ansi-green-fg">1</span>].url)
+
+<span class="ansi-red-fg">NameError</span>: name &#39;wq_data&#39; is not defined
 </pre></div></div>
 </div>
 </section>
@@ -671,322 +347,85 @@ The query URL used to retrieve the data from NWIS was: https://nwis.waterdata.us
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/home/runner/.local/lib/python3.10/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
+/home/runner/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
   warnings.warn(
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Retrieved data for 281 samples.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3805</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3804</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3805</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   3806</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">index.pyx:167</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
 
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th></th>
-      <th>agency_cd</th>
-      <th>sample_dt</th>
-      <th>sample_tm</th>
-      <th>sample_end_dt</th>
-      <th>sample_end_tm</th>
-      <th>sample_start_time_datum_cd</th>
-      <th>tm_datum_rlbty_cd</th>
-      <th>coll_ent_cd</th>
-      <th>medium_cd</th>
-      <th>project_cd</th>
-      <th>aqfr_cd</th>
-      <th>tu_id</th>
-      <th>body_part_id</th>
-      <th>hyd_cond_cd</th>
-      <th>samp_type_cd</th>
-      <th>hyd_event_cd</th>
-      <th>sample_lab_cm_txt</th>
-      <th>p00065</th>
-    </tr>
-    <tr>
-      <th>site_no</th>
-      <th>datetime</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th rowspan="5" valign="top">04024000</th>
-      <th>1984-04-24 14:30:00+00:00</th>
-      <td>USGS</td>
-      <td>1984-04-24</td>
-      <td>08:30</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>4.62</td>
-    </tr>
-    <tr>
-      <th>1984-06-19 15:15:00+00:00</th>
-      <td>USGS</td>
-      <td>1984-06-19</td>
-      <td>10:15</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>6.43</td>
-    </tr>
-    <tr>
-      <th>1984-08-22 15:45:00+00:00</th>
-      <td>USGS</td>
-      <td>1984-08-22</td>
-      <td>10:45</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>3.24</td>
-    </tr>
-    <tr>
-      <th>1985-02-11 20:30:00+00:00</th>
-      <td>USGS</td>
-      <td>1985-02-11</td>
-      <td>14:30</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>3.51</td>
-    </tr>
-    <tr>
-      <th>2010-10-07 15:45:00+00:00</th>
-      <td>USGS</td>
-      <td>2010-10-07</td>
-      <td>10:45</td>
-      <td>2010-11-02</td>
-      <td>10:15</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR11NQ00E</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>3.11</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th rowspan="5" valign="top">04024430</th>
-      <th>1983-04-19 16:00:00+00:00</th>
-      <td>USGS</td>
-      <td>1983-04-19</td>
-      <td>10:00</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>A</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>8.83</td>
-    </tr>
-    <tr>
-      <th>1983-05-24 21:10:00+00:00</th>
-      <td>USGS</td>
-      <td>1983-05-24</td>
-      <td>16:10</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>5.64</td>
-    </tr>
-    <tr>
-      <th>1983-07-06 17:00:00+00:00</th>
-      <td>USGS</td>
-      <td>1983-07-06</td>
-      <td>12:00</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>12.59</td>
-    </tr>
-    <tr>
-      <th>1983-08-16 19:20:00+00:00</th>
-      <td>USGS</td>
-      <td>1983-08-16</td>
-      <td>14:20</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>5.23</td>
-    </tr>
-    <tr>
-      <th>2007-10-09 22:00:00+00:00</th>
-      <td>USGS</td>
-      <td>2007-10-09</td>
-      <td>17:00</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>SS</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>7</td>
-      <td>NaN</td>
-      <td>10.92</td>
-    </tr>
-  </tbody>
-</table>
-<p>281 rows × 18 columns</p>
-</div></div>
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">index.pyx:196</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7081</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7089</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 3</span>
+<span class="ansi-green-fg">      1</span> site_ids = [<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">04024430</span><span class="ansi-yellow-fg">&#39;</span>, <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">04024000</span><span class="ansi-yellow-fg">&#39;</span>]
+<span class="ansi-green-fg">      2</span> parameter_code = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">00065</span><span class="ansi-yellow-fg">&#39;</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">3</span> wq_multi_site = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_qwdata</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">site_ids</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">parameterCd</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">parameter_code</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">      4</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved data for </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(wq_multi_site[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> samples.</span><span class="ansi-yellow-fg">&#39;</span>)
+<span class="ansi-green-fg">      5</span> display(wq_multi_site[<span class="ansi-green-fg">0</span>])
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:254</span>, in <span class="ansi-cyan-fg">get_qwdata</span><span class="ansi-blue-fg">(sites, start, end, multi_index, wide_format, datetime_index, ssl_check, **kwargs)</span>
+<span class="ansi-green-fg">    251</span> df = _read_rdb(response.text)
+<span class="ansi-green-fg">    253</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">254</span>     df = <span class="ansi-yellow-bg">format_datetime</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_tm</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_start_time_datum_cd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    256</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/utils.py:79</span>, in <span class="ansi-cyan-fg">format_datetime</span><span class="ansi-blue-fg">(df, date_field, time_field, tz_field)</span>
+<span class="ansi-green-fg">     56</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Creates a datetime field from separate date, time, and</span>
+<span class="ansi-green-fg">     57</span> <span class="ansi-yellow-fg">time zone fields.</span>
+<span class="ansi-green-fg">     58</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     76</span>
+<span class="ansi-green-fg">     77</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">     78</span> <span style="color: rgb(95,135,135)"># create a datetime index from the columns in qwdata response</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">79</span> df[tz_field] = <span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">tz_field</span><span class="ansi-yellow-bg">]</span>.map(tz)
+<span class="ansi-green-fg">     81</span> df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#34;</span>] = pd.to_datetime(
+<span class="ansi-green-fg">     82</span>     df[date_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[time_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[tz_field],
+<span class="ansi-green-fg">     83</span>     <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">ISO8601</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">     84</span>     utc=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
+<span class="ansi-green-fg">     85</span> )
+<span class="ansi-green-fg">     87</span> <span style="color: rgb(95,135,135)"># if there are any incomplete dates, warn the user</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/frame.py:4102</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   4100</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
+<span class="ansi-green-fg">   4101</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4102</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   4103</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
+<span class="ansi-green-fg">   4104</span>     indexer = [indexer]
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3812</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3807</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
+<span class="ansi-green-fg">   3808</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
+<span class="ansi-green-fg">   3809</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
+<span class="ansi-green-fg">   3810</span>     ):
+<span class="ansi-green-fg">   3811</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3812</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">err</span>
+<span class="ansi-green-fg">   3813</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
+<span class="ansi-green-fg">   3814</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
+<span class="ansi-green-fg">   3815</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
+<span class="ansi-green-fg">   3816</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
+<span class="ansi-green-fg">   3817</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
+
+<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
+</pre></div></div>
 </div>
 <p>The following example is the same as the previous example but with multi index turned off (multi_index=False)</p>
 <div class="nbinput docutils container">
@@ -1006,330 +445,85 @@ Retrieved data for 281 samples.
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/home/runner/.local/lib/python3.10/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
+/home/runner/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
   warnings.warn(
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Retrieved data for 281 samples.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3805</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3804</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3805</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   3806</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">index.pyx:167</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
 
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>sample_dt</th>
-      <th>sample_tm</th>
-      <th>sample_end_dt</th>
-      <th>sample_end_tm</th>
-      <th>sample_start_time_datum_cd</th>
-      <th>tm_datum_rlbty_cd</th>
-      <th>coll_ent_cd</th>
-      <th>medium_cd</th>
-      <th>project_cd</th>
-      <th>aqfr_cd</th>
-      <th>tu_id</th>
-      <th>body_part_id</th>
-      <th>hyd_cond_cd</th>
-      <th>samp_type_cd</th>
-      <th>hyd_event_cd</th>
-      <th>sample_lab_cm_txt</th>
-      <th>p00065</th>
-    </tr>
-    <tr>
-      <th>datetime</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>1982-11-02 20:10:00+00:00</th>
-      <td>USGS</td>
-      <td>04024430</td>
-      <td>1982-11-02</td>
-      <td>14:10</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>USGS-GAL</td>
-      <td>WS</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>A</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>5.72</td>
-    </tr>
-    <tr>
-      <th>1983-01-18 18:30:00+00:00</th>
-      <td>USGS</td>
-      <td>04024430</td>
-      <td>1983-01-18</td>
-      <td>12:30</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>USGS-GAL</td>
-      <td>WS</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>A</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>6.17</td>
-    </tr>
-    <tr>
-      <th>1983-04-19 16:00:00+00:00</th>
-      <td>USGS</td>
-      <td>04024430</td>
-      <td>1983-04-19</td>
-      <td>10:00</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>A</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>8.83</td>
-    </tr>
-    <tr>
-      <th>1983-05-24 21:10:00+00:00</th>
-      <td>USGS</td>
-      <td>04024430</td>
-      <td>1983-05-24</td>
-      <td>16:10</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>5.64</td>
-    </tr>
-    <tr>
-      <th>1983-07-06 17:00:00+00:00</th>
-      <td>USGS</td>
-      <td>04024430</td>
-      <td>1983-07-06</td>
-      <td>12:00</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>12.59</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>2023-10-16 16:40:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2023-10-16</td>
-      <td>11:40</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>Scanlon</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>3.51</td>
-    </tr>
-    <tr>
-      <th>2023-11-20 15:25:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2023-11-20</td>
-      <td>09:25</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>Scanlon</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>4.21</td>
-    </tr>
-    <tr>
-      <th>2023-12-18 16:40:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2023-12-18</td>
-      <td>10:40</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>Scanlon</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>8</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>4.00</td>
-    </tr>
-    <tr>
-      <th>2024-01-08 17:00:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2024-01-08</td>
-      <td>11:00</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>Scanlon</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>4.54</td>
-    </tr>
-    <tr>
-      <th>2024-02-05 15:05:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2024-02-05</td>
-      <td>09:05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>Scanlon</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>3.85</td>
-    </tr>
-  </tbody>
-</table>
-<p>281 rows × 19 columns</p>
-</div></div>
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">index.pyx:196</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7081</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7089</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[8]</span><span class="ansi-green-fg">, line 3</span>
+<span class="ansi-green-fg">      1</span> site_ids = [<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">04024430</span><span class="ansi-yellow-fg">&#39;</span>, <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">04024000</span><span class="ansi-yellow-fg">&#39;</span>]
+<span class="ansi-green-fg">      2</span> parameter_code = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">00065</span><span class="ansi-yellow-fg">&#39;</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">3</span> wq_multi_site = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_qwdata</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">site_ids</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">parameterCd</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">parameter_code</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">multi_index</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">False</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">      4</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved data for </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(wq_multi_site[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> samples.</span><span class="ansi-yellow-fg">&#39;</span>)
+<span class="ansi-green-fg">      5</span> display(wq_multi_site[<span class="ansi-green-fg">0</span>])
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:254</span>, in <span class="ansi-cyan-fg">get_qwdata</span><span class="ansi-blue-fg">(sites, start, end, multi_index, wide_format, datetime_index, ssl_check, **kwargs)</span>
+<span class="ansi-green-fg">    251</span> df = _read_rdb(response.text)
+<span class="ansi-green-fg">    253</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">254</span>     df = <span class="ansi-yellow-bg">format_datetime</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_tm</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_start_time_datum_cd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    256</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/utils.py:79</span>, in <span class="ansi-cyan-fg">format_datetime</span><span class="ansi-blue-fg">(df, date_field, time_field, tz_field)</span>
+<span class="ansi-green-fg">     56</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Creates a datetime field from separate date, time, and</span>
+<span class="ansi-green-fg">     57</span> <span class="ansi-yellow-fg">time zone fields.</span>
+<span class="ansi-green-fg">     58</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     76</span>
+<span class="ansi-green-fg">     77</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">     78</span> <span style="color: rgb(95,135,135)"># create a datetime index from the columns in qwdata response</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">79</span> df[tz_field] = <span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">tz_field</span><span class="ansi-yellow-bg">]</span>.map(tz)
+<span class="ansi-green-fg">     81</span> df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#34;</span>] = pd.to_datetime(
+<span class="ansi-green-fg">     82</span>     df[date_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[time_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[tz_field],
+<span class="ansi-green-fg">     83</span>     <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">ISO8601</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">     84</span>     utc=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
+<span class="ansi-green-fg">     85</span> )
+<span class="ansi-green-fg">     87</span> <span style="color: rgb(95,135,135)"># if there are any incomplete dates, warn the user</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/frame.py:4102</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   4100</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
+<span class="ansi-green-fg">   4101</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4102</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   4103</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
+<span class="ansi-green-fg">   4104</span>     indexer = [indexer]
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3812</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3807</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
+<span class="ansi-green-fg">   3808</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
+<span class="ansi-green-fg">   3809</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
+<span class="ansi-green-fg">   3810</span>     ):
+<span class="ansi-green-fg">   3811</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3812</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">err</span>
+<span class="ansi-green-fg">   3813</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
+<span class="ansi-green-fg">   3814</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
+<span class="ansi-green-fg">   3815</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
+<span class="ansi-green-fg">   3816</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
+<span class="ansi-green-fg">   3817</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
+
+<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
+</pre></div></div>
 </div>
 </section>
 <section id="Example-3:-Retrieve-water-quality-sample-data-for-multiple-sites,-including-a-list-of-parameters,-within-a-time-period-defined-by-start-and-end-dates">
@@ -1354,1008 +548,86 @@ Retrieved data for 281 samples.
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/home/runner/.local/lib/python3.10/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
+/home/runner/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
   warnings.warn(
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Retrieved data for 281 samples.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3805</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3804</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3805</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   3806</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">index.pyx:167</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
 
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th></th>
-      <th>agency_cd</th>
-      <th>sample_dt</th>
-      <th>sample_tm</th>
-      <th>sample_end_dt</th>
-      <th>sample_end_tm</th>
-      <th>sample_start_time_datum_cd</th>
-      <th>tm_datum_rlbty_cd</th>
-      <th>coll_ent_cd</th>
-      <th>medium_cd</th>
-      <th>project_cd</th>
-      <th>...</th>
-      <th>tu_id</th>
-      <th>body_part_id</th>
-      <th>hyd_cond_cd</th>
-      <th>samp_type_cd</th>
-      <th>hyd_event_cd</th>
-      <th>sample_lab_cm_txt</th>
-      <th>p30234</th>
-      <th>p32104</th>
-      <th>p34220</th>
-      <th>p34247</th>
-    </tr>
-    <tr>
-      <th>site_no</th>
-      <th>datetime</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th rowspan="34" valign="top">04024000</th>
-      <th>2012-01-25 14:40:00+00:00</th>
-      <td>USGS</td>
-      <td>2012-01-25</td>
-      <td>08:40</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR12NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4</td>
-      <td>9</td>
-      <td>B</td>
-      <td>A-0270113 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-02-22 14:45:00+00:00</th>
-      <td>USGS</td>
-      <td>2012-02-22</td>
-      <td>08:45</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR12NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4</td>
-      <td>9</td>
-      <td>B</td>
-      <td>A-0540032 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-03-12 13:55:00+00:00</th>
-      <td>USGS</td>
-      <td>2012-03-12</td>
-      <td>08:55</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR12NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4</td>
-      <td>9</td>
-      <td>B</td>
-      <td>A-0740087 ** Second GCC bottle (Sch 4433) is a...</td>
-      <td>&lt; 0.16</td>
-      <td>0.01 bt</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-03-27 13:55:00+00:00</th>
-      <td>USGS</td>
-      <td>2012-03-27</td>
-      <td>08:55</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR12NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A</td>
-      <td>A-0900013 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-04-17 14:20:00+00:00</th>
-      <td>USGS</td>
-      <td>2012-04-17</td>
-      <td>09:20</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR12NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>8</td>
-      <td>9</td>
-      <td>J</td>
-      <td>A-1110047 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-04-25 15:47:00+00:00</th>
-      <td>USGS</td>
-      <td>2012-04-25</td>
-      <td>10:47</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR12NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A-1180039 **Second GCC bottle (SCH4433) is and...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-05-17 13:40:00+00:00</th>
-      <td>USGS</td>
-      <td>2012-05-17</td>
-      <td>08:40</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR12NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A-1390189 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-05-24 18:23:00+00:00</th>
-      <td>USGS</td>
-      <td>2012-05-24</td>
-      <td>13:23</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR12NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>8</td>
-      <td>9</td>
-      <td>J</td>
-      <td>A-1500157 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-06-14 14:15:00+00:00</th>
-      <td>USGS</td>
-      <td>2012-06-14</td>
-      <td>09:15</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR12NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A-1710114 **Second GCC bottle (sch. 4433) is a...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-06-20 18:43:00+00:00</th>
-      <td>USGS</td>
-      <td>2012-06-20</td>
-      <td>13:43</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR12NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>7</td>
-      <td>9</td>
-      <td>J</td>
-      <td>A-1740217 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-07-17 14:50:00+00:00</th>
-      <td>USGS</td>
-      <td>2012-07-17</td>
-      <td>09:50</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR12NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A-2010133 **Second GCC bottle (sch. 4433) is a...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-08-13 14:55:00+00:00</th>
-      <td>USGS</td>
-      <td>2012-08-13</td>
-      <td>09:55</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR12NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A-2280252 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-09-04 13:45:00+00:00</th>
-      <td>USGS</td>
-      <td>2012-09-04</td>
-      <td>08:45</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR12NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A-2500209 ***Second GCC bottle (sch4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-10-10 14:40:00+00:00</th>
-      <td>USGS</td>
-      <td>2012-10-10</td>
-      <td>09:40</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR13NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A-2860068 ***Second GCC bottle (sch 4433) is a...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-11-14 14:45:00+00:00</th>
-      <td>USGS</td>
-      <td>2012-11-14</td>
-      <td>08:45</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR13NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A-3240067 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-12-20 16:50:00+00:00</th>
-      <td>USGS</td>
-      <td>2012-12-20</td>
-      <td>10:50</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR13NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>B</td>
-      <td>A-3560065 ***Second GCC bottle (sch 4433) is a...</td>
-      <td>&lt; 0.16</td>
-      <td>0.01 bt</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2013-01-16 14:30:00+00:00</th>
-      <td>USGS</td>
-      <td>2013-01-16</td>
-      <td>08:30</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR13NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>B</td>
-      <td>A-0180147 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>M  bt</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2013-04-27 15:40:00+00:00</th>
-      <td>USGS</td>
-      <td>2013-04-27</td>
-      <td>10:40</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GR13NK00E</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>8</td>
-      <td>9</td>
-      <td>A</td>
-      <td>A-1220123 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2014-04-21 18:00:00+00:00</th>
-      <td>USGS</td>
-      <td>2014-04-21</td>
-      <td>13:00</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>GR14NK00F</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>8</td>
-      <td>9</td>
-      <td>A</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>E 0.01 btc</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2014-07-09 14:30:00+00:00</th>
-      <td>USGS</td>
-      <td>2014-07-09</td>
-      <td>09:30</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>GR14NK00F</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2014-10-21 15:00:00+00:00</th>
-      <td>USGS</td>
-      <td>2014-10-21</td>
-      <td>10:00</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>GR15NK00F</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2015-04-28 17:45:00+00:00</th>
-      <td>USGS</td>
-      <td>2015-04-28</td>
-      <td>12:45</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>MN-00300</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>L-1210024 Received April 30, 2015</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2015-10-20 16:55:00+00:00</th>
-      <td>USGS</td>
-      <td>2015-10-20</td>
-      <td>11:55</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>MN-00300</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>MM-44934A</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2016-02-02 15:45:00+00:00</th>
-      <td>USGS</td>
-      <td>2016-02-02</td>
-      <td>09:45</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>MN-00300</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>B</td>
-      <td>MM-45749A</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2016-06-08 15:35:00+00:00</th>
-      <td>USGS</td>
-      <td>2016-06-08</td>
-      <td>10:35</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>MN-00300</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>MM-47133A</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2016-07-05 14:55:00+00:00</th>
-      <td>USGS</td>
-      <td>2016-07-05</td>
-      <td>09:55</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>MN-00300</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>MM-47591A</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2016-11-15 17:05:00+00:00</th>
-      <td>USGS</td>
-      <td>2016-11-15</td>
-      <td>11:05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>MN-00300</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2017-02-01 17:05:00+00:00</th>
-      <td>USGS</td>
-      <td>2017-02-01</td>
-      <td>11:05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>MN-00300</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>B</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2017-04-04 17:05:00+00:00</th>
-      <td>USGS</td>
-      <td>2017-04-04</td>
-      <td>12:05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>MN-00300</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2017-07-05 16:50:00+00:00</th>
-      <td>USGS</td>
-      <td>2017-07-05</td>
-      <td>11:50</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>MN-00300</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>0.01 bt</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2017-11-27 16:40:00+00:00</th>
-      <td>USGS</td>
-      <td>2017-11-27</td>
-      <td>10:40</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>MN-00300</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>L-3330046 Numerical result and or metadata rev...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2018-02-06 14:45:00+00:00</th>
-      <td>USGS</td>
-      <td>2018-02-06</td>
-      <td>08:45</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>MN-00300</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>B</td>
-      <td>L-0380062 Numerical result and or metadata rev...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2018-05-01 16:05:00+00:00</th>
-      <td>USGS</td>
-      <td>2018-05-01</td>
-      <td>11:05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>00GQ41400</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>L-1230062 Numerical result and or metadata rev...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2018-07-09 16:25:00+00:00</th>
-      <td>USGS</td>
-      <td>2018-07-09</td>
-      <td>11:25</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>00GQ41400</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>6</td>
-      <td>9</td>
-      <td>9</td>
-      <td>L-1920083 Numerical result and or metadata rev...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th rowspan="4" valign="top">04024430</th>
-      <th>2014-04-30 18:40:00+00:00</th>
-      <td>USGS</td>
-      <td>2014-04-30</td>
-      <td>13:40</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>F6X7H</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>7</td>
-      <td>9</td>
-      <td>J</td>
-      <td>NaN</td>
-      <td>0.10 n</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2014-06-10 13:50:00+00:00</th>
-      <td>USGS</td>
-      <td>2014-06-10</td>
-      <td>08:50</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>F6X7H</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2014-10-29 19:30:00+00:00</th>
-      <td>USGS</td>
-      <td>2014-10-29</td>
-      <td>14:30</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GLRI TOX</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>0.01 bt</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2014-11-12 19:30:00+00:00</th>
-      <td>USGS</td>
-      <td>2014-11-12</td>
-      <td>13:30</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>GLRI TOX</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>7</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-  </tbody>
-</table>
-<p>38 rows × 21 columns</p>
-</div></div>
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">index.pyx:196</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7081</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7089</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[9]</span><span class="ansi-green-fg">, line 5</span>
+<span class="ansi-green-fg">      3</span> startDate = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">2012-01-01</span><span class="ansi-yellow-fg">&#39;</span>
+<span class="ansi-green-fg">      4</span> endDate = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">&#39;</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">5</span> wq_data2 = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_qwdata</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">site_ids</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">parameterCd</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">parameterCd</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">      6</span> <span class="ansi-yellow-bg">                           </span><span class="ansi-yellow-bg">start</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">startDate</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">end</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">endDate</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">      7</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved data for </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(wq_multi_site[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> samples.</span><span class="ansi-yellow-fg">&#39;</span>)
+<span class="ansi-green-fg">      8</span> display(wq_data2[<span class="ansi-green-fg">0</span>])
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:254</span>, in <span class="ansi-cyan-fg">get_qwdata</span><span class="ansi-blue-fg">(sites, start, end, multi_index, wide_format, datetime_index, ssl_check, **kwargs)</span>
+<span class="ansi-green-fg">    251</span> df = _read_rdb(response.text)
+<span class="ansi-green-fg">    253</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">254</span>     df = <span class="ansi-yellow-bg">format_datetime</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_tm</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_start_time_datum_cd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    256</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/utils.py:79</span>, in <span class="ansi-cyan-fg">format_datetime</span><span class="ansi-blue-fg">(df, date_field, time_field, tz_field)</span>
+<span class="ansi-green-fg">     56</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Creates a datetime field from separate date, time, and</span>
+<span class="ansi-green-fg">     57</span> <span class="ansi-yellow-fg">time zone fields.</span>
+<span class="ansi-green-fg">     58</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     76</span>
+<span class="ansi-green-fg">     77</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">     78</span> <span style="color: rgb(95,135,135)"># create a datetime index from the columns in qwdata response</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">79</span> df[tz_field] = <span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">tz_field</span><span class="ansi-yellow-bg">]</span>.map(tz)
+<span class="ansi-green-fg">     81</span> df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#34;</span>] = pd.to_datetime(
+<span class="ansi-green-fg">     82</span>     df[date_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[time_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[tz_field],
+<span class="ansi-green-fg">     83</span>     <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">ISO8601</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">     84</span>     utc=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
+<span class="ansi-green-fg">     85</span> )
+<span class="ansi-green-fg">     87</span> <span style="color: rgb(95,135,135)"># if there are any incomplete dates, warn the user</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/frame.py:4102</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   4100</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
+<span class="ansi-green-fg">   4101</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4102</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   4103</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
+<span class="ansi-green-fg">   4104</span>     indexer = [indexer]
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3812</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3807</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
+<span class="ansi-green-fg">   3808</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
+<span class="ansi-green-fg">   3809</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
+<span class="ansi-green-fg">   3810</span>     ):
+<span class="ansi-green-fg">   3811</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3812</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">err</span>
+<span class="ansi-green-fg">   3813</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
+<span class="ansi-green-fg">   3814</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
+<span class="ansi-green-fg">   3815</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
+<span class="ansi-green-fg">   3816</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
+<span class="ansi-green-fg">   3817</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
+
+<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
+</pre></div></div>
 </div>
 <p>The following example is the same as the previous example but with multi index turned off (multi_index=False)</p>
 <div class="nbinput docutils container">
@@ -2378,1004 +650,86 @@ Retrieved data for 281 samples.
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/home/runner/.local/lib/python3.10/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
+/home/runner/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
   warnings.warn(
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Retrieved data for 281 samples.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3805</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3804</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3805</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   3806</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">index.pyx:167</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
 
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>sample_dt</th>
-      <th>sample_tm</th>
-      <th>sample_end_dt</th>
-      <th>sample_end_tm</th>
-      <th>sample_start_time_datum_cd</th>
-      <th>tm_datum_rlbty_cd</th>
-      <th>coll_ent_cd</th>
-      <th>medium_cd</th>
-      <th>...</th>
-      <th>tu_id</th>
-      <th>body_part_id</th>
-      <th>hyd_cond_cd</th>
-      <th>samp_type_cd</th>
-      <th>hyd_event_cd</th>
-      <th>sample_lab_cm_txt</th>
-      <th>p30234</th>
-      <th>p32104</th>
-      <th>p34220</th>
-      <th>p34247</th>
-    </tr>
-    <tr>
-      <th>datetime</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2012-01-25 14:40:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2012-01-25</td>
-      <td>08:40</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4</td>
-      <td>9</td>
-      <td>B</td>
-      <td>A-0270113 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-02-22 14:45:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2012-02-22</td>
-      <td>08:45</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4</td>
-      <td>9</td>
-      <td>B</td>
-      <td>A-0540032 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-03-12 13:55:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2012-03-12</td>
-      <td>08:55</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4</td>
-      <td>9</td>
-      <td>B</td>
-      <td>A-0740087 ** Second GCC bottle (Sch 4433) is a...</td>
-      <td>&lt; 0.16</td>
-      <td>0.01 bt</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-03-27 13:55:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2012-03-27</td>
-      <td>08:55</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A</td>
-      <td>A-0900013 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-04-17 14:20:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2012-04-17</td>
-      <td>09:20</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>8</td>
-      <td>9</td>
-      <td>J</td>
-      <td>A-1110047 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-04-25 15:47:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2012-04-25</td>
-      <td>10:47</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A-1180039 **Second GCC bottle (SCH4433) is and...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-05-17 13:40:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2012-05-17</td>
-      <td>08:40</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A-1390189 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-05-24 18:23:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2012-05-24</td>
-      <td>13:23</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>8</td>
-      <td>9</td>
-      <td>J</td>
-      <td>A-1500157 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-06-14 14:15:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2012-06-14</td>
-      <td>09:15</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A-1710114 **Second GCC bottle (sch. 4433) is a...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-06-20 18:43:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2012-06-20</td>
-      <td>13:43</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>7</td>
-      <td>9</td>
-      <td>J</td>
-      <td>A-1740217 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-07-17 14:50:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2012-07-17</td>
-      <td>09:50</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A-2010133 **Second GCC bottle (sch. 4433) is a...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-08-13 14:55:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2012-08-13</td>
-      <td>09:55</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A-2280252 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-09-04 13:45:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2012-09-04</td>
-      <td>08:45</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A-2500209 ***Second GCC bottle (sch4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-10-10 14:40:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2012-10-10</td>
-      <td>09:40</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A-2860068 ***Second GCC bottle (sch 4433) is a...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-11-14 14:45:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2012-11-14</td>
-      <td>08:45</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4</td>
-      <td>9</td>
-      <td>9</td>
-      <td>A-3240067 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2012-12-20 16:50:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2012-12-20</td>
-      <td>10:50</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>B</td>
-      <td>A-3560065 ***Second GCC bottle (sch 4433) is a...</td>
-      <td>&lt; 0.16</td>
-      <td>0.01 bt</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2013-01-16 14:30:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2013-01-16</td>
-      <td>08:30</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>B</td>
-      <td>A-0180147 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>M  bt</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2013-04-27 15:40:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2013-04-27</td>
-      <td>10:40</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>8</td>
-      <td>9</td>
-      <td>A</td>
-      <td>A-1220123 **Second GCC bottle (sch 4433) is an...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2014-04-21 18:00:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2014-04-21</td>
-      <td>13:00</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>8</td>
-      <td>9</td>
-      <td>A</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>E 0.01 btc</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2014-04-30 18:40:00+00:00</th>
-      <td>USGS</td>
-      <td>04024430</td>
-      <td>2014-04-30</td>
-      <td>13:40</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>7</td>
-      <td>9</td>
-      <td>J</td>
-      <td>NaN</td>
-      <td>0.10 n</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2014-06-10 13:50:00+00:00</th>
-      <td>USGS</td>
-      <td>04024430</td>
-      <td>2014-06-10</td>
-      <td>08:50</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2014-07-09 14:30:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2014-07-09</td>
-      <td>09:30</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2014-10-21 15:00:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2014-10-21</td>
-      <td>10:00</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2014-10-29 19:30:00+00:00</th>
-      <td>USGS</td>
-      <td>04024430</td>
-      <td>2014-10-29</td>
-      <td>14:30</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>0.01 bt</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2014-11-12 19:30:00+00:00</th>
-      <td>USGS</td>
-      <td>04024430</td>
-      <td>2014-11-12</td>
-      <td>13:30</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>7</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2015-04-28 17:45:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2015-04-28</td>
-      <td>12:45</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>L-1210024 Received April 30, 2015</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2015-10-20 16:55:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2015-10-20</td>
-      <td>11:55</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>MM-44934A</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2016-02-02 15:45:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2016-02-02</td>
-      <td>09:45</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>B</td>
-      <td>MM-45749A</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2016-06-08 15:35:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2016-06-08</td>
-      <td>10:35</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>MM-47133A</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2016-07-05 14:55:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2016-07-05</td>
-      <td>09:55</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>MM-47591A</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2016-11-15 17:05:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2016-11-15</td>
-      <td>11:05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2017-02-01 17:05:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2017-02-01</td>
-      <td>11:05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>B</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2017-04-04 17:05:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2017-04-04</td>
-      <td>12:05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2017-07-05 16:50:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2017-07-05</td>
-      <td>11:50</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>NaN</td>
-      <td>&lt; 0.16</td>
-      <td>0.01 bt</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2017-11-27 16:40:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2017-11-27</td>
-      <td>10:40</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>9</td>
-      <td>L-3330046 Numerical result and or metadata rev...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2018-02-06 14:45:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2018-02-06</td>
-      <td>08:45</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9</td>
-      <td>9</td>
-      <td>B</td>
-      <td>L-0380062 Numerical result and or metadata rev...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2018-05-01 16:05:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2018-05-01</td>
-      <td>11:05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5</td>
-      <td>9</td>
-      <td>9</td>
-      <td>L-1230062 Numerical result and or metadata rev...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-    <tr>
-      <th>2018-07-09 16:25:00+00:00</th>
-      <td>USGS</td>
-      <td>04024000</td>
-      <td>2018-07-09</td>
-      <td>11:25</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0500</td>
-      <td>K</td>
-      <td>USGSMNWC</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>6</td>
-      <td>9</td>
-      <td>9</td>
-      <td>L-1920083 Numerical result and or metadata rev...</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.16</td>
-      <td>&lt; 0.02</td>
-      <td>&lt; 0.02</td>
-    </tr>
-  </tbody>
-</table>
-<p>38 rows × 22 columns</p>
-</div></div>
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">index.pyx:196</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7081</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7089</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[10]</span><span class="ansi-green-fg">, line 5</span>
+<span class="ansi-green-fg">      3</span> startDate = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">2012-01-01</span><span class="ansi-yellow-fg">&#39;</span>
+<span class="ansi-green-fg">      4</span> endDate = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">&#39;</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">5</span> wq_data2 = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_qwdata</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">site_ids</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">parameterCd</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">parameterCd</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">      6</span> <span class="ansi-yellow-bg">                           </span><span class="ansi-yellow-bg">start</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">startDate</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">end</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">endDate</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">multi_index</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">False</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">      7</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved data for </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(wq_multi_site[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> samples.</span><span class="ansi-yellow-fg">&#39;</span>)
+<span class="ansi-green-fg">      8</span> display(wq_data2[<span class="ansi-green-fg">0</span>])
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:254</span>, in <span class="ansi-cyan-fg">get_qwdata</span><span class="ansi-blue-fg">(sites, start, end, multi_index, wide_format, datetime_index, ssl_check, **kwargs)</span>
+<span class="ansi-green-fg">    251</span> df = _read_rdb(response.text)
+<span class="ansi-green-fg">    253</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">254</span>     df = <span class="ansi-yellow-bg">format_datetime</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_tm</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_start_time_datum_cd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    256</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/utils.py:79</span>, in <span class="ansi-cyan-fg">format_datetime</span><span class="ansi-blue-fg">(df, date_field, time_field, tz_field)</span>
+<span class="ansi-green-fg">     56</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Creates a datetime field from separate date, time, and</span>
+<span class="ansi-green-fg">     57</span> <span class="ansi-yellow-fg">time zone fields.</span>
+<span class="ansi-green-fg">     58</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     76</span>
+<span class="ansi-green-fg">     77</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">     78</span> <span style="color: rgb(95,135,135)"># create a datetime index from the columns in qwdata response</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">79</span> df[tz_field] = <span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">tz_field</span><span class="ansi-yellow-bg">]</span>.map(tz)
+<span class="ansi-green-fg">     81</span> df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#34;</span>] = pd.to_datetime(
+<span class="ansi-green-fg">     82</span>     df[date_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[time_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[tz_field],
+<span class="ansi-green-fg">     83</span>     <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">ISO8601</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">     84</span>     utc=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
+<span class="ansi-green-fg">     85</span> )
+<span class="ansi-green-fg">     87</span> <span style="color: rgb(95,135,135)"># if there are any incomplete dates, warn the user</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/frame.py:4102</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   4100</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
+<span class="ansi-green-fg">   4101</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4102</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   4103</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
+<span class="ansi-green-fg">   4104</span>     indexer = [indexer]
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3812</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3807</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
+<span class="ansi-green-fg">   3808</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
+<span class="ansi-green-fg">   3809</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
+<span class="ansi-green-fg">   3810</span>     ):
+<span class="ansi-green-fg">   3811</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3812</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">err</span>
+<span class="ansi-green-fg">   3813</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
+<span class="ansi-green-fg">   3814</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
+<span class="ansi-green-fg">   3815</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
+<span class="ansi-green-fg">   3816</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
+<span class="ansi-green-fg">   3817</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
+
+<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
+</pre></div></div>
 </div>
 </section>
 <section id="Example-4:-Retrieve-water-quality-sample-data-for-one-site-in-serial-format">
@@ -3397,365 +751,84 @@ Retrieved data for 281 samples.
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/home/runner/.local/lib/python3.10/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
-  warnings.warn(
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Retrieved data for 2465 sample results.
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/home/runner/.local/lib/python3.10/site-packages/dataretrieval/utils.py:90: UserWarning: Warning: 36 incomplete dates found, consider setting datetime_index to False.
+/home/runner/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
   warnings.warn(
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3805</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3804</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3805</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   3806</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">index.pyx:167</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
 
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>sample_dt</th>
-      <th>sample_tm</th>
-      <th>sample_end_dt</th>
-      <th>sample_end_tm</th>
-      <th>sample_start_time_datum_cd</th>
-      <th>tm_datum_rlbty_cd</th>
-      <th>coll_ent_cd</th>
-      <th>medium_cd</th>
-      <th>...</th>
-      <th>dqi_cd</th>
-      <th>rpt_lev_va</th>
-      <th>rpt_lev_cd</th>
-      <th>lab_std_va</th>
-      <th>prep_set_no</th>
-      <th>prep_dt</th>
-      <th>anl_set_no</th>
-      <th>anl_dt</th>
-      <th>result_lab_cm_tx</th>
-      <th>anl_ent_cd</th>
-    </tr>
-    <tr>
-      <th>datetime</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>1967-09-13 13:35:00+00:00</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1967-09-13</td>
-      <td>07:35</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>NaN</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>A</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>1967-09-13 13:35:00+00:00</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1967-09-13</td>
-      <td>07:35</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>NaN</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>A</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>1967-09-13 13:35:00+00:00</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1967-09-13</td>
-      <td>07:35</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>NaN</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>A</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>1967-09-13 13:35:00+00:00</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1967-09-13</td>
-      <td>07:35</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>NaN</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>A</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>1967-09-13 13:35:00+00:00</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1967-09-13</td>
-      <td>07:35</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>NaN</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>A</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1989-10-05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>A</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1989-10-05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>A</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1989-10-05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>A</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1989-10-05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>A</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1989-10-05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-0600</td>
-      <td>T</td>
-      <td>USGS-WRD</td>
-      <td>WS</td>
-      <td>...</td>
-      <td>A</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-  </tbody>
-</table>
-<p>2465 rows × 33 columns</p>
-</div></div>
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">index.pyx:196</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7081</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7089</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[11]</span><span class="ansi-green-fg">, line 2</span>
+<span class="ansi-green-fg">      1</span> siteID = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">10109000</span><span class="ansi-yellow-fg">&#39;</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> wq_data = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_qwdata</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">siteID</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">wide_format</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">False</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">      3</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved data for </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(wq_data[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> sample results.</span><span class="ansi-yellow-fg">&#39;</span>)
+<span class="ansi-green-fg">      4</span> display(wq_data[<span class="ansi-green-fg">0</span>])
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:254</span>, in <span class="ansi-cyan-fg">get_qwdata</span><span class="ansi-blue-fg">(sites, start, end, multi_index, wide_format, datetime_index, ssl_check, **kwargs)</span>
+<span class="ansi-green-fg">    251</span> df = _read_rdb(response.text)
+<span class="ansi-green-fg">    253</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">254</span>     df = <span class="ansi-yellow-bg">format_datetime</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_tm</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_start_time_datum_cd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    256</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/utils.py:79</span>, in <span class="ansi-cyan-fg">format_datetime</span><span class="ansi-blue-fg">(df, date_field, time_field, tz_field)</span>
+<span class="ansi-green-fg">     56</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Creates a datetime field from separate date, time, and</span>
+<span class="ansi-green-fg">     57</span> <span class="ansi-yellow-fg">time zone fields.</span>
+<span class="ansi-green-fg">     58</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     76</span>
+<span class="ansi-green-fg">     77</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">     78</span> <span style="color: rgb(95,135,135)"># create a datetime index from the columns in qwdata response</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">79</span> df[tz_field] = <span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">tz_field</span><span class="ansi-yellow-bg">]</span>.map(tz)
+<span class="ansi-green-fg">     81</span> df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#34;</span>] = pd.to_datetime(
+<span class="ansi-green-fg">     82</span>     df[date_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[time_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[tz_field],
+<span class="ansi-green-fg">     83</span>     <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">ISO8601</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">     84</span>     utc=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
+<span class="ansi-green-fg">     85</span> )
+<span class="ansi-green-fg">     87</span> <span style="color: rgb(95,135,135)"># if there are any incomplete dates, warn the user</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/frame.py:4102</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   4100</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
+<span class="ansi-green-fg">   4101</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4102</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   4103</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
+<span class="ansi-green-fg">   4104</span>     indexer = [indexer]
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3812</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3807</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
+<span class="ansi-green-fg">   3808</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
+<span class="ansi-green-fg">   3809</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
+<span class="ansi-green-fg">   3810</span>     ):
+<span class="ansi-green-fg">   3811</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3812</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">err</span>
+<span class="ansi-green-fg">   3813</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
+<span class="ansi-green-fg">   3814</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
+<span class="ansi-green-fg">   3815</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
+<span class="ansi-green-fg">   3816</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
+<span class="ansi-green-fg">   3817</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
+
+<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
+</pre></div></div>
 </div>
 </section>
 </section>

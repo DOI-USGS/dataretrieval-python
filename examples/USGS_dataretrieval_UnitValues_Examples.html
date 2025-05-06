@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_iv() Examples &mdash; dataretrieval 0.1.dev1+g3ba0c83 documentation</title>
+  <title>USGS dataretrieval Python Package get_iv() Examples &mdash; dataretrieval 0.1.dev1+g4b3a3e8 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=c1fc3a19"></script>
+      <script src="../_static/documentation_options.js?v=44675f88"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -126,18 +126,13 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+g3ba0c83)
-Requirement already satisfied: requests in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.32.3)
-Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.2.3)
-Requirement already satisfied: numpy&gt;=1.22.4 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2.1.2)
-Requirement already satisfied: python-dateutil&gt;=2.8.2 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2.9.0.post0)
-Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2022.1)
-Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2024.2)
-Requirement already satisfied: charset-normalizer&lt;4,&gt;=2 in /home/runner/.local/lib/python3.10/site-packages (from requests-&gt;dataretrieval) (3.4.0)
-Requirement already satisfied: idna&lt;4,&gt;=2.5 in /usr/lib/python3/dist-packages (from requests-&gt;dataretrieval) (3.3)
-Requirement already satisfied: urllib3&lt;3,&gt;=1.21.1 in /usr/lib/python3/dist-packages (from requests-&gt;dataretrieval) (1.26.5)
-Requirement already satisfied: certifi&gt;=2017.4.17 in /usr/lib/python3/dist-packages (from requests-&gt;dataretrieval) (2020.6.20)
-Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.2-&gt;pandas==2.*-&gt;dataretrieval) (1.16.0)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g4b3a3e8)
+Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
+Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.2.3)
+Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.2.5)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2.8.2)
+Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2024.1)
+Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2025.2)
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
@@ -595,7 +590,7 @@ Retrieved 96 data values.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 50 data values.
+Retrieved 57 data values.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -633,303 +628,345 @@ Retrieved 50 data values.
   </thead>
   <tbody>
     <tr>
-      <th>2024-10-25 05:00:00+00:00</th>
+      <th>2025-05-06 05:00:00+00:00</th>
       <td>05114000</td>
-      <td>8.15</td>
+      <td>13.9</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 05:15:00+00:00</th>
+      <th>2025-05-06 05:15:00+00:00</th>
       <td>05114000</td>
-      <td>7.58</td>
+      <td>14.2</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 05:30:00+00:00</th>
+      <th>2025-05-06 05:30:00+00:00</th>
       <td>05114000</td>
-      <td>7.58</td>
+      <td>14.1</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 05:45:00+00:00</th>
+      <th>2025-05-06 05:45:00+00:00</th>
       <td>05114000</td>
-      <td>7.67</td>
+      <td>13.9</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 06:00:00+00:00</th>
+      <th>2025-05-06 06:00:00+00:00</th>
       <td>05114000</td>
-      <td>7.58</td>
+      <td>14.1</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 06:15:00+00:00</th>
+      <th>2025-05-06 06:15:00+00:00</th>
       <td>05114000</td>
-      <td>7.80</td>
+      <td>13.8</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 06:30:00+00:00</th>
+      <th>2025-05-06 06:30:00+00:00</th>
       <td>05114000</td>
-      <td>7.71</td>
+      <td>13.8</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 06:45:00+00:00</th>
+      <th>2025-05-06 06:45:00+00:00</th>
       <td>05114000</td>
-      <td>7.58</td>
+      <td>13.9</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 07:00:00+00:00</th>
+      <th>2025-05-06 07:00:00+00:00</th>
       <td>05114000</td>
-      <td>7.71</td>
+      <td>13.7</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 07:15:00+00:00</th>
+      <th>2025-05-06 07:15:00+00:00</th>
       <td>05114000</td>
-      <td>7.50</td>
+      <td>13.9</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 07:30:00+00:00</th>
+      <th>2025-05-06 07:30:00+00:00</th>
       <td>05114000</td>
-      <td>7.71</td>
+      <td>13.8</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 07:45:00+00:00</th>
+      <th>2025-05-06 07:45:00+00:00</th>
       <td>05114000</td>
-      <td>7.45</td>
+      <td>14.0</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 08:00:00+00:00</th>
+      <th>2025-05-06 08:00:00+00:00</th>
       <td>05114000</td>
-      <td>7.45</td>
+      <td>14.0</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 08:15:00+00:00</th>
+      <th>2025-05-06 08:15:00+00:00</th>
       <td>05114000</td>
-      <td>7.71</td>
+      <td>13.8</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 08:30:00+00:00</th>
+      <th>2025-05-06 08:30:00+00:00</th>
       <td>05114000</td>
-      <td>7.71</td>
+      <td>13.7</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 08:45:00+00:00</th>
+      <th>2025-05-06 08:45:00+00:00</th>
       <td>05114000</td>
-      <td>7.67</td>
+      <td>13.6</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 09:00:00+00:00</th>
+      <th>2025-05-06 09:00:00+00:00</th>
       <td>05114000</td>
-      <td>7.67</td>
+      <td>13.9</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 09:15:00+00:00</th>
+      <th>2025-05-06 09:15:00+00:00</th>
       <td>05114000</td>
-      <td>7.67</td>
+      <td>13.7</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 09:30:00+00:00</th>
+      <th>2025-05-06 09:30:00+00:00</th>
       <td>05114000</td>
-      <td>7.50</td>
+      <td>14.0</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 09:45:00+00:00</th>
+      <th>2025-05-06 09:45:00+00:00</th>
       <td>05114000</td>
-      <td>7.75</td>
+      <td>13.7</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 10:00:00+00:00</th>
+      <th>2025-05-06 10:00:00+00:00</th>
       <td>05114000</td>
-      <td>7.50</td>
+      <td>13.8</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 10:15:00+00:00</th>
+      <th>2025-05-06 10:15:00+00:00</th>
       <td>05114000</td>
-      <td>7.50</td>
+      <td>14.1</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 10:30:00+00:00</th>
+      <th>2025-05-06 10:30:00+00:00</th>
       <td>05114000</td>
-      <td>7.50</td>
+      <td>14.0</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 10:45:00+00:00</th>
+      <th>2025-05-06 10:45:00+00:00</th>
       <td>05114000</td>
-      <td>7.50</td>
+      <td>13.8</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 11:00:00+00:00</th>
+      <th>2025-05-06 11:00:00+00:00</th>
       <td>05114000</td>
-      <td>7.58</td>
+      <td>13.8</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 11:15:00+00:00</th>
+      <th>2025-05-06 11:15:00+00:00</th>
       <td>05114000</td>
-      <td>7.58</td>
+      <td>14.0</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 11:30:00+00:00</th>
+      <th>2025-05-06 11:30:00+00:00</th>
       <td>05114000</td>
-      <td>7.50</td>
+      <td>14.1</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 11:45:00+00:00</th>
+      <th>2025-05-06 11:45:00+00:00</th>
       <td>05114000</td>
-      <td>7.75</td>
+      <td>14.1</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 12:00:00+00:00</th>
+      <th>2025-05-06 12:00:00+00:00</th>
       <td>05114000</td>
-      <td>7.67</td>
+      <td>13.9</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 12:15:00+00:00</th>
+      <th>2025-05-06 12:15:00+00:00</th>
       <td>05114000</td>
-      <td>7.54</td>
+      <td>14.0</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 12:30:00+00:00</th>
+      <th>2025-05-06 12:30:00+00:00</th>
       <td>05114000</td>
-      <td>7.37</td>
+      <td>13.8</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 12:45:00+00:00</th>
+      <th>2025-05-06 12:45:00+00:00</th>
       <td>05114000</td>
-      <td>7.54</td>
+      <td>14.1</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 13:00:00+00:00</th>
+      <th>2025-05-06 13:00:00+00:00</th>
       <td>05114000</td>
-      <td>7.45</td>
+      <td>13.9</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 13:15:00+00:00</th>
+      <th>2025-05-06 13:15:00+00:00</th>
       <td>05114000</td>
-      <td>7.54</td>
+      <td>13.8</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 13:30:00+00:00</th>
+      <th>2025-05-06 13:30:00+00:00</th>
       <td>05114000</td>
-      <td>7.75</td>
+      <td>13.9</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 13:45:00+00:00</th>
+      <th>2025-05-06 13:45:00+00:00</th>
       <td>05114000</td>
-      <td>7.33</td>
+      <td>13.9</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 14:00:00+00:00</th>
+      <th>2025-05-06 14:00:00+00:00</th>
       <td>05114000</td>
-      <td>7.50</td>
+      <td>13.7</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 14:15:00+00:00</th>
+      <th>2025-05-06 14:15:00+00:00</th>
       <td>05114000</td>
-      <td>7.37</td>
+      <td>14.2</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 14:30:00+00:00</th>
+      <th>2025-05-06 14:30:00+00:00</th>
       <td>05114000</td>
-      <td>7.37</td>
+      <td>13.9</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 14:45:00+00:00</th>
+      <th>2025-05-06 14:45:00+00:00</th>
       <td>05114000</td>
-      <td>7.54</td>
+      <td>14.1</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 15:00:00+00:00</th>
+      <th>2025-05-06 15:00:00+00:00</th>
       <td>05114000</td>
-      <td>7.54</td>
+      <td>13.9</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 15:15:00+00:00</th>
+      <th>2025-05-06 15:15:00+00:00</th>
       <td>05114000</td>
-      <td>7.45</td>
+      <td>13.7</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 15:30:00+00:00</th>
+      <th>2025-05-06 15:30:00+00:00</th>
       <td>05114000</td>
-      <td>7.50</td>
+      <td>14.1</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 15:45:00+00:00</th>
+      <th>2025-05-06 15:45:00+00:00</th>
       <td>05114000</td>
-      <td>7.58</td>
+      <td>13.5</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 16:00:00+00:00</th>
+      <th>2025-05-06 16:00:00+00:00</th>
       <td>05114000</td>
-      <td>7.45</td>
+      <td>13.6</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 16:15:00+00:00</th>
+      <th>2025-05-06 16:15:00+00:00</th>
       <td>05114000</td>
-      <td>7.71</td>
+      <td>13.4</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 16:30:00+00:00</th>
+      <th>2025-05-06 16:30:00+00:00</th>
       <td>05114000</td>
-      <td>7.84</td>
+      <td>13.6</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 16:45:00+00:00</th>
+      <th>2025-05-06 16:45:00+00:00</th>
       <td>05114000</td>
-      <td>7.45</td>
+      <td>13.8</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 17:00:00+00:00</th>
+      <th>2025-05-06 17:00:00+00:00</th>
       <td>05114000</td>
-      <td>7.50</td>
+      <td>13.6</td>
       <td>P</td>
     </tr>
     <tr>
-      <th>2024-10-25 17:15:00+00:00</th>
+      <th>2025-05-06 17:15:00+00:00</th>
       <td>05114000</td>
-      <td>7.54</td>
+      <td>13.3</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2025-05-06 17:30:00+00:00</th>
+      <td>05114000</td>
+      <td>13.3</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2025-05-06 17:45:00+00:00</th>
+      <td>05114000</td>
+      <td>13.3</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2025-05-06 18:00:00+00:00</th>
+      <td>05114000</td>
+      <td>13.3</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2025-05-06 18:15:00+00:00</th>
+      <td>05114000</td>
+      <td>13.3</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2025-05-06 18:30:00+00:00</th>
+      <td>05114000</td>
+      <td>13.4</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2025-05-06 18:45:00+00:00</th>
+      <td>05114000</td>
+      <td>13.3</td>
+      <td>P</td>
+    </tr>
+    <tr>
+      <th>2025-05-06 19:00:00+00:00</th>
+      <td>05114000</td>
+      <td>13.0</td>
       <td>P</td>
     </tr>
   </tbody>

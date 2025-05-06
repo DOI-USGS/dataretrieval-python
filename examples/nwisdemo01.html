@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>National trends in peak annual streamflow &mdash; dataretrieval 0.1.dev1+g3ba0c83 documentation</title>
+  <title>National trends in peak annual streamflow &mdash; dataretrieval 0.1.dev1+g4b3a3e8 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=c1fc3a19"></script>
+      <script src="../_static/documentation_options.js?v=44675f88"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -127,10 +127,10 @@
 <div class="highlight"><pre>
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
 <span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
-Cell <span class="ansi-green-fg">In[1], line 1</span>
-<span class="ansi-green-fg">----&gt; 1</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-bold" style="color: rgb(0,0,255)">scipy</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> stats
-<span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-bold" style="color: rgb(0,0,255)">pandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-bold" style="color: rgb(0,0,255)">pd</span>
-<span class="ansi-green-intense-fg ansi-bold">      3</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-bold" style="color: rgb(0,0,255)">numpy</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-bold" style="color: rgb(0,0,255)">np</span>
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[1]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">scipy</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> stats
+<span class="ansi-green-fg">      2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">pandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">pd</span>
+<span class="ansi-green-fg">      3</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">numpy</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">np</span>
 
 <span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;scipy&#39;
 </pre></div></div>
@@ -159,12 +159,12 @@ Cell <span class="ansi-green-fg">In[1], line 1</span>
 <div class="highlight"><pre>
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
 <span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-Cell <span class="ansi-green-fg">In[2], line 2</span>
-<span class="ansi-green-intense-fg ansi-bold">      1</span> <span style="color: rgb(95,135,135)"># download annual peaks from a single site</span>
-<span class="ansi-green-fg">----&gt; 2</span> df <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg">nwis</span><span style="color: rgb(98,98,98)">.</span>get_record(sites<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(175,0,0)">&#39;</span><span style="color: rgb(175,0,0)">03339000</span><span style="color: rgb(175,0,0)">&#39;</span>, service<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(175,0,0)">&#39;</span><span style="color: rgb(175,0,0)">peaks</span><span style="color: rgb(175,0,0)">&#39;</span>, start<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(175,0,0)">&#39;</span><span style="color: rgb(175,0,0)">1970-01-01</span><span style="color: rgb(175,0,0)">&#39;</span>)
-<span class="ansi-green-intense-fg ansi-bold">      3</span> df<span style="color: rgb(98,98,98)">.</span>head()
-<span class="ansi-green-intense-fg ansi-bold">      5</span> <span style="color: rgb(95,135,135)"># alternatively information for the entire state of illiois can be downloaded using</span>
-<span class="ansi-green-intense-fg ansi-bold">      6</span> <span style="color: rgb(95,135,135)">#df = nwis.get_record(state_cd=&#39;il&#39;, service=&#39;peaks&#39;, start=&#39;1970-01-01&#39;)</span>
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[2]</span><span class="ansi-green-fg">, line 2</span>
+<span class="ansi-green-fg">      1</span> <span style="color: rgb(95,135,135)"># download annual peaks from a single site</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> df = <span class="ansi-yellow-bg">nwis</span>.get_record(sites=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">03339000</span><span class="ansi-yellow-fg">&#39;</span>, service=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">peaks</span><span class="ansi-yellow-fg">&#39;</span>, start=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">1970-01-01</span><span class="ansi-yellow-fg">&#39;</span>)
+<span class="ansi-green-fg">      3</span> df.head()
+<span class="ansi-green-fg">      5</span> <span style="color: rgb(95,135,135)"># alternatively information for the entire state of illiois can be downloaded using</span>
+<span class="ansi-green-fg">      6</span> <span style="color: rgb(95,135,135)">#df = nwis.get_record(state_cd=&#39;il&#39;, service=&#39;peaks&#39;, start=&#39;1970-01-01&#39;)</span>
 
 <span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
 </pre></div></div>
@@ -272,9 +272,9 @@ Cell <span class="ansi-green-fg">In[2], line 2</span>
 <div class="highlight"><pre>
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
 <span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-Cell <span class="ansi-green-fg">In[6], line 1</span>
-<span class="ansi-green-fg">----&gt; 1</span> final_df <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg">pd</span><span style="color: rgb(98,98,98)">.</span>read_csv(<span style="color: rgb(175,0,0)">&#39;</span><span style="color: rgb(175,0,0)">datasets/peak_discharge_trends.csv</span><span style="color: rgb(175,0,0)">&#39;</span>)
-<span class="ansi-green-intense-fg ansi-bold">      2</span> final_df<span style="color: rgb(98,98,98)">.</span>head()
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> final_df = <span class="ansi-yellow-bg">pd</span>.read_csv(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">datasets/peak_discharge_trends.csv</span><span class="ansi-yellow-fg">&#39;</span>)
+<span class="ansi-green-fg">      2</span> final_df.head()
 
 <span class="ansi-red-fg">NameError</span>: name &#39;pd&#39; is not defined
 </pre></div></div>

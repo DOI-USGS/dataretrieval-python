@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_stats() Examples &mdash; dataretrieval 0.1.dev1+g3ba0c83 documentation</title>
+  <title>USGS dataretrieval Python Package get_stats() Examples &mdash; dataretrieval 0.1.dev1+g4b3a3e8 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=c1fc3a19"></script>
+      <script src="../_static/documentation_options.js?v=44675f88"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -126,18 +126,13 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.10/site-packages (0.1.dev1+g3ba0c83)
-Requirement already satisfied: requests in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.32.3)
-Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.10/site-packages (from dataretrieval) (2.2.3)
-Requirement already satisfied: numpy&gt;=1.22.4 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2.1.2)
-Requirement already satisfied: python-dateutil&gt;=2.8.2 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2.9.0.post0)
-Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2022.1)
-Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.10/site-packages (from pandas==2.*-&gt;dataretrieval) (2024.2)
-Requirement already satisfied: charset-normalizer&lt;4,&gt;=2 in /home/runner/.local/lib/python3.10/site-packages (from requests-&gt;dataretrieval) (3.4.0)
-Requirement already satisfied: idna&lt;4,&gt;=2.5 in /usr/lib/python3/dist-packages (from requests-&gt;dataretrieval) (3.3)
-Requirement already satisfied: urllib3&lt;3,&gt;=1.21.1 in /usr/lib/python3/dist-packages (from requests-&gt;dataretrieval) (1.26.5)
-Requirement already satisfied: certifi&gt;=2017.4.17 in /usr/lib/python3/dist-packages (from requests-&gt;dataretrieval) (2020.6.20)
-Requirement already satisfied: six&gt;=1.5 in /usr/lib/python3/dist-packages (from python-dateutil&gt;=2.8.2-&gt;pandas==2.*-&gt;dataretrieval) (1.16.0)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g4b3a3e8)
+Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
+Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.2.3)
+Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.2.5)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2.8.2)
+Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2024.1)
+Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2025.2)
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
@@ -592,6 +587,17 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <th>1</th>
       <td>USGS</td>
       <td>02171500</td>
+      <td>00010</td>
+      <td>306223</td>
+      <td>NaN</td>
+      <td>2024</td>
+      <td>20.24</td>
+      <td>366</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USGS</td>
+      <td>02171500</td>
       <td>00060</td>
       <td>125737</td>
       <td>NaN</td>
@@ -600,7 +606,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>365</td>
     </tr>
     <tr>
-      <th>2</th>
+      <th>3</th>
       <td>USGS</td>
       <td>02171500</td>
       <td>00060</td>
@@ -611,7 +617,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>366</td>
     </tr>
     <tr>
-      <th>3</th>
+      <th>4</th>
       <td>USGS</td>
       <td>02171500</td>
       <td>00060</td>
@@ -619,17 +625,6 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>NaN</td>
       <td>1945</td>
       <td>2577.00</td>
-      <td>365</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>USGS</td>
-      <td>02171500</td>
-      <td>00060</td>
-      <td>125737</td>
-      <td>NaN</td>
-      <td>1946</td>
-      <td>3274.00</td>
       <td>365</td>
     </tr>
     <tr>
@@ -644,7 +639,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>...</td>
     </tr>
     <tr>
-      <th>91</th>
+      <th>92</th>
       <td>USGS</td>
       <td>02319394</td>
       <td>00060</td>
@@ -655,7 +650,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>365</td>
     </tr>
     <tr>
-      <th>92</th>
+      <th>93</th>
       <td>USGS</td>
       <td>02319394</td>
       <td>00060</td>
@@ -666,7 +661,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>365</td>
     </tr>
     <tr>
-      <th>93</th>
+      <th>94</th>
       <td>USGS</td>
       <td>02319394</td>
       <td>00060</td>
@@ -677,7 +672,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>366</td>
     </tr>
     <tr>
-      <th>94</th>
+      <th>95</th>
       <td>USGS</td>
       <td>02319394</td>
       <td>00060</td>
@@ -688,7 +683,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
       <td>365</td>
     </tr>
     <tr>
-      <th>95</th>
+      <th>96</th>
       <td>USGS</td>
       <td>02319394</td>
       <td>00060</td>
@@ -700,7 +695,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
     </tr>
   </tbody>
 </table>
-<p>96 rows × 8 columns</p>
+<p>97 rows × 8 columns</p>
 </div></div>
 </div>
 </section>

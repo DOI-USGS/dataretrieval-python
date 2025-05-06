@@ -17,6 +17,8 @@ provided below.
 +-----------------------------------+---------------------------------------------------------------+
 | Mercury Deposition Network        | https://nadp.slh.wisc.edu/networks/mercury-deposition-network |
 +-----------------------------------+---------------------------------------------------------------+
+| USGS Samples                      | https://waterdata.usgs.gov/download-samples/                  |
++-----------------------------------+---------------------------------------------------------------+
 | Streamstats                       | https://streamstats.usgs.gov                                  |
 +-----------------------------------+---------------------------------------------------------------+
 | Water Quality Portal              | https://waterqualitydata.us                                   |
