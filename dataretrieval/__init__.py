@@ -2,6 +2,7 @@ from importlib.metadata import PackageNotFoundError, version
 
 from dataretrieval.nadp import *
 from dataretrieval.nwis import *
+from dataretrieval.samples import *
 from dataretrieval.streamstats import *
 from dataretrieval.utils import *
 from dataretrieval.waterwatch import *
