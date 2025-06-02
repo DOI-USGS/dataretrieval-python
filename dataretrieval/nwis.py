@@ -1160,11 +1160,6 @@ def get_record(
         )
         return df
 
-    elif service == "qwdata":
-        return print("qw data are no longer available from" \
-        "NWIS. Please use `samples.get_usgs_samples()` instead." \
-        " If you have questions, please reach out to comptools@usgs.gov")
-
     elif service == "site":
         df, _ = get_info(sites=sites, ssl_check=ssl_check, **kwargs)
         return df
