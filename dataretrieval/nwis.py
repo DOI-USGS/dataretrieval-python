@@ -157,14 +157,10 @@ def get_discharge_measurements(
     Parameters
     ----------
     sites: string or list of strings, optional, default is None
-        If the qwdata parameter site_no is supplied, it will overwrite the
-        sites parameter
-    start: string, optional, default is None
-        If the qwdata parameter begin_date is supplied, it will overwrite the
-        start parameter (YYYY-MM-DD)
+    start: string, optional, default is None 
+        Supply date in the format: YYYY-MM-DD
     end: string, optional, default is None
-        If the qwdata parameter end_date is supplied, it will overwrite the
-        end parameter (YYYY-MM-DD)
+        Supply date in the format: YYYY-MM-DD
     ssl_check: bool, optional
         If True, check SSL certificates, if False, do not check SSL,
         default is True
@@ -1071,7 +1067,6 @@ def get_record(
     service: string, default is 'iv'
         - 'iv' : instantaneous data
         - 'dv' : daily mean data
-        - 'qwdata' : discrete samples
         - 'site' : site description
         - 'measurements' : discharge measurements
         - 'peaks': discharge peaks
@@ -1099,9 +1094,6 @@ def get_record(
 
         >>> # Get latest daily mean data from site 01585200
         >>> df = dataretrieval.nwis.get_record(sites="01585200", service="dv")
-
-        >>> # Get all discrete sample data from site 01585200
-        >>> df = dataretrieval.nwis.get_record(sites="01585200", service="qwdata")
 
         >>> # Get site description for site 01585200
         >>> df = dataretrieval.nwis.get_record(sites="01585200", service="site")
@@ -1169,16 +1161,9 @@ def get_record(
         return df
 
     elif service == "qwdata":
-        df, _ = get_qwdata(
-            site_no=sites,
-            begin_date=start,
-            end_date=end,
-            multi_index=multi_index,
-            wide_format=wide_format,
-            ssl_check=ssl_check,
-            **kwargs,
-        )
-        return df
+        return print("qw data are no longer available from" \
+        "NWIS. Please use `samples.get_usgs_samples()` instead." \
+        " If you have questions, please reach out to comptools@usgs.gov")
 
     elif service == "site":
         df, _ = get_info(sites=sites, ssl_check=ssl_check, **kwargs)

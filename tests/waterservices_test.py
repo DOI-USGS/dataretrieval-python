@@ -11,7 +11,6 @@ from dataretrieval.nwis import (
     get_info,
     get_iv,
     get_pmcodes,
-    get_qwdata,
     get_ratings,
     get_record,
     get_stats,
@@ -201,65 +200,6 @@ def test_get_info(requests_mock):
     assert df.size == size
     assert md.url == request_url
     assert_metadata(requests_mock, request_url, md, site, [parameter_cd], format)
-
-
-def test_get_qwdata(requests_mock):
-    """Tests get_qwdata method correctly generates the request url and returns
-    the result in a DataFrame"""
-    format = "rdb"
-    site = "01491000%2C01645000"
-    request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/qwdata?site_no={}"
-        "&qw_sample_wide=qw_sample_wide&agency_cd=USGS&format={}&pm_cd_compare=Greater+than"
-        "&inventory_output=0&rdb_inventory_output=file&TZoutput=0&rdb_qw_attributes=expanded"
-        "&date_format=YYYY-MM-DD&rdb_compression=value&submitted_form=brief_list".format(
-            site, format
-        )
-    )
-    response_file_path = "data/waterdata_qwdata.txt"
-    mock_request(requests_mock, request_url, response_file_path)
-    with pytest.warns(DeprecationWarning):
-        df, md = get_qwdata(sites=["01491000", "01645000"])
-    if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
-
-    if "geometry" in list(df):
-        if not isinstance(df, gpd.GeoDataFrame):
-            raise AssertionError(f"{type(df)} is not a GeoDataFrame")
-
-        geom_type = df.geom_type.unique()
-        if len(geom_type) > 1 or geom_type[0] != "Point":
-            raise AssertionError(
-                f"Geometry type {geom_type} not valid, expecting Point"
-            )
-
-    assert df.size == 1821472
-    assert_metadata(requests_mock, request_url, md, site, None, format)
-
-
-@pytest.mark.parametrize("site_input_type_list", [True, False])
-def test_get_qwdata_site_value_types(requests_mock, site_input_type_list):
-    """Tests get_qwdata method for valid input types for the 'sites' parameter"""
-    _format = "rdb"
-    site = "01491000"
-    request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/qwdata?site_no={}"
-        "&qw_sample_wide=qw_sample_wide&agency_cd=USGS&format={}&pm_cd_compare=Greater+than"
-        "&inventory_output=0&rdb_inventory_output=file&TZoutput=0&rdb_qw_attributes=expanded"
-        "&date_format=YYYY-MM-DD&rdb_compression=value&submitted_form=brief_list".format(
-            site, _format
-        )
-    )
-    response_file_path = "data/waterdata_qwdata.txt"
-    mock_request(requests_mock, request_url, response_file_path)
-    if site_input_type_list:
-        sites = [site]
-    else:
-        sites = site
-    with pytest.warns(DeprecationWarning):
-        df, md = get_qwdata(sites=sites)
-    assert type(df) is DataFrame
-    assert df.size == 1821472
 
 
 def test_get_gwlevels(requests_mock):
