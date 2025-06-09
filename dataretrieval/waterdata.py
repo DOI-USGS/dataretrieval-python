@@ -271,13 +271,13 @@ def get_samples(
     .. code::
 
         >>> # Get PFAS results within a bounding box
-        >>> df, md = dataretrieval.samples.get_samples(
+        >>> df, md = dataretrieval.waterdata.get_samples(
         ...     boundingBox=[-90.2,42.6,-88.7,43.2],
         ...     characteristicGroup="Organics, PFAS"
         ... )
 
         >>> # Get all activities for the Commonwealth of Virginia over a date range
-        >>> df, md = dataretrieval.samples.get_samples(
+        >>> df, md = dataretrieval.waterdata.get_samples(
         ...     service="activities",
         ...     profile="sampact",
         ...     activityStartDateLower="2023-10-01",
@@ -285,7 +285,7 @@ def get_samples(
         ...     stateFips="US:51")
 
         >>> # Get all pH samples for two sites in Utah
-        >>> df, md = dataretrieval.samples.get_samples(
+        >>> df, md = dataretrieval.waterdata.get_samples(
         ...     monitoringLocationIdentifier=['USGS-393147111462301', 'USGS-393343111454101'],
         ...     usgsPCode='00400')
 
