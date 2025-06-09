@@ -6,17 +6,13 @@ See https://api.waterdata.usgs.gov/samples-data/docs#/ for API reference
 
 from __future__ import annotations
 
-import json
-from io import StringIO
 from typing import TYPE_CHECKING, Literal, get_args
 
 import pandas as pd
 import warnings
-import requests
-from requests.models import PreparedRequest
 
 from dataretrieval.utils import BaseMetadata, to_str
-from dataretrieval.waterdata import get_codes, get_args, _check_profiles, _BASE_URL, _CODE_SERVICES, _PROFILES, _SERVICES, _PROFILE_LOOKUP
+from dataretrieval import waterdata
 
 if TYPE_CHECKING:
     from typing import Optional, Tuple, Union
@@ -218,32 +214,34 @@ def get_usgs_samples(
     " deprecated and will eventually be removed. Switch to the" \
     " waterdata module as soon as possible, thank you.")
 
-    _check_profiles(service, profile)
+    result = waterdata.get_samples(
+        ssl_check=ssl_check,
+        service=service,
+        profile=profile,
+        activityMediaName=activityMediaName,
+        activityStartDateLower=activityStartDateLower,
+        activityStartDateUpper=activityStartDateUpper,
+        activityTypeCode=activityTypeCode,
+        characteristicGroup=characteristicGroup,
+        characteristic=characteristic,
+        characteristicUserSupplied=characteristicUserSupplied,
+        boundingBox=boundingBox,
+        countryFips=countryFips,
+        stateFips=stateFips,
+        countyFips=countyFips,
+        siteTypeCode=siteTypeCode,
+        siteTypeName=siteTypeName,
+        usgsPCode=usgsPCode,
+        hydrologicUnit=hydrologicUnit,
+        monitoringLocationIdentifier=monitoringLocationIdentifier,
+        organizationIdentifier=organizationIdentifier,
+        pointLocationLatitude=pointLocationLatitude,
+        pointLocationLongitude=pointLocationLongitude,
+        pointLocationWithinMiles=pointLocationWithinMiles,
+        projectIdentifier=projectIdentifier,
+        recordIdentifierUserSupplied=recordIdentifierUserSupplied,
+    )
 
-    params = {
-        k: v for k, v in locals().items()
-        if k not in ["ssl_check", "service", "profile"]
-        and v is not None
-        }
-
-
-    params.update({"mimeType": "text/csv"})
-
-    if "boundingBox" in params:
-        params["boundingBox"] = to_str(params["boundingBox"])
-
-    url = f"{_BASE_URL}/{service}/{profile}"
-
-    req = PreparedRequest()
-    req.prepare_url(url, params=params)
-    print(f"Request: {req.url}")
-
-    response = requests.get(url, params=params, verify=ssl_check)
-
-    response.raise_for_status()
-
-    df = pd.read_csv(StringIO(response.text), delimiter=",")
-
-    return df, BaseMetadata(response)
+    return result
 
 
