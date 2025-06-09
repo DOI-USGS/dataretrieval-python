@@ -3,9 +3,9 @@ import datetime
 import pytest
 from pandas import DataFrame
 
-from dataretrieval.samples import (
+from dataretrieval.waterdata import (
     _check_profiles,
-    get_usgs_samples
+    get_samples
 )
 
 def mock_request(requests_mock, request_url, file_path):
@@ -24,7 +24,7 @@ def test_mock_get_samples(requests_mock):
     )
     response_file_path = "data/samples_results.txt"
     mock_request(requests_mock, request_url, response_file_path)
-    df, md = get_usgs_samples(
+    df, md = get_samples(
         service="results",
         profile="fullphyschem",
         activityMediaName="Water",
@@ -48,7 +48,7 @@ def test_check_profiles():
 
 def test_samples_results():
     """Test results call for proper columns"""
-    df,_ = get_usgs_samples(
+    df,_ = get_samples(
         service="results",
         profile="narrow",
         monitoringLocationIdentifier="USGS-05288705",
@@ -60,7 +60,7 @@ def test_samples_results():
 
 def test_samples_activity():
     """Test activity call for proper columns"""
-    df,_ = get_usgs_samples(
+    df,_ = get_samples(
         service="activities",
         profile="sampact",
         monitoringLocationIdentifier="USGS-06719505"
@@ -71,7 +71,7 @@ def test_samples_activity():
 
 def test_samples_locations():
     """Test locations call for proper columns"""
-    df,_ = get_usgs_samples(
+    df,_ = get_samples(
         service="locations",
         profile="site",
         stateFips="US:55",
@@ -84,7 +84,7 @@ def test_samples_locations():
 
 def test_samples_projects():
     """Test projects call for proper columns"""
-    df,_ = get_usgs_samples(
+    df,_ = get_samples(
         service="projects",
         profile="project",
         stateFips="US:15",
@@ -96,7 +96,7 @@ def test_samples_projects():
 
 def test_samples_organizations():
     """Test organizations call for proper columns"""
-    df,_ = get_usgs_samples(
+    df,_ = get_samples(
         service="organizations",
         profile="count",
         stateFips="US:01"

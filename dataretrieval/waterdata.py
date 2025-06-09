@@ -1,7 +1,6 @@
-"""Functions for downloading data from the USGS Aquarius Samples database
-(https://waterdata.usgs.gov/download-samples/).
+"""Functions for downloading data from the Water Data APIs, including the USGS Aquarius Samples database.
 
-See https://api.waterdata.usgs.gov/samples-data/docs#/ for API reference
+See https://api.waterdata.usgs.gov/ for API reference.
 """
 
 from __future__ import annotations
@@ -104,7 +103,7 @@ def get_codes(code_service: _CODE_SERVICES) -> DataFrame:
 
     return df
 
-def get_usgs_samples(
+def get_samples(
     ssl_check: bool = True,
     service: _SERVICES = "results",
     profile: _PROFILES = "fullphyschem",

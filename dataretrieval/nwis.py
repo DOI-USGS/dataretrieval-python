@@ -134,13 +134,13 @@ def get_qwdata(
     **kwargs,
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """
-    Get water sample data from qwdata service - deprecated, use `get_usgs_samples()`
-    in the samples module.
+    Get water sample data from qwdata service - deprecated, use `get_samples()`
+    in the waterdata module.
 
     """
     return print("This function is deprecated and has been " \
-                 "replaced with `get_usgs_samples() in the " \
-                 "samples module. If you have questions, " \
+                 "replaced with `get_samples() in the " \
+                 "waterdata module. If you have questions, " \
                  "please reach out to comptools@usgs.gov")
 
 
