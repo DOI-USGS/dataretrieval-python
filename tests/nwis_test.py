@@ -12,6 +12,7 @@ from dataretrieval.nwis import (
     get_record,
     preformat_peaks_response,
     what_sites,
+    get_gwlevels
 )
 
 START_DATE = "2018-01-24"
@@ -296,3 +297,25 @@ class TestMetaData:
         md = NWIS_Metadata(response, countyCd="01001")
         # assert that site_info is implemented
         assert md.site_info
+
+class Testgwlevels:
+    """Tests of get_gwlevels function
+
+    Notes
+    -----
+    - gwlevels moved to a new web service endpoint in 2024
+    - The new endpoint has quirks and doesn't recognize the 
+        parameterCd kwarg advertisted by the service.
+    """
+    def test_gwlevels_one_parameterCd(self):
+        pcode = "72019"
+        df,_ = get_gwlevels(sites="434400121275801", start = "2010-01-01", parameterCd=pcode)
+        assert set(df['parameter_cd'].unique().tolist()) == set([pcode])
+
+    def test_gwlevels_two_parameterCds(self):
+        pcode = ["72019", "62610"]
+        df,_ = get_gwlevels(sites="434400121275801", start = "2010-01-01", parameterCd=pcode)
+        assert set(df['parameter_cd'].unique().tolist()) == set(pcode)
+
+    
+
