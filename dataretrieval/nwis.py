@@ -460,6 +460,13 @@ def get_gwlevels(
 
     if datetime_index is True:
         df = format_datetime(df, "lev_dt", "lev_tm", "lev_tz_cd")
+    
+    # Filter by kwarg parameterCd because the service doesn't do it
+    if "parameterCd" in kwargs:
+        pcodes = kwargs["parameterCd"]
+        if isinstance(pcodes, str):
+            pcodes = [pcodes]
+        df = df[df["parameter_cd"].isin(pcodes)]
 
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
