@@ -12,11 +12,11 @@ import pandas as pd
 import warnings
 
 from dataretrieval.utils import BaseMetadata, to_str
-from dataretrieval import waterdata
+from dataretrieval.waterdata import get_samples
 
 if TYPE_CHECKING:
     from typing import Optional, Tuple, Union
-
+    from dataretrieval.waterdata import _SERVICES, _PROFILES
     from pandas import DataFrame
 
 def get_usgs_samples(
