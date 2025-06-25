@@ -138,10 +138,9 @@ def get_qwdata(
     in the waterdata module.
 
     """
-    return print("This function is deprecated and has been " \
-                 "replaced with `get_samples() in the " \
-                 "waterdata module. If you have questions, " \
-                 "please reach out to comptools@usgs.gov")
+raise NameError(
+    "`nwis.get_qwdata` has been replaced with `waterdata.get_samples()`."
+)
 
 
 def get_discharge_measurements(
