@@ -212,12 +212,7 @@ def get_usgs_samples(
         DeprecationWarning,
         stacklevel=2,
     )
-    " the samples module to the new waterdata module, where" \
-    " it will be called simply `get_samples`. All of the same" \
-    " functionality will be retained. The samples module is" \
-    " deprecated and will eventually be removed. Switch to the" \
-    " waterdata module as soon as possible, thank you.")
-
+    
     result = get_samples(
         ssl_check=ssl_check,
         service=service,
