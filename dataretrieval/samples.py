@@ -207,7 +207,11 @@ def get_usgs_samples(
 
     """
 
-    warnings.warn("The `get_usgs_samples` function is moving from" \
+    warnings.warn(
+        "`get_usgs_samples` is deprecated and will be removed. Use `waterdata.get_samples` instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     " the samples module to the new waterdata module, where" \
     " it will be called simply `get_samples`. All of the same" \
     " functionality will be retained. The samples module is" \
