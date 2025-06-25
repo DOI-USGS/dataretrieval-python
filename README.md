@@ -53,7 +53,7 @@ Water quality data are available from:
 - [Samples](https://waterdata.usgs.gov/download-samples/#dataProfile=site) - Discrete USGS water quality data only
 - [Water Quality Portal](https://www.waterqualitydata.us/) - Discrete water quality data from USGS and EPA. Older data are available in the legacy WQX version 2 format; all data are available in the beta WQX3.0 format.
 
-To access the full functionality available from NWIS web services, nwis.get record appends any additional kwargs into the REST request. For example:
+To access the full functionality available from NWIS web services, nwis.get record appends any additional kwargs into the REST request. For example, this function call:
 ```python
 nwis.get_record(sites='03339000', service='dv', start='2017-12-31', parameterCd='00060')
 ```
@@ -97,9 +97,11 @@ Any help in testing, development, documentation and other tasks is welcome.
 For more details, see the file [CONTRIBUTING.md](CONTRIBUTING.md).
 
 
-## Package Support
-The Water Mission Area of the USGS supports the development and maintenance of `dataretrieval`
-and most likely further into the future.
+## Need help?
+
+The Water Mission Area of the USGS supports the development and maintenance of `dataretrieval`. Any questions can be directed to the Computational Tools team at 
+comptools@usgs.gov. 
+
 Resources are available primarily for maintenance and responding to user questions.
 Priorities on the development of new features are determined by the `dataretrieval` development team.
 

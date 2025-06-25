@@ -138,9 +138,9 @@ def get_qwdata(
     in the waterdata module.
 
     """
-raise NameError(
-    "`nwis.get_qwdata` has been replaced with `waterdata.get_samples()`."
-)
+    raise NameError(
+        "`nwis.get_qwdata` has been replaced with `waterdata.get_samples()`."
+        )
 
 
 def get_discharge_measurements(

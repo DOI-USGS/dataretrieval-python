@@ -5,7 +5,9 @@ from pandas import DataFrame
 
 from dataretrieval.waterdata import (
     _check_profiles,
-    get_samples
+    get_samples,
+    _SERVICES,
+    _PROFILES
 )
 
 def mock_request(requests_mock, request_url, file_path):
