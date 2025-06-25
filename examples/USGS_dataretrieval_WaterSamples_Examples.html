@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_qwdata() Examples &mdash; dataretrieval 0.1.dev1+g0e6167f documentation</title>
+  <title>USGS dataretrieval Python Package get_samples() Examples &mdash; dataretrieval 0.1.dev1+g2c8419c documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=81fd2454"></script>
+      <script src="../_static/documentation_options.js?v=2e2d820c"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -62,7 +62,7 @@
 <li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_SiteInventory_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_Statistics_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_stats()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_dataretrieval_UnitValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_iv()</span></code> Examples</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_qwdata()</span></code> Examples</a><ul>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> Examples</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#Install-the-Package">Install the Package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#Basic-Usage">Basic Usage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#Interpreting-the-Result">Interpreting the Result</a></li>
@@ -96,7 +96,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
-      <li class="breadcrumb-item active">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_qwdata()</span></code> Examples</li>
+      <li class="breadcrumb-item active">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> Examples</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/examples/USGS_dataretrieval_WaterSamples_Examples.nblink.txt" rel="nofollow"> View page source</a>
       </li>
@@ -106,9 +106,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="USGS-dataretrieval-Python-Package-get_qwdata()-Examples">
-<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_qwdata()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-get_qwdata()-Examples" title="Link to this heading"></a></h1>
-<p>This notebook provides examples of using the Python dataretrieval package to retrieve water quality sample data for United States Geological Survey (USGS) monitoring sites. The dataretrieval package provides a collection of functions to get data from the USGS National Water Information System (NWIS) and other online sources of hydrology and water quality data, including the United States Environmental Protection Agency (USEPA).</p>
+  <section id="USGS-dataretrieval-Python-Package-get_samples()-Examples">
+<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-get_samples()-Examples" title="Link to this heading"></a></h1>
+<p>This notebook provides examples of using the Python dataretrieval package to retrieve water quality sample data for United States Geological Survey (USGS) monitoring sites. The dataretrieval package provides a collection of functions to get data from the USGS Samples database and other online sources of hydrology and water quality data, including the United States Environmental Protection Agency (USEPA).</p>
 <section id="Install-the-Package">
 <h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Link to this heading"></a></h2>
 <p>Use the following code to install the package if it doesn’t exist already within your Jupyter Python environment.</p>
@@ -126,10 +126,10 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g0e6167f)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g2c8419c)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
 Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.0)
-Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.3.0)
+Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.3.1)
 Requirement already satisfied: python-dateutil&gt;=2.8.2 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2.8.2)
 Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2024.1)
 Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2025.2)
@@ -140,7 +140,7 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">nwis</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">waterdata</span>
 <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
 </pre></div>
 </div>
@@ -148,15 +148,34 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 </section>
 <section id="Basic-Usage">
 <h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Link to this heading"></a></h2>
-<p>The dataretrieval package has several functions that allow you to retrieve data from different web services. This examples uses the <code class="docutils literal notranslate"><span class="pre">get_qwdata()</span></code> function to retrieve water quality sample data for USGS monitoring sites from NWIS. The following arguments are supported:</p>
-<p>Arguments (Additional arguments, if supplied, will be used as query parameters)</p>
+<p>The dataretrieval package has several functions that allow you to retrieve data from different web services. This examples uses the <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> function to retrieve water quality sample data for USGS monitoring sites from Samples. The following arguments are supported:</p>
 <ul class="simple">
-<li><p><strong>sites</strong> (string or list of strings): A list of USGS site identifiers for which to retrieve data. If the qwdata parameter site_no is supplied, it will overwrite the sites parameter.</p></li>
-<li><p><strong>parameterCd</strong> (string or list of strings): A list of USGS parameter codes for which to retrieve data.</p></li>
-<li><p><strong>start</strong> (string): The beginning date for a period for which to retrieve data. If the qwdata parameter begin_date is supplied, it will overwrite the start parameter.</p></li>
-<li><p><strong>end</strong> (string): The ending date for a period for which to retrieve data. If the qwdata parameter end_date is supplied, it will overwrite the end parameter.</p></li>
-<li><p><strong>datetime_index</strong> (boolean): If True, create a datetime index</p></li>
-<li><p><strong>wide_format</strong> (boolean): If True, return data in wide format with multiple samples per row and one row per time.</p></li>
+<li><p><strong>ssl_check</strong> : boolean, optional Check the SSL certificate.</p></li>
+<li><p><strong>service</strong> : string One of the available Samples services: “results”, “locations”, “activities”, “projects”, or “organizations”. Defaults to “results”.</p></li>
+<li><p><strong>profile</strong> : string One of the available profiles associated with a service. Options for each service are: results - “fullphyschem”, “basicphyschem”, “fullbio”, “basicbio”, “narrow”, “resultdetectionquantitationlimit”, “labsampleprep”, “count” locations - “site”, “count” activities - “sampact”, “actmetric”, “actgroup”, “count” projects - “project”, “projectmonitoringlocationweight” organizations - “organization”, “count”</p></li>
+<li><p><strong>activityMediaName</strong> : string or list of strings, optional Name or code indicating environmental medium in which sample was taken. Check the <code class="docutils literal notranslate"><span class="pre">activityMediaName_lookup()</span></code> function in this module for all possible inputs. Example: “Water”.</p></li>
+<li><p><strong>activityStartDateLower</strong> : string, optional The start date if using a date range. Takes the format YYYY-MM-DD. The logic is inclusive, i.e. it will also return results that match the date. If left as None, will pull all data on or before activityStartDateUpper, if populated.</p></li>
+<li><p><strong>activityStartDateUpper</strong> : string, optional The end date if using a date range. Takes the format YYYY-MM-DD. The logic is inclusive, i.e. it will also return results that match the date. If left as None, will pull all data after activityStartDateLower up to the most recent available results.</p></li>
+<li><p><strong>activityTypeCode</strong> : string or list of strings, optional Text code that describes type of field activity performed. Example: “Sample-Routine, regular”.</p></li>
+<li><p><strong>characteristicGroup</strong> : string or list of strings, optional Characteristic group is a broad category of characteristics describing one or more results. Check the <code class="docutils literal notranslate"><span class="pre">characteristicGroup_lookup()</span></code> function in this module for all possible inputs. Example: “Organics, PFAS”</p></li>
+<li><p><strong>characteristic</strong> : string or list of strings, optional Characteristic is a specific category describing one or more results. Check the <code class="docutils literal notranslate"><span class="pre">characteristic_lookup()</span></code> function in this module for all possible inputs. Example: “Suspended Sediment Discharge”</p></li>
+<li><p><strong>characteristicUserSupplied</strong> : string or list of strings, optional A user supplied characteristic name describing one or more results.</p></li>
+<li><p><strong>boundingBox</strong>: list of four floats, optional Filters on the the associated monitoring location’s point location by checking if it is located within the specified geographic area. The logic is inclusive, i.e. it will include locations that overlap with the edge of the bounding box. Values are separated by commas, expressed in decimal degrees, NAD83, and longitudes west of Greenwich are negative. The format is a string consisting of: - Western-most longitude - Southern-most latitude -
+Eastern-most longitude - Northern-most longitude Example: [-92.8,44.2,-88.9,46.0]</p></li>
+<li><p><strong>countryFips</strong> : string or list of strings, optional Example: “US” (United States)</p></li>
+<li><p><strong>stateFips</strong> : string or list of strings, optional Check the <code class="docutils literal notranslate"><span class="pre">stateFips_lookup()</span></code> function in this module for all possible inputs. Example: “US:15” (United States: Hawaii)</p></li>
+<li><p><strong>countyFips</strong> : string or list of strings, optional Check the <code class="docutils literal notranslate"><span class="pre">countyFips_lookup()</span></code> function in this module for all possible inputs. Example: “US:15:001” (United States: Hawaii, Hawaii County)</p></li>
+<li><p><strong>siteTypeCode</strong> : string or list of strings, optional An abbreviation for a certain site type. Check the <code class="docutils literal notranslate"><span class="pre">siteType_lookup()</span></code> function in this module for all possible inputs. Example: “GW” (Groundwater site)</p></li>
+<li><p><strong>siteTypeName</strong> : string or list of strings, optional A full name for a certain site type. Check the <code class="docutils literal notranslate"><span class="pre">siteType_lookup()</span></code> function in this module for all possible inputs. Example: “Well”</p></li>
+<li><p><strong>usgsPCode</strong> : string or list of strings, optional 5-digit number used in the US Geological Survey computerized data system, National Water Information System (NWIS), to uniquely identify a specific constituent. Check the <code class="docutils literal notranslate"><span class="pre">characteristic_lookup()</span></code> function in this module for all possible inputs. Example: “00060” (Discharge, cubic feet per second)</p></li>
+<li><p><strong>hydrologicUnit</strong> : string or list of strings, optional Max 12-digit number used to describe a hydrologic unit. Example: “070900020502”</p></li>
+<li><p><strong>monitoringLocationIdentifier</strong> : string or list of strings, optional A monitoring location identifier has two parts: the agency code and the location number, separated by a dash (-). Example: “USGS-040851385”</p></li>
+<li><p><strong>organizationIdentifier</strong> : string or list of strings, optional Designator used to uniquely identify a specific organization. Currently only accepting the organization “USGS”.</p></li>
+<li><p><strong>pointLocationLatitude</strong> : float, optional Latitude for a point/radius query (decimal degrees). Must be used with pointLocationLongitude and pointLocationWithinMiles.</p></li>
+<li><p><strong>pointLocationLongitude</strong> : float, optional Longitude for a point/radius query (decimal degrees). Must be used with pointLocationLatitude and pointLocationWithinMiles.</p></li>
+<li><p><strong>pointLocationWithinMiles</strong> : float, optional Radius for a point/radius query. Must be used with pointLocationLatitude and pointLocationLongitude</p></li>
+<li><p><strong>projectIdentifier</strong> : string or list of strings, optional Designator used to uniquely identify a data collection project. Project identifiers are specific to an organization (e.g. USGS). Example: “ZH003QW03”</p></li>
+<li><p><strong>recordIdentifierUserSupplied</strong> : string or list of strings, optional Internal AQS record identifier that returns 1 entry. Only available for the “results” service.</p></li>
 </ul>
 <section id="Example-1:-Get-all-water-quality-sample-data-for-a-single-monitoring-site">
 <h3>Example 1: Get all water quality sample data for a single monitoring site<a class="headerlink" href="#Example-1:-Get-all-water-quality-sample-data-for-a-single-monitoring-site" title="Link to this heading"></a></h3>
@@ -164,102 +183,28 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteID</span> <span class="o">=</span> <span class="s1">&#39;10109000&#39;</span>
-<span class="n">wq_data</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_qwdata</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteID</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteID</span> <span class="o">=</span> <span class="s1">&#39;USGS-10109000&#39;</span>
+<span class="n">wq_data</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="n">siteID</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved data for &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; samples.&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/home/runner/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
-  warnings.warn(
-</pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3812</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   3811</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3812</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   3813</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:167</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:196</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7088</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7096</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
-
-The above exception was the direct cause of the following exception:
-
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> siteID = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">10109000</span><span class="ansi-yellow-fg">&#39;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> wq_data = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_qwdata</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">siteID</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">      3</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved data for </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(wq_data[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> samples.</span><span class="ansi-yellow-fg">&#39;</span>)
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:254</span>, in <span class="ansi-cyan-fg">get_qwdata</span><span class="ansi-blue-fg">(sites, start, end, multi_index, wide_format, datetime_index, ssl_check, **kwargs)</span>
-<span class="ansi-green-fg">    251</span> df = _read_rdb(response.text)
-<span class="ansi-green-fg">    253</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">254</span>     df = <span class="ansi-yellow-bg">format_datetime</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_tm</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_start_time_datum_cd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">    256</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/utils.py:79</span>, in <span class="ansi-cyan-fg">format_datetime</span><span class="ansi-blue-fg">(df, date_field, time_field, tz_field)</span>
-<span class="ansi-green-fg">     56</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Creates a datetime field from separate date, time, and</span>
-<span class="ansi-green-fg">     57</span> <span class="ansi-yellow-fg">time zone fields.</span>
-<span class="ansi-green-fg">     58</span>
-<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     76</span>
-<span class="ansi-green-fg">     77</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
-<span class="ansi-green-fg">     78</span> <span style="color: rgb(95,135,135)"># create a datetime index from the columns in qwdata response</span>
-<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">79</span> df[tz_field] = <span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">tz_field</span><span class="ansi-yellow-bg">]</span>.map(tz)
-<span class="ansi-green-fg">     81</span> df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#34;</span>] = pd.to_datetime(
-<span class="ansi-green-fg">     82</span>     df[date_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[time_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[tz_field],
-<span class="ansi-green-fg">     83</span>     <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">ISO8601</span><span class="ansi-yellow-fg">&#34;</span>,
-<span class="ansi-green-fg">     84</span>     utc=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
-<span class="ansi-green-fg">     85</span> )
-<span class="ansi-green-fg">     87</span> <span style="color: rgb(95,135,135)"># if there are any incomplete dates, warn the user</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/frame.py:4107</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   4105</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
-<span class="ansi-green-fg">   4106</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4107</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   4108</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
-<span class="ansi-green-fg">   4109</span>     indexer = [indexer]
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3819</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   3814</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
-<span class="ansi-green-fg">   3815</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
-<span class="ansi-green-fg">   3816</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
-<span class="ansi-green-fg">   3817</span>     ):
-<span class="ansi-green-fg">   3818</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key)
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3819</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">err</span>
-<span class="ansi-green-fg">   3820</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
-<span class="ansi-green-fg">   3821</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
-<span class="ansi-green-fg">   3822</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
-<span class="ansi-green-fg">   3823</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
-<span class="ansi-green-fg">   3824</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
-
-<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
+Request: https://api.waterdata.usgs.gov/samples-data/results/fullphyschem?monitoringLocationIdentifier=USGS-10109000&amp;mimeType=text%2Fcsv
+Retrieved data for 2293 samples.
 </pre></div></div>
 </div>
 </section>
 </section>
 <section id="Interpreting-the-Result">
 <h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Link to this heading"></a></h2>
-<p>The result of calling the <code class="docutils literal notranslate"><span class="pre">get_qwdata()</span></code> function is an object that contains a Pandas data frame object and an associated metadata object. The Pandas data frame contains the water quality sample data for the requested site, and or observed variables and time frame.</p>
+<p>The result of calling the <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> function is an object that contains a Pandas data frame object and an associated metadata object. The Pandas data frame contains the water quality sample data for the requested site, and or observed variables and time frame.</p>
 <p>Once you’ve got the data frame, there’s several useful things you can do to explore the data.</p>
-<p>Display the data frame as a table. The default data frame for this function is a wide, cross-tabulated table, with columns for each observed variable and a row for each sample date (wide_format=True).</p>
+<p>Display the data frame as a table. The default data frame for this function is a long, flat table, with a row for each observed variable at a given site and date/time.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
@@ -271,15 +216,317 @@ The above exception was the direct cause of the following exception:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[4]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> display(<span class="ansi-yellow-bg">wq_data</span>[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;wq_data&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Org_Identifier</th>
+      <th>Org_FormalName</th>
+      <th>Project_Identifier</th>
+      <th>Project_Name</th>
+      <th>Project_QAPPApproved</th>
+      <th>Project_QAPPApprovalAgency</th>
+      <th>ProjectAttachment_FileName</th>
+      <th>ProjectAttachment_FileType</th>
+      <th>Location_Identifier</th>
+      <th>Location_Name</th>
+      <th>...</th>
+      <th>ResultAttachment_FileName</th>
+      <th>ResultAttachment_FileType</th>
+      <th>ResultAttachment_FileDownload</th>
+      <th>ProviderName</th>
+      <th>Result_CharacteristicComparable</th>
+      <th>Result_CharacteristicGroup</th>
+      <th>Org_Type</th>
+      <th>LastChangeDate</th>
+      <th>USGSpcode</th>
+      <th>USGSSampleAquifer</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>20</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>61</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>95</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS","UT2110000"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Information</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>9</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS","UT1710001"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Information</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>9</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2288</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS","UT2510000"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2025-05-20</td>
+      <td>4</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2289</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS","UT2510000"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2025-05-20</td>
+      <td>95</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2290</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS","UT2510000"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2025-05-20</td>
+      <td>65</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2291</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS","UT2510000"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2025-05-20</td>
+      <td>61</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2292</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS","UT2510000"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Information</td>
+      <td>Federal/US Government</td>
+      <td>2025-05-20</td>
+      <td>3</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>2293 rows × 181 columns</p>
+</div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
 <div class="nbinput docutils container">
@@ -295,20 +542,26 @@ The above exception was the direct cause of the following exception:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[5]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-bg">wq_data</span>[<span class="ansi-green-fg">0</span>].dtypes)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;wq_data&#39; is not defined
+Org_Identifier                 object
+Org_FormalName                 object
+Project_Identifier             object
+Project_Name                  float64
+Project_QAPPApproved          float64
+                               ...
+Result_CharacteristicGroup     object
+Org_Type                       object
+LastChangeDate                 object
+USGSpcode                       int64
+USGSSampleAquifer             float64
+Length: 181, dtype: object
 </pre></div></div>
 </div>
-<p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_qwdata()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.</p>
+<p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The query URL used to retrieve the data from NWIS was: &#39;</span> <span class="o">+</span> <span class="n">wq_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The query URL used to retrieve the data from USGS Samples was: &#39;</span> <span class="o">+</span> <span class="n">wq_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -317,12 +570,7 @@ The above exception was the direct cause of the following exception:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">The query URL used to retrieve the data from NWIS was: </span><span class="ansi-yellow-fg">&#39;</span> + <span class="ansi-yellow-bg">wq_data</span>[<span class="ansi-green-fg">1</span>].url)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;wq_data&#39; is not defined
+The query URL used to retrieve the data from USGS Samples was: https://api.waterdata.usgs.gov/samples-data/results/fullphyschem?monitoringLocationIdentifier=USGS-10109000&amp;mimeType=text%2Fcsv
 </pre></div></div>
 </div>
 </section>
@@ -334,9 +582,9 @@ The above exception was the direct cause of the following exception:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;04024430&#39;</span><span class="p">,</span> <span class="s1">&#39;04024000&#39;</span><span class="p">]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;USGS-04024430&#39;</span><span class="p">,</span> <span class="s1">&#39;USGS-04024000&#39;</span><span class="p">]</span>
 <span class="n">parameter_code</span> <span class="o">=</span> <span class="s1">&#39;00065&#39;</span>
-<span class="n">wq_multi_site</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_qwdata</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameter_code</span><span class="p">)</span>
+<span class="n">wq_multi_site</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span> <span class="n">usgsPCode</span><span class="o">=</span><span class="n">parameter_code</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved data for &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_multi_site</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; samples.&#39;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">wq_multi_site</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
@@ -345,199 +593,339 @@ The above exception was the direct cause of the following exception:
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area stderr docutils container">
+<div class="output_area docutils container">
 <div class="highlight"><pre>
-/home/runner/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
-  warnings.warn(
+Request: https://api.waterdata.usgs.gov/samples-data/results/fullphyschem?usgsPCode=00065&amp;monitoringLocationIdentifier=USGS-04024430&amp;monitoringLocationIdentifier=USGS-04024000&amp;mimeType=text%2Fcsv
+Retrieved data for 298 samples.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3812</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   3811</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3812</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   3813</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:167</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:196</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7088</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7096</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
-
-The above exception was the direct cause of the following exception:
-
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 3</span>
-<span class="ansi-green-fg">      1</span> site_ids = [<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">04024430</span><span class="ansi-yellow-fg">&#39;</span>, <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">04024000</span><span class="ansi-yellow-fg">&#39;</span>]
-<span class="ansi-green-fg">      2</span> parameter_code = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">00065</span><span class="ansi-yellow-fg">&#39;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">3</span> wq_multi_site = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_qwdata</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">site_ids</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">parameterCd</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">parameter_code</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">      4</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved data for </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(wq_multi_site[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> samples.</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      5</span> display(wq_multi_site[<span class="ansi-green-fg">0</span>])
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:254</span>, in <span class="ansi-cyan-fg">get_qwdata</span><span class="ansi-blue-fg">(sites, start, end, multi_index, wide_format, datetime_index, ssl_check, **kwargs)</span>
-<span class="ansi-green-fg">    251</span> df = _read_rdb(response.text)
-<span class="ansi-green-fg">    253</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">254</span>     df = <span class="ansi-yellow-bg">format_datetime</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_tm</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_start_time_datum_cd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">    256</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/utils.py:79</span>, in <span class="ansi-cyan-fg">format_datetime</span><span class="ansi-blue-fg">(df, date_field, time_field, tz_field)</span>
-<span class="ansi-green-fg">     56</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Creates a datetime field from separate date, time, and</span>
-<span class="ansi-green-fg">     57</span> <span class="ansi-yellow-fg">time zone fields.</span>
-<span class="ansi-green-fg">     58</span>
-<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     76</span>
-<span class="ansi-green-fg">     77</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
-<span class="ansi-green-fg">     78</span> <span style="color: rgb(95,135,135)"># create a datetime index from the columns in qwdata response</span>
-<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">79</span> df[tz_field] = <span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">tz_field</span><span class="ansi-yellow-bg">]</span>.map(tz)
-<span class="ansi-green-fg">     81</span> df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#34;</span>] = pd.to_datetime(
-<span class="ansi-green-fg">     82</span>     df[date_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[time_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[tz_field],
-<span class="ansi-green-fg">     83</span>     <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">ISO8601</span><span class="ansi-yellow-fg">&#34;</span>,
-<span class="ansi-green-fg">     84</span>     utc=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
-<span class="ansi-green-fg">     85</span> )
-<span class="ansi-green-fg">     87</span> <span style="color: rgb(95,135,135)"># if there are any incomplete dates, warn the user</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/frame.py:4107</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   4105</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
-<span class="ansi-green-fg">   4106</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4107</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   4108</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
-<span class="ansi-green-fg">   4109</span>     indexer = [indexer]
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3819</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   3814</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
-<span class="ansi-green-fg">   3815</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
-<span class="ansi-green-fg">   3816</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
-<span class="ansi-green-fg">   3817</span>     ):
-<span class="ansi-green-fg">   3818</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key)
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3819</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">err</span>
-<span class="ansi-green-fg">   3820</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
-<span class="ansi-green-fg">   3821</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
-<span class="ansi-green-fg">   3822</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
-<span class="ansi-green-fg">   3823</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
-<span class="ansi-green-fg">   3824</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
-
-<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
-</pre></div></div>
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Org_Identifier</th>
+      <th>Org_FormalName</th>
+      <th>Project_Identifier</th>
+      <th>Project_Name</th>
+      <th>Project_QAPPApproved</th>
+      <th>Project_QAPPApprovalAgency</th>
+      <th>ProjectAttachment_FileName</th>
+      <th>ProjectAttachment_FileType</th>
+      <th>Location_Identifier</th>
+      <th>Location_Name</th>
+      <th>...</th>
+      <th>ResultAttachment_FileName</th>
+      <th>ResultAttachment_FileType</th>
+      <th>ResultAttachment_FileDownload</th>
+      <th>ProviderName</th>
+      <th>Result_CharacteristicComparable</th>
+      <th>Result_CharacteristicGroup</th>
+      <th>Org_Type</th>
+      <th>LastChangeDate</th>
+      <th>USGSpcode</th>
+      <th>USGSSampleAquifer</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","GR13NK0...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>65</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","MN-00300"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>65</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>65</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","00GQ436...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>65</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","MN-00300"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>65</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>293</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","NA00V18"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>65</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>294</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","NA00V18"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2025-05-01</td>
+      <td>65</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>295</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","NA00V18"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2025-06-09</td>
+      <td>65</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>296</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","NA00V18"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2025-06-03</td>
+      <td>65</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>297</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","NA00V18"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2025-06-05</td>
+      <td>65</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>298 rows × 181 columns</p>
+</div></div>
 </div>
-<p>The following example is the same as the previous example but with multi index turned off (multi_index=False)</p>
+</section>
+<section id="Example-3:-Retrieve-water-quality-sample-data-for-multiple-sites,-including-a-list-of-parameters,-within-a-time-period-defined-by-start-date-until-present">
+<h3>Example 3: Retrieve water quality sample data for multiple sites, including a list of parameters, within a time period defined by start date until present<a class="headerlink" href="#Example-3:-Retrieve-water-quality-sample-data-for-multiple-sites,-including-a-list-of-parameters,-within-a-time-period-defined-by-start-date-until-present" title="Link to this heading"></a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;04024430&#39;</span><span class="p">,</span> <span class="s1">&#39;04024000&#39;</span><span class="p">]</span>
-<span class="n">parameter_code</span> <span class="o">=</span> <span class="s1">&#39;00065&#39;</span>
-<span class="n">wq_multi_site</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_qwdata</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameter_code</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved data for &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_multi_site</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; samples.&#39;</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">wq_multi_site</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/home/runner/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
-  warnings.warn(
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3812</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   3811</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3812</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   3813</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:167</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:196</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7088</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7096</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
-
-The above exception was the direct cause of the following exception:
-
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[8]</span><span class="ansi-green-fg">, line 3</span>
-<span class="ansi-green-fg">      1</span> site_ids = [<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">04024430</span><span class="ansi-yellow-fg">&#39;</span>, <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">04024000</span><span class="ansi-yellow-fg">&#39;</span>]
-<span class="ansi-green-fg">      2</span> parameter_code = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">00065</span><span class="ansi-yellow-fg">&#39;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">3</span> wq_multi_site = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_qwdata</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">site_ids</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">parameterCd</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">parameter_code</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">multi_index</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">False</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">      4</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved data for </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(wq_multi_site[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> samples.</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      5</span> display(wq_multi_site[<span class="ansi-green-fg">0</span>])
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:254</span>, in <span class="ansi-cyan-fg">get_qwdata</span><span class="ansi-blue-fg">(sites, start, end, multi_index, wide_format, datetime_index, ssl_check, **kwargs)</span>
-<span class="ansi-green-fg">    251</span> df = _read_rdb(response.text)
-<span class="ansi-green-fg">    253</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">254</span>     df = <span class="ansi-yellow-bg">format_datetime</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_tm</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_start_time_datum_cd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">    256</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/utils.py:79</span>, in <span class="ansi-cyan-fg">format_datetime</span><span class="ansi-blue-fg">(df, date_field, time_field, tz_field)</span>
-<span class="ansi-green-fg">     56</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Creates a datetime field from separate date, time, and</span>
-<span class="ansi-green-fg">     57</span> <span class="ansi-yellow-fg">time zone fields.</span>
-<span class="ansi-green-fg">     58</span>
-<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     76</span>
-<span class="ansi-green-fg">     77</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
-<span class="ansi-green-fg">     78</span> <span style="color: rgb(95,135,135)"># create a datetime index from the columns in qwdata response</span>
-<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">79</span> df[tz_field] = <span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">tz_field</span><span class="ansi-yellow-bg">]</span>.map(tz)
-<span class="ansi-green-fg">     81</span> df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#34;</span>] = pd.to_datetime(
-<span class="ansi-green-fg">     82</span>     df[date_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[time_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[tz_field],
-<span class="ansi-green-fg">     83</span>     <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">ISO8601</span><span class="ansi-yellow-fg">&#34;</span>,
-<span class="ansi-green-fg">     84</span>     utc=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
-<span class="ansi-green-fg">     85</span> )
-<span class="ansi-green-fg">     87</span> <span style="color: rgb(95,135,135)"># if there are any incomplete dates, warn the user</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/frame.py:4107</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   4105</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
-<span class="ansi-green-fg">   4106</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4107</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   4108</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
-<span class="ansi-green-fg">   4109</span>     indexer = [indexer]
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3819</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   3814</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
-<span class="ansi-green-fg">   3815</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
-<span class="ansi-green-fg">   3816</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
-<span class="ansi-green-fg">   3817</span>     ):
-<span class="ansi-green-fg">   3818</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key)
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3819</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">err</span>
-<span class="ansi-green-fg">   3820</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
-<span class="ansi-green-fg">   3821</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
-<span class="ansi-green-fg">   3822</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
-<span class="ansi-green-fg">   3823</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
-<span class="ansi-green-fg">   3824</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
-
-<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
-</pre></div></div>
-</div>
-</section>
-<section id="Example-3:-Retrieve-water-quality-sample-data-for-multiple-sites,-including-a-list-of-parameters,-within-a-time-period-defined-by-start-and-end-dates">
-<h3>Example 3: Retrieve water quality sample data for multiple sites, including a list of parameters, within a time period defined by start and end dates<a class="headerlink" href="#Example-3:-Retrieve-water-quality-sample-data-for-multiple-sites,-including-a-list-of-parameters,-within-a-time-period-defined-by-start-and-end-dates" title="Link to this heading"></a></h3>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;04024430&#39;</span><span class="p">,</span> <span class="s1">&#39;04024000&#39;</span><span class="p">]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;USGS-04024430&#39;</span><span class="p">,</span> <span class="s1">&#39;USGS-04024000&#39;</span><span class="p">]</span>
 <span class="n">parameterCd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;34247&#39;</span><span class="p">,</span> <span class="s1">&#39;30234&#39;</span><span class="p">,</span> <span class="s1">&#39;32104&#39;</span><span class="p">,</span> <span class="s1">&#39;34220&#39;</span><span class="p">]</span>
 <span class="n">startDate</span> <span class="o">=</span> <span class="s1">&#39;2012-01-01&#39;</span>
-<span class="n">endDate</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-<span class="n">wq_data2</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_qwdata</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
-                           <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">)</span>
+<span class="n">wq_data2</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span> <span class="n">usgsPCode</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
+                           <span class="n">activityStartDateLower</span><span class="o">=</span><span class="n">startDate</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved data for &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_multi_site</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; samples.&#39;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">wq_data2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 <br/></pre></div>
@@ -546,289 +934,708 @@ The above exception was the direct cause of the following exception:
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area stderr docutils container">
+<div class="output_area docutils container">
 <div class="highlight"><pre>
-/home/runner/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
-  warnings.warn(
+Request: https://api.waterdata.usgs.gov/samples-data/results/fullphyschem?activityStartDateLower=2012-01-01&amp;usgsPCode=34247&amp;usgsPCode=30234&amp;usgsPCode=32104&amp;usgsPCode=34220&amp;monitoringLocationIdentifier=USGS-04024430&amp;monitoringLocationIdentifier=USGS-04024000&amp;mimeType=text%2Fcsv
+Retrieved data for 298 samples.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3812</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   3811</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3812</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   3813</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:167</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:196</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7088</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7096</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
-
-The above exception was the direct cause of the following exception:
-
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[9]</span><span class="ansi-green-fg">, line 5</span>
-<span class="ansi-green-fg">      3</span> startDate = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">2012-01-01</span><span class="ansi-yellow-fg">&#39;</span>
-<span class="ansi-green-fg">      4</span> endDate = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">&#39;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">5</span> wq_data2 = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_qwdata</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">site_ids</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">parameterCd</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">parameterCd</span><span class="ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">      6</span> <span class="ansi-yellow-bg">                           </span><span class="ansi-yellow-bg">start</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">startDate</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">end</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">endDate</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">      7</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved data for </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(wq_multi_site[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> samples.</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      8</span> display(wq_data2[<span class="ansi-green-fg">0</span>])
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:254</span>, in <span class="ansi-cyan-fg">get_qwdata</span><span class="ansi-blue-fg">(sites, start, end, multi_index, wide_format, datetime_index, ssl_check, **kwargs)</span>
-<span class="ansi-green-fg">    251</span> df = _read_rdb(response.text)
-<span class="ansi-green-fg">    253</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">254</span>     df = <span class="ansi-yellow-bg">format_datetime</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_tm</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_start_time_datum_cd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">    256</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/utils.py:79</span>, in <span class="ansi-cyan-fg">format_datetime</span><span class="ansi-blue-fg">(df, date_field, time_field, tz_field)</span>
-<span class="ansi-green-fg">     56</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Creates a datetime field from separate date, time, and</span>
-<span class="ansi-green-fg">     57</span> <span class="ansi-yellow-fg">time zone fields.</span>
-<span class="ansi-green-fg">     58</span>
-<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     76</span>
-<span class="ansi-green-fg">     77</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
-<span class="ansi-green-fg">     78</span> <span style="color: rgb(95,135,135)"># create a datetime index from the columns in qwdata response</span>
-<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">79</span> df[tz_field] = <span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">tz_field</span><span class="ansi-yellow-bg">]</span>.map(tz)
-<span class="ansi-green-fg">     81</span> df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#34;</span>] = pd.to_datetime(
-<span class="ansi-green-fg">     82</span>     df[date_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[time_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[tz_field],
-<span class="ansi-green-fg">     83</span>     <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">ISO8601</span><span class="ansi-yellow-fg">&#34;</span>,
-<span class="ansi-green-fg">     84</span>     utc=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
-<span class="ansi-green-fg">     85</span> )
-<span class="ansi-green-fg">     87</span> <span style="color: rgb(95,135,135)"># if there are any incomplete dates, warn the user</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/frame.py:4107</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   4105</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
-<span class="ansi-green-fg">   4106</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4107</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   4108</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
-<span class="ansi-green-fg">   4109</span>     indexer = [indexer]
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3819</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   3814</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
-<span class="ansi-green-fg">   3815</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
-<span class="ansi-green-fg">   3816</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
-<span class="ansi-green-fg">   3817</span>     ):
-<span class="ansi-green-fg">   3818</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key)
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3819</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">err</span>
-<span class="ansi-green-fg">   3820</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
-<span class="ansi-green-fg">   3821</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
-<span class="ansi-green-fg">   3822</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
-<span class="ansi-green-fg">   3823</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
-<span class="ansi-green-fg">   3824</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
-
-<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
-</pre></div></div>
-</div>
-<p>The following example is the same as the previous example but with multi index turned off (multi_index=False)</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;04024430&#39;</span><span class="p">,</span> <span class="s1">&#39;04024000&#39;</span><span class="p">]</span>
-<span class="n">parameterCd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;34247&#39;</span><span class="p">,</span> <span class="s1">&#39;30234&#39;</span><span class="p">,</span> <span class="s1">&#39;32104&#39;</span><span class="p">,</span> <span class="s1">&#39;34220&#39;</span><span class="p">]</span>
-<span class="n">startDate</span> <span class="o">=</span> <span class="s1">&#39;2012-01-01&#39;</span>
-<span class="n">endDate</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-<span class="n">wq_data2</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_qwdata</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
-                           <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved data for &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_multi_site</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; samples.&#39;</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">wq_data2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/home/runner/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
-  warnings.warn(
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3812</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   3811</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3812</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   3813</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:167</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:196</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7088</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7096</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
-
-The above exception was the direct cause of the following exception:
-
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[10]</span><span class="ansi-green-fg">, line 5</span>
-<span class="ansi-green-fg">      3</span> startDate = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">2012-01-01</span><span class="ansi-yellow-fg">&#39;</span>
-<span class="ansi-green-fg">      4</span> endDate = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">&#39;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">5</span> wq_data2 = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_qwdata</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">site_ids</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">parameterCd</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">parameterCd</span><span class="ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">      6</span> <span class="ansi-yellow-bg">                           </span><span class="ansi-yellow-bg">start</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">startDate</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">end</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">endDate</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">multi_index</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">False</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">      7</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved data for </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(wq_multi_site[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> samples.</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      8</span> display(wq_data2[<span class="ansi-green-fg">0</span>])
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:254</span>, in <span class="ansi-cyan-fg">get_qwdata</span><span class="ansi-blue-fg">(sites, start, end, multi_index, wide_format, datetime_index, ssl_check, **kwargs)</span>
-<span class="ansi-green-fg">    251</span> df = _read_rdb(response.text)
-<span class="ansi-green-fg">    253</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">254</span>     df = <span class="ansi-yellow-bg">format_datetime</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_tm</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_start_time_datum_cd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">    256</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/utils.py:79</span>, in <span class="ansi-cyan-fg">format_datetime</span><span class="ansi-blue-fg">(df, date_field, time_field, tz_field)</span>
-<span class="ansi-green-fg">     56</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Creates a datetime field from separate date, time, and</span>
-<span class="ansi-green-fg">     57</span> <span class="ansi-yellow-fg">time zone fields.</span>
-<span class="ansi-green-fg">     58</span>
-<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     76</span>
-<span class="ansi-green-fg">     77</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
-<span class="ansi-green-fg">     78</span> <span style="color: rgb(95,135,135)"># create a datetime index from the columns in qwdata response</span>
-<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">79</span> df[tz_field] = <span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">tz_field</span><span class="ansi-yellow-bg">]</span>.map(tz)
-<span class="ansi-green-fg">     81</span> df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#34;</span>] = pd.to_datetime(
-<span class="ansi-green-fg">     82</span>     df[date_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[time_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[tz_field],
-<span class="ansi-green-fg">     83</span>     <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">ISO8601</span><span class="ansi-yellow-fg">&#34;</span>,
-<span class="ansi-green-fg">     84</span>     utc=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
-<span class="ansi-green-fg">     85</span> )
-<span class="ansi-green-fg">     87</span> <span style="color: rgb(95,135,135)"># if there are any incomplete dates, warn the user</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/frame.py:4107</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   4105</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
-<span class="ansi-green-fg">   4106</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4107</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   4108</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
-<span class="ansi-green-fg">   4109</span>     indexer = [indexer]
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3819</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   3814</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
-<span class="ansi-green-fg">   3815</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
-<span class="ansi-green-fg">   3816</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
-<span class="ansi-green-fg">   3817</span>     ):
-<span class="ansi-green-fg">   3818</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key)
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3819</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">err</span>
-<span class="ansi-green-fg">   3820</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
-<span class="ansi-green-fg">   3821</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
-<span class="ansi-green-fg">   3822</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
-<span class="ansi-green-fg">   3823</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
-<span class="ansi-green-fg">   3824</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
-
-<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
-</pre></div></div>
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Org_Identifier</th>
+      <th>Org_FormalName</th>
+      <th>Project_Identifier</th>
+      <th>Project_Name</th>
+      <th>Project_QAPPApproved</th>
+      <th>Project_QAPPApprovalAgency</th>
+      <th>ProjectAttachment_FileName</th>
+      <th>ProjectAttachment_FileType</th>
+      <th>Location_Identifier</th>
+      <th>Location_Name</th>
+      <th>...</th>
+      <th>ResultAttachment_FileName</th>
+      <th>ResultAttachment_FileType</th>
+      <th>ResultAttachment_FileDownload</th>
+      <th>ProviderName</th>
+      <th>Result_CharacteristicComparable</th>
+      <th>Result_CharacteristicGroup</th>
+      <th>Org_Type</th>
+      <th>LastChangeDate</th>
+      <th>USGSpcode</th>
+      <th>USGSSampleAquifer</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS","F6X7H"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024430</td>
+      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Organics, Other</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>32104</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","00GQ414...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Organics, Other</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>34247</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS","GLRI TOX"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024430</td>
+      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Organics, Other</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>32104</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Organics, Pesticide</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>30234</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","MN-00300"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Organics, Other</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>32104</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>147</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","MN-00300"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Organics, Pesticide</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>30234</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>148</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","GR14NK0...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Organics, Other</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>34220</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>149</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS","GLRI TOX"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024430</td>
+      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Organics, Other</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-22</td>
+      <td>34220</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>150</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Organics, Other</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-22</td>
+      <td>32104</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>151</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Organics, Other</td>
+      <td>Federal/US Government</td>
+      <td>2025-04-21</td>
+      <td>34247</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>152 rows × 181 columns</p>
+</div></div>
 </div>
 </section>
-<section id="Example-4:-Retrieve-water-quality-sample-data-for-one-site-in-serial-format">
-<h3>Example 4: Retrieve water quality sample data for one site in serial format<a class="headerlink" href="#Example-4:-Retrieve-water-quality-sample-data-for-one-site-in-serial-format" title="Link to this heading"></a></h3>
-<p>Each row in the resulting table represents a single observation of a single parameters. Each sample may be analyzed for multiple parameters and so a single water quality sample can result in multiple rows in serial format.</p>
+<section id="Example-4:-Retrieve-water-quality-sample-data-for-one-site-and-convert-to-a-wide-format">
+<h3>Example 4: Retrieve water quality sample data for one site and convert to a wide format<a class="headerlink" href="#Example-4:-Retrieve-water-quality-sample-data-for-one-site-and-convert-to-a-wide-format" title="Link to this heading"></a></h3>
+<p>Note that the USGS Samples database returns multiple parameters in a “long” format: each row in the resulting table represents a single observation of a single parameters. Furthermore, every observation has 181 fields of metadata. However, if you wanted to place your water quality data into a “wide” format, where each column represents a water quality parameter code, the code below details one solution.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteID</span> <span class="o">=</span> <span class="s1">&#39;10109000&#39;</span>
-<span class="n">wq_data</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_qwdata</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteID</span><span class="p">,</span> <span class="n">wide_format</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved data for &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; sample results.&#39;</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">wq_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</pre></div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteID</span> <span class="o">=</span> <span class="s1">&#39;USGS-10109000&#39;</span>
+<span class="n">wq_data</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="n">siteID</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved data for &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_data</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39; sample results.&#39;</span><span class="p">)</span>
+
+<span class="n">wq_data</span><span class="p">[</span><span class="s2">&quot;characteristic_unit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">wq_data</span><span class="p">[</span><span class="s2">&quot;Result_Characteristic&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span> <span class="o">+</span> <span class="n">wq_data</span><span class="p">[</span><span class="s2">&quot;Result_MeasureUnit&quot;</span><span class="p">]</span>
+<span class="n">wq_data_wide</span> <span class="o">=</span> <span class="n">wq_data</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Location_Identifier&#39;</span><span class="p">,</span> <span class="s1">&#39;Activity_StartDate&#39;</span><span class="p">,</span> <span class="s1">&#39;Activity_StartTime&#39;</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="s2">&quot;characteristic_unit&quot;</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="s2">&quot;Result_Measure&quot;</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">wq_data_wide</span><span class="p">)</span>
+<br/></pre></div>
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area stderr docutils container">
+<div class="output_area docutils container">
 <div class="highlight"><pre>
-/home/runner/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:193: UserWarning: WARNING: Starting in March 2024, the NWIS qw data endpoint is retiring and no longer receives updates. For more information, refer to https://waterdata.usgs.gov.nwis/qwdata and https://doi-usgs.github.io/dataRetrieval/articles/Status.html or email CompTools@usgs.gov.
-  warnings.warn(
+Request: https://api.waterdata.usgs.gov/samples-data/results/fullphyschem?monitoringLocationIdentifier=USGS-10109000&amp;mimeType=text%2Fcsv
+Retrieved data for 2293 sample results.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3812</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   3811</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3812</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   3813</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:167</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:196</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7088</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7096</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
-
-The above exception was the direct cause of the following exception:
-
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[11]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> siteID = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">10109000</span><span class="ansi-yellow-fg">&#39;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> wq_data = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_qwdata</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">siteID</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">wide_format</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">False</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">      3</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved data for </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(wq_data[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> sample results.</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      4</span> display(wq_data[<span class="ansi-green-fg">0</span>])
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:254</span>, in <span class="ansi-cyan-fg">get_qwdata</span><span class="ansi-blue-fg">(sites, start, end, multi_index, wide_format, datetime_index, ssl_check, **kwargs)</span>
-<span class="ansi-green-fg">    251</span> df = _read_rdb(response.text)
-<span class="ansi-green-fg">    253</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">254</span>     df = <span class="ansi-yellow-bg">format_datetime</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_tm</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">sample_start_time_datum_cd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">    256</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/utils.py:79</span>, in <span class="ansi-cyan-fg">format_datetime</span><span class="ansi-blue-fg">(df, date_field, time_field, tz_field)</span>
-<span class="ansi-green-fg">     56</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Creates a datetime field from separate date, time, and</span>
-<span class="ansi-green-fg">     57</span> <span class="ansi-yellow-fg">time zone fields.</span>
-<span class="ansi-green-fg">     58</span>
-<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     76</span>
-<span class="ansi-green-fg">     77</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
-<span class="ansi-green-fg">     78</span> <span style="color: rgb(95,135,135)"># create a datetime index from the columns in qwdata response</span>
-<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">79</span> df[tz_field] = <span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">tz_field</span><span class="ansi-yellow-bg">]</span>.map(tz)
-<span class="ansi-green-fg">     81</span> df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#34;</span>] = pd.to_datetime(
-<span class="ansi-green-fg">     82</span>     df[date_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[time_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[tz_field],
-<span class="ansi-green-fg">     83</span>     <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">ISO8601</span><span class="ansi-yellow-fg">&#34;</span>,
-<span class="ansi-green-fg">     84</span>     utc=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
-<span class="ansi-green-fg">     85</span> )
-<span class="ansi-green-fg">     87</span> <span style="color: rgb(95,135,135)"># if there are any incomplete dates, warn the user</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/frame.py:4107</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   4105</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
-<span class="ansi-green-fg">   4106</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4107</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   4108</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
-<span class="ansi-green-fg">   4109</span>     indexer = [indexer]
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3819</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   3814</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
-<span class="ansi-green-fg">   3815</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
-<span class="ansi-green-fg">   3816</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
-<span class="ansi-green-fg">   3817</span>     ):
-<span class="ansi-green-fg">   3818</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key)
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3819</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">err</span>
-<span class="ansi-green-fg">   3820</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
-<span class="ansi-green-fg">   3821</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
-<span class="ansi-green-fg">   3822</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
-<span class="ansi-green-fg">   3823</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
-<span class="ansi-green-fg">   3824</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
-
-<span class="ansi-red-fg">KeyError</span>: &#39;sample_start_time_datum_cd&#39;
-</pre></div></div>
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>characteristic_unit</th>
+      <th>Acidity, (H+), mg/L</th>
+      <th>Alkalinity, mg/L</th>
+      <th>Bicarbonate, mg/L</th>
+      <th>Calcium, mg/L</th>
+      <th>Carbon dioxide, mg/L</th>
+      <th>Carbonate, mg/L</th>
+      <th>Chloride, mg/L</th>
+      <th>Depth of water column, ft</th>
+      <th>Hardness, Ca, Mg, mg/L</th>
+      <th>Hardness, non-carbonate, mg/L</th>
+      <th>...</th>
+      <th>Stream flow, instantaneous, m3/sec</th>
+      <th>Stream flow, m3/sec</th>
+      <th>Stream width measure, ft</th>
+      <th>Sulfate, mg/L</th>
+      <th>Temperature, air, deg C</th>
+      <th>Temperature, water, deg C</th>
+      <th>Total dissolved solids, mg/L</th>
+      <th>Total dissolved solids, tons/ac ft</th>
+      <th>Total dissolved solids, tons/day</th>
+      <th>pH, standard units</th>
+    </tr>
+    <tr>
+      <th>Location_Identifier</th>
+      <th>Activity_StartDate</th>
+      <th>Activity_StartTime</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="11" valign="top">USGS-10109000</th>
+      <th>1967-09-13</th>
+      <th>07:35:00</th>
+      <td>0.00001</td>
+      <td>187</td>
+      <td>228</td>
+      <td>44.0</td>
+      <td>2.9</td>
+      <td>0.0</td>
+      <td>3.5</td>
+      <td>NaN</td>
+      <td>190</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>5.8</td>
+      <td>NaN</td>
+      <td>6.5</td>
+      <td>NaN</td>
+      <td>7.0</td>
+      <td>196</td>
+      <td>0.27</td>
+      <td>108</td>
+      <td>8.1</td>
+    </tr>
+    <tr>
+      <th>1968-01-18</th>
+      <th>12:20:00</th>
+      <td>0.00002</td>
+      <td>207</td>
+      <td>252</td>
+      <td>52.0</td>
+      <td>6.5</td>
+      <td>0.0</td>
+      <td>3.9</td>
+      <td>NaN</td>
+      <td>220</td>
+      <td>17</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>3.2</td>
+      <td>NaN</td>
+      <td>17.0</td>
+      <td>NaN</td>
+      <td>4.0</td>
+      <td>210</td>
+      <td>0.29</td>
+      <td>63.5</td>
+      <td>7.8</td>
+    </tr>
+    <tr>
+      <th>1968-05-15</th>
+      <th>12:30:00</th>
+      <td>0.00004</td>
+      <td>149</td>
+      <td>182</td>
+      <td>38.0</td>
+      <td>12</td>
+      <td>0.0</td>
+      <td>1.7</td>
+      <td>NaN</td>
+      <td>150</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>10</td>
+      <td>NaN</td>
+      <td>5.5</td>
+      <td>NaN</td>
+      <td>7.0</td>
+      <td>155</td>
+      <td>0.21</td>
+      <td>151</td>
+      <td>7.4</td>
+    </tr>
+    <tr>
+      <th>1968-07-26</th>
+      <th>14:40:00</th>
+      <td>0.00002</td>
+      <td>179</td>
+      <td>218</td>
+      <td>53.0</td>
+      <td>7.0</td>
+      <td>0.0</td>
+      <td>2.2</td>
+      <td>NaN</td>
+      <td>180</td>
+      <td>3</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>7.5</td>
+      <td>NaN</td>
+      <td>6.2</td>
+      <td>NaN</td>
+      <td>12.0</td>
+      <td>188</td>
+      <td>0.26</td>
+      <td>135</td>
+      <td>7.7</td>
+    </tr>
+    <tr>
+      <th>1972-12-08</th>
+      <th>16:15:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>3.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2024-11-06</th>
+      <th>11:02:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>50.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>3.9</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2024-12-11</th>
+      <th>16:21:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>52.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>3.1</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2025-02-03</th>
+      <th>17:53:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>47.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2025-03-26</th>
+      <th>15:09:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>49.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>10.3</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2025-05-13</th>
+      <th>16:42:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>53.8</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>8.2</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>348 rows × 34 columns</p>
+</div></div>
 </div>
 </section>
 </section>

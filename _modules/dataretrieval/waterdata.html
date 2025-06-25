@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.samples &mdash; dataretrieval 0.1.dev1+g2c8419c documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g2c8419c documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
@@ -64,7 +64,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">dataretrieval.samples</li>
+      <li class="breadcrumb-item active">dataretrieval.waterdata</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -73,31 +73,118 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for dataretrieval.samples</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Functions for downloading data from the USGS Aquarius Samples database</span>
-<span class="sd">(https://waterdata.usgs.gov/download-samples/).</span>
+  <h1>Source code for dataretrieval.waterdata</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Functions for downloading data from the Water Data APIs, including the USGS Aquarius Samples database.</span>
 
-<span class="sd">See https://api.waterdata.usgs.gov/samples-data/docs#/ for API reference</span>
+<span class="sd">See https://api.waterdata.usgs.gov/ for API reference.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">get_args</span>
 
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">requests.models</span> <span class="kn">import</span> <span class="n">PreparedRequest</span>
 
 <span class="kn">from</span> <span class="nn">dataretrieval.utils</span> <span class="kn">import</span> <span class="n">BaseMetadata</span><span class="p">,</span> <span class="n">to_str</span>
-<span class="kn">from</span> <span class="nn">dataretrieval.waterdata</span> <span class="kn">import</span> <span class="n">get_samples</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
-    <span class="kn">from</span> <span class="nn">dataretrieval.waterdata</span> <span class="kn">import</span> <span class="n">_SERVICES</span><span class="p">,</span> <span class="n">_PROFILES</span>
+
     <span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
 
-<div class="viewcode-block" id="get_usgs_samples">
-<a class="viewcode-back" href="../../reference/samples.html#dataretrieval.samples.get_usgs_samples">[docs]</a>
-<span class="k">def</span> <span class="nf">get_usgs_samples</span><span class="p">(</span>
+
+<span class="n">_BASE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://api.waterdata.usgs.gov/samples-data&quot;</span>
+
+<span class="n">_CODE_SERVICES</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span>
+    <span class="s2">&quot;characteristicgroup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;characteristics&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;counties&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;countries&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;observedproperty&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;samplemedia&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sitetype&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;states&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<span class="n">_SERVICES</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;activities&quot;</span><span class="p">,</span> <span class="s2">&quot;locations&quot;</span><span class="p">,</span> <span class="s2">&quot;organizations&quot;</span><span class="p">,</span> <span class="s2">&quot;projects&quot;</span><span class="p">,</span> <span class="s2">&quot;results&quot;</span><span class="p">]</span>
+
+<span class="n">_PROFILES</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span>
+    <span class="s2">&quot;actgroup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;actmetric&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;basicbio&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;basicphyschem&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;count&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;fullbio&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;fullphyschem&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;labsampleprep&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;narrow&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;organization&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;project&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;projectmonitoringlocationweight&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;resultdetectionquantitationlimit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sampact&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;site&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">_PROFILE_LOOKUP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;activities&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;sampact&quot;</span><span class="p">,</span> <span class="s2">&quot;actmetric&quot;</span><span class="p">,</span> <span class="s2">&quot;actgroup&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;locations&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;organizations&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;organization&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;projects&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;project&quot;</span><span class="p">,</span> <span class="s2">&quot;projectmonitoringlocationweight&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;results&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;fullphyschem&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;basicphyschem&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;fullbio&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;basicbio&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;narrow&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;resultdetectionquantitationlimit&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;labsampleprep&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;count&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">}</span>
+
+ 
+<div class="viewcode-block" id="get_codes">
+<a class="viewcode-back" href="../../reference/waterdata.html#dataretrieval.waterdata.get_codes">[docs]</a>
+<span class="k">def</span> <span class="nf">get_codes</span><span class="p">(</span><span class="n">code_service</span><span class="p">:</span> <span class="n">_CODE_SERVICES</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return codes from a Samples code service.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    code_service : string</span>
+<span class="sd">        One of the following options: &quot;states&quot;, &quot;counties&quot;, &quot;countries&quot;</span>
+<span class="sd">        &quot;sitetype&quot;, &quot;samplemedia&quot;, &quot;characteristicgroup&quot;, &quot;characteristics&quot;,</span>
+<span class="sd">        or &quot;observedproperty&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">valid_code_services</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">_CODE_SERVICES</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">code_service</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_code_services</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Invalid code service: &#39;</span><span class="si">{</span><span class="n">code_service</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Valid options are: </span><span class="si">{</span><span class="n">valid_code_services</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_BASE_URL</span><span class="si">}</span><span class="s2">/codeservice/</span><span class="si">{</span><span class="n">code_service</span><span class="si">}</span><span class="s2">?mimeType=application%2Fjson&quot;</span>
+    
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    
+    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+
+    <span class="n">data_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">data_list</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data_list</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="get_samples">
+<a class="viewcode-back" href="../../reference/waterdata.html#dataretrieval.waterdata.get_samples">[docs]</a>
+<span class="k">def</span> <span class="nf">get_samples</span><span class="p">(</span>
     <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">service</span><span class="p">:</span> <span class="n">_SERVICES</span> <span class="o">=</span> <span class="s2">&quot;results&quot;</span><span class="p">,</span>
     <span class="n">profile</span><span class="p">:</span> <span class="n">_PROFILES</span> <span class="o">=</span> <span class="s2">&quot;fullphyschem&quot;</span><span class="p">,</span>
@@ -265,13 +352,13 @@
 <span class="sd">    .. code::</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get PFAS results within a bounding box</span>
-<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.samples.get_usgs_samples(</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_samples(</span>
 <span class="sd">        ...     boundingBox=[-90.2,42.6,-88.7,43.2],</span>
 <span class="sd">        ...     characteristicGroup=&quot;Organics, PFAS&quot;</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get all activities for the Commonwealth of Virginia over a date range</span>
-<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.samples.get_usgs_samples(</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_samples(</span>
 <span class="sd">        ...     service=&quot;activities&quot;,</span>
 <span class="sd">        ...     profile=&quot;sampact&quot;,</span>
 <span class="sd">        ...     activityStartDateLower=&quot;2023-10-01&quot;,</span>
@@ -279,48 +366,71 @@
 <span class="sd">        ...     stateFips=&quot;US:51&quot;)</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get all pH samples for two sites in Utah</span>
-<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.samples.get_usgs_samples(</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_samples(</span>
 <span class="sd">        ...     monitoringLocationIdentifier=[&#39;USGS-393147111462301&#39;, &#39;USGS-393343111454101&#39;],</span>
 <span class="sd">        ...     usgsPCode=&#39;00400&#39;)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-        <span class="s2">&quot;`get_usgs_samples` is deprecated and will be removed. Use `waterdata.get_samples` instead.&quot;</span><span class="p">,</span>
-        <span class="ne">DeprecationWarning</span><span class="p">,</span>
-        <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-    <span class="p">)</span>
-    
-    <span class="n">result</span> <span class="o">=</span> <span class="n">get_samples</span><span class="p">(</span>
-        <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
-        <span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">,</span>
-        <span class="n">profile</span><span class="o">=</span><span class="n">profile</span><span class="p">,</span>
-        <span class="n">activityMediaName</span><span class="o">=</span><span class="n">activityMediaName</span><span class="p">,</span>
-        <span class="n">activityStartDateLower</span><span class="o">=</span><span class="n">activityStartDateLower</span><span class="p">,</span>
-        <span class="n">activityStartDateUpper</span><span class="o">=</span><span class="n">activityStartDateUpper</span><span class="p">,</span>
-        <span class="n">activityTypeCode</span><span class="o">=</span><span class="n">activityTypeCode</span><span class="p">,</span>
-        <span class="n">characteristicGroup</span><span class="o">=</span><span class="n">characteristicGroup</span><span class="p">,</span>
-        <span class="n">characteristic</span><span class="o">=</span><span class="n">characteristic</span><span class="p">,</span>
-        <span class="n">characteristicUserSupplied</span><span class="o">=</span><span class="n">characteristicUserSupplied</span><span class="p">,</span>
-        <span class="n">boundingBox</span><span class="o">=</span><span class="n">boundingBox</span><span class="p">,</span>
-        <span class="n">countryFips</span><span class="o">=</span><span class="n">countryFips</span><span class="p">,</span>
-        <span class="n">stateFips</span><span class="o">=</span><span class="n">stateFips</span><span class="p">,</span>
-        <span class="n">countyFips</span><span class="o">=</span><span class="n">countyFips</span><span class="p">,</span>
-        <span class="n">siteTypeCode</span><span class="o">=</span><span class="n">siteTypeCode</span><span class="p">,</span>
-        <span class="n">siteTypeName</span><span class="o">=</span><span class="n">siteTypeName</span><span class="p">,</span>
-        <span class="n">usgsPCode</span><span class="o">=</span><span class="n">usgsPCode</span><span class="p">,</span>
-        <span class="n">hydrologicUnit</span><span class="o">=</span><span class="n">hydrologicUnit</span><span class="p">,</span>
-        <span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="n">monitoringLocationIdentifier</span><span class="p">,</span>
-        <span class="n">organizationIdentifier</span><span class="o">=</span><span class="n">organizationIdentifier</span><span class="p">,</span>
-        <span class="n">pointLocationLatitude</span><span class="o">=</span><span class="n">pointLocationLatitude</span><span class="p">,</span>
-        <span class="n">pointLocationLongitude</span><span class="o">=</span><span class="n">pointLocationLongitude</span><span class="p">,</span>
-        <span class="n">pointLocationWithinMiles</span><span class="o">=</span><span class="n">pointLocationWithinMiles</span><span class="p">,</span>
-        <span class="n">projectIdentifier</span><span class="o">=</span><span class="n">projectIdentifier</span><span class="p">,</span>
-        <span class="n">recordIdentifierUserSupplied</span><span class="o">=</span><span class="n">recordIdentifierUserSupplied</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="n">_check_profiles</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">profile</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">result</span></div>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;ssl_check&quot;</span><span class="p">,</span> <span class="s2">&quot;service&quot;</span><span class="p">,</span> <span class="s2">&quot;profile&quot;</span><span class="p">]</span>
+        <span class="ow">and</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">}</span>
 
+
+    <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;mimeType&quot;</span><span class="p">:</span> <span class="s2">&quot;text/csv&quot;</span><span class="p">})</span>
+
+    <span class="k">if</span> <span class="s2">&quot;boundingBox&quot;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+        <span class="n">params</span><span class="p">[</span><span class="s2">&quot;boundingBox&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_str</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;boundingBox&quot;</span><span class="p">])</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_BASE_URL</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">profile</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">req</span> <span class="o">=</span> <span class="n">PreparedRequest</span><span class="p">()</span>
+    <span class="n">req</span><span class="o">.</span><span class="n">prepare_url</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request: </span><span class="si">{</span><span class="n">req</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
+
+    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="_check_profiles">
+<a class="viewcode-back" href="../../reference/waterdata.html#dataretrieval.waterdata._check_profiles">[docs]</a>
+<span class="k">def</span> <span class="nf">_check_profiles</span><span class="p">(</span>
+        <span class="n">service</span><span class="p">:</span> <span class="n">_SERVICES</span><span class="p">,</span>
+        <span class="n">profile</span><span class="p">:</span> <span class="n">_PROFILES</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check whether a service profile is valid.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    service : string</span>
+<span class="sd">        One of the service names from the &quot;services&quot; list.</span>
+<span class="sd">    profile : string</span>
+<span class="sd">        One of the profile names from &quot;results_profiles&quot;,</span>
+<span class="sd">        &quot;locations_profiles&quot;, &quot;activities_profiles&quot;,</span>
+<span class="sd">        &quot;projects_profiles&quot; or &quot;organizations_profiles&quot;. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">valid_services</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">_SERVICES</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">service</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_services</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Invalid service: &#39;</span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Valid options are: </span><span class="si">{</span><span class="n">valid_services</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">valid_profiles</span> <span class="o">=</span> <span class="n">_PROFILE_LOOKUP</span><span class="p">[</span><span class="n">service</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">profile</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_profiles</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Invalid profile: &#39;</span><span class="si">{</span><span class="n">profile</span><span class="si">}</span><span class="s2">&#39; for service &#39;</span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Valid options are: </span><span class="si">{</span><span class="n">valid_profiles</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span></div>
 
 
 </pre></div>

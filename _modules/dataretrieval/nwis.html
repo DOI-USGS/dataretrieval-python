@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g0e6167f documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g2c8419c documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=81fd2454"></script>
+      <script src="../../_static/documentation_options.js?v=2e2d820c"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -112,7 +112,6 @@
 
 <span class="n">WATERSERVICES_SERVICES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dv&quot;</span><span class="p">,</span> <span class="s2">&quot;iv&quot;</span><span class="p">,</span> <span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="s2">&quot;stat&quot;</span><span class="p">]</span>
 <span class="n">WATERDATA_SERVICES</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;qwdata&quot;</span><span class="p">,</span>
     <span class="s2">&quot;gwlevels&quot;</span><span class="p">,</span>
     <span class="s2">&quot;measurements&quot;</span><span class="p">,</span>
     <span class="s2">&quot;peaks&quot;</span><span class="p">,</span>
@@ -219,125 +218,13 @@
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Get water sample data from qwdata service.</span>
-
-<span class="sd">    .. warning::</span>
-
-<span class="sd">        WARNING: Beginning in March 2024 the NWIS qw data endpoint will</span>
-<span class="sd">        not deliver new data or updates to existing data.</span>
-<span class="sd">        Eventually the endpoint will be retired. For updated information visit:</span>
-<span class="sd">        https://waterdata.usgs.gov.nwis/qwdata</span>
-<span class="sd">        For additional details, see the R package vignette:</span>
-<span class="sd">        https://doi-usgs.github.io/dataRetrieval/articles/Status.html</span>
-<span class="sd">        If you have additional questions about the qw data service,</span>
-<span class="sd">        email CompTools@usgs.gov.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    sites: string or list of strings, optional, default is None</span>
-<span class="sd">        If the qwdata parameter site_no is supplied, it will overwrite the</span>
-<span class="sd">        sites parameter</span>
-<span class="sd">    start: string, optional, default is None</span>
-<span class="sd">        If the qwdata parameter begin_date is supplied, it will overwrite the</span>
-<span class="sd">        start parameter (YYYY-MM-DD)</span>
-<span class="sd">    end: string, optional, default is None</span>
-<span class="sd">        If the qwdata parameter end_date is supplied, it will overwrite the</span>
-<span class="sd">        end parameter (YYYY-MM-DD)</span>
-<span class="sd">    multi_index: bool, optional</span>
-<span class="sd">        If False, a dataframe with a single-level index (datetime) is returned,</span>
-<span class="sd">        default is True</span>
-<span class="sd">    wide_format : bool, optional</span>
-<span class="sd">        If True, return data in wide format with multiple samples per row and</span>
-<span class="sd">        one row per time, default is True</span>
-<span class="sd">    datetime_index : bool, optional</span>
-<span class="sd">        If True, create a datetime index, default is True</span>
-<span class="sd">    ssl_check: bool, optional</span>
-<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
-<span class="sd">        default is True</span>
-<span class="sd">    **kwargs: optional</span>
-<span class="sd">        If supplied, will be used as query parameters</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        Times series data from the NWIS JSON</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
-<span class="sd">        A custom metadata object</span>
-
-<span class="sd">    Examples</span>
-<span class="sd">    --------</span>
-<span class="sd">    .. doctest::</span>
-
-<span class="sd">        &gt;&gt;&gt; # get water sample information for site 11447650</span>
-<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.nwis.get_qwdata(</span>
-<span class="sd">        ...     sites=&quot;11447650&quot;, start=&quot;2010-01-01&quot;, end=&quot;2010-02-01&quot;</span>
-<span class="sd">        ... )</span>
+<span class="sd">    Get water sample data from qwdata service - deprecated, use `get_samples()`</span>
+<span class="sd">    in the waterdata module.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-        <span class="p">(</span>
-            <span class="s2">&quot;WARNING: Starting in March 2024, the NWIS qw data endpoint is &quot;</span>
-            <span class="s2">&quot;retiring and no longer receives updates. For more information, &quot;</span>
-            <span class="s2">&quot;refer to https://waterdata.usgs.gov.nwis/qwdata and &quot;</span>
-            <span class="s2">&quot;https://doi-usgs.github.io/dataRetrieval/articles/Status.html &quot;</span>
-            <span class="s2">&quot;or email CompTools@usgs.gov.&quot;</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="n">_check_sites_value_types</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
-
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;site_no&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;site_no&quot;</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;begin_date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;begin_date&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;end_date&quot;</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;multi_index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">multi_index</span>
-    <span class="k">if</span> <span class="n">wide_format</span><span class="p">:</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;qw_sample_wide&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;qw_sample_wide&quot;</span>
-
-    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;agency_cd&quot;</span><span class="p">:</span> <span class="s2">&quot;USGS&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;rdb&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pm_cd_compare&quot;</span><span class="p">:</span> <span class="s2">&quot;Greater than&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;inventory_output&quot;</span><span class="p">:</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;rdb_inventory_output&quot;</span><span class="p">:</span> <span class="s2">&quot;file&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;TZoutput&quot;</span><span class="p">:</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;rdb_qw_attributes&quot;</span><span class="p">:</span> <span class="s2">&quot;expanded&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;date_format&quot;</span><span class="p">:</span> <span class="s2">&quot;YYYY-MM-DD&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;rdb_compression&quot;</span><span class="p">:</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;submitted_form&quot;</span><span class="p">:</span> <span class="s2">&quot;brief_list&quot;</span><span class="p">,</span>
-    <span class="p">}</span>
-
-    <span class="c1"># check for parameter codes, and reformat query args</span>
-    <span class="n">qwdata_parameter_code_field</span> <span class="o">=</span> <span class="s2">&quot;parameterCd&quot;</span>
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">qwdata_parameter_code_field</span><span class="p">):</span>
-        <span class="n">parameter_codes</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">qwdata_parameter_code_field</span><span class="p">)</span>
-        <span class="n">parameter_codes</span> <span class="o">=</span> <span class="n">to_str</span><span class="p">(</span><span class="n">parameter_codes</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;multiple_parameter_cds&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parameter_codes</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;param_cd_operator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;OR&quot;</span>
-
-        <span class="n">search_criteria</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;list_of_search_criteria&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">search_criteria</span><span class="p">:</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;list_of_search_criteria&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">search_criteria</span><span class="p">,</span> <span class="s2">&quot;multiple_parameter_cds&quot;</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;list_of_search_criteria&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;multiple_parameter_cds&quot;</span>
-
-    <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
-
-    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-        <span class="s2">&quot;NWIS qw web services are being retired. &quot;</span>
-        <span class="o">+</span> <span class="s2">&quot;See this note from the R package for more: &quot;</span>
-        <span class="o">+</span> <span class="s2">&quot;https://doi-usgs.github.io/dataRetrieval/articles/qwdata_changes.html&quot;</span><span class="p">,</span>
-        <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterdata</span><span class="p">(</span><span class="s2">&quot;qwdata&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">datetime_index</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">format_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;sample_dt&quot;</span><span class="p">,</span> <span class="s2">&quot;sample_tm&quot;</span><span class="p">,</span> <span class="s2">&quot;sample_start_time_datum_cd&quot;</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">NWIS_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
+        <span class="s2">&quot;`nwis.get_qwdata` has been replaced with `waterdata.get_samples()`.&quot;</span>
+        <span class="p">)</span></div>
 
 
 
@@ -356,14 +243,10 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    sites: string or list of strings, optional, default is None</span>
-<span class="sd">        If the qwdata parameter site_no is supplied, it will overwrite the</span>
-<span class="sd">        sites parameter</span>
-<span class="sd">    start: string, optional, default is None</span>
-<span class="sd">        If the qwdata parameter begin_date is supplied, it will overwrite the</span>
-<span class="sd">        start parameter (YYYY-MM-DD)</span>
+<span class="sd">    start: string, optional, default is None </span>
+<span class="sd">        Supply date in the format: YYYY-MM-DD</span>
 <span class="sd">    end: string, optional, default is None</span>
-<span class="sd">        If the qwdata parameter end_date is supplied, it will overwrite the</span>
-<span class="sd">        end parameter (YYYY-MM-DD)</span>
+<span class="sd">        Supply date in the format: YYYY-MM-DD</span>
 <span class="sd">    ssl_check: bool, optional</span>
 <span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
 <span class="sd">        default is True</span>
@@ -1316,7 +1199,6 @@
 <span class="sd">    service: string, default is &#39;iv&#39;</span>
 <span class="sd">        - &#39;iv&#39; : instantaneous data</span>
 <span class="sd">        - &#39;dv&#39; : daily mean data</span>
-<span class="sd">        - &#39;qwdata&#39; : discrete samples</span>
 <span class="sd">        - &#39;site&#39; : site description</span>
 <span class="sd">        - &#39;measurements&#39; : discharge measurements</span>
 <span class="sd">        - &#39;peaks&#39;: discharge peaks</span>
@@ -1344,9 +1226,6 @@
 
 <span class="sd">        &gt;&gt;&gt; # Get latest daily mean data from site 01585200</span>
 <span class="sd">        &gt;&gt;&gt; df = dataretrieval.nwis.get_record(sites=&quot;01585200&quot;, service=&quot;dv&quot;)</span>
-
-<span class="sd">        &gt;&gt;&gt; # Get all discrete sample data from site 01585200</span>
-<span class="sd">        &gt;&gt;&gt; df = dataretrieval.nwis.get_record(sites=&quot;01585200&quot;, service=&quot;qwdata&quot;)</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get site description for site 01585200</span>
 <span class="sd">        &gt;&gt;&gt; df = dataretrieval.nwis.get_record(sites=&quot;01585200&quot;, service=&quot;site&quot;)</span>
@@ -1408,18 +1287,6 @@
             <span class="n">startDT</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
             <span class="n">endDT</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
             <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span>
-            <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">df</span>
-
-    <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s2">&quot;qwdata&quot;</span><span class="p">:</span>
-        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_qwdata</span><span class="p">(</span>
-            <span class="n">site_no</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span>
-            <span class="n">begin_date</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
-            <span class="n">end_date</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
-            <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span>
-            <span class="n">wide_format</span><span class="o">=</span><span class="n">wide_format</span><span class="p">,</span>
             <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
