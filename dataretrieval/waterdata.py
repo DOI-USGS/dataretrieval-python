@@ -1,25 +1,109 @@
-"""Functions for downloading data from the USGS Aquarius Samples database
-(https://waterdata.usgs.gov/download-samples/).
+"""Functions for downloading data from the Water Data APIs, including the USGS Aquarius Samples database.
 
-See https://api.waterdata.usgs.gov/samples-data/docs#/ for API reference
+See https://api.waterdata.usgs.gov/ for API reference.
 """
 
 from __future__ import annotations
 
+import json
+from io import StringIO
 from typing import TYPE_CHECKING, Literal, get_args
 
 import pandas as pd
-import warnings
+import requests
+from requests.models import PreparedRequest
 
 from dataretrieval.utils import BaseMetadata, to_str
-from dataretrieval.waterdata import get_samples
 
 if TYPE_CHECKING:
     from typing import Optional, Tuple, Union
-    from dataretrieval.waterdata import _SERVICES, _PROFILES
+
     from pandas import DataFrame
 
-def get_usgs_samples(
+
+_BASE_URL = "https://api.waterdata.usgs.gov/samples-data"
+
+_CODE_SERVICES = Literal[
+    "characteristicgroup",
+    "characteristics",
+    "counties",
+    "countries",
+    "observedproperty",
+    "samplemedia",
+    "sitetype",
+    "states",
+]
+
+
+_SERVICES = Literal["activities", "locations", "organizations", "projects", "results"]
+
+_PROFILES = Literal[
+    "actgroup",
+    "actmetric",
+    "basicbio",
+    "basicphyschem",
+    "count",
+    "fullbio",
+    "fullphyschem",
+    "labsampleprep",
+    "narrow",
+    "organization",
+    "project",
+    "projectmonitoringlocationweight",
+    "resultdetectionquantitationlimit",
+    "sampact",
+    "site",
+]
+
+_PROFILE_LOOKUP = {
+    "activities": ["sampact", "actmetric", "actgroup", "count"],
+    "locations": ["site", "count"],
+    "organizations": ["organization", "count"],
+    "projects": ["project", "projectmonitoringlocationweight"],
+    "results": [
+        "fullphyschem",
+        "basicphyschem",
+        "fullbio",
+        "basicbio",
+        "narrow",
+        "resultdetectionquantitationlimit",
+        "labsampleprep",
+        "count",
+    ],
+}
+
+ 
+def get_codes(code_service: _CODE_SERVICES) -> DataFrame:
+    """Return codes from a Samples code service.
+    
+    Parameters
+    ----------
+    code_service : string
+        One of the following options: "states", "counties", "countries"
+        "sitetype", "samplemedia", "characteristicgroup", "characteristics",
+        or "observedproperty"
+    """
+    valid_code_services = get_args(_CODE_SERVICES)
+    if code_service not in valid_code_services:
+        raise ValueError(
+            f"Invalid code service: '{code_service}'. "
+            f"Valid options are: {valid_code_services}."
+        )
+
+    url = f"{_BASE_URL}/codeservice/{code_service}?mimeType=application%2Fjson"
+    
+    response = requests.get(url)
+    
+    response.raise_for_status()
+
+    data_dict = json.loads(response.text)
+    data_list = data_dict['data']
+
+    df = pd.DataFrame(data_list)
+
+    return df
+
+def get_samples(
     ssl_check: bool = True,
     service: _SERVICES = "results",
     profile: _PROFILES = "fullphyschem",
@@ -187,13 +271,13 @@ def get_usgs_samples(
     .. code::
 
         >>> # Get PFAS results within a bounding box
-        >>> df, md = dataretrieval.samples.get_usgs_samples(
+        >>> df, md = dataretrieval.waterdata.get_samples(
         ...     boundingBox=[-90.2,42.6,-88.7,43.2],
         ...     characteristicGroup="Organics, PFAS"
         ... )
 
         >>> # Get all activities for the Commonwealth of Virginia over a date range
-        >>> df, md = dataretrieval.samples.get_usgs_samples(
+        >>> df, md = dataretrieval.waterdata.get_samples(
         ...     service="activities",
         ...     profile="sampact",
         ...     activityStartDateLower="2023-10-01",
@@ -201,46 +285,66 @@ def get_usgs_samples(
         ...     stateFips="US:51")
 
         >>> # Get all pH samples for two sites in Utah
-        >>> df, md = dataretrieval.samples.get_usgs_samples(
+        >>> df, md = dataretrieval.waterdata.get_samples(
         ...     monitoringLocationIdentifier=['USGS-393147111462301', 'USGS-393343111454101'],
         ...     usgsPCode='00400')
 
     """
 
-    warnings.warn(
-        "`get_usgs_samples` is deprecated and will be removed. Use `waterdata.get_samples` instead.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    
-    result = get_samples(
-        ssl_check=ssl_check,
-        service=service,
-        profile=profile,
-        activityMediaName=activityMediaName,
-        activityStartDateLower=activityStartDateLower,
-        activityStartDateUpper=activityStartDateUpper,
-        activityTypeCode=activityTypeCode,
-        characteristicGroup=characteristicGroup,
-        characteristic=characteristic,
-        characteristicUserSupplied=characteristicUserSupplied,
-        boundingBox=boundingBox,
-        countryFips=countryFips,
-        stateFips=stateFips,
-        countyFips=countyFips,
-        siteTypeCode=siteTypeCode,
-        siteTypeName=siteTypeName,
-        usgsPCode=usgsPCode,
-        hydrologicUnit=hydrologicUnit,
-        monitoringLocationIdentifier=monitoringLocationIdentifier,
-        organizationIdentifier=organizationIdentifier,
-        pointLocationLatitude=pointLocationLatitude,
-        pointLocationLongitude=pointLocationLongitude,
-        pointLocationWithinMiles=pointLocationWithinMiles,
-        projectIdentifier=projectIdentifier,
-        recordIdentifierUserSupplied=recordIdentifierUserSupplied,
-    )
+    _check_profiles(service, profile)
 
-    return result
+    params = {
+        k: v for k, v in locals().items()
+        if k not in ["ssl_check", "service", "profile"]
+        and v is not None
+        }
 
+
+    params.update({"mimeType": "text/csv"})
+
+    if "boundingBox" in params:
+        params["boundingBox"] = to_str(params["boundingBox"])
+
+    url = f"{_BASE_URL}/{service}/{profile}"
+
+    req = PreparedRequest()
+    req.prepare_url(url, params=params)
+    print(f"Request: {req.url}")
+
+    response = requests.get(url, params=params, verify=ssl_check)
+
+    response.raise_for_status()
+
+    df = pd.read_csv(StringIO(response.text), delimiter=",")
+
+    return df, BaseMetadata(response)
+
+def _check_profiles(
+        service: _SERVICES,
+        profile: _PROFILES,
+) -> None:
+    """Check whether a service profile is valid.
+
+    Parameters
+    ----------
+    service : string
+        One of the service names from the "services" list.
+    profile : string
+        One of the profile names from "results_profiles",
+        "locations_profiles", "activities_profiles",
+        "projects_profiles" or "organizations_profiles". 
+    """
+    valid_services = get_args(_SERVICES)
+    if service not in valid_services:
+        raise ValueError(
+            f"Invalid service: '{service}'. "
+            f"Valid options are: {valid_services}."
+        )
+
+    valid_profiles = _PROFILE_LOOKUP[service]
+    if profile not in valid_profiles:
+        raise ValueError(
+            f"Invalid profile: '{profile}' for service '{service}'. "
+            f"Valid options are: {valid_profiles}."
+        )
 

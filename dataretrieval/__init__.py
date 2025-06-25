@@ -5,6 +5,7 @@ from dataretrieval.nwis import *
 from dataretrieval.samples import *
 from dataretrieval.streamstats import *
 from dataretrieval.utils import *
+from dataretrieval.waterdata import *
 from dataretrieval.waterwatch import *
 from dataretrieval.wqp import *
 
