@@ -218,7 +218,7 @@ def get_usgs_samples(
     " deprecated and will eventually be removed. Switch to the" \
     " waterdata module as soon as possible, thank you.")
 
-    result = waterdata.get_samples(
+    result = get_samples(
         ssl_check=ssl_check,
         service=service,
         profile=profile,
