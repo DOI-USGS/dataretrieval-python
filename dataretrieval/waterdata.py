@@ -7,13 +7,14 @@ from __future__ import annotations
 
 import json
 from io import StringIO
-from typing import TYPE_CHECKING, Literal, get_args
+from typing import TYPE_CHECKING, Literal, List, get_args
 
 import pandas as pd
 import requests
 from requests.models import PreparedRequest
 
 from dataretrieval.utils import BaseMetadata, to_str
+import dataretrieval.waterdata_helpers
 
 if TYPE_CHECKING:
     from typing import Optional, Tuple, Union
@@ -21,7 +22,9 @@ if TYPE_CHECKING:
     from pandas import DataFrame
 
 
-_BASE_URL = "https://api.waterdata.usgs.gov/samples-data"
+_BASE_URL = "https://api.waterdata.usgs.gov/"
+
+_SAMPLES_URL = _BASE_URL + "samples-data"
 
 _CODE_SERVICES = Literal[
     "characteristicgroup",
@@ -33,7 +36,6 @@ _CODE_SERVICES = Literal[
     "sitetype",
     "states",
 ]
-
 
 _SERVICES = Literal["activities", "locations", "organizations", "projects", "results"]
 
@@ -72,6 +74,40 @@ _PROFILE_LOOKUP = {
     ],
 }
 
+def get_daily(
+        monitoring_location_id: Optional[Union[str, List[str]]] = None,
+        parameter_code: Optional[Union[str, List[str]]] = None,
+        statistic_id: Optional[Union[str, List[str]]] = None,
+        properties: Optional[List[str]] = None,
+        time_series_id: Optional[Union[str, List[str]]] = None,
+        daily_id: Optional[Union[str, List[str]]] = None,
+        approval_status: Optional[Union[str, List[str]]] = None,
+        unit_of_measure: Optional[Union[str, List[str]]] = None,
+        qualifier: Optional[Union[str, List[str]]] = None,
+        value: Optional[Union[str, List[str]]] = None,
+        last_modified: Optional[str] = None,
+        skipGeometry: Optional[bool] = None,
+        time: Optional[Union[str, List[str]]] = None,
+        bbox: Optional[List[float]] = None,
+        limit: Optional[int] = None,
+        max_results: Optional[int] = None,
+        convertType: bool = True
+    ) -> pd.DataFrame:
+    
+    service = "daily"
+    output_id = "daily_id"
+
+    return_list = _get_ogc_data(
+
+    )
+
+def get_monitoring_locations(): 
+
+def get_ts_meta():
+
+def get_latest_continuous():
+
+def get_field_measurements():
  
 def get_codes(code_service: _CODE_SERVICES) -> DataFrame:
     """Return codes from a Samples code service.
@@ -90,7 +126,7 @@ def get_codes(code_service: _CODE_SERVICES) -> DataFrame:
             f"Valid options are: {valid_code_services}."
         )
 
-    url = f"{_BASE_URL}/codeservice/{code_service}?mimeType=application%2Fjson"
+    url = f"{_SAMPLES_URL}/codeservice/{code_service}?mimeType=application%2Fjson"
     
     response = requests.get(url)
     
@@ -305,7 +341,7 @@ def get_samples(
     if "boundingBox" in params:
         params["boundingBox"] = to_str(params["boundingBox"])
 
-    url = f"{_BASE_URL}/{service}/{profile}"
+    url = f"{_SAMPLES_URL}/{service}/{profile}"
 
     req = PreparedRequest()
     req.prepare_url(url, params=params)

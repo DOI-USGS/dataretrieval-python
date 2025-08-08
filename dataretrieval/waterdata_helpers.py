@@ -1,0 +1,265 @@
+import httpx
+import os
+import warnings
+from typing import List, Dict, Any, Optional, Union
+from datetime import datetime
+import pytz
+import pandas as pd
+
+BASE_API = "https://api.waterdata.usgs.gov/ogcapi/"
+API_VERSION = "v0"
+
+# --- Caching for repeated calls ---
+_cached_base_url = None
+def _base_url():
+    global _cached_base_url
+    if _cached_base_url is None:
+        _cached_base_url = f"{BASE_API}{API_VERSION}/"
+    return _cached_base_url
+
+def _setup_api(service: str):
+    return f"{_base_url()}collections/{service}/items"
+
+def _switch_arg_id(ls: Dict[str, Any], id_name: str, service: str):
+    service_id = service.replace("-", "_") + "_id"
+    ls.setdefault("id", ls.pop(service_id, ls.pop(id_name, None)))
+    return ls
+
+def _switch_properties_id(properties: Optional[List[str]], id_name: str, service: str):
+    if not properties:
+        return []
+    service_id = service.replace("-", "_") + "_id"
+    last_letter = service[-1]
+    service_id_singular = ""
+    if last_letter == "s":
+        service_singular = service[:-1]
+        service_id_singular = service_singular.replace("-", "_") + "_id"
+    # Replace id fields with "id"
+    id_fields = [service_id, service_id_singular, id_name]
+    properties = ["id" if p in id_fields else p.replace("-", "_") for p in properties]
+    # Remove unwanted fields
+    return [p for p in properties if p not in ["geometry", service_id]]
+
+def _format_api_dates(datetime_list: Union[str, List[Union[str, datetime]]], date: bool = False):
+    def _iso8601(dt):
+        if isinstance(dt, str):
+            return dt
+        elif isinstance(dt, datetime):
+            if dt.tzinfo is None:
+                dt = pytz.UTC.localize(dt)
+            return dt.isoformat()
+        return str(dt)
+
+    if isinstance(datetime_list, str):
+        if not datetime_list:
+            return None
+        if "P" in datetime_list or "/" in datetime_list:
+            return datetime_list
+        return datetime_list
+    if isinstance(datetime_list, list):
+        datetime_list = [None if not d else d for d in datetime_list]
+        if all(d is None for d in datetime_list):
+            return None
+        if len(datetime_list) == 1:
+            d = datetime_list[0]
+            if isinstance(d, str) and ("P" in d or "/" in d):
+                return d
+            return datetime.strptime(d, "%Y-%m-%d").strftime("%Y-%m-%d") if date else _iso8601(d)
+        elif len(datetime_list) == 2:
+            dates = [datetime.strptime(str(d), "%Y-%m-%d").strftime("%Y-%m-%d") if date and d else _iso8601(d) if d else "" for d in datetime_list]
+            return "/".join(dates).replace("NA", "..")
+        else:
+            raise ValueError("datetime should only include 1-2 values")
+    return None
+
+def _explode_post(ls: Dict[str, Any]):
+    return {k: _cql2_param({k: v if isinstance(v, list) else [v]}) for k, v in ls.items() if v is not None}
+
+def _cql2_param(parameter: Dict[str, List[str]]):
+    property_name = next(iter(parameter))
+    parameters = [str(x) for x in parameter[property_name]]
+    return {"property": property_name, "parameter": parameters}
+
+def _default_headers():
+    headers = {
+        "Accept-Encoding": "compress, gzip",
+        "Accept": "application/json",
+        "User-Agent": "python-dataretrieval/1.0",
+        "lang": "en-US"
+    }
+    token = os.getenv("API_USGS_PAT", "")
+    if token:
+        headers["X-Api-Key"] = token
+    return headers
+
+def _check_OGC_requests(endpoint: str = "daily", req_type: str = "queryables"):
+    assert req_type in ["queryables", "schema"]
+    url = f"{_base_url()}collections/{endpoint}/{req_type}"
+    resp = httpx.get(url, headers=_default_headers())
+    resp.raise_for_status()
+    return resp.json()
+
+def _error_body(resp: httpx.Response):
+    if resp.status_code == 429:
+        return resp.json().get('error', {}).get('message')
+    elif resp.status_code == 403:
+        return "Query request denied. Possible reasons include query exceeding server limits."
+    return resp.text
+
+def _get_collection():
+    url = f"{_base_url()}openapi?f=json"
+    resp = httpx.get(url, headers=_default_headers())
+    resp.raise_for_status()
+    return resp.json()
+
+def _get_description(service: str):
+    tags = _get_collection().get("tags", [])
+    for tag in tags:
+        if tag.get("name") == service:
+            return tag.get("description")
+    return None
+
+def _get_params(service: str):
+    url = f"{_base_url()}collections/{service}/schema"
+    resp = httpx.get(url, headers=_default_headers())
+    resp.raise_for_status()
+    properties = resp.json().get("properties", {})
+    return {k: v.get("description") for k, v in properties.items()}
+
+def construct_api_requests(
+    service: str,
+    properties: Optional[List[str]] = None,
+    bbox: Optional[List[float]] = None,
+    limit: Optional[int] = None,
+    max_results: Optional[int] = None,
+    skipGeometry: bool = False,
+    **kwargs
+):
+    baseURL = _setup_api(service)
+    single_params = {"datetime", "last_modified", "begin", "end", "time"}
+    params = {k: v for k, v in kwargs.items() if k in single_params}
+    params["skipGeometry"] = skipGeometry
+    # Limit logic
+    params["limit"] = max_results if limit is None and max_results is not None else limit or 10000
+    if max_results is not None and limit is not None and limit > max_results:
+        raise ValueError("limit cannot be greater than max_result")
+    post_params = _explode_post({k: v for k, v in kwargs.items() if k not in single_params})
+    POST = bool(post_params)
+
+    time_periods = {"last_modified", "datetime", "time", "begin", "end"}
+    for i in time_periods:
+        if i in params:
+            dates = service == "daily" and i != "last_modified"
+            params[i] = _format_api_dates(params[i], date=dates)
+            kwargs[i] = _format_api_dates(kwargs[i], date=dates)
+
+    if bbox:
+        params["bbox"] = ",".join(map(str, bbox))
+    if properties:
+        params["properties"] = ",".join(_switch_properties_id(properties, "monitoring_location_id", service))
+
+    headers = _default_headers()
+    if POST:
+        headers["Content-Type"] = "application/query-cql-json"
+        resp = httpx.post(baseURL, headers=headers, json={"params": list(post_params.values())}, params=params)
+    else:
+        resp = httpx.get(baseURL, headers=headers, params={**params, **{k: v for k, v in kwargs.items() if k not in single_params}})
+    if resp.status_code != 200:
+        raise Exception(_error_body(resp))
+    return resp.json()
+
+def _deal_with_empty(return_list: pd.DataFrame, properties: Optional[List[str]], service: str) -> pd.DataFrame:
+    if return_list.empty:
+        if not properties or all(pd.isna(properties)):
+            schema = _check_OGC_requests(endpoint=service, req_type="schema")
+            properties = list(schema.get("properties", {}).keys())
+        return pd.DataFrame(columns=properties)
+    return return_list
+
+def _rejigger_cols(df: pd.DataFrame, properties: Optional[List[str]], output_id: str) -> pd.DataFrame:
+    if properties and not all(pd.isna(properties)):
+        if "id" not in properties:
+            if output_id in properties:
+                df = df.rename(columns={"id": output_id})
+            else:
+                plural = output_id.replace("_id", "s_id")
+                if plural in properties:
+                    df = df.rename(columns={"id": plural})
+        return df.loc[:, [col for col in properties if col in df.columns]]
+    else:
+        return df.rename(columns={"id": output_id})
+
+def _cleanup_cols(df: pd.DataFrame, service: str = "daily") -> pd.DataFrame:
+    if "qualifier" in df.columns:
+        df["qualifier"] = df["qualifier"].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)
+    if "time" in df.columns and service == "daily":
+        df["time"] = pd.to_datetime(df["time"]).dt.date
+    for col in ["value", "contributing_drainage_area"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    return df
+
+def _next_req_url(resp: httpx.Response, req_url: str) -> Optional[str]:
+    body = resp.json()
+    if not body.get("numberReturned"):
+        return None
+    header_info = resp.headers
+    if os.getenv("API_USGS_PAT", ""):
+        print("Remaining requests this hour:", header_info.get("x-ratelimit-remaining", ""))
+    for link in body.get("links", []):
+        if link.get("rel") == "next":
+            return link.get("href")
+    return None
+
+def _get_resp_data(resp: httpx.Response) -> pd.DataFrame:
+    body = resp.json()
+    if not body.get("numberReturned"):
+        return pd.DataFrame()
+    df = pd.DataFrame(body.get("features", []))
+    for col in ["geometry", "AsGeoJSON(geometry)"]:
+        if col in df.columns:
+            df = df.drop(columns=[col])
+    return df
+
+def _walk_pages(req_url: str, max_results: Optional[int], client: Optional[httpx.Client] = None) -> pd.DataFrame:
+    print(f"Requesting:\n{req_url}")
+    client = client or httpx.Client()
+    if max_results is None or pd.isna(max_results):
+        dfs = []
+        curr_url = req_url
+        failures = []
+        while curr_url:
+            try:
+                resp = client.get(curr_url)
+                resp.raise_for_status()
+                df1 = _get_resp_data(resp)
+                dfs.append(df1)
+                curr_url = _next_req_url(resp, curr_url)
+            except Exception:
+                failures.append(curr_url)
+                curr_url = None
+        if failures:
+            print(f"There were {len(failures)} failed requests.")
+        return pd.concat(dfs, ignore_index=True) if dfs else pd.DataFrame()
+    else:
+        resp = client.get(req_url)
+        resp.raise_for_status()
+        return _get_resp_data(resp)
+
+def _get_ogc_data(args: Dict[str, Any], output_id: str, service: str) -> pd.DataFrame:
+    args = args.copy()  # Don't mutate input
+    args["service"] = service
+    max_results = args.pop("max_results", None)
+    args = _switch_arg_id(args, id_name=output_id, service=service)
+    properties = args.get("properties")
+    args["properties"] = _switch_properties_id(properties, id_name=output_id, service=service)
+    convertType = args.pop("convertType", False)
+    req_url = construct_api_requests(**args)
+    return_list = _walk_pages(req_url, max_results)
+    return_list = _deal_with_empty(return_list, properties, service)
+    if convertType:
+        return_list = _cleanup_cols(return_list, service=service)
+    return_list = _rejigger_cols(return_list, properties, output_id)
+    # Metadata
+    return_list.attrs.update(request=req_url, queryTime=pd.Timestamp.now())
+    return return_list
