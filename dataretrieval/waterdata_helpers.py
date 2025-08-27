@@ -12,20 +12,79 @@ API_VERSION = "v0"
 # --- Caching for repeated calls ---
 _cached_base_url = None
 def _base_url():
+    """
+    Returns the base URL for the USGS Water Data OGC API.
+
+    Uses a cached value to avoid repeated string formatting. If the cached value
+    is not set, it constructs the base URL using the BASE_API and API_VERSION constants.
+
+    Returns:
+        str: The base URL for the API (e.g., "https://api.waterdata.usgs.gov/ogcapi/v0/").
+    """
     global _cached_base_url
     if _cached_base_url is None:
         _cached_base_url = f"{BASE_API}{API_VERSION}/"
     return _cached_base_url
 
 def _setup_api(service: str):
+    """
+    Constructs and returns the API endpoint URL for a specified service.
+
+    Args:
+        service (str): The name of the service to be used in the API endpoint.
+
+    Returns:
+        str: The full URL for the API endpoint corresponding to the given service.
+
+    Example:
+        >>> _setup_api("daily")
+        'https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily/items'
+    """
     return f"{_base_url()}collections/{service}/items"
 
 def _switch_arg_id(ls: Dict[str, Any], id_name: str, service: str):
+    """
+    Switch argument id from its package-specific identifier to the standardized "id" key
+    that the API recognizes.
+
+    Sets the "id" key in the provided dictionary `ls`
+    with the value from either the service name or the expected id column name.
+    If neither key exists, "id" will be set to None.
+
+    Example: for service "time-series-metadata", the function will look for either "time_series_metadata_id"
+    or "time_series_id" and change the key to simply "id".
+
+    Args:
+        ls (Dict[str, Any]): The dictionary containing identifier keys to be standardized.
+        id_name (str): The name of the specific identifier key to look for.
+        service (str): The service name.
+
+    Returns:
+        Dict[str, Any]: The modified dictionary with the "id" key set appropriately.
+    """
     service_id = service.replace("-", "_") + "_id"
     ls.setdefault("id", ls.pop(service_id, ls.pop(id_name, None)))
     return ls
 
 def _switch_properties_id(properties: Optional[List[str]], id_name: str, service: str):
+    """
+    Switch properties id from its package-specific identifier to the standardized "id" key
+    that the API recognizes.
+
+    Sets the "id" key in the provided dictionary `ls` with the value from either the service name
+    or the expected id column name. If neither key exists, "id" will be set to None.
+    
+    Example: for service "monitoring-locations", it will look for "monitoring_location_id" and change
+    it to "id".
+
+    Args:
+        ls (Dict[str, Any]): The dictionary containing identifier keys to be standardized.
+        id_name (str): The name of the specific identifier key to look for.
+        service (str): The service name.
+
+    Returns:
+        Dict[str, Any]: The modified dictionary with the "id" key set appropriately.
+    """
     if not properties:
         return []
     service_id = service.replace("-", "_") + "_id"
@@ -87,7 +146,7 @@ def _default_headers():
         "User-Agent": "python-dataretrieval/1.0",
         "lang": "en-US"
     }
-    token = os.getenv("API_USGS_PAT", "")
+    token = os.getenv("API_USGS_PAT")
     if token:
         headers["X-Api-Key"] = token
     return headers
@@ -111,20 +170,6 @@ def _get_collection():
     resp = httpx.get(url, headers=_default_headers())
     resp.raise_for_status()
     return resp.json()
-
-def _get_description(service: str):
-    tags = _get_collection().get("tags", [])
-    for tag in tags:
-        if tag.get("name") == service:
-            return tag.get("description")
-    return None
-
-def _get_params(service: str):
-    url = f"{_base_url()}collections/{service}/schema"
-    resp = httpx.get(url, headers=_default_headers())
-    resp.raise_for_status()
-    properties = resp.json().get("properties", {})
-    return {k: v.get("description") for k, v in properties.items()}
 
 def construct_api_requests(
     service: str,
@@ -159,6 +204,7 @@ def construct_api_requests(
         params["properties"] = ",".join(_switch_properties_id(properties, "monitoring_location_id", service))
 
     headers = _default_headers()
+    print({**params, **{k: v for k, v in kwargs.items() if k not in single_params}})
     if POST:
         headers["Content-Type"] = "application/query-cql-json"
         resp = httpx.post(baseURL, headers=headers, json={"params": list(post_params.values())}, params=params)
@@ -263,3 +309,18 @@ def _get_ogc_data(args: Dict[str, Any], output_id: str, service: str) -> pd.Data
     # Metadata
     return_list.attrs.update(request=req_url, queryTime=pd.Timestamp.now())
     return return_list
+
+
+# def _get_description(service: str):
+#     tags = _get_collection().get("tags", [])
+#     for tag in tags:
+#         if tag.get("name") == service:
+#             return tag.get("description")
+#     return None
+
+# def _get_params(service: str):
+#     url = f"{_base_url()}collections/{service}/schema"
+#     resp = httpx.get(url, headers=_default_headers())
+#     resp.raise_for_status()
+#     properties = resp.json().get("properties", {})
+#     return {k: v.get("description") for k, v in properties.items()}

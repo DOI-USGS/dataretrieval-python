@@ -14,7 +14,7 @@ import requests
 from requests.models import PreparedRequest
 
 from dataretrieval.utils import BaseMetadata, to_str
-import dataretrieval.waterdata_helpers
+from dataretrieval import waterdata_helpers
 
 if TYPE_CHECKING:
     from typing import Optional, Tuple, Union
@@ -97,17 +97,33 @@ def get_daily(
     service = "daily"
     output_id = "daily_id"
 
-    return_list = _get_ogc_data(
+    # Build argument dictionary, omitting None values
+    args = { 
+        k: v for k, v in locals().items()
+        if k not in {"service", "output_id"} and v is not None
+    }
+    args["convertType"] = False
 
-    )
+    return waterdata_helpers._get_ogc_data(args, output_id, service)
 
-def get_monitoring_locations(): 
+# def get_monitoring_locations(): 
+#     service = "monitoring-locations"
+#     output_id = "monitoring_location_id"
 
-def get_ts_meta():
+#     # Build argument dictionary, omitting None values
+#     args = { 
+#         k: v for k, v in locals().items()
+#         if k not in {"service", "output_id"} and v is not None
+#     }
+#     args["convertType"] = False
 
-def get_latest_continuous():
+#     return _get_ogc_data(args, output_id, service)
 
-def get_field_measurements():
+# def get_ts_meta():
+
+# def get_latest_continuous():
+
+# def get_field_measurements():
  
 def get_codes(code_service: _CODE_SERVICES) -> DataFrame:
     """Return codes from a Samples code service.
