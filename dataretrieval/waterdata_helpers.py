@@ -5,6 +5,9 @@ from typing import List, Dict, Any, Optional, Union
 from datetime import datetime
 import pytz
 import pandas as pd
+from datetime import datetime
+from zoneinfo import ZoneInfo
+import re
 
 BASE_API = "https://api.waterdata.usgs.gov/ogcapi/"
 API_VERSION = "v0"
@@ -78,12 +81,12 @@ def _switch_properties_id(properties: Optional[List[str]], id_name: str, service
     it to "id".
 
     Args:
-        ls (Dict[str, Any]): The dictionary containing identifier keys to be standardized.
+        properties (List[str]): A list containing the properties or column names to be pulled from the service.
         id_name (str): The name of the specific identifier key to look for.
         service (str): The service name.
 
     Returns:
-        Dict[str, Any]: The modified dictionary with the "id" key set appropriately.
+        List[str]: The modified list with the "id" key set appropriately.
     """
     if not properties:
         return []
@@ -99,37 +102,53 @@ def _switch_properties_id(properties: Optional[List[str]], id_name: str, service
     # Remove unwanted fields
     return [p for p in properties if p not in ["geometry", service_id]]
 
-def _format_api_dates(datetime_list: Union[str, List[Union[str, datetime]]], date: bool = False):
-    def _iso8601(dt):
-        if isinstance(dt, str):
-            return dt
-        elif isinstance(dt, datetime):
-            if dt.tzinfo is None:
-                dt = pytz.UTC.localize(dt)
-            return dt.isoformat()
-        return str(dt)
+def format_api_dates(datetime_input: Union[str, List[str]], date: bool = False) -> Union[str, None]:
+    # Get timezone
+    local_timezone = ZoneInfo.local()
 
-    if isinstance(datetime_list, str):
-        if not datetime_list:
-            return None
-        if "P" in datetime_list or "/" in datetime_list:
-            return datetime_list
-        return datetime_list
-    if isinstance(datetime_list, list):
-        datetime_list = [None if not d else d for d in datetime_list]
-        if all(d is None for d in datetime_list):
-            return None
-        if len(datetime_list) == 1:
-            d = datetime_list[0]
-            if isinstance(d, str) and ("P" in d or "/" in d):
-                return d
-            return datetime.strptime(d, "%Y-%m-%d").strftime("%Y-%m-%d") if date else _iso8601(d)
-        elif len(datetime_list) == 2:
-            dates = [datetime.strptime(str(d), "%Y-%m-%d").strftime("%Y-%m-%d") if date and d else _iso8601(d) if d else "" for d in datetime_list]
-            return "/".join(dates).replace("NA", "..")
+    # Return empty strings as None
+    if isinstance(datetime_input, str) and datetime_input.strip() == "":
+        return None
+
+    # Convert single string to list for uniform processing
+    if isinstance(datetime_input, str):
+        datetime_input = [datetime_input]
+
+    # Check for null or all NA and return None
+    if all(pd.isna(dt) or dt == "" for dt in datetime_input):
+        return None
+    # If the list is of length 1, first look for things like "P7D" or dates
+    # already formatted in ISO08601. Otherwise, try to coerce to datetime
+    if len(datetime_input) == 1:
+        dt = datetime_input[0]
+        if re.search(r"P", dt, re.IGNORECASE) or "/" in dt:
+            return dt
         else:
-            raise ValueError("datetime should only include 1-2 values")
-    return None
+            try:
+                parsed_dt = pd.to_datetime(dt)
+                # If the service only accepts dates for this input, not datetimes (e.g. "daily"),
+                # return just the date, otherwise, return the datetime in UTC format.
+                if date:
+                    return parsed_dt.strftime("%Y-%m-%d")
+                else:
+                    parsed_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+                    parsed_dt.replace(tzinfo=local_timezone)
+                    return parsed_dt.astimezone(pytz.UTC)
+            except Exception:
+                return None
+
+    elif len(datetime_input) == 2:
+        try:
+            parsed_dates = [pd.to_datetime(dt) for dt in datetime_input]
+            if date:
+                formatted = "/".join(dt.strftime("%Y-%m-%d") for dt in parsed_dates)
+            else:
+                formatted = "/".join(dt.strftime("%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=local_timezone).astimezone(pytz.UTC) for dt in parsed_dates)
+            return formatted.replace("", "..")
+        except Exception:
+            return None
+    else:
+        raise ValueError("datetime_input should only include 1-2 values")
 
 def _explode_post(ls: Dict[str, Any]):
     return {k: _cql2_param({k: v if isinstance(v, list) else [v]}) for k, v in ls.items() if v is not None}
