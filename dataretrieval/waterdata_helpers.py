@@ -116,6 +116,31 @@ def _switch_properties_id(properties: Optional[List[str]], id_name: str, service
     return [p for p in properties if p not in ["geometry", service_id]]
 
 def _format_api_dates(datetime_input: Union[str, List[str]], date: bool = False) -> Union[str, None]:
+    """
+    Formats date or datetime input(s) for use with an API, handling single values or ranges, and converting to ISO 8601 or date-only formats as needed.
+    Parameters
+    ----------
+    datetime_input : Union[str, List[str]]
+        A single date/datetime string or a list of one or two date/datetime strings. Accepts formats like "%Y-%m-%d %H:%M:%S", ISO 8601, or relative periods (e.g., "P7D").
+    date : bool, optional
+        If True, returns only the date portion ("YYYY-MM-DD"). If False (default), returns full datetime in UTC ISO 8601 format ("YYYY-MM-DDTHH:MM:SSZ").
+    Returns
+    -------
+    Union[str, None]
+        - If input is a single value, returns the formatted date/datetime string or None if parsing fails.
+        - If input is a list of two values, returns a date/datetime range string separated by "/" (e.g., "YYYY-MM-DD/YYYY-MM-DD" or "YYYY-MM-DDTHH:MM:SSZ/YYYY-MM-DDTHH:MM:SSZ").
+        - Returns None if input is empty, all NA, or cannot be parsed.
+    Raises
+    ------
+    ValueError
+        If `datetime_input` contains more than two values.
+    Notes
+    -----
+    - Handles blank or NA values by returning None.
+    - Supports relative period strings (e.g., "P7D") and passes them through unchanged.
+    - Converts datetimes to UTC and formats as ISO 8601 with 'Z' suffix when `date` is False.
+    - For date ranges, replaces "nan" with ".." in the output.
+    """
     # Get timezone
     local_timezone = datetime.now().astimezone().tzinfo
     
@@ -174,6 +199,14 @@ def _cql2_param(parameter: Dict[str, List[str]]):
     return {"property": property_name, "parameter": parameters}
 
 def _default_headers():
+    """
+    Generate default HTTP headers for API requests.
+
+    Returns:
+        dict: A dictionary containing default headers including 'Accept-Encoding',
+        'Accept', 'User-Agent', and 'lang'. If the environment variable 'API_USGS_PAT'
+        is set, its value is included as the 'X-Api-Key' header.
+    """
     headers = {
         "Accept-Encoding": "compress, gzip",
         "Accept": "application/json",
@@ -186,6 +219,20 @@ def _default_headers():
     return headers
 
 def _check_OGC_requests(endpoint: str = "daily", req_type: str = "queryables"):
+    """
+    Sends an HTTP GET request to the specified OGC endpoint and request type, returning the JSON response.
+
+    Args:
+        endpoint (str): The OGC collection endpoint to query. Defaults to "daily".
+        req_type (str): The type of request to make. Must be either "queryables" or "schema". Defaults to "queryables".
+
+    Returns:
+        dict: The JSON response from the OGC endpoint.
+
+    Raises:
+        AssertionError: If req_type is not "queryables" or "schema".
+        httpx.HTTPStatusError: If the HTTP request returns an unsuccessful status code.
+    """
     assert req_type in ["queryables", "schema"]
     url = f"{_base_url()}collections/{endpoint}/{req_type}"
     resp = httpx.get(url, headers=_default_headers())
