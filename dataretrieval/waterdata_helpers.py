@@ -66,9 +66,21 @@ def _switch_arg_id(ls: Dict[str, Any], id_name: str, service: str):
     Returns:
         Dict[str, Any]: The modified dictionary with the "id" key set appropriately.
     """
+
     service_id = service.replace("-", "_") + "_id"
-    ls.setdefault("id", ls.pop(service_id, ls.pop(id_name, None)))
+
+    if "id" not in ls:
+        if service_id in ls:
+            ls["id"] = ls[service_id]
+        elif id_name in ls:
+            ls["id"] = ls[id_name]
+
+    # Remove the original keys regardless of whether they were used
+    ls.pop(service_id, None)
+    ls.pop(id_name, None)
+
     return ls
+
 
 def _switch_properties_id(properties: Optional[List[str]], id_name: str, service: str):
     """
@@ -103,7 +115,7 @@ def _switch_properties_id(properties: Optional[List[str]], id_name: str, service
     # Remove unwanted fields
     return [p for p in properties if p not in ["geometry", service_id]]
 
-def format_api_dates(datetime_input: Union[str, List[str]], date: bool = False) -> Union[str, None]:
+def _format_api_dates(datetime_input: Union[str, List[str]], date: bool = False) -> Union[str, None]:
     # Get timezone
     local_timezone = datetime.now().astimezone().tzinfo
     
@@ -138,7 +150,8 @@ def format_api_dates(datetime_input: Union[str, List[str]], date: bool = False) 
                     return dt_local.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
             except Exception:
                 return None
-
+    # If the list is of length 2, parse the dates and if necessary, combine them together into
+    # the date range format accepted by the API
     elif len(datetime_input) == 2:
         try:
             parsed_dates = [datetime.strptime(dt, "%Y-%m-%d %H:%M:%S") for dt in datetime_input]
@@ -186,13 +199,7 @@ def _error_body(resp: httpx.Response):
         return "Query request denied. Possible reasons include query exceeding server limits."
     return resp.text
 
-def _get_collection():
-    url = f"{_base_url()}openapi?f=json"
-    resp = httpx.get(url, headers=_default_headers())
-    resp.raise_for_status()
-    return resp.json()
-
-def construct_api_requests(
+def _construct_api_requests(
     service: str,
     properties: Optional[List[str]] = None,
     bbox: Optional[List[float]] = None,
@@ -209,9 +216,18 @@ def construct_api_requests(
     params["limit"] = max_results if limit is None and max_results is not None else limit or 10000
     if max_results is not None and limit is not None and limit > max_results:
         raise ValueError("limit cannot be greater than max_result")
-    post_params = _explode_post({k: v for k, v in kwargs.items() if k not in single_params})
+    
+    # Create post calls for any input parameters that are not in the single_params list
+    # and have more than one element associated with the list or tuple.
+    post_params = _explode_post({
+        k: v for k, v in kwargs.items()
+        if k not in single_params and isinstance(v, (list, tuple)) and len(v) > 1
+        })
+
+    # Indicate if function needs to perform POST conversion
     POST = bool(post_params)
 
+    # Convert dates to ISO08601 format
     time_periods = {"last_modified", "datetime", "time", "begin", "end"}
     for i in time_periods:
         if i in params:
@@ -219,18 +235,21 @@ def construct_api_requests(
             params[i] = _format_api_dates(params[i], date=dates)
             kwargs[i] = _format_api_dates(kwargs[i], date=dates)
 
+    # String together bbox elements from a list to a comma-separated string,
+    # and string together properties if provided
     if bbox:
         params["bbox"] = ",".join(map(str, bbox))
     if properties:
-        params["properties"] = ",".join(_switch_properties_id(properties, "monitoring_location_id", service))
+        params["properties"] = ",".join(properties)
 
     headers = _default_headers()
-    print({**params, **{k: v for k, v in kwargs.items() if k not in single_params}})
+
     if POST:
         headers["Content-Type"] = "application/query-cql-json"
         resp = httpx.post(baseURL, headers=headers, json={"params": list(post_params.values())}, params=params)
     else:
         resp = httpx.get(baseURL, headers=headers, params={**params, **{k: v for k, v in kwargs.items() if k not in single_params}})
+        print(resp.url)
     if resp.status_code != 200:
         raise Exception(_error_body(resp))
     return resp.json()
@@ -313,7 +332,7 @@ def _walk_pages(req_url: str, max_results: Optional[int], client: Optional[httpx
         resp.raise_for_status()
         return _get_resp_data(resp)
 
-def _get_ogc_data(args: Dict[str, Any], output_id: str, service: str) -> pd.DataFrame:
+def get_ogc_data(args: Dict[str, Any], output_id: str, service: str) -> pd.DataFrame:
     args = args.copy()  # Don't mutate input
     args["service"] = service
     max_results = args.pop("max_results", None)
@@ -321,7 +340,8 @@ def _get_ogc_data(args: Dict[str, Any], output_id: str, service: str) -> pd.Data
     properties = args.get("properties")
     args["properties"] = _switch_properties_id(properties, id_name=output_id, service=service)
     convertType = args.pop("convertType", False)
-    req_url = construct_api_requests(**args)
+    args = {k: v for k, v in args.items() if v is not None}
+    req_url = _construct_api_requests(**args)
     return_list = _walk_pages(req_url, max_results)
     return_list = _deal_with_empty(return_list, properties, service)
     if convertType:
@@ -345,3 +365,9 @@ def _get_ogc_data(args: Dict[str, Any], output_id: str, service: str) -> pd.Data
 #     resp.raise_for_status()
 #     properties = resp.json().get("properties", {})
 #     return {k: v.get("description") for k, v in properties.items()}
+
+# def _get_collection():
+#     url = f"{_base_url()}openapi?f=json"
+#     resp = httpx.get(url, headers=_default_headers())
+#     resp.raise_for_status()
+#     return resp.json()
