@@ -5,6 +5,7 @@ from typing import List, Dict, Any, Optional, Union
 from datetime import datetime
 import pytz
 import pandas as pd
+import numpy as np
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import re
@@ -104,19 +105,19 @@ def _switch_properties_id(properties: Optional[List[str]], id_name: str, service
 
 def format_api_dates(datetime_input: Union[str, List[str]], date: bool = False) -> Union[str, None]:
     # Get timezone
-    local_timezone = ZoneInfo.local()
-
-    # Return empty strings as None
-    if isinstance(datetime_input, str) and datetime_input.strip() == "":
-        return None
-
+    local_timezone = datetime.now().astimezone().tzinfo
+    
     # Convert single string to list for uniform processing
     if isinstance(datetime_input, str):
         datetime_input = [datetime_input]
-
+    
     # Check for null or all NA and return None
-    if all(pd.isna(dt) or dt == "" for dt in datetime_input):
+    if all(pd.isna(dt) or dt == "" or dt == None for dt in datetime_input):
         return None
+
+    # Replace all blanks with "nan"
+    datetime_input = ["nan" if x == "" else x for x in datetime_input]
+
     # If the list is of length 1, first look for things like "P7D" or dates
     # already formatted in ISO08601. Otherwise, try to coerce to datetime
     if len(datetime_input) == 1:
@@ -125,26 +126,27 @@ def format_api_dates(datetime_input: Union[str, List[str]], date: bool = False) 
             return dt
         else:
             try:
-                parsed_dt = pd.to_datetime(dt)
+                # Parse to naive datetime
+                parsed_dt = datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")
                 # If the service only accepts dates for this input, not datetimes (e.g. "daily"),
                 # return just the date, otherwise, return the datetime in UTC format.
                 if date:
                     return parsed_dt.strftime("%Y-%m-%d")
                 else:
-                    parsed_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
-                    parsed_dt.replace(tzinfo=local_timezone)
-                    return parsed_dt.astimezone(pytz.UTC)
+                    dt_local = parsed_dt.replace(tzinfo=local_timezone)
+                    # Convert to UTC and format as ISO 8601 with 'Z'
+                    return dt_local.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
             except Exception:
                 return None
 
     elif len(datetime_input) == 2:
         try:
-            parsed_dates = [pd.to_datetime(dt) for dt in datetime_input]
+            parsed_dates = [datetime.strptime(dt, "%Y-%m-%d %H:%M:%S") for dt in datetime_input]
             if date:
                 formatted = "/".join(dt.strftime("%Y-%m-%d") for dt in parsed_dates)
             else:
-                formatted = "/".join(dt.strftime("%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=local_timezone).astimezone(pytz.UTC) for dt in parsed_dates)
-            return formatted.replace("", "..")
+                formatted = "/".join(dt.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ") for dt in parsed_dates)
+            return formatted.replace("nan", "..")
         except Exception:
             return None
     else:
