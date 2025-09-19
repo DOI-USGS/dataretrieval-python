@@ -506,23 +506,30 @@ def _walk_pages(req: httpx.Request, max_results: Optional[int], client: Optional
     resp = client.send(req)
     if resp.status_code != 200: raise Exception(_error_body(resp))
 
+    # Grab some aspects of the original request: headers and the
+    # request type (GET or POST)
+    method = req.method.upper()
+    headers = req.headers
+    content = req.content if method == "POST" else None
+
     if max_results is None or pd.isna(max_results):
-        dfs = []
+        dfs = _get_resp_data(resp)
         curr_url = _next_req_url(resp)
         failures = []
         while curr_url:
             try:
-                resp = client.get(curr_url, headers=_default_headers())
+                resp = client.request(method, curr_url, headers=headers, content=content if method == "POST" else None)
                 if resp.status_code != 200: raise Exception(_error_body(resp))
                 df1 = _get_resp_data(resp)
-                dfs.append(df1)
+                dfs = pd.concat([dfs, df1], ignore_index=True)
+                #dfs.append(df1)
                 curr_url = _next_req_url(resp)
             except Exception:
                 failures.append(curr_url)
                 curr_url = None
         if failures:
             print(f"There were {len(failures)} failed requests.")
-        return pd.concat(dfs, ignore_index=True) if dfs else pd.DataFrame()
+        return dfs
     else:
         resp.raise_for_status()
         return _get_resp_data(resp)

@@ -106,24 +106,57 @@ def get_daily(
 
     return waterdata_helpers.get_ogc_data(args, output_id, service)
 
-# def get_monitoring_locations(): 
-#     service = "monitoring-locations"
-#     output_id = "monitoring_location_id"
+def get_monitoring_locations() -> pd.DataFrame: 
+    service = "monitoring-locations"
+    output_id = "monitoring_location_id"
 
-#     # Build argument dictionary, omitting None values
-#     args = { 
-#         k: v for k, v in locals().items()
-#         if k not in {"service", "output_id"} and v is not None
-#     }
-#     args["convertType"] = False
+    # Build argument dictionary, omitting None values
+    args = { 
+        k: v for k, v in locals().items()
+        if k not in {"service", "output_id"} and v is not None
+    }
+    args["convertType"] = False
 
-#     return waterdata_helpers.get_ogc_data(args, output_id, service)
+    return waterdata_helpers.get_ogc_data(args, output_id, service)
 
-# def get_ts_meta():
+def get_ts_meta() -> pd.DataFrame:
+    service = "time-series-metadata"
+    output_id = "time_series_id"
 
-# def get_latest_continuous():
+    # Build argument dictionary, omitting None values
+    args = { 
+        k: v for k, v in locals().items()
+        if k not in {"service", "output_id"} and v is not None
+    }
+    args["convertType"] = False
 
-# def get_field_measurements():
+    return waterdata_helpers.get_ogc_data(args, output_id, service)
+
+def get_latest_continuous() -> pd.DataFrame:
+    service = "latest-continuous"
+    output_id = "latest_continuous_id"
+
+    # Build argument dictionary, omitting None values
+    args = { 
+        k: v for k, v in locals().items()
+        if k not in {"service", "output_id"} and v is not None
+    }
+    args["convertType"] = False
+
+    return waterdata_helpers.get_ogc_data(args, output_id, service)
+
+def get_field_measurements() -> pd.DataFrame:
+    service = "field-measurements"
+    output_id = "field_measurement_id"
+
+    # Build argument dictionary, omitting None values
+    args = { 
+        k: v for k, v in locals().items()
+        if k not in {"service", "output_id"} and v is not None
+    }
+    args["convertType"] = False
+
+    return waterdata_helpers.get_ogc_data(args, output_id, service)
  
 def get_codes(code_service: _CODE_SERVICES) -> DataFrame:
     """Return codes from a Samples code service.
