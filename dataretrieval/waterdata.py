@@ -93,7 +93,7 @@ def get_daily(
         max_results: Optional[int] = None,
         convertType: bool = True
     ) -> pd.DataFrame:
-    
+
     service = "daily"
     output_id = "daily_id"
 
@@ -106,7 +106,55 @@ def get_daily(
 
     return waterdata_helpers.get_ogc_data(args, output_id, service)
 
-def get_monitoring_locations() -> pd.DataFrame: 
+def get_monitoring_locations(
+        monitoring_location_id: Optional[List[str]] = None,
+        agency_code: Optional[List[str]] = None,
+        agency_name: Optional[List[str]] = None,
+        monitoring_location_number: Optional[List[str]] = None,
+        monitoring_location_name: Optional[List[str]] = None,
+        district_code: Optional[List[str]] = None,
+        country_code: Optional[List[str]] = None,
+        country_name: Optional[List[str]] = None,
+        state_code: Optional[List[str]] = None,
+        state_name: Optional[List[str]] = None,
+        county_code: Optional[List[str]] = None,
+        county_name: Optional[List[str]] = None,
+        minor_civil_division_code: Optional[List[str]] = None,
+        site_type_code: Optional[List[str]] = None,
+        site_type: Optional[List[str]] = None,
+        hydrologic_unit_code: Optional[List[str]] = None,
+        basin_code: Optional[List[str]] = None,
+        altitude: Optional[List[str]] = None,
+        altitude_accuracy: Optional[List[str]] = None,
+        altitude_method_code: Optional[List[str]] = None,
+        altitude_method_name: Optional[List[str]] = None,             
+        vertical_datum: Optional[List[str]] = None,
+        vertical_datum_name: Optional[List[str]] = None,
+        horizontal_positional_accuracy_code: Optional[List[str]] = None,
+        horizontal_positional_accuracy: Optional[List[str]] = None,
+        horizontal_position_method_code: Optional[List[str]] = None,
+        horizontal_position_method_name: Optional[List[str]] = None,
+        original_horizontal_datum: Optional[List[str]] = None,
+        original_horizontal_datum_name: Optional[List[str]] = None,
+        drainage_area: Optional[List[str]] = None,
+        contributing_drainage_area: Optional[List[str]] = None,    
+        time_zone_abbreviation: Optional[List[str]] = None,
+        uses_daylight_savings: Optional[List[str]] = None,
+        construction_date: Optional[List[str]] = None,
+        aquifer_code: Optional[List[str]] = None,
+        national_aquifer_code: Optional[List[str]] = None,
+        aquifer_type_code: Optional[List[str]] = None,
+        well_constructed_depth: Optional[List[str]] = None,
+        hole_constructed_depth: Optional[List[str]] = None,
+        depth_source_code: Optional[List[str]] = None,
+        properties: Optional[List[str]] = None,
+        skipGeometry: Optional[bool] = None,
+        time: Optional[Union[str, List[str]]] = None,
+        bbox: Optional[List[float]] = None,
+        limit: Optional[int] = None,
+        max_results: Optional[int] = None,
+        convertType: bool = True
+        ) -> pd.DataFrame: 
     service = "monitoring-locations"
     output_id = "monitoring_location_id"
 
@@ -119,7 +167,32 @@ def get_monitoring_locations() -> pd.DataFrame:
 
     return waterdata_helpers.get_ogc_data(args, output_id, service)
 
-def get_ts_meta() -> pd.DataFrame:
+def get_timeseries_metadata(
+        monitoring_location_id: Optional[Union[str, List[str]]] = None,
+        parameter_code: Optional[Union[str, List[str]]] = None,
+        parameter_name: Optional[Union[str, List[str]]] = None,
+        properties: Optional[Union[str, List[str]]] = None,
+        statistic_id: Optional[Union[str, List[str]]] = None,
+        last_modified: Optional[Union[str, List[str]]] = None,
+        begin: Optional[Union[str, List[str]]] = None,
+        end: Optional[Union[str, List[str]]] = None,
+        unit_of_measure: Optional[Union[str, List[str]]] = None,
+        computation_period_identifier: Optional[Union[str, List[str]]] = None,
+        computation_identifier: Optional[Union[str, List[str]]] = None,
+        thresholds: Optional[int] = None,
+        sublocation_identifier: Optional[Union[str, List[str]]] = None,
+        primary: Optional[Union[str, List[str]]] = None,
+        parent_time_series_id: Optional[Union[str, List[str]]] = None,
+        time_series_id: Optional[Union[str, List[str]]] = None,
+        web_description: Optional[Union[str, List[str]]] = None,
+        skipGeometry: Optional[bool] = None,
+        time: Optional[Union[str, List[str]]] = None,
+        bbox: Optional[List[float]] = None,
+        limit: Optional[int] = None,
+        max_results: Optional[int] = None,
+        convertType: bool = True
+) -> pd.DataFrame:
+
     service = "time-series-metadata"
     output_id = "time_series_id"
 
@@ -132,7 +205,25 @@ def get_ts_meta() -> pd.DataFrame:
 
     return waterdata_helpers.get_ogc_data(args, output_id, service)
 
-def get_latest_continuous() -> pd.DataFrame:
+def get_latest_continuous(
+        monitoring_location_id: Optional[Union[str, List[str]]] = None,
+        parameter_code: Optional[Union[str, List[str]]] = None,
+        statistic_id: Optional[Union[str, List[str]]] = None,
+        properties: Optional[Union[str, List[str]]] = None,
+        time_series_id: Optional[Union[str, List[str]]] = None,
+        latest_continuous_id: Optional[Union[str, List[str]]] = None,
+        approval_status: Optional[Union[str, List[str]]] = None,
+        unit_of_measure: Optional[Union[str, List[str]]] = None,
+        qualifier: Optional[Union[str, List[str]]] = None,
+        value: Optional[int] = None,
+        last_modified: Optional[Union[str, List[str]]] = None,
+        skipGeometry: Optional[bool] = None,
+        time: Optional[Union[str, List[str]]] = None,
+        bbox: Optional[List[float]] = None,
+        limit: Optional[int] = None,
+        max_results: Optional[int] = None,
+        convertType: bool = True
+        ) -> pd.DataFrame:
     service = "latest-continuous"
     output_id = "latest_continuous_id"
 
@@ -145,7 +236,27 @@ def get_latest_continuous() -> pd.DataFrame:
 
     return waterdata_helpers.get_ogc_data(args, output_id, service)
 
-def get_field_measurements() -> pd.DataFrame:
+def get_field_measurements(
+        monitoring_location_id: Optional[Union[str, List[str]]] = None,
+        parameter_code: Optional[Union[str, List[str]]] = None,
+        observing_procedure_code: Optional[Union[str, List[str]]] = None,
+        properties: Optional[List[str]] = None,
+        field_visit_id: Optional[Union[str, List[str]]] = None,
+        approval_status: Optional[Union[str, List[str]]] = None,
+        unit_of_measure: Optional[Union[str, List[str]]] = None,
+        qualifier: Optional[Union[str, List[str]]] = None,
+        value: Optional[Union[str, List[str]]] = None,
+        last_modified: Optional[Union[str, List[str]]] = None,
+        observing_procedure: Optional[Union[str, List[str]]] = None,
+        vertical_datum: Optional[Union[str, List[str]]] = None,
+        measuring_agency: Optional[Union[str, List[str]]] = None,
+        skipGeometry: Optional[bool] = None,
+        time: Optional[Union[str, List[str]]] = None,
+        bbox: Optional[List[float]] = None,
+        limit: Optional[int] = None,
+        max_results: Optional[int] = None,
+        convertType: bool = True
+        ) -> pd.DataFrame:
     service = "field-measurements"
     output_id = "field_measurement_id"
 
