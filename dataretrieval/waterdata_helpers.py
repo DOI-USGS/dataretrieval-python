@@ -334,6 +334,21 @@ def _construct_api_requests(
     return req
 
 def _deal_with_empty(return_list: pd.DataFrame, properties: Optional[List[str]], service: str) -> pd.DataFrame:
+    """
+    Handles empty DataFrame results by returning a DataFrame with appropriate columns.
+
+    If `return_list` is empty, determines the column names to use:
+    - If `properties` is not provided or contains only NaN values, retrieves the schema properties from the specified service.
+    - Otherwise, uses the provided `properties` list as column names.
+
+    Args:
+        return_list (pd.DataFrame): The DataFrame to check for emptiness.
+        properties (Optional[List[str]]): List of property names to use as columns, or None.
+        service (str): The service endpoint to query for schema properties if needed.
+
+    Returns:
+        pd.DataFrame: The original DataFrame if not empty, otherwise an empty DataFrame with the appropriate columns.
+    """
     if return_list.empty:
         if not properties or all(pd.isna(properties)):
             schema = _check_OGC_requests(endpoint=service, req_type="schema")
@@ -342,6 +357,23 @@ def _deal_with_empty(return_list: pd.DataFrame, properties: Optional[List[str]],
     return return_list
 
 def _rejigger_cols(df: pd.DataFrame, properties: Optional[List[str]], output_id: str) -> pd.DataFrame:
+    """
+    Rearranges and renames columns in a DataFrame based on provided properties and output identifier.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The input DataFrame whose columns are to be rearranged or renamed.
+    properties : Optional[List[str]]
+        A list of column names to possibly rename. If None or contains only NaN, the function will rename 'id' to output_id.
+    output_id : str
+        The name to which the 'id' column should be renamed if applicable.
+
+    Returns
+    -------
+    pd.DataFrame
+        The DataFrame with columns rearranged and/or renamed according to the specified properties and output_id.
+    """
     if properties and not all(pd.isna(properties)):
         if "id" not in properties:
             if output_id in properties:
@@ -355,6 +387,27 @@ def _rejigger_cols(df: pd.DataFrame, properties: Optional[List[str]], output_id:
         return df.rename(columns={"id": output_id})
 
 def _cleanup_cols(df: pd.DataFrame, service: str = "daily") -> pd.DataFrame:
+    """
+    Cleans and standardizes columns in a pandas DataFrame for water data endpoints.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The input DataFrame containing water data.
+    service : str, optional
+        The type of water data service (default is "daily").
+
+    Returns
+    -------
+    pd.DataFrame
+        The cleaned DataFrame with standardized columns.
+
+    Notes
+    -----
+    - If the 'qualifier' column exists, lists are joined into comma-separated strings.
+    - If the 'time' column exists and service is "daily", it is converted to date objects.
+    - The 'value' and 'contributing_drainage_area' columns are coerced to numeric types.
+    """
     if "qualifier" in df.columns:
         df["qualifier"] = df["qualifier"].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)
     if "time" in df.columns and service == "daily":
@@ -364,7 +417,24 @@ def _cleanup_cols(df: pd.DataFrame, service: str = "daily") -> pd.DataFrame:
             df[col] = pd.to_numeric(df[col], errors="coerce")
     return df
 
-def _next_req_url(resp: httpx.Response, req_url: str) -> Optional[str]:
+def _next_req_url(resp: httpx.Response) -> Optional[str]:
+    """
+    Extracts the URL for the next page of results from an HTTP response from a water data endpoint.
+
+    Parameters:
+        resp (httpx.Response): The HTTP response object containing JSON data and headers.
+
+    Returns:
+        Optional[str]: The URL for the next page of results if available, otherwise None.
+
+    Side Effects:
+        If the environment variable "API_USGS_PAT" is set, prints the remaining requests for the current hour.
+        Prints the next URL if found.
+
+    Notes:
+        - Expects the response JSON to contain a "links" list with objects having "rel" and "href" keys.
+        - Checks for the "next" relation in the "links" to determine the next URL.
+    """
     body = resp.json()
     if not body.get("numberReturned"):
         return None
