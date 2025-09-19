@@ -6,6 +6,7 @@ from datetime import datetime
 import pytz
 import pandas as pd
 import numpy as np
+import json
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import re
@@ -193,10 +194,23 @@ def _format_api_dates(datetime_input: Union[str, List[str]], date: bool = False)
 def _explode_post(ls: Dict[str, Any]):
     return {k: _cql2_param({k: v if isinstance(v, list) else [v]}) for k, v in ls.items() if v is not None}
 
-def _cql2_param(parameter: Dict[str, List[str]]):
-    property_name = next(iter(parameter))
-    parameters = [str(x) for x in parameter[property_name]]
-    return {"property": property_name, "parameter": parameters}
+def _cql2_param(args):
+    filters = []
+    for key, values in args.items():
+        filters.append({
+            "op": "in",
+            "args": [
+                {"property": key},
+                values
+            ]
+        })
+
+    query = {
+        "op": "and",
+        "args": filters
+    }
+
+    return json.dumps(query, indent=4)
 
 def _default_headers():
     """
@@ -328,91 +342,11 @@ def _construct_api_requests(
 
     if POST:
         headers["Content-Type"] = "application/query-cql-json"
-        req = httpx.Request(method="POST", url=baseURL, headers=headers, json={"params": list(post_params.values())}, params=params)
+        #req = httpx.Request(method="POST", url=baseURL, headers=headers, json={"params": list(post_params.values())}, params=params)
+        req = httpx.Request(method="POST", url=baseURL, headers=headers, data=_cql2_param(post_params), params=params)
     else:
         req = httpx.Request(method="GET", url=baseURL, headers=headers, params={**params, **{k: v for k, v in kwargs.items() if k not in single_params}})
     return req
-
-def _deal_with_empty(return_list: pd.DataFrame, properties: Optional[List[str]], service: str) -> pd.DataFrame:
-    """
-    Handles empty DataFrame results by returning a DataFrame with appropriate columns.
-
-    If `return_list` is empty, determines the column names to use:
-    - If `properties` is not provided or contains only NaN values, retrieves the schema properties from the specified service.
-    - Otherwise, uses the provided `properties` list as column names.
-
-    Args:
-        return_list (pd.DataFrame): The DataFrame to check for emptiness.
-        properties (Optional[List[str]]): List of property names to use as columns, or None.
-        service (str): The service endpoint to query for schema properties if needed.
-
-    Returns:
-        pd.DataFrame: The original DataFrame if not empty, otherwise an empty DataFrame with the appropriate columns.
-    """
-    if return_list.empty:
-        if not properties or all(pd.isna(properties)):
-            schema = _check_OGC_requests(endpoint=service, req_type="schema")
-            properties = list(schema.get("properties", {}).keys())
-        return pd.DataFrame(columns=properties)
-    return return_list
-
-def _rejigger_cols(df: pd.DataFrame, properties: Optional[List[str]], output_id: str) -> pd.DataFrame:
-    """
-    Rearranges and renames columns in a DataFrame based on provided properties and output identifier.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        The input DataFrame whose columns are to be rearranged or renamed.
-    properties : Optional[List[str]]
-        A list of column names to possibly rename. If None or contains only NaN, the function will rename 'id' to output_id.
-    output_id : str
-        The name to which the 'id' column should be renamed if applicable.
-
-    Returns
-    -------
-    pd.DataFrame
-        The DataFrame with columns rearranged and/or renamed according to the specified properties and output_id.
-    """
-    if properties and not all(pd.isna(properties)):
-        if "id" not in properties:
-            if output_id in properties:
-                df = df.rename(columns={"id": output_id})
-            else:
-                plural = output_id.replace("_id", "s_id")
-                if plural in properties:
-                    df = df.rename(columns={"id": plural})
-        return df.loc[:, [col for col in properties if col in df.columns]]
-    else:
-        return df.rename(columns={"id": output_id})
-
-def _cleanup_cols(df: pd.DataFrame, service: str = "daily") -> pd.DataFrame:
-    """
-    Cleans and standardizes columns in a pandas DataFrame for water data endpoints.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        The input DataFrame containing water data.
-    service : str, optional
-        The type of water data service (default is "daily").
-
-    Returns
-    -------
-    pd.DataFrame
-        The cleaned DataFrame with standardized columns.
-
-    Notes
-    -----
-    - If the 'time' column exists and service is "daily", it is converted to date objects.
-    - The 'value' and 'contributing_drainage_area' columns are coerced to numeric types.
-    """
-    if "time" in df.columns and service == "daily":
-        df["time"] = pd.to_datetime(df["time"]).dt.date
-    for col in ["value", "contributing_drainage_area"]:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
-    return df
 
 def _next_req_url(resp: httpx.Response) -> Optional[str]:
     """
@@ -533,6 +467,87 @@ def _walk_pages(req: httpx.Request, max_results: Optional[int], client: Optional
     else:
         resp.raise_for_status()
         return _get_resp_data(resp)
+
+def _deal_with_empty(return_list: pd.DataFrame, properties: Optional[List[str]], service: str) -> pd.DataFrame:
+    """
+    Handles empty DataFrame results by returning a DataFrame with appropriate columns.
+
+    If `return_list` is empty, determines the column names to use:
+    - If `properties` is not provided or contains only NaN values, retrieves the schema properties from the specified service.
+    - Otherwise, uses the provided `properties` list as column names.
+
+    Args:
+        return_list (pd.DataFrame): The DataFrame to check for emptiness.
+        properties (Optional[List[str]]): List of property names to use as columns, or None.
+        service (str): The service endpoint to query for schema properties if needed.
+
+    Returns:
+        pd.DataFrame: The original DataFrame if not empty, otherwise an empty DataFrame with the appropriate columns.
+    """
+    if return_list.empty:
+        if not properties or all(pd.isna(properties)):
+            schema = _check_OGC_requests(endpoint=service, req_type="schema")
+            properties = list(schema.get("properties", {}).keys())
+        return pd.DataFrame(columns=properties)
+    return return_list
+
+def _rejigger_cols(df: pd.DataFrame, properties: Optional[List[str]], output_id: str) -> pd.DataFrame:
+    """
+    Rearranges and renames columns in a DataFrame based on provided properties and output identifier.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The input DataFrame whose columns are to be rearranged or renamed.
+    properties : Optional[List[str]]
+        A list of column names to possibly rename. If None or contains only NaN, the function will rename 'id' to output_id.
+    output_id : str
+        The name to which the 'id' column should be renamed if applicable.
+
+    Returns
+    -------
+    pd.DataFrame
+        The DataFrame with columns rearranged and/or renamed according to the specified properties and output_id.
+    """
+    if properties and not all(pd.isna(properties)):
+        if "id" not in properties:
+            if output_id in properties:
+                df = df.rename(columns={"id": output_id})
+            else:
+                plural = output_id.replace("_id", "s_id")
+                if plural in properties:
+                    df = df.rename(columns={"id": plural})
+        return df.loc[:, [col for col in properties if col in df.columns]]
+    else:
+        return df.rename(columns={"id": output_id})
+
+def _cleanup_cols(df: pd.DataFrame, service: str = "daily") -> pd.DataFrame:
+    """
+    Cleans and standardizes columns in a pandas DataFrame for water data endpoints.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The input DataFrame containing water data.
+    service : str, optional
+        The type of water data service (default is "daily").
+
+    Returns
+    -------
+    pd.DataFrame
+        The cleaned DataFrame with standardized columns.
+
+    Notes
+    -----
+    - If the 'time' column exists and service is "daily", it is converted to date objects.
+    - The 'value' and 'contributing_drainage_area' columns are coerced to numeric types.
+    """
+    if "time" in df.columns and service == "daily":
+        df["time"] = pd.to_datetime(df["time"]).dt.date
+    for col in ["value", "contributing_drainage_area"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    return df
 
 def get_ogc_data(args: Dict[str, Any], output_id: str, service: str) -> pd.DataFrame:
     """
