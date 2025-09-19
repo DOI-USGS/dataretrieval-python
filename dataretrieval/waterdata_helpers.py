@@ -404,12 +404,9 @@ def _cleanup_cols(df: pd.DataFrame, service: str = "daily") -> pd.DataFrame:
 
     Notes
     -----
-    - If the 'qualifier' column exists, lists are joined into comma-separated strings.
     - If the 'time' column exists and service is "daily", it is converted to date objects.
     - The 'value' and 'contributing_drainage_area' columns are coerced to numeric types.
     """
-    if "qualifier" in df.columns:
-        df["qualifier"] = df["qualifier"].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)
     if "time" in df.columns and service == "daily":
         df["time"] = pd.to_datetime(df["time"]).dt.date
     for col in ["value", "contributing_drainage_area"]:
@@ -449,16 +446,58 @@ def _next_req_url(resp: httpx.Response) -> Optional[str]:
     return None
 
 def _get_resp_data(resp: httpx.Response) -> pd.DataFrame:
+    """
+    Extracts and normalizes data from an httpx.Response object containing GeoJSON features.
+
+    Parameters:
+        resp (httpx.Response): The HTTP response object expected to contain a JSON body with a "features" key.
+
+    Returns:
+        pd.DataFrame: A pandas DataFrame containing the normalized feature properties. 
+                      Returns an empty DataFrame if no features are returned.
+
+    Notes:
+        - Drops columns "type", "geometry", and "AsGeoJSON(geometry)" if present.
+        - Flattens nested properties and removes the "properties_" prefix from column names.
+    """
     body = resp.json()
     if not body.get("numberReturned"):
         return pd.DataFrame()
-    df = pd.DataFrame(body.get("features", []))
-    for col in ["geometry", "AsGeoJSON(geometry)"]:
-        if col in df.columns:
-            df = df.drop(columns=[col])
+    df = pd.json_normalize(
+        resp.json()["features"],
+        sep="_")
+    df = df.drop(columns=["type", "geometry", "AsGeoJSON(geometry)"], errors="ignore")
+    df.columns = [col.replace("properties_", "") for col in df.columns]
     return df
 
 def _walk_pages(req: httpx.Request, max_results: Optional[int], client: Optional[httpx.Client] = None) -> pd.DataFrame:
+    """
+    Iterates through paginated API responses and aggregates the results into a single DataFrame.
+
+    Parameters
+    ----------
+    req : httpx.Request
+        The initial HTTP request to send.
+    max_results : Optional[int]
+        The maximum number of results to retrieve. If None or NaN, retrieves all available pages.
+    client : Optional[httpx.Client], default None
+        An optional HTTP client to use for requests. If not provided, a new client is created.
+
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame containing the aggregated results from all pages.
+
+    Raises
+    ------
+    Exception
+        If a request fails or returns a non-200 status code.
+
+    Notes
+    -----
+    - If `max_results` is None or NaN, the function will continue to request subsequent pages until no more pages are available.
+    - Failed requests are tracked and reported, but do not halt the entire process unless the initial request fails.
+    """
     print(f"Requesting:\n{req.url}")
 
     # Get first response from client
@@ -469,7 +508,7 @@ def _walk_pages(req: httpx.Request, max_results: Optional[int], client: Optional
 
     if max_results is None or pd.isna(max_results):
         dfs = []
-        curr_url = _next_req_url(resp, req.url)
+        curr_url = _next_req_url(resp)
         failures = []
         while curr_url:
             try:
@@ -477,7 +516,7 @@ def _walk_pages(req: httpx.Request, max_results: Optional[int], client: Optional
                 if resp.status_code != 200: raise Exception(_error_body(resp))
                 df1 = _get_resp_data(resp)
                 dfs.append(df1)
-                curr_url = _next_req_url(resp, curr_url)
+                curr_url = _next_req_url(resp)
             except Exception:
                 failures.append(curr_url)
                 curr_url = None
@@ -489,21 +528,50 @@ def _walk_pages(req: httpx.Request, max_results: Optional[int], client: Optional
         return _get_resp_data(resp)
 
 def get_ogc_data(args: Dict[str, Any], output_id: str, service: str) -> pd.DataFrame:
-    args = args.copy()  # Don't mutate input
+    """
+    Retrieves OGC (Open Geospatial Consortium) data from a specified water data endpoint and returns it as a pandas DataFrame.
+
+    This function prepares request arguments, constructs API requests, handles pagination, processes the results,
+    and formats the output DataFrame according to the specified parameters.
+
+    Args:
+        args (Dict[str, Any]): Dictionary of request arguments for the OGC service.
+        output_id (str): The name of the output identifier to use in the request.
+        service (str): The OGC service type (e.g., "wfs", "wms").
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the retrieved and processed OGC data, with metadata attributes
+        including the request URL and query timestamp.
+
+    Notes:
+        - The function does not mutate the input `args` dictionary.
+        - Handles optional arguments such as `max_results` and `convertType`.
+        - Applies column cleanup and reordering based on service and properties.
+        - Metadata is attached to the DataFrame via the `.attrs` attribute.
+    """
+    args = args.copy()
+    # Add service as an argument
     args["service"] = service
+    # Pull out a max results input if exists
     max_results = args.pop("max_results", None)
+    # Switch the input id to "id" if needed
     args = _switch_arg_id(args, id_name=output_id, service=service)
     properties = args.get("properties")
+    # Switch properties id to "id" if needed
     args["properties"] = _switch_properties_id(properties, id_name=output_id, service=service)
     convertType = args.pop("convertType", False)
+    # Create fresh dictionary of args without any None values
     args = {k: v for k, v in args.items() if v is not None}
+    # Build API request
     req = _construct_api_requests(**args)
+    # Run API request and iterate through pages if needed
     return_list = _walk_pages(req, max_results)
+    # Manage some aspects of the returned dataset
     return_list = _deal_with_empty(return_list, properties, service)
     if convertType:
         return_list = _cleanup_cols(return_list, service=service)
     return_list = _rejigger_cols(return_list, properties, output_id)
-    # Metadata
+    # Add metadata
     return_list.attrs.update(request=req.url, queryTime=pd.Timestamp.now())
     return return_list
 

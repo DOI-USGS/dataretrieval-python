@@ -104,7 +104,7 @@ def get_daily(
     }
     args["convertType"] = False
 
-    return waterdata_helpers._get_ogc_data(args, output_id, service)
+    return waterdata_helpers.get_ogc_data(args, output_id, service)
 
 # def get_monitoring_locations(): 
 #     service = "monitoring-locations"
@@ -117,7 +117,7 @@ def get_daily(
 #     }
 #     args["convertType"] = False
 
-#     return _get_ogc_data(args, output_id, service)
+#     return waterdata_helpers.get_ogc_data(args, output_id, service)
 
 # def get_ts_meta():
 
