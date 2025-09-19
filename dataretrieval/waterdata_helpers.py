@@ -240,6 +240,17 @@ def _check_OGC_requests(endpoint: str = "daily", req_type: str = "queryables"):
     return resp.json()
 
 def _error_body(resp: httpx.Response):
+    """
+    Extracts and returns an error message from an HTTP response object based on its status code.
+
+    Args:
+        resp (httpx.Response): The HTTP response object to extract the error message from.
+
+    Returns:
+        str: The extracted error message. For status code 429, returns the 'message' field from the JSON error object.
+             For status code 403, returns a predefined message indicating possible reasons for denial.
+             For other status codes, returns the raw response text.
+    """
     if resp.status_code == 429:
         return resp.json().get('error', {}).get('message')
     elif resp.status_code == 403:
@@ -255,11 +266,35 @@ def _construct_api_requests(
     skipGeometry: bool = False,
     **kwargs
 ):
+    """
+    Constructs an HTTP request object for the specified water data API service.
+    Depending on the input parameters, the function determines whether to use a GET or POST request,
+    formats parameters appropriately, and sets required headers.
+    Args:
+        service (str): The name of the API service to query (e.g., "daily").
+        properties (Optional[List[str]], optional): List of property names to include in the request.
+        bbox (Optional[List[float]], optional): Bounding box coordinates as a list of floats.
+        limit (Optional[int], optional): Maximum number of results to return per request.
+        max_results (Optional[int], optional): Maximum number of results allowed by the API.
+        skipGeometry (bool, optional): Whether to exclude geometry from the response.
+        **kwargs: Additional query parameters, including date/time filters and other API-specific options.
+    Returns:
+        httpx.Request: The constructed HTTP request object ready to be sent.
+    Raises:
+        ValueError: If `limit` is greater than `max_results`.
+    Notes:
+        - Date/time parameters are automatically formatted to ISO8601.
+        - If multiple values are provided for non-single parameters, a POST request is constructed.
+        - The function sets appropriate headers for GET and POST requests.
+    """
     baseURL = _setup_api(service)
+    # Single parameters can only have one value
     single_params = {"datetime", "last_modified", "begin", "end", "time"}
     params = {k: v for k, v in kwargs.items() if k in single_params}
+    # Set skipGeometry parameter
     params["skipGeometry"] = skipGeometry
-    # Limit logic
+    # If limit is none and max_results is not none, then set limit to max results. Otherwise,
+    # if max_results is none, set it to 10000 (the API max).
     params["limit"] = max_results if limit is None and max_results is not None else limit or 10000
     if max_results is not None and limit is not None and limit > max_results:
         raise ValueError("limit cannot be greater than max_result")
@@ -293,13 +328,10 @@ def _construct_api_requests(
 
     if POST:
         headers["Content-Type"] = "application/query-cql-json"
-        resp = httpx.post(baseURL, headers=headers, json={"params": list(post_params.values())}, params=params)
+        req = httpx.Request(method="POST", url=baseURL, headers=headers, json={"params": list(post_params.values())}, params=params)
     else:
-        resp = httpx.get(baseURL, headers=headers, params={**params, **{k: v for k, v in kwargs.items() if k not in single_params}})
-        print(resp.url)
-    if resp.status_code != 200:
-        raise Exception(_error_body(resp))
-    return resp.json()
+        req = httpx.Request(method="GET", url=baseURL, headers=headers, params={**params, **{k: v for k, v in kwargs.items() if k not in single_params}})
+    return req
 
 def _deal_with_empty(return_list: pd.DataFrame, properties: Optional[List[str]], service: str) -> pd.DataFrame:
     if return_list.empty:
@@ -341,7 +373,9 @@ def _next_req_url(resp: httpx.Response, req_url: str) -> Optional[str]:
         print("Remaining requests this hour:", header_info.get("x-ratelimit-remaining", ""))
     for link in body.get("links", []):
         if link.get("rel") == "next":
-            return link.get("href")
+            next_url = link.get("href")
+            print(f"Next URL: {next_url}")
+            return next_url
     return None
 
 def _get_resp_data(resp: httpx.Response) -> pd.DataFrame:
@@ -354,17 +388,23 @@ def _get_resp_data(resp: httpx.Response) -> pd.DataFrame:
             df = df.drop(columns=[col])
     return df
 
-def _walk_pages(req_url: str, max_results: Optional[int], client: Optional[httpx.Client] = None) -> pd.DataFrame:
-    print(f"Requesting:\n{req_url}")
+def _walk_pages(req: httpx.Request, max_results: Optional[int], client: Optional[httpx.Client] = None) -> pd.DataFrame:
+    print(f"Requesting:\n{req.url}")
+
+    # Get first response from client
+    # using GET or POST call
     client = client or httpx.Client()
+    resp = client.send(req)
+    if resp.status_code != 200: raise Exception(_error_body(resp))
+
     if max_results is None or pd.isna(max_results):
         dfs = []
-        curr_url = req_url
+        curr_url = _next_req_url(resp, req.url)
         failures = []
         while curr_url:
             try:
-                resp = client.get(curr_url)
-                resp.raise_for_status()
+                resp = client.get(curr_url, headers=_default_headers())
+                if resp.status_code != 200: raise Exception(_error_body(resp))
                 df1 = _get_resp_data(resp)
                 dfs.append(df1)
                 curr_url = _next_req_url(resp, curr_url)
@@ -375,7 +415,6 @@ def _walk_pages(req_url: str, max_results: Optional[int], client: Optional[httpx
             print(f"There were {len(failures)} failed requests.")
         return pd.concat(dfs, ignore_index=True) if dfs else pd.DataFrame()
     else:
-        resp = client.get(req_url)
         resp.raise_for_status()
         return _get_resp_data(resp)
 
@@ -388,14 +427,14 @@ def get_ogc_data(args: Dict[str, Any], output_id: str, service: str) -> pd.DataF
     args["properties"] = _switch_properties_id(properties, id_name=output_id, service=service)
     convertType = args.pop("convertType", False)
     args = {k: v for k, v in args.items() if v is not None}
-    req_url = _construct_api_requests(**args)
-    return_list = _walk_pages(req_url, max_results)
+    req = _construct_api_requests(**args)
+    return_list = _walk_pages(req, max_results)
     return_list = _deal_with_empty(return_list, properties, service)
     if convertType:
         return_list = _cleanup_cols(return_list, service=service)
     return_list = _rejigger_cols(return_list, properties, output_id)
     # Metadata
-    return_list.attrs.update(request=req_url, queryTime=pd.Timestamp.now())
+    return_list.attrs.update(request=req.url, queryTime=pd.Timestamp.now())
     return return_list
 
 
