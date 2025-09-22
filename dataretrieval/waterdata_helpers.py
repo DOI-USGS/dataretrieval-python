@@ -191,9 +191,6 @@ def _format_api_dates(datetime_input: Union[str, List[str]], date: bool = False)
     else:
         raise ValueError("datetime_input should only include 1-2 values")
 
-def _explode_post(ls: Dict[str, Any]):
-    return {k: _cql2_param({k: v if isinstance(v, list) else [v]}) for k, v in ls.items() if v is not None}
-
 def _cql2_param(args):
     filters = []
     for key, values in args.items():
@@ -313,12 +310,11 @@ def _construct_api_requests(
     if max_results is not None and limit is not None and limit > max_results:
         raise ValueError("limit cannot be greater than max_result")
     
-    # Create post calls for any input parameters that are not in the single_params list
-    # and have more than one element associated with the list or tuple.
-    post_params = _explode_post({
-        k: v for k, v in kwargs.items()
-        if k not in single_params and isinstance(v, (list, tuple)) and len(v) > 1
-        })
+    # Identify which parameters should be included in the POST content body
+    post_params = {
+         k: v for k, v in kwargs.items()
+         if k not in single_params and isinstance(v, (list, tuple)) and len(v) > 1
+         }
 
     # Indicate if function needs to perform POST conversion
     POST = bool(post_params)
@@ -343,7 +339,7 @@ def _construct_api_requests(
     if POST:
         headers["Content-Type"] = "application/query-cql-json"
         #req = httpx.Request(method="POST", url=baseURL, headers=headers, json={"params": list(post_params.values())}, params=params)
-        req = httpx.Request(method="POST", url=baseURL, headers=headers, data=_cql2_param(post_params), params=params)
+        req = httpx.Request(method="POST", url=baseURL, headers=headers, content=_cql2_param(post_params), params=params)
     else:
         req = httpx.Request(method="GET", url=baseURL, headers=headers, params={**params, **{k: v for k, v in kwargs.items() if k not in single_params}})
     return req
@@ -617,3 +613,6 @@ def get_ogc_data(args: Dict[str, Any], output_id: str, service: str) -> pd.DataF
 #     resp = httpx.get(url, headers=_default_headers())
 #     resp.raise_for_status()
 #     return resp.json()
+
+# def _explode_post(ls: Dict[str, Any]):
+#     return {k: _cql2_param({k: v if isinstance(v, list) else [v]}) for k, v in ls.items() if v is not None}
