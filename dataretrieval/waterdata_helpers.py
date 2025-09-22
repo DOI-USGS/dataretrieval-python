@@ -3,9 +3,7 @@ import os
 import warnings
 from typing import List, Dict, Any, Optional, Union
 from datetime import datetime
-import pytz
 import pandas as pd
-import numpy as np
 import json
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -301,7 +299,23 @@ def _construct_api_requests(
     baseURL = _setup_api(service)
     # Single parameters can only have one value
     single_params = {"datetime", "last_modified", "begin", "end", "time"}
-    params = {k: v for k, v in kwargs.items() if k in single_params}
+    # params = {k: v for k, v in kwargs.items() if k in single_params}
+    # # Set skipGeometry parameter
+    # params["skipGeometry"] = skipGeometry
+    # # If limit is none and max_results is not none, then set limit to max results. Otherwise,
+    # # if max_results is none, set it to 10000 (the API max).
+    # params["limit"] = max_results if limit is None and max_results is not None else limit or 10000
+    # if max_results is not None and limit is not None and limit > max_results:
+    #     raise ValueError("limit cannot be greater than max_result")
+    
+    # Identify which parameters should be included in the POST content body
+    post_params = {
+         k: v for k, v in kwargs.items()
+         if k not in single_params and isinstance(v, (list, tuple)) and len(v) > 1
+         }
+    
+    # Everything else goes into the params dictionary for the URL
+    params = {k: v for k, v in kwargs.items() if k not in post_params}
     # Set skipGeometry parameter
     params["skipGeometry"] = skipGeometry
     # If limit is none and max_results is not none, then set limit to max results. Otherwise,
@@ -309,12 +323,6 @@ def _construct_api_requests(
     params["limit"] = max_results if limit is None and max_results is not None else limit or 10000
     if max_results is not None and limit is not None and limit > max_results:
         raise ValueError("limit cannot be greater than max_result")
-    
-    # Identify which parameters should be included in the POST content body
-    post_params = {
-         k: v for k, v in kwargs.items()
-         if k not in single_params and isinstance(v, (list, tuple)) and len(v) > 1
-         }
 
     # Indicate if function needs to perform POST conversion
     POST = bool(post_params)
@@ -325,7 +333,7 @@ def _construct_api_requests(
         if i in params:
             dates = service == "daily" and i != "last_modified"
             params[i] = _format_api_dates(params[i], date=dates)
-            kwargs[i] = _format_api_dates(kwargs[i], date=dates)
+            #kwargs[i] = _format_api_dates(kwargs[i], date=dates)
 
     # String together bbox elements from a list to a comma-separated string,
     # and string together properties if provided
@@ -338,10 +346,9 @@ def _construct_api_requests(
 
     if POST:
         headers["Content-Type"] = "application/query-cql-json"
-        #req = httpx.Request(method="POST", url=baseURL, headers=headers, json={"params": list(post_params.values())}, params=params)
         req = httpx.Request(method="POST", url=baseURL, headers=headers, content=_cql2_param(post_params), params=params)
     else:
-        req = httpx.Request(method="GET", url=baseURL, headers=headers, params={**params, **{k: v for k, v in kwargs.items() if k not in single_params}})
+        req = httpx.Request(method="GET", url=baseURL, headers=headers, params=params)
     return req
 
 def _next_req_url(resp: httpx.Response) -> Optional[str]:
