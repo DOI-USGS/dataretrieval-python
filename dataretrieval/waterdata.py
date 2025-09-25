@@ -309,13 +309,14 @@ def get_monitoring_locations(
     agency_code : string or list of strings, optional
         The agency that is reporting the data. Agency codes are fixed values
         assigned by the National Water Information System (NWIS). A list of
-        agency codes is available at this link.
+        agency codes is available at
+        [this link](https://help.waterdata.usgs.gov/code/agency_cd_query?fmt=html).
     agency_name : string or list of strings, optional
         The name of the agency that is reporting the data.
     monitoring_location_number : string or list of strings, optional
         Each monitoring location in the USGS data base has a unique 8- to
         15-digit identification number. Monitoring location numbers are
-        assigned based on this logic.
+        assigned based on [this logic](https://help.waterdata.usgs.gov/faq/sites/do-station-numbers-have-any-particular-meaning).
     monitoring_location_name : string or list of strings, optional
         This is the official name of the monitoring location in the database.
         For well information this can be a district-assigned local number.
@@ -335,7 +336,8 @@ def get_monitoring_locations(
         State code. A two-digit ANSI code (formerly FIPS code) as defined by
         the American National Standards Institute, to define States and
         equivalents. A three-digit ANSI code is used to define counties and
-        county equivalents. A lookup table is available. The only countries with
+        county equivalents. A [lookup table](https://www.census.gov/library/reference/code-lists/ansi.html#states)
+        is available. The only countries with
         political subdivisions other than the US are Mexico and Canada. The Mexican
         states have US state codes ranging from 81-86 and Canadian provinces have
         state codes ranging from 90-98.
@@ -344,20 +346,22 @@ def get_monitoring_locations(
         is located.
     county_code : string or list of strings, optional
         The code for the county or county equivalent (parish, borough, etc.) in which
-        the monitoring location is located. A list of codes is available.
+        the monitoring location is located. A [list of codes](https://help.waterdata.usgs.gov/code/county_query?fmt=html)
+        is available.
     county_name : string or list of strings, optional
         The name of the county or county equivalent (parish, borough, etc.) in which
-        the monitoring location is located. A list of codes is available.
+        the monitoring location is located. A [list of codes](https://help.waterdata.usgs.gov/code/county_query?fmt=html)
+        is available.
     minor_civil_division_code : string or list of strings, optional
         Codes for primary governmental or administrative divisions of the county or
         county equivalent in which the monitoring location is located.
     site_type_code : string or list of strings, optional
-        A code describing the hydrologic setting of the monitoring location. A list of
-        codes is available.
+        A code describing the hydrologic setting of the monitoring location. A [list of
+        codes](https://help.waterdata.usgs.gov/code/site_tp_query?fmt=html) is available.
         Example: "US:15:001" (United States: Hawaii, Hawaii County)
     site_type : string or list of strings, optional
-        A description of the hydrologic setting of the monitoring location. A list of
-        codes is available.
+        A description of the hydrologic setting of the monitoring location. A [list of
+        codes](https://help.waterdata.usgs.gov/code/site_tp_query?fmt=html) is available.
     hydrologic_unit_code : string or list of strings, optional
         The United States is divided and sub-divided into successively smaller
         hydrologic units which are classified into four levels: regions,
@@ -379,37 +383,44 @@ def get_monitoring_locations(
         topographic maps; accuracies determined in this way are generally entered
         as one-half of the contour interval.
     altitude_method_code : string or list of strings, optional
-        Codes representing the method used to measure altitude. A list of codes is
-        available.
+        Codes representing the method used to measure altitude. A [list of codes](https://help.waterdata.usgs.gov/code/alt_meth_cd_query?fmt=html)
+        is available.
     altitude_method_name : float, optional
-        The name of the the method used to measure altitude. A list of codes is
+        The name of the the method used to measure altitude. A [list of codes](https://help.waterdata.usgs.gov/code/alt_meth_cd_query?fmt=html)
+        is
         available.
     vertical_datum : float, optional
         The datum used to determine altitude and vertical position at the
-        monitoring location. A list of codes is available.
+        monitoring location. A [list of codes](https://help.waterdata.usgs.gov/code/alt_datum_cd_query?fmt=html)
+        is available.
     vertical_datum_name : float, optional
         The datum used to determine altitude and vertical position at the
-        monitoring location. A list of codes is available.
+        monitoring location. A [list of codes](https://help.waterdata.usgs.gov/code/alt_datum_cd_query?fmt=html)
+        is available.
     horizontal_positional_accuracy_code : string or list of strings, optional
-        Indicates the accuracy of the latitude longitude values. A list of codes
+        Indicates the accuracy of the latitude longitude values. A [list of codes](https://help.waterdata.usgs.gov/code/coord_acy_cd_query?fmt=html)
         is available.
     horizontal_positional_accuracy : string or list of strings, optional
-        Indicates the accuracy of the latitude longitude values. A list of codes
+        Indicates the accuracy of the latitude longitude values. A [list of codes](https://help.waterdata.usgs.gov/code/coord_acy_cd_query?fmt=html)
         is available.
     horizontal_position_method_code : string or list of strings, optional
         Indicates the method used to determine latitude longitude values. A
-        list of codes is available.
+        [list of codes](https://help.waterdata.usgs.gov/code/coord_meth_cd_query?fmt=html)
+        is available.
     horizontal_position_method_name : string or list of strings, optional
         Indicates the method used to determine latitude longitude values. A
-        list of codes is available.
+        [list of codes](https://help.waterdata.usgs.gov/code/coord_meth_cd_query?fmt=html)
+        is available.
     original_horizontal_datum : string or list of strings, optional
         Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System
         1984. This field indicates the original datum used to determine
-        coordinates before they were converted. A list of codes is available.
+        coordinates before they were converted. A [list of codes](https://help.waterdata.usgs.gov/code/coord_datum_cd_query?fmt=html)
+        is available.
     original_horizontal_datum_name : string or list of strings, optional
         Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System
         1984. This field indicates the original datum used to determine coordinates
-        before they were converted. A list of codes is available.
+        before they were converted. A [list of codes](https://help.waterdata.usgs.gov/code/coord_datum_cd_query?fmt=html)
+        is available.
     drainage_area : string or list of strings, optional
         The area enclosed by a topographic divide from which direct surface runoff
         from precipitation normally drains by gravity into the stream above that
@@ -432,14 +443,15 @@ def get_monitoring_locations(
         Local aquifers in the USGS water resources data base are identified by a
         geohydrologic unit code (a three-digit number related to the age of the
         formation, followed by a 4 or 5 character abbreviation for the geologic unit
-        or aquifer name). Additional information is available at this link.
+        or aquifer name). Additional information is available [at this link](https://help.waterdata.usgs.gov/faq/groundwater/local-aquifer-description).
     national_aquifer_code : string or list of strings, optional
         National aquifers are the principal aquifers or aquifer systems in the United
         States, defined as regionally extensive aquifers or aquifer systems that have
         the potential to be used as a source of potable water. Not all groundwater
         monitoring locations can be associated with a National Aquifer. Such
-        monitoring locations will not be retrieved using this search criteria. A list
-        of National aquifer codes and names is available.
+        monitoring locations will not be retrieved using this search criteria. A [list
+        of National aquifer codes and names](https://help.waterdata.usgs.gov/code/nat_aqfr_query?fmt=html)
+        is available.
     aquifer_type_code : string or list of strings, optional
         Groundwater occurs in aquifers under two different conditions. Where water
         only partly fills an aquifer, the upper surface is free to rise and decline.
@@ -448,7 +460,7 @@ def get_monitoring_locations(
         aquifer is referred to as a confined (or artesian) aquifer. When a confined
         aquifer is penetrated by a well, the water level in the well will rise above
         the top of the aquifer (but not necessarily above land surface). Additional
-        information is available at this link.
+        information is available [at this link](https://help.waterdata.usgs.gov/faq/groundwater/local-aquifer-description).
     well_constructed_depth : string or list of strings, optional
         The depth of the finished well, in feet below land surface datum. Note: Not
         all groundwater monitoring locations have information on Well Depth. Such
@@ -458,7 +470,8 @@ def get_monitoring_locations(
         Note: Not all groundwater monitoring locations have information on Hole Depth.
         Such monitoring locations will not be retrieved using this search criteria.
     depth_source_code : string or list of strings, optional
-        A code indicating the source of water-level data. A list of codes is available.
+        A code indicating the source of water-level data. A [list of codes](https://help.waterdata.usgs.gov/code/water_level_src_cd_query?fmt=html)
+        is available.
     properties : string or list of strings, optional
         A vector of requested columns to be returned from the query. Available options
         are: geometry, id, agency_code, agency_name, monitoring_location_number,
@@ -573,7 +586,8 @@ def get_time_series_metadata(
         measured and the units of measure. A complete list of parameter
         codes and associated groupings can be found at
         https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
-    parameter_name : 
+    parameter_name : string or list of strings, optional
+        A human-understandable name corresponding to parameter_code.
     properties : string or list of strings, optional
         A vector of requested columns to be returned from the query.
         Available options are: geometry, id, time_series_id,
@@ -596,21 +610,67 @@ def get_time_series_metadata(
             - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
             - Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
         Only features that have a last_modified that intersects the value of datetime are selected.
-    begin : 
-    end : 
+    begin : string or list of strings, optional
+        The datetime of the earliest observation in the time series. Together with end,
+        this field represents the period of record of a time series. Note that some time
+        series may have large gaps in their collection record. This field is currently
+        in the local time of the monitoring location. We intend to update this in version
+        v0 to use UTC with a time zone. You can query this field using date-times or
+        intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals
+        may be bounded or half-bounded (double-dots at start or end). Examples:
+
+        - A date-time: "2018-02-12T23:20:50Z"
+
+        - A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+
+        - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+
+        - Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+
+        Only features that have a begin that intersects the value of datetime are selected.
+    end : string or list of strings, optional
+        The datetime of the most recent observation in the time series. Data returned by
+        this endpoint updates at most once per day, and potentially less frequently than
+        that, and as such there may be more recent observations within a time series
+        than the time series end value reflects. Together with begin, this field
+        represents the period of record of a time series. It is additionally used to
+        determine whether a time series is "active". We intend to update this in
+        version v0 to use UTC with a time zone. You can query this field using date-times
+        or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals
+        may be bounded or half-bounded (double-dots at start or end). Examples:
+
+        - A date-time: "2018-02-12T23:20:50Z"
+
+        - A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+
+        - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+
+        - Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+
+        Only features that have a end that intersects the value of datetime are selected.
     unit_of_measure : string or list of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
-    computation_period_identifier : 
-    computation_identifier : 
-    thresholds : 
-    sublocation_identifier : 
-    primary : 
-    parent_time_series_id : 
+    computation_period_identifier : string or list of strings, optional
+        Indicates the period of data used for any statistical computations.
+    computation_identifier : string or list of strings, optional
+        Indicates whether the data from this time series represent a specific statistical
+        computation.
+    thresholds : numeric or list of numbers, optional
+        Thresholds represent known numeric limits for a time series, for example the
+        historic maximum value for a parameter or a level below which a sensor is
+        non-operative. These thresholds are sometimes used to automatically determine if
+        an observation is erroneous due to sensor error, and therefore shouldn't be included
+        in the time series.
+    sublocation_identifier : string or list of strings, optional
+    primary : string or list of strings, optional
+    parent_time_series_id : string or list of strings, optional
     time_series_id : string or list of strings, optional
         A unique identifier representing a single time series. This
         corresponds to the id field in the time-series-metadata endpoint.
-    web_description : 
+    web_description : string or list of strings, optional
+        A description of what this time series represents, as used by WDFN and other USGS
+        data dissemination products.
     skipGeometry : boolean, optional
         This option can be used to skip response geometries for each feature. The returning
         object will be a data frame with no spatial information.
@@ -643,7 +703,7 @@ def get_time_series_metadata(
 
         >>> # Get daily flow data from a single site
         >>> # over a yearlong period
-        >>> df = dataretrieval.waterdata.get_daily(
+        >>> df = dataretrieval.waterdata.get_time_series_metadata(
         ...     monitoring_location_id = "USGS-02238500",
         ...     parameter_code = "00060",
         ...     time = "2021-01-01T00:00:00Z/2022-01-01T00:00:00Z"
@@ -651,12 +711,10 @@ def get_time_series_metadata(
 
         >>> # Get monitoring location info for specific sites
         >>> # and only specific properties
-        >>> df = dataretrieval.waterdata.get_daily(
+        >>> df = dataretrieval.waterdata.get_time_series_metadata(
         ...     monitoring_location_id = ["USGS-05114000", "USGS-09423350"],
-        ...     approval_status = "Approved",
         ...     time = "2024-01-01/.."
     """ 
-
     service = "time-series-metadata"
     output_id = "time_series_id"
 
@@ -690,7 +748,14 @@ def get_latest_continuous(
         ) -> pd.DataFrame:
     """This endpoint provides the most recent observation for each time series
     of continuous data. Continuous data are collected via automated sensors
-    installed at a monitoring location. They are collected at a high frequencyand often at a fixed 15-minute interval. Depending on the specific monitoring location, the data may be transmitted automatically via telemetry and be available on WDFN within minutes of collection, while other times the delivery of data may be delayed if the monitoring location does not have the capacity to automatically transmit data. Continuous data are described by parameter name and parameter code. These data might also be referred to as "instantaneous values" or "IV"
+    installed at a monitoring location. They are collected at a high frequency
+    and often at a fixed 15-minute interval. Depending on the specific monitoring
+    location, the data may be transmitted automatically via telemetry and be
+    available on WDFN within minutes of collection, while other times the delivery
+    of data may be delayed if the monitoring location does not have the capacity to
+    automatically transmit data. Continuous data are described by parameter name
+    and parameter code. These data might also be referred to as "instantaneous
+    values" or "IV"
 
     Parameters
     ----------
@@ -805,18 +870,16 @@ def get_latest_continuous(
 
         >>> # Get daily flow data from a single site
         >>> # over a yearlong period
-        >>> df = dataretrieval.waterdata.get_daily(
+        >>> df = dataretrieval.waterdata.get_latest_continuous(
         ...     monitoring_location_id = "USGS-02238500",
-        ...     parameter_code = "00060",
-        ...     time = "2021-01-01T00:00:00Z/2022-01-01T00:00:00Z"
+        ...     parameter_code = "00060"
         ... )
 
         >>> # Get monitoring location info for specific sites
         >>> # and only specific properties
         >>> df = dataretrieval.waterdata.get_daily(
-        ...     monitoring_location_id = ["USGS-05114000", "USGS-09423350"],
-        ...     approval_status = "Approved",
-        ...     time = "2024-01-01/.."
+        ...     monitoring_location_id = ["USGS-05114000", "USGS-09423350"]
+        ... )
     """
     service = "latest-continuous"
     output_id = "latest_continuous_id"
@@ -851,6 +914,139 @@ def get_field_measurements(
         max_results: Optional[int] = None,
         convertType: bool = True
         ) -> pd.DataFrame:
+    """Field measurements are physically measured values collected during
+    a visit to the monitoring location. Field measurements consist of
+    measurements of gage height and discharge, and readings of groundwater
+    levels, and are primarily used as calibration readings for the automated
+    sensors collecting continuous data. They are collected at a low frequency,
+    and delivery of the data in WDFN may be delayed due to data processing
+    time.
+
+    Parameters
+    ----------
+    monitoring_location_id : string or list of strings, optional
+        A unique identifier representing a single monitoring location. This
+        corresponds to the id field in the monitoring-locations endpoint.
+        Monitoring location IDs are created by combining the agency code of
+        the agency responsible for the monitoring location (e.g. USGS) with
+        the ID number of the monitoring location (e.g. 02238500), separated
+        by a hyphen (e.g. USGS-02238500).
+    parameter_code : string or list of strings, optional
+        Parameter codes are 5-digit codes used to identify the constituent
+        measured and the units of measure. A complete list of parameter
+        codes and associated groupings can be found at
+        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+    observing_procedure_code : string or list of strings, optional
+        A short code corresponding to the observing procedure for the field
+        measurement.
+    properties : string or list of strings, optional
+        A vector of requested columns to be returned from the query.
+        Available options are: geometry, id, time_series_id,
+        monitoring_location_id, parameter_code, statistic_id, time, value,
+        unit_of_measure, approval_status, qualifier, last_modified
+    field_visit_id : string or list of strings, optional
+        A universally unique identifier (UUID) for the field visit.
+        Multiple measurements may be made during a single field visit.
+    approval_status : string or list of strings, optional
+        Some of the data that you have obtained from this U.S. Geological
+        Survey database may not have received Director's approval. Any such
+        data values are qualified as provisional and are subject to revision.
+        Provisional data are released on the condition that neither the USGS
+        nor the United States Government may be held liable for any damages
+        resulting from its use. This field reflects the approval status of
+        each record, and is either "Approved", meaining processing review has
+        been completed and the data is approved for publication, or
+        "Provisional" and subject to revision. For more information about
+        provisional data, go to
+        https://waterdata.usgs.gov/provisional-data-statement/.
+    unit_of_measure : string or list of strings, optional
+        A human-readable description of the units of measurement associated
+        with an observation.
+    qualifier : string or list of strings, optional
+        This field indicates any qualifiers associated with an observation, for
+        instance if a sensor may have been impacted by ice or if values were
+        estimated.
+    value : string or list of strings, optional
+        The value of the observation. Values are transmitted as strings in
+        the JSON response format in order to preserve precision.
+    last_modified : string, optional
+        The last time a record was refreshed in our database. This may happen
+        due to regular operational processes and does not necessarily indicate
+        anything about the measurement has changed. You can query this field
+        using date-times or intervals, adhering to RFC 3339, or using ISO 8601
+        duration objects. Intervals may be bounded or half-bounded (double-dots
+        at start or end). Examples:
+            - A date-time: "2018-02-12T23:20:50Z"
+            - A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            - Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+        Only features that have a last_modified that intersects the value of datetime are selected.
+    observing_procedure : string or list of strings, optional
+        Water measurement or water-quality observing procedure descriptions.
+    vertical_datum : string or list of strings, optional
+        The datum used to determine altitude and vertical position at the monitoring location.
+        A list of codes is available.
+    measuring_agency : string or list of strings, optional
+        The agency performing the measurement.
+    skipGeometry : boolean, optional
+        This option can be used to skip response geometries for each feature. The returning
+        object will be a data frame with no spatial information.
+    time : string, optional
+        The date an observation represents. You can query this field using date-times
+        or intervals, adhering to RFC 3339, or using ISO 8601 duration objects.
+        Intervals may be bounded or half-bounded (double-dots at start or end).
+        Examples:
+            - A date-time: "2018-02-12T23:20:50Z"
+            - A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            - Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+        Only features that have a time that intersects the value of datetime are selected. If
+        a feature has multiple temporal properties, it is the decision of the server whether
+        only a single temporal property is used to determine the extent or all relevant temporal properties.
+    bbox : list of numbers, optional
+        Only features that have a geometry that intersects the bounding box are selected.
+        The bounding box is provided as four or six numbers, depending on whether the
+        coordinate reference system includes a vertical axis (height or depth). Coordinates
+        are assumed to be in crs 4326. The expected format is a numeric vector structured:
+        c(xmin,ymin,xmax,ymax). Another way to think of it is c(Western-most longitude,
+        Southern-most latitude, Eastern-most longitude, Northern-most longitude).
+    limit : numeric, optional
+        The optional limit parameter is used to control the subset of the selected features
+        that should be returned in each page. The maximum allowable limit is 10000. It may
+        be beneficial to set this number lower if your internet connection is spotty. The
+        default (NA) will set the limit to the maximum allowable limit for the service.
+    max_results : numeric, optional
+        The optional maximum number of rows to return. This value must be less than the
+        requested limit.
+    convertType : boolean, optional
+        If True, the function will convert the data to dates and qualifier to string vector
+
+    Returns
+    -------
+    df : ``pandas.DataFrame``
+        Formatted data returned from the API query.
+
+    Examples
+    --------
+    .. code::
+
+        >>> # Get daily flow data from a single site
+        >>> # over a yearlong period
+        >>> df = dataretrieval.waterdata.get_field_measurements(
+        ...     monitoring_location_id = "USGS-375907091432201",
+        ...     parameter_code = "72019",
+        ...     skipGeometry = True
+        ... )
+
+        >>> # Get monitoring location info for specific sites
+        >>> # and only specific properties
+        >>> df = dataretrieval.waterdata.get_field_measurements(
+        ...     monitoring_location_id = ["USGS-451605097071701",
+                                          "USGS-263819081585801"],
+        ...     parameter_code = ["62611", "72019"],
+        ...     time = "P20Y"
+        ... )
+    """
     service = "field-measurements"
     output_id = "field_measurement_id"
 
