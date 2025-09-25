@@ -10,10 +10,9 @@ from zoneinfo import ZoneInfo
 import re
 try:
     import geopandas as gpd
-    gpd = True
+    geopd = True
 except ImportError:
-    warnings.warn("Geopandas is not installed. Data frames containing geometry will be returned as pandas DataFrames.", ImportWarning)
-    gpd = False
+    geopd = False
 
 
 
@@ -384,7 +383,7 @@ def _next_req_url(resp: httpx.Response) -> Optional[str]:
             return next_url
     return None
 
-def _get_resp_data(resp: httpx.Response) -> pd.DataFrame:
+def _get_resp_data(resp: httpx.Response, geopd: bool) -> pd.DataFrame:
     """
     Extracts and normalizes data from an httpx.Response object containing GeoJSON features.
 
@@ -402,7 +401,7 @@ def _get_resp_data(resp: httpx.Response) -> pd.DataFrame:
         return pd.DataFrame()
     
     # If geopandas not installed, return a pandas dataframe
-    if not gpd:
+    if not geopd:
         df = pd.json_normalize(
             body["features"],
             sep="_")
@@ -422,7 +421,7 @@ def _get_resp_data(resp: httpx.Response) -> pd.DataFrame:
 
     return df
 
-def _walk_pages(req: httpx.Request, max_results: Optional[int], client: Optional[httpx.Client] = None) -> pd.DataFrame:
+def _walk_pages(geopd: bool, req: httpx.Request, max_results: Optional[int], client: Optional[httpx.Client] = None) -> pd.DataFrame:
     """
     Iterates through paginated API responses and aggregates the results into a single DataFrame.
 
@@ -452,6 +451,9 @@ def _walk_pages(req: httpx.Request, max_results: Optional[int], client: Optional
     """
     print(f"Requesting:\n{req.url}")
 
+    if not geopd:
+        print("Geopandas is not installed. Data frames containing geometry will be returned as pandas DataFrames.")
+
     # Get first response from client
     # using GET or POST call
     client = client or httpx.Client()
@@ -465,14 +467,14 @@ def _walk_pages(req: httpx.Request, max_results: Optional[int], client: Optional
     content = req.content if method == "POST" else None
 
     if max_results is None or pd.isna(max_results):
-        dfs = _get_resp_data(resp)
+        dfs = _get_resp_data(resp, geopd=geopd)
         curr_url = _next_req_url(resp)
         failures = []
         while curr_url:
             try:
                 resp = client.request(method, curr_url, headers=headers, content=content if method == "POST" else None)
                 if resp.status_code != 200: raise Exception(_error_body(resp))
-                df1 = _get_resp_data(resp)
+                df1 = _get_resp_data(resp, geopd=geopd)
                 dfs = pd.concat([dfs, df1], ignore_index=True)
                 curr_url = _next_req_url(resp)
             except Exception:
@@ -483,7 +485,7 @@ def _walk_pages(req: httpx.Request, max_results: Optional[int], client: Optional
         return dfs
     else:
         resp.raise_for_status()
-        return _get_resp_data(resp)
+        return _get_resp_data(resp, geopd=geopd)
 
 def _deal_with_empty(return_list: pd.DataFrame, properties: Optional[List[str]], service: str) -> pd.DataFrame:
     """
@@ -604,7 +606,7 @@ def get_ogc_data(args: Dict[str, Any], output_id: str, service: str) -> pd.DataF
     # Build API request
     req = _construct_api_requests(**args)
     # Run API request and iterate through pages if needed
-    return_list = _walk_pages(req, max_results)
+    return_list = _walk_pages(geopd=geopd, req=req, max_results=max_results)
     # Manage some aspects of the returned dataset
     return_list = _deal_with_empty(return_list, properties, service)
     if convertType:
