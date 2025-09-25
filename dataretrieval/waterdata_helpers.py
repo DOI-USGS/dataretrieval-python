@@ -122,7 +122,7 @@ def _format_api_dates(datetime_input: Union[str, List[str]], date: bool = False)
     datetime_input : Union[str, List[str]]
         A single date/datetime string or a list of one or two date/datetime strings. Accepts formats like "%Y-%m-%d %H:%M:%S", ISO 8601, or relative periods (e.g., "P7D").
     date : bool, optional
-        If True, returns only the date portion ("YYYY-MM-DD"). If False (default), returns full datetime in UTC ISO 8601 format ("YYYY-MM-DDTHH:MM:SSZ").
+        If True, uses only the date portion ("YYYY-MM-DD"). If False (default), returns full datetime in UTC ISO 8601 format ("YYYY-MM-DDTHH:MM:SSZ").
     Returns
     -------
     Union[str, None]
@@ -154,38 +154,31 @@ def _format_api_dates(datetime_input: Union[str, List[str]], date: bool = False)
     # Replace all blanks with "nan"
     datetime_input = ["nan" if x == "" else x for x in datetime_input]
 
-    # If the list is of length 1, first look for things like "P7D" or dates
-    # already formatted in ISO08601. Otherwise, try to coerce to datetime
-    if len(datetime_input) == 1:
-        dt = datetime_input[0]
-        if re.search(r"P", dt, re.IGNORECASE) or "/" in dt:
-            return dt
+    if len(datetime_input) <=2:
+        # If the list is of length 1, first look for things like "P7D" or dates
+        # already formatted in ISO08601. Otherwise, try to coerce to datetime
+        if len(datetime_input) == 1 and re.search(r"P", datetime_input[0], re.IGNORECASE) or "/" in datetime_input[0]:
+            return datetime_input[0]
+        # Otherwise, use list comprehension to parse dates
         else:
             try:
                 # Parse to naive datetime
-                parsed_dt = datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")
-                # If the service only accepts dates for this input, not datetimes (e.g. "daily"),
-                # return just the date, otherwise, return the datetime in UTC format.
-                if date:
-                    return parsed_dt.strftime("%Y-%m-%d")
-                else:
-                    dt_local = parsed_dt.replace(tzinfo=local_timezone)
-                    # Convert to UTC and format as ISO 8601 with 'Z'
-                    return dt_local.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
+                parsed_dates = [datetime.strptime(dt, "%Y-%m-%d %H:%M:%S") for dt in datetime_input]
             except Exception:
-                return None
-    # If the list is of length 2, parse the dates and if necessary, combine them together into
-    # the date range format accepted by the API
-    elif len(datetime_input) == 2:
-        try:
-            parsed_dates = [datetime.strptime(dt, "%Y-%m-%d %H:%M:%S") for dt in datetime_input]
+                # Parse to date only
+                try:
+                    parsed_dates = [datetime.strptime(dt, "%Y-%m-%d") for dt in datetime_input]
+                except Exception:
+                    return None
+                # If the service only accepts dates for this input, not datetimes (e.g. "daily"),
+                # return just the dates separated by a "/", otherwise, return the datetime in UTC
+                # format.
             if date:
-                formatted = "/".join(dt.strftime("%Y-%m-%d") for dt in parsed_dates)
+                return "/".join(dt.strftime("%Y-%m-%d") for dt in parsed_dates)
             else:
-                formatted = "/".join(dt.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ") for dt in parsed_dates)
-            return formatted.replace("nan", "..")
-        except Exception:
-            return None
+                parsed_locals = [dt.replace(tzinfo=local_timezone) for dt in parsed_dates]
+                formatted = "/".join(dt.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ") for dt in parsed_locals)
+                return formatted.replace("nan", "..")
     else:
         raise ValueError("datetime_input should only include 1-2 values")
 
@@ -333,7 +326,6 @@ def _construct_api_requests(
         if i in params:
             dates = service == "daily" and i != "last_modified"
             params[i] = _format_api_dates(params[i], date=dates)
-            #kwargs[i] = _format_api_dates(kwargs[i], date=dates)
 
     # String together bbox elements from a list to a comma-separated string,
     # and string together properties if provided
