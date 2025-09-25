@@ -1,11 +1,9 @@
 import httpx
 import os
-import warnings
 from typing import List, Dict, Any, Optional, Union
 from datetime import datetime
 import pandas as pd
 import json
-from datetime import datetime
 from zoneinfo import ZoneInfo
 import re
 try:
@@ -158,9 +156,6 @@ def _format_api_dates(datetime_input: Union[str, List[str]], date: bool = False)
     if all(pd.isna(dt) or dt == "" or dt == None for dt in datetime_input):
         return None
 
-    # Replace all blanks with "nan"
-    datetime_input = ["nan" if x == "" else x for x in datetime_input]
-
     if len(datetime_input) <=2:
         # If the list is of length 1, first look for things like "P7D" or dates
         # already formatted in ISO08601. Otherwise, try to coerce to datetime
@@ -185,7 +180,7 @@ def _format_api_dates(datetime_input: Union[str, List[str]], date: bool = False)
             else:
                 parsed_locals = [dt.replace(tzinfo=local_timezone) for dt in parsed_dates]
                 formatted = "/".join(dt.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ") for dt in parsed_locals)
-                return formatted.replace("nan", "..")
+                return formatted
     else:
         raise ValueError("datetime_input should only include 1-2 values")
 
@@ -407,6 +402,7 @@ def _get_resp_data(resp: httpx.Response, geopd: bool) -> pd.DataFrame:
             sep="_")
         df = df.drop(columns=["type", "geometry", "AsGeoJSON(geometry)"], errors="ignore")
         df.columns = [col.replace("properties_", "") for col in df.columns]
+        df.rename(columns={"geometry_coordinates": "geometry"}, inplace=True)
         return df
 
     # Organize json into geodataframe and make sure id column comes along.

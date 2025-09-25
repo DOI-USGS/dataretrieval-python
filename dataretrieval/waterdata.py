@@ -237,7 +237,6 @@ def get_daily(
         k: v for k, v in locals().items()
         if k not in {"service", "output_id"} and v is not None
     }
-    args["convertType"] = False
 
     return waterdata_helpers.get_ogc_data(args, output_id, service)
 
@@ -536,7 +535,6 @@ def get_monitoring_locations(
         k: v for k, v in locals().items()
         if k not in {"service", "output_id"} and v is not None
     }
-    args["convertType"] = False
 
     return waterdata_helpers.get_ogc_data(args, output_id, service)
 
@@ -723,7 +721,6 @@ def get_time_series_metadata(
         k: v for k, v in locals().items()
         if k not in {"service", "output_id"} and v is not None
     }
-    args["convertType"] = False
 
     return waterdata_helpers.get_ogc_data(args, output_id, service)
 
@@ -889,7 +886,6 @@ def get_latest_continuous(
         k: v for k, v in locals().items()
         if k not in {"service", "output_id"} and v is not None
     }
-    args["convertType"] = False
 
     return waterdata_helpers.get_ogc_data(args, output_id, service)
 
@@ -1055,7 +1051,6 @@ def get_field_measurements(
         k: v for k, v in locals().items()
         if k not in {"service", "output_id"} and v is not None
     }
-    args["convertType"] = False
 
     return waterdata_helpers.get_ogc_data(args, output_id, service)
  
