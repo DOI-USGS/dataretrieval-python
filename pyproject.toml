@@ -48,6 +48,10 @@ nldi = [
   'geopandas>=0.10'
 ]
 
+waterdata = [
+  'geopandas>=0.10',
+]
+
 [project.urls]
 homepage = "https://github.com/DOI-USGS/dataretrieval-python"
 documentation = "https://doi-usgs.github.io/dataretrieval-python/"
