@@ -207,7 +207,7 @@ def get_daily(
 
     Returns
     -------
-    df : ``pandas.DataFrame``
+    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
 
     Examples
@@ -506,7 +506,7 @@ def get_monitoring_locations(
 
     Returns
     -------
-    df : ``pandas.DataFrame``
+    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
 
     Examples
@@ -694,7 +694,7 @@ def get_time_series_metadata(
 
     Returns
     -------
-    df : ``pandas.DataFrame``
+    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
 
     Examples
@@ -861,7 +861,7 @@ def get_latest_continuous(
 
     Returns
     -------
-    df : ``pandas.DataFrame``
+    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
 
     Examples
@@ -1023,7 +1023,7 @@ def get_field_measurements(
 
     Returns
     -------
-    df : ``pandas.DataFrame``
+    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
 
     Examples

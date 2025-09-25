@@ -512,7 +512,7 @@ def _deal_with_empty(return_list: pd.DataFrame, properties: Optional[List[str]],
 
 def _rejigger_cols(df: pd.DataFrame, properties: Optional[List[str]], output_id: str) -> pd.DataFrame:
     """
-    Rearranges and renames columns in a DataFrame based on provided properties and output identifier.
+    Rearranges and renames columns in a DataFrame based on provided properties and service's output id.
 
     Parameters
     ----------
@@ -530,8 +530,14 @@ def _rejigger_cols(df: pd.DataFrame, properties: Optional[List[str]], output_id:
     """
     if properties and not all(pd.isna(properties)):
         if "id" not in properties:
+            # If user refers to service-specific output id in properties,
+            # then rename the "id" column to the output_id (id column is 
+            # automatically included).
             if output_id in properties:
                 df = df.rename(columns={"id": output_id})
+            # If output id is not in properties, but user requests the plural
+            # of the output_id (e.g. "monitoring_locations_id"), then rename
+            # "id" to plural. This is pretty niche.
             else:
                 plural = output_id.replace("_id", "s_id")
                 if plural in properties:
@@ -581,8 +587,8 @@ def get_ogc_data(args: Dict[str, Any], output_id: str, service: str) -> pd.DataF
         service (str): The OGC service type (e.g., "wfs", "wms").
 
     Returns:
-        pd.DataFrame: A DataFrame containing the retrieved and processed OGC data, with metadata attributes
-        including the request URL and query timestamp.
+        pd.DataFrame or gpd.GeoDataFrame: A DataFrame containing the retrieved and processed OGC data,
+        with metadata attributes including the request URL and query timestamp.
 
     Notes:
         - The function does not mutate the input `args` dictionary.
@@ -637,5 +643,3 @@ def get_ogc_data(args: Dict[str, Any], output_id: str, service: str) -> pd.DataF
 #     resp.raise_for_status()
 #     return resp.json()
 
-# def _explode_post(ls: Dict[str, Any]):
-#     return {k: _cql2_param({k: v if isinstance(v, list) else [v]}) for k, v in ls.items() if v is not None}
