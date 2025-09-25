@@ -1,13 +1,21 @@
 import httpx
 import os
+import warnings
 from typing import List, Dict, Any, Optional, Union
 from datetime import datetime
 import pandas as pd
 import json
-import geopandas as gpd
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import re
+try:
+    import geopandas as gpd
+    gpd = True
+except ImportError:
+    warnings.warn("Geopandas is not installed. Data frames containing geometry will be returned as pandas DataFrames.", ImportWarning)
+    gpd = False
+
+
 
 BASE_API = "https://api.waterdata.usgs.gov/ogcapi/"
 API_VERSION = "v0"
@@ -388,18 +396,27 @@ def _get_resp_data(resp: httpx.Response) -> pd.DataFrame:
         pandas DataFrame containing the feature properties and each row's service-specific id. 
         Returns an empty pandas DataFrame if no features are returned.
     """
+    # Check if it's an empty response
     body = resp.json()
     if not body.get("numberReturned"):
         return pd.DataFrame()
-    #df = pd.json_normalize(
-    #    resp.json()["features"],
-    #    sep="_")
-    #df = df.drop(columns=["type", "geometry", "AsGeoJSON(geometry)"], errors="ignore")
-    #df.columns = [col.replace("properties_", "") for col in df.columns]
     
+    # If geopandas not installed, return a pandas dataframe
+    if not gpd:
+        df = pd.json_normalize(
+            body["features"],
+            sep="_")
+        df = df.drop(columns=["type", "geometry", "AsGeoJSON(geometry)"], errors="ignore")
+        df.columns = [col.replace("properties_", "") for col in df.columns]
+        return df
+
+    # Organize json into geodataframe and make sure id column comes along.
     df = gpd.GeoDataFrame.from_features(body["features"])
     df["id"] = pd.json_normalize(body["features"])["id"].values
+    df = df[["id"] + [col for col in df.columns if col != "id"]]
 
+    # If no geometry present, then return pandas dataframe. A geodataframe
+    # is not needed.
     if df["geometry"].isnull().all():
         df = pd.DataFrame(df.drop(columns="geometry"))
 
@@ -506,7 +523,7 @@ def _rejigger_cols(df: pd.DataFrame, properties: Optional[List[str]], output_id:
 
     Returns
     -------
-    pd.DataFrame
+    pd.DataFrame or gpd.GeoDataFrame
         The DataFrame with columns rearranged and/or renamed according to the specified properties and output_id.
     """
     if properties and not all(pd.isna(properties)):
