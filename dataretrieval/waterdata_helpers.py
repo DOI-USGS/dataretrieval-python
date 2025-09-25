@@ -1,10 +1,10 @@
 import httpx
 import os
-import warnings
 from typing import List, Dict, Any, Optional, Union
 from datetime import datetime
 import pandas as pd
 import json
+import geopandas as gpd
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import re
@@ -243,7 +243,7 @@ def _check_OGC_requests(endpoint: str = "daily", req_type: str = "queryables"):
 
 def _error_body(resp: httpx.Response):
     """
-    Extracts and returns an error message from an HTTP response object based on its status code.
+    Provide more informative error messages based on the response status.
 
     Args:
         resp (httpx.Response): The HTTP response object to extract the error message from.
@@ -270,8 +270,10 @@ def _construct_api_requests(
 ):
     """
     Constructs an HTTP request object for the specified water data API service.
-    Depending on the input parameters, the function determines whether to use a GET or POST request,
-    formats parameters appropriately, and sets required headers.
+    Depending on the input parameters (whether there's lists of multiple argument values),
+    the function determines whether to use a GET or POST request, formats parameters
+    appropriately, and sets required headers.
+    
     Args:
         service (str): The name of the API service to query (e.g., "daily").
         properties (Optional[List[str]], optional): List of property names to include in the request.
@@ -382,21 +384,25 @@ def _get_resp_data(resp: httpx.Response) -> pd.DataFrame:
         resp (httpx.Response): The HTTP response object expected to contain a JSON body with a "features" key.
 
     Returns:
-        pd.DataFrame: A pandas DataFrame containing the normalized feature properties. 
-                      Returns an empty DataFrame if no features are returned.
-
-    Notes:
-        - Drops columns "type", "geometry", and "AsGeoJSON(geometry)" if present.
-        - Flattens nested properties and removes the "properties_" prefix from column names.
+        gpd.GeoDataFrame or pd.DataFrame: A geopandas GeoDataFrame if geometry is included, or a 
+        pandas DataFrame containing the feature properties and each row's service-specific id. 
+        Returns an empty pandas DataFrame if no features are returned.
     """
     body = resp.json()
     if not body.get("numberReturned"):
         return pd.DataFrame()
-    df = pd.json_normalize(
-        resp.json()["features"],
-        sep="_")
-    df = df.drop(columns=["type", "geometry", "AsGeoJSON(geometry)"], errors="ignore")
-    df.columns = [col.replace("properties_", "") for col in df.columns]
+    #df = pd.json_normalize(
+    #    resp.json()["features"],
+    #    sep="_")
+    #df = df.drop(columns=["type", "geometry", "AsGeoJSON(geometry)"], errors="ignore")
+    #df.columns = [col.replace("properties_", "") for col in df.columns]
+    
+    df = gpd.GeoDataFrame.from_features(body["features"])
+    df["id"] = pd.json_normalize(body["features"])["id"].values
+
+    if df["geometry"].isnull().all():
+        df = pd.DataFrame(df.drop(columns="geometry"))
+
     return df
 
 def _walk_pages(req: httpx.Request, max_results: Optional[int], client: Optional[httpx.Client] = None) -> pd.DataFrame:
@@ -451,7 +457,6 @@ def _walk_pages(req: httpx.Request, max_results: Optional[int], client: Optional
                 if resp.status_code != 200: raise Exception(_error_body(resp))
                 df1 = _get_resp_data(resp)
                 dfs = pd.concat([dfs, df1], ignore_index=True)
-                #dfs.append(df1)
                 curr_url = _next_req_url(resp)
             except Exception:
                 failures.append(curr_url)
