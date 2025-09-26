@@ -4,11 +4,19 @@
 ![Conda Version](https://img.shields.io/conda/v/conda-forge/dataretrieval)
 ![Downloads](https://static.pepy.tech/badge/dataretrieval)
 
-:warning: USGS data availability and format have changed on Water Quality Portal (WQP). Since March 2024, data obtained from WQP legacy profiles will not include new USGS data or recent updates to existing data. All USGS data (up to and beyond March 2024) are available using the new WQP beta services. You can access the beta services by setting `legacy=False` in the functions in the `wqp` module.
+## Latest Announcements
 
-To view the status of changes in data availability and code functionality, visit: https://doi-usgs.github.io/dataRetrieval/articles/Status.html
+:mega: **10/01/2025:** `dataretrieval` is pleased to offer a new, *in-development* module, `waterdata`, which gives users access USGS's modernized [Water Data APIs](https://api.waterdata.usgs.gov/). The Water Data API endpoints include daily values, instantaneous values, field measurements (modernized groundwater levels service), time series metadata, and discrete water quality data from the Samples database. Though there will be a period of overlap, the functions within `waterdata` will eventually replace the `nwis` module, which currently provides access to the legacy [NWIS Water Services](https://waterservices.usgs.gov/). More example workflows and functions coming soon. Check `help(waterdata)` for more information.
 
-:mega: **09/03/2024:** The groundwater levels service has switched endpoints, and `dataretrieval` was updated accordingly in [`v1.0.10`](https://github.com/DOI-USGS/dataretrieval-python/releases/tag/v1.0.10). Older versions using the discontinued endpoint will return 503 errors for `nwis.get_gwlevels` or the `service='gwlevels'` argument. Visit [Water Data For the Nation](https://waterdata.usgs.gov/blog/wdfn-waterservices-2024/) for more information.
+**Important:** Users of the Water Data APIs are strongly encouraged to obtain an API key, which gives users higher rate limits and thus greater access to USGS data. [Register for an API key](https://api.waterdata.usgs.gov/signup/) and then place that API key in your python environment as an environment variable named "API_USGS_PAT". One option is to set the variable as follows:
+
+```python
+import os
+os.environ["API_USGS_PAT"] = "your_api_key_here"
+```
+Note that you may need to restart your python session for the environment variable to be recognized.
+
+Check out the [NEWS](NEWS.md) file for all updates and announcements, or track updates to the package via the GitHub releases.
 
 ## What is dataretrieval?
 `dataretrieval` was created to simplify the process of loading hydrologic data into the Python environment.
@@ -20,8 +28,7 @@ Environmental Protection Agency (EPA), U.S. Department of Agriculture
 (USDA), and USGS. Direct USGS data is obtained from a service called the
 National Water Information System (NWIS).
 
-Note that the python version is not a direct port of the original: it attempts to reproduce the functionality of the R package,
-though its organization and interface often differ.
+Note that the python version is not a direct port of the original: it attempts to reproduce the functionality of the R package, though its organization and interface often differ.
 
 If there's a hydrologic or environmental data portal that you'd like dataretrieval to 
 work with, raise it as an [issue](https://github.com/USGS-python/dataretrieval/issues).
@@ -53,7 +60,7 @@ Water quality data are available from:
 - [Samples](https://waterdata.usgs.gov/download-samples/#dataProfile=site) - Discrete USGS water quality data only
 - [Water Quality Portal](https://www.waterqualitydata.us/) - Discrete water quality data from USGS and EPA. Older data are available in the legacy WQX version 2 format; all data are available in the beta WQX3.0 format.
 
-To access the full functionality available from NWIS web services, nwis.get record appends any additional kwargs into the REST request. For example, this function call:
+To access the full functionality available from NWIS web services, `nwis.get_record()` appends any additional kwargs into the REST request. For example, this function call:
 ```python
 nwis.get_record(sites='03339000', service='dv', start='2017-12-31', parameterCd='00060')
 ```
@@ -66,8 +73,6 @@ For example
 ```python
 nwis.get_record(sites='05404147',service='iv', start='2021-01-01', end='2021-3-01', access='3')
 ```
-
-More services and documentation to come!
 
 ## Quick start
 
@@ -99,12 +104,10 @@ For more details, see the file [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Need help?
 
-The Water Mission Area of the USGS supports the development and maintenance of `dataretrieval`. Any questions can be directed to the Computational Tools team at 
-comptools@usgs.gov. 
+The Water Mission Area of the USGS supports the development and maintenance of `dataretrieval`. Any questions can be directed to the Computational Tools team at comptools@usgs.gov. 
 
 Resources are available primarily for maintenance and responding to user questions.
 Priorities on the development of new features are determined by the `dataretrieval` development team.
-
 
 ## Acknowledgments
 This material is partially based upon work supported by the National Science Foundation (NSF) under award 1931297.
