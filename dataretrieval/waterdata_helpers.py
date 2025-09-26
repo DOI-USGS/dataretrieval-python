@@ -21,7 +21,7 @@ API_VERSION = "v0"
 _cached_base_url = None
 def _base_url():
     """
-    Returns the base URL for the USGS Water Data OGC API.
+    Returns the base URL for the USGS Water Data APIs.
 
     Uses a cached value to avoid repeated string formatting. If the cached value
     is not set, it constructs the base URL using the BASE_API and API_VERSION constants.
@@ -222,7 +222,7 @@ def _default_headers():
         headers["X-Api-Key"] = token
     return headers
 
-def _check_OGC_requests(endpoint: str = "daily", req_type: str = "queryables"):
+def _check_ogc_requests(endpoint: str = "daily", req_type: str = "queryables"):
     """
     Sends an HTTP GET request to the specified OGC endpoint and request type, returning the JSON response.
 
@@ -281,7 +281,7 @@ def _construct_api_requests(
         properties (Optional[List[str]], optional): List of property names to include in the request.
         bbox (Optional[List[float]], optional): Bounding box coordinates as a list of floats.
         limit (Optional[int], optional): Maximum number of results to return per request.
-        max_results (Optional[int], optional): Maximum number of results allowed by the API.
+        max_results (Optional[int], optional): Maximum number of rows to return.
         skipGeometry (bool, optional): Whether to exclude geometry from the response.
         **kwargs: Additional query parameters, including date/time filters and other API-specific options.
     Returns:
@@ -296,14 +296,6 @@ def _construct_api_requests(
     baseURL = _setup_api(service)
     # Single parameters can only have one value
     single_params = {"datetime", "last_modified", "begin", "end", "time"}
-    # params = {k: v for k, v in kwargs.items() if k in single_params}
-    # # Set skipGeometry parameter
-    # params["skipGeometry"] = skipGeometry
-    # # If limit is none and max_results is not none, then set limit to max results. Otherwise,
-    # # if max_results is none, set it to 10000 (the API max).
-    # params["limit"] = max_results if limit is None and max_results is not None else limit or 10000
-    # if max_results is not None and limit is not None and limit > max_results:
-    #     raise ValueError("limit cannot be greater than max_result")
     
     # Identify which parameters should be included in the POST content body
     post_params = {
@@ -384,6 +376,7 @@ def _get_resp_data(resp: httpx.Response, geopd: bool) -> pd.DataFrame:
 
     Parameters:
         resp (httpx.Response): The HTTP response object expected to contain a JSON body with a "features" key.
+        geopd (bool): Indicates whether geopandas is installed and should be used to handle geometries.
 
     Returns:
         gpd.GeoDataFrame or pd.DataFrame: A geopandas GeoDataFrame if geometry is included, or a 
@@ -423,10 +416,12 @@ def _walk_pages(geopd: bool, req: httpx.Request, max_results: Optional[int], cli
 
     Parameters
     ----------
+    geopd : bool
+        Indicates whether geopandas is installed and should be used for handling geometries.
     req : httpx.Request
         The initial HTTP request to send.
     max_results : Optional[int]
-        The maximum number of results to retrieve. If None or NaN, retrieves all available pages.
+        Maximum number of rows to return. If None or NaN, retrieves all available pages.
     client : Optional[httpx.Client], default None
         An optional HTTP client to use for requests. If not provided, a new client is created.
 
@@ -501,12 +496,12 @@ def _deal_with_empty(return_list: pd.DataFrame, properties: Optional[List[str]],
     """
     if return_list.empty:
         if not properties or all(pd.isna(properties)):
-            schema = _check_OGC_requests(endpoint=service, req_type="schema")
+            schema = _check_ogc_requests(endpoint=service, req_type="schema")
             properties = list(schema.get("properties", {}).keys())
         return pd.DataFrame(columns=properties)
     return return_list
 
-def _rejigger_cols(df: pd.DataFrame, properties: Optional[List[str]], output_id: str) -> pd.DataFrame:
+def _arrange_cols(df: pd.DataFrame, properties: Optional[List[str]], output_id: str) -> pd.DataFrame:
     """
     Rearranges and renames columns in a DataFrame based on provided properties and service's output id.
 
@@ -613,7 +608,7 @@ def get_ogc_data(args: Dict[str, Any], output_id: str, service: str) -> pd.DataF
     return_list = _deal_with_empty(return_list, properties, service)
     if convertType:
         return_list = _cleanup_cols(return_list, service=service)
-    return_list = _rejigger_cols(return_list, properties, output_id)
+    return_list = _arrange_cols(return_list, properties, output_id)
     # Add metadata
     return_list.attrs.update(request=req.url, queryTime=pd.Timestamp.now())
     return return_list
