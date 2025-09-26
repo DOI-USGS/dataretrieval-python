@@ -310,6 +310,10 @@ def _construct_api_requests(
     # If limit is none and max_results is not none, then set limit to max results. Otherwise,
     # if max_results is none, set it to 10000 (the API max).
     params["limit"] = max_results if limit is None and max_results is not None else limit or 10000
+    # Add max results as a parameter if it is not None
+    if max_results is not None:
+        params["max_results"] = max_results
+
     if max_results is not None and limit is not None and limit > max_results:
         raise ValueError("limit cannot be greater than max_result")
 
