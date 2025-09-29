@@ -1,4 +1,4 @@
-import httpx
+import requests
 import os
 from typing import List, Dict, Any, Optional, Union
 from datetime import datetime
@@ -235,20 +235,20 @@ def _check_ogc_requests(endpoint: str = "daily", req_type: str = "queryables"):
 
     Raises:
         AssertionError: If req_type is not "queryables" or "schema".
-        httpx.HTTPStatusError: If the HTTP request returns an unsuccessful status code.
+        requests.HTTPError: If the HTTP request returns an unsuccessful status code.
     """
     assert req_type in ["queryables", "schema"]
     url = f"{_base_url()}collections/{endpoint}/{req_type}"
-    resp = httpx.get(url, headers=_default_headers())
+    resp = requests.get(url, headers=_default_headers())
     resp.raise_for_status()
     return resp.json()
 
-def _error_body(resp: httpx.Response):
+def _error_body(resp: requests.Response):
     """
     Provide more informative error messages based on the response status.
 
     Args:
-        resp (httpx.Response): The HTTP response object to extract the error message from.
+        resp (requests.Response): The HTTP response object to extract the error message from.
 
     Returns:
         str: The extracted error message. For status code 429, returns the 'message' field from the JSON error object.
@@ -285,7 +285,7 @@ def _construct_api_requests(
         skipGeometry (bool, optional): Whether to exclude geometry from the response.
         **kwargs: Additional query parameters, including date/time filters and other API-specific options.
     Returns:
-        httpx.Request: The constructed HTTP request object ready to be sent.
+        requests.PreparedRequest: The constructed HTTP request object ready to be sent.
     Raises:
         ValueError: If `limit` is greater than `max_results`.
     Notes:
@@ -338,17 +338,28 @@ def _construct_api_requests(
 
     if POST:
         headers["Content-Type"] = "application/query-cql-json"
-        req = httpx.Request(method="POST", url=baseURL, headers=headers, content=_cql2_param(post_params), params=params)
+        request = requests.Request(
+            method="POST",
+            url=baseURL,
+            headers=headers,
+            data=_cql2_param(post_params),
+            params=params,
+        )
     else:
-        req = httpx.Request(method="GET", url=baseURL, headers=headers, params=params)
-    return req
+        request = requests.Request(
+            method="GET",
+            url=baseURL,
+            headers=headers,
+            params=params,
+        )
+    return request.prepare()
 
-def _next_req_url(resp: httpx.Response) -> Optional[str]:
+def _next_req_url(resp: requests.Response) -> Optional[str]:
     """
     Extracts the URL for the next page of results from an HTTP response from a water data endpoint.
 
     Parameters:
-        resp (httpx.Response): The HTTP response object containing JSON data and headers.
+        resp (requests.Response): The HTTP response object containing JSON data and headers.
 
     Returns:
         Optional[str]: The URL for the next page of results if available, otherwise None.
@@ -374,12 +385,12 @@ def _next_req_url(resp: httpx.Response) -> Optional[str]:
             return next_url
     return None
 
-def _get_resp_data(resp: httpx.Response, geopd: bool) -> pd.DataFrame:
+def _get_resp_data(resp: requests.Response, geopd: bool) -> pd.DataFrame:
     """
-    Extracts and normalizes data from an httpx.Response object containing GeoJSON features.
+    Extracts and normalizes data from an HTTP response containing GeoJSON features.
 
     Parameters:
-        resp (httpx.Response): The HTTP response object expected to contain a JSON body with a "features" key.
+        resp (requests.Response): The HTTP response object expected to contain a JSON body with a "features" key.
         geopd (bool): Indicates whether geopandas is installed and should be used to handle geometries.
 
     Returns:
@@ -414,7 +425,7 @@ def _get_resp_data(resp: httpx.Response, geopd: bool) -> pd.DataFrame:
 
     return df
 
-def _walk_pages(geopd: bool, req: httpx.Request, max_results: Optional[int], client: Optional[httpx.Client] = None) -> pd.DataFrame:
+def _walk_pages(geopd: bool, req: requests.PreparedRequest, max_results: Optional[int], client: Optional[requests.Session] = None) -> pd.DataFrame:
     """
     Iterates through paginated API responses and aggregates the results into a single DataFrame.
 
@@ -422,11 +433,11 @@ def _walk_pages(geopd: bool, req: httpx.Request, max_results: Optional[int], cli
     ----------
     geopd : bool
         Indicates whether geopandas is installed and should be used for handling geometries.
-    req : httpx.Request
+    req : requests.PreparedRequest
         The initial HTTP request to send.
     max_results : Optional[int]
         Maximum number of rows to return. If None or NaN, retrieves all available pages.
-    client : Optional[httpx.Client], default None
+    client : Optional[requests.Session], default None
         An optional HTTP client to use for requests. If not provided, a new client is created.
 
     Returns
@@ -451,36 +462,43 @@ def _walk_pages(geopd: bool, req: httpx.Request, max_results: Optional[int], cli
 
     # Get first response from client
     # using GET or POST call
-    client = client or httpx.Client()
-    resp = client.send(req)
-    if resp.status_code != 200: raise Exception(_error_body(resp))
+    close_client = client is None
+    client = client or requests.Session()
+    try:
+        resp = client.send(req)
+        if resp.status_code != 200:
+            raise Exception(_error_body(resp))
 
-    # Grab some aspects of the original request: headers and the
-    # request type (GET or POST)
-    method = req.method.upper()
-    headers = req.headers
-    content = req.content if method == "POST" else None
+        # Grab some aspects of the original request: headers and the
+        # request type (GET or POST)
+        method = req.method.upper()
+        headers = dict(req.headers)
+        content = req.body if method == "POST" else None
 
-    if max_results is None or pd.isna(max_results):
-        dfs = _get_resp_data(resp, geopd=geopd)
-        curr_url = _next_req_url(resp)
-        failures = []
-        while curr_url:
-            try:
-                resp = client.request(method, curr_url, headers=headers, content=content if method == "POST" else None)
-                if resp.status_code != 200: raise Exception(_error_body(resp))
-                df1 = _get_resp_data(resp, geopd=geopd)
-                dfs = pd.concat([dfs, df1], ignore_index=True)
-                curr_url = _next_req_url(resp)
-            except Exception:
-                failures.append(curr_url)
-                curr_url = None
-        if failures:
-            print(f"There were {len(failures)} failed requests.")
-        return dfs
-    else:
-        resp.raise_for_status()
-        return _get_resp_data(resp, geopd=geopd)
+        if max_results is None or pd.isna(max_results):
+            dfs = _get_resp_data(resp, geopd=geopd)
+            curr_url = _next_req_url(resp)
+            failures = []
+            while curr_url:
+                try:
+                    resp = client.request(method, curr_url, headers=headers, data=content if method == "POST" else None)
+                    if resp.status_code != 200:
+                        raise Exception(_error_body(resp))
+                    df1 = _get_resp_data(resp, geopd=geopd)
+                    dfs = pd.concat([dfs, df1], ignore_index=True)
+                    curr_url = _next_req_url(resp)
+                except Exception:
+                    failures.append(curr_url)
+                    curr_url = None
+            if failures:
+                print(f"There were {len(failures)} failed requests.")
+            return dfs
+        else:
+            resp.raise_for_status()
+            return _get_resp_data(resp, geopd=geopd)
+    finally:
+        if close_client:
+            client.close()
 
 def _deal_with_empty(return_list: pd.DataFrame, properties: Optional[List[str]], service: str) -> pd.DataFrame:
     """
@@ -627,14 +645,13 @@ def get_ogc_data(args: Dict[str, Any], output_id: str, service: str) -> pd.DataF
 
 # def _get_params(service: str):
 #     url = f"{_base_url()}collections/{service}/schema"
-#     resp = httpx.get(url, headers=_default_headers())
+#     resp = requests.get(url, headers=_default_headers())
 #     resp.raise_for_status()
 #     properties = resp.json().get("properties", {})
 #     return {k: v.get("description") for k, v in properties.items()}
 
 # def _get_collection():
 #     url = f"{_base_url()}openapi?f=json"
-#     resp = httpx.get(url, headers=_default_headers())
+#     resp = requests.get(url, headers=_default_headers())
 #     resp.raise_for_status()
 #     return resp.json()
-
