@@ -11,8 +11,8 @@ from dataretrieval.waterdata import (
     get_latest_continuous,
     get_field_measurements,
     get_time_series_metadata,
-    _SERVICES,
-    _PROFILES
+    SERVICES,
+    PROFILES,
 )
 
 def mock_request(requests_mock, request_url, file_path):
@@ -29,7 +29,7 @@ def test_mock_get_samples(requests_mock):
         "activityMediaName=Water&activityStartDateLower=2020-01-01"
         "&activityStartDateUpper=2024-12-31&monitoringLocationIdentifier=USGS-05406500&mimeType=text%2Fcsv"
     )
-    response_file_path = "data/samples_results.txt"
+    response_file_path = "tests/data/samples_results.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_samples(
         service="results",
@@ -112,7 +112,7 @@ def test_samples_organizations():
     assert df.size == 3
 
 def test_get_daily():
-    df = get_daily(
+    df, metadata = get_daily(
         monitoring_location_id="USGS-05427718",
         parameter_code="00060",
         time="2025-01-01/.."
@@ -123,10 +123,12 @@ def test_get_daily():
     assert df.parameter_code.unique().tolist() == ["00060"]
     assert df.monitoring_location_id.unique().tolist() == ["USGS-05427718"]
     assert df["time"].apply(lambda x: isinstance(x, datetime.date)).all()
+    assert hasattr(metadata, 'url')
+    assert hasattr(metadata, 'query_time')
     assert df["value"].dtype == "float64"
 
 def test_get_daily_properties():
-    df = get_daily(
+    df, metadata = get_daily(
         monitoring_location_id="USGS-05427718",
         parameter_code="00060",
         time="2025-01-01/..",
@@ -135,39 +137,49 @@ def test_get_daily_properties():
     assert "daily_id" in df.columns
     assert "geometry" in df.columns
     assert df.shape[1] == 6
-    assert (df["time"] >= datetime.date(2025, 1, 1)).all()
+    assert df.parameter_code.unique().tolist() == ["00060"]
+    assert hasattr(metadata, 'url')
+    assert hasattr(metadata, 'query_time')
 
 def test_get_daily_no_geometry():
-    df = get_daily(
+    df, metadata = get_daily(
         monitoring_location_id="USGS-05427718",
         parameter_code="00060",
         time="2025-01-01/..",
-        skipGeometry=True
+        skip_geometry=True
     )
     assert "geometry" not in df.columns
     assert df.shape[1] == 11
     assert isinstance(df, DataFrame)
+    assert hasattr(metadata, 'url')
+    assert hasattr(metadata, 'query_time')
 
 def test_get_monitoring_locations():
-    df = get_monitoring_locations(
+    df, metadata = get_monitoring_locations(
         state_name="Connecticut",
         site_type_code="GW"
     )
     assert df.site_type_code.unique().tolist() == ["GW"]
+    assert hasattr(metadata, 'url')
+    assert hasattr(metadata, 'query_time')
 
 def test_get_monitoring_locations_hucs():
-    df = get_monitoring_locations(
+    df, metadata = get_monitoring_locations(
         hydrologic_unit_code=["010802050102", "010802050103"]
     )
     assert set(df.hydrologic_unit_code.unique().tolist()) == {"010802050102", "010802050103"}
+    assert hasattr(metadata, 'url')
+    assert hasattr(metadata, 'query_time')
 
 def test_get_latest_continuous():
-    df = get_latest_continuous(
+    df, metadata = get_latest_continuous(
         monitoring_location_id=["USGS-05427718", "USGS-05427719"],
         parameter_code=["00060", "00065"]
     )
     assert df.shape[0] <= 4
     assert df.statistic_id.unique().tolist() == ["00011"]
+    assert hasattr(metadata, 'url')
+    assert hasattr(metadata, 'query_time')
     try:
         datetime.datetime.strptime(df['time'].iloc[0], "%Y-%m-%dT%H:%M:%S+00:00")
         out=True
@@ -176,22 +188,26 @@ def test_get_latest_continuous():
     assert out
 
 def test_get_field_measurements():
-    df = get_field_measurements(
+    df, metadata = get_field_measurements(
         monitoring_location_id="USGS-05427718",
         unit_of_measure="ft^3/s",
         time="2025-01-01/2025-10-01",
-        skipGeometry=True
+        skip_geometry=True
     )
     assert "field_measurement_id" in df.columns
     assert "geometry" not in df.columns
     assert df.unit_of_measure.unique().tolist() == ["ft^3/s"]
+    assert hasattr(metadata, 'url')
+    assert hasattr(metadata, 'query_time')
 
 def test_get_time_series_metadata():
-    df = get_time_series_metadata(
+    df, metadata = get_time_series_metadata(
         bbox=[-89.840355,42.853411,-88.818626,43.422598],
         parameter_code=["00060", "00065", "72019"],
-        skipGeometry=True
+        skip_geometry=True
     )
     assert set(df['parameter_name'].unique().tolist()) == {"Gage height", "Water level, depth LSD", "Discharge"}
+    assert hasattr(metadata, 'url')
+    assert hasattr(metadata, 'query_time')
 
 

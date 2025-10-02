@@ -24,7 +24,7 @@ def test_get_results(requests_mock):
         "&characteristicName=Specific+conductance&startDateLo=05-01-2011&startDateHi=09-30-2011"
         "&mimeType=csv"
     )
-    response_file_path = "data/wqp_results.txt"
+    response_file_path = "tests/data/wqp_results.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_results(
         siteid="WIDNR_WQX-10032762",
@@ -48,7 +48,7 @@ def test_get_results_WQX3(requests_mock):
         "&mimeType=csv"
         "&dataProfile=fullPhysChem"
     )
-    response_file_path = "data/wqp3_results.txt"
+    response_file_path = "tests/data/wqp3_results.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_results(
         legacy=False,
@@ -71,7 +71,7 @@ def test_what_sites(requests_mock):
         "https://www.waterqualitydata.us/data/Station/Search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
-    response_file_path = "data/wqp_sites.txt"
+    response_file_path = "tests/data/wqp_sites.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = what_sites(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
@@ -88,7 +88,7 @@ def test_what_organizations(requests_mock):
         "https://www.waterqualitydata.us/data/Organization/Search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
-    response_file_path = "data/wqp_organizations.txt"
+    response_file_path = "tests/data/wqp_organizations.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = what_organizations(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
@@ -105,7 +105,7 @@ def test_what_projects(requests_mock):
         "https://www.waterqualitydata.us/data/Project/Search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
-    response_file_path = "data/wqp_projects.txt"
+    response_file_path = "tests/data/wqp_projects.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = what_projects(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
@@ -122,7 +122,7 @@ def test_what_activities(requests_mock):
         "https://www.waterqualitydata.us/data/Activity/Search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
-    response_file_path = "data/wqp_activities.txt"
+    response_file_path = "tests/data/wqp_activities.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = what_activities(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
@@ -139,7 +139,7 @@ def test_what_detection_limits(requests_mock):
         "https://www.waterqualitydata.us/data/ResultDetectionQuantitationLimit/Search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
-    response_file_path = "data/wqp_detection_limits.txt"
+    response_file_path = "tests/data/wqp_detection_limits.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = what_detection_limits(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
@@ -156,7 +156,7 @@ def test_what_habitat_metrics(requests_mock):
         "https://www.waterqualitydata.us/data/BiologicalMetric/Search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
-    response_file_path = "data/wqp_habitat_metrics.txt"
+    response_file_path = "tests/data/wqp_habitat_metrics.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = what_habitat_metrics(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
@@ -173,7 +173,7 @@ def test_what_project_weights(requests_mock):
         "https://www.waterqualitydata.us/data/ProjectMonitoringLocationWeighting/Search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
-    response_file_path = "data/wqp_project_weights.txt"
+    response_file_path = "tests/data/wqp_project_weights.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = what_project_weights(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
@@ -190,7 +190,7 @@ def test_what_activity_metrics(requests_mock):
         "https://www.waterqualitydata.us/data/ActivityMetric/Search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
-    response_file_path = "data/wqp_activity_metrics.txt"
+    response_file_path = "tests/data/wqp_activity_metrics.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = what_activity_metrics(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame

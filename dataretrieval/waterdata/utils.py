@@ -1,54 +1,30 @@
 import requests
 import os
-from typing import List, Dict, Any, Optional, Union
+import logging
+from typing import List, Dict, Any, Optional, Union, Tuple
 from datetime import datetime
 import pandas as pd
 import json
 from zoneinfo import ZoneInfo
 import re
+
+from dataretrieval.utils import BaseMetadata
+
 try:
     import geopandas as gpd
-    geopd = True
+
+    GEOPANDAS = True
 except ImportError:
-    geopd = False
+    GEOPANDAS = False
 
+# Set up logger for this module
+logger = logging.getLogger(__name__)
 
+BASE_URL = "https://api.waterdata.usgs.gov"
+OGC_API_VERSION = "v0"
+OGC_API_URL = f"{BASE_URL}/ogcapi/{OGC_API_VERSION}"
+SAMPLES_URL = f"{BASE_URL}/samples-data"
 
-BASE_API = "https://api.waterdata.usgs.gov/ogcapi/"
-API_VERSION = "v0"
-
-# --- Caching for repeated calls ---
-_cached_base_url = None
-def _base_url():
-    """
-    Returns the base URL for the USGS Water Data APIs.
-
-    Uses a cached value to avoid repeated string formatting. If the cached value
-    is not set, it constructs the base URL using the BASE_API and API_VERSION constants.
-
-    Returns:
-        str: The base URL for the API (e.g., "https://api.waterdata.usgs.gov/ogcapi/v0/").
-    """
-    global _cached_base_url
-    if _cached_base_url is None:
-        _cached_base_url = f"{BASE_API}{API_VERSION}/"
-    return _cached_base_url
-
-def _setup_api(service: str):
-    """
-    Constructs and returns the API endpoint URL for a specified service.
-
-    Args:
-        service (str): The name of the service to be used in the API endpoint.
-
-    Returns:
-        str: The full URL for the API endpoint corresponding to the given service.
-
-    Example:
-        >>> _setup_api("daily")
-        'https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily/items'
-    """
-    return f"{_base_url()}collections/{service}/items"
 
 def _switch_arg_id(ls: Dict[str, Any], id_name: str, service: str):
     """
@@ -59,16 +35,25 @@ def _switch_arg_id(ls: Dict[str, Any], id_name: str, service: str):
     with the value from either the service name or the expected id column name.
     If neither key exists, "id" will be set to None.
 
-    Example: for service "time-series-metadata", the function will look for either "time_series_metadata_id"
-    or "time_series_id" and change the key to simply "id".
+    Parameters
+    ----------
+    ls : Dict[str, Any]
+        The dictionary containing identifier keys to be standardized.
+    id_name : str
+        The name of the specific identifier key to look for.
+    service : str
+        The service name.
 
-    Args:
-        ls (Dict[str, Any]): The dictionary containing identifier keys to be standardized.
-        id_name (str): The name of the specific identifier key to look for.
-        service (str): The service name.
+    Returns
+    -------
+    Dict[str, Any]
+        The modified dictionary with the "id" key set appropriately.
 
-    Returns:
-        Dict[str, Any]: The modified dictionary with the "id" key set appropriately.
+    Examples
+    --------
+    For service "time-series-metadata", the function will look for either
+    "time_series_metadata_id" or "time_series_id" and change the key to simply
+    "id".
     """
 
     service_id = service.replace("-", "_") + "_id"
@@ -88,22 +73,33 @@ def _switch_arg_id(ls: Dict[str, Any], id_name: str, service: str):
 
 def _switch_properties_id(properties: Optional[List[str]], id_name: str, service: str):
     """
-    Switch properties id from its package-specific identifier to the standardized "id" key
-    that the API recognizes.
+    Switch properties id from its package-specific identifier to the
+    standardized "id" key that the API recognizes.
 
-    Sets the "id" key in the provided dictionary `ls` with the value from either the service name
-    or the expected id column name. If neither key exists, "id" will be set to None.
-    
-    Example: for service "monitoring-locations", it will look for "monitoring_location_id" and change
+    Sets the "id" key in the provided dictionary `ls` with the value from either
+    the service name or the expected id column name. If neither key exists, "id"
+    will be set to None.
+
+    Parameters
+    ----------
+    properties : Optional[List[str]]
+        A list containing the properties or column names to be pulled from the
+        service, or None.
+    id_name : str
+        The name of the specific identifier key to look for.
+    service : str
+        The service name.
+
+    Returns
+    -------
+    List[str]
+        The modified list with the "id" key set appropriately.
+
+    Examples
+    --------
+    For service "monitoring-locations", it will look for
+    "monitoring_location_id" and change
     it to "id".
-
-    Args:
-        properties (List[str]): A list containing the properties or column names to be pulled from the service.
-        id_name (str): The name of the specific identifier key to look for.
-        service (str): The service name.
-
-    Returns:
-        List[str]: The modified list with the "id" key set appropriately.
     """
     if not properties:
         return []
@@ -119,147 +115,204 @@ def _switch_properties_id(properties: Optional[List[str]], id_name: str, service
     # Remove unwanted fields
     return [p for p in properties if p not in ["geometry", service_id]]
 
-def _format_api_dates(datetime_input: Union[str, List[str]], date: bool = False) -> Union[str, None]:
+
+def _format_api_dates(
+    datetime_input: Union[str, List[str]], date: bool = False
+) -> Union[str, None]:
     """
-    Formats date or datetime input(s) for use with an API, handling single values or ranges, and converting to ISO 8601 or date-only formats as needed.
+    Formats date or datetime input(s) for use with an API.
+
+    Handles single values or ranges, and converting to ISO 8601 or date-only
+    formats as needed.
+
     Parameters
     ----------
     datetime_input : Union[str, List[str]]
-        A single date/datetime string or a list of one or two date/datetime strings. Accepts formats like "%Y-%m-%d %H:%M:%S", ISO 8601, or relative periods (e.g., "P7D").
+        A single date/datetime string or a list of one or two date/datetime
+        strings. Accepts formats like "%Y-%m-%d %H:%M:%S", ISO 8601, or relative
+        periods (e.g., "P7D").
     date : bool, optional
-        If True, uses only the date portion ("YYYY-MM-DD"). If False (default), returns full datetime in UTC ISO 8601 format ("YYYY-MM-DDTHH:MM:SSZ").
+        If True, uses only the date portion ("YYYY-MM-DD"). If False (default),
+        returns full datetime in UTC ISO 8601 format ("YYYY-MM-DDTHH:MM:SSZ").
+
     Returns
     -------
     Union[str, None]
-        - If input is a single value, returns the formatted date/datetime string or None if parsing fails.
-        - If input is a list of two values, returns a date/datetime range string separated by "/" (e.g., "YYYY-MM-DD/YYYY-MM-DD" or "YYYY-MM-DDTHH:MM:SSZ/YYYY-MM-DDTHH:MM:SSZ").
+        - If input is a single value, returns the formatted date/datetime string
+        or None if parsing fails.
+        - If input is a list of two values, returns a date/datetime range string
+        separated by "/" (e.g., "YYYY-MM-DD/YYYY-MM-DD" or
+        "YYYY-MM-DDTHH:MM:SSZ/YYYY-MM-DDTHH:MM:SSZ").
         - Returns None if input is empty, all NA, or cannot be parsed.
+
     Raises
     ------
     ValueError
         If `datetime_input` contains more than two values.
+
     Notes
     -----
     - Handles blank or NA values by returning None.
-    - Supports relative period strings (e.g., "P7D") and passes them through unchanged.
-    - Converts datetimes to UTC and formats as ISO 8601 with 'Z' suffix when `date` is False.
+    - Supports relative period strings (e.g., "P7D") and passes them through
+    unchanged.
+    - Converts datetimes to UTC and formats as ISO 8601 with 'Z' suffix when
+    `date` is False.
     - For date ranges, replaces "nan" with ".." in the output.
     """
     # Get timezone
     local_timezone = datetime.now().astimezone().tzinfo
-    
+
     # Convert single string to list for uniform processing
     if isinstance(datetime_input, str):
         datetime_input = [datetime_input]
-    
+
     # Check for null or all NA and return None
     if all(pd.isna(dt) or dt == "" or dt == None for dt in datetime_input):
         return None
 
-    if len(datetime_input) <=2:
+    if len(datetime_input) <= 2:
         # If the list is of length 1, first look for things like "P7D" or dates
         # already formatted in ISO08601. Otherwise, try to coerce to datetime
-        if len(datetime_input) == 1 and re.search(r"P", datetime_input[0], re.IGNORECASE) or "/" in datetime_input[0]:
+        if (
+            len(datetime_input) == 1
+            and re.search(r"P", datetime_input[0], re.IGNORECASE)
+            or "/" in datetime_input[0]
+        ):
             return datetime_input[0]
         # Otherwise, use list comprehension to parse dates
         else:
             try:
                 # Parse to naive datetime
-                parsed_dates = [datetime.strptime(dt, "%Y-%m-%d %H:%M:%S") for dt in datetime_input]
+                parsed_dates = [
+                    datetime.strptime(dt, "%Y-%m-%d %H:%M:%S") for dt in datetime_input
+                ]
             except Exception:
                 # Parse to date only
                 try:
-                    parsed_dates = [datetime.strptime(dt, "%Y-%m-%d") for dt in datetime_input]
+                    parsed_dates = [
+                        datetime.strptime(dt, "%Y-%m-%d") for dt in datetime_input
+                    ]
                 except Exception:
                     return None
-                # If the service only accepts dates for this input, not datetimes (e.g. "daily"),
-                # return just the dates separated by a "/", otherwise, return the datetime in UTC
-                # format.
+                # If the service only accepts dates for this input, not
+                # datetimes (e.g. "daily"), return just the dates separated by a
+                # "/", otherwise, return the datetime in UTC format.
             if date:
                 return "/".join(dt.strftime("%Y-%m-%d") for dt in parsed_dates)
             else:
-                parsed_locals = [dt.replace(tzinfo=local_timezone) for dt in parsed_dates]
-                formatted = "/".join(dt.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ") for dt in parsed_locals)
+                parsed_locals = [
+                    dt.replace(tzinfo=local_timezone) for dt in parsed_dates
+                ]
+                formatted = "/".join(
+                    dt.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
+                    for dt in parsed_locals
+                )
                 return formatted
     else:
         raise ValueError("datetime_input should only include 1-2 values")
 
-def _cql2_param(args):
+
+def _cql2_param(args: Dict[str, Any]) -> str:
+    """
+    Convert query parameters to CQL2 JSON format for POST requests.
+
+    Parameters
+    ----------
+    args : Dict[str, Any]
+        Dictionary of query parameters to convert to CQL2 format.
+
+    Returns
+    -------
+    str
+        JSON string representation of the CQL2 query.
+    """
     filters = []
     for key, values in args.items():
-        filters.append({
-            "op": "in",
-            "args": [
-                {"property": key},
-                values
-            ]
-        })
+        filters.append({"op": "in", "args": [{"property": key}, values]})
 
-    query = {
-        "op": "and",
-        "args": filters
-    }
+    query = {"op": "and", "args": filters}
 
     return json.dumps(query, indent=4)
+
 
 def _default_headers():
     """
     Generate default HTTP headers for API requests.
 
-    Returns:
-        dict: A dictionary containing default headers including 'Accept-Encoding',
-        'Accept', 'User-Agent', and 'lang'. If the environment variable 'API_USGS_PAT'
-        is set, its value is included as the 'X-Api-Key' header.
+    Returns
+    -------
+    dict
+        A dictionary containing default headers including 'Accept-Encoding',
+        'Accept', 'User-Agent', and 'lang'. If the environment variable
+        'API_USGS_PAT' is set, its value is included as the 'X-Api-Key' header.
     """
     headers = {
         "Accept-Encoding": "compress, gzip",
         "Accept": "application/json",
         "User-Agent": "python-dataretrieval/1.0",
-        "lang": "en-US"
+        "lang": "en-US",
     }
     token = os.getenv("API_USGS_PAT")
     if token:
         headers["X-Api-Key"] = token
     return headers
 
+
 def _check_ogc_requests(endpoint: str = "daily", req_type: str = "queryables"):
     """
-    Sends an HTTP GET request to the specified OGC endpoint and request type, returning the JSON response.
+    Sends an HTTP GET request to the specified OGC endpoint and request type,
+    returning the JSON response.
 
-    Args:
-        endpoint (str): The OGC collection endpoint to query. Defaults to "daily".
-        req_type (str): The type of request to make. Must be either "queryables" or "schema". Defaults to "queryables".
+    Parameters
+    ----------
+    endpoint : str, optional
+        The OGC collection endpoint to query (default is "daily").
+    req_type : str, optional
+        The type of request to make. Must be either "queryables" or "schema"
+        (default is "queryables").
 
-    Returns:
-        dict: The JSON response from the OGC endpoint.
+    Returns
+    -------
+    dict
+        The JSON response from the OGC endpoint.
 
-    Raises:
-        AssertionError: If req_type is not "queryables" or "schema".
-        requests.HTTPError: If the HTTP request returns an unsuccessful status code.
+    Raises
+    ------
+    AssertionError
+        If req_type is not "queryables" or "schema".
+    requests.HTTPError
+        If the HTTP request returns an unsuccessful status code.
     """
     assert req_type in ["queryables", "schema"]
-    url = f"{_base_url()}collections/{endpoint}/{req_type}"
+    url = f"{OGC_API_URL}/collections/{endpoint}/{req_type}"
     resp = requests.get(url, headers=_default_headers())
     resp.raise_for_status()
     return resp.json()
+
 
 def _error_body(resp: requests.Response):
     """
     Provide more informative error messages based on the response status.
 
-    Args:
-        resp (requests.Response): The HTTP response object to extract the error message from.
+    Parameters
+    ----------
+    resp : requests.Response
+        The HTTP response object to extract the error message from.
 
-    Returns:
-        str: The extracted error message. For status code 429, returns the 'message' field from the JSON error object.
-             For status code 403, returns a predefined message indicating possible reasons for denial.
-             For other status codes, returns the raw response text.
+    Returns
+    -------
+    str
+        The extracted error message. For status code 429, returns the 'message'
+        field from the JSON error object. For status code 403, returns a
+        predefined message indicating possible reasons for denial. For other
+        status codes, returns the raw response text.
     """
     if resp.status_code == 429:
-        return resp.json().get('error', {}).get('message')
+        return resp.json().get("error", {}).get("message")
     elif resp.status_code == 403:
         return "Query request denied. Possible reasons include query exceeding server limits."
     return resp.text
+
 
 def _construct_api_requests(
     service: str,
@@ -267,49 +320,71 @@ def _construct_api_requests(
     bbox: Optional[List[float]] = None,
     limit: Optional[int] = None,
     max_results: Optional[int] = None,
-    skipGeometry: bool = False,
-    **kwargs
+    skip_geometry: bool = False,
+    **kwargs,
 ):
     """
     Constructs an HTTP request object for the specified water data API service.
-    Depending on the input parameters (whether there's lists of multiple argument values),
-    the function determines whether to use a GET or POST request, formats parameters
-    appropriately, and sets required headers.
-    
-    Args:
-        service (str): The name of the API service to query (e.g., "daily").
-        properties (Optional[List[str]], optional): List of property names to include in the request.
-        bbox (Optional[List[float]], optional): Bounding box coordinates as a list of floats.
-        limit (Optional[int], optional): Maximum number of results to return per request.
-        max_results (Optional[int], optional): Maximum number of rows to return.
-        skipGeometry (bool, optional): Whether to exclude geometry from the response.
-        **kwargs: Additional query parameters, including date/time filters and other API-specific options.
-    Returns:
-        requests.PreparedRequest: The constructed HTTP request object ready to be sent.
-    Raises:
-        ValueError: If `limit` is greater than `max_results`.
-    Notes:
-        - Date/time parameters are automatically formatted to ISO8601.
-        - If multiple values are provided for non-single parameters, a POST request is constructed.
-        - The function sets appropriate headers for GET and POST requests.
+
+    Depending on the input parameters (whether there's lists of multiple
+    argument values), the function determines whether to use a GET or POST
+    request, formats parameters appropriately, and sets required headers.
+
+    Parameters
+    ----------
+    service : str
+        The name of the API service to query (e.g., "daily").
+    properties : Optional[List[str]], optional
+        List of property names to include in the request.
+    bbox : Optional[List[float]], optional
+        Bounding box coordinates as a list of floats.
+    limit : Optional[int], optional
+        Maximum number of results to return per request.
+    max_results : Optional[int], optional
+        Maximum number of rows to return.
+    skip_geometry : bool, optional
+        Whether to exclude geometry from the response (default is False).
+    **kwargs
+        Additional query parameters, including date/time filters and other
+        API-specific options.
+
+    Returns
+    -------
+    requests.PreparedRequest
+        The constructed HTTP request object ready to be sent.
+
+    Raises
+    ------
+    ValueError
+        If `limit` is greater than `max_results`.
+
+    Notes
+    -----
+    - Date/time parameters are automatically formatted to ISO8601.
+    - If multiple values are provided for non-single parameters, a POST request
+    is constructed.
+    - The function sets appropriate headers for GET and POST requests.
     """
-    baseURL = _setup_api(service)
+    service_url = f"{OGC_API_URL}/collections/{service}/items"
     # Single parameters can only have one value
     single_params = {"datetime", "last_modified", "begin", "end", "time"}
-    
+
     # Identify which parameters should be included in the POST content body
     post_params = {
-         k: v for k, v in kwargs.items()
-         if k not in single_params and isinstance(v, (list, tuple)) and len(v) > 1
-         }
-    
+        k: v
+        for k, v in kwargs.items()
+        if k not in single_params and isinstance(v, (list, tuple)) and len(v) > 1
+    }
+
     # Everything else goes into the params dictionary for the URL
     params = {k: v for k, v in kwargs.items() if k not in post_params}
-    # Set skipGeometry parameter
-    params["skipGeometry"] = skipGeometry
+    # Set skipGeometry parameter (API expects camelCase)
+    params["skipGeometry"] = skip_geometry
     # If limit is none and max_results is not none, then set limit to max results. Otherwise,
     # if max_results is none, set it to 10000 (the API max).
-    params["limit"] = max_results if limit is None and max_results is not None else limit or 10000
+    params["limit"] = (
+        max_results if limit is None and max_results is not None else limit or 10000
+    )
     # Add max results as a parameter if it is not None
     if max_results is not None:
         params["max_results"] = max_results
@@ -340,7 +415,7 @@ def _construct_api_requests(
         headers["Content-Type"] = "application/query-cql-json"
         request = requests.Request(
             method="POST",
-            url=baseURL,
+            url=service_url,
             headers=headers,
             data=_cql2_param(post_params),
             params=params,
@@ -348,67 +423,83 @@ def _construct_api_requests(
     else:
         request = requests.Request(
             method="GET",
-            url=baseURL,
+            url=service_url,
             headers=headers,
             params=params,
         )
     return request.prepare()
 
+
 def _next_req_url(resp: requests.Response) -> Optional[str]:
     """
-    Extracts the URL for the next page of results from an HTTP response from a water data endpoint.
+    Extracts the URL for the next page of results from an HTTP response from a
+    water data endpoint.
 
-    Parameters:
-        resp (requests.Response): The HTTP response object containing JSON data and headers.
+    Parameters
+    ----------
+    resp : requests.Response
+        The HTTP response object containing JSON data and headers.
 
-    Returns:
-        Optional[str]: The URL for the next page of results if available, otherwise None.
+    Returns
+    -------
+    Optional[str]
+        The URL for the next page of results if available, otherwise None.
 
-    Side Effects:
-        If the environment variable "API_USGS_PAT" is set, prints the remaining requests for the current hour.
-        Prints the next URL if found.
-
-    Notes:
-        - Expects the response JSON to contain a "links" list with objects having "rel" and "href" keys.
-        - Checks for the "next" relation in the "links" to determine the next URL.
+    Notes
+    -----
+    - If the environment variable "API_USGS_PAT" is set, logs the remaining
+    requests for the current hour.
+    - Logs the next URL if found at debug level.
+    - Expects the response JSON to contain a "links" list with objects having
+    "rel" and "href" keys.
+    - Checks for the "next" relation in the "links" to determine the next URL.
     """
     body = resp.json()
     if not body.get("numberReturned"):
         return None
     header_info = resp.headers
     if os.getenv("API_USGS_PAT", ""):
-        print("Remaining requests this hour:", header_info.get("x-ratelimit-remaining", ""))
+        logger.info(
+            "Remaining requests this hour: %s",
+            header_info.get("x-ratelimit-remaining", ""),
+        )
     for link in body.get("links", []):
         if link.get("rel") == "next":
             next_url = link.get("href")
-            print(f"Next URL: {next_url}")
+            logger.debug("Next URL: %s", next_url)
             return next_url
     return None
+
 
 def _get_resp_data(resp: requests.Response, geopd: bool) -> pd.DataFrame:
     """
     Extracts and normalizes data from an HTTP response containing GeoJSON features.
 
-    Parameters:
-        resp (requests.Response): The HTTP response object expected to contain a JSON body with a "features" key.
-        geopd (bool): Indicates whether geopandas is installed and should be used to handle geometries.
+    Parameters
+    ----------
+    resp : requests.Response
+        The HTTP response object expected to contain a JSON body with a "features" key.
+    geopd : bool
+        Indicates whether geopandas is installed and should be used to handle geometries.
 
-    Returns:
-        gpd.GeoDataFrame or pd.DataFrame: A geopandas GeoDataFrame if geometry is included, or a 
-        pandas DataFrame containing the feature properties and each row's service-specific id. 
+    Returns
+    -------
+    gpd.GeoDataFrame or pd.DataFrame
+        A geopandas GeoDataFrame if geometry is included, or a pandas DataFrame
+        containing the feature properties and each row's service-specific id.
         Returns an empty pandas DataFrame if no features are returned.
     """
     # Check if it's an empty response
     body = resp.json()
     if not body.get("numberReturned"):
         return pd.DataFrame()
-    
+
     # If geopandas not installed, return a pandas dataframe
     if not geopd:
-        df = pd.json_normalize(
-            body["features"],
-            sep="_")
-        df = df.drop(columns=["type", "geometry", "AsGeoJSON(geometry)"], errors="ignore")
+        df = pd.json_normalize(body["features"], sep="_")
+        df = df.drop(
+            columns=["type", "geometry", "AsGeoJSON(geometry)"], errors="ignore"
+        )
         df.columns = [col.replace("properties_", "") for col in df.columns]
         df.rename(columns={"geometry_coordinates": "geometry"}, inplace=True)
         return df
@@ -425,25 +516,36 @@ def _get_resp_data(resp: requests.Response, geopd: bool) -> pd.DataFrame:
 
     return df
 
-def _walk_pages(geopd: bool, req: requests.PreparedRequest, max_results: Optional[int], client: Optional[requests.Session] = None) -> pd.DataFrame:
+
+def _walk_pages(
+    geopd: bool,
+    req: requests.PreparedRequest,
+    max_results: Optional[int],
+    client: Optional[requests.Session] = None,
+) -> Tuple[pd.DataFrame, requests.Response]:
     """
     Iterates through paginated API responses and aggregates the results into a single DataFrame.
 
     Parameters
     ----------
     geopd : bool
-        Indicates whether geopandas is installed and should be used for handling geometries.
+        Indicates whether geopandas is installed and should be used for handling
+        geometries.
     req : requests.PreparedRequest
         The initial HTTP request to send.
     max_results : Optional[int]
-        Maximum number of rows to return. If None or NaN, retrieves all available pages.
+        Maximum number of rows to return. If None or NaN, retrieves all
+        available pages.
     client : Optional[requests.Session], default None
-        An optional HTTP client to use for requests. If not provided, a new client is created.
+        An optional HTTP client to use for requests. If not provided, a new
+        client is created.
 
     Returns
     -------
     pd.DataFrame
         A DataFrame containing the aggregated results from all pages.
+    requests.Response
+        The initial response object containing metadata about the first request.
 
     Raises
     ------
@@ -452,13 +554,18 @@ def _walk_pages(geopd: bool, req: requests.PreparedRequest, max_results: Optiona
 
     Notes
     -----
-    - If `max_results` is None or NaN, the function will continue to request subsequent pages until no more pages are available.
-    - Failed requests are tracked and reported, but do not halt the entire process unless the initial request fails.
+    - If `max_results` is None or NaN, the function will continue to request
+    subsequent pages until no more pages are available.
+    - Failed requests are tracked and reported, but do not halt the entire
+    process unless the initial request fails.
     """
-    print(f"Requesting:\n{req.url}")
+    logger.info("Requesting: %s", req.url)
 
     if not geopd:
-        print("Geopandas is not installed. Data frames containing geometry will be returned as pandas DataFrames.")
+        logger.warning(
+            "Geopandas is not installed. ",
+            "Geometries will be flattened into pandas DataFrames.",
+        )
 
     # Get first response from client
     # using GET or POST call
@@ -468,6 +575,9 @@ def _walk_pages(geopd: bool, req: requests.PreparedRequest, max_results: Optiona
         resp = client.send(req)
         if resp.status_code != 200:
             raise Exception(_error_body(resp))
+
+        # Store the initial response for metadata
+        initial_response = resp
 
         # Grab some aspects of the original request: headers and the
         # request type (GET or POST)
@@ -481,7 +591,12 @@ def _walk_pages(geopd: bool, req: requests.PreparedRequest, max_results: Optiona
             failures = []
             while curr_url:
                 try:
-                    resp = client.request(method, curr_url, headers=headers, data=content if method == "POST" else None)
+                    resp = client.request(
+                        method,
+                        curr_url,
+                        headers=headers,
+                        data=content if method == "POST" else None,
+                    )
                     if resp.status_code != 200:
                         raise Exception(_error_body(resp))
                     df1 = _get_resp_data(resp, geopd=geopd)
@@ -491,16 +606,19 @@ def _walk_pages(geopd: bool, req: requests.PreparedRequest, max_results: Optiona
                     failures.append(curr_url)
                     curr_url = None
             if failures:
-                print(f"There were {len(failures)} failed requests.")
-            return dfs
+                logger.warning("There were %d failed requests.", len(failures))
+            return dfs, initial_response
         else:
             resp.raise_for_status()
-            return _get_resp_data(resp, geopd=geopd)
+            return _get_resp_data(resp, geopd=geopd), initial_response
     finally:
         if close_client:
             client.close()
 
-def _deal_with_empty(return_list: pd.DataFrame, properties: Optional[List[str]], service: str) -> pd.DataFrame:
+
+def _deal_with_empty(
+    return_list: pd.DataFrame, properties: Optional[List[str]], service: str
+) -> pd.DataFrame:
     """
     Handles empty DataFrame results by returning a DataFrame with appropriate columns.
 
@@ -508,13 +626,19 @@ def _deal_with_empty(return_list: pd.DataFrame, properties: Optional[List[str]],
     - If `properties` is not provided or contains only NaN values, retrieves the schema properties from the specified service.
     - Otherwise, uses the provided `properties` list as column names.
 
-    Args:
-        return_list (pd.DataFrame): The DataFrame to check for emptiness.
-        properties (Optional[List[str]]): List of property names to use as columns, or None.
-        service (str): The service endpoint to query for schema properties if needed.
+    Parameters
+    ----------
+    return_list : pd.DataFrame
+        The DataFrame to check for emptiness.
+    properties : Optional[List[str]]
+        List of property names to use as columns, or None.
+    service : str
+        The service endpoint to query for schema properties if needed.
 
-    Returns:
-        pd.DataFrame: The original DataFrame if not empty, otherwise an empty DataFrame with the appropriate columns.
+    Returns
+    -------
+    pd.DataFrame
+        The original DataFrame if not empty, otherwise an empty DataFrame with the appropriate columns.
     """
     if return_list.empty:
         if not properties or all(pd.isna(properties)):
@@ -523,7 +647,10 @@ def _deal_with_empty(return_list: pd.DataFrame, properties: Optional[List[str]],
         return pd.DataFrame(columns=properties)
     return return_list
 
-def _arrange_cols(df: pd.DataFrame, properties: Optional[List[str]], output_id: str) -> pd.DataFrame:
+
+def _arrange_cols(
+    df: pd.DataFrame, properties: Optional[List[str]], output_id: str
+) -> pd.DataFrame:
     """
     Rearranges and renames columns in a DataFrame based on provided properties and service's output id.
 
@@ -544,7 +671,7 @@ def _arrange_cols(df: pd.DataFrame, properties: Optional[List[str]], output_id: 
     if properties and not all(pd.isna(properties)):
         if "id" not in properties:
             # If user refers to service-specific output id in properties,
-            # then rename the "id" column to the output_id (id column is 
+            # then rename the "id" column to the output_id (id column is
             # automatically included).
             if output_id in properties:
                 df = df.rename(columns={"id": output_id})
@@ -558,6 +685,7 @@ def _arrange_cols(df: pd.DataFrame, properties: Optional[List[str]], output_id: 
         return df.loc[:, [col for col in properties if col in df.columns]]
     else:
         return df.rename(columns={"id": output_id})
+
 
 def _cleanup_cols(df: pd.DataFrame, service: str = "daily") -> pd.DataFrame:
     """
@@ -587,27 +715,37 @@ def _cleanup_cols(df: pd.DataFrame, service: str = "daily") -> pd.DataFrame:
             df[col] = pd.to_numeric(df[col], errors="coerce")
     return df
 
-def get_ogc_data(args: Dict[str, Any], output_id: str, service: str) -> pd.DataFrame:
+
+def get_ogc_data(
+    args: Dict[str, Any], output_id: str, service: str
+) -> Tuple[pd.DataFrame, BaseMetadata]:
     """
-    Retrieves OGC (Open Geospatial Consortium) data from a specified water data endpoint and returns it as a pandas DataFrame.
+    Retrieves OGC (Open Geospatial Consortium) data from a specified water data endpoint and returns it as a pandas DataFrame with metadata.
 
     This function prepares request arguments, constructs API requests, handles pagination, processes the results,
     and formats the output DataFrame according to the specified parameters.
 
-    Args:
-        args (Dict[str, Any]): Dictionary of request arguments for the OGC service.
-        output_id (str): The name of the output identifier to use in the request.
-        service (str): The OGC service type (e.g., "wfs", "wms").
+    Parameters
+    ----------
+    args : Dict[str, Any]
+        Dictionary of request arguments for the OGC service.
+    output_id : str
+        The name of the output identifier to use in the request.
+    service : str
+        The OGC service type (e.g., "wfs", "wms").
 
-    Returns:
-        pd.DataFrame or gpd.GeoDataFrame: A DataFrame containing the retrieved and processed OGC data,
-        with metadata attributes including the request URL and query timestamp.
+    Returns
+    -------
+    pd.DataFrame or gpd.GeoDataFrame
+        A DataFrame containing the retrieved and processed OGC data.
+    BaseMetadata
+        A metadata object containing request information including URL and query time.
 
-    Notes:
-        - The function does not mutate the input `args` dictionary.
-        - Handles optional arguments such as `max_results` and `convertType`.
-        - Applies column cleanup and reordering based on service and properties.
-        - Metadata is attached to the DataFrame via the `.attrs` attribute.
+    Notes
+    -----
+    - The function does not mutate the input `args` dictionary.
+    - Handles optional arguments such as `max_results` and `convert_type`.
+    - Applies column cleanup and reordering based on service and properties.
     """
     args = args.copy()
     # Add service as an argument
@@ -618,22 +756,26 @@ def get_ogc_data(args: Dict[str, Any], output_id: str, service: str) -> pd.DataF
     args = _switch_arg_id(args, id_name=output_id, service=service)
     properties = args.get("properties")
     # Switch properties id to "id" if needed
-    args["properties"] = _switch_properties_id(properties, id_name=output_id, service=service)
-    convertType = args.pop("convertType", False)
+    args["properties"] = _switch_properties_id(
+        properties, id_name=output_id, service=service
+    )
+    convert_type = args.pop("convert_type", False)
     # Create fresh dictionary of args without any None values
     args = {k: v for k, v in args.items() if v is not None}
     # Build API request
     req = _construct_api_requests(**args)
     # Run API request and iterate through pages if needed
-    return_list = _walk_pages(geopd=geopd, req=req, max_results=max_results)
+    return_list, response = _walk_pages(
+        geopd=GEOPANDAS, req=req, max_results=max_results
+    )
     # Manage some aspects of the returned dataset
     return_list = _deal_with_empty(return_list, properties, service)
-    if convertType:
+    if convert_type:
         return_list = _cleanup_cols(return_list, service=service)
     return_list = _arrange_cols(return_list, properties, output_id)
-    # Add metadata
-    return_list.attrs.update(request=req.url, queryTime=pd.Timestamp.now())
-    return return_list
+    # Create metadata object from response
+    metadata = BaseMetadata(response)
+    return return_list, metadata
 
 
 # def _get_description(service: str):
