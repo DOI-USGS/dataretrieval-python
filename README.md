@@ -6,124 +6,219 @@
 
 ## Latest Announcements
 
-:mega: **10/01/2025:** `dataretrieval` is pleased to offer a new, *in-development* module, `waterdata`, which gives users access USGS's modernized [Water Data APIs](https://api.waterdata.usgs.gov/). The Water Data API endpoints include daily values, instantaneous values, field measurements (modernized groundwater levels service), time series metadata, and discrete water quality data from the Samples database. Though there will be a period of overlap, the functions within `waterdata` will eventually replace the `nwis` module, which currently provides access to the legacy [NWIS Water Services](https://waterservices.usgs.gov/). More example workflows and functions coming soon. Check `help(waterdata)` for more information.
+:mega: **10/01/2025:** `dataretrieval` now features the new `waterdata` module,
+which provides access to USGS's modernized [Water Data
+APIs](https://api.waterdata.usgs.gov/). The Water Data API endpoints include
+daily values, instantaneous values, field measurements, time series metadata,
+and discrete water quality data from the Samples database. This new module will
+eventually replace the `nwis` module, which provides access to the legacy [NWIS
+Water Services](https://waterservices.usgs.gov/).
 
-**Important:** Users of the Water Data APIs are strongly encouraged to obtain an API key, which gives users higher rate limits and thus greater access to USGS data. [Register for an API key](https://api.waterdata.usgs.gov/signup/) and then place that API key in your python environment as an environment variable named "API_USGS_PAT". One option is to set the variable as follows:
+**Important:** Users of the Water Data APIs are strongly encouraged to obtain an
+API key for higher rate limits and greater access to USGS data. [Register for
+an API key](https://api.waterdata.usgs.gov/signup/) and set it as an
+environment variable:
 
 ```python
 import os
 os.environ["API_USGS_PAT"] = "your_api_key_here"
 ```
-Note that you may need to restart your python session for the environment variable to be recognized.
 
-Check out the [NEWS](NEWS.md) file for all updates and announcements, or track updates to the package via the GitHub releases.
+Check out the [NEWS](NEWS.md) file for all updates and announcements.
 
 ## What is dataretrieval?
-`dataretrieval` was created to simplify the process of loading hydrologic data into the Python environment.
-Like the original R version [`dataRetrieval`](https://github.com/DOI-USGS/dataRetrieval),
-it is designed to retrieve the major data types of U.S. Geological Survey (USGS) hydrology
-data that are available on the Web, as well as data from the Water
-Quality Portal (WQP), which currently houses water quality data from the
-Environmental Protection Agency (EPA), U.S. Department of Agriculture
-(USDA), and USGS. Direct USGS data is obtained from a service called the
-National Water Information System (NWIS).
 
-Note that the python version is not a direct port of the original: it attempts to reproduce the functionality of the R package, though its organization and interface often differ.
+`dataretrieval` simplifies the process of loading hydrologic data into Python.
+Like the original R version
+[`dataRetrieval`](https://github.com/DOI-USGS/dataRetrieval), it retrieves major
+U.S. Geological Survey (USGS) hydrology data types available on the Web, as well
+as data from the Water Quality Portal (WQP) and Network Linked Data Index
+(NLDI).
 
-If there's a hydrologic or environmental data portal that you'd like dataretrieval to 
-work with, raise it as an [issue](https://github.com/USGS-python/dataretrieval/issues).
+## Usage Examples
 
-Here's an example using `dataretrieval` to retrieve data from the National Water Information System (NWIS).
+### Water Data API (Recommended - Modern USGS Data)
+
+The `waterdata` module provides access to modern USGS Water Data APIs:
 
 ```python
-# first import the functions for downloading data from NWIS
+import dataretrieval.waterdata as waterdata
+
+# Get daily streamflow data (returns DataFrame and metadata)
+df, metadata = waterdata.get_daily(
+    monitoring_location_id='USGS-01646500', 
+    parameter_code='00060',  # Discharge
+    time='2024-10-01/2024-10-02'
+)
+
+print(f"Retrieved {len(df)} records")
+print(f"Site: {df['monitoring_location_id'].iloc[0]}")
+print(f"Mean discharge: {df['value'].mean():.2f} {df['unit_of_measure'].iloc[0]}")
+```
+
+```python
+# Get monitoring location information
+locations, metadata = waterdata.get_monitoring_locations(
+    state_name='Maryland',
+    site_type_code='ST'  # Stream sites
+)
+
+print(f"Found {len(locations)} stream monitoring locations in Maryland")
+```
+
+### NWIS Legacy Services (Deprecated but still functional)
+
+The `nwis` module accesses legacy NWIS Water Services:
+
+```python
 import dataretrieval.nwis as nwis
 
-# specify the USGS site code for which we want data.
-site = '03339000'
+# Get site information
+info, metadata = nwis.get_info(sites='01646500')
+    
+print(f"Site name: {info['station_nm'].iloc[0]}")
 
-# get instantaneous values (iv)
-df = nwis.get_record(sites=site, service='iv', start='2017-12-31', end='2018-01-01')
-
-# get basic info about the site
-df2 = nwis.get_record(sites=site, service='site')
+# Get daily values
+dv, metadata = nwis.get_dv(
+  sites='01646500',
+  start='2024-10-01',
+  end='2024-10-02',
+  parameterCd='00060',
+)
+    
+print(f"Retrieved {len(dv)} daily values")
 ```
-Services available from NWIS include:
-- instantaneous values (iv)
-- daily values (dv)
-- statistics (stat)
-- site info (site)
-- discharge peaks (peaks)
-- discharge measurements (measurements)
 
-Water quality data are available from:
-- [Samples](https://waterdata.usgs.gov/download-samples/#dataProfile=site) - Discrete USGS water quality data only
-- [Water Quality Portal](https://www.waterqualitydata.us/) - Discrete water quality data from USGS and EPA. Older data are available in the legacy WQX version 2 format; all data are available in the beta WQX3.0 format.
+### Water Quality Portal (WQP)
 
-To access the full functionality available from NWIS web services, `nwis.get_record()` appends any additional kwargs into the REST request. For example, this function call:
+Access water quality data from multiple agencies:
+
 ```python
-nwis.get_record(sites='03339000', service='dv', start='2017-12-31', parameterCd='00060')
-```
-...will download daily data with the parameter code 00060 (discharge).
+import dataretrieval.wqp as wqp
 
-## Accessing the "Internal" NWIS
-If you're connected to the USGS network, dataretrieval call pull from the internal (non-public) NWIS interface.
-Most dataretrieval functions pass kwargs directly to NWIS's REST API, which provides simple access to internal data; simply specify "access='3'".
-For example
+# Find water quality monitoring sites
+sites = wqp.what_sites(
+    statecode='US:55',  # Wisconsin
+    siteType='Stream'
+)
+
+print(f"Found {len(sites)} stream monitoring sites in Wisconsin")
+
+# Get water quality results
+results = wqp.get_results(
+    siteid='USGS-05427718',
+    characteristicName='Temperature, water'
+)
+
+print(f"Retrieved {len(results)} temperature measurements")
+```
+
+### Network Linked Data Index (NLDI)
+
+Discover and navigate hydrologic networks:
+
 ```python
-nwis.get_record(sites='05404147',service='iv', start='2021-01-01', end='2021-3-01', access='3')
+import dataretrieval.nldi as nldi
+
+# Get watershed basin for a stream reach
+basin = nldi.get_basin(
+    feature_source='comid',
+    feature_id='13293474'  # NHD reach identifier  
+)
+
+print(f"Basin contains {len(basin)} feature(s)")
+
+# Find upstream flowlines
+flowlines = nldi.get_flowlines(
+    feature_source='comid',
+    feature_id='13293474',
+    navigation_mode='UT',  # Upstream tributaries
+    distance=50  # km
+)
+
+print(f"Found {len(flowlines)} upstream tributaries within 50km")
 ```
 
-## Quick start
+## Available Data Services
 
-dataretrieval can be installed using pip:
-	
-    $ python3 -m pip install -U dataretrieval
+### Modern USGS Water Data APIs (Recommended)
+- **Daily values**: Daily statistical summaries (mean, min, max)
+- **Instantaneous values**: High-frequency continuous data  
+- **Field measurements**: Discrete measurements from field visits
+- **Monitoring locations**: Site information and metadata
+- **Time series metadata**: Information about available data parameters
 
-or conda:
+### Legacy NWIS Services (Deprecated)
+- **Daily values (dv)**: Legacy daily statistical data
+- **Instantaneous values (iv)**: Legacy continuous data
+- **Site info (site)**: Basic site information  
+- **Statistics (stat)**: Statistical summaries
+- **Discharge peaks (peaks)**: Annual peak discharge events
+- **Discharge measurements (measurements)**: Direct flow measurements
 
-    $ conda install -c conda-forge dataretrieval
+### Water Quality Portal
+- **Results**: Water quality analytical results from USGS, EPA, and other agencies
+- **Sites**: Monitoring location information
+- **Organizations**: Data provider information
+- **Projects**: Sampling project details
 
-More examples of use are include in [`demos`](https://github.com/USGS-python/dataretrieval/tree/main/demos).
+### Network Linked Data Index (NLDI)
+- **Basin delineation**: Watershed boundaries for any point
+- **Flow navigation**: Upstream/downstream network traversal
+- **Feature discovery**: Find monitoring sites, dams, and other features
+- **Hydrologic connectivity**: Link data across the stream network
 
-## Issue tracker
+## Installation
 
-Please report any bugs and enhancement ideas using the dataretrieval issue
-tracker:
+Install dataretrieval using pip:
 
-  https://github.com/USGS-python/dataretrieval/issues
+```bash
+pip install dataretrieval
+```
 
-Feel free to also ask questions on the tracker.
+Or using conda:
 
+```bash
+conda install -c conda-forge dataretrieval
+```
+
+## More Examples
+
+Explore additional examples in the
+[`demos`](https://github.com/USGS-python/dataretrieval/tree/main/demos)
+directory, including Jupyter notebooks demonstrating advanced usage patterns.
+
+## Getting Help
+
+- **Issue tracker**: Report bugs and request features at https://github.com/USGS-python/dataretrieval/issues
+- **Documentation**: Full API documentation available in the source code docstrings
 
 ## Contributing
 
-Any help in testing, development, documentation and other tasks is welcome.
-For more details, see the file [CONTRIBUTING.md](CONTRIBUTING.md).
-
-
-## Need help?
-
-The Water Mission Area of the USGS supports the development and maintenance of `dataretrieval`. Any questions can be directed to the Computational Tools team at comptools@usgs.gov. 
-
-Resources are available primarily for maintenance and responding to user questions.
-Priorities on the development of new features are determined by the `dataretrieval` development team.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for
+development guidelines.
 
 ## Acknowledgments
-This material is partially based upon work supported by the National Science Foundation (NSF) under award 1931297.
-Any opinions, findings, conclusions, or recommendations expressed in this material are those of the authors and do not necessarily reflect the views of the NSF.
+
+This material is partially based upon work supported by the National Science
+Foundation (NSF) under award 1931297. Any opinions, findings, conclusions, or
+recommendations expressed in this material are those of the authors and do not
+necessarily reflect the views of the NSF.
 
 ## Disclaimer
 
-This software is preliminary or provisional and is subject to revision. 
-It is being provided to meet the need for timely best science.
-The software has not received final approval by the U.S. Geological Survey (USGS).
-No warranty, expressed or implied, is made by the USGS or the U.S. Government as to the functionality of the software and related material nor shall the fact of release constitute any such warranty. 
-The software is provided on the condition that neither the USGS nor the U.S. Government shall be held liable for any damages resulting from the authorized or unauthorized use of the software.
+This software is preliminary or provisional and is subject to revision. It is
+being provided to meet the need for timely best science. The software has not
+received final approval by the U.S. Geological Survey (USGS). No warranty,
+expressed or implied, is made by the USGS or the U.S. Government as to the
+functionality of the software and related material nor shall the fact of release
+constitute any such warranty. The software is provided on the condition that
+neither the USGS nor the U.S. Government shall be held liable for any damages
+resulting from the authorized or unauthorized use of the software.
 
 ## Citation
 
-Hodson, T.O., Hariharan, J.A., Black, S., and Horsburgh, J.S., 2023, dataretrieval (Python): a Python package for discovering
-and retrieving water data available from U.S. federal hydrologic web services:
-U.S. Geological Survey software release,
-https://doi.org/10.5066/P94I5TX3.
+Hodson, T.O., Hariharan, J.A., Black, S., and Horsburgh, J.S., 2023,
+dataretrieval (Python): a Python package for discovering and retrieving water
+data available from U.S. federal hydrologic web services: U.S. Geological Survey
+software release, https://doi.org/10.5066/P94I5TX3.
