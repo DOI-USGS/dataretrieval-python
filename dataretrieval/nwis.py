@@ -36,7 +36,6 @@ ALLPARAMCODES_URL = "https://help.waterdata.usgs.gov/code/parameter_cd_query?"
 
 WATERSERVICES_SERVICES = ["dv", "iv", "site", "stat"]
 WATERDATA_SERVICES = [
-    "qwdata",
     "gwlevels",
     "measurements",
     "peaks",
@@ -135,125 +134,13 @@ def get_qwdata(
     **kwargs,
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """
-    Get water sample data from qwdata service.
-
-    .. warning::
-
-        WARNING: Beginning in March 2024 the NWIS qw data endpoint will
-        not deliver new data or updates to existing data.
-        Eventually the endpoint will be retired. For updated information visit:
-        https://waterdata.usgs.gov.nwis/qwdata
-        For additional details, see the R package vignette:
-        https://doi-usgs.github.io/dataRetrieval/articles/Status.html
-        If you have additional questions about the qw data service,
-        email CompTools@usgs.gov.
-
-    Parameters
-    ----------
-    sites: string or list of strings, optional, default is None
-        If the qwdata parameter site_no is supplied, it will overwrite the
-        sites parameter
-    start: string, optional, default is None
-        If the qwdata parameter begin_date is supplied, it will overwrite the
-        start parameter (YYYY-MM-DD)
-    end: string, optional, default is None
-        If the qwdata parameter end_date is supplied, it will overwrite the
-        end parameter (YYYY-MM-DD)
-    multi_index: bool, optional
-        If False, a dataframe with a single-level index (datetime) is returned,
-        default is True
-    wide_format : bool, optional
-        If True, return data in wide format with multiple samples per row and
-        one row per time, default is True
-    datetime_index : bool, optional
-        If True, create a datetime index, default is True
-    ssl_check: bool, optional
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
-    **kwargs: optional
-        If supplied, will be used as query parameters
-
-    Returns
-    -------
-    df: ``pandas.DataFrame``
-        Times series data from the NWIS JSON
-    md: :obj:`dataretrieval.utils.Metadata`
-        A custom metadata object
-
-    Examples
-    --------
-    .. doctest::
-
-        >>> # get water sample information for site 11447650
-        >>> df, md = dataretrieval.nwis.get_qwdata(
-        ...     sites="11447650", start="2010-01-01", end="2010-02-01"
-        ... )
+    Get water sample data from qwdata service - deprecated, use `get_samples()`
+    in the waterdata module.
 
     """
-    warnings.warn(
-        (
-            "WARNING: Starting in March 2024, the NWIS qw data endpoint is "
-            "retiring and no longer receives updates. For more information, "
-            "refer to https://waterdata.usgs.gov.nwis/qwdata and "
-            "https://doi-usgs.github.io/dataRetrieval/articles/Status.html "
-            "or email CompTools@usgs.gov."
+    raise NameError(
+        "`nwis.get_qwdata` has been replaced with `waterdata.get_samples()`."
         )
-    )
-
-    _check_sites_value_types(sites)
-
-    kwargs["site_no"] = kwargs.pop("site_no", sites)
-    kwargs["begin_date"] = kwargs.pop("begin_date", start)
-    kwargs["end_date"] = kwargs.pop("end_date", end)
-    kwargs["multi_index"] = multi_index
-    if wide_format:
-        kwargs["qw_sample_wide"] = "qw_sample_wide"
-
-    payload = {
-        "agency_cd": "USGS",
-        "format": "rdb",
-        "pm_cd_compare": "Greater than",
-        "inventory_output": "0",
-        "rdb_inventory_output": "file",
-        "TZoutput": "0",
-        "rdb_qw_attributes": "expanded",
-        "date_format": "YYYY-MM-DD",
-        "rdb_compression": "value",
-        "submitted_form": "brief_list",
-    }
-
-    # check for parameter codes, and reformat query args
-    qwdata_parameter_code_field = "parameterCd"
-    if kwargs.get(qwdata_parameter_code_field):
-        parameter_codes = kwargs.pop(qwdata_parameter_code_field)
-        parameter_codes = to_str(parameter_codes)
-        kwargs["multiple_parameter_cds"] = parameter_codes
-        kwargs["param_cd_operator"] = "OR"
-
-        search_criteria = kwargs.get("list_of_search_criteria")
-        if search_criteria:
-            kwargs["list_of_search_criteria"] = "{},{}".format(
-                search_criteria, "multiple_parameter_cds"
-            )
-        else:
-            kwargs["list_of_search_criteria"] = "multiple_parameter_cds"
-
-    kwargs.update(payload)
-
-    warnings.warn(
-        "NWIS qw web services are being retired. "
-        + "See this note from the R package for more: "
-        + "https://doi-usgs.github.io/dataRetrieval/articles/qwdata_changes.html",
-        category=DeprecationWarning,
-    )
-    response = query_waterdata("qwdata", ssl_check=ssl_check, **kwargs)
-
-    df = _read_rdb(response.text)
-
-    if datetime_index is True:
-        df = format_datetime(df, "sample_dt", "sample_tm", "sample_start_time_datum_cd")
-
-    return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
 
 def get_discharge_measurements(
@@ -269,14 +156,10 @@ def get_discharge_measurements(
     Parameters
     ----------
     sites: string or list of strings, optional, default is None
-        If the qwdata parameter site_no is supplied, it will overwrite the
-        sites parameter
-    start: string, optional, default is None
-        If the qwdata parameter begin_date is supplied, it will overwrite the
-        start parameter (YYYY-MM-DD)
+    start: string, optional, default is None 
+        Supply date in the format: YYYY-MM-DD
     end: string, optional, default is None
-        If the qwdata parameter end_date is supplied, it will overwrite the
-        end parameter (YYYY-MM-DD)
+        Supply date in the format: YYYY-MM-DD
     ssl_check: bool, optional
         If True, check SSL certificates, if False, do not check SSL,
         default is True
@@ -460,6 +343,13 @@ def get_gwlevels(
 
     if datetime_index is True:
         df = format_datetime(df, "lev_dt", "lev_tm", "lev_tz_cd")
+    
+    # Filter by kwarg parameterCd because the service doesn't do it
+    if "parameterCd" in kwargs:
+        pcodes = kwargs["parameterCd"]
+        if isinstance(pcodes, str):
+            pcodes = [pcodes]
+        df = df[df["parameter_cd"].isin(pcodes)]
 
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
@@ -1183,7 +1073,6 @@ def get_record(
     service: string, default is 'iv'
         - 'iv' : instantaneous data
         - 'dv' : daily mean data
-        - 'qwdata' : discrete samples
         - 'site' : site description
         - 'measurements' : discharge measurements
         - 'peaks': discharge peaks
@@ -1211,9 +1100,6 @@ def get_record(
 
         >>> # Get latest daily mean data from site 01585200
         >>> df = dataretrieval.nwis.get_record(sites="01585200", service="dv")
-
-        >>> # Get all discrete sample data from site 01585200
-        >>> df = dataretrieval.nwis.get_record(sites="01585200", service="qwdata")
 
         >>> # Get site description for site 01585200
         >>> df = dataretrieval.nwis.get_record(sites="01585200", service="site")
@@ -1275,18 +1161,6 @@ def get_record(
             startDT=start,
             endDT=end,
             multi_index=multi_index,
-            ssl_check=ssl_check,
-            **kwargs,
-        )
-        return df
-
-    elif service == "qwdata":
-        df, _ = get_qwdata(
-            site_no=sites,
-            begin_date=start,
-            end_date=end,
-            multi_index=multi_index,
-            wide_format=wide_format,
             ssl_check=ssl_check,
             **kwargs,
         )

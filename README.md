@@ -4,7 +4,8 @@
 ![Conda Version](https://img.shields.io/conda/v/conda-forge/dataretrieval)
 ![Downloads](https://static.pepy.tech/badge/dataretrieval)
 
-:warning: USGS data availability and format are changing on Water Quality Portal (WQP). Since March 2024, data obtained from WQP legacy profiles will not include new USGS data or recent updates to existing data. 
+:warning: USGS data availability and format have changed on Water Quality Portal (WQP). Since March 2024, data obtained from WQP legacy profiles will not include new USGS data or recent updates to existing data. All USGS data (up to and beyond March 2024) are available using the new WQP beta services. You can access the beta services by setting `legacy=False` in the functions in the `wqp` module.
+
 To view the status of changes in data availability and code functionality, visit: https://doi-usgs.github.io/dataRetrieval/articles/Status.html
 
 :mega: **09/03/2024:** The groundwater levels service has switched endpoints, and `dataretrieval` was updated accordingly in [`v1.0.10`](https://github.com/DOI-USGS/dataretrieval-python/releases/tag/v1.0.10). Older versions using the discontinued endpoint will return 503 errors for `nwis.get_gwlevels` or the `service='gwlevels'` argument. Visit [Water Data For the Nation](https://waterdata.usgs.gov/blog/wdfn-waterservices-2024/) for more information.
@@ -34,15 +35,11 @@ import dataretrieval.nwis as nwis
 # specify the USGS site code for which we want data.
 site = '03339000'
 
-
 # get instantaneous values (iv)
 df = nwis.get_record(sites=site, service='iv', start='2017-12-31', end='2018-01-01')
 
-# get water quality samples (qwdata)
-df2 = nwis.get_record(sites=site, service='qwdata', start='2017-12-31', end='2018-01-01')
-
 # get basic info about the site
-df3 = nwis.get_record(sites=site, service='site')
+df2 = nwis.get_record(sites=site, service='site')
 ```
 Services available from NWIS include:
 - instantaneous values (iv)
@@ -51,13 +48,16 @@ Services available from NWIS include:
 - site info (site)
 - discharge peaks (peaks)
 - discharge measurements (measurements)
-* water quality samples (qwdata)
 
-To access the full functionality available from NWIS web services, nwis.get record appends any additional kwargs into the REST request. For example
+Water quality data are available from:
+- [Samples](https://waterdata.usgs.gov/download-samples/#dataProfile=site) - Discrete USGS water quality data only
+- [Water Quality Portal](https://www.waterqualitydata.us/) - Discrete water quality data from USGS and EPA. Older data are available in the legacy WQX version 2 format; all data are available in the beta WQX3.0 format.
+
+To access the full functionality available from NWIS web services, nwis.get record appends any additional kwargs into the REST request. For example, this function call:
 ```python
 nwis.get_record(sites='03339000', service='dv', start='2017-12-31', parameterCd='00060')
 ```
-will download daily data with the parameter code 00060 (discharge).
+...will download daily data with the parameter code 00060 (discharge).
 
 ## Accessing the "Internal" NWIS
 If you're connected to the USGS network, dataretrieval call pull from the internal (non-public) NWIS interface.
@@ -97,9 +97,11 @@ Any help in testing, development, documentation and other tasks is welcome.
 For more details, see the file [CONTRIBUTING.md](CONTRIBUTING.md).
 
 
-## Package Support
-The Water Mission Area of the USGS supports the development and maintenance of `dataretrieval`
-and most likely further into the future.
+## Need help?
+
+The Water Mission Area of the USGS supports the development and maintenance of `dataretrieval`. Any questions can be directed to the Computational Tools team at 
+comptools@usgs.gov. 
+
 Resources are available primarily for maintenance and responding to user questions.
 Priorities on the development of new features are determined by the `dataretrieval` development team.
 
