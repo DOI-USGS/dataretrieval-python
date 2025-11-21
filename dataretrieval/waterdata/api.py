@@ -174,7 +174,7 @@ def get_daily(
 
         >>> # Get daily flow data from a single site
         >>> # over a yearlong period
-        >>> df = dataretrieval.waterdata.get_daily(
+        >>> df, metadata = dataretrieval.waterdata.get_daily(
         ...     monitoring_location_id="USGS-02238500",
         ...     parameter_code="00060",
         ...     time="2021-01-01T00:00:00Z/2022-01-01T00:00:00Z",
@@ -680,7 +680,7 @@ def get_time_series_metadata(
 
         >>> # Get monitoring location info for specific sites
         >>> # and only specific properties
-        >>> df = dataretrieval.waterdata.get_time_series_metadata(
+        >>> df, metadata = dataretrieval.waterdata.get_time_series_metadata(
         ...     monitoring_location_id = ["USGS-05114000", "USGS-09423350"],
         ...     time = "2024-01-01/.."
     """
@@ -715,7 +715,7 @@ def get_latest_continuous(
     limit: Optional[int] = None,
     max_results: Optional[int] = None,
     convert_type: bool = True,
-) -> pd.DataFrame:
+) -> Tuple[pd.DataFrame, BaseMetadata]:
     """This endpoint provides the most recent observation for each time series
     of continuous data. Continuous data are collected via automated sensors
     installed at a monitoring location. They are collected at a high frequency
@@ -885,7 +885,7 @@ def get_field_measurements(
     limit: Optional[int] = None,
     max_results: Optional[int] = None,
     convert_type: bool = True,
-) -> pd.DataFrame:
+) -> Tuple[pd.DataFrame, BaseMetadata]:
     """Field measurements are physically measured values collected during a
     visit to the monitoring location. Field measurements consist of measurements
     of gage height and discharge, and readings of groundwater levels, and are
