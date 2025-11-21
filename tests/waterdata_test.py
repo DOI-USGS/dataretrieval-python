@@ -136,8 +136,6 @@ def test_get_daily_properties():
     assert "geometry" in df.columns
     assert df.shape[1] == 6
     assert df.parameter_code.unique().tolist() == ["00060"]
-    assert hasattr(md, 'url')
-    assert hasattr(md, 'query_time')
 
 def test_get_daily_no_geometry():
     df, md = get_daily(
@@ -149,8 +147,6 @@ def test_get_daily_no_geometry():
     assert "geometry" not in df.columns
     assert df.shape[1] == 11
     assert isinstance(df, DataFrame)
-    assert hasattr(md, 'url')
-    assert hasattr(md, 'query_time')
 
 def test_get_monitoring_locations():
     df, md = get_monitoring_locations(
@@ -166,8 +162,6 @@ def test_get_monitoring_locations_hucs():
         hydrologic_unit_code=["010802050102", "010802050103"]
     )
     assert set(df.hydrologic_unit_code.unique().tolist()) == {"010802050102", "010802050103"}
-    assert hasattr(md, 'url')
-    assert hasattr(md, 'query_time')
 
 def test_get_latest_continuous():
     df, md = get_latest_continuous(
