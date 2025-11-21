@@ -44,7 +44,7 @@ def get_daily(
     limit: Optional[int] = None,
     max_results: Optional[int] = None,
     convert_type: bool = True,
-) -> pd.DataFrame:
+) -> Tuple[pd.DataFrame, BaseMetadata]:
     """Daily data provide one data value to represent water conditions for the
     day.
 
