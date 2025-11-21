@@ -11,8 +11,6 @@ from dataretrieval.waterdata import (
     get_latest_continuous,
     get_field_measurements,
     get_time_series_metadata,
-    SERVICES,
-    PROFILES,
 )
 
 def mock_request(requests_mock, request_url, file_path):
