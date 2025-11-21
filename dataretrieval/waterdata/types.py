@@ -1,6 +1,5 @@
 from typing import Literal
 
-
 CODE_SERVICES = Literal[
     "characteristicgroup",
     "characteristics",

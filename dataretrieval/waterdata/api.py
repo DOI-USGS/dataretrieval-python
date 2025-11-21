@@ -7,7 +7,7 @@ See https://api.waterdata.usgs.gov/ for API reference.
 import json
 import logging
 from io import StringIO
-from typing import Optional, List, Tuple, Union, get_args
+from typing import List, Optional, Tuple, Union, get_args
 
 import pandas as pd
 import requests
@@ -96,7 +96,15 @@ def get_daily(
     approval_status : string or list of strings, optional
         Some of the data that you have obtained from this U.S. Geological Survey
         database may not have received Director's approval. Any such data values
-        are qualified as provisional and are subject to revision.
+        are qualified as provisional and are subject to revision. Provisional
+        data are released on the condition that neither the USGS nor the United
+        States Government may be held liable for any damages resulting from its
+        use. This field reflects the approval status of each record, and is either
+        "Approved", meaining processing review has been completed and the data is
+        approved for publication, or "Provisional" and subject to revision. For
+        more information about provisional data, go to
+        [https://waterdata.usgs.gov/provisional-data-statement/]
+        (https://waterdata.usgs.gov/provisional-data-statement/).
     unit_of_measure : string or list of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
@@ -765,7 +773,15 @@ def get_latest_continuous(
     approval_status : string or list of strings, optional
         Some of the data that you have obtained from this U.S. Geological Survey
         database may not have received Director's approval. Any such data values
-        are qualified as provisional and are subject to revision.
+        are qualified as provisional and are subject to revision. Provisional
+        data are released on the condition that neither the USGS nor the United
+        States Government may be held liable for any damages resulting from its
+        use. This field reflects the approval status of each record, and is either
+        "Approved", meaining processing review has been completed and the data is
+        approved for publication, or "Provisional" and subject to revision. For
+        more information about provisional data, go to
+        [https://waterdata.usgs.gov/provisional-data-statement/]
+        (https://waterdata.usgs.gov/provisional-data-statement/).
     unit_of_measure : string or list of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
@@ -921,7 +937,15 @@ def get_field_measurements(
     approval_status : string or list of strings, optional
         Some of the data that you have obtained from this U.S. Geological Survey
         database may not have received Director's approval. Any such data values
-        are qualified as provisional and are subject to revision.
+        are qualified as provisional and are subject to revision. Provisional
+        data are released on the condition that neither the USGS nor the United
+        States Government may be held liable for any damages resulting from its
+        use. This field reflects the approval status of each record, and is either
+        "Approved", meaining processing review has been completed and the data is
+        approved for publication, or "Provisional" and subject to revision. For
+        more information about provisional data, go to
+        [https://waterdata.usgs.gov/provisional-data-statement/]
+        (https://waterdata.usgs.gov/provisional-data-statement/).
     unit_of_measure : string or list of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
