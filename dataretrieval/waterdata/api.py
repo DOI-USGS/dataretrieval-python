@@ -175,6 +175,8 @@ def get_daily(
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
 
     Examples
     --------
@@ -182,7 +184,7 @@ def get_daily(
 
         >>> # Get daily flow data from a single site
         >>> # over a yearlong period
-        >>> df, metadata = dataretrieval.waterdata.get_daily(
+        >>> df, md = dataretrieval.waterdata.get_daily(
         ...     monitoring_location_id="USGS-02238500",
         ...     parameter_code="00060",
         ...     time="2021-01-01T00:00:00Z/2022-01-01T00:00:00Z",
@@ -190,7 +192,7 @@ def get_daily(
 
         >>> # Get monitoring location info for specific sites
         >>> # and only specific properties
-        >>> df = dataretrieval.waterdata.get_daily(
+        >>> df, md = dataretrieval.waterdata.get_daily(
         ...     monitoring_location_id = ["USGS-05114000", "USGS-09423350"],
         ...     approval_status = "Approved",
         ...     time = "2024-01-01/.."
@@ -484,6 +486,8 @@ def get_monitoring_locations(
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
 
     Examples
     --------
@@ -491,13 +495,13 @@ def get_monitoring_locations(
 
         >>> # Get monitoring locations within a bounding box
         >>> # and leave out geometry
-        >>> df = dataretrieval.waterdata.get_monitoring_locations(
+        >>> df, md = dataretrieval.waterdata.get_monitoring_locations(
         ...     bbox=[-90.2, 42.6, -88.7, 43.2], skip_geometry=True
         ... )
 
         >>> # Get monitoring location info for specific sites
         >>> # and only specific properties
-        >>> df = dataretrieval.waterdata.get_monitoring_locations(
+        >>> df, md = dataretrieval.waterdata.get_monitoring_locations(
         ...     monitoring_location_id=["USGS-05114000", "USGS-09423350"],
         ...     properties=["monitoring_location_id", "state_name", "country_name"],
         ... )
@@ -673,6 +677,8 @@ def get_time_series_metadata(
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
 
     Examples
     --------
@@ -680,7 +686,7 @@ def get_time_series_metadata(
 
         >>> # Get daily flow data from a single site
         >>> # over a yearlong period
-        >>> df, metadata = dataretrieval.waterdata.get_time_series_metadata(
+        >>> df, md = dataretrieval.waterdata.get_time_series_metadata(
         ...     monitoring_location_id="USGS-02238500",
         ...     parameter_code="00060",
         ...     time="2021-01-01T00:00:00Z/2022-01-01T00:00:00Z",
@@ -688,7 +694,7 @@ def get_time_series_metadata(
 
         >>> # Get monitoring location info for specific sites
         >>> # and only specific properties
-        >>> df, metadata = dataretrieval.waterdata.get_time_series_metadata(
+        >>> df, md = dataretrieval.waterdata.get_time_series_metadata(
         ...     monitoring_location_id = ["USGS-05114000", "USGS-09423350"],
         ...     time = "2024-01-01/.."
     """
@@ -851,6 +857,8 @@ def get_latest_continuous(
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
 
     Examples
     --------
@@ -858,13 +866,13 @@ def get_latest_continuous(
 
         >>> # Get daily flow data from a single site
         >>> # over a yearlong period
-        >>> df = dataretrieval.waterdata.get_latest_continuous(
+        >>> df, md = dataretrieval.waterdata.get_latest_continuous(
         ...     monitoring_location_id="USGS-02238500", parameter_code="00060"
         ... )
 
         >>> # Get monitoring location info for specific sites
         >>> # and only specific properties
-        >>> df = dataretrieval.waterdata.get_daily(
+        >>> df, md = dataretrieval.waterdata.get_daily(
         ...     monitoring_location_id=["USGS-05114000", "USGS-09423350"]
         ... )
     """
@@ -1019,6 +1027,8 @@ def get_field_measurements(
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
 
     Examples
     --------
@@ -1026,7 +1036,7 @@ def get_field_measurements(
 
         >>> # Get daily flow data from a single site
         >>> # over a yearlong period
-        >>> df = dataretrieval.waterdata.get_field_measurements(
+        >>> df, md = dataretrieval.waterdata.get_field_measurements(
         ...     monitoring_location_id="USGS-375907091432201",
         ...     parameter_code="72019",
         ...     skip_geometry=True,
@@ -1034,7 +1044,7 @@ def get_field_measurements(
 
         >>> # Get monitoring location info for specific sites
         >>> # and only specific properties
-        >>> df = dataretrieval.waterdata.get_field_measurements(
+        >>> df, md = dataretrieval.waterdata.get_field_measurements(
         ...     monitoring_location_id = ["USGS-451605097071701",
                                           "USGS-263819081585801"],
         ...     parameter_code = ["62611", "72019"],
