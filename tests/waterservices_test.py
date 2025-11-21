@@ -93,7 +93,7 @@ def test_get_dv(requests_mock):
         "https://waterservices.usgs.gov/nwis/dv?format={}"
         "&startDT=2020-02-14&endDT=2020-02-15&sites={}".format(format, site)
     )
-    response_file_path = "data/waterservices_dv.txt"
+    response_file_path = "tests/data/waterservices_dv.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_dv(
         sites=["01491000", "01645000"], start="2020-02-14", end="2020-02-15"
@@ -115,7 +115,7 @@ def test_get_dv_site_value_types(requests_mock, site_input_type_list):
         "https://waterservices.usgs.gov/nwis/dv?format={}"
         "&startDT=2020-02-14&endDT=2020-02-15&sites={}".format(_format, site)
     )
-    response_file_path = "data/waterservices_dv.txt"
+    response_file_path = "tests/data/waterservices_dv.txt"
     mock_request(requests_mock, request_url, response_file_path)
     if site_input_type_list:
         sites = [site]
@@ -136,7 +136,7 @@ def test_get_iv(requests_mock):
         "https://waterservices.usgs.gov/nwis/iv?format={}"
         "&startDT=2019-02-14&endDT=2020-02-15&sites={}".format(format, site)
     )
-    response_file_path = "data/waterservices_iv.txt"
+    response_file_path = "tests/data/waterservices_iv.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_iv(
         sites=["01491000", "01645000"], start="2019-02-14", end="2020-02-15"
@@ -158,7 +158,7 @@ def test_get_iv_site_value_types(requests_mock, site_input_type_list):
         "https://waterservices.usgs.gov/nwis/iv?format={}"
         "&startDT=2019-02-14&endDT=2020-02-15&sites={}".format(_format, site)
     )
-    response_file_path = "data/waterservices_iv.txt"
+    response_file_path = "tests/data/waterservices_iv.txt"
     mock_request(requests_mock, request_url, response_file_path)
     if site_input_type_list:
         sites = [site]
@@ -183,7 +183,7 @@ def test_get_info(requests_mock):
     request_url = "https://waterservices.usgs.gov/nwis/site?sites={}&parameterCd={}&siteOutput=Expanded&format={}".format(
         site, parameter_cd, format
     )
-    response_file_path = "data/waterservices_site.txt"
+    response_file_path = "tests/data/waterservices_site.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_info(sites=["01491000", "01645000"], parameterCd="00618")
     if not isinstance(df, DataFrame):
@@ -210,7 +210,7 @@ def test_get_gwlevels(requests_mock):
         "https://nwis.waterdata.usgs.gov/nwis/gwlevels?format={}&begin_date=1851-01-01"
         "&site_no={}".format(format, site)
     )
-    response_file_path = "data/waterdata_gwlevels.txt"
+    response_file_path = "tests/data/waterdata_gwlevels.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_gwlevels(sites=site)
     if not isinstance(df, DataFrame):
@@ -229,7 +229,7 @@ def test_get_gwlevels_site_value_types(requests_mock, site_input_type_list):
         "https://nwis.waterdata.usgs.gov/nwis/gwlevels?format={}&begin_date=1851-01-01"
         "&site_no={}".format(_format, site)
     )
-    response_file_path = "data/waterdata_gwlevels.txt"
+    response_file_path = "tests/data/waterdata_gwlevels.txt"
     mock_request(requests_mock, request_url, response_file_path)
     if site_input_type_list:
         sites = [site]
@@ -249,7 +249,7 @@ def test_get_discharge_peaks(requests_mock):
         "https://nwis.waterdata.usgs.gov/nwis/peaks?format={}&site_no={}"
         "&begin_date=2000-02-14&end_date=2020-02-15".format(format, site)
     )
-    response_file_path = "data/waterservices_peaks.txt"
+    response_file_path = "tests/data/waterservices_peaks.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_discharge_peaks(sites=[site], start="2000-02-14", end="2020-02-15")
     if not isinstance(df, DataFrame):
@@ -269,7 +269,7 @@ def test_get_discharge_peaks_sites_value_types(requests_mock, site_input_type_li
         "https://nwis.waterdata.usgs.gov/nwis/peaks?format={}&site_no={}"
         "&begin_date=2000-02-14&end_date=2020-02-15".format(_format, site)
     )
-    response_file_path = "data/waterservices_peaks.txt"
+    response_file_path = "tests/data/waterservices_peaks.txt"
     mock_request(requests_mock, request_url, response_file_path)
     if site_input_type_list:
         sites = [site]
@@ -292,7 +292,7 @@ def test_get_discharge_measurements(requests_mock):
         "https://nwis.waterdata.usgs.gov/nwis/measurements?site_no={}"
         "&begin_date=2000-02-14&end_date=2020-02-15&format={}".format(site, format)
     )
-    response_file_path = "data/waterdata_measurements.txt"
+    response_file_path = "tests/data/waterdata_measurements.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_discharge_measurements(
         sites=[site], start="2000-02-14", end="2020-02-15"
@@ -315,7 +315,7 @@ def test_get_discharge_measurements_sites_value_types(
         "https://nwis.waterdata.usgs.gov/nwis/measurements?site_no={}"
         "&begin_date=2000-02-14&end_date=2020-02-15&format={}".format(site, format)
     )
-    response_file_path = "data/waterdata_measurements.txt"
+    response_file_path = "tests/data/waterdata_measurements.txt"
     mock_request(requests_mock, request_url, response_file_path)
     if site_input_type_list:
         sites = [site]
@@ -334,7 +334,7 @@ def test_get_pmcodes(requests_mock):
     DataFrame"""
     format = "rdb"
     request_url = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?fmt=rdb&parm_nm_cd=%2500618%25"
-    response_file_path = "data/waterdata_pmcodes.txt"
+    response_file_path = "tests/data/waterdata_pmcodes.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_pmcodes(parameterCd="00618")
     if not isinstance(df, DataFrame):
@@ -352,7 +352,7 @@ def test_get_pmcodes_parameterCd_value_types(
     parameterCd = "00618"
     request_url = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?fmt={}&parm_nm_cd=%25{}%25"
     request_url = request_url.format(_format, parameterCd)
-    response_file_path = "data/waterdata_pmcodes.txt"
+    response_file_path = "tests/data/waterdata_pmcodes.txt"
     mock_request(requests_mock, request_url, response_file_path)
     if parameterCd_input_type_list:
         parameterCd = [parameterCd]
@@ -372,7 +372,7 @@ def test_get_water_use_national(requests_mock):
         "https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format={}&wu_year=ALL"
         "&wu_category=ALL&wu_county=ALL".format(format)
     )
-    response_file_path = "data/water_use_national.txt"
+    response_file_path = "tests/data/water_use_national.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_water_use()
     if not isinstance(df, DataFrame):
@@ -390,7 +390,7 @@ def test_get_water_use_national_year_value_types(requests_mock, year_input_type_
         "https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format={}&wu_year=ALL"
         "&wu_category=ALL&wu_county=ALL".format(_format)
     )
-    response_file_path = "data/water_use_national.txt"
+    response_file_path = "tests/data/water_use_national.txt"
     mock_request(requests_mock, request_url, response_file_path)
     if year_input_type_list:
         years = [year]
@@ -412,7 +412,7 @@ def test_get_water_use_national_county_value_types(
         "https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format={}&wu_year=ALL"
         "&wu_category=ALL&wu_county=ALL".format(_format)
     )
-    response_file_path = "data/water_use_national.txt"
+    response_file_path = "tests/data/water_use_national.txt"
     mock_request(requests_mock, request_url, response_file_path)
     if county_input_type_list:
         counties = [county]
@@ -435,7 +435,7 @@ def test_get_water_use_national_county_value_types(
         "https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format={}&wu_year=ALL"
         "&wu_category=ALL&wu_county=ALL".format(_format)
     )
-    response_file_path = "data/water_use_national.txt"
+    response_file_path = "tests/data/water_use_national.txt"
     mock_request(requests_mock, request_url, response_file_path)
     if category_input_type_list:
         categories = [category]
@@ -455,7 +455,7 @@ def test_get_water_use_allegheny(requests_mock):
         "https://nwis.waterdata.usgs.gov/PA/nwis/water_use?rdb_compression=value&format=rdb&wu_year=ALL"
         "&wu_category=ALL&wu_county=003&wu_area=county"
     )
-    response_file_path = "data/water_use_allegheny.txt"
+    response_file_path = "tests/data/water_use_allegheny.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_water_use(state="PA", counties="003")
     if not isinstance(df, DataFrame):
@@ -481,7 +481,7 @@ def test_get_ratings(requests_mock):
     request_url = "https://nwis.waterdata.usgs.gov/nwisweb/get_ratings/?site_no={}&file_type=base".format(
         site
     )
-    response_file_path = "data/waterservices_ratings.txt"
+    response_file_path = "tests/data/waterservices_ratings.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_ratings(site_no=site)
     if not isinstance(df, DataFrame):
@@ -501,7 +501,7 @@ def test_what_sites(requests_mock):
         "https://waterservices.usgs.gov/nwis/site?bBox=-83.0%2C36.5%2C-81.0%2C38.5"
         "&parameterCd={}&hasDataTypeCd=dv&format={}".format(parameter_cd, format)
     )
-    response_file_path = "data/nwis_sites.txt"
+    response_file_path = "tests/data/nwis_sites.txt"
     mock_request(requests_mock, request_url, response_file_path)
 
     df, md = what_sites(
@@ -534,7 +534,7 @@ def test_get_stats(requests_mock):
     request_url = "https://waterservices.usgs.gov/nwis/stat?sites=01491000%2C01645000&format={}".format(
         format
     )
-    response_file_path = "data/waterservices_stats.txt"
+    response_file_path = "tests/data/waterservices_stats.txt"
     mock_request(requests_mock, request_url, response_file_path)
 
     df, md = get_stats(sites=["01491000", "01645000"])
@@ -552,7 +552,7 @@ def test_get_stats_site_value_types(requests_mock, site_input_type_list):
     request_url = "https://waterservices.usgs.gov/nwis/stat?sites={}&format={}".format(
         site, _format
     )
-    response_file_path = "data/waterservices_stats.txt"
+    response_file_path = "tests/data/waterservices_stats.txt"
     mock_request(requests_mock, request_url, response_file_path)
     if site_input_type_list:
         sites = [site]
@@ -579,7 +579,7 @@ def assert_metadata(requests_mock, request_url, md, site, parameter_cd, format):
         site_request_url = (
             "https://waterservices.usgs.gov/nwis/site?sites={}&format=rdb".format(site)
         )
-        with open("data/waterservices_site.txt") as text:
+        with open("tests/data/waterservices_site.txt") as text:
             requests_mock.get(site_request_url, text=text.read())
         site_info, _ = md.site_info
         if not isinstance(site_info, DataFrame):
@@ -591,7 +591,7 @@ def assert_metadata(requests_mock, request_url, md, site, parameter_cd, format):
             pcode_request_url = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?fmt=rdb&parm_nm_cd=%25{}%25".format(
                 param
             )
-            with open("data/waterdata_pmcodes.txt") as text:
+            with open("tests/data/waterdata_pmcodes.txt") as text:
                 requests_mock.get(pcode_request_url, text=text.read())
         variable_info, _ = md.variable_info
         assert type(variable_info) is DataFrame

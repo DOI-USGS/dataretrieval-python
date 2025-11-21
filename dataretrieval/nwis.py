@@ -2,13 +2,6 @@
 
 .. _National Water Information System (NWIS): https://waterdata.usgs.gov/nwis
 
-
-.. todo::
-
-    * Create a test to check whether functions pull multiple sites
-    * Work on multi-index capabilities.
-    * Check that all timezones are handled properly for each service.
-
 """
 
 import re
@@ -19,7 +12,7 @@ from typing import List, Optional, Tuple, Union
 import pandas as pd
 import requests
 
-from dataretrieval.utils import BaseMetadata, format_datetime, to_str
+from dataretrieval.utils import BaseMetadata, format_datetime
 
 from .utils import query
 
@@ -27,6 +20,14 @@ try:
     import geopandas as gpd
 except ImportError:
     gpd = None
+
+# Issue deprecation warning upon import
+warnings.warn(
+    "The 'nwis' services are deprecated and being decommissioned. "
+    "Please use the 'waterdata' module to access the new services.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 WATERDATA_BASE_URL = "https://nwis.waterdata.usgs.gov/"
 WATERDATA_URL = WATERDATA_BASE_URL + "nwis/"
