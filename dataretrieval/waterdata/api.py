@@ -248,7 +248,7 @@ def get_monitoring_locations(
     limit: Optional[int] = None,
     max_results: Optional[int] = None,
     convert_type: bool = True,
-) -> pd.DataFrame:
+) -> Tuple[pd.DataFrame, BaseMetadata]:
     """Location information is basic information about the monitoring location
     including the name, identifier, agency responsible for data collection, and
     the date the location was established. It also includes information about
