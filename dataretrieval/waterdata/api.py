@@ -672,7 +672,7 @@ def get_time_series_metadata(
 
         >>> # Get daily flow data from a single site
         >>> # over a yearlong period
-        >>> df = dataretrieval.waterdata.get_time_series_metadata(
+        >>> df, metadata = dataretrieval.waterdata.get_time_series_metadata(
         ...     monitoring_location_id="USGS-02238500",
         ...     parameter_code="00060",
         ...     time="2021-01-01T00:00:00Z/2022-01-01T00:00:00Z",
