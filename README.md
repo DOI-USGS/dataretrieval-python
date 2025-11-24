@@ -6,7 +6,7 @@
 
 ## Latest Announcements
 
-:mega: **10/01/2025:** `dataretrieval` now features the new `waterdata` module,
+:mega: **11/24/2025:** `dataretrieval` now features the new `waterdata` module,
 which provides access to USGS's modernized [Water Data
 APIs](https://api.waterdata.usgs.gov/). The Water Data API endpoints include
 daily values, instantaneous values, field measurements, time series metadata,
@@ -64,6 +64,23 @@ locations, metadata = waterdata.get_monitoring_locations(
 )
 
 print(f"Found {len(locations)} stream monitoring locations in Maryland")
+```
+This new module implements
+[logging](https://docs.python.org/3/howto/logging.html#logging-basic-tutorial)
+in which users can view the URL requests sent to the USGS Water Data APIs
+and the number of requests they have remaining each hour. These messages can
+be helpful for troubleshooting and support. To enable logging in your python
+console or notebook:
+
+```python
+import logging
+logging.basicConfig(level=logging.INFO)
+``` 
+To log messages to a file, you can specify a filename in the
+`basicConfig` call:
+
+```python
+logging.basicConfig(filename='waterdata.log', level=logging.INFO)
 ```
 
 ### NWIS Legacy Services (Deprecated but still functional)

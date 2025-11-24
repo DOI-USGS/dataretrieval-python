@@ -188,8 +188,7 @@ def get_daily(
         ...     time="2021-01-01T00:00:00Z/2022-01-01T00:00:00Z",
         ... )
 
-        >>> # Get monitoring location info for specific sites
-        >>> # and only specific properties
+        >>> # Get approved daily flow data from multiple sites
         >>> df, md = dataretrieval.waterdata.get_daily(
         ...     monitoring_location_id = ["USGS-05114000", "USGS-09423350"],
         ...     approval_status = "Approved",
@@ -678,19 +677,18 @@ def get_time_series_metadata(
     --------
     .. code::
 
-        >>> # Get daily flow data from a single site
+        >>> # Get timeseries metadata information from a single site
         >>> # over a yearlong period
         >>> df, md = dataretrieval.waterdata.get_time_series_metadata(
-        ...     monitoring_location_id="USGS-02238500",
-        ...     parameter_code="00060",
-        ...     time="2021-01-01T00:00:00Z/2022-01-01T00:00:00Z",
+        ...     monitoring_location_id="USGS-02238500"
         ... )
 
-        >>> # Get monitoring location info for specific sites
-        >>> # and only specific properties
+        >>> # Get timeseries metadata information from multiple sites
+        >>> # that begin after January 1, 1990.
         >>> df, md = dataretrieval.waterdata.get_time_series_metadata(
         ...     monitoring_location_id = ["USGS-05114000", "USGS-09423350"],
-        ...     time = "2024-01-01/.."
+        ...     begin = "1990-01-01/.."
+        ... )
     """
     service = "time-series-metadata"
     output_id = "time_series_id"
@@ -856,14 +854,12 @@ def get_latest_continuous(
     --------
     .. code::
 
-        >>> # Get daily flow data from a single site
-        >>> # over a yearlong period
+        >>> # Get latest flow data from a single site
         >>> df, md = dataretrieval.waterdata.get_latest_continuous(
         ...     monitoring_location_id="USGS-02238500", parameter_code="00060"
         ... )
 
-        >>> # Get monitoring location info for specific sites
-        >>> # and only specific properties
+        >>> # Get latest continuous measurements for multiple sites
         >>> df, md = dataretrieval.waterdata.get_latest_continuous(
         ...     monitoring_location_id=["USGS-05114000", "USGS-09423350"]
         ... )
@@ -1034,14 +1030,12 @@ def get_latest_daily(
     --------
     .. code::
 
-        >>> # Get daily flow data from a single site
-        >>> # over a yearlong period
+        >>> # Get most recent daily flow data from a single site
         >>> df, md = dataretrieval.waterdata.get_latest_daily(
         ...     monitoring_location_id="USGS-02238500", parameter_code="00060"
         ... )
 
-        >>> # Get monitoring location info for specific sites
-        >>> # and only specific properties
+        >>> # Get most recent daily measurements for two sites
         >>> df, md = dataretrieval.waterdata.get_latest_daily(
         ...     monitoring_location_id=["USGS-05114000", "USGS-09423350"]
         ... )
@@ -1201,16 +1195,16 @@ def get_field_measurements(
     --------
     .. code::
 
-        >>> # Get daily flow data from a single site
-        >>> # over a yearlong period
+        >>> # Get field measurements from a single groundwater site
+        >>> # and parameter code, and do not return geometry
         >>> df, md = dataretrieval.waterdata.get_field_measurements(
         ...     monitoring_location_id="USGS-375907091432201",
         ...     parameter_code="72019",
         ...     skip_geometry=True,
         ... )
 
-        >>> # Get monitoring location info for specific sites
-        >>> # and only specific properties
+        >>> # Get field measurements from multiple sites and
+        >>> # parameter codes from the last 20 years
         >>> df, md = dataretrieval.waterdata.get_field_measurements(
         ...     monitoring_location_id = ["USGS-451605097071701",
                                           "USGS-263819081585801"],
