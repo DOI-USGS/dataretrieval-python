@@ -589,7 +589,6 @@ def _walk_pages(
         if max_results is None or pd.isna(max_results):
             dfs = _get_resp_data(resp, geopd=geopd)
             curr_url = _next_req_url(resp)
-            failures = []
             while curr_url:
                 try:
                     resp = client.request(
@@ -604,10 +603,8 @@ def _walk_pages(
                     dfs = pd.concat([dfs, df1], ignore_index=True)
                     curr_url = _next_req_url(resp)
                 except Exception:
-                    failures.append(curr_url)
+                    logger.info("Request failed for URL: %s. Stopping pagination and data download.", curr_url)
                     curr_url = None
-            if failures:
-                logger.warning("There were %d failed requests.", len(failures))
             return dfs, initial_response
         else:
             resp.raise_for_status()
