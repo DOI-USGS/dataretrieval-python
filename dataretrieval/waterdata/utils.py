@@ -450,7 +450,7 @@ def _next_req_url(resp: requests.Response) -> Optional[str]:
     -----
     - If the environment variable "API_USGS_PAT" is set, logs the remaining
     requests for the current hour.
-    - Logs the next URL if found at debug level.
+    - Logs the next URL if found at info level.
     - Expects the response JSON to contain a "links" list with objects having
     "rel" and "href" keys.
     - Checks for the "next" relation in the "links" to determine the next URL.
@@ -467,7 +467,7 @@ def _next_req_url(resp: requests.Response) -> Optional[str]:
     for link in body.get("links", []):
         if link.get("rel") == "next":
             next_url = link.get("href")
-            logger.debug("Next URL: %s", next_url)
+            logger.info("Next URL: %s", next_url)
             return next_url
     return None
 

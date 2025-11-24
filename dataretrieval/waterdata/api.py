@@ -134,6 +134,8 @@ def get_daily(
     skip_geometry : boolean, optional
         This option can be used to skip response geometries for each feature.
         The returning object will be a data frame with no spatial information.
+        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
+        CQL2 queries.
     time : string, optional
         The date an observation represents. You can query this field using
         date-times or intervals, adhering to RFC 3339, or using ISO 8601
@@ -481,6 +483,8 @@ def get_monitoring_locations(
     skip_geometry : boolean, optional
         This option can be used to skip response geometries for each feature.
         The returning object will be a data frame with no spatial information.
+        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
+        CQL2 queries.
 
     Returns
     -------
@@ -652,6 +656,8 @@ def get_time_series_metadata(
     skip_geometry : boolean, optional
         This option can be used to skip response geometries for each feature.
         The returning object will be a data frame with no spatial information.
+        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
+        CQL2 queries.
     bbox : list of numbers, optional
         Only features that have a geometry that intersects the bounding box are
         selected.  The bounding box is provided as four or six numbers,
@@ -816,6 +822,8 @@ def get_latest_continuous(
     skip_geometry : boolean, optional
         This option can be used to skip response geometries for each feature.
         The returning object will be a data frame with no spatial information.
+        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
+        CQL2 queries.
     time : string, optional
         The date an observation represents. You can query this field using
         date-times or intervals, adhering to RFC 3339, or using ISO 8601
@@ -987,6 +995,8 @@ def get_field_measurements(
     skip_geometry : boolean, optional
         This option can be used to skip response geometries for each feature. The returning
         object will be a data frame with no spatial information.
+        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
+        CQL2 queries.
     time : string, optional
         The date an observation represents. You can query this field using date-times
         or intervals, adhering to RFC 3339, or using ISO 8601 duration objects.
