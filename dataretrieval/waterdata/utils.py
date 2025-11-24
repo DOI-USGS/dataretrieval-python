@@ -320,7 +320,6 @@ def _construct_api_requests(
     properties: Optional[List[str]] = None,
     bbox: Optional[List[float]] = None,
     limit: Optional[int] = None,
-    max_results: Optional[int] = None,
     skip_geometry: bool = False,
     **kwargs,
 ):
@@ -341,8 +340,6 @@ def _construct_api_requests(
         Bounding box coordinates as a list of floats.
     limit : Optional[int], optional
         Maximum number of results to return per request.
-    max_results : Optional[int], optional
-        Maximum number of rows to return.
     skip_geometry : bool, optional
         Whether to exclude geometry from the response (default is False).
     **kwargs
@@ -354,11 +351,6 @@ def _construct_api_requests(
     requests.PreparedRequest
         The constructed HTTP request object ready to be sent.
 
-    Raises
-    ------
-    ValueError
-        If `limit` is greater than `max_results`.
-
     Notes
     -----
     - Date/time parameters are automatically formatted to ISO8601.
@@ -367,6 +359,7 @@ def _construct_api_requests(
     - The function sets appropriate headers for GET and POST requests.
     """
     service_url = f"{OGC_API_URL}/collections/{service}/items"
+    
     # Single parameters can only have one value
     single_params = {"datetime", "last_modified", "begin", "end", "time"}
 
@@ -381,17 +374,12 @@ def _construct_api_requests(
     params = {k: v for k, v in kwargs.items() if k not in post_params}
     # Set skipGeometry parameter (API expects camelCase)
     params["skipGeometry"] = skip_geometry
-    # If limit is none and max_results is not none, then set limit to max results. Otherwise,
-    # if max_results is none, set it to 10000 (the API max).
+    
+    # If limit is none or greater than 10000, then set limit to max results. Otherwise,
+    # use the limit
     params["limit"] = (
-        max_results if limit is None and max_results is not None else limit or 10000
-    )
-    # Add max results as a parameter if it is not None
-    if max_results is not None:
-        params["max_results"] = max_results
-
-    if max_results is not None and limit is not None and limit > max_results:
-        raise ValueError("limit cannot be greater than max_result")
+        10000 if limit is None or limit > 10000 else limit
+        )
 
     # Indicate if function needs to perform POST conversion
     POST = bool(post_params)
@@ -521,7 +509,6 @@ def _get_resp_data(resp: requests.Response, geopd: bool) -> pd.DataFrame:
 def _walk_pages(
     geopd: bool,
     req: requests.PreparedRequest,
-    max_results: Optional[int],
     client: Optional[requests.Session] = None,
 ) -> Tuple[pd.DataFrame, requests.Response]:
     """
@@ -534,9 +521,6 @@ def _walk_pages(
         geometries.
     req : requests.PreparedRequest
         The initial HTTP request to send.
-    max_results : Optional[int]
-        Maximum number of rows to return. If None or NaN, retrieves all
-        available pages.
     client : Optional[requests.Session], default None
         An optional HTTP client to use for requests. If not provided, a new
         client is created.
@@ -552,13 +536,6 @@ def _walk_pages(
     ------
     Exception
         If a request fails or returns a non-200 status code.
-
-    Notes
-    -----
-    - If `max_results` is None or NaN, the function will continue to request
-    subsequent pages until no more pages are available.
-    - Failed requests are tracked and reported, but do not halt the entire
-    process unless the initial request fails.
     """
     logger.info("Requesting: %s", req.url)
 
@@ -586,29 +563,25 @@ def _walk_pages(
         headers = dict(req.headers)
         content = req.body if method == "POST" else None
 
-        if max_results is None or pd.isna(max_results):
-            dfs = _get_resp_data(resp, geopd=geopd)
-            curr_url = _next_req_url(resp)
-            while curr_url:
-                try:
-                    resp = client.request(
-                        method,
-                        curr_url,
-                        headers=headers,
-                        data=content if method == "POST" else None,
+        dfs = _get_resp_data(resp, geopd=geopd)
+        curr_url = _next_req_url(resp)
+        while curr_url:
+            try:
+                resp = client.request(
+                    method,
+                    curr_url,
+                    headers=headers,
+                    data=content if method == "POST" else None,
                     )
-                    if resp.status_code != 200:
-                        raise Exception(_error_body(resp))
-                    df1 = _get_resp_data(resp, geopd=geopd)
-                    dfs = pd.concat([dfs, df1], ignore_index=True)
-                    curr_url = _next_req_url(resp)
-                except Exception:
-                    logger.info("Request failed for URL: %s. Stopping pagination and data download.", curr_url)
-                    curr_url = None
-            return dfs, initial_response
-        else:
-            resp.raise_for_status()
-            return _get_resp_data(resp, geopd=geopd), initial_response
+                if resp.status_code != 200:
+                    raise Exception(_error_body(resp))
+                df1 = _get_resp_data(resp, geopd=geopd)
+                dfs = pd.concat([dfs, df1], ignore_index=True)
+                curr_url = _next_req_url(resp)
+            except Exception:
+                logger.info("Request failed for URL: %s. Stopping pagination and data download.", curr_url)
+                curr_url = None
+        return dfs, initial_response
     finally:
         if close_client:
             client.close()
@@ -742,14 +715,12 @@ def get_ogc_data(
     Notes
     -----
     - The function does not mutate the input `args` dictionary.
-    - Handles optional arguments such as `max_results` and `convert_type`.
+    - Handles optional arguments such as `convert_type`.
     - Applies column cleanup and reordering based on service and properties.
     """
     args = args.copy()
     # Add service as an argument
     args["service"] = service
-    # Pull out a max results input if exists
-    max_results = args.pop("max_results", None)
     # Switch the input id to "id" if needed
     args = _switch_arg_id(args, id_name=output_id, service=service)
     properties = args.get("properties")
@@ -764,7 +735,7 @@ def get_ogc_data(
     req = _construct_api_requests(**args)
     # Run API request and iterate through pages if needed
     return_list, response = _walk_pages(
-        geopd=GEOPANDAS, req=req, max_results=max_results
+        geopd=GEOPANDAS, req=req
     )
     # Manage some aspects of the returned dataset
     return_list = _deal_with_empty(return_list, properties, service)

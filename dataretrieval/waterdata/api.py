@@ -42,7 +42,6 @@ def get_daily(
     time: Optional[Union[str, List[str]]] = None,
     bbox: Optional[List[float]] = None,
     limit: Optional[int] = None,
-    max_results: Optional[int] = None,
     convert_type: bool = True,
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """Daily data provide one data value to represent water conditions for the
@@ -166,9 +165,6 @@ def get_daily(
         allowable limit is 10000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (NA) will set the
         limit to the maximum allowable limit for the service.
-    max_results : numeric, optional
-        The optional maximum number of rows to return. This value must be less
-        than the requested limit.
     convert_type : boolean, optional
         If True, the function will convert the data to dates and qualifier to
         string vector
@@ -258,7 +254,6 @@ def get_monitoring_locations(
     time: Optional[Union[str, List[str]]] = None,
     bbox: Optional[List[float]] = None,
     limit: Optional[int] = None,
-    max_results: Optional[int] = None,
     convert_type: bool = True,
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """Location information is basic information about the monitoring location
@@ -477,9 +472,6 @@ def get_monitoring_locations(
         allowable limit is 10000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (NA) will set the
         limit to the maximum allowable limit for the service.
-    max_results : numeric, optional
-        The optional maximum number of rows to return. This value must be less
-        than the requested limit.
     skip_geometry : boolean, optional
         This option can be used to skip response geometries for each feature.
         The returning object will be a data frame with no spatial information.
@@ -545,7 +537,6 @@ def get_time_series_metadata(
     time: Optional[Union[str, List[str]]] = None,
     bbox: Optional[List[float]] = None,
     limit: Optional[int] = None,
-    max_results: Optional[int] = None,
     convert_type: bool = True,
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """Daily data and continuous measurements are grouped into time series,
@@ -672,9 +663,6 @@ def get_time_series_metadata(
         allowable limit is 10000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
-    max_results : numeric, optional
-        The optional maximum number of rows to return. This value must be less
-        than the requested limit.
     convert_type : boolean, optional
         If True, the function will convert the data to dates and qualifier to
         string vector
@@ -733,7 +721,6 @@ def get_latest_continuous(
     time: Optional[Union[str, List[str]]] = None,
     bbox: Optional[List[float]] = None,
     limit: Optional[int] = None,
-    max_results: Optional[int] = None,
     convert_type: bool = True,
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """This endpoint provides the most recent observation for each time series
@@ -854,9 +841,6 @@ def get_latest_continuous(
         allowable limit is 10000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
-    max_results : numeric, optional
-        The optional maximum number of rows to return. This value must be less
-        than the requested limit.
     convert_type : boolean, optional
         If True, the function will convert the data to dates and qualifier to
         string vector
@@ -915,7 +899,6 @@ def get_field_measurements(
     time: Optional[Union[str, List[str]]] = None,
     bbox: Optional[List[float]] = None,
     limit: Optional[int] = None,
-    max_results: Optional[int] = None,
     convert_type: bool = True,
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """Field measurements are physically measured values collected during a
@@ -1026,9 +1009,6 @@ def get_field_measurements(
         allowable limit is 10000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
-    max_results : numeric, optional
-        The optional maximum number of rows to return. This value must be less
-        than the requested limit.
     convert_type : boolean, optional
         If True, the function will convert the data to dates and qualifier to
         string vector
