@@ -864,7 +864,7 @@ def get_latest_continuous(
 
         >>> # Get monitoring location info for specific sites
         >>> # and only specific properties
-        >>> df, md = dataretrieval.waterdata.get_daily(
+        >>> df, md = dataretrieval.waterdata.get_latest_continuous(
         ...     monitoring_location_id=["USGS-05114000", "USGS-09423350"]
         ... )
     """
@@ -880,6 +880,183 @@ def get_latest_continuous(
 
     return get_ogc_data(args, output_id, service)
 
+
+def get_latest_daily(
+    monitoring_location_id: Optional[Union[str, List[str]]] = None,
+    parameter_code: Optional[Union[str, List[str]]] = None,
+    statistic_id: Optional[Union[str, List[str]]] = None,
+    properties: Optional[Union[str, List[str]]] = None,
+    time_series_id: Optional[Union[str, List[str]]] = None,
+    latest_daily_id: Optional[Union[str, List[str]]] = None,
+    approval_status: Optional[Union[str, List[str]]] = None,
+    unit_of_measure: Optional[Union[str, List[str]]] = None,
+    qualifier: Optional[Union[str, List[str]]] = None,
+    value: Optional[int] = None,
+    last_modified: Optional[Union[str, List[str]]] = None,
+    skip_geometry: Optional[bool] = None,
+    time: Optional[Union[str, List[str]]] = None,
+    bbox: Optional[List[float]] = None,
+    limit: Optional[int] = None,
+    convert_type: bool = True,
+) -> Tuple[pd.DataFrame, BaseMetadata]:
+    """Daily data provide one data value to represent water conditions for the
+    day.
+
+    Throughout much of the history of the USGS, the primary water data available
+    was daily data collected manually at the monitoring location once each day.
+    With improved availability of computer storage and automated transmission of
+    data, the daily data published today are generally a statistical summary or
+    metric of the continuous data collected each day, such as the daily mean,
+    minimum, or maximum value. Daily data are automatically calculated from the
+    continuous data of the same parameter code and are described by parameter
+    code and a statistic code. These data have also been referred to as “daily
+    values” or “DV”.
+
+    Parameters
+    ----------
+    monitoring_location_id : string or list of strings, optional
+        A unique identifier representing a single monitoring location. This
+        corresponds to the id field in the monitoring-locations endpoint.
+        Monitoring location IDs are created by combining the agency code of the
+        agency responsible for the monitoring location (e.g. USGS) with the ID
+        number of the monitoring location (e.g. 02238500), separated by a hyphen
+        (e.g. USGS-02238500).
+    parameter_code : string or list of strings, optional
+        Parameter codes are 5-digit codes used to identify the constituent
+        measured and the units of measure. A complete list of parameter codes
+        and associated groupings can be found at
+        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+    statistic_id : string or list of strings, optional
+        A code corresponding to the statistic an observation represents.
+        Example codes include 00001 (max), 00002 (min), and 00003 (mean).
+        A complete list of codes and their descriptions can be found at
+        https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
+    properties : string or list of strings, optional
+        A vector of requested columns to be returned from the query.  Available
+        options are: geometry, id, time_series_id, monitoring_location_id,
+        parameter_code, statistic_id, time, value, unit_of_measure,
+        approval_status, qualifier, last_modified
+    time_series_id : string or list of strings, optional
+        A unique identifier representing a single time series. This
+        corresponds to the id field in the time-series-metadata endpoint.
+    latest_daily_id : string or list of strings, optional
+        A universally unique identifier (UUID) representing a single version of
+        a record. It is not stable over time. Every time the record is refreshed
+        in our database (which may happen as part of normal operations and does
+        not imply any change to the data itself) a new ID will be generated. To
+        uniquely identify a single observation over time, compare the time and
+        time_series_id fields; each time series will only have a single
+        observation at a given time.
+    approval_status : string or list of strings, optional
+        Some of the data that you have obtained from this U.S. Geological Survey
+        database may not have received Director's approval. Any such data values
+        are qualified as provisional and are subject to revision. Provisional
+        data are released on the condition that neither the USGS nor the United
+        States Government may be held liable for any damages resulting from its
+        use. This field reflects the approval status of each record, and is either
+        "Approved", meaining processing review has been completed and the data is
+        approved for publication, or "Provisional" and subject to revision. For
+        more information about provisional data, go to
+        [https://waterdata.usgs.gov/provisional-data-statement/]
+        (https://waterdata.usgs.gov/provisional-data-statement/).
+    unit_of_measure : string or list of strings, optional
+        A human-readable description of the units of measurement associated
+        with an observation.
+    qualifier : string or list of strings, optional
+        This field indicates any qualifiers associated with an observation, for
+        instance if a sensor may have been impacted by ice or if values were
+        estimated.
+    value : string or list of strings, optional
+        The value of the observation. Values are transmitted as strings in
+        the JSON response format in order to preserve precision.
+    last_modified : string, optional
+        The last time a record was refreshed in our database. This may happen
+        due to regular operational processes and does not necessarily indicate
+        anything about the measurement has changed. You can query this field
+        using date-times or intervals, adhering to RFC 3339, or using ISO 8601
+        duration objects. Intervals may be bounded or half-bounded (double-dots
+        at start or end). Only features that have a last_modified that
+        intersects the value of datetime are selected.
+        Examples:
+            - A date-time: "2018-02-12T23:20:50Z"
+            - A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+            "../2018-03-18T12:31:12Z"
+            - Duration objects: "P1M" for data from the past month or "PT36H"
+            for the last 36 hours
+    skip_geometry : boolean, optional
+        This option can be used to skip response geometries for each feature.
+        The returning object will be a data frame with no spatial information.
+        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
+        CQL2 queries.
+    time : string, optional
+        The date an observation represents. You can query this field using
+        date-times or intervals, adhering to RFC 3339, or using ISO 8601
+        duration objects.  Intervals may be bounded or half-bounded (double-dots
+        at start or end).  Only features that have a time that intersects the
+        value of datetime are selected. If a feature has multiple temporal
+        properties, it is the decision of the server whether only a single
+        temporal property is used to determine the extent or all relevant
+        temporal properties.
+        Examples:
+            - A date-time: "2018-02-12T23:20:50Z"
+            - A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+            "../2018-03-18T12:31:12Z"
+            - Duration objects: "P1M" for data from the past month or "PT36H"
+            for the last 36 hours
+    bbox : list of numbers, optional
+        Only features that have a geometry that intersects the bounding box are
+        selected.  The bounding box is provided as four or six numbers,
+        depending on whether the coordinate reference system includes a vertical
+        axis (height or depth). Coordinates are assumed to be in crs 4326. The
+        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
+        Another way to think of it is c(Western-most longitude, Southern-most
+        latitude, Eastern-most longitude, Northern-most longitude).
+    limit : numeric, optional
+        The optional limit parameter is used to control the subset of the
+        selected features that should be returned in each page. The maximum
+        allowable limit is 10000. It may be beneficial to set this number lower
+        if your internet connection is spotty. The default (None) will set the
+        limit to the maximum allowable limit for the service.
+    convert_type : boolean, optional
+        If True, the function will convert the data to dates and qualifier to
+        string vector
+
+    Returns
+    -------
+    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
+        Formatted data returned from the API query.
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
+
+    Examples
+    --------
+    .. code::
+
+        >>> # Get daily flow data from a single site
+        >>> # over a yearlong period
+        >>> df, md = dataretrieval.waterdata.get_latest_daily(
+        ...     monitoring_location_id="USGS-02238500", parameter_code="00060"
+        ... )
+
+        >>> # Get monitoring location info for specific sites
+        >>> # and only specific properties
+        >>> df, md = dataretrieval.waterdata.get_latest_daily(
+        ...     monitoring_location_id=["USGS-05114000", "USGS-09423350"]
+        ... )
+    """
+    service = "latest-daily"
+    output_id = "latest_daily_id"
+
+    # Build argument dictionary, omitting None values
+    args = {
+        k: v
+        for k, v in locals().items()
+        if k not in {"service", "output_id"} and v is not None
+    }
+
+    return get_ogc_data(args, output_id, service)
 
 def get_field_measurements(
     monitoring_location_id: Optional[Union[str, List[str]]] = None,

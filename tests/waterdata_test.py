@@ -9,6 +9,7 @@ from dataretrieval.waterdata import (
     get_daily,
     get_monitoring_locations,
     get_latest_continuous,
+    get_latest_daily,
     get_field_measurements,
     get_time_series_metadata,
 )
@@ -168,6 +169,7 @@ def test_get_latest_continuous():
         monitoring_location_id=["USGS-05427718", "USGS-05427719"],
         parameter_code=["00060", "00065"]
     )
+    assert "latest_continuous_id" in df.columns
     assert df.shape[0] <= 4
     assert df.statistic_id.unique().tolist() == ["00011"]
     assert hasattr(md, 'url')
@@ -178,6 +180,16 @@ def test_get_latest_continuous():
     except:
         out=False
     assert out
+
+def test_get_latest_daily():
+    df, md = get_latest_daily(
+        monitoring_location_id=["USGS-05427718", "USGS-05427719"],
+        parameter_code=["00060", "00065"]
+    )
+    assert "latest_daily_id" in df.columns
+    assert df.shape[1] == 12
+    assert hasattr(md, 'url')
+    assert hasattr(md, 'query_time')
 
 def test_get_field_measurements():
     df, md = get_field_measurements(
