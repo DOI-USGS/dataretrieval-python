@@ -202,7 +202,7 @@ print(f"Found {len(flowlines)} upstream tributaries within 50km")
 - **Latest daily values**: Most recent daily statistical summary data
 - **Latest instantaneous values**: Most recent high-frequency continuous data
 - **Samples data**: Discrete USGS water quality data
-- **Instantaneous values** (:alarm_clock: *COMING SOON*): High-frequency continuous data
+- **Instantaneous values** (*COMING SOON*): High-frequency continuous data
 
 ### Legacy NWIS Services (Deprecated)
 - **Daily values (dv)**: Legacy daily statistical data

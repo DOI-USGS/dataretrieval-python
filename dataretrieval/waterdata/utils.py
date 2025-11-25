@@ -309,11 +309,16 @@ def _error_body(resp: requests.Response):
         predefined message indicating possible reasons for denial. For other
         status codes, returns the raw response text.
     """
-    if resp.status_code == 429:
+    status = resp.status_code
+    if status == 429:
         return "429: Too many requests made. Please obtain an API token or try again later."
-    elif resp.status_code == 403:
+    elif status == 403:
         return "403: Query request denied. Possible reasons include query exceeding server limits."
-    return f"{resp.status_code}: {resp.json().get('code', 'Unknown type')}. {resp.json().get('description', "No description provided")}."
+    j_txt = resp.json()
+    return (
+        f"{status}: {j_txt.get('code', 'Unknown type')}. " 
+        f"{j_txt.get('description', 'No description provided')}."
+    )
 
 
 def _construct_api_requests(
