@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.samples &mdash; dataretrieval 0.1.dev1+g2c8419c documentation</title>
+  <title>dataretrieval.samples &mdash; dataretrieval 0.1.dev1+g693588f03 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=2e2d820c"></script>
+      <script src="../_static/documentation_options.js?v=10e7f399"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -53,10 +53,7 @@
 <li class="toctree-l2"><a class="reference internal" href="nadp.html">dataretrieval.nadp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nldi.html">dataretrieval.nldi</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nwis.html">dataretrieval.nwis</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.samples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.samples.get_usgs_samples"><code class="docutils literal notranslate"><span class="pre">get_usgs_samples()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.samples</a></li>
 <li class="toctree-l2"><a class="reference internal" href="streamstats.html">dataretrieval.streamstats</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html">dataretrieval.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="waterdata.html">dataretrieval.waterdata</a></li>
@@ -90,153 +87,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-dataretrieval.samples">
-<span id="dataretrieval-samples"></span><h1>dataretrieval.samples<a class="headerlink" href="#module-dataretrieval.samples" title="Link to this heading"></a></h1>
-<p>Functions for downloading data from the USGS Aquarius Samples database
-(<a class="reference external" href="https://waterdata.usgs.gov/download-samples/">https://waterdata.usgs.gov/download-samples/</a>).</p>
-<p>See <a class="reference external" href="https://api.waterdata.usgs.gov/samples-data/docs#/">https://api.waterdata.usgs.gov/samples-data/docs#/</a> for API reference</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="dataretrieval.samples.get_usgs_samples">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.samples.</span></span><span class="sig-name descname"><span class="pre">get_usgs_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_SERVICES</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'results'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_PROFILES</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'fullphyschem'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activityMediaName</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activityStartDateLower</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activityStartDateUpper</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activityTypeCode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">characteristicGroup</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">characteristic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">characteristicUserSupplied</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundingBox</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">countryFips</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stateFips</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">countyFips</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">siteTypeCode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">siteTypeName</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">usgsPCode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hydrologicUnit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitoringLocationIdentifier</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">organizationIdentifier</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pointLocationLatitude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pointLocationLongitude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pointLocationWithinMiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projectIdentifier</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recordIdentifierUserSupplied</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/samples.html#get_usgs_samples"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.samples.get_usgs_samples" title="Link to this definition"></a></dt>
-<dd><p>Search Samples database for USGS water quality data.
-This is a wrapper function for the Samples database API. All potential
-filters are provided as arguments to the function, but please do not
-populate all possible filters; leave as many as feasible with their default
-value (None). This is important because overcomplicated web service queries
-can bog down the database’s ability to return an applicable dataset before
-it times out.</p>
-<p>The web GUI for the Samples database can be found here:
-<a class="reference external" href="https://waterdata.usgs.gov/download-samples/#dataProfile=site">https://waterdata.usgs.gov/download-samples/#dataProfile=site</a></p>
-<p>If you would like more details on feasible query parameters (complete with
-examples), please visit the Samples database swagger docs, here:
-<a class="reference external" href="https://api.waterdata.usgs.gov/samples-data/docs#/">https://api.waterdata.usgs.gov/samples-data/docs#/</a></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>ssl_check</strong> (<em>bool</em><em>, </em><em>optional</em>) – Check the SSL certificate.</p></li>
-<li><p><strong>service</strong> (<em>string</em>) – One of the available Samples services: “results”, “locations”, “activities”,
-“projects”, or “organizations”. Defaults to “results”.</p></li>
-<li><p><strong>profile</strong> (<em>string</em>) – <p>One of the available profiles associated with a service. Options for each
-service are:
-results - “fullphyschem”, “basicphyschem”,</p>
-<blockquote>
-<div><p>”fullbio”, “basicbio”, “narrow”,
-“resultdetectionquantitationlimit”,
-“labsampleprep”, “count”</p>
-</div></blockquote>
-<p>locations - “site”, “count”
-activities - “sampact”, “actmetric”,</p>
-<blockquote>
-<div><p>”actgroup”, “count”</p>
-</div></blockquote>
-<p>projects - “project”, “projectmonitoringlocationweight”
-organizations - “organization”, “count”</p>
-</p></li>
-<li><p><strong>activityMediaName</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Name or code indicating environmental medium in which sample was taken.
-Check the <cite>activityMediaName_lookup()</cite> function in this module for all
-possible inputs.
-Example: “Water”.</p></li>
-<li><p><strong>activityStartDateLower</strong> (<em>string</em><em>, </em><em>optional</em>) – The start date if using a date range. Takes the format YYYY-MM-DD.
-The logic is inclusive, i.e. it will also return results that
-match the date. If left as None, will pull all data on or before
-activityStartDateUpper, if populated.</p></li>
-<li><p><strong>activityStartDateUpper</strong> (<em>string</em><em>, </em><em>optional</em>) – The end date if using a date range. Takes the format YYYY-MM-DD.
-The logic is inclusive, i.e. it will also return results that
-match the date. If left as None, will pull all data after
-activityStartDateLower up to the most recent available results.</p></li>
-<li><p><strong>activityTypeCode</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Text code that describes type of field activity performed.
-Example: “Sample-Routine, regular”.</p></li>
-<li><p><strong>characteristicGroup</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Characteristic group is a broad category of characteristics
-describing one or more results. Check the <cite>characteristicGroup_lookup()</cite>
-function in this module for all possible inputs.
-Example: “Organics, PFAS”</p></li>
-<li><p><strong>characteristic</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Characteristic is a specific category describing one or more results.
-Check the <cite>characteristic_lookup()</cite> function in this module for all
-possible inputs.
-Example: “Suspended Sediment Discharge”</p></li>
-<li><p><strong>characteristicUserSupplied</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A user supplied characteristic name describing one or more results.</p></li>
-<li><p><strong>boundingBox</strong> (<em>list</em><em> of </em><em>four floats</em><em>, </em><em>optional</em>) – Filters on the the associated monitoring location’s point location
-by checking if it is located within the specified geographic area.
-The logic is inclusive, i.e. it will include locations that overlap
-with the edge of the bounding box. Values are separated by commas,
-expressed in decimal degrees, NAD83, and longitudes west of Greenwich
-are negative.
-The format is a string consisting of:
-- Western-most longitude
-- Southern-most latitude
-- Eastern-most longitude
-- Northern-most longitude
-Example: [-92.8,44.2,-88.9,46.0]</p></li>
-<li><p><strong>countryFips</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Example: “US” (United States)</p></li>
-<li><p><strong>stateFips</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Check the <cite>stateFips_lookup()</cite> function in this module for all
-possible inputs.
-Example: “US:15” (United States: Hawaii)</p></li>
-<li><p><strong>countyFips</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Check the <cite>countyFips_lookup()</cite> function in this module for all
-possible inputs.
-Example: “US:15:001” (United States: Hawaii, Hawaii County)</p></li>
-<li><p><strong>siteTypeCode</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – An abbreviation for a certain site type. Check the <cite>siteType_lookup()</cite>
-function in this module for all possible inputs.
-Example: “GW” (Groundwater site)</p></li>
-<li><p><strong>siteTypeName</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A full name for a certain site type. Check the <cite>siteType_lookup()</cite>
-function in this module for all possible inputs.
-Example: “Well”</p></li>
-<li><p><strong>usgsPCode</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – 5-digit number used in the US Geological Survey computerized
-data system, National Water Information System (NWIS), to
-uniquely identify a specific constituent. Check the
-<cite>characteristic_lookup()</cite> function in this module for all possible
-inputs.
-Example: “00060” (Discharge, cubic feet per second)</p></li>
-<li><p><strong>hydrologicUnit</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Max 12-digit number used to describe a hydrologic unit.
-Example: “070900020502”</p></li>
-<li><p><strong>monitoringLocationIdentifier</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A monitoring location identifier has two parts: the agency code
-and the location number, separated by a dash (-).
-Example: “USGS-040851385”</p></li>
-<li><p><strong>organizationIdentifier</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Designator used to uniquely identify a specific organization.
-Currently only accepting the organization “USGS”.</p></li>
-<li><p><strong>pointLocationLatitude</strong> (<em>float</em><em>, </em><em>optional</em>) – Latitude for a point/radius query (decimal degrees). Must be used
-with pointLocationLongitude and pointLocationWithinMiles.</p></li>
-<li><p><strong>pointLocationLongitude</strong> (<em>float</em><em>, </em><em>optional</em>) – Longitude for a point/radius query (decimal degrees). Must be used
-with pointLocationLatitude and pointLocationWithinMiles.</p></li>
-<li><p><strong>pointLocationWithinMiles</strong> (<em>float</em><em>, </em><em>optional</em>) – Radius for a point/radius query. Must be used with
-pointLocationLatitude and pointLocationLongitude</p></li>
-<li><p><strong>projectIdentifier</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Designator used to uniquely identify a data collection project. Project
-identifiers are specific to an organization (e.g. USGS).
-Example: “ZH003QW03”</p></li>
-<li><p><strong>recordIdentifierUserSupplied</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Internal AQS record identifier that returns 1 entry. Only available
-for the “results” service.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – Custom <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> metadata object pertaining to the query.</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get PFAS results within a bounding box</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">get_usgs_samples</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">boundingBox</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">90.2</span><span class="p">,</span><span class="mf">42.6</span><span class="p">,</span><span class="o">-</span><span class="mf">88.7</span><span class="p">,</span><span class="mf">43.2</span><span class="p">],</span>
-<span class="gp">... </span>    <span class="n">characteristicGroup</span><span class="o">=</span><span class="s2">&quot;Organics, PFAS&quot;</span>
-<span class="gp">... </span><span class="p">)</span>
-
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get all activities for the Commonwealth of Virginia over a date range</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">get_usgs_samples</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">service</span><span class="o">=</span><span class="s2">&quot;activities&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">profile</span><span class="o">=</span><span class="s2">&quot;sampact&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">activityStartDateLower</span><span class="o">=</span><span class="s2">&quot;2023-10-01&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">activityStartDateUpper</span><span class="o">=</span><span class="s2">&quot;2024-01-01&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">stateFips</span><span class="o">=</span><span class="s2">&quot;US:51&quot;</span><span class="p">)</span>
-
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get all pH samples for two sites in Utah</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">get_usgs_samples</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;USGS-393147111462301&#39;</span><span class="p">,</span> <span class="s1">&#39;USGS-393343111454101&#39;</span><span class="p">],</span>
-<span class="gp">... </span>    <span class="n">usgsPCode</span><span class="o">=</span><span class="s1">&#39;00400&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
+  <section id="dataretrieval-samples">
+<h1>dataretrieval.samples<a class="headerlink" href="#dataretrieval-samples" title="Link to this heading"></a></h1>
 </section>
 
 

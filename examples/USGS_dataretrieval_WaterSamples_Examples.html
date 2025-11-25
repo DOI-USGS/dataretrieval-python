@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_samples() Examples &mdash; dataretrieval 0.1.dev1+g2c8419c documentation</title>
+  <title>USGS dataretrieval Python Package get_samples() Examples &mdash; dataretrieval 0.1.dev1+g693588f03 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=2e2d820c"></script>
+      <script src="../_static/documentation_options.js?v=10e7f399"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -126,17 +126,17 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g2c8419c)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g693588f03)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
-Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.0)
-Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.3.1)
+Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.3)
+Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.3.5)
 Requirement already satisfied: python-dateutil&gt;=2.8.2 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2.8.2)
 Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2024.1)
 Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2025.2)
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
@@ -144,6 +144,44 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nldi.py:7</span>
+<span class="ansi-green-fg">      6</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">7</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">geopandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">gpd</span>
+<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>:
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;geopandas&#39;
+
+During handling of the above exception, another exception occurred:
+
+<span class="ansi-red-fg">ImportError</span>                               Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[2]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> waterdata
+<span class="ansi-green-fg">      2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">IPython</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">display</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> display
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/__init__.py:9</span>
+<span class="ansi-green-fg">      6</span>     __version__ = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">version-unknown</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nadp</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nldi</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
+<span class="ansi-green-fg">     10</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nwis</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
+<span class="ansi-green-fg">     11</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">samples</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nldi.py:9</span>
+<span class="ansi-green-fg">      7</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">geopandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">gpd</span>
+<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>:
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Install geopandas to use the NLDI module.</span><span class="ansi-yellow-fg">&#34;</span>)
+<span class="ansi-green-fg">     11</span> NLDI_API_BASE_URL = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">https://api.water.usgs.gov/nldi/linked-data</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">     12</span> _AVAILABLE_DATA_SOURCES = <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
+
+<span class="ansi-red-fg">ImportError</span>: Install geopandas to use the NLDI module.
+</pre></div></div>
 </div>
 </section>
 <section id="Basic-Usage">
@@ -194,8 +232,14 @@ Eastern-most longitude - Northern-most longitude Example: [-92.8,44.2,-88.9,46.0
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Request: https://api.waterdata.usgs.gov/samples-data/results/fullphyschem?monitoringLocationIdentifier=USGS-10109000&amp;mimeType=text%2Fcsv
-Retrieved data for 2293 samples.
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 2</span>
+<span class="ansi-green-fg">      1</span> siteID = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">USGS-10109000</span><span class="ansi-yellow-fg">&#39;</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> wq_data = <span class="ansi-yellow-bg">waterdata</span>.get_samples(monitoringLocationIdentifier=siteID)
+<span class="ansi-green-fg">      3</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved data for </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(wq_data[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> samples.</span><span class="ansi-yellow-fg">&#39;</span>)
+
+<span class="ansi-red-fg">NameError</span>: name &#39;waterdata&#39; is not defined
 </pre></div></div>
 </div>
 </section>
@@ -216,317 +260,15 @@ Retrieved data for 2293 samples.
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[4]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> display(<span class="ansi-yellow-bg">wq_data</span>[<span class="ansi-green-fg">0</span>])
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Org_Identifier</th>
-      <th>Org_FormalName</th>
-      <th>Project_Identifier</th>
-      <th>Project_Name</th>
-      <th>Project_QAPPApproved</th>
-      <th>Project_QAPPApprovalAgency</th>
-      <th>ProjectAttachment_FileName</th>
-      <th>ProjectAttachment_FileType</th>
-      <th>Location_Identifier</th>
-      <th>Location_Name</th>
-      <th>...</th>
-      <th>ResultAttachment_FileName</th>
-      <th>ResultAttachment_FileType</th>
-      <th>ResultAttachment_FileDownload</th>
-      <th>ProviderName</th>
-      <th>Result_CharacteristicComparable</th>
-      <th>Result_CharacteristicGroup</th>
-      <th>Org_Type</th>
-      <th>LastChangeDate</th>
-      <th>USGSpcode</th>
-      <th>USGSSampleAquifer</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["USGS"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-10109000</td>
-      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>20</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["USGS"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-10109000</td>
-      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>61</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["USGS"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-10109000</td>
-      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>95</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["USGS","UT2110000"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-10109000</td>
-      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Information</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>9</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["USGS","UT1710001"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-10109000</td>
-      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Information</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>9</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>2288</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["USGS","UT2510000"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-10109000</td>
-      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-05-20</td>
-      <td>4</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2289</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["USGS","UT2510000"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-10109000</td>
-      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-05-20</td>
-      <td>95</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2290</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["USGS","UT2510000"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-10109000</td>
-      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-05-20</td>
-      <td>65</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2291</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["USGS","UT2510000"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-10109000</td>
-      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-05-20</td>
-      <td>61</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2292</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["USGS","UT2510000"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-10109000</td>
-      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Information</td>
-      <td>Federal/US Government</td>
-      <td>2025-05-20</td>
-      <td>3</td>
-      <td>NaN</td>
-    </tr>
-  </tbody>
-</table>
-<p>2293 rows × 181 columns</p>
-</div></div>
+<span class="ansi-red-fg">NameError</span>: name &#39;wq_data&#39; is not defined
+</pre></div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
 <div class="nbinput docutils container">
@@ -542,18 +284,12 @@ Retrieved data for 2293 samples.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Org_Identifier                 object
-Org_FormalName                 object
-Project_Identifier             object
-Project_Name                  float64
-Project_QAPPApproved          float64
-                               ...
-Result_CharacteristicGroup     object
-Org_Type                       object
-LastChangeDate                 object
-USGSpcode                       int64
-USGSSampleAquifer             float64
-Length: 181, dtype: object
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[5]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-bg">wq_data</span>[<span class="ansi-green-fg">0</span>].dtypes)
+
+<span class="ansi-red-fg">NameError</span>: name &#39;wq_data&#39; is not defined
 </pre></div></div>
 </div>
 <p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.</p>
@@ -570,7 +306,12 @@ Length: 181, dtype: object
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-The query URL used to retrieve the data from USGS Samples was: https://api.waterdata.usgs.gov/samples-data/results/fullphyschem?monitoringLocationIdentifier=USGS-10109000&amp;mimeType=text%2Fcsv
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">The query URL used to retrieve the data from USGS Samples was: </span><span class="ansi-yellow-fg">&#39;</span> + <span class="ansi-yellow-bg">wq_data</span>[<span class="ansi-green-fg">1</span>].url)
+
+<span class="ansi-red-fg">NameError</span>: name &#39;wq_data&#39; is not defined
 </pre></div></div>
 </div>
 </section>
@@ -590,329 +331,22 @@ The query URL used to retrieve the data from USGS Samples was: https://api.water
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
+<div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Request: https://api.waterdata.usgs.gov/samples-data/results/fullphyschem?usgsPCode=00065&amp;monitoringLocationIdentifier=USGS-04024430&amp;monitoringLocationIdentifier=USGS-04024000&amp;mimeType=text%2Fcsv
-Retrieved data for 298 samples.
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 3</span>
+<span class="ansi-green-fg">      1</span> site_ids = [<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">USGS-04024430</span><span class="ansi-yellow-fg">&#39;</span>, <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">USGS-04024000</span><span class="ansi-yellow-fg">&#39;</span>]
+<span class="ansi-green-fg">      2</span> parameter_code = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">00065</span><span class="ansi-yellow-fg">&#39;</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">3</span> wq_multi_site = <span class="ansi-yellow-bg">waterdata</span>.get_samples(monitoringLocationIdentifier=site_ids, usgsPCode=parameter_code)
+<span class="ansi-green-fg">      4</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved data for </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(wq_multi_site[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> samples.</span><span class="ansi-yellow-fg">&#39;</span>)
+<span class="ansi-green-fg">      5</span> display(wq_multi_site[<span class="ansi-green-fg">0</span>])
+
+<span class="ansi-red-fg">NameError</span>: name &#39;waterdata&#39; is not defined
 </pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Org_Identifier</th>
-      <th>Org_FormalName</th>
-      <th>Project_Identifier</th>
-      <th>Project_Name</th>
-      <th>Project_QAPPApproved</th>
-      <th>Project_QAPPApprovalAgency</th>
-      <th>ProjectAttachment_FileName</th>
-      <th>ProjectAttachment_FileType</th>
-      <th>Location_Identifier</th>
-      <th>Location_Name</th>
-      <th>...</th>
-      <th>ResultAttachment_FileName</th>
-      <th>ResultAttachment_FileType</th>
-      <th>ResultAttachment_FileDownload</th>
-      <th>ProviderName</th>
-      <th>Result_CharacteristicComparable</th>
-      <th>Result_CharacteristicGroup</th>
-      <th>Org_Type</th>
-      <th>LastChangeDate</th>
-      <th>USGSpcode</th>
-      <th>USGSSampleAquifer</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","GR13NK0...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>65</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","MN-00300"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>65</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>65</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","00GQ436...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>65</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","MN-00300"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>65</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>293</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","NA00V18"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>65</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>294</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","NA00V18"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-05-01</td>
-      <td>65</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>295</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","NA00V18"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-06-09</td>
-      <td>65</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>296</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","NA00V18"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-06-03</td>
-      <td>65</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>297</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","NA00V18"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-06-05</td>
-      <td>65</td>
-      <td>NaN</td>
-    </tr>
-  </tbody>
-</table>
-<p>298 rows × 181 columns</p>
-</div></div>
 </div>
 </section>
 <section id="Example-3:-Retrieve-water-quality-sample-data-for-multiple-sites,-including-a-list-of-parameters,-within-a-time-period-defined-by-start-date-until-present">
@@ -931,329 +365,23 @@ Retrieved data for 298 samples.
 <br/></pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
+<div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Request: https://api.waterdata.usgs.gov/samples-data/results/fullphyschem?activityStartDateLower=2012-01-01&amp;usgsPCode=34247&amp;usgsPCode=30234&amp;usgsPCode=32104&amp;usgsPCode=34220&amp;monitoringLocationIdentifier=USGS-04024430&amp;monitoringLocationIdentifier=USGS-04024000&amp;mimeType=text%2Fcsv
-Retrieved data for 298 samples.
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[8]</span><span class="ansi-green-fg">, line 4</span>
+<span class="ansi-green-fg">      2</span> parameterCd = [<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">34247</span><span class="ansi-yellow-fg">&#39;</span>, <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">30234</span><span class="ansi-yellow-fg">&#39;</span>, <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">32104</span><span class="ansi-yellow-fg">&#39;</span>, <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">34220</span><span class="ansi-yellow-fg">&#39;</span>]
+<span class="ansi-green-fg">      3</span> startDate = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">2012-01-01</span><span class="ansi-yellow-fg">&#39;</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">4</span> wq_data2 = <span class="ansi-yellow-bg">waterdata</span>.get_samples(monitoringLocationIdentifier=site_ids, usgsPCode=parameterCd,
+<span class="ansi-green-fg">      5</span>                            activityStartDateLower=startDate)
+<span class="ansi-green-fg">      6</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved data for </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(wq_multi_site[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> samples.</span><span class="ansi-yellow-fg">&#39;</span>)
+<span class="ansi-green-fg">      7</span> display(wq_data2[<span class="ansi-green-fg">0</span>])
+
+<span class="ansi-red-fg">NameError</span>: name &#39;waterdata&#39; is not defined
 </pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Org_Identifier</th>
-      <th>Org_FormalName</th>
-      <th>Project_Identifier</th>
-      <th>Project_Name</th>
-      <th>Project_QAPPApproved</th>
-      <th>Project_QAPPApprovalAgency</th>
-      <th>ProjectAttachment_FileName</th>
-      <th>ProjectAttachment_FileType</th>
-      <th>Location_Identifier</th>
-      <th>Location_Name</th>
-      <th>...</th>
-      <th>ResultAttachment_FileName</th>
-      <th>ResultAttachment_FileType</th>
-      <th>ResultAttachment_FileDownload</th>
-      <th>ProviderName</th>
-      <th>Result_CharacteristicComparable</th>
-      <th>Result_CharacteristicGroup</th>
-      <th>Org_Type</th>
-      <th>LastChangeDate</th>
-      <th>USGSpcode</th>
-      <th>USGSSampleAquifer</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["USGS","F6X7H"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024430</td>
-      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Other</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>32104</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","00GQ414...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Other</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>34247</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["USGS","GLRI TOX"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024430</td>
-      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Other</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>32104</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Pesticide</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>30234</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","MN-00300"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Other</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>32104</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>147</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","MN-00300"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Pesticide</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>30234</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>148</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","GR14NK0...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Other</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>34220</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>149</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["USGS","GLRI TOX"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024430</td>
-      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Other</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-22</td>
-      <td>34220</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>150</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Other</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-22</td>
-      <td>32104</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>151</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Other</td>
-      <td>Federal/US Government</td>
-      <td>2025-04-21</td>
-      <td>34247</td>
-      <td>NaN</td>
-    </tr>
-  </tbody>
-</table>
-<p>152 rows × 181 columns</p>
-</div></div>
 </div>
 </section>
 <section id="Example-4:-Retrieve-water-quality-sample-data-for-one-site-and-convert-to-a-wide-format">
@@ -1273,369 +401,21 @@ Retrieved data for 298 samples.
 <br/></pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
+<div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Request: https://api.waterdata.usgs.gov/samples-data/results/fullphyschem?monitoringLocationIdentifier=USGS-10109000&amp;mimeType=text%2Fcsv
-Retrieved data for 2293 sample results.
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[9]</span><span class="ansi-green-fg">, line 2</span>
+<span class="ansi-green-fg">      1</span> siteID = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">USGS-10109000</span><span class="ansi-yellow-fg">&#39;</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> wq_data,_ = <span class="ansi-yellow-bg">waterdata</span>.get_samples(monitoringLocationIdentifier=siteID)
+<span class="ansi-green-fg">      3</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved data for </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(wq_data)) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> sample results.</span><span class="ansi-yellow-fg">&#39;</span>)
+<span class="ansi-green-fg">      5</span> wq_data[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">characteristic_unit</span><span class="ansi-yellow-fg">&#34;</span>] = wq_data[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Result_Characteristic</span><span class="ansi-yellow-fg">&#34;</span>] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">, </span><span class="ansi-yellow-fg">&#34;</span> + wq_data[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Result_MeasureUnit</span><span class="ansi-yellow-fg">&#34;</span>]
+
+<span class="ansi-red-fg">NameError</span>: name &#39;waterdata&#39; is not defined
 </pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th></th>
-      <th>characteristic_unit</th>
-      <th>Acidity, (H+), mg/L</th>
-      <th>Alkalinity, mg/L</th>
-      <th>Bicarbonate, mg/L</th>
-      <th>Calcium, mg/L</th>
-      <th>Carbon dioxide, mg/L</th>
-      <th>Carbonate, mg/L</th>
-      <th>Chloride, mg/L</th>
-      <th>Depth of water column, ft</th>
-      <th>Hardness, Ca, Mg, mg/L</th>
-      <th>Hardness, non-carbonate, mg/L</th>
-      <th>...</th>
-      <th>Stream flow, instantaneous, m3/sec</th>
-      <th>Stream flow, m3/sec</th>
-      <th>Stream width measure, ft</th>
-      <th>Sulfate, mg/L</th>
-      <th>Temperature, air, deg C</th>
-      <th>Temperature, water, deg C</th>
-      <th>Total dissolved solids, mg/L</th>
-      <th>Total dissolved solids, tons/ac ft</th>
-      <th>Total dissolved solids, tons/day</th>
-      <th>pH, standard units</th>
-    </tr>
-    <tr>
-      <th>Location_Identifier</th>
-      <th>Activity_StartDate</th>
-      <th>Activity_StartTime</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th rowspan="11" valign="top">USGS-10109000</th>
-      <th>1967-09-13</th>
-      <th>07:35:00</th>
-      <td>0.00001</td>
-      <td>187</td>
-      <td>228</td>
-      <td>44.0</td>
-      <td>2.9</td>
-      <td>0.0</td>
-      <td>3.5</td>
-      <td>NaN</td>
-      <td>190</td>
-      <td>0.0</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>5.8</td>
-      <td>NaN</td>
-      <td>6.5</td>
-      <td>NaN</td>
-      <td>7.0</td>
-      <td>196</td>
-      <td>0.27</td>
-      <td>108</td>
-      <td>8.1</td>
-    </tr>
-    <tr>
-      <th>1968-01-18</th>
-      <th>12:20:00</th>
-      <td>0.00002</td>
-      <td>207</td>
-      <td>252</td>
-      <td>52.0</td>
-      <td>6.5</td>
-      <td>0.0</td>
-      <td>3.9</td>
-      <td>NaN</td>
-      <td>220</td>
-      <td>17</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>3.2</td>
-      <td>NaN</td>
-      <td>17.0</td>
-      <td>NaN</td>
-      <td>4.0</td>
-      <td>210</td>
-      <td>0.29</td>
-      <td>63.5</td>
-      <td>7.8</td>
-    </tr>
-    <tr>
-      <th>1968-05-15</th>
-      <th>12:30:00</th>
-      <td>0.00004</td>
-      <td>149</td>
-      <td>182</td>
-      <td>38.0</td>
-      <td>12</td>
-      <td>0.0</td>
-      <td>1.7</td>
-      <td>NaN</td>
-      <td>150</td>
-      <td>0.0</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>10</td>
-      <td>NaN</td>
-      <td>5.5</td>
-      <td>NaN</td>
-      <td>7.0</td>
-      <td>155</td>
-      <td>0.21</td>
-      <td>151</td>
-      <td>7.4</td>
-    </tr>
-    <tr>
-      <th>1968-07-26</th>
-      <th>14:40:00</th>
-      <td>0.00002</td>
-      <td>179</td>
-      <td>218</td>
-      <td>53.0</td>
-      <td>7.0</td>
-      <td>0.0</td>
-      <td>2.2</td>
-      <td>NaN</td>
-      <td>180</td>
-      <td>3</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>7.5</td>
-      <td>NaN</td>
-      <td>6.2</td>
-      <td>NaN</td>
-      <td>12.0</td>
-      <td>188</td>
-      <td>0.26</td>
-      <td>135</td>
-      <td>7.7</td>
-    </tr>
-    <tr>
-      <th>1972-12-08</th>
-      <th>16:15:00</th>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>4.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>3.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>2024-11-06</th>
-      <th>11:02:00</th>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>50.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>3.9</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2024-12-11</th>
-      <th>16:21:00</th>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>52.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>3.1</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2025-02-03</th>
-      <th>17:53:00</th>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>47.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2025-03-26</th>
-      <th>15:09:00</th>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>49.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>10.3</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2025-05-13</th>
-      <th>16:42:00</th>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>53.8</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>8.2</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-  </tbody>
-</table>
-<p>348 rows × 34 columns</p>
-</div></div>
 </div>
 </section>
 </section>

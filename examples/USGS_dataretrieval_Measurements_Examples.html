@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_discharge_measurements() Examples &mdash; dataretrieval 0.1.dev1+g2c8419c documentation</title>
+  <title>USGS dataretrieval Python Package get_discharge_measurements() Examples &mdash; dataretrieval 0.1.dev1+g693588f03 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=2e2d820c"></script>
+      <script src="../_static/documentation_options.js?v=10e7f399"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -126,17 +126,17 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g2c8419c)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g693588f03)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
-Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.0)
-Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.3.1)
+Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.3)
+Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.3.5)
 Requirement already satisfied: python-dateutil&gt;=2.8.2 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2.8.2)
 Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2024.1)
 Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2025.2)
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
@@ -144,6 +144,44 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nldi.py:7</span>
+<span class="ansi-green-fg">      6</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">7</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">geopandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">gpd</span>
+<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>:
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;geopandas&#39;
+
+During handling of the above exception, another exception occurred:
+
+<span class="ansi-red-fg">ImportError</span>                               Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[2]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> nwis
+<span class="ansi-green-fg">      2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">IPython</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">display</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> display
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/__init__.py:9</span>
+<span class="ansi-green-fg">      6</span>     __version__ = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">version-unknown</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nadp</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nldi</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
+<span class="ansi-green-fg">     10</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nwis</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
+<span class="ansi-green-fg">     11</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">samples</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nldi.py:9</span>
+<span class="ansi-green-fg">      7</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">geopandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">gpd</span>
+<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>:
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Install geopandas to use the NLDI module.</span><span class="ansi-yellow-fg">&#34;</span>)
+<span class="ansi-green-fg">     11</span> NLDI_API_BASE_URL = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">https://api.water.usgs.gov/nldi/linked-data</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">     12</span> _AVAILABLE_DATA_SOURCES = <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
+
+<span class="ansi-red-fg">ImportError</span>: Install geopandas to use the NLDI module.
+</pre></div></div>
 </div>
 </section>
 <section id="Basic-Usage">
@@ -170,7 +208,13 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 953 data values.
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> measurements1 = <span class="ansi-yellow-bg">nwis</span>.get_discharge_measurements(sites=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">10109000</span><span class="ansi-yellow-fg">&#34;</span>)
+<span class="ansi-green-fg">      2</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#34;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(measurements1[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> data values.</span><span class="ansi-yellow-fg">&#34;</span>)
+
+<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
 </pre></div></div>
 </div>
 </section>
@@ -190,245 +234,15 @@ Retrieved 953 data values.
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[4]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> display(<span class="ansi-yellow-bg">measurements1</span>[<span class="ansi-green-fg">0</span>])
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>measurement_nu</th>
-      <th>measurement_dt</th>
-      <th>tz_cd</th>
-      <th>q_meas_used_fg</th>
-      <th>party_nm</th>
-      <th>site_visit_coll_agency_cd</th>
-      <th>gage_height_va</th>
-      <th>discharge_va</th>
-      <th>measured_rating_diff</th>
-      <th>gage_va_change</th>
-      <th>gage_va_time</th>
-      <th>control_type_cd</th>
-      <th>discharge_cd</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>146</td>
-      <td>1951-09-06 09:40:00</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>AFP</td>
-      <td>USGS</td>
-      <td>0.94</td>
-      <td>17.0</td>
-      <td>Excellent</td>
-      <td>0.00</td>
-      <td>0.8</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>148</td>
-      <td>1951-12-13 12:10:00</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>BSR</td>
-      <td>USGS</td>
-      <td>0.88</td>
-      <td>12.5</td>
-      <td>Unspecified</td>
-      <td>0.00</td>
-      <td>0.7</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>151</td>
-      <td>1952-04-23 10:25:00</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>AFP</td>
-      <td>USGS</td>
-      <td>1.80</td>
-      <td>203.0</td>
-      <td>Good</td>
-      <td>-0.01</td>
-      <td>1.1</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>152</td>
-      <td>1952-05-22 01:35:00</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>BSR</td>
-      <td>USGS</td>
-      <td>2.54</td>
-      <td>506.0</td>
-      <td>Excellent</td>
-      <td>0.00</td>
-      <td>0.2</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>153</td>
-      <td>1952-05-27 09:45:00</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>WNJ</td>
-      <td>USGS</td>
-      <td>2.80</td>
-      <td>652.0</td>
-      <td>Good</td>
-      <td>-0.03</td>
-      <td>1.0</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>948</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1098</td>
-      <td>2025-02-03 17:20:48</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>EHQM</td>
-      <td>USGS</td>
-      <td>2.63</td>
-      <td>116.0</td>
-      <td>Fair</td>
-      <td>0.00</td>
-      <td>0.8</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>949</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1099</td>
-      <td>2025-03-26 15:46:54</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>EHQM</td>
-      <td>USGS</td>
-      <td>2.71</td>
-      <td>125.0</td>
-      <td>Fair</td>
-      <td>0.00</td>
-      <td>1.0</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>950</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1100</td>
-      <td>2025-03-26 17:22:17</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>EHQM</td>
-      <td>USGS</td>
-      <td>2.71</td>
-      <td>127.0</td>
-      <td>Fair</td>
-      <td>0.01</td>
-      <td>0.7</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>951</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1101</td>
-      <td>2025-05-13 17:41:05</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>EHQM</td>
-      <td>USGS</td>
-      <td>4.03</td>
-      <td>663.0</td>
-      <td>Fair</td>
-      <td>0.01</td>
-      <td>0.3</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>952</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1102</td>
-      <td>2025-06-17 11:56:46</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>EHQM</td>
-      <td>USGS</td>
-      <td>3.25</td>
-      <td>297.0</td>
-      <td>Fair</td>
-      <td>0.00</td>
-      <td>0.3</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-  </tbody>
-</table>
-<p>953 rows × 15 columns</p>
-</div></div>
+<span class="ansi-red-fg">NameError</span>: name &#39;measurements1&#39; is not defined
+</pre></div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
 <div class="nbinput docutils container">
@@ -444,22 +258,12 @@ Retrieved 953 data values.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-agency_cd                     object
-site_no                       object
-measurement_nu                object
-measurement_dt                object
-tz_cd                         object
-q_meas_used_fg                object
-party_nm                      object
-site_visit_coll_agency_cd     object
-gage_height_va               float64
-discharge_va                 float64
-measured_rating_diff          object
-gage_va_change               float64
-gage_va_time                 float64
-control_type_cd               object
-discharge_cd                  object
-dtype: object
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[5]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-bg">measurements1</span>[<span class="ansi-green-fg">0</span>].dtypes)
+
+<span class="ansi-red-fg">NameError</span>: name &#39;measurements1&#39; is not defined
 </pre></div></div>
 </div>
 <p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_discharge_measurements()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.</p>
@@ -476,7 +280,12 @@ dtype: object
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-The query URL used to retrieve the data from NWIS was: https://nwis.waterdata.usgs.gov/nwis/measurements?site_no=10109000&amp;format=rdb
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">The query URL used to retrieve the data from NWIS was: </span><span class="ansi-yellow-fg">&#34;</span> + <span class="ansi-yellow-bg">measurements1</span>[<span class="ansi-green-fg">1</span>].url)
+
+<span class="ansi-red-fg">NameError</span>: name &#39;measurements1&#39; is not defined
 </pre></div></div>
 </div>
 </section>
@@ -493,219 +302,20 @@ The query URL used to retrieve the data from NWIS was: https://nwis.waterdata.us
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
+<div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 9 data values.
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> measurements2 = <span class="ansi-yellow-bg">nwis</span>.get_discharge_measurements(sites=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">10109000</span><span class="ansi-yellow-fg">&#34;</span>, start=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">2019-01-01</span><span class="ansi-yellow-fg">&#34;</span>, end=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">2019-12-31</span><span class="ansi-yellow-fg">&#34;</span>)
+<span class="ansi-green-fg">      2</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#34;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(measurements2[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> data values.</span><span class="ansi-yellow-fg">&#34;</span>)
+<span class="ansi-green-fg">      3</span> display(measurements2[<span class="ansi-green-fg">0</span>])
+
+<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
 </pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>measurement_nu</th>
-      <th>measurement_dt</th>
-      <th>tz_cd</th>
-      <th>q_meas_used_fg</th>
-      <th>party_nm</th>
-      <th>site_visit_coll_agency_cd</th>
-      <th>gage_height_va</th>
-      <th>discharge_va</th>
-      <th>measured_rating_diff</th>
-      <th>gage_va_change</th>
-      <th>gage_va_time</th>
-      <th>control_type_cd</th>
-      <th>discharge_cd</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1034</td>
-      <td>2019-01-29 12:57:30</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>MJF</td>
-      <td>USGS</td>
-      <td>2.43</td>
-      <td>83.8</td>
-      <td>Good</td>
-      <td>-0.04</td>
-      <td>0.55</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1035</td>
-      <td>2019-03-11 13:29:30</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>MJF</td>
-      <td>USGS</td>
-      <td>2.46</td>
-      <td>94.2</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>0.55</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1036</td>
-      <td>2019-04-23 15:39:16</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>MJF</td>
-      <td>USGS</td>
-      <td>3.29</td>
-      <td>337.0</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>0.33</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1037</td>
-      <td>2019-06-12 08:02:56</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>MJF</td>
-      <td>USGS</td>
-      <td>4.09</td>
-      <td>709.0</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>1.02</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1038</td>
-      <td>2019-07-30 11:57:17</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>MJF/BTR</td>
-      <td>USGS</td>
-      <td>2.84</td>
-      <td>167.0</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>0.67</td>
-      <td>VegetationLight</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1039</td>
-      <td>2019-07-30 12:06:00</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>MJF/BTR</td>
-      <td>USGS</td>
-      <td>2.84</td>
-      <td>162.0</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>0.83</td>
-      <td>VegetationLight</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1040</td>
-      <td>2019-09-16 10:59:19</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>MJF</td>
-      <td>USGS</td>
-      <td>2.64</td>
-      <td>126.0</td>
-      <td>Good</td>
-      <td>0.03</td>
-      <td>0.75</td>
-      <td>VegetationLight</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1041</td>
-      <td>2019-10-28 13:06:42</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>MJF/NML</td>
-      <td>USGS</td>
-      <td>2.64</td>
-      <td>133.0</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>0.65</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1042</td>
-      <td>2019-12-03 13:53:15</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>NML</td>
-      <td>USGS</td>
-      <td>2.60</td>
-      <td>122.0</td>
-      <td>Good</td>
-      <td>0.02</td>
-      <td>0.60</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-  </tbody>
-</table>
-</div></div>
 </div>
 <p>Example 3: Get all of the surface water measurements for multiple sites</p>
 <div class="nbinput docutils container">
@@ -718,256 +328,20 @@ Retrieved 9 data values.
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
+<div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 485 data values.
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[8]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> measurements3 = <span class="ansi-yellow-bg">nwis</span>.get_discharge_measurements(sites=[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">01594440</span><span class="ansi-yellow-fg">&#34;</span>, <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">040851325</span><span class="ansi-yellow-fg">&#34;</span>])
+<span class="ansi-green-fg">      2</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#34;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(measurements3[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> data values.</span><span class="ansi-yellow-fg">&#34;</span>)
+<span class="ansi-green-fg">      3</span> display(measurements3[<span class="ansi-green-fg">0</span>])
+
+<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
 </pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>measurement_nu</th>
-      <th>measurement_dt</th>
-      <th>tz_cd</th>
-      <th>q_meas_used_fg</th>
-      <th>party_nm</th>
-      <th>site_visit_coll_agency_cd</th>
-      <th>gage_height_va</th>
-      <th>discharge_va</th>
-      <th>measured_rating_diff</th>
-      <th>gage_va_change</th>
-      <th>gage_va_time</th>
-      <th>control_type_cd</th>
-      <th>discharge_cd</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>USGS</td>
-      <td>01594440</td>
-      <td>1</td>
-      <td>1955-04-07 14:05:00</td>
-      <td>EST</td>
-      <td>Yes</td>
-      <td>JMD</td>
-      <td>USGS</td>
-      <td>3.11</td>
-      <td>152.00</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>1.5</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>USGS</td>
-      <td>01594440</td>
-      <td>2</td>
-      <td>1955-05-04 16:05:00</td>
-      <td>EST</td>
-      <td>Yes</td>
-      <td>DGB</td>
-      <td>USGS</td>
-      <td>2.76</td>
-      <td>127.00</td>
-      <td>Fair</td>
-      <td>-0.01</td>
-      <td>1.0</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>USGS</td>
-      <td>01594440</td>
-      <td>3</td>
-      <td>1955-06-10 08:35:00</td>
-      <td>EST</td>
-      <td>Yes</td>
-      <td>DGB</td>
-      <td>USGS</td>
-      <td>4.26</td>
-      <td>310.00</td>
-      <td>Good</td>
-      <td>-0.14</td>
-      <td>1.9</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>USGS</td>
-      <td>01594440</td>
-      <td>4</td>
-      <td>1955-07-21 12:15:00</td>
-      <td>EST</td>
-      <td>Yes</td>
-      <td>JMD</td>
-      <td>USGS</td>
-      <td>1.83</td>
-      <td>46.60</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>0.8</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>USGS</td>
-      <td>01594440</td>
-      <td>5</td>
-      <td>1955-09-08 17:15:00</td>
-      <td>EST</td>
-      <td>Yes</td>
-      <td>AGT</td>
-      <td>USGS</td>
-      <td>3.25</td>
-      <td>175.00</td>
-      <td>Poor</td>
-      <td>0.00</td>
-      <td>1.3</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>480</th>
-      <td>USGS</td>
-      <td>040851325</td>
-      <td>93</td>
-      <td>2014-05-20 11:42:00</td>
-      <td>CDT</td>
-      <td>Yes</td>
-      <td>PCR</td>
-      <td>USGS</td>
-      <td>2.78</td>
-      <td>34.50</td>
-      <td>Unspecified</td>
-      <td>-0.03</td>
-      <td>0.6</td>
-      <td>NaN</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>481</th>
-      <td>USGS</td>
-      <td>040851325</td>
-      <td>94</td>
-      <td>2014-06-25 16:27:00</td>
-      <td>CDT</td>
-      <td>Yes</td>
-      <td>DLO,ENC</td>
-      <td>USGS</td>
-      <td>2.26</td>
-      <td>11.40</td>
-      <td>Good</td>
-      <td>0.01</td>
-      <td>0.4</td>
-      <td>Clear</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>482</th>
-      <td>USGS</td>
-      <td>040851325</td>
-      <td>95</td>
-      <td>2014-08-13 16:23:00</td>
-      <td>CDT</td>
-      <td>Yes</td>
-      <td>DLO</td>
-      <td>USGS</td>
-      <td>1.91</td>
-      <td>0.82</td>
-      <td>Fair</td>
-      <td>0.00</td>
-      <td>0.4</td>
-      <td>VegetationModerate</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>483</th>
-      <td>USGS</td>
-      <td>040851325</td>
-      <td>96</td>
-      <td>2014-09-24 16:26:00</td>
-      <td>CDT</td>
-      <td>Yes</td>
-      <td>DLO</td>
-      <td>USGS</td>
-      <td>2.23</td>
-      <td>8.90</td>
-      <td>Good</td>
-      <td>0.02</td>
-      <td>0.4</td>
-      <td>VegetationModerate</td>
-      <td>NONE</td>
-    </tr>
-    <tr>
-      <th>484</th>
-      <td>USGS</td>
-      <td>040851325</td>
-      <td>97</td>
-      <td>2016-07-20 08:25:00</td>
-      <td>CDT</td>
-      <td>Yes</td>
-      <td>AJD</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>0.68</td>
-      <td>Fair</td>
-      <td>NaN</td>
-      <td>0.5</td>
-      <td>NaN</td>
-      <td>NONE</td>
-    </tr>
-  </tbody>
-</table>
-<p>485 rows × 15 columns</p>
-</div></div>
 </div>
 </section>
 </section>
