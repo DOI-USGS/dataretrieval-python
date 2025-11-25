@@ -169,7 +169,7 @@ def _format_api_dates(
         datetime_input = [datetime_input]
 
     # Check for null or all NA and return None
-    if all(pd.isna(dt) or dt == "" or dt == None for dt in datetime_input):
+    if all(pd.isna(dt) or dt == "" or dt is None for dt in datetime_input):
         return None
 
     if len(datetime_input) <= 2:
@@ -313,8 +313,7 @@ def _error_body(resp: requests.Response):
         return "429: Too many requests made. Please obtain an API token or try again later."
     elif resp.status_code == 403:
         return "403: Query request denied. Possible reasons include query exceeding server limits."
-    return f"{resp.status_code}: {resp.json().get('code', 'Unknown type')}. \
-    {resp.json().get('description', "No description provided")}."
+    return f"{resp.status_code}: {resp.json().get('code', 'Unknown type')}. {resp.json().get('description', "No description provided")}."
 
 
 def _construct_api_requests(
