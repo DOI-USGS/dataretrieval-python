@@ -11,6 +11,7 @@ import requests
 from zoneinfo import ZoneInfo
 
 from dataretrieval.utils import BaseMetadata
+from dataretrieval import __version__
 
 try:
     import geopandas as gpd
@@ -251,7 +252,7 @@ def _default_headers():
     headers = {
         "Accept-Encoding": "compress, gzip",
         "Accept": "application/json",
-        "User-Agent": "python-dataretrieval/1.0",
+        "User-Agent": f"python-dataretrieval/{__version__}",
         "lang": "en-US",
     }
     token = os.getenv("API_USGS_PAT")
