@@ -35,11 +35,29 @@ U.S. Geological Survey (USGS) hydrology data types available on the Web, as well
 as data from the Water Quality Portal (WQP) and Network Linked Data Index
 (NLDI).
 
+## Installation
+
+Install dataretrieval using pip:
+
+```bash
+pip install dataretrieval
+```
+
+Or using conda:
+
+```bash
+conda install -c conda-forge dataretrieval
+```
+
 ## Usage Examples
 
 ### Water Data API (Recommended - Modern USGS Data)
 
-The `waterdata` module provides access to modern USGS Water Data APIs:
+The `waterdata` module provides access to modern USGS Water Data APIs.
+
+The example below retrieves daily streamflow data for a specific monitoring
+location for water year 2025, where a "/" between two dates in the "time"
+input argument indicates a desired date range:
 
 ```python
 import dataretrieval.waterdata as waterdata
@@ -48,13 +66,27 @@ import dataretrieval.waterdata as waterdata
 df, metadata = waterdata.get_daily(
     monitoring_location_id='USGS-01646500', 
     parameter_code='00060',  # Discharge
-    time='2024-10-01/2024-10-02'
+    time='2024-10-01/2025-09-30'
 )
 
 print(f"Retrieved {len(df)} records")
 print(f"Site: {df['monitoring_location_id'].iloc[0]}")
 print(f"Mean discharge: {df['value'].mean():.2f} {df['unit_of_measure'].iloc[0]}")
 ```
+Fetch daily discharge data for multiple sites from a start date to present
+using the following code:
+
+```python
+df, metadata = waterdata.get_daily(
+    monitoring_location_id=["USGS-13018750","USGS-13013650"],
+    parameter_code='00060',
+    time='2024-10-01/..'
+)
+
+print(f"Retrieved {len(df)} records")
+```
+The following example downloads location information for all monitoring
+locations that are categorized as stream sites in the state of Maryland:
 
 ```python
 # Get monitoring location information
@@ -65,7 +97,11 @@ locations, metadata = waterdata.get_monitoring_locations(
 
 print(f"Found {len(locations)} stream monitoring locations in Maryland")
 ```
-This new module implements
+Visit the
+[API Reference](https://doi-usgs.github.io/dataretrieval-python/reference/waterdata.html)
+for more information and examples on available services and input parameters. 
+
+**NEW:** This new module implements
 [logging](https://docs.python.org/3/howto/logging.html#logging-basic-tutorial)
 in which users can view the URL requests sent to the USGS Water Data APIs
 and the number of requests they have remaining each hour. These messages can
@@ -160,10 +196,13 @@ print(f"Found {len(flowlines)} upstream tributaries within 50km")
 
 ### Modern USGS Water Data APIs (Recommended)
 - **Daily values**: Daily statistical summaries (mean, min, max)
-- **Instantaneous values**: High-frequency continuous data  
 - **Field measurements**: Discrete measurements from field visits
 - **Monitoring locations**: Site information and metadata
 - **Time series metadata**: Information about available data parameters
+- **Latest daily values**: Most recent daily statistical summary data
+- **Latest instantaneous values**: Most recent high-frequency continuous data
+- **Samples data**: Discrete USGS water quality data
+- **Instantaneous values (:alarm_clock: COMING SOON)**: High-frequency continuous data
 
 ### Legacy NWIS Services (Deprecated)
 - **Daily values (dv)**: Legacy daily statistical data
@@ -184,20 +223,6 @@ print(f"Found {len(flowlines)} upstream tributaries within 50km")
 - **Flow navigation**: Upstream/downstream network traversal
 - **Feature discovery**: Find monitoring sites, dams, and other features
 - **Hydrologic connectivity**: Link data across the stream network
-
-## Installation
-
-Install dataretrieval using pip:
-
-```bash
-pip install dataretrieval
-```
-
-Or using conda:
-
-```bash
-conda install -c conda-forge dataretrieval
-```
 
 ## More Examples
 
