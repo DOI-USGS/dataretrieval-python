@@ -1,4 +1,4 @@
-.. _samples
+.. _waterdata
 
 dataretrieval.waterdata
 -------------------------
