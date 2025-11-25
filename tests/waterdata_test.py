@@ -1,7 +1,10 @@
 import datetime
-
+import sys
 import pytest
 from pandas import DataFrame
+
+if sys.version_info < (3, 10):
+    pytest.skip("Skip entire module on Python < 3.10", allow_module_level=True)
 
 from dataretrieval.waterdata import (
     _check_profiles,
