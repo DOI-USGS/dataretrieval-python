@@ -1,5 +1,6 @@
 import json
 import logging
+import warnings
 import os
 import re
 from datetime import datetime
@@ -309,10 +310,11 @@ def _error_body(resp: requests.Response):
         status codes, returns the raw response text.
     """
     if resp.status_code == 429:
-        return resp.json().get("error", {}).get("message")
+        return "429: Too many requests made. Please obtain an API token or try again later."
     elif resp.status_code == 403:
-        return "Query request denied. Possible reasons include query exceeding server limits."
-    return resp.text
+        return "403: Query request denied. Possible reasons include query exceeding server limits."
+    return f"{resp.status_code}: {resp.json().get('code', 'Unknown type')}. \
+    {resp.json().get('description', "No description provided")}."
 
 
 def _construct_api_requests(
@@ -574,12 +576,15 @@ def _walk_pages(
                     data=content if method == "POST" else None,
                     )
                 if resp.status_code != 200:
-                    raise Exception(_error_body(resp))
+                    error_text = _error_body(resp)
+                    raise Exception(error_text)
                 df1 = _get_resp_data(resp, geopd=geopd)
                 dfs = pd.concat([dfs, df1], ignore_index=True)
                 curr_url = _next_req_url(resp)
             except Exception:
-                logger.info("Request failed for URL: %s. Stopping pagination and data download.", curr_url)
+                warnings.warn(f"{error_text}. Data request incomplete.")
+                logger.error("Request incomplete. %s", error_text)
+                logger.warning("Request failed for URL: %s. Data download interrupted.", curr_url)
                 curr_url = None
         return dfs, initial_response
     finally:
