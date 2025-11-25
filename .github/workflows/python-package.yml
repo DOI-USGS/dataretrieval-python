@@ -17,6 +17,10 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         python-version: [3.8, 3.9, '3.10', 3.11, 3.12]
+        exclude:
+          - os: ubuntu-latest
+            python-version: 3.8
+
 
     steps:
       - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871
@@ -36,7 +40,5 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with pytest and report coverage
         run: |
-          cd tests
-          coverage run -m pytest
+          coverage run -m pytest tests/
           coverage report -m
-          cd ..

@@ -47,7 +47,7 @@ def test_get_basin(requests_mock):
         f"{NLDI_API_BASE_URL}/WQP/USGS-054279485/basin"
         f"?simplified=true&splitCatchment=false"
     )
-    response_file_path = "data/nldi_get_basin.json"
+    response_file_path = "tests/data/nldi_get_basin.json"
     mock_request_data_sources(requests_mock)
     mock_request(requests_mock, request_url, response_file_path)
 
@@ -62,7 +62,7 @@ def test_get_flowlines(requests_mock):
         f"{NLDI_API_BASE_URL}/WQP/USGS-054279485/navigation/UM/flowlines"
         f"?distance=5&trimStart=false"
     )
-    response_file_path = "data/nldi_get_flowlines.json"
+    response_file_path = "tests/data/nldi_get_flowlines.json"
     mock_request_data_sources(requests_mock)
     mock_request(requests_mock, request_url, response_file_path)
 
@@ -78,7 +78,7 @@ def test_get_flowlines_by_comid(requests_mock):
     request_url = (
         f"{NLDI_API_BASE_URL}/comid/13294314/navigation/UM/flowlines?distance=50"
     )
-    response_file_path = "data/nldi_get_flowlines_by_comid.json"
+    response_file_path = "tests/data/nldi_get_flowlines_by_comid.json"
     mock_request_data_sources(requests_mock)
     mock_request(requests_mock, request_url, response_file_path)
 
@@ -94,7 +94,7 @@ def test_features_by_feature_source_with_navigation(requests_mock):
     request_url = (
         f"{NLDI_API_BASE_URL}/WQP/USGS-054279485/navigation/UM/nwissite?distance=50"
     )
-    response_file_path = "data/nldi_get_features_by_feature_source_with_nav_mode.json"
+    response_file_path = "tests/data/nldi_get_features_by_feature_source_with_nav_mode.json"
     mock_request_data_sources(requests_mock)
     mock_request(requests_mock, request_url, response_file_path)
 
@@ -115,7 +115,7 @@ def test_features_by_feature_source_without_navigation(requests_mock):
     """
     request_url = f"{NLDI_API_BASE_URL}/WQP/USGS-054279485"
     response_file_path = (
-        "data/nldi_get_features_by_feature_source_without_nav_mode.json"
+        "tests/data/nldi_get_features_by_feature_source_without_nav_mode.json"
     )
     mock_request_data_sources(requests_mock)
     mock_request(requests_mock, request_url, response_file_path)
@@ -128,7 +128,7 @@ def test_features_by_feature_source_without_navigation(requests_mock):
 def test_get_features_by_comid(requests_mock):
     """Tests NLDI get features query using comid as the origin"""
     request_url = f"{NLDI_API_BASE_URL}/comid/13294314/navigation/UM/WQP?distance=5"
-    response_file_path = "data/nldi_get_features_by_comid.json"
+    response_file_path = "tests/data/nldi_get_features_by_comid.json"
     mock_request_data_sources(requests_mock)
     mock_request(requests_mock, request_url, response_file_path)
 
@@ -144,7 +144,7 @@ def test_get_features_by_lat_long(requests_mock):
     request_url = (
         f"{NLDI_API_BASE_URL}/comid/position?coords=POINT%28-89.509%2043.087%29"
     )
-    response_file_path = "data/nldi_get_features_by_lat_long.json"
+    response_file_path = "tests/data/nldi_get_features_by_lat_long.json"
     mock_request_data_sources(requests_mock)
     mock_request(requests_mock, request_url, response_file_path)
 
@@ -156,7 +156,7 @@ def test_get_features_by_lat_long(requests_mock):
 def test_search_for_basin(requests_mock):
     """Tests NLDI search query for basin"""
     request_url = f"{NLDI_API_BASE_URL}/WQP/USGS-054279485/basin"
-    response_file_path = "data/nldi_get_basin.json"
+    response_file_path = "tests/data/nldi_get_basin.json"
     mock_request_data_sources(requests_mock)
     mock_request(requests_mock, request_url, response_file_path)
 
@@ -172,7 +172,7 @@ def test_search_for_basin(requests_mock):
 def test_search_for_flowlines(requests_mock):
     """Tests NLDI search query for flowlines"""
     request_url = f"{NLDI_API_BASE_URL}/WQP/USGS-054279485/navigation/UM/flowlines"
-    response_file_path = "data/nldi_get_flowlines.json"
+    response_file_path = "tests/data/nldi_get_flowlines.json"
     mock_request_data_sources(requests_mock)
     mock_request(requests_mock, request_url, response_file_path)
 
@@ -191,7 +191,7 @@ def test_search_for_flowlines(requests_mock):
 def test_search_for_flowlines_by_comid(requests_mock):
     """Tests NLDI search query for flowlines by comid"""
     request_url = f"{NLDI_API_BASE_URL}/comid/13294314/navigation/UM/flowlines"
-    response_file_path = "data/nldi_get_flowlines_by_comid.json"
+    response_file_path = "tests/data/nldi_get_flowlines_by_comid.json"
     mock_request_data_sources(requests_mock)
     mock_request(requests_mock, request_url, response_file_path)
 
@@ -207,7 +207,7 @@ def test_search_for_features_by_feature_source_with_navigation(requests_mock):
     request_url = (
         f"{NLDI_API_BASE_URL}/WQP/USGS-054279485/navigation/UM/nwissite?distance=50"
     )
-    response_file_path = "data/nldi_get_features_by_feature_source_with_nav_mode.json"
+    response_file_path = "tests/data/nldi_get_features_by_feature_source_with_nav_mode.json"
     mock_request_data_sources(requests_mock)
     mock_request(requests_mock, request_url, response_file_path)
 
@@ -228,7 +228,7 @@ def test_search_for_features_by_feature_source_without_navigation(requests_mock)
     """Tests NLDI search query for features by feature source"""
     request_url = f"{NLDI_API_BASE_URL}/WQP/USGS-054279485"
     response_file_path = (
-        "data/nldi_get_features_by_feature_source_without_nav_mode.json"
+        "tests/data/nldi_get_features_by_feature_source_without_nav_mode.json"
     )
     mock_request_data_sources(requests_mock)
     mock_request(requests_mock, request_url, response_file_path)
@@ -245,7 +245,7 @@ def test_search_for_features_by_feature_source_without_navigation(requests_mock)
 def test_search_for_features_by_comid(requests_mock):
     """Tests NLDI search query for features by comid"""
     request_url = f"{NLDI_API_BASE_URL}/comid/13294314/navigation/UM/WQP?distance=5"
-    response_file_path = "data/nldi_get_features_by_comid.json"
+    response_file_path = "tests/data/nldi_get_features_by_comid.json"
     mock_request_data_sources(requests_mock)
     mock_request(requests_mock, request_url, response_file_path)
 
@@ -267,7 +267,7 @@ def test_search_for_features_by_lat_long(requests_mock):
     request_url = (
         f"{NLDI_API_BASE_URL}/comid/position?coords=POINT%28-89.509%2043.087%29"
     )
-    response_file_path = "data/nldi_get_features_by_lat_long.json"
+    response_file_path = "tests/data/nldi_get_features_by_lat_long.json"
     mock_request_data_sources(requests_mock)
     mock_request(requests_mock, request_url, response_file_path)
 

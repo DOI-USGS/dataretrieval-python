@@ -2,7 +2,7 @@
 
 import os
 
-import dataretrieval.nadp as nadp
+from dataretrieval import nadp
 
 
 class TestMDNmap:
