@@ -18,8 +18,7 @@ jobs:
         shell: bash -l {0}
         run: |
           python -m pip install --upgrade pip
-          pip install geopandas
-          pip install .[doc]
+          pip install .[doc,nldi]
           ipython kernel install --name "python3" --user
           sudo apt update -y && sudo apt install -y latexmk texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended dvipng pandoc
           (cd docs && make html)
