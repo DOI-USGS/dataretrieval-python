@@ -1,3 +1,5 @@
 from setuptools import setup
 
-setup()
+setup(
+    package_data={"dataretrieval": ["py.typed"]}
+)
