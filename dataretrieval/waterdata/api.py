@@ -101,9 +101,8 @@ def get_daily(
         use. This field reflects the approval status of each record, and is either
         "Approved", meaining processing review has been completed and the data is
         approved for publication, or "Provisional" and subject to revision. For
-        more information about provisional data, go to
-        [https://waterdata.usgs.gov/provisional-data-statement/]
-        (https://waterdata.usgs.gov/provisional-data-statement/).
+        more information about provisional data, go to:
+        https://waterdata.usgs.gov/provisional-data-statement/.
     unit_of_measure : string or list of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
@@ -122,12 +121,12 @@ def get_daily(
         duration objects. Intervals may be bounded or half-bounded (double-dots
         at start or end).
         Examples:
-            - A date-time: "2018-02-12T23:20:50Z"
-            - A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
-            "../2018-03-18T12:31:12Z"
-            - Duration objects: "P1M" for data from the past month or "PT36H"
-            for the last 36 hours
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+
         Only features that have a last_modified that intersects the value of
         datetime are selected.
     skip_geometry : boolean, optional
@@ -145,12 +144,12 @@ def get_daily(
         temporal property is used to determine the extent or all relevant
         temporal properties.
         Examples:
-            - A date-time: "2018-02-12T23:20:50Z"
-            - A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
-            "../2018-03-18T12:31:12Z"
-            - Duration objects: "P1M" for data from the past month or "PT36H"
-            for the last 36 hours
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+
     bbox : list of numbers, optional
         Only features that have a geometry that intersects the bounding box are
         selected.  The bounding box is provided as four or six numbers,
@@ -274,14 +273,15 @@ def get_monitoring_locations(
     agency_code : string or list of strings, optional
         The agency that is reporting the data. Agency codes are fixed values
         assigned by the National Water Information System (NWIS). A list of
-        agency codes is available at
-        [this link](https://help.waterdata.usgs.gov/code/agency_cd_query?fmt=html).
+        agency codes is available at:
+        https://help.waterdata.usgs.gov/code/agency_cd_query?fmt=html.
     agency_name : string or list of strings, optional
         The name of the agency that is reporting the data.
     monitoring_location_number : string or list of strings, optional
         Each monitoring location in the USGS data base has a unique 8- to
         15-digit identification number. Monitoring location numbers are
-        assigned based on [this logic](https://help.waterdata.usgs.gov/faq/sites/do-station-numbers-have-any-particular-meaning).
+        assigned based on this logic:
+        https://help.waterdata.usgs.gov/faq/sites/do-station-numbers-have-any-particular-meaning.
     monitoring_location_name : string or list of strings, optional
         This is the official name of the monitoring location in the database.
         For well information this can be a district-assigned local number.
@@ -301,7 +301,8 @@ def get_monitoring_locations(
         State code. A two-digit ANSI code (formerly FIPS code) as defined by
         the American National Standards Institute, to define States and
         equivalents. A three-digit ANSI code is used to define counties and
-        county equivalents. A [lookup table](https://www.census.gov/library/reference/code-lists/ansi.html#states)
+        county equivalents. A `lookup table
+        <https://www.census.gov/library/reference/code-lists/ansi.html#states>`_
         is available. The only countries with
         political subdivisions other than the US are Mexico and Canada. The Mexican
         states have US state codes ranging from 81-86 and Canadian provinces have
@@ -311,22 +312,22 @@ def get_monitoring_locations(
         is located.
     county_code : string or list of strings, optional
         The code for the county or county equivalent (parish, borough, etc.) in which
-        the monitoring location is located. A [list of codes](https://help.waterdata.usgs.gov/code/county_query?fmt=html)
-        is available.
+        the monitoring location is located. A `list of codes 
+        <https://help.waterdata.usgs.gov/code/county_query?fmt=html>`_ is available.
     county_name : string or list of strings, optional
         The name of the county or county equivalent (parish, borough, etc.) in which
-        the monitoring location is located. A [list of codes](https://help.waterdata.usgs.gov/code/county_query?fmt=html)
-        is available.
+        the monitoring location is located. A `list of codes 
+        <https://help.waterdata.usgs.gov/code/county_query?fmt=html>`_ is available.
     minor_civil_division_code : string or list of strings, optional
         Codes for primary governmental or administrative divisions of the county or
         county equivalent in which the monitoring location is located.
     site_type_code : string or list of strings, optional
-        A code describing the hydrologic setting of the monitoring location. A [list of
-        codes](https://help.waterdata.usgs.gov/code/site_tp_query?fmt=html) is available.
+        A code describing the hydrologic setting of the monitoring location. A `list of
+        codes <https://help.waterdata.usgs.gov/code/site_tp_query?fmt=html>`_ is available.
         Example: "US:15:001" (United States: Hawaii, Hawaii County)
     site_type : string or list of strings, optional
-        A description of the hydrologic setting of the monitoring location. A [list of
-        codes](https://help.waterdata.usgs.gov/code/site_tp_query?fmt=html) is available.
+        A description of the hydrologic setting of the monitoring location. A `list of
+        codes <https://help.waterdata.usgs.gov/code/site_tp_query?fmt=html>`_ is available.
     hydrologic_unit_code : string or list of strings, optional
         The United States is divided and sub-divided into successively smaller
         hydrologic units which are classified into four levels: regions,
@@ -350,44 +351,41 @@ def get_monitoring_locations(
         topographic maps; accuracies determined in this way are generally
         entered as one-half of the contour interval.
     altitude_method_code : string or list of strings, optional
-        Codes representing the method used to measure altitude. A [list of codes](https://help.waterdata.usgs.gov/code/alt_meth_cd_query?fmt=html)
-        is available.
+        Codes representing the method used to measure altitude. A `list of
+        codes <https://help.waterdata.usgs.gov/code/alt_meth_cd_query?fmt=html>`_ is available.
     altitude_method_name : float, optional
-        The name of the the method used to measure altitude. A [list of codes](https://help.waterdata.usgs.gov/code/alt_meth_cd_query?fmt=html)
-        is
-        available.
+        The name of the the method used to measure altitude. A `list of
+        codes <https://help.waterdata.usgs.gov/code/alt_meth_cd_query?fmt=html>`_ is available.
     vertical_datum : float, optional
         The datum used to determine altitude and vertical position at the
-        monitoring location. A [list of codes](https://help.waterdata.usgs.gov/code/alt_datum_cd_query?fmt=html)
-        is available.
+        monitoring location. A `list of
+        codes <https://help.waterdata.usgs.gov/code/alt_datum_cd_query?fmt=html>`_ is available.
     vertical_datum_name : float, optional
         The datum used to determine altitude and vertical position at the
-        monitoring location. A [list of codes](https://help.waterdata.usgs.gov/code/alt_datum_cd_query?fmt=html)
-        is available.
+        monitoring location. A `list of
+        codes <https://help.waterdata.usgs.gov/code/alt_datum_cd_query?fmt=html>`_ is available.
     horizontal_positional_accuracy_code : string or list of strings, optional
-        Indicates the accuracy of the latitude longitude values. A [list of codes](https://help.waterdata.usgs.gov/code/coord_acy_cd_query?fmt=html)
-        is available.
+        Indicates the accuracy of the latitude longitude values. A `list of
+        codes <https://help.waterdata.usgs.gov/code/coord_acy_cd_query?fmt=html>`_ is available.
     horizontal_positional_accuracy : string or list of strings, optional
-        Indicates the accuracy of the latitude longitude values. A [list of codes](https://help.waterdata.usgs.gov/code/coord_acy_cd_query?fmt=html)
-        is available.
+        Indicates the accuracy of the latitude longitude values. A `list of
+        codes <https://help.waterdata.usgs.gov/code/coord_acy_cd_query?fmt=html>`_ is available.
     horizontal_position_method_code : string or list of strings, optional
-        Indicates the method used to determine latitude longitude values. A
-        [list of codes](https://help.waterdata.usgs.gov/code/coord_meth_cd_query?fmt=html)
-        is available.
+        Indicates the method used to determine latitude longitude values. A `list of
+        codes <https://help.waterdata.usgs.gov/code/coord_meth_cd_query?fmt=html>`_ is available.
     horizontal_position_method_name : string or list of strings, optional
-        Indicates the method used to determine latitude longitude values. A
-        [list of codes](https://help.waterdata.usgs.gov/code/coord_meth_cd_query?fmt=html)
-        is available.
+        Indicates the method used to determine latitude longitude values. A `list of
+        codes <https://help.waterdata.usgs.gov/code/coord_meth_cd_query?fmt=html>`_ is available.
     original_horizontal_datum : string or list of strings, optional
         Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System
         1984. This field indicates the original datum used to determine
-        coordinates before they were converted. A [list of codes](https://help.waterdata.usgs.gov/code/coord_datum_cd_query?fmt=html)
-        is available.
+        coordinates before they were converted. A `list of
+        codes <https://help.waterdata.usgs.gov/code/coord_datum_cd_query?fmt=html>`_ is available.
     original_horizontal_datum_name : string or list of strings, optional
         Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System
         1984. This field indicates the original datum used to determine coordinates
-        before they were converted. A [list of codes](https://help.waterdata.usgs.gov/code/coord_datum_cd_query?fmt=html)
-        is available.
+        before they were converted. A `list of
+        codes <https://help.waterdata.usgs.gov/code/coord_datum_cd_query?fmt=html>`_ is available.
     drainage_area : string or list of strings, optional
         The area enclosed by a topographic divide from which direct surface runoff
         from precipitation normally drains by gravity into the stream above that
@@ -412,14 +410,14 @@ def get_monitoring_locations(
         geohydrologic unit code (a three-digit number related to the age of the
         formation, followed by a 4 or 5 character abbreviation for the geologic
         unit or aquifer name). Additional information is available
-        [at this link](https://help.waterdata.usgs.gov/faq/groundwater/local-aquifer-description).
+        `at this link <https://help.waterdata.usgs.gov/faq/groundwater/local-aquifer-description>`_.
     national_aquifer_code : string or list of strings, optional
         National aquifers are the principal aquifers or aquifer systems in the United
         States, defined as regionally extensive aquifers or aquifer systems that have
         the potential to be used as a source of potable water. Not all groundwater
         monitoring locations can be associated with a National Aquifer. Such
-        monitoring locations will not be retrieved using this search criteria. A [list
-        of National aquifer codes and names](https://help.waterdata.usgs.gov/code/nat_aqfr_query?fmt=html)
+        monitoring locations will not be retrieved using this search criteria. A `list
+        of National aquifer codes and names <https://help.waterdata.usgs.gov/code/nat_aqfr_query?fmt=html>`_
         is available.
     aquifer_type_code : string or list of strings, optional
         Groundwater occurs in aquifers under two different conditions. Where water
@@ -429,7 +427,7 @@ def get_monitoring_locations(
         aquifer is referred to as a confined (or artesian) aquifer. When a confined
         aquifer is penetrated by a well, the water level in the well will rise above
         the top of the aquifer (but not necessarily above land surface). Additional
-        information is available [at this link](https://help.waterdata.usgs.gov/faq/groundwater/local-aquifer-description).
+        information is available `at this link <https://help.waterdata.usgs.gov/faq/groundwater/local-aquifer-description>`_.
     well_constructed_depth : string or list of strings, optional
         The depth of the finished well, in feet below land surface datum. Note: Not
         all groundwater monitoring locations have information on Well Depth. Such
@@ -439,7 +437,8 @@ def get_monitoring_locations(
         Note: Not all groundwater monitoring locations have information on Hole Depth.
         Such monitoring locations will not be retrieved using this search criteria.
     depth_source_code : string or list of strings, optional
-        A code indicating the source of water-level data. A [list of codes](https://help.waterdata.usgs.gov/code/water_level_src_cd_query?fmt=html)
+        A code indicating the source of water-level data. A `list of
+        codes <https://help.waterdata.usgs.gov/code/water_level_src_cd_query?fmt=html>`_
         is available.
     properties : string or list of strings, optional
         A vector of requested columns to be returned from the query. Available
@@ -580,12 +579,14 @@ def get_time_series_metadata(
         at start or end). Only features that have a last_modified that
         intersects the value of datetime are selected.
         Examples:
-            - A date-time: "2018-02-12T23:20:50Z"
-            - A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
-            "../2018-03-18T12:31:12Z"
-            - Duration objects: "P1M" for data from the past month or "PT36H"
-            for the last 36 hours
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H"
+                for the last 36 hours
+
     begin : string or list of strings, optional
         The datetime of the earliest observation in the time series. Together
         with end, this field represents the period of record of a time series.
@@ -597,10 +598,12 @@ def get_time_series_metadata(
         bounded or half-bounded (double-dots at start or end). Only features
         that have a begin that intersects the value of datetime are selected.
         Examples:
-        - A date-time: "2018-02-12T23:20:50Z"
-        - A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-        - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
-        - Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+
     end : string or list of strings, optional
         The datetime of the most recent observation in the time series. Data returned by
         this endpoint updates at most once per day, and potentially less frequently than
@@ -614,12 +617,12 @@ def get_time_series_metadata(
         features that have a end that intersects the value of datetime are
         selected.
         Examples:
-        - A date-time: "2018-02-12T23:20:50Z"
-        - A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-        - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
-        "../2018-03-18T12:31:12Z"
-        - Duration objects: "P1M" for data from the past month or "PT36H" for
-        the last 36 hours
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+
     unit_of_measure : string or list of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
@@ -776,9 +779,8 @@ def get_latest_continuous(
         use. This field reflects the approval status of each record, and is either
         "Approved", meaining processing review has been completed and the data is
         approved for publication, or "Provisional" and subject to revision. For
-        more information about provisional data, go to
-        [https://waterdata.usgs.gov/provisional-data-statement/]
-        (https://waterdata.usgs.gov/provisional-data-statement/).
+        more information about provisional data, go to:
+        https://waterdata.usgs.gov/provisional-data-statement/.
     unit_of_measure : string or list of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
@@ -798,12 +800,12 @@ def get_latest_continuous(
         at start or end). Only features that have a last_modified that
         intersects the value of datetime are selected.
         Examples:
-            - A date-time: "2018-02-12T23:20:50Z"
-            - A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
-            "../2018-03-18T12:31:12Z"
-            - Duration objects: "P1M" for data from the past month or "PT36H"
-            for the last 36 hours
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+
     skip_geometry : boolean, optional
         This option can be used to skip response geometries for each feature.
         The returning object will be a data frame with no spatial information.
@@ -819,12 +821,12 @@ def get_latest_continuous(
         temporal property is used to determine the extent or all relevant
         temporal properties.
         Examples:
-            - A date-time: "2018-02-12T23:20:50Z"
-            - A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
-            "../2018-03-18T12:31:12Z"
-            - Duration objects: "P1M" for data from the past month or "PT36H"
-            for the last 36 hours
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+
     bbox : list of numbers, optional
         Only features that have a geometry that intersects the bounding box are
         selected.  The bounding box is provided as four or six numbers,
@@ -952,9 +954,8 @@ def get_latest_daily(
         use. This field reflects the approval status of each record, and is either
         "Approved", meaining processing review has been completed and the data is
         approved for publication, or "Provisional" and subject to revision. For
-        more information about provisional data, go to
-        [https://waterdata.usgs.gov/provisional-data-statement/]
-        (https://waterdata.usgs.gov/provisional-data-statement/).
+        more information about provisional data, go to:
+        https://waterdata.usgs.gov/provisional-data-statement/.
     unit_of_measure : string or list of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
@@ -974,12 +975,12 @@ def get_latest_daily(
         at start or end). Only features that have a last_modified that
         intersects the value of datetime are selected.
         Examples:
-            - A date-time: "2018-02-12T23:20:50Z"
-            - A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
-            "../2018-03-18T12:31:12Z"
-            - Duration objects: "P1M" for data from the past month or "PT36H"
-            for the last 36 hours
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+
     skip_geometry : boolean, optional
         This option can be used to skip response geometries for each feature.
         The returning object will be a data frame with no spatial information.
@@ -995,12 +996,12 @@ def get_latest_daily(
         temporal property is used to determine the extent or all relevant
         temporal properties.
         Examples:
-            - A date-time: "2018-02-12T23:20:50Z"
-            - A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
-            "../2018-03-18T12:31:12Z"
-            - Duration objects: "P1M" for data from the past month or "PT36H"
-            for the last 36 hours
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+
     bbox : list of numbers, optional
         Only features that have a geometry that intersects the bounding box are
         selected.  The bounding box is provided as four or six numbers,
@@ -1113,9 +1114,8 @@ def get_field_measurements(
         use. This field reflects the approval status of each record, and is either
         "Approved", meaining processing review has been completed and the data is
         approved for publication, or "Provisional" and subject to revision. For
-        more information about provisional data, go to
-        [https://waterdata.usgs.gov/provisional-data-statement/]
-        (https://waterdata.usgs.gov/provisional-data-statement/).
+        more information about provisional data, go to:
+        https://waterdata.usgs.gov/provisional-data-statement/.
     unit_of_measure : string or list of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
@@ -1135,10 +1135,12 @@ def get_field_measurements(
         at start or end). Only features that have a last_modified that
         intersects the value of datetime are selected.
         Examples:
-            - A date-time: "2018-02-12T23:20:50Z"
-            - A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
-            - Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+
     observing_procedure : string or list of strings, optional
         Water measurement or water-quality observing procedure descriptions.
     vertical_datum : string or list of strings, optional
@@ -1160,12 +1162,12 @@ def get_field_measurements(
         decision of the server whether only a single temporal property is used
         to determine the extent or all relevant temporal properties.
         Examples:
-            - A date-time: "2018-02-12T23:20:50Z"
-            - A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            - Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
-            "../2018-03-18T12:31:12Z"
-            - Duration objects: "P1M" for data from the past month or "PT36H"
-            for the last 36 hours
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+
     bbox : list of numbers, optional
         Only features that have a geometry that intersects the bounding box are
         selected.  The bounding box is provided as four or six numbers,
@@ -1309,12 +1311,12 @@ def get_samples(
         One of the available profiles associated with a service. Options for each
         service are:
         results - "fullphyschem", "basicphyschem",
-                    "fullbio", "basicbio", "narrow",
-                    "resultdetectionquantitationlimit",
-                    "labsampleprep", "count"
+        "fullbio", "basicbio", "narrow",
+        "resultdetectionquantitationlimit",
+        "labsampleprep", "count"
         locations - "site", "count"
         activities - "sampact", "actmetric",
-                        "actgroup", "count"
+        "actgroup", "count"
         projects - "project", "projectmonitoringlocationweight"
         organizations - "organization", "count"
     activityMediaName : string or list of strings, optional
@@ -1353,12 +1355,13 @@ def get_samples(
         The logic is inclusive, i.e. it will include locations that overlap
         with the edge of the bounding box. Values are separated by commas,
         expressed in decimal degrees, NAD83, and longitudes west of Greenwich
-        are negative.
-        The format is a string consisting of:
-        - Western-most longitude
-        - Southern-most latitude
-        - Eastern-most longitude
-        - Northern-most longitude
+        are negative. The format is a string consisting of:
+
+            * Western-most longitude
+            * Southern-most latitude
+            * Eastern-most longitude
+            * Northern-most longitude
+
         Example: [-92.8,44.2,-88.9,46.0]
     countryFips : string or list of strings, optional
         Example: "US" (United States)
