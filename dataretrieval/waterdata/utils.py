@@ -548,8 +548,7 @@ def _walk_pages(
 
     if not geopd:
         logger.warning(
-            "Geopandas is not installed. ",
-            "Geometries will be flattened into pandas DataFrames.",
+            "Geopandas not installed. Geometries will be flattened into pandas DataFrames."
         )
 
     # Get first response from client
