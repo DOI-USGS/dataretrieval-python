@@ -1,4 +1,4 @@
-.. _streamstats
+.. _streamstats:
 
 dataretrieval.streamstats
 -------------------------

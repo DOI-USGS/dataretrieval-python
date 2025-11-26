@@ -16,11 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: [3.8, 3.9, '3.10', 3.11, 3.12]
-        exclude:
-          - os: ubuntu-latest
-            python-version: 3.8
-
+        python-version: [3.9, '3.10', 3.11, 3.12, 3.13]
 
     steps:
       - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871
