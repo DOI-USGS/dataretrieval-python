@@ -6,7 +6,6 @@ except PackageNotFoundError:
     __version__ = "version-unknown"
 
 from dataretrieval.nadp import *
-from dataretrieval.nldi import *
 from dataretrieval.nwis import *
 from dataretrieval.samples import *
 from dataretrieval.streamstats import *
