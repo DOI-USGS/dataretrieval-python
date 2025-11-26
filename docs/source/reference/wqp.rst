@@ -1,4 +1,4 @@
-.. _wqp
+.. _wqp:
 
 dataretrieval.wqp
 -----------------
