@@ -49,6 +49,12 @@ Or using conda:
 conda install -c conda-forge dataretrieval
 ```
 
+To install the "main" branch directly from GitHub, use:
+
+```bash
+pip install git+https://github.com/DOI-USGS/dataretrieval-python.git
+```
+
 ## Usage Examples
 
 ### Water Data API (Recommended - Modern USGS Data)
