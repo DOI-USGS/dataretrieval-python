@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_discharge_peaks() Examples &mdash; dataretrieval 0.1.dev1+g640e47760 documentation</title>
+  <title>USGS dataretrieval Python Package get_discharge_peaks() Examples &mdash; dataretrieval 0.1.dev1+gad478045b documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=35fa23c9"></script>
+      <script src="../_static/documentation_options.js?v=4b5feb02"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -126,7 +126,7 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g640e47760)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+gad478045b)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
 Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.3.5)
@@ -136,7 +136,7 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
@@ -144,44 +144,6 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nldi.py:7</span>
-<span class="ansi-green-fg">      6</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">7</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">geopandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">gpd</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>:
-
-<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;geopandas&#39;
-
-During handling of the above exception, another exception occurred:
-
-<span class="ansi-red-fg">ImportError</span>                               Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[2]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> nwis
-<span class="ansi-green-fg">      2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">IPython</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">display</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> display
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/__init__.py:9</span>
-<span class="ansi-green-fg">      6</span>     __version__ = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">version-unknown</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nadp</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nldi</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">     10</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nwis</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">     11</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">samples</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nldi.py:9</span>
-<span class="ansi-green-fg">      7</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">geopandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">gpd</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>:
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Install geopandas to use the NLDI module.</span><span class="ansi-yellow-fg">&#34;</span>)
-<span class="ansi-green-fg">     11</span> NLDI_API_BASE_URL = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">https://api.water.usgs.gov/nldi/linked-data</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">     12</span> _AVAILABLE_DATA_SOURCES = <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
-
-<span class="ansi-red-fg">ImportError</span>: Install geopandas to use the NLDI module.
-</pre></div></div>
 </div>
 </section>
 <section id="Basic-Usage">
@@ -209,14 +171,7 @@ During handling of the above exception, another exception occurred:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> site_ids = [<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">01594440</span><span class="ansi-yellow-fg">&#39;</span>, <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">040851325</span><span class="ansi-yellow-fg">&#39;</span>]
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> peak_data = <span class="ansi-yellow-bg">nwis</span>.get_discharge_peaks(site_ids)
-<span class="ansi-green-fg">      3</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#34;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(peak_data[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> data values.</span><span class="ansi-yellow-fg">&#34;</span>)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
+Retrieved 56 data values.
 </pre></div></div>
 </div>
 </section>
@@ -236,15 +191,844 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[4]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> display(<span class="ansi-yellow-bg">peak_data</span>[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;peak_data&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>agency_cd</th>
+      <th>peak_tm</th>
+      <th>peak_va</th>
+      <th>peak_cd</th>
+      <th>gage_ht</th>
+      <th>gage_ht_cd</th>
+      <th>year_last_pk</th>
+      <th>ag_dt</th>
+      <th>ag_tm</th>
+      <th>ag_gage_ht</th>
+      <th>ag_gage_ht_cd</th>
+    </tr>
+    <tr>
+      <th>site_no</th>
+      <th>datetime</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="48" valign="top">01594440</th>
+      <th>1972-06-22 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>31100</td>
+      <td>5,7</td>
+      <td>27.90</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1978-01-27 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>10600</td>
+      <td>5</td>
+      <td>18.04</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1979-09-07 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>11500</td>
+      <td>5</td>
+      <td>18.52</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1979-10-11 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>3940</td>
+      <td>5</td>
+      <td>12.06</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1981-02-24 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>1640</td>
+      <td>5</td>
+      <td>9.60</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1982-02-04 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>3380</td>
+      <td>5</td>
+      <td>11.53</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1983-06-21 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>5750</td>
+      <td>5</td>
+      <td>14.28</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1984-03-30 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>4340</td>
+      <td>5</td>
+      <td>12.58</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1985-02-13 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>4730</td>
+      <td>5</td>
+      <td>13.07</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1986-04-16 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>1520</td>
+      <td>5</td>
+      <td>9.43</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1986-12-25 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>4060</td>
+      <td>5</td>
+      <td>12.21</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1987-11-30 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>3510</td>
+      <td>5</td>
+      <td>11.65</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1989-05-07 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>9190</td>
+      <td>5</td>
+      <td>16.84</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1990-05-30 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>3140</td>
+      <td>5</td>
+      <td>11.44</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1991-03-24 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>4750</td>
+      <td>5</td>
+      <td>12.95</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1992-03-27 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>3200</td>
+      <td>5</td>
+      <td>11.50</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1993-03-05 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>5550</td>
+      <td>5</td>
+      <td>13.76</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1993-11-29 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>6960</td>
+      <td>5</td>
+      <td>15.05</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1995-03-09 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>4100</td>
+      <td>5</td>
+      <td>12.32</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1996-01-20 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>8280</td>
+      <td>5</td>
+      <td>16.14</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1996-11-09 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>6900</td>
+      <td>5</td>
+      <td>15.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1998-03-10 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>4840</td>
+      <td>5</td>
+      <td>13.04</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1999-09-17 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>8200</td>
+      <td>5</td>
+      <td>16.07</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2000-03-22 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>3640</td>
+      <td>5</td>
+      <td>11.90</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2001-06-08 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06:30</td>
+      <td>3800</td>
+      <td>5</td>
+      <td>12.05</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2002-04-29 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>1510</td>
+      <td>2,5,8</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2003-02-23 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>19:30</td>
+      <td>6990</td>
+      <td>5</td>
+      <td>15.08</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2003-12-12 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>10:45</td>
+      <td>5790</td>
+      <td>5</td>
+      <td>13.99</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2005-04-03 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>19:15</td>
+      <td>5210</td>
+      <td>5</td>
+      <td>13.42</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2006-06-26 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>23:00</td>
+      <td>12700</td>
+      <td>5</td>
+      <td>19.20</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2007-04-16 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>11:15</td>
+      <td>5520</td>
+      <td>5</td>
+      <td>13.73</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-05-13 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>02:00</td>
+      <td>7860</td>
+      <td>5</td>
+      <td>15.80</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2009-06-19 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>05:45</td>
+      <td>4130</td>
+      <td>5</td>
+      <td>12.35</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2010-03-14 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>13:00</td>
+      <td>5780</td>
+      <td>5</td>
+      <td>13.98</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2011-09-08 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>13:15</td>
+      <td>16800</td>
+      <td>5</td>
+      <td>21.10</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2011-12-08 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>20:30</td>
+      <td>4900</td>
+      <td>5</td>
+      <td>13.74</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2012-10-30 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>23:00</td>
+      <td>10800</td>
+      <td>5</td>
+      <td>18.02</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2014-05-01 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>17:30</td>
+      <td>15600</td>
+      <td>5</td>
+      <td>20.56</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2015-06-28 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>18:15</td>
+      <td>6610</td>
+      <td>5</td>
+      <td>15.03</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2016-08-01 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>00:30</td>
+      <td>6140</td>
+      <td>5</td>
+      <td>14.64</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2017-07-30 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>01:15</td>
+      <td>4960</td>
+      <td>5</td>
+      <td>13.60</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2018-06-04 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>18:30</td>
+      <td>8360</td>
+      <td>5</td>
+      <td>16.32</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2018-12-16 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>23:30</td>
+      <td>7220</td>
+      <td>5</td>
+      <td>15.50</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2020-04-14 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>09:15</td>
+      <td>4340</td>
+      <td>5</td>
+      <td>12.99</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2020-11-12 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>17:45</td>
+      <td>4000</td>
+      <td>5</td>
+      <td>13.24</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2021-10-30 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>17:45</td>
+      <td>4590</td>
+      <td>5</td>
+      <td>13.74</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2022-12-16 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>14:15</td>
+      <td>3330</td>
+      <td>5</td>
+      <td>12.65</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2024-01-10 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>19:15</td>
+      <td>7400</td>
+      <td>5</td>
+      <td>15.88</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th rowspan="8" valign="top">040851325</th>
+      <th>2005-08-18 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>267</td>
+      <td>NaN</td>
+      <td>4.30</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2006-03-13 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>288</td>
+      <td>NaN</td>
+      <td>4.37</td>
+      <td>2.0</td>
+      <td>NaN</td>
+      <td>2006-05-12</td>
+      <td>NaN</td>
+      <td>4.45</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>2007-03-14 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>301</td>
+      <td>NaN</td>
+      <td>4.58</td>
+      <td>2.0</td>
+      <td>NaN</td>
+      <td>2007-03-12</td>
+      <td>NaN</td>
+      <td>5.24</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>2010-03-14 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>386</td>
+      <td>NaN</td>
+      <td>4.87</td>
+      <td>2.0</td>
+      <td>NaN</td>
+      <td>2010-03-13</td>
+      <td>NaN</td>
+      <td>5.22</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>2011-03-18 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>436</td>
+      <td>NaN</td>
+      <td>5.02</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2012-03-09 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>150</td>
+      <td>NaN</td>
+      <td>3.89</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2013-03-31 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>409</td>
+      <td>NaN</td>
+      <td>4.91</td>
+      <td>2.0</td>
+      <td>NaN</td>
+      <td>2013-03-13</td>
+      <td>NaN</td>
+      <td>5.42</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>2014-06-02 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>429</td>
+      <td>NaN</td>
+      <td>5.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
 <div class="nbinput docutils container">
@@ -260,12 +1044,18 @@ During handling of the above exception, another exception occurred:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[5]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-bg">peak_data</span>[<span class="ansi-green-fg">0</span>].dtypes)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;peak_data&#39; is not defined
+agency_cd         object
+peak_tm           object
+peak_va            int64
+peak_cd           object
+gage_ht          float64
+gage_ht_cd       float64
+year_last_pk     float64
+ag_dt             object
+ag_tm            float64
+ag_gage_ht       float64
+ag_gage_ht_cd    float64
+dtype: object
 </pre></div></div>
 </div>
 <p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_dv()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.</p>
@@ -282,12 +1072,7 @@ During handling of the above exception, another exception occurred:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">The query URL used to retrieve the data from NWIS was: </span><span class="ansi-yellow-fg">&#34;</span> + <span class="ansi-yellow-bg">peak_data</span>[<span class="ansi-green-fg">1</span>].url)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;peak_data&#39; is not defined
+The query URL used to retrieve the data from NWIS was: https://nwis.waterdata.usgs.gov/nwis/peaks?format=rdb&amp;site_no=01594440%2C040851325
 </pre></div></div>
 </div>
 <p>The following example is the same as the previous example but with multi index turned off (multi_index=False)</p>
@@ -306,14 +1091,7 @@ During handling of the above exception, another exception occurred:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> site_ids = [<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">01594440</span><span class="ansi-yellow-fg">&#39;</span>, <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">040851325</span><span class="ansi-yellow-fg">&#39;</span>]
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> peak_data = <span class="ansi-yellow-bg">nwis</span>.get_discharge_peaks(site_ids, multi_index=<span class="ansi-bold" style="color: rgb(0,135,0)">False</span>)
-<span class="ansi-green-fg">      3</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#34;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(peak_data[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> data values.</span><span class="ansi-yellow-fg">&#34;</span>)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
+Retrieved 56 data values.
 </pre></div></div>
 </div>
 </section>
@@ -333,17 +1111,478 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[8]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> stations = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">06011000</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> data3 = <span class="ansi-yellow-bg">nwis</span>.get_discharge_peaks(stations)
-<span class="ansi-green-fg">      3</span> display(data3[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>agency_cd</th>
+      <th>site_no</th>
+      <th>peak_tm</th>
+      <th>peak_va</th>
+      <th>peak_cd</th>
+      <th>gage_ht</th>
+      <th>gage_ht_cd</th>
+      <th>year_last_pk</th>
+      <th>ag_dt</th>
+      <th>ag_tm</th>
+      <th>ag_gage_ht</th>
+      <th>ag_gage_ht_cd</th>
+    </tr>
+    <tr>
+      <th>datetime</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1937-04-28 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>964</td>
+      <td>NaN</td>
+      <td>3.52</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1938-04-27 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>1030</td>
+      <td>NaN</td>
+      <td>3.92</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1939-04-19 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>829</td>
+      <td>NaN</td>
+      <td>3.56</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1940-04-14 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>590</td>
+      <td>NaN</td>
+      <td>3.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1941-04-11 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>430</td>
+      <td>NaN</td>
+      <td>2.59</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1942-04-12 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>883</td>
+      <td>NaN</td>
+      <td>3.67</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1945-05-04 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>681</td>
+      <td>NaN</td>
+      <td>3.99</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1946-04-21 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>961</td>
+      <td>NaN</td>
+      <td>4.75</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1947-05-02 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>781</td>
+      <td>NaN</td>
+      <td>4.28</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1948-04-30 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>820</td>
+      <td>NaN</td>
+      <td>4.41</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1949-04-27 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>726</td>
+      <td>NaN</td>
+      <td>4.14</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1950-04-22 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>781</td>
+      <td>NaN</td>
+      <td>4.30</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1951-04-23 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>640</td>
+      <td>NaN</td>
+      <td>3.96</td>
+      <td>2</td>
+      <td>NaN</td>
+      <td>1951-04-15</td>
+      <td>NaN</td>
+      <td>4.47</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>1952-04-30 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>1360</td>
+      <td>NaN</td>
+      <td>5.24</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1953-05-05 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>715</td>
+      <td>NaN</td>
+      <td>4.10</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1954-04-23 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>546</td>
+      <td>NaN</td>
+      <td>3.54</td>
+      <td>2</td>
+      <td>NaN</td>
+      <td>1954-04-19</td>
+      <td>NaN</td>
+      <td>5.41</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1956-04-24 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>596</td>
+      <td>NaN</td>
+      <td>3.77</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1957-05-06 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>1020</td>
+      <td>NaN</td>
+      <td>4.77</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1958-04-30 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>590</td>
+      <td>NaN</td>
+      <td>3.77</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1959-04-22 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>352</td>
+      <td>NaN</td>
+      <td>2.81</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1960-04-08 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>800</td>
+      <td>1</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1960-04-08</td>
+      <td>1200.0</td>
+      <td>4.52</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>1961-04-05 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>300</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1962-04-27 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>900</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1963-04-20 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>486</td>
+      <td>NaN</td>
+      <td>3.20</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1964-04-28 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>751</td>
+      <td>NaN</td>
+      <td>4.20</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1965-04-28 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>958</td>
+      <td>NaN</td>
+      <td>4.66</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1966-04-16 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>524</td>
+      <td>NaN</td>
+      <td>3.28</td>
+      <td>2</td>
+      <td>NaN</td>
+      <td>1966-04-21</td>
+      <td>NaN</td>
+      <td>3.76</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>1967-05-12 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>604</td>
+      <td>NaN</td>
+      <td>3.75</td>
+      <td>2</td>
+      <td>NaN</td>
+      <td>1967-04-27</td>
+      <td>NaN</td>
+      <td>4.20</td>
+      <td>1.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
 </div>
 <p>Example 3: Retrieve peak discharge data for a monitoring site between two dates</p>
 <div class="nbinput docutils container">
@@ -358,16 +1597,148 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[9]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> data4 = <span class="ansi-yellow-bg">nwis</span>.get_discharge_peaks(stations, start=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">1953-01-01</span><span class="ansi-yellow-fg">&#39;</span>, end=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">1960-01-01</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      2</span> display(data4[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>agency_cd</th>
+      <th>site_no</th>
+      <th>peak_tm</th>
+      <th>peak_va</th>
+      <th>peak_cd</th>
+      <th>gage_ht</th>
+      <th>gage_ht_cd</th>
+      <th>year_last_pk</th>
+      <th>ag_dt</th>
+      <th>ag_tm</th>
+      <th>ag_gage_ht</th>
+      <th>ag_gage_ht_cd</th>
+    </tr>
+    <tr>
+      <th>datetime</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1953-05-05 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>715</td>
+      <td>NaN</td>
+      <td>4.10</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1954-04-23 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>546</td>
+      <td>NaN</td>
+      <td>3.54</td>
+      <td>2.0</td>
+      <td>NaN</td>
+      <td>1954-04-19</td>
+      <td>NaN</td>
+      <td>5.41</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1956-04-24 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>596</td>
+      <td>NaN</td>
+      <td>3.77</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1957-05-06 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>1020</td>
+      <td>NaN</td>
+      <td>4.77</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1958-04-30 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>590</td>
+      <td>NaN</td>
+      <td>3.77</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1959-04-22 00:00:00+00:00</th>
+      <td>USGS</td>
+      <td>06011000</td>
+      <td>NaN</td>
+      <td>352</td>
+      <td>NaN</td>
+      <td>2.81</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
 </div>
 </section>
 </section>

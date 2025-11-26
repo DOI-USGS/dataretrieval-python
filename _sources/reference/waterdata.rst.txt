@@ -1,4 +1,4 @@
-.. _waterdata
+.. _waterdata:
 
 dataretrieval.waterdata
 -------------------------

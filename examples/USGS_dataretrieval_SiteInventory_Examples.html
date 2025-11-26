@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package what_sites() Examples &mdash; dataretrieval 0.1.dev1+g640e47760 documentation</title>
+  <title>USGS dataretrieval Python Package what_sites() Examples &mdash; dataretrieval 0.1.dev1+gad478045b documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=35fa23c9"></script>
+      <script src="../_static/documentation_options.js?v=4b5feb02"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -126,7 +126,7 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g640e47760)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+gad478045b)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
 Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.3.5)
@@ -136,7 +136,7 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
@@ -144,44 +144,6 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nldi.py:7</span>
-<span class="ansi-green-fg">      6</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">7</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">geopandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">gpd</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>:
-
-<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;geopandas&#39;
-
-During handling of the above exception, another exception occurred:
-
-<span class="ansi-red-fg">ImportError</span>                               Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[2]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> nwis
-<span class="ansi-green-fg">      2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">IPython</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">display</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> display
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/__init__.py:9</span>
-<span class="ansi-green-fg">      6</span>     __version__ = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">version-unknown</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nadp</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nldi</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">     10</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nwis</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">     11</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">samples</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nldi.py:9</span>
-<span class="ansi-green-fg">      7</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">geopandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">gpd</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>:
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Install geopandas to use the NLDI module.</span><span class="ansi-yellow-fg">&#34;</span>)
-<span class="ansi-green-fg">     11</span> NLDI_API_BASE_URL = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">https://api.water.usgs.gov/nldi/linked-data</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">     12</span> _AVAILABLE_DATA_SOURCES = <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
-
-<span class="ansi-red-fg">ImportError</span>: Install geopandas to use the NLDI module.
-</pre></div></div>
 </div>
 </section>
 <section id="Basic-Usage">
@@ -219,26 +181,13 @@ During handling of the above exception, another exception occurred:
 </section>
 <section id="Example-1:-Retrieve-information-about-sites-in-Ohio-where-phosphorus-data-was-collected">
 <h3>Example 1: Retrieve information about sites in Ohio where phosphorus data was collected<a class="headerlink" href="#Example-1:-Retrieve-information-about-sites-in-Ohio-where-phosphorus-data-was-collected" title="Link to this heading"></a></h3>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteListPhos</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">stateCd</span><span class="o">=</span><span class="s2">&quot;OH&quot;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s2">&quot;00665&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> siteListPhos = <span class="ansi-yellow-bg">nwis</span>.what_sites(stateCd=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">OH</span><span class="ansi-yellow-fg">&#34;</span>, parameterCd=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00665</span><span class="ansi-yellow-fg">&#34;</span>)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
 </div>
 </section>
 </section>
@@ -258,16 +207,221 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[4]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> <span style="color: rgb(95,135,135)"># Display the data frame as a table</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> display(<span class="ansi-yellow-bg">siteListPhos</span>[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;siteListPhos&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>agency_cd</th>
+      <th>site_no</th>
+      <th>station_nm</th>
+      <th>site_tp_cd</th>
+      <th>dec_lat_va</th>
+      <th>dec_long_va</th>
+      <th>coord_acy_cd</th>
+      <th>dec_coord_datum_cd</th>
+      <th>alt_va</th>
+      <th>alt_acy_va</th>
+      <th>alt_datum_cd</th>
+      <th>huc_cd</th>
+      <th>geometry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>03086500</td>
+      <td>Mahoning River at Alliance OH</td>
+      <td>ST</td>
+      <td>40.932836</td>
+      <td>-81.094541</td>
+      <td>S</td>
+      <td>NAD83</td>
+      <td>1034.79</td>
+      <td>0.10</td>
+      <td>NAVD88</td>
+      <td>5030103.0</td>
+      <td>POINT (-81.09454 40.93284)</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USGS</td>
+      <td>03089500</td>
+      <td>Mill Creek near Berlin Center OH</td>
+      <td>ST</td>
+      <td>41.000336</td>
+      <td>-80.968424</td>
+      <td>S</td>
+      <td>NAD83</td>
+      <td>1032.90</td>
+      <td>0.01</td>
+      <td>NGVD29</td>
+      <td>5030103.0</td>
+      <td>POINT (-80.96842 41.00034)</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USGS</td>
+      <td>03090500</td>
+      <td>Mahoning River bl Berlin Dam nr Berlin Center OH</td>
+      <td>ST</td>
+      <td>41.048391</td>
+      <td>-81.001203</td>
+      <td>S</td>
+      <td>NAD83</td>
+      <td>957.72</td>
+      <td>0.01</td>
+      <td>NAVD88</td>
+      <td>5030103.0</td>
+      <td>POINT (-81.0012 41.04839)</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USGS</td>
+      <td>03091500</td>
+      <td>Mahoning River at Pricetown OH</td>
+      <td>ST</td>
+      <td>41.131446</td>
+      <td>-80.971202</td>
+      <td>S</td>
+      <td>NAD83</td>
+      <td>904.77</td>
+      <td>0.10</td>
+      <td>NAVD88</td>
+      <td>5030103.0</td>
+      <td>POINT (-80.9712 41.13145)</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USGS</td>
+      <td>03092000</td>
+      <td>Kale Creek near Pricetown OH</td>
+      <td>ST</td>
+      <td>41.139779</td>
+      <td>-80.995092</td>
+      <td>S</td>
+      <td>NAD83</td>
+      <td>914.70</td>
+      <td>0.01</td>
+      <td>COE1912</td>
+      <td>5030103.0</td>
+      <td>POINT (-80.99509 41.13978)</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>1275</th>
+      <td>USGS</td>
+      <td>414144084242500</td>
+      <td>WM-103 OH</td>
+      <td>GW</td>
+      <td>41.686439</td>
+      <td>-84.406893</td>
+      <td>S</td>
+      <td>NAD83</td>
+      <td>850.00</td>
+      <td>10.00</td>
+      <td>NGVD29</td>
+      <td>4100006.0</td>
+      <td>POINT (-84.40689 41.68644)</td>
+    </tr>
+    <tr>
+      <th>1276</th>
+      <td>USGS</td>
+      <td>414150084331000</td>
+      <td>WM-87-S14 OH</td>
+      <td>GW</td>
+      <td>41.697272</td>
+      <td>-84.552728</td>
+      <td>S</td>
+      <td>NAD83</td>
+      <td>895.00</td>
+      <td>10.00</td>
+      <td>NGVD29</td>
+      <td>4100003.0</td>
+      <td>POINT (-84.55273 41.69727)</td>
+    </tr>
+    <tr>
+      <th>1277</th>
+      <td>USGS</td>
+      <td>414214083151000</td>
+      <td>Lake Erie at site WE12 near Toledo OH</td>
+      <td>LK</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>S</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4120200.0</td>
+      <td>POINT (NaN NaN)</td>
+    </tr>
+    <tr>
+      <th>1278</th>
+      <td>USGS</td>
+      <td>414233083595500</td>
+      <td>Little Bear Creek at HWY 120 nr Seward, OH</td>
+      <td>ST-DCH</td>
+      <td>41.709167</td>
+      <td>-83.998611</td>
+      <td>S</td>
+      <td>NAD83</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4100002.0</td>
+      <td>POINT (-83.99861 41.70917)</td>
+    </tr>
+    <tr>
+      <th>1279</th>
+      <td>USGS</td>
+      <td>414937083112500</td>
+      <td>Lake Erie at site WE4 near Toledo OH</td>
+      <td>LK</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>S</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4120200.0</td>
+      <td>POINT (NaN NaN)</td>
+    </tr>
+  </tbody>
+</table>
+<p>1280 rows × 13 columns</p>
+</div></div>
 </div>
 <p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.</p>
 <div class="nbinput docutils container">
@@ -283,12 +437,7 @@ During handling of the above exception, another exception occurred:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[5]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">The query URL used to retrieve the data from NWIS was: </span><span class="ansi-yellow-fg">&#39;</span> + <span class="ansi-yellow-bg">siteListPhos</span>[<span class="ansi-green-fg">1</span>].url)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;siteListPhos&#39; is not defined
+The query URL used to retrieve the data from NWIS was: https://waterservices.usgs.gov/nwis/site?stateCd=OH&amp;parameterCd=00665&amp;format=rdb
 </pre></div></div>
 </div>
 </section>
@@ -308,16 +457,60 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> oneSite = <span class="ansi-yellow-bg">nwis</span>.what_sites(sites=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">05114000</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      2</span> display(oneSite[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>agency_cd</th>
+      <th>site_no</th>
+      <th>station_nm</th>
+      <th>site_tp_cd</th>
+      <th>dec_lat_va</th>
+      <th>dec_long_va</th>
+      <th>coord_acy_cd</th>
+      <th>dec_coord_datum_cd</th>
+      <th>alt_va</th>
+      <th>alt_acy_va</th>
+      <th>alt_datum_cd</th>
+      <th>huc_cd</th>
+      <th>geometry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>05114000</td>
+      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
+      <td>ST</td>
+      <td>48.989957</td>
+      <td>-101.958335</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>1605.0</td>
+      <td>0.19</td>
+      <td>NAVD88</td>
+      <td>9010008</td>
+      <td>POINT (-101.95833 48.98996)</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
 </div>
 </section>
 <section id="Example-3:-Retrieve-site-information-for-a-single-site-and-show-the-result-with-expanded-output">
@@ -334,16 +527,77 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> oneSite = <span class="ansi-yellow-bg">nwis</span>.what_sites(sites=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">05114000</span><span class="ansi-yellow-fg">&#39;</span>, siteOutput=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">expanded</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      2</span> display(oneSite[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>agency_cd</th>
+      <th>site_no</th>
+      <th>station_nm</th>
+      <th>site_tp_cd</th>
+      <th>lat_va</th>
+      <th>long_va</th>
+      <th>dec_lat_va</th>
+      <th>dec_long_va</th>
+      <th>coord_meth_cd</th>
+      <th>coord_acy_cd</th>
+      <th>...</th>
+      <th>reliability_cd</th>
+      <th>gw_file_cd</th>
+      <th>nat_aqfr_cd</th>
+      <th>aqfr_cd</th>
+      <th>aqfr_type_cd</th>
+      <th>well_depth_va</th>
+      <th>hole_depth_va</th>
+      <th>depth_src_cd</th>
+      <th>project_no</th>
+      <th>geometry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>05114000</td>
+      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
+      <td>ST</td>
+      <td>485924</td>
+      <td>1015728</td>
+      <td>48.989957</td>
+      <td>-101.958335</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-101.95833 48.98996)</td>
+    </tr>
+  </tbody>
+</table>
+<p>1 rows × 43 columns</p>
+</div></div>
 </div>
 </section>
 <section id="Example-4:-Retrieve-site-information-for-sites-in-Utah-with-daily-values-data-falling-within-a-specified-date-range">
@@ -360,16 +614,317 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[8]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> UTsites = <span class="ansi-yellow-bg">nwis</span>.what_sites(stateCd=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">UT</span><span class="ansi-yellow-fg">&#39;</span>, outputDataTypeCd=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">dv</span><span class="ansi-yellow-fg">&#39;</span>, startDT=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">1971-07-01</span><span class="ansi-yellow-fg">&#39;</span>, endDT=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">2021-07-28</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      2</span> display(UTsites[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>agency_cd</th>
+      <th>site_no</th>
+      <th>station_nm</th>
+      <th>site_tp_cd</th>
+      <th>dec_lat_va</th>
+      <th>dec_long_va</th>
+      <th>coord_acy_cd</th>
+      <th>dec_coord_datum_cd</th>
+      <th>alt_va</th>
+      <th>alt_acy_va</th>
+      <th>...</th>
+      <th>ts_id</th>
+      <th>loc_web_ds</th>
+      <th>medium_grp_cd</th>
+      <th>parm_grp_cd</th>
+      <th>srs_id</th>
+      <th>access_cd</th>
+      <th>begin_date</th>
+      <th>end_date</th>
+      <th>count_nu</th>
+      <th>geometry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>09163675</td>
+      <td>COTTONWOOD WASH AT I-70, NEAR CISCO, UTAH</td>
+      <td>ST</td>
+      <td>39.081652</td>
+      <td>-109.217615</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>142731</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1645423</td>
+      <td>0</td>
+      <td>1983-04-13</td>
+      <td>1986-09-30</td>
+      <td>1267</td>
+      <td>POINT (-109.21762 39.08165)</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USGS</td>
+      <td>09180000</td>
+      <td>DOLORES RIVER NEAR CISCO, UT</td>
+      <td>ST</td>
+      <td>38.797208</td>
+      <td>-109.195114</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>4168.32</td>
+      <td>0.11</td>
+      <td>...</td>
+      <td>241055</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1645597</td>
+      <td>0</td>
+      <td>2006-07-18</td>
+      <td>2025-11-26</td>
+      <td>7000</td>
+      <td>POINT (-109.19511 38.79721)</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USGS</td>
+      <td>09180000</td>
+      <td>DOLORES RIVER NEAR CISCO, UT</td>
+      <td>ST</td>
+      <td>38.797208</td>
+      <td>-109.195114</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>4168.32</td>
+      <td>0.11</td>
+      <td>...</td>
+      <td>241056</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1645597</td>
+      <td>0</td>
+      <td>2006-07-19</td>
+      <td>2025-11-26</td>
+      <td>6983</td>
+      <td>POINT (-109.19511 38.79721)</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USGS</td>
+      <td>09180000</td>
+      <td>DOLORES RIVER NEAR CISCO, UT</td>
+      <td>ST</td>
+      <td>38.797208</td>
+      <td>-109.195114</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>4168.32</td>
+      <td>0.11</td>
+      <td>...</td>
+      <td>142732</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1645597</td>
+      <td>0</td>
+      <td>2006-07-19</td>
+      <td>2025-11-25</td>
+      <td>6976</td>
+      <td>POINT (-109.19511 38.79721)</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USGS</td>
+      <td>09180000</td>
+      <td>DOLORES RIVER NEAR CISCO, UT</td>
+      <td>ST</td>
+      <td>38.797208</td>
+      <td>-109.195114</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>4168.32</td>
+      <td>0.11</td>
+      <td>...</td>
+      <td>142733</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1645597</td>
+      <td>0</td>
+      <td>1949-05-01</td>
+      <td>2004-08-17</td>
+      <td>13002</td>
+      <td>POINT (-109.19511 38.79721)</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>1237</th>
+      <td>USGS</td>
+      <td>414411112543701</td>
+      <td>(B-12- 9)30cda- 1</td>
+      <td>GW</td>
+      <td>41.736312</td>
+      <td>-112.911094</td>
+      <td>S</td>
+      <td>NAD83</td>
+      <td>4239.00</td>
+      <td>0.50</td>
+      <td>...</td>
+      <td>144019</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1642008</td>
+      <td>0</td>
+      <td>1975-10-05</td>
+      <td>2025-11-17</td>
+      <td>9517</td>
+      <td>POINT (-112.91109 41.73631)</td>
+    </tr>
+    <tr>
+      <th>1238</th>
+      <td>USGS</td>
+      <td>414500112000000</td>
+      <td>COM FLOW BEAR AREA GSL INFLOW GROUP 1</td>
+      <td>ST</td>
+      <td>41.749928</td>
+      <td>-112.000782</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>144020</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1645423</td>
+      <td>0</td>
+      <td>1960-10-01</td>
+      <td>1982-09-29</td>
+      <td>7303</td>
+      <td>POINT (-112.00078 41.74993)</td>
+    </tr>
+    <tr>
+      <th>1239</th>
+      <td>USGS</td>
+      <td>414500112000100</td>
+      <td>COM FLOW BEAR AREA GSL INFLOW GROUP 2</td>
+      <td>ST</td>
+      <td>41.749928</td>
+      <td>-112.001059</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>144021</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1645423</td>
+      <td>0</td>
+      <td>1960-10-01</td>
+      <td>1980-09-29</td>
+      <td>6207</td>
+      <td>POINT (-112.00106 41.74993)</td>
+    </tr>
+    <tr>
+      <th>1240</th>
+      <td>USGS</td>
+      <td>414500112000200</td>
+      <td>COM FLOW BEAR AREA GSL INFLOW GROUP 3</td>
+      <td>ST</td>
+      <td>41.749928</td>
+      <td>-112.001337</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>144022</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1645423</td>
+      <td>0</td>
+      <td>1960-10-01</td>
+      <td>1980-09-29</td>
+      <td>6573</td>
+      <td>POINT (-112.00134 41.74993)</td>
+    </tr>
+    <tr>
+      <th>1241</th>
+      <td>USGS</td>
+      <td>415703112514501</td>
+      <td>(B-14- 9) 9add- 1</td>
+      <td>GW</td>
+      <td>41.960106</td>
+      <td>-112.863444</td>
+      <td>1</td>
+      <td>NAD83</td>
+      <td>4387.88</td>
+      <td>0.10</td>
+      <td>...</td>
+      <td>144023</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1642008</td>
+      <td>0</td>
+      <td>1981-07-21</td>
+      <td>2025-08-12</td>
+      <td>15104</td>
+      <td>POINT (-112.86344 41.96011)</td>
+    </tr>
+  </tbody>
+</table>
+<p>1242 rows × 25 columns</p>
+</div></div>
 </div>
 </section>
 <section id="Example-5:-Retrieve-site-information-for-a-single-site-and-show-the-series-catalog-output">
@@ -387,16 +942,317 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[9]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> oneSite = <span class="ansi-yellow-bg">nwis</span>.what_sites(sites=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">05114000</span><span class="ansi-yellow-fg">&#39;</span>, seriesCatalogOutput=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">true</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      2</span> display(oneSite[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>agency_cd</th>
+      <th>site_no</th>
+      <th>station_nm</th>
+      <th>site_tp_cd</th>
+      <th>dec_lat_va</th>
+      <th>dec_long_va</th>
+      <th>coord_acy_cd</th>
+      <th>dec_coord_datum_cd</th>
+      <th>alt_va</th>
+      <th>alt_acy_va</th>
+      <th>...</th>
+      <th>ts_id</th>
+      <th>loc_web_ds</th>
+      <th>medium_grp_cd</th>
+      <th>parm_grp_cd</th>
+      <th>srs_id</th>
+      <th>access_cd</th>
+      <th>begin_date</th>
+      <th>end_date</th>
+      <th>count_nu</th>
+      <th>geometry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>05114000</td>
+      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
+      <td>ST</td>
+      <td>48.989957</td>
+      <td>-101.958335</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>1605.0</td>
+      <td>0.19</td>
+      <td>...</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2006</td>
+      <td>2024</td>
+      <td>19</td>
+      <td>POINT (-101.95833 48.98996)</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USGS</td>
+      <td>05114000</td>
+      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
+      <td>ST</td>
+      <td>48.989957</td>
+      <td>-101.958335</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>1605.0</td>
+      <td>0.19</td>
+      <td>...</td>
+      <td>91355</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1645597</td>
+      <td>0</td>
+      <td>1983-08-11</td>
+      <td>2024-10-31</td>
+      <td>6094</td>
+      <td>POINT (-101.95833 48.98996)</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USGS</td>
+      <td>05114000</td>
+      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
+      <td>ST</td>
+      <td>48.989957</td>
+      <td>-101.958335</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>1605.0</td>
+      <td>0.19</td>
+      <td>...</td>
+      <td>91356</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1645597</td>
+      <td>0</td>
+      <td>1983-08-11</td>
+      <td>2024-10-31</td>
+      <td>6094</td>
+      <td>POINT (-101.95833 48.98996)</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USGS</td>
+      <td>05114000</td>
+      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
+      <td>ST</td>
+      <td>48.989957</td>
+      <td>-101.958335</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>1605.0</td>
+      <td>0.19</td>
+      <td>...</td>
+      <td>91357</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1645597</td>
+      <td>0</td>
+      <td>1983-08-11</td>
+      <td>2024-10-31</td>
+      <td>6094</td>
+      <td>POINT (-101.95833 48.98996)</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USGS</td>
+      <td>05114000</td>
+      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
+      <td>ST</td>
+      <td>48.989957</td>
+      <td>-101.958335</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>1605.0</td>
+      <td>0.19</td>
+      <td>...</td>
+      <td>91358</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1645597</td>
+      <td>0</td>
+      <td>1974-10-17</td>
+      <td>1981-09-02</td>
+      <td>1937</td>
+      <td>POINT (-101.95833 48.98996)</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>402</th>
+      <td>USGS</td>
+      <td>05114000</td>
+      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
+      <td>ST</td>
+      <td>48.989957</td>
+      <td>-101.958335</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>1605.0</td>
+      <td>0.19</td>
+      <td>...</td>
+      <td>92591</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1645423</td>
+      <td>0</td>
+      <td>1994-10-01</td>
+      <td>2025-11-26</td>
+      <td>11379</td>
+      <td>POINT (-101.95833 48.98996)</td>
+    </tr>
+    <tr>
+      <th>403</th>
+      <td>USGS</td>
+      <td>05114000</td>
+      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
+      <td>ST</td>
+      <td>48.989957</td>
+      <td>-101.958335</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>1605.0</td>
+      <td>0.19</td>
+      <td>...</td>
+      <td>92592</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>17164583</td>
+      <td>0</td>
+      <td>2007-10-01</td>
+      <td>2025-11-26</td>
+      <td>6631</td>
+      <td>POINT (-101.95833 48.98996)</td>
+    </tr>
+    <tr>
+      <th>404</th>
+      <td>USGS</td>
+      <td>05114000</td>
+      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
+      <td>ST</td>
+      <td>48.989957</td>
+      <td>-101.958335</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>1605.0</td>
+      <td>0.19</td>
+      <td>...</td>
+      <td>249682</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1646694</td>
+      <td>0</td>
+      <td>2019-05-15</td>
+      <td>2023-10-10</td>
+      <td>1609</td>
+      <td>POINT (-101.95833 48.98996)</td>
+    </tr>
+    <tr>
+      <th>405</th>
+      <td>USGS</td>
+      <td>05114000</td>
+      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
+      <td>ST</td>
+      <td>48.989957</td>
+      <td>-101.958335</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>1605.0</td>
+      <td>0.19</td>
+      <td>...</td>
+      <td>249681</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1736457</td>
+      <td>0</td>
+      <td>2019-05-15</td>
+      <td>2023-10-10</td>
+      <td>1609</td>
+      <td>POINT (-101.95833 48.98996)</td>
+    </tr>
+    <tr>
+      <th>406</th>
+      <td>USGS</td>
+      <td>05114000</td>
+      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
+      <td>ST</td>
+      <td>48.989957</td>
+      <td>-101.958335</td>
+      <td>F</td>
+      <td>NAD83</td>
+      <td>1605.0</td>
+      <td>0.19</td>
+      <td>...</td>
+      <td>317832</td>
+      <td>NaN</td>
+      <td>wat</td>
+      <td>NaN</td>
+      <td>1642503</td>
+      <td>0</td>
+      <td>2025-01-01</td>
+      <td>2025-11-26</td>
+      <td>329</td>
+      <td>POINT (-101.95833 48.98996)</td>
+    </tr>
+  </tbody>
+</table>
+<p>407 rows × 25 columns</p>
+</div></div>
 </div>
 </section>
 </section>

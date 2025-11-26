@@ -1,4 +1,4 @@
-.. _nadp
+.. _nadp:
 
 dataretrieval.nadp
 ------------------

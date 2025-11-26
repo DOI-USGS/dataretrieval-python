@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_info() Examples &mdash; dataretrieval 0.1.dev1+g640e47760 documentation</title>
+  <title>USGS dataretrieval Python Package get_info() Examples &mdash; dataretrieval 0.1.dev1+gad478045b documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=35fa23c9"></script>
+      <script src="../_static/documentation_options.js?v=4b5feb02"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -127,7 +127,7 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g640e47760)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+gad478045b)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
 Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.3.5)
@@ -137,7 +137,7 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
@@ -145,44 +145,6 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nldi.py:7</span>
-<span class="ansi-green-fg">      6</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">7</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">geopandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">gpd</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>:
-
-<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;geopandas&#39;
-
-During handling of the above exception, another exception occurred:
-
-<span class="ansi-red-fg">ImportError</span>                               Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[2]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> nwis
-<span class="ansi-green-fg">      2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">IPython</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">display</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> display
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/__init__.py:9</span>
-<span class="ansi-green-fg">      6</span>     __version__ = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">version-unknown</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nadp</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nldi</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">     10</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nwis</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">     11</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">samples</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nldi.py:9</span>
-<span class="ansi-green-fg">      7</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">geopandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">gpd</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>:
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Install geopandas to use the NLDI module.</span><span class="ansi-yellow-fg">&#34;</span>)
-<span class="ansi-green-fg">     11</span> NLDI_API_BASE_URL = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">https://api.water.usgs.gov/nldi/linked-data</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">     12</span> _AVAILABLE_DATA_SOURCES = <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
-
-<span class="ansi-red-fg">ImportError</span>: Install geopandas to use the NLDI module.
-</pre></div></div>
 </div>
 </section>
 <section id="Basic-Usage">
@@ -222,7 +184,7 @@ During handling of the above exception, another exception occurred:
 </section>
 <section id="Example-1:-Get-site-information-for-a-USGS-NWIS-monitoring-site">
 <h2>Example 1: Get site information for a USGS NWIS monitoring site<a class="headerlink" href="#Example-1:-Get-site-information-for-a-USGS-NWIS-monitoring-site" title="Link to this heading"></a></h2>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
@@ -233,21 +195,6 @@ During handling of the above exception, another exception occurred:
 <span class="n">siteINFO</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteID</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 5</span>
-<span class="ansi-green-fg">      2</span> siteID = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">10109000</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">      4</span> <span style="color: rgb(95,135,135)"># Get the site information</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">5</span> siteINFO = <span class="ansi-yellow-bg">nwis</span>.get_info(sites=siteID)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
 </div>
 </section>
 <section id="Interpreting-the-Result">
@@ -266,16 +213,77 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[4]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> <span style="color: rgb(95,135,135)"># Display the data frame as a table</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> display(<span class="ansi-yellow-bg">siteINFO</span>[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;siteINFO&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>agency_cd</th>
+      <th>site_no</th>
+      <th>station_nm</th>
+      <th>site_tp_cd</th>
+      <th>lat_va</th>
+      <th>long_va</th>
+      <th>dec_lat_va</th>
+      <th>dec_long_va</th>
+      <th>coord_meth_cd</th>
+      <th>coord_acy_cd</th>
+      <th>...</th>
+      <th>reliability_cd</th>
+      <th>gw_file_cd</th>
+      <th>nat_aqfr_cd</th>
+      <th>aqfr_cd</th>
+      <th>aqfr_type_cd</th>
+      <th>well_depth_va</th>
+      <th>hole_depth_va</th>
+      <th>depth_src_cd</th>
+      <th>project_no</th>
+      <th>geometry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>ST</td>
+      <td>414436.78</td>
+      <td>1114702.33</td>
+      <td>41.74355</td>
+      <td>-111.783981</td>
+      <td>G</td>
+      <td>1</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.78398 41.74355)</td>
+    </tr>
+  </tbody>
+</table>
+<p>1 rows × 43 columns</p>
+</div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
 <div class="nbinput docutils container">
@@ -291,12 +299,50 @@ During handling of the above exception, another exception occurred:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[5]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-bg">siteINFO</span>[<span class="ansi-green-fg">0</span>].dtypes)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;siteINFO&#39; is not defined
+agency_cd                  object
+site_no                    object
+station_nm                 object
+site_tp_cd                 object
+lat_va                    float64
+long_va                   float64
+dec_lat_va                float64
+dec_long_va               float64
+coord_meth_cd              object
+coord_acy_cd                int64
+coord_datum_cd             object
+dec_coord_datum_cd         object
+district_cd                 int64
+state_cd                    int64
+county_cd                   int64
+country_cd                 object
+land_net_ds                object
+map_nm                     object
+map_scale_fc                int64
+alt_va                    float64
+alt_meth_cd                object
+alt_acy_va                float64
+alt_datum_cd               object
+huc_cd                      int64
+basin_cd                    int64
+topo_cd                   float64
+instruments_cd             object
+construction_dt           float64
+inventory_dt              float64
+drain_area_va               int64
+contrib_drain_area_va     float64
+tz_cd                      object
+local_time_fg              object
+reliability_cd            float64
+gw_file_cd                 object
+nat_aqfr_cd               float64
+aqfr_cd                   float64
+aqfr_type_cd              float64
+well_depth_va             float64
+hole_depth_va             float64
+depth_src_cd              float64
+project_no                float64
+geometry                 geometry
+dtype: object
 </pre></div></div>
 </div>
 <p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_info()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.</p>
@@ -313,12 +359,7 @@ During handling of the above exception, another exception occurred:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">The query URL used to retrieve the data from NWIS was: </span><span class="ansi-yellow-fg">&#34;</span> + <span class="ansi-yellow-bg">siteINFO</span>[<span class="ansi-green-fg">1</span>].url)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;siteINFO&#39; is not defined
+The query URL used to retrieve the data from NWIS was: https://waterservices.usgs.gov/nwis/site?sites=10109000&amp;siteOutput=Expanded&amp;format=rdb
 </pre></div></div>
 </div>
 </section>
@@ -342,18 +383,101 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 5</span>
-<span class="ansi-green-fg">      2</span> siteIDs = [<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">05114000</span><span class="ansi-yellow-fg">&#34;</span>, <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">09423350</span><span class="ansi-yellow-fg">&#34;</span>]
-<span class="ansi-green-fg">      4</span> <span style="color: rgb(95,135,135)"># Get the site information</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">5</span> siteINFO_multi = <span class="ansi-yellow-bg">nwis</span>.get_info(sites=siteIDs)
-<span class="ansi-green-fg">      6</span> display(siteINFO_multi[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>agency_cd</th>
+      <th>site_no</th>
+      <th>station_nm</th>
+      <th>site_tp_cd</th>
+      <th>lat_va</th>
+      <th>long_va</th>
+      <th>dec_lat_va</th>
+      <th>dec_long_va</th>
+      <th>coord_meth_cd</th>
+      <th>coord_acy_cd</th>
+      <th>...</th>
+      <th>reliability_cd</th>
+      <th>gw_file_cd</th>
+      <th>nat_aqfr_cd</th>
+      <th>aqfr_cd</th>
+      <th>aqfr_type_cd</th>
+      <th>well_depth_va</th>
+      <th>hole_depth_va</th>
+      <th>depth_src_cd</th>
+      <th>project_no</th>
+      <th>geometry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>05114000</td>
+      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
+      <td>ST</td>
+      <td>485924.00</td>
+      <td>1015728.00</td>
+      <td>48.989957</td>
+      <td>-101.958335</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-101.95833 48.98996)</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USGS</td>
+      <td>09423350</td>
+      <td>CARUTHERS C NR IVANPAH CA</td>
+      <td>ST</td>
+      <td>351442.02</td>
+      <td>1151756.36</td>
+      <td>35.245006</td>
+      <td>-115.298989</td>
+      <td>M</td>
+      <td>5</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-115.29899 35.24501)</td>
+    </tr>
+  </tbody>
+</table>
+<p>2 rows × 43 columns</p>
+</div></div>
 </div>
 </section>
 <section id="Example-3:-Get-site-information-for-all-sites-within-a-state">
@@ -371,17 +495,317 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[8]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> <span style="color: rgb(95,135,135)"># Get the site information for a state</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> siteINFO_state = <span class="ansi-yellow-bg">nwis</span>.get_info(stateCd=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">UT</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      3</span> display(siteINFO_state[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>agency_cd</th>
+      <th>site_no</th>
+      <th>station_nm</th>
+      <th>site_tp_cd</th>
+      <th>lat_va</th>
+      <th>long_va</th>
+      <th>dec_lat_va</th>
+      <th>dec_long_va</th>
+      <th>coord_meth_cd</th>
+      <th>coord_acy_cd</th>
+      <th>...</th>
+      <th>reliability_cd</th>
+      <th>gw_file_cd</th>
+      <th>nat_aqfr_cd</th>
+      <th>aqfr_cd</th>
+      <th>aqfr_type_cd</th>
+      <th>well_depth_va</th>
+      <th>hole_depth_va</th>
+      <th>depth_src_cd</th>
+      <th>project_no</th>
+      <th>geometry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>09163527</td>
+      <td>WEST BITTER CREEK NEAR HARLEY DOME, UTAH</td>
+      <td>ST</td>
+      <td>392035.0</td>
+      <td>1090848.0</td>
+      <td>39.343032</td>
+      <td>-109.147336</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-109.14734 39.34303)</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USGS</td>
+      <td>09163530</td>
+      <td>COLORADO RIVER BELOW COLORADO-UTAH STATE LINE</td>
+      <td>ST</td>
+      <td>390518.0</td>
+      <td>1090601.0</td>
+      <td>39.088317</td>
+      <td>-109.100945</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-109.10095 39.08832)</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USGS</td>
+      <td>09163550</td>
+      <td>HARLEY DOME WASH NEAR HARLEY DOME, UTAH</td>
+      <td>ST</td>
+      <td>390925.0</td>
+      <td>1090840.0</td>
+      <td>39.156927</td>
+      <td>-109.145114</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-109.14511 39.15693)</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USGS</td>
+      <td>09163675</td>
+      <td>COTTONWOOD WASH AT I-70, NEAR CISCO, UTAH</td>
+      <td>ST</td>
+      <td>390454.0</td>
+      <td>1091301.0</td>
+      <td>39.081652</td>
+      <td>-109.217615</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-109.21762 39.08165)</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USGS</td>
+      <td>09163700</td>
+      <td>CISCO WASH NEAR CISCO, UTAH</td>
+      <td>ST</td>
+      <td>385750.0</td>
+      <td>1092010.0</td>
+      <td>38.963873</td>
+      <td>-109.336784</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-109.33678 38.96387)</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>32802</th>
+      <td>USGS</td>
+      <td>415956112525201</td>
+      <td>(B-15- 9)28cbc- 1</td>
+      <td>GW</td>
+      <td>415956.0</td>
+      <td>1125252.0</td>
+      <td>41.998808</td>
+      <td>-112.881929</td>
+      <td>M</td>
+      <td>S</td>
+      <td>...</td>
+      <td>C</td>
+      <td>YNNNNNNN</td>
+      <td>NaN</td>
+      <td>100VLFL</td>
+      <td>NaN</td>
+      <td>400.0</td>
+      <td>NaN</td>
+      <td>O</td>
+      <td>NaN</td>
+      <td>POINT (-112.88193 41.99881)</td>
+    </tr>
+    <tr>
+      <th>32803</th>
+      <td>USGS</td>
+      <td>415956112532501</td>
+      <td>(B-15- 9)29dbc- 1</td>
+      <td>GW</td>
+      <td>415956.0</td>
+      <td>1125325.0</td>
+      <td>41.998808</td>
+      <td>-112.891096</td>
+      <td>M</td>
+      <td>S</td>
+      <td>...</td>
+      <td>C</td>
+      <td>YNNNNNNN</td>
+      <td>NaN</td>
+      <td>100VLFL</td>
+      <td>NaN</td>
+      <td>480.0</td>
+      <td>NaN</td>
+      <td>O</td>
+      <td>NaN</td>
+      <td>POINT (-112.8911 41.99881)</td>
+    </tr>
+    <tr>
+      <th>32804</th>
+      <td>USGS</td>
+      <td>415957112411001</td>
+      <td>(B-15- 7)30cbc- 1</td>
+      <td>GW</td>
+      <td>415957.0</td>
+      <td>1124110.0</td>
+      <td>41.999086</td>
+      <td>-112.686923</td>
+      <td>M</td>
+      <td>S</td>
+      <td>...</td>
+      <td>C</td>
+      <td>YNNNNNNN</td>
+      <td>NaN</td>
+      <td>100VLFL</td>
+      <td>NaN</td>
+      <td>228.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-112.68692 41.99909)</td>
+    </tr>
+    <tr>
+      <th>32805</th>
+      <td>USGS</td>
+      <td>415958111242901</td>
+      <td>(A-15- 5)32dbb- 1</td>
+      <td>GW</td>
+      <td>415958.0</td>
+      <td>1112429.0</td>
+      <td>41.999377</td>
+      <td>-111.408818</td>
+      <td>M</td>
+      <td>T</td>
+      <td>...</td>
+      <td>U</td>
+      <td>NYNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>191.0</td>
+      <td>191.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.40882 41.99938)</td>
+    </tr>
+    <tr>
+      <th>32806</th>
+      <td>USGS</td>
+      <td>415958112390301</td>
+      <td>(B-15- 7)29dac- 1</td>
+      <td>GW</td>
+      <td>415958.0</td>
+      <td>1123903.0</td>
+      <td>41.999364</td>
+      <td>-112.651644</td>
+      <td>M</td>
+      <td>S</td>
+      <td>...</td>
+      <td>C</td>
+      <td>YNNNNNNN</td>
+      <td>NaN</td>
+      <td>100VLFL</td>
+      <td>NaN</td>
+      <td>175.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-112.65164 41.99936)</td>
+    </tr>
+  </tbody>
+</table>
+<p>32807 rows × 43 columns</p>
+</div></div>
 </div>
 </section>
 <section id="Example-4:-Get-site-information-for-all-%22stream%22-sites-within-a-USGS-HUC">
@@ -402,18 +826,821 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[9]</span><span class="ansi-green-fg">, line 5</span>
-<span class="ansi-green-fg">      2</span> huc_list = [<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">16010203</span><span class="ansi-yellow-fg">&#39;</span>]
-<span class="ansi-green-fg">      4</span> <span style="color: rgb(95,135,135)"># Get the site information - limit to stream sites</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">5</span> siteINFO_huc = <span class="ansi-yellow-bg">nwis</span>.get_info(huc=huc_list, siteType=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">ST</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      6</span> display(siteINFO_huc[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>agency_cd</th>
+      <th>site_no</th>
+      <th>station_nm</th>
+      <th>site_tp_cd</th>
+      <th>lat_va</th>
+      <th>long_va</th>
+      <th>dec_lat_va</th>
+      <th>dec_long_va</th>
+      <th>coord_meth_cd</th>
+      <th>coord_acy_cd</th>
+      <th>...</th>
+      <th>reliability_cd</th>
+      <th>gw_file_cd</th>
+      <th>nat_aqfr_cd</th>
+      <th>aqfr_cd</th>
+      <th>aqfr_type_cd</th>
+      <th>well_depth_va</th>
+      <th>hole_depth_va</th>
+      <th>depth_src_cd</th>
+      <th>project_no</th>
+      <th>geometry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>10104600</td>
+      <td>SOUTH FORK LITTLE BEAR RIVER NEAR AVON, UTAH</td>
+      <td>ST</td>
+      <td>413001.00</td>
+      <td>1114857.00</td>
+      <td>41.500214</td>
+      <td>-111.816607</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.81661 41.50021)</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USGS</td>
+      <td>10104700</td>
+      <td>LITTLE BEAR R BL DAVENPORT C NR AVON UT</td>
+      <td>ST</td>
+      <td>413045.00</td>
+      <td>1114840.00</td>
+      <td>41.512436</td>
+      <td>-111.811885</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4.649001e+08</td>
+      <td>POINT (-111.81189 41.51244)</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USGS</td>
+      <td>10104900</td>
+      <td>EAST FK LT BEAR RIV AB RESV NR AVON UTAH</td>
+      <td>ST</td>
+      <td>413106.00</td>
+      <td>1114249.00</td>
+      <td>41.518270</td>
+      <td>-111.714382</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.71438 41.51827)</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USGS</td>
+      <td>10105000</td>
+      <td>EAST FORK LITTLE BEAR R NR AVON UTAH</td>
+      <td>ST</td>
+      <td>413100.00</td>
+      <td>1114500.00</td>
+      <td>41.516603</td>
+      <td>-111.750772</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.75077 41.5166)</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USGS</td>
+      <td>10105900</td>
+      <td>LITTLE BEAR RIVER AT PARADISE, UT</td>
+      <td>ST</td>
+      <td>413432.00</td>
+      <td>1115116.00</td>
+      <td>41.575490</td>
+      <td>-111.855220</td>
+      <td>M</td>
+      <td>S</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2.474900e+09</td>
+      <td>POINT (-111.85522 41.57549)</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>USGS</td>
+      <td>10106000</td>
+      <td>LITTLE BEAR RIVER NEAR PARADISE, UTAH</td>
+      <td>ST</td>
+      <td>413525.00</td>
+      <td>1115110.00</td>
+      <td>41.590212</td>
+      <td>-111.853554</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.85355 41.59021)</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>USGS</td>
+      <td>10107400</td>
+      <td>WELLSVILLE-MENDON LOWER CANAL AT WELLSVILLE, UT</td>
+      <td>ST-CA</td>
+      <td>413855.00</td>
+      <td>1115630.00</td>
+      <td>41.648543</td>
+      <td>-111.942446</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.94245 41.64854)</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>USGS</td>
+      <td>10107500</td>
+      <td>LITTLE BEAR RIVER NEAR HYRUM, UTAH</td>
+      <td>ST</td>
+      <td>413800.00</td>
+      <td>1115300.00</td>
+      <td>41.633266</td>
+      <td>-111.884111</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.88411 41.63327)</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>USGS</td>
+      <td>10107600</td>
+      <td>LITTLE BEAR RIV AT WELLSVILLE UTAH</td>
+      <td>ST</td>
+      <td>413851.00</td>
+      <td>1115522.00</td>
+      <td>41.647432</td>
+      <td>-111.923556</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.92356 41.64743)</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>USGS</td>
+      <td>10107700</td>
+      <td>LOGAN RIVER NR GARDEN CITY, UTAH</td>
+      <td>ST</td>
+      <td>415600.00</td>
+      <td>1113400.00</td>
+      <td>41.933264</td>
+      <td>-111.567436</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.56744 41.93326)</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>USGS</td>
+      <td>10107800</td>
+      <td>TEMPLE FORK NEAR LOGAN, UTAH</td>
+      <td>ST</td>
+      <td>415000.00</td>
+      <td>1113500.00</td>
+      <td>41.833266</td>
+      <td>-111.584103</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.5841 41.83327)</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>USGS</td>
+      <td>10108000</td>
+      <td>UTAH POWER AND LIGHT TAILRACE NR LOGAN UTAH</td>
+      <td>ST</td>
+      <td>414440.00</td>
+      <td>1114700.00</td>
+      <td>41.744375</td>
+      <td>-111.784109</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4.649001e+08</td>
+      <td>POINT (-111.78411 41.74438)</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>USGS</td>
+      <td>10108400</td>
+      <td>CACHE HIGHLINE CANAL NEAR LOGAN, UTAH</td>
+      <td>ST-CA</td>
+      <td>414436.15</td>
+      <td>1114543.42</td>
+      <td>41.743375</td>
+      <td>-111.762061</td>
+      <td>G</td>
+      <td>1</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.76206 41.74338)</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>USGS</td>
+      <td>10108500</td>
+      <td>LOGAN HYD P AN SM CA N LOGAN UTAH</td>
+      <td>ST</td>
+      <td>414445.00</td>
+      <td>1114705.00</td>
+      <td>41.745764</td>
+      <td>-111.785498</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.7855 41.74576)</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>USGS</td>
+      <td>10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>ST</td>
+      <td>414436.78</td>
+      <td>1114702.33</td>
+      <td>41.743550</td>
+      <td>-111.783981</td>
+      <td>G</td>
+      <td>1</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.78398 41.74355)</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>USGS</td>
+      <td>10109001</td>
+      <td>COM F LOGAN R AB ST D AND CACHE HL CAN NR LOGA...</td>
+      <td>ST</td>
+      <td>414440.00</td>
+      <td>1114701.00</td>
+      <td>41.744375</td>
+      <td>-111.784387</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.78439 41.74438)</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>USGS</td>
+      <td>10111700</td>
+      <td>BLACKSMITH F B MILL C N HYRUM UT</td>
+      <td>ST</td>
+      <td>413540.00</td>
+      <td>1113400.00</td>
+      <td>41.594381</td>
+      <td>-111.567433</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4.649001e+08</td>
+      <td>POINT (-111.56743 41.59438)</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>USGS</td>
+      <td>10112000</td>
+      <td>BLACKSMITH F A H RAN N HYRUM UTAH</td>
+      <td>ST</td>
+      <td>413700.00</td>
+      <td>1113700.00</td>
+      <td>41.616603</td>
+      <td>-111.617435</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.61743 41.6166)</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>USGS</td>
+      <td>10112500</td>
+      <td>BLACKSMITH FK AT MUN. POWERPLANT, NR HYRUM, UT</td>
+      <td>ST</td>
+      <td>413740.00</td>
+      <td>1114120.00</td>
+      <td>41.627713</td>
+      <td>-111.689660</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.68966 41.62771)</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>USGS</td>
+      <td>10113500</td>
+      <td>BLACKSMITH FORK AB UP and L CO.'S DAM NR HYRUM...</td>
+      <td>ST</td>
+      <td>413726.42</td>
+      <td>1114410.19</td>
+      <td>41.624006</td>
+      <td>-111.736164</td>
+      <td>G</td>
+      <td>1</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.73616 41.62401)</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>USGS</td>
+      <td>10114500</td>
+      <td>BLACKSMITH FK BL UP&amp;L PLANT, NR HYRUM, UT</td>
+      <td>ST</td>
+      <td>413740.00</td>
+      <td>1114800.00</td>
+      <td>41.627711</td>
+      <td>-111.800775</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.80077 41.62771)</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>USGS</td>
+      <td>10115200</td>
+      <td>LOGAN RIVER BLW BLACKSMITH FORK NR LOGAN, UTAH</td>
+      <td>ST</td>
+      <td>414315.00</td>
+      <td>1115308.00</td>
+      <td>41.720764</td>
+      <td>-111.886334</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.88633 41.72076)</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>USGS</td>
+      <td>413900111520003</td>
+      <td>Ditch 675 ft DS outfall pipe nr Miller Rd,Hyru...</td>
+      <td>ST-DCH</td>
+      <td>413927.14</td>
+      <td>1115208.36</td>
+      <td>41.657539</td>
+      <td>-111.868989</td>
+      <td>G</td>
+      <td>S</td>
+      <td>...</td>
+      <td>C</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-111.86899 41.65754)</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>USGS</td>
+      <td>414048111495101</td>
+      <td>Blacksmithsfork at 2900 S. nr Millville, UT</td>
+      <td>ST</td>
+      <td>414048.00</td>
+      <td>1114951.00</td>
+      <td>41.680000</td>
+      <td>-111.830833</td>
+      <td>G</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4.749224e+08</td>
+      <td>POINT (-111.83083 41.68)</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>USGS</td>
+      <td>414258111502001</td>
+      <td>Logan River at golf course road</td>
+      <td>ST</td>
+      <td>414258.00</td>
+      <td>1115020.00</td>
+      <td>41.716111</td>
+      <td>-111.838889</td>
+      <td>G</td>
+      <td>5</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4.749224e+08</td>
+      <td>POINT (-111.83889 41.71611)</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>USGS</td>
+      <td>414308111564101</td>
+      <td>Little Bear at 600 S. nr Mendon, UT</td>
+      <td>ST</td>
+      <td>414308.00</td>
+      <td>1115641.00</td>
+      <td>41.718889</td>
+      <td>-111.944722</td>
+      <td>G</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4.749224e+08</td>
+      <td>POINT (-111.94472 41.71889)</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>USGS</td>
+      <td>414314111553801</td>
+      <td>Spring Creek at 600 S. near Logan, UT</td>
+      <td>ST</td>
+      <td>414314.00</td>
+      <td>1115538.00</td>
+      <td>41.720556</td>
+      <td>-111.927222</td>
+      <td>G</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4.749224e+08</td>
+      <td>POINT (-111.92722 41.72056)</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>USGS</td>
+      <td>414500112000000</td>
+      <td>COM FLOW BEAR AREA GSL INFLOW GROUP 1</td>
+      <td>ST</td>
+      <td>414500.00</td>
+      <td>1120000.00</td>
+      <td>41.749928</td>
+      <td>-112.000782</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-112.00078 41.74993)</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>USGS</td>
+      <td>414500112000100</td>
+      <td>COM FLOW BEAR AREA GSL INFLOW GROUP 2</td>
+      <td>ST</td>
+      <td>414500.00</td>
+      <td>1120001.00</td>
+      <td>41.749928</td>
+      <td>-112.001059</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-112.00106 41.74993)</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>USGS</td>
+      <td>414500112000200</td>
+      <td>COM FLOW BEAR AREA GSL INFLOW GROUP 3</td>
+      <td>ST</td>
+      <td>414500.00</td>
+      <td>1120002.00</td>
+      <td>41.749928</td>
+      <td>-112.001337</td>
+      <td>M</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>POINT (-112.00134 41.74993)</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td>USGS</td>
+      <td>414541111544201</td>
+      <td>Logan WWTP Outflow nr Logan, UT</td>
+      <td>ST</td>
+      <td>414541.00</td>
+      <td>1115442.00</td>
+      <td>41.761389</td>
+      <td>-111.911667</td>
+      <td>G</td>
+      <td>F</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4.749224e+08</td>
+      <td>POINT (-111.91167 41.76139)</td>
+    </tr>
+    <tr>
+      <th>31</th>
+      <td>USGS</td>
+      <td>414615111544301</td>
+      <td>Swift Slough at 1300 East nr Logan UT</td>
+      <td>ST</td>
+      <td>414614.85</td>
+      <td>1115442.77</td>
+      <td>41.770792</td>
+      <td>-111.911881</td>
+      <td>G</td>
+      <td>5</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NNNNNNNN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4.749224e+08</td>
+      <td>POINT (-111.91188 41.77079)</td>
+    </tr>
+  </tbody>
+</table>
+<p>32 rows × 43 columns</p>
+</div></div>
 </div>
 </section>
 </section>

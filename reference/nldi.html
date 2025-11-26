@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g640e47760 documentation</title>
+  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+gad478045b documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=35fa23c9"></script>
+      <script src="../_static/documentation_options.js?v=4b5feb02"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -51,7 +51,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">API reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="nadp.html">dataretrieval.nadp</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.nldi</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.nldi</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nldi.get_basin"><code class="docutils literal notranslate"><span class="pre">get_basin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nldi.get_features"><code class="docutils literal notranslate"><span class="pre">get_features()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nldi.get_features_by_data_source"><code class="docutils literal notranslate"><span class="pre">get_features_by_data_source()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nldi.get_flowlines"><code class="docutils literal notranslate"><span class="pre">get_flowlines()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nldi.search"><code class="docutils literal notranslate"><span class="pre">search()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="nwis.html">dataretrieval.nwis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="streamstats.html">dataretrieval.streamstats</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html">dataretrieval.utils</a></li>
@@ -86,8 +93,235 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="dataretrieval-nldi">
-<h1>dataretrieval.nldi<a class="headerlink" href="#dataretrieval-nldi" title="Link to this heading"></a></h1>
+  <section id="module-dataretrieval.nldi">
+<span id="dataretrieval-nldi"></span><span id="nldi"></span><h1>dataretrieval.nldi<a class="headerlink" href="#module-dataretrieval.nldi" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.nldi.get_basin">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nldi.</span></span><span class="sig-name descname"><span class="pre">get_basin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simplified</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split_catchment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_json</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">GeoDataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nldi.html#get_basin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nldi.get_basin" title="Link to this definition"></a></dt>
+<dd><p>Gets the aggregated basin for the specified feature in WGS84 lat/lon
+as GeoDataFrame or as JSON conatining a polygon geometry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>feature_source</strong> (<em>string</em><em>, </em><em>name</em><em> of </em><em>the feature source</em>)</p></li>
+<li><p><strong>feature_id</strong> (<em>string</em><em>, </em><em>identifier</em><em> of </em><em>the feature</em>)</p></li>
+<li><p><strong>simplified</strong> (<em>bool</em><em>, </em><em>simplified</em><em>, </em><em>default is True</em>)</p></li>
+<li><p><strong>split_catchment</strong> (<em>bool</em><em>, </em><em>split catchment</em><em>, </em><em>default is False</em>)</p></li>
+<li><p><strong>as_json</strong> (<em>bool</em><em>, </em><em>return basin as JSON is set to True</em><em>, </em><em>otherwise return</em>) – as GeoDataFrame, default is False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>gdf</strong> – GeoDataFrame/dict of basin</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>GeoDataFrame or dict</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get basin for a feature source: WQP and feature id: USGS-01031500</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nldi</span><span class="o">.</span><span class="n">get_basin</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">feature_source</span><span class="o">=</span><span class="s2">&quot;WQP&quot;</span><span class="p">,</span> <span class="n">feature_id</span><span class="o">=</span><span class="s2">&quot;USGS-01031500&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.nldi.get_features">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nldi.</span></span><span class="sig-name descname"><span class="pre">get_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">navigation_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_comid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_json</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">GeoDataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nldi.html#get_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nldi.get_features" title="Link to this definition"></a></dt>
+<dd><p>Gets all features found along the specified navigation either by
+comid or feature source as points in WGS84 lat/long coordinates - a GeoDataFrame
+containing a point geometry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>feature_source</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>name</em><em> of </em><em>the feature source</em><em>,</em>) – required if comid is not provided</p></li>
+<li><p><strong>feature_id</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>identifier</em><em> of </em><em>the feature</em><em>,</em>) – required if comid is not provided</p></li>
+<li><p><strong>navigation_mode</strong> (<em>string</em><em>, </em><em>navigation mode</em><em>, </em><em>allowed values are 'UM'</em><em>, </em><em>'DM'</em><em>, </em><em>'UT'</em><em>, </em><em>'DD'</em>)</p></li>
+<li><p><strong>data_source</strong> (<em>string</em><em>, </em><em>data source</em>)</p></li>
+<li><p><strong>distance</strong> (<em>int</em><em>, </em><em>distance in kilometers</em><em>, </em><em>default is 50</em>)</p></li>
+<li><p><strong>comid</strong> (<em>integer</em><em>, </em><em>optional</em><em>, </em><em>comid</em><em>, </em><em>required if feature source is not provided</em>)</p></li>
+<li><p><strong>lat</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>latitude</em><em>, </em><em>if provided</em><em>, </em><em>long is also required</em>)</p></li>
+<li><p><strong>long</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>longitude</em><em>, </em><em>if provided</em><em>, </em><em>lat is also required</em>)</p></li>
+<li><p><strong>stop_comid</strong> (<em>integer</em><em>, </em><em>optional</em><em>, </em><em>stop comid</em>)</p></li>
+<li><p><strong>as_json</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>return features as JSON if set to True</em><em>,</em>) – otherwise return as GeoDataFrame, default is False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>gdf</strong> – GeoDataFrame/dict of features</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>GeoDataFrame or dict</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get registered features for a feature source: WQP,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># feature id: USGS-01031500</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nldi</span><span class="o">.</span><span class="n">get_features</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">feature_source</span><span class="o">=</span><span class="s2">&quot;WQP&quot;</span><span class="p">,</span> <span class="n">feature_id</span><span class="o">=</span><span class="s2">&quot;USGS-01031500&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get features for a feature source: WQP, feature id: USGS-01031500,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># and data source: nwissite in the upstream main</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nldi</span><span class="o">.</span><span class="n">get_features</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">feature_source</span><span class="o">=</span><span class="s2">&quot;WQP&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">feature_id</span><span class="o">=</span><span class="s2">&quot;USGS-01031500&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">navigation_mode</span><span class="o">=</span><span class="s2">&quot;UM&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">data_source</span><span class="o">=</span><span class="s2">&quot;nwissite&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">distance</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get features for a comid: 13294314, and data source: nwissite</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># in the upstream main</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nldi</span><span class="o">.</span><span class="n">get_features</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">comid</span><span class="o">=</span><span class="mi">13294314</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">navigation_mode</span><span class="o">=</span><span class="s2">&quot;UM&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">data_source</span><span class="o">=</span><span class="s2">&quot;nwissite&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">distance</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get features for a latitude: 43.073051 and longitude: -89.401230</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nldi</span><span class="o">.</span><span class="n">get_features</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="mf">43.073051</span><span class="p">,</span> <span class="n">long</span><span class="o">=-</span><span class="mf">89.401230</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.nldi.get_features_by_data_source">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nldi.</span></span><span class="sig-name descname"><span class="pre">get_features_by_data_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">GeoDataFrame</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nldi.html#get_features_by_data_source"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nldi.get_features_by_data_source" title="Link to this definition"></a></dt>
+<dd><p>Gets all features found for the specified data source as
+points in WGS84 lat/long coordinates as GeoDataFrame containing a point geometry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_source</strong> (<em>string</em><em>, </em><em>data source</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>gdf</strong> – GeoDataFrame of features</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>GeoDataFrame</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get features for a feature wqp and feature_id USGS-01031500</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nldi</span><span class="o">.</span><span class="n">get_features_by_data_source</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">data_source</span><span class="o">=</span><span class="s2">&quot;nwissite&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.nldi.get_flowlines">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nldi.</span></span><span class="sig-name descname"><span class="pre">get_flowlines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">navigation_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_comid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trim_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_json</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">GeoDataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nldi.html#get_flowlines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nldi.get_flowlines" title="Link to this definition"></a></dt>
+<dd><p>Gets the flowlines for the specified navigation either by comid or feature
+source in WGS84 lat/long coordinates as GeoDataFrame containing a polyline geometry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>navigation_mode</strong> (<em>string</em><em>, </em><em>navigation mode</em><em>, </em><em>allowed values are 'UM'</em><em>, </em><em>'DM'</em><em>, </em><em>'UT'</em><em>, </em><em>'DD'</em>)</p></li>
+<li><p><strong>distance</strong> (<em>int</em><em>, </em><em>distance in kilometers</em><em>, </em><em>default is 5</em>)</p></li>
+<li><p><strong>feature_source</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>name</em><em> of </em><em>the feature source</em><em>,</em>) – required if comid is not provided</p></li>
+<li><p><strong>feature_id</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>identifier</em><em> of </em><em>the feature</em><em>,</em>) – required if comid is not provided</p></li>
+<li><p><strong>comid</strong> (<em>integer</em><em>, </em><em>optional</em><em>, </em><em>comid</em><em>, </em><em>required if feature source is not provided</em>)</p></li>
+<li><p><strong>stop_comid</strong> (<em>integer</em><em>, </em><em>optional</em><em>, </em><em>stop comid</em>)</p></li>
+<li><p><strong>trim_start</strong> (<em>bool</em><em>, </em><em>trim start</em><em>, </em><em>default is False</em>)</p></li>
+<li><p><strong>as_json</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>return flowlines as JSON if set to True</em><em>,</em>) – otherwise return as GeoDataFrame, default is False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>gdf</strong> – GeoDataFrame/dict of flowlines</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>GeoDataFrame or dict</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get flowlines for a feature source: WQP and</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># feature id: USGS-01031500 in the upstream main</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nldi</span><span class="o">.</span><span class="n">get_flowlines</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">feature_source</span><span class="o">=</span><span class="s2">&quot;WQP&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">feature_id</span><span class="o">=</span><span class="s2">&quot;USGS-01031500&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">navigation_mode</span><span class="o">=</span><span class="s2">&quot;UM&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get flowlines for comid: 13294314 in the upstream main</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nldi</span><span class="o">.</span><span class="n">get_flowlines</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">comid</span><span class="o">=</span><span class="mi">13294314</span><span class="p">,</span> <span class="n">navigation_mode</span><span class="o">=</span><span class="s2">&quot;UM&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.nldi.search">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nldi.</span></span><span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">navigation_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">find</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'basin'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'flowlines'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'features'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'features'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nldi.html#search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nldi.search" title="Link to this definition"></a></dt>
+<dd><p>Searches for the specified feature in NLDI and returns the results
+as a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>feature_source</strong> (<em>string</em><em>, </em><em>name</em><em> of </em><em>the feature source</em>)</p></li>
+<li><p><strong>feature_id</strong> (<em>string</em><em>, </em><em>identifier</em><em> of </em><em>the feature</em>)</p></li>
+<li><p><strong>navigation_mode</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>navigation mode</em><em>,</em>) – allowed values are ‘UM’, ‘DM’, ‘UT’, ‘DD’</p></li>
+<li><p><strong>data_source</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>data source</em>)</p></li>
+<li><p><strong>find</strong> (<em>string</em><em>, </em><em>search for 'basin'</em><em>, </em><em>'flowlines'</em><em>, or </em><em>'features'</em><em>, </em><em>default is 'features'</em>)</p></li>
+<li><p><strong>comid</strong> (<em>int</em><em>, </em><em>optional</em><em>, </em><em>comid</em><em>, </em><em>default is None</em>)</p></li>
+<li><p><strong>lat</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>latitude</em><em>, </em><em>default is None</em>)</p></li>
+<li><p><strong>long</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>longitude</em><em>, </em><em>default is None</em>)</p></li>
+<li><p><strong>distance</strong> (<em>int</em><em>, </em><em>optional</em><em>, </em><em>distance in kilometers</em><em>, </em><em>default is 50</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>dict</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>search results</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Search for aggregated basin for feature source: WQP</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># and feature id: USGS-01031500</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">search_results</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nldi</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">feature_source</span><span class="o">=</span><span class="s2">&quot;WQP&quot;</span><span class="p">,</span> <span class="n">feature_id</span><span class="o">=</span><span class="s2">&quot;USGS-01031500&quot;</span><span class="p">,</span> <span class="n">find</span><span class="o">=</span><span class="s2">&quot;basin&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Search for flowlines for feature source: WQP and</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># feature id: USGS-01031500 in the upstream main</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">search_results</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nldi</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">feature_source</span><span class="o">=</span><span class="s2">&quot;WQP&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">feature_id</span><span class="o">=</span><span class="s2">&quot;USGS-01031500&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">navigation_mode</span><span class="o">=</span><span class="s2">&quot;UM&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">find</span><span class="o">=</span><span class="s2">&quot;flowlines&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get registered features for a feature source: WQP,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># feature id: USGS-01031500</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nldi</span><span class="o">.</span><span class="n">get_features</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">feature_source</span><span class="o">=</span><span class="s2">&quot;WQP&quot;</span><span class="p">,</span> <span class="n">feature_id</span><span class="o">=</span><span class="s2">&quot;USGS-01031500&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Search for features for feature source: WQP, feature id: USGS-01031500,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># and data source: census2020-nhdpv2 in the upstream main</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">search_results</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nldi</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">feature_source</span><span class="o">=</span><span class="s2">&quot;WQP&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">feature_id</span><span class="o">=</span><span class="s2">&quot;USGS-01031500&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">data_source</span><span class="o">=</span><span class="s2">&quot;census2020-nhdpv2&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">navigation_mode</span><span class="o">=</span><span class="s2">&quot;UM&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">find</span><span class="o">=</span><span class="s2">&quot;features&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Search for features for comid: 13294314,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># and data source: census2020-nhdpv2 in the upstream main</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">search_results</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nldi</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">comid</span><span class="o">=</span><span class="mi">13294314</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">data_source</span><span class="o">=</span><span class="s2">&quot;census2020-nhdpv2&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">navigation_mode</span><span class="o">=</span><span class="s2">&quot;UM&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Search for flowlines for comid: 13294314 in the upstream main</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">search_results</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nldi</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">comid</span><span class="o">=</span><span class="mi">13294314</span><span class="p">,</span> <span class="n">navigation_mode</span><span class="o">=</span><span class="s2">&quot;UM&quot;</span><span class="p">,</span> <span class="n">find</span><span class="o">=</span><span class="s2">&quot;flowlines&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Search for features for latitude: 43.073051 and longitude: -89.401230</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">search_results</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nldi</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">lat</span><span class="o">=</span><span class="mf">43.073051</span><span class="p">,</span> <span class="n">long</span><span class="o">=-</span><span class="mf">89.401230</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 
 

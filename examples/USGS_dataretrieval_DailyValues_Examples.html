@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_dv() Examples &mdash; dataretrieval 0.1.dev1+g640e47760 documentation</title>
+  <title>USGS dataretrieval Python Package get_dv() Examples &mdash; dataretrieval 0.1.dev1+gad478045b documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=35fa23c9"></script>
+      <script src="../_static/documentation_options.js?v=4b5feb02"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -126,7 +126,7 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g640e47760)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+gad478045b)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
 Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.3.5)
@@ -136,7 +136,7 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
@@ -144,44 +144,6 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nldi.py:7</span>
-<span class="ansi-green-fg">      6</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">7</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">geopandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">gpd</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>:
-
-<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;geopandas&#39;
-
-During handling of the above exception, another exception occurred:
-
-<span class="ansi-red-fg">ImportError</span>                               Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[2]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> nwis
-<span class="ansi-green-fg">      2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">IPython</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">display</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> display
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/__init__.py:9</span>
-<span class="ansi-green-fg">      6</span>     __version__ = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">version-unknown</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nadp</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nldi</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">     10</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nwis</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">     11</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">samples</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nldi.py:9</span>
-<span class="ansi-green-fg">      7</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">geopandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">gpd</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>:
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Install geopandas to use the NLDI module.</span><span class="ansi-yellow-fg">&#34;</span>)
-<span class="ansi-green-fg">     11</span> NLDI_API_BASE_URL = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">https://api.water.usgs.gov/nldi/linked-data</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">     12</span> _AVAILABLE_DATA_SOURCES = <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
-
-<span class="ansi-red-fg">ImportError</span>: Install geopandas to use the NLDI module.
-</pre></div></div>
 </div>
 </section>
 <section id="Basic-Usage">
@@ -217,15 +179,7 @@ During handling of the above exception, another exception occurred:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 8</span>
-<span class="ansi-green-fg">      5</span> endDate = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">2021-09-30</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">      7</span> <span style="color: rgb(95,135,135)"># Retrieve the data</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">8</span> dailyStreamflow = <span class="ansi-yellow-bg">nwis</span>.get_dv(sites=siteNumber, parameterCd=parameterCode, start=startDate, end=endDate)
-<span class="ansi-green-fg">      9</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#34;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(dailyStreamflow[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> data values.</span><span class="ansi-yellow-fg">&#34;</span>)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
+Retrieved 365 data values.
 </pre></div></div>
 </div>
 </section>
@@ -245,16 +199,107 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[4]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> <span style="color: rgb(95,135,135)"># Display the data frame as a table</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> display(<span class="ansi-yellow-bg">dailyStreamflow</span>[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;dailyStreamflow&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>site_no</th>
+      <th>00060_Mean</th>
+      <th>00060_Mean_cd</th>
+    </tr>
+    <tr>
+      <th>datetime</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2020-10-01 00:00:00+00:00</th>
+      <td>10109000</td>
+      <td>88.8</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2020-10-02 00:00:00+00:00</th>
+      <td>10109000</td>
+      <td>90.5</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2020-10-03 00:00:00+00:00</th>
+      <td>10109000</td>
+      <td>92.7</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2020-10-04 00:00:00+00:00</th>
+      <td>10109000</td>
+      <td>91.8</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2020-10-05 00:00:00+00:00</th>
+      <td>10109000</td>
+      <td>91.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2021-09-26 00:00:00+00:00</th>
+      <td>10109000</td>
+      <td>54.2</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2021-09-27 00:00:00+00:00</th>
+      <td>10109000</td>
+      <td>54.5</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2021-09-28 00:00:00+00:00</th>
+      <td>10109000</td>
+      <td>54.1</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2021-09-29 00:00:00+00:00</th>
+      <td>10109000</td>
+      <td>53.5</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2021-09-30 00:00:00+00:00</th>
+      <td>10109000</td>
+      <td>54.0</td>
+      <td>A</td>
+    </tr>
+  </tbody>
+</table>
+<p>365 rows × 3 columns</p>
+</div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
 <div class="nbinput docutils container">
@@ -270,12 +315,10 @@ During handling of the above exception, another exception occurred:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[5]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-bg">dailyStreamflow</span>[<span class="ansi-green-fg">0</span>].dtypes)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;dailyStreamflow&#39; is not defined
+site_no           object
+00060_Mean       float64
+00060_Mean_cd     object
+dtype: object
 </pre></div></div>
 </div>
 <p>Get summary statistics for the daily streamflow values.</p>
@@ -288,17 +331,67 @@ During handling of the above exception, another exception occurred:
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span class="ansi-yellow-bg">dailyStreamflow</span>[<span class="ansi-green-fg">0</span>].describe()
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;dailyStreamflow&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>00060_Mean</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>365.000000</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>95.795616</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>41.146872</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>45.900000</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>75.200000</td>
+    </tr>
+    <tr>
+      <th>50%</th>
+      <td>85.800000</td>
+    </tr>
+    <tr>
+      <th>75%</th>
+      <td>106.000000</td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td>271.000000</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
 </div>
 <p>Make a quick time series plot.</p>
 <div class="nbinput docutils container">
@@ -311,20 +404,21 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Text(0, 0.5, &#39;Streamflow (cfs)&#39;)
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> ax = <span class="ansi-yellow-bg">dailyStreamflow</span>[<span class="ansi-green-fg">0</span>].plot(y=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">00060_Mean</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      2</span> ax.set_xlabel(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Date</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      3</span> ax.set_ylabel(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Streamflow (cfs)</span><span class="ansi-yellow-fg">&#39;</span>)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;dailyStreamflow&#39; is not defined
-</pre></div></div>
+<img alt="../_images/examples_USGS_dataretrieval_DailyValues_Examples_15_1.png" src="../_images/examples_USGS_dataretrieval_DailyValues_Examples_15_1.png" />
+</div>
 </div>
 <p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_dv()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.</p>
 <div class="nbinput docutils container">
@@ -340,12 +434,7 @@ During handling of the above exception, another exception occurred:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[8]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">The query URL used to retrieve the data from NWIS was: </span><span class="ansi-yellow-fg">&#34;</span> + <span class="ansi-yellow-bg">dailyStreamflow</span>[<span class="ansi-green-fg">1</span>].url)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;dailyStreamflow&#39; is not defined
+The query URL used to retrieve the data from NWIS was: https://waterservices.usgs.gov/nwis/dv?format=json&amp;parameterCd=00060&amp;startDT=2020-10-01&amp;endDT=2021-09-30&amp;sites=10109000
 </pre></div></div>
 </div>
 </section>
@@ -370,19 +459,159 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[9]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> siteID = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">04085427</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> dailyQAndT = <span class="ansi-yellow-bg">nwis</span>.get_dv(sites=siteID, parameterCd=[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00010</span><span class="ansi-yellow-fg">&#34;</span>, <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00060</span><span class="ansi-yellow-fg">&#34;</span>],
-<span class="ansi-green-fg">      3</span>                          start=startDate, end=endDate,
-<span class="ansi-green-fg">      4</span>                          statCd=[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00001</span><span class="ansi-yellow-fg">&#34;</span>, <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00003</span><span class="ansi-yellow-fg">&#34;</span>])
-<span class="ansi-green-fg">      5</span> display(dailyQAndT[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>site_no</th>
+      <th>00010_Maximum</th>
+      <th>00010_Maximum_cd</th>
+      <th>00010_Mean</th>
+      <th>00010_Mean_cd</th>
+      <th>00060_Mean</th>
+      <th>00060_Mean_cd</th>
+    </tr>
+    <tr>
+      <th>datetime</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2020-10-01 00:00:00+00:00</th>
+      <td>04085427</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>96.2</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2020-10-02 00:00:00+00:00</th>
+      <td>04085427</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>90.4</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2020-10-03 00:00:00+00:00</th>
+      <td>04085427</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>84.7</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2020-10-04 00:00:00+00:00</th>
+      <td>04085427</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>84.9</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2020-10-05 00:00:00+00:00</th>
+      <td>04085427</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>93.4</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2021-09-26 00:00:00+00:00</th>
+      <td>04085427</td>
+      <td>17.4</td>
+      <td>A</td>
+      <td>15.9</td>
+      <td>A</td>
+      <td>127.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2021-09-27 00:00:00+00:00</th>
+      <td>04085427</td>
+      <td>18.4</td>
+      <td>A</td>
+      <td>16.8</td>
+      <td>A</td>
+      <td>110.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2021-09-28 00:00:00+00:00</th>
+      <td>04085427</td>
+      <td>18.1</td>
+      <td>A</td>
+      <td>16.1</td>
+      <td>A</td>
+      <td>100.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2021-09-29 00:00:00+00:00</th>
+      <td>04085427</td>
+      <td>18.4</td>
+      <td>A</td>
+      <td>16.2</td>
+      <td>A</td>
+      <td>96.2</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2021-09-30 00:00:00+00:00</th>
+      <td>04085427</td>
+      <td>19.0</td>
+      <td>A</td>
+      <td>16.9</td>
+      <td>A</td>
+      <td>92.9</td>
+      <td>A</td>
+    </tr>
+  </tbody>
+</table>
+<p>365 rows × 7 columns</p>
+</div></div>
 </div>
 <p>Example 3: Get daily mean and max discharge and temperature values for multiple sites between a begin and end date</p>
 <div class="nbinput docutils container">
@@ -398,17 +627,151 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[10]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> dailyMultiSites = <span class="ansi-yellow-bg">nwis</span>.get_dv(sites=[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">01491000</span><span class="ansi-yellow-fg">&#34;</span>, <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">01645000</span><span class="ansi-yellow-fg">&#34;</span>], parameterCd=[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00010</span><span class="ansi-yellow-fg">&#34;</span>, <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00060</span><span class="ansi-yellow-fg">&#34;</span>],
-<span class="ansi-green-fg">      2</span>                               start=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">2012-01-01</span><span class="ansi-yellow-fg">&#34;</span>, end=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">2012-06-30</span><span class="ansi-yellow-fg">&#34;</span>, statCd=[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00001</span><span class="ansi-yellow-fg">&#34;</span>,<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00003</span><span class="ansi-yellow-fg">&#34;</span>])
-<span class="ansi-green-fg">      3</span> display(dailyMultiSites[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>00010_discontinued_Maximum</th>
+      <th>00010_discontinued_Maximum_cd</th>
+      <th>00010_discontinued_Mean</th>
+      <th>00010_discontinued_Mean_cd</th>
+      <th>00060_Mean</th>
+      <th>00060_Mean_cd</th>
+    </tr>
+    <tr>
+      <th>site_no</th>
+      <th>datetime</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">01491000</th>
+      <th>2012-01-01 00:00:00+00:00</th>
+      <td>8.4</td>
+      <td>A</td>
+      <td>7.7</td>
+      <td>A</td>
+      <td>205.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-01-02 00:00:00+00:00</th>
+      <td>8.5</td>
+      <td>A</td>
+      <td>7.3</td>
+      <td>A</td>
+      <td>193.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-01-03 00:00:00+00:00</th>
+      <td>6.0</td>
+      <td>A</td>
+      <td>4.6</td>
+      <td>A</td>
+      <td>180.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-01-04 00:00:00+00:00</th>
+      <td>3.0</td>
+      <td>A</td>
+      <td>1.8</td>
+      <td>A</td>
+      <td>162.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-01-05 00:00:00+00:00</th>
+      <td>2.9</td>
+      <td>A</td>
+      <td>2.3</td>
+      <td>A</td>
+      <td>155.0</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">01645000</th>
+      <th>2012-06-26 00:00:00+00:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>56.3</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-06-27 00:00:00+00:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>54.8</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-06-28 00:00:00+00:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>53.6</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-06-29 00:00:00+00:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>53.1</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-06-30 00:00:00+00:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>129.0</td>
+      <td>A</td>
+    </tr>
+  </tbody>
+</table>
+<p>364 rows × 6 columns</p>
+</div></div>
 </div>
 <p>The following example is the same as the previous example but with multi index turned off (multi_index=False)</p>
 <div class="nbinput docutils container">
@@ -425,18 +788,159 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[11]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> dailyMultiSites = <span class="ansi-yellow-bg">nwis</span>.get_dv(sites=[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">01491000</span><span class="ansi-yellow-fg">&#34;</span>, <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">01645000</span><span class="ansi-yellow-fg">&#34;</span>], parameterCd=[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00010</span><span class="ansi-yellow-fg">&#34;</span>, <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00060</span><span class="ansi-yellow-fg">&#34;</span>],
-<span class="ansi-green-fg">      2</span>                               start=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">2012-01-01</span><span class="ansi-yellow-fg">&#34;</span>, end=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">2012-06-30</span><span class="ansi-yellow-fg">&#34;</span>, statCd=[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00001</span><span class="ansi-yellow-fg">&#34;</span>,<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00003</span><span class="ansi-yellow-fg">&#34;</span>],
-<span class="ansi-green-fg">      3</span>                               multi_index=<span class="ansi-bold" style="color: rgb(0,135,0)">False</span>)
-<span class="ansi-green-fg">      4</span> display(dailyMultiSites[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>site_no</th>
+      <th>00010_discontinued_Maximum</th>
+      <th>00010_discontinued_Maximum_cd</th>
+      <th>00010_discontinued_Mean</th>
+      <th>00010_discontinued_Mean_cd</th>
+      <th>00060_Mean</th>
+      <th>00060_Mean_cd</th>
+    </tr>
+    <tr>
+      <th>datetime</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2012-01-01 00:00:00+00:00</th>
+      <td>01491000</td>
+      <td>8.4</td>
+      <td>A</td>
+      <td>7.7</td>
+      <td>A</td>
+      <td>205.00</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-01-01 00:00:00+00:00</th>
+      <td>01645000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>175.00</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-01-02 00:00:00+00:00</th>
+      <td>01645000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>168.00</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-01-02 00:00:00+00:00</th>
+      <td>01491000</td>
+      <td>8.5</td>
+      <td>A</td>
+      <td>7.3</td>
+      <td>A</td>
+      <td>193.00</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-01-03 00:00:00+00:00</th>
+      <td>01491000</td>
+      <td>6.0</td>
+      <td>A</td>
+      <td>4.6</td>
+      <td>A</td>
+      <td>180.00</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2012-06-28 00:00:00+00:00</th>
+      <td>01491000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>12.10</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-06-29 00:00:00+00:00</th>
+      <td>01645000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>53.10</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-06-29 00:00:00+00:00</th>
+      <td>01491000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>8.58</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-06-30 00:00:00+00:00</th>
+      <td>01491000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>7.15</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <th>2012-06-30 00:00:00+00:00</th>
+      <td>01645000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>129.00</td>
+      <td>A</td>
+    </tr>
+  </tbody>
+</table>
+<p>364 rows × 7 columns</p>
+</div></div>
 </div>
 <p>Example 4: Test for a site that is not active - returns an empty DataFrame.</p>
 <div class="nbinput docutils container">
@@ -452,17 +956,36 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[12]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> siteID = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">05212700</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> notActive = <span class="ansi-yellow-bg">nwis</span>.get_dv(sites=siteID, parameterCd=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00060</span><span class="ansi-yellow-fg">&#34;</span>, start=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">2014-01-01</span><span class="ansi-yellow-fg">&#34;</span>, end=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">2014-01-07</span><span class="ansi-yellow-fg">&#34;</span>)
-<span class="ansi-green-fg">      3</span> display(notActive[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>site_no</th>
+    </tr>
+    <tr>
+      <th>datetime</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+</div></div>
 </div>
 </section>
 </section>

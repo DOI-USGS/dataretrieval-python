@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_water_use() Examples &mdash; dataretrieval 0.1.dev1+g640e47760 documentation</title>
+  <title>USGS dataretrieval Python Package get_water_use() Examples &mdash; dataretrieval 0.1.dev1+gad478045b documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=35fa23c9"></script>
+      <script src="../_static/documentation_options.js?v=4b5feb02"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -125,7 +125,7 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g640e47760)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+gad478045b)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
 Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.3.5)
@@ -135,7 +135,7 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
@@ -143,44 +143,6 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nldi.py:7</span>
-<span class="ansi-green-fg">      6</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">7</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">geopandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">gpd</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>:
-
-<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;geopandas&#39;
-
-During handling of the above exception, another exception occurred:
-
-<span class="ansi-red-fg">ImportError</span>                               Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[2]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> nwis
-<span class="ansi-green-fg">      2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">IPython</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">display</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> display
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/__init__.py:9</span>
-<span class="ansi-green-fg">      6</span>     __version__ = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">version-unknown</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nadp</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nldi</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">     10</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nwis</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">     11</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">samples</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nldi.py:9</span>
-<span class="ansi-green-fg">      7</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">geopandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">gpd</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>:
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Install geopandas to use the NLDI module.</span><span class="ansi-yellow-fg">&#34;</span>)
-<span class="ansi-green-fg">     11</span> NLDI_API_BASE_URL = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">https://api.water.usgs.gov/nldi/linked-data</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">     12</span> _AVAILABLE_DATA_SOURCES = <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
-
-<span class="ansi-red-fg">ImportError</span>: Install geopandas to use the NLDI module.
-</pre></div></div>
 </div>
 </section>
 <section id="Basic-Usage">
@@ -209,13 +171,7 @@ During handling of the above exception, another exception occurred:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> pennsylvania = <span class="ansi-yellow-bg">nwis</span>.get_water_use(state=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">PA</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      2</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(pennsylvania[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> water use records.</span><span class="ansi-yellow-fg">&#39;</span>)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
+Retrieved 469 water use records.
 </pre></div></div>
 </div>
 </section>
@@ -236,15 +192,317 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[4]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> display(<span class="ansi-yellow-bg">pennsylvania</span>[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;pennsylvania&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>state_cd</th>
+      <th>state_name</th>
+      <th>county_cd</th>
+      <th>county_nm</th>
+      <th>year</th>
+      <th>Total Population total population of area in thousands</th>
+      <th>Public Supply population served by groundwater in thousands</th>
+      <th>Public Supply population served by surface water in thousands</th>
+      <th>Public Supply total population served in thousands</th>
+      <th>Public Supply self-supplied groundwater withdrawals fresh in Mgal/d</th>
+      <th>...</th>
+      <th>Hydroelectric Power power generated by instream use in gigawatt-hours</th>
+      <th>Hydroelectric Power power generated by offstream use in gigawatt-hours</th>
+      <th>Hydroelectric Power total power generated in gigawatt-hours</th>
+      <th>Hydroelectric Power number of instream facilities</th>
+      <th>Hydroelectric Power number of offstream facilities</th>
+      <th>Hydroelectric Power total number of facilities</th>
+      <th>Wastewater Treatment returns by public wastewater facilities in Mgal/d</th>
+      <th>Wastewater Treatment number of public wastewater facilities</th>
+      <th>Wastewater Treatment number of wastewater facilities</th>
+      <th>Wastewater Treatment reclaimed wastewater released by wastewater facilities in Mgal/d</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>1</td>
+      <td>Adams County</td>
+      <td>1985</td>
+      <td>70.000</td>
+      <td>11.300</td>
+      <td>1.860</td>
+      <td>13.160</td>
+      <td>7.85</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>2.86</td>
+      <td>18</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>1</td>
+      <td>Adams County</td>
+      <td>1990</td>
+      <td>78.270</td>
+      <td>21.920</td>
+      <td>9.520</td>
+      <td>31.440</td>
+      <td>2.44</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0</td>
+      <td>-</td>
+      <td>-</td>
+      <td>6.26</td>
+      <td>18</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>1</td>
+      <td>Adams County</td>
+      <td>1995</td>
+      <td>84.000</td>
+      <td>17.160</td>
+      <td>19.660</td>
+      <td>36.820</td>
+      <td>2.58</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3.00</td>
+      <td>4</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>1</td>
+      <td>Adams County</td>
+      <td>2000</td>
+      <td>91.290</td>
+      <td>-</td>
+      <td>-</td>
+      <td>45.928</td>
+      <td>2.48</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>1</td>
+      <td>Adams County</td>
+      <td>2005</td>
+      <td>99.749</td>
+      <td>22.997</td>
+      <td>25.019</td>
+      <td>48.016</td>
+      <td>2.01</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>464</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>133</td>
+      <td>York County</td>
+      <td>1995</td>
+      <td>362.790</td>
+      <td>27.710</td>
+      <td>199.430</td>
+      <td>227.140</td>
+      <td>3.59</td>
+      <td>...</td>
+      <td>112.58</td>
+      <td>0.00</td>
+      <td>112.58</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>32.95</td>
+      <td>9</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>465</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>133</td>
+      <td>York County</td>
+      <td>2000</td>
+      <td>381.750</td>
+      <td>-</td>
+      <td>-</td>
+      <td>285.291</td>
+      <td>3.54</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>466</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>133</td>
+      <td>York County</td>
+      <td>2005</td>
+      <td>408.801</td>
+      <td>41.850</td>
+      <td>257.985</td>
+      <td>299.835</td>
+      <td>3.18</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>467</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>133</td>
+      <td>York County</td>
+      <td>2010</td>
+      <td>434.972</td>
+      <td>62.600</td>
+      <td>218.230</td>
+      <td>280.830</td>
+      <td>4.46</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>468</th>
+      <td>42</td>
+      <td>Pennsylvania</td>
+      <td>133</td>
+      <td>York County</td>
+      <td>2015</td>
+      <td>442.867</td>
+      <td>59.710</td>
+      <td>219.304</td>
+      <td>279.014</td>
+      <td>3.56</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+  </tbody>
+</table>
+<p>469 rows × 283 columns</p>
+</div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
 <div class="nbinput docutils container">
@@ -260,12 +518,18 @@ During handling of the above exception, another exception occurred:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[5]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-bg">pennsylvania</span>[<span class="ansi-green-fg">0</span>].dtypes)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;pennsylvania&#39; is not defined
+state_cd                                                                                  int64
+state_name                                                                               object
+county_cd                                                                                 int64
+county_nm                                                                                object
+year                                                                                      int64
+                                                                                          ...
+Hydroelectric Power total number of facilities                                           object
+Wastewater Treatment returns by public wastewater facilities in Mgal/d                   object
+Wastewater Treatment number of public wastewater facilities                              object
+Wastewater Treatment number of wastewater facilities                                     object
+Wastewater Treatment reclaimed wastewater released by wastewater facilities in Mgal/d    object
+Length: 283, dtype: object
 </pre></div></div>
 </div>
 <section id="Example-2:-Retrieve-data-for-an-entire-state-for-certain-years">
@@ -281,20 +545,328 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
+<div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> ohio = <span class="ansi-yellow-bg">nwis</span>.get_water_use(years=[<span class="ansi-green-fg">2000</span>, <span class="ansi-green-fg">2005</span>, <span class="ansi-green-fg">2010</span>], state=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">OH</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      2</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(ohio[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> water use records.</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      3</span> display(ohio[<span class="ansi-green-fg">0</span>])
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
+Retrieved 264 water use records.
 </pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>state_cd</th>
+      <th>state_name</th>
+      <th>county_cd</th>
+      <th>county_nm</th>
+      <th>year</th>
+      <th>Total Population total population of area in thousands</th>
+      <th>Public Supply population served by groundwater in thousands</th>
+      <th>Public Supply population served by surface water in thousands</th>
+      <th>Public Supply total population served in thousands</th>
+      <th>Public Supply self-supplied groundwater withdrawals fresh in Mgal/d</th>
+      <th>...</th>
+      <th>Hydroelectric Power power generated by instream use in gigawatt-hours</th>
+      <th>Hydroelectric Power power generated by offstream use in gigawatt-hours</th>
+      <th>Hydroelectric Power total power generated in gigawatt-hours</th>
+      <th>Hydroelectric Power number of instream facilities</th>
+      <th>Hydroelectric Power number of offstream facilities</th>
+      <th>Hydroelectric Power total number of facilities</th>
+      <th>Wastewater Treatment returns by public wastewater facilities in Mgal/d</th>
+      <th>Wastewater Treatment number of public wastewater facilities</th>
+      <th>Wastewater Treatment number of wastewater facilities</th>
+      <th>Wastewater Treatment reclaimed wastewater released by wastewater facilities in Mgal/d</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>1</td>
+      <td>Adams County</td>
+      <td>2000</td>
+      <td>27.330</td>
+      <td>23.885</td>
+      <td>0.000</td>
+      <td>23.885</td>
+      <td>1.87</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>1</td>
+      <td>Adams County</td>
+      <td>2005</td>
+      <td>28.454</td>
+      <td>25.009</td>
+      <td>0.000</td>
+      <td>25.009</td>
+      <td>2.10</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>1</td>
+      <td>Adams County</td>
+      <td>2010</td>
+      <td>28.550</td>
+      <td>27.710</td>
+      <td>0.000</td>
+      <td>27.710</td>
+      <td>2.22</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>3</td>
+      <td>Allen County</td>
+      <td>2000</td>
+      <td>108.473</td>
+      <td>13.929</td>
+      <td>78.550</td>
+      <td>92.479</td>
+      <td>1.42</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>3</td>
+      <td>Allen County</td>
+      <td>2005</td>
+      <td>106.234</td>
+      <td>17.421</td>
+      <td>78.550</td>
+      <td>95.971</td>
+      <td>1.14</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>259</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>173</td>
+      <td>Wood County</td>
+      <td>2005</td>
+      <td>123.929</td>
+      <td>5.726</td>
+      <td>73.596</td>
+      <td>79.322</td>
+      <td>0.36</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>260</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>173</td>
+      <td>Wood County</td>
+      <td>2010</td>
+      <td>125.488</td>
+      <td>6.738</td>
+      <td>77.336</td>
+      <td>84.074</td>
+      <td>0.34</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>261</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>175</td>
+      <td>Wyandot County</td>
+      <td>2000</td>
+      <td>22.908</td>
+      <td>5.499</td>
+      <td>6.600</td>
+      <td>12.099</td>
+      <td>0.71</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>262</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>175</td>
+      <td>Wyandot County</td>
+      <td>2005</td>
+      <td>22.813</td>
+      <td>5.629</td>
+      <td>6.600</td>
+      <td>12.229</td>
+      <td>0.73</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>263</th>
+      <td>39</td>
+      <td>Ohio</td>
+      <td>175</td>
+      <td>Wyandot County</td>
+      <td>2010</td>
+      <td>22.615</td>
+      <td>5.629</td>
+      <td>6.600</td>
+      <td>12.229</td>
+      <td>0.60</td>
+      <td>...</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+  </tbody>
+</table>
+<p>264 rows × 283 columns</p>
+</div></div>
 </div>
 </section>
 <section id="Example-3:-Retrieve-two-specific-water-use-categories-for-an-entire-state">
@@ -310,21 +882,328 @@ During handling of the above exception, another exception occurred:
 <br/></pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
+<div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> <span style="color: rgb(95,135,135)"># Get water use data for livestock (LI) and irrigation (IT)</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> kansas = <span class="ansi-yellow-bg">nwis</span>.get_water_use(state=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">KS</span><span class="ansi-yellow-fg">&#39;</span>, categories=[<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">IT</span><span class="ansi-yellow-fg">&#39;</span>, <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">LI</span><span class="ansi-yellow-fg">&#39;</span>])
-<span class="ansi-green-fg">      3</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#39;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(kansas[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> water use records.</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">      4</span> display(kansas[<span class="ansi-green-fg">0</span>])
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
+Retrieved 735 water use records.
 </pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>state_cd</th>
+      <th>state_name</th>
+      <th>county_cd</th>
+      <th>county_nm</th>
+      <th>year</th>
+      <th>Livestock self-supplied groundwater withdrawals fresh in Mgal/d</th>
+      <th>Livestock self-supplied surface-water withdrawals fresh in Mgal/d</th>
+      <th>Livestock total self-supplied withdrawals fresh in Mgal/d</th>
+      <th>Livestock consumptive use fresh in Mgal/d</th>
+      <th>Irrigation Total self-supplied groundwater withdrawals fresh in Mgal/d</th>
+      <th>...</th>
+      <th>Irrigation Total total self-supplied withdrawals in Mgal/d</th>
+      <th>Irrigation Total consumptive use fresh in Mgal/d</th>
+      <th>Irrigation Total consumptive use saline in Mgal/d</th>
+      <th>Irrigation Total total consumptive use in Mgal/d</th>
+      <th>Irrigation Total conveyance loss in Mgal/d</th>
+      <th>Irrigation Total sprinkler irrigation in thousand acres</th>
+      <th>Irrigation Total microirrigation in thousand acres</th>
+      <th>Irrigation Total surface irrigation in thousand acres</th>
+      <th>Irrigation Total total irrigation in thousand acres</th>
+      <th>Irrigation Total reclaimed wastewater in Mgal/d</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>1</td>
+      <td>Allen County</td>
+      <td>1985</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>-</td>
+      <td>1.26</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.10</td>
+      <td>0.20</td>
+      <td>-</td>
+      <td>1.00</td>
+      <td>-</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>1</td>
+      <td>Allen County</td>
+      <td>1990</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>-</td>
+      <td>0.17</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.01</td>
+      <td>0.00</td>
+      <td>-</td>
+      <td>0.78</td>
+      <td>-</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>1</td>
+      <td>Allen County</td>
+      <td>1995</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.03</td>
+      <td>0.03</td>
+      <td>0.00</td>
+      <td>0.03</td>
+      <td>0.00</td>
+      <td>0.16</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.16</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>1</td>
+      <td>Allen County</td>
+      <td>2000</td>
+      <td>0.00</td>
+      <td>0.49</td>
+      <td>0.49</td>
+      <td>-</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.26</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.43</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.43</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>1</td>
+      <td>Allen County</td>
+      <td>2005</td>
+      <td>0.00</td>
+      <td>0.56</td>
+      <td>0.56</td>
+      <td>-</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.08</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.56</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.56</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>730</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>209</td>
+      <td>Wyandotte County</td>
+      <td>1995</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.10</td>
+      <td>0.10</td>
+      <td>0.00</td>
+      <td>0.10</td>
+      <td>0.00</td>
+      <td>0.07</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.07</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>731</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>209</td>
+      <td>Wyandotte County</td>
+      <td>2000</td>
+      <td>0.00</td>
+      <td>0.05</td>
+      <td>0.05</td>
+      <td>-</td>
+      <td>0.10</td>
+      <td>...</td>
+      <td>0.27</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.24</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.24</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>732</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>209</td>
+      <td>Wyandotte County</td>
+      <td>2005</td>
+      <td>0.00</td>
+      <td>0.03</td>
+      <td>0.03</td>
+      <td>-</td>
+      <td>0.15</td>
+      <td>...</td>
+      <td>0.39</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.60</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.60</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>733</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>209</td>
+      <td>Wyandotte County</td>
+      <td>2010</td>
+      <td>0.00</td>
+      <td>0.03</td>
+      <td>0.03</td>
+      <td>-</td>
+      <td>0.10</td>
+      <td>...</td>
+      <td>0.26</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.62</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.62</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>734</th>
+      <td>20</td>
+      <td>Kansas</td>
+      <td>209</td>
+      <td>Wyandotte County</td>
+      <td>2015</td>
+      <td>0.00</td>
+      <td>0.02</td>
+      <td>0.02</td>
+      <td>-</td>
+      <td>0.13</td>
+      <td>...</td>
+      <td>0.26</td>
+      <td>0.17</td>
+      <td>-</td>
+      <td>0.17</td>
+      <td>-</td>
+      <td>0.82</td>
+      <td>0.00</td>
+      <td>0.09</td>
+      <td>0.91</td>
+      <td>0.00</td>
+    </tr>
+  </tbody>
+</table>
+<p>735 rows × 27 columns</p>
+</div></div>
 </div>
 </section>
 </section>

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Python Equivalents to R Vignette Examples &mdash; dataretrieval 0.1.dev1+g640e47760 documentation</title>
+  <title>Python Equivalents to R Vignette Examples &mdash; dataretrieval 0.1.dev1+gad478045b documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=35fa23c9"></script>
+      <script src="../_static/documentation_options.js?v=4b5feb02"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
              
   <section id="Python-Equivalents-to-R-Vignette-Examples">
 <h1>Python Equivalents to R Vignette Examples<a class="headerlink" href="#Python-Equivalents-to-R-Vignette-Examples" title="Link to this heading"></a></h1>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
@@ -102,48 +102,9 @@
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nldi.py:7</span>
-<span class="ansi-green-fg">      6</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">7</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">geopandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">gpd</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>:
-
-<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;geopandas&#39;
-
-During handling of the above exception, another exception occurred:
-
-<span class="ansi-red-fg">ImportError</span>                               Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[1]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> nwis
-<span class="ansi-green-fg">      2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> waterdata
-<span class="ansi-green-fg">      3</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> wqp
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/__init__.py:9</span>
-<span class="ansi-green-fg">      6</span>     __version__ = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">version-unknown</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nadp</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nldi</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">     10</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">nwis</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-<span class="ansi-green-fg">     11</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">samples</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> *
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nldi.py:9</span>
-<span class="ansi-green-fg">      7</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">geopandas</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">gpd</span>
-<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>:
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Install geopandas to use the NLDI module.</span><span class="ansi-yellow-fg">&#34;</span>)
-<span class="ansi-green-fg">     11</span> NLDI_API_BASE_URL = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">https://api.water.usgs.gov/nldi/linked-data</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">     12</span> _AVAILABLE_DATA_SOURCES = <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
-
-<span class="ansi-red-fg">ImportError</span>: Install geopandas to use the NLDI module.
-</pre></div></div>
-</div>
 <p>The dataRetrieval package was created as a python equivalent to the R dataRetrieval tool.</p>
 <p>The following shows python equivalents for methods outlined in the R dataRetrieval Vignette with the equivalent R code in comments</p>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
@@ -182,24 +143,7 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[2]</span><span class="ansi-green-fg">, line 22</span>
-<span class="ansi-green-fg">     20</span> <span style="color: rgb(95,135,135)"># Choptank River near Greensboro, MD</span>
-<span class="ansi-green-fg">     21</span> siteNumber = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">01491000</span><span class="ansi-yellow-fg">&#39;</span>
-<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">22</span> chop_tank_info, md = <span class="ansi-yellow-bg">nwis</span>.get_info(sites=siteNumber)
-<span class="ansi-green-fg">     23</span> parameterCd = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">00060</span><span class="ansi-yellow-fg">&#39;</span>
-<span class="ansi-green-fg">     25</span> <span style="color: rgb(95,135,135)"># raw daily data</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
@@ -213,26 +157,7 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 7</span>
-<span class="ansi-green-fg">      1</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">      2</span> <span class="ansi-yellow-fg">{r getSite, echo=TRUE, eval=FALSE}</span>
-<span class="ansi-green-fg">      3</span> <span class="ansi-yellow-fg">siteNumbers &lt;- c(&#34;01491000&#34;,&#34;01645000&#34;)</span>
-<span class="ansi-green-fg">      4</span> <span class="ansi-yellow-fg">siteINFO &lt;- readNWISsite(siteNumbers)</span>
-<span class="ansi-green-fg">      5</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">      6</span> siteNumbers = [<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">01491000</span><span class="ansi-yellow-fg">&#34;</span>,<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">01645000</span><span class="ansi-yellow-fg">&#34;</span>]
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">7</span> siteINFO, md = <span class="ansi-yellow-bg">nwis</span>.get_iv(sites=siteNumbers)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
@@ -247,26 +172,7 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[4]</span><span class="ansi-green-fg">, line 8</span>
-<span class="ansi-green-fg">      1</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">      2</span> <span class="ansi-yellow-fg"># Continuing from the previous example:</span>
-<span class="ansi-green-fg">      3</span> <span class="ansi-yellow-fg"># This pulls out just the daily, mean data:</span>
-<span class="ansi-green-fg">      4</span> <span class="ansi-yellow-fg">dailyDataAvailable &lt;- whatNWISdata(siteNumbers,</span>
-<span class="ansi-green-fg">      5</span> <span class="ansi-yellow-fg">                    service=&#34;dv&#34;, statCd=&#34;00003&#34;)</span>
-<span class="ansi-green-fg">      6</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">8</span> dailyDataAvailable, md = <span class="ansi-yellow-bg">nwis</span>.get_dv(sites=siteNumbers, statCd=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00003</span><span class="ansi-yellow-fg">&#34;</span>)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
@@ -280,25 +186,7 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[5]</span><span class="ansi-green-fg">, line 7</span>
-<span class="ansi-green-fg">      1</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">      2</span> <span class="ansi-yellow-fg"># Using defaults:</span>
-<span class="ansi-green-fg">      3</span> <span class="ansi-yellow-fg">parameterCd &lt;- &#34;00618&#34; </span>
-<span class="ansi-green-fg">      4</span> <span class="ansi-yellow-fg">parameterINFO &lt;- readNWISpCode(parameterCd)</span>
-<span class="ansi-green-fg">      5</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">7</span> pCode, md = <span class="ansi-yellow-bg">nwis</span>.get_pmcodes(parameterCd=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00618</span><span class="ansi-yellow-fg">&#34;</span>)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
@@ -322,22 +210,7 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 17</span>
-<span class="ansi-green-fg">     14</span> startDate = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">2009-10-01</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">     15</span> endDate = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">2012-09-30</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">17</span> discharge, md = <span class="ansi-yellow-bg">nwis</span>.get_dv(sites=siteNumber, parameterCd=parameterCd, start=startDate, end=endDate)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
@@ -362,23 +235,7 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 17</span>
-<span class="ansi-green-fg">     14</span> startDate = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">2012-01-01</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">     15</span> endDate = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">2012-05-01</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">17</span> temperatureAndFlow, md = <span class="ansi-yellow-bg">nwis</span>.get_dv(sites=siteNumber, parameterCd=parameterCd,
-<span class="ansi-green-fg">     18</span>                                      start=startDate, end=endDate, statCd=statCd)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
@@ -398,23 +255,7 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[8]</span><span class="ansi-green-fg">, line 12</span>
-<span class="ansi-green-fg">     10</span> startDate = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">2012-05-12</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">     11</span> endDate = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">2012-05-13</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">12</span> dischargeUnit, md = <span class="ansi-yellow-bg">nwis</span>.get_iv(sites=siteNumber, parameterCd=parameterCd,
-<span class="ansi-green-fg">     13</span>                             start=startDate, end=endDate)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
@@ -435,22 +276,6 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[9]</span><span class="ansi-green-fg">, line 13</span>
-<span class="ansi-green-fg">     11</span> startDate = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">1985-10-01</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">     12</span> endDate = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">2012-09-30</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">13</span> dfLong, md = <span class="ansi-yellow-bg">waterdata</span>.get_samples(monitoringLocationIdentifier=<span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">USGS-</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>siteNumber<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">&#34;</span>, usgsPCode=parameterCd,
-<span class="ansi-green-fg">     14</span>                                       activityStartDateLower=startDate, activityStartDateUpper=endDate)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;waterdata&#39; is not defined
-</pre></div></div>
-</div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
@@ -467,22 +292,13 @@ During handling of the above exception, another exception occurred:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
+<div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[10]</span><span class="ansi-green-fg">, line 6</span>
-<span class="ansi-green-fg">      1</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">      2</span> <span class="ansi-yellow-fg">siteNumber &lt;- &#34;434400121275801&#34;</span>
-<span class="ansi-green-fg">      3</span> <span class="ansi-yellow-fg">groundWater &lt;- readNWISgwl(siteNumber)</span>
-<span class="ansi-green-fg">      4</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">      5</span> siteNumber = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">434400121275801</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">6</span> groundWater, md = <span class="ansi-yellow-bg">nwis</span>.get_gwlevels(sites=siteNumber)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
+/home/runner/.local/lib/python3.12/site-packages/dataretrieval/utils.py:90: UserWarning: Warning: 567 incomplete dates found, consider setting datetime_index to False.
+  warnings.warn(
 </pre></div></div>
 </div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
@@ -495,25 +311,7 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[11]</span><span class="ansi-green-fg">, line 6</span>
-<span class="ansi-green-fg">      1</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">      2</span> <span class="ansi-yellow-fg">siteNumber &lt;- &#39;01594440&#39;</span>
-<span class="ansi-green-fg">      3</span> <span class="ansi-yellow-fg">peakData &lt;- readNWISpeak(siteNumber)</span>
-<span class="ansi-green-fg">      4</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">      5</span> siteNumber = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">01594440</span><span class="ansi-yellow-fg">&#39;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">6</span> peakData, md = <span class="ansi-yellow-bg">nwis</span>.get_discharge_peaks(sites=siteNumber)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
@@ -525,24 +323,7 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[12]</span><span class="ansi-green-fg">, line 5</span>
-<span class="ansi-green-fg">      1</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">      2</span> <span class="ansi-yellow-fg">ratingData &lt;- readNWISrating(siteNumber, &#34;base&#34;)</span>
-<span class="ansi-green-fg">      3</span> <span class="ansi-yellow-fg">attr(ratingData, &#34;RATING&#34;)</span>
-<span class="ansi-green-fg">      4</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">5</span> ratings_data, md = <span class="ansi-yellow-bg">nwis</span>.get_ratings(site=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">01594440</span><span class="ansi-yellow-fg">&#39;</span>, file_type=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">base</span><span class="ansi-yellow-fg">&#34;</span>)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
@@ -552,22 +333,7 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[13]</span><span class="ansi-green-fg">, line 3</span>
-<span class="ansi-green-fg">      1</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;surfaceData &lt;- readNWISmeas(siteNumber)&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">      2</span> siteNumber = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">01594440</span><span class="ansi-yellow-fg">&#39;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">3</span> surface_data, md = <span class="ansi-yellow-bg">nwis</span>.get_discharge_measurements(sites=siteNumber)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
@@ -584,26 +350,7 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[14]</span><span class="ansi-green-fg">, line 8</span>
-<span class="ansi-green-fg">      1</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">      2</span> <span class="ansi-yellow-fg">allegheny &lt;- readNWISuse(stateCd = &#34;Pennsylvania&#34;,</span>
-<span class="ansi-green-fg">      3</span> <span class="ansi-yellow-fg">                         countyCd = &#34;Allegheny&#34;)</span>
-<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">      6</span> <span class="ansi-yellow-fg">                        transform = TRUE)</span>
-<span class="ansi-green-fg">      7</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">8</span> allegheny, md = <span class="ansi-yellow-bg">nwis</span>.get_water_use(state=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">PA</span><span class="ansi-yellow-fg">&#34;</span>, counties=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">003</span><span class="ansi-yellow-fg">&#34;</span>)
-<span class="ansi-green-fg">     10</span> national, md = nwis.get_water_use()
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
@@ -615,24 +362,6 @@ During handling of the above exception, another exception occurred:
 <span class="n">discharge_stats</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;02319394&#39;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="n">statReportType</span><span class="o">=</span><span class="s1">&#39;annual&#39;</span><span class="p">,</span> <span class="n">statTypeCd</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[15]</span><span class="ansi-green-fg">, line 6</span>
-<span class="ansi-green-fg">      1</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">      2</span> <span class="ansi-yellow-fg">discharge_stats &lt;- readNWISstat(siteNumbers=c(&#34;02319394&#34;),</span>
-<span class="ansi-green-fg">      3</span> <span class="ansi-yellow-fg">                   parameterCd=c(&#34;00060&#34;),</span>
-<span class="ansi-green-fg">      4</span> <span class="ansi-yellow-fg">                   statReportType=&#34;annual&#34;) </span>
-<span class="ansi-green-fg">      5</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">6</span> discharge_stats, md = <span class="ansi-yellow-bg">nwis</span>.get_stats(sites=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">02319394</span><span class="ansi-yellow-fg">&#39;</span>, parameterCd=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00060</span><span class="ansi-yellow-fg">&#34;</span>, statReportType=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">annual</span><span class="ansi-yellow-fg">&#39;</span>, statTypeCd=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">all</span><span class="ansi-yellow-fg">&#39;</span>)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
-</pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
@@ -701,7 +430,7 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
@@ -711,21 +440,7 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[21]</span><span class="ansi-green-fg">, line 3</span>
-<span class="ansi-green-fg">      1</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;site &lt;- whatWQPsamples(siteid=&#34;USGS-01594440&#34;)&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">3</span> site, md = <span class="ansi-yellow-bg">wqp</span>.what_sites(siteid=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">USGS-01594440</span><span class="ansi-yellow-fg">&#34;</span>)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;wqp&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
@@ -737,24 +452,6 @@ During handling of the above exception, another exception occurred:
 <span class="n">sites</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">wqp</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">countycode</span><span class="o">=</span><span class="s2">&quot;US:55:025&quot;</span><span class="p">,</span><span class="n">siteType</span><span class="o">=</span><span class="n">streamType</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[22]</span><span class="ansi-green-fg">, line 6</span>
-<span class="ansi-green-fg">      1</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">      2</span> <span class="ansi-yellow-fg">type &lt;- &#34;Stream&#34;</span>
-<span class="ansi-green-fg">      3</span> <span class="ansi-yellow-fg">sites &lt;- whatWQPmetrics(countycode=&#34;US:55:025&#34;,siteType=type)</span>
-<span class="ansi-green-fg">      4</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
-<span class="ansi-green-fg">      5</span> streamType = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Stream</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">6</span> sites, md = <span class="ansi-yellow-bg">wqp</span>.what_sites(countycode=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">US:55:025</span><span class="ansi-yellow-fg">&#34;</span>,siteType=streamType)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;wqp&#39; is not defined
-</pre></div></div>
 </div>
 </section>
 <section id="Embedded-Metadata">
