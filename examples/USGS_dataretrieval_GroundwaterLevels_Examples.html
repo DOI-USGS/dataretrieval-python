@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_gwlevels() Examples &mdash; dataretrieval 0.1.dev1+gad478045b documentation</title>
+  <title>USGS dataretrieval Python Package get_gwlevels() Examples &mdash; dataretrieval 0.1.dev1+g8f37748c3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=4b5feb02"></script>
+      <script src="../_static/documentation_options.js?v=ab673ec6"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -126,7 +126,7 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+gad478045b)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g8f37748c3)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
 Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.3.5)
@@ -915,92 +915,309 @@ Retrieved 933 data values.
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
+<div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">ParserError</span>                               Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[10]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> site_ids = [<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">434400121275801</span><span class="ansi-yellow-fg">&#34;</span>, <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">375907091432201</span><span class="ansi-yellow-fg">&#34;</span>]
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> data2 = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_gwlevels</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">site_ids</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">multi_index</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">False</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">      3</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#34;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(data2[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> data values.</span><span class="ansi-yellow-fg">&#34;</span>)
-<span class="ansi-green-fg">      4</span> display(data2[<span class="ansi-green-fg">0</span>])
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:343</span>, in <span class="ansi-cyan-fg">get_gwlevels</span><span class="ansi-blue-fg">(sites, start, end, multi_index, datetime_index, ssl_check, **kwargs)</span>
-<span class="ansi-green-fg">    339</span> kwargs[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">multi_index</span><span class="ansi-yellow-fg">&#34;</span>] = multi_index
-<span class="ansi-green-fg">    341</span> response = query_waterdata(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">gwlevels</span><span class="ansi-yellow-fg">&#34;</span>, <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">rdb</span><span class="ansi-yellow-fg">&#34;</span>, ssl_check=ssl_check, **kwargs)
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">343</span> df = <span class="ansi-yellow-bg">_read_rdb</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">response</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">text</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">    345</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
-<span class="ansi-green-fg">    346</span>     df = format_datetime(df, <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">lev_dt</span><span class="ansi-yellow-fg">&#34;</span>, <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">lev_tm</span><span class="ansi-yellow-fg">&#34;</span>, <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">lev_tz_cd</span><span class="ansi-yellow-fg">&#34;</span>)
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:1364</span>, in <span class="ansi-cyan-fg">_read_rdb</span><span class="ansi-blue-fg">(rdb)</span>
-<span class="ansi-green-fg">   1355</span> fields = [field.replace(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">,</span><span class="ansi-yellow-fg">&#34;</span>, <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">&#34;</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> field <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> fields]
-<span class="ansi-green-fg">   1356</span> dtypes = {
-<span class="ansi-green-fg">   1357</span>     <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">site_no</span><span class="ansi-yellow-fg">&#34;</span>: <span style="color: rgb(0,135,0)">str</span>,
-<span class="ansi-green-fg">   1358</span>     <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">dec_long_va</span><span class="ansi-yellow-fg">&#34;</span>: <span style="color: rgb(0,135,0)">float</span>,
-<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">   1361</span>     <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">parameter_cd</span><span class="ansi-yellow-fg">&#34;</span>: <span style="color: rgb(0,135,0)">str</span>,
-<span class="ansi-green-fg">   1362</span> }
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1364</span> df = <span class="ansi-yellow-bg">pd</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">read_csv</span><span class="ansi-yellow-bg">(</span>
-<span class="ansi-green-fg">   1365</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">StringIO</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">rdb</span><span class="ansi-yellow-bg">)</span><span class="ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">   1366</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">delimiter</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(175,95,0)">\t</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">   1367</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">skiprows</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">count</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">+</span><span class="ansi-yellow-bg"> </span><span class="ansi-green-fg ansi-yellow-bg">2</span><span class="ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">   1368</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">names</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">fields</span><span class="ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">   1369</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">na_values</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">NaN</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">   1370</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">dtype</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">dtypes</span><span class="ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">   1371</span> <span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   1373</span> df = format_response(df)
-<span class="ansi-green-fg">   1374</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> df
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/io/parsers/readers.py:1026</span>, in <span class="ansi-cyan-fg">read_csv</span><span class="ansi-blue-fg">(filepath_or_buffer, sep, delimiter, header, names, index_col, usecols, dtype, engine, converters, true_values, false_values, skipinitialspace, skiprows, skipfooter, nrows, na_values, keep_default_na, na_filter, verbose, skip_blank_lines, parse_dates, infer_datetime_format, keep_date_col, date_parser, date_format, dayfirst, cache_dates, iterator, chunksize, compression, thousands, decimal, lineterminator, quotechar, quoting, doublequote, escapechar, comment, encoding, encoding_errors, dialect, on_bad_lines, delim_whitespace, low_memory, memory_map, float_precision, storage_options, dtype_backend)</span>
-<span class="ansi-green-fg">   1013</span> kwds_defaults = _refine_defaults_read(
-<span class="ansi-green-fg">   1014</span>     dialect,
-<span class="ansi-green-fg">   1015</span>     delimiter,
-<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">   1022</span>     dtype_backend=dtype_backend,
-<span class="ansi-green-fg">   1023</span> )
-<span class="ansi-green-fg">   1024</span> kwds.update(kwds_defaults)
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1026</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">_read</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">filepath_or_buffer</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">kwds</span><span class="ansi-yellow-bg">)</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/io/parsers/readers.py:626</span>, in <span class="ansi-cyan-fg">_read</span><span class="ansi-blue-fg">(filepath_or_buffer, kwds)</span>
-<span class="ansi-green-fg">    623</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> parser
-<span class="ansi-green-fg">    625</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> parser:
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">626</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">parser</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">read</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">nrows</span><span class="ansi-yellow-bg">)</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/io/parsers/readers.py:1923</span>, in <span class="ansi-cyan-fg">TextFileReader.read</span><span class="ansi-blue-fg">(self, nrows)</span>
-<span class="ansi-green-fg">   1916</span> nrows = validate_integer(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">nrows</span><span class="ansi-yellow-fg">&#34;</span>, nrows)
-<span class="ansi-green-fg">   1917</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">   1918</span>     <span style="color: rgb(95,135,135)"># error: &#34;ParserBase&#34; has no attribute &#34;read&#34;</span>
-<span class="ansi-green-fg">   1919</span>     (
-<span class="ansi-green-fg">   1920</span>         index,
-<span class="ansi-green-fg">   1921</span>         columns,
-<span class="ansi-green-fg">   1922</span>         col_dict,
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1923</span>     ) = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">read</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">  </span><span class="ansi-yellow-bg" style="color: rgb(95,135,135)"># type: ignore[attr-defined]</span>
-<span class="ansi-green-fg">   1924</span> <span class="ansi-yellow-bg">        </span><span class="ansi-yellow-bg">nrows</span>
-<span class="ansi-green-fg">   1925</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   1926</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">Exception</span>:
-<span class="ansi-green-fg">   1927</span>     <span style="color: rgb(0,135,0)">self</span>.close()
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/io/parsers/c_parser_wrapper.py:234</span>, in <span class="ansi-cyan-fg">CParserWrapper.read</span><span class="ansi-blue-fg">(self, nrows)</span>
-<span class="ansi-green-fg">    232</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">    233</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.low_memory:
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">234</span>         chunks = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_reader</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">read_low_memory</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">nrows</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">    235</span>         <span style="color: rgb(95,135,135)"># destructive to chunks</span>
-<span class="ansi-green-fg">    236</span>         data = _concatenate_chunks(chunks)
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/parsers.pyx:838</span>, in <span class="ansi-cyan-fg">pandas._libs.parsers.TextReader.read_low_memory</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/parsers.pyx:905</span>, in <span class="ansi-cyan-fg">pandas._libs.parsers.TextReader._read_rows</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/parsers.pyx:874</span>, in <span class="ansi-cyan-fg">pandas._libs.parsers.TextReader._tokenize_rows</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/parsers.pyx:891</span>, in <span class="ansi-cyan-fg">pandas._libs.parsers.TextReader._check_tokenize_status</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/parsers.pyx:2061</span>, in <span class="ansi-cyan-fg">pandas._libs.parsers.raise_parser_error</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-red-fg">ParserError</span>: Error tokenizing data. C error: Expected 1 fields in line 291, saw 4
-
+Retrieved 933 data values.
 </pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/runner/.local/lib/python3.12/site-packages/dataretrieval/utils.py:90: UserWarning: Warning: 621 incomplete dates found, consider setting datetime_index to False.
+  warnings.warn(
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>agency_cd</th>
+      <th>site_no</th>
+      <th>site_tp_cd</th>
+      <th>lev_dt</th>
+      <th>lev_tm</th>
+      <th>lev_tz_cd</th>
+      <th>lev_va</th>
+      <th>sl_lev_va</th>
+      <th>sl_datum_cd</th>
+      <th>lev_status_cd</th>
+      <th>lev_agency_cd</th>
+      <th>lev_dt_acy_cd</th>
+      <th>lev_acy_cd</th>
+      <th>lev_src_cd</th>
+      <th>lev_meth_cd</th>
+      <th>lev_age_cd</th>
+      <th>parameter_cd</th>
+    </tr>
+    <tr>
+      <th>datetime</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1945-10-12 22:35:00+00:00</th>
+      <td>USGS</td>
+      <td>434400121275801</td>
+      <td>GW</td>
+      <td>1945-10-12</td>
+      <td>22:35</td>
+      <td>+0000</td>
+      <td>NaN</td>
+      <td>4192.65</td>
+      <td>NGVD29</td>
+      <td>1</td>
+      <td>USGS</td>
+      <td>m</td>
+      <td>2</td>
+      <td>S</td>
+      <td>O</td>
+      <td>A</td>
+      <td>62610</td>
+    </tr>
+    <tr>
+      <th>1945-10-12 22:35:00+00:00</th>
+      <td>USGS</td>
+      <td>434400121275801</td>
+      <td>GW</td>
+      <td>1945-10-12</td>
+      <td>22:35</td>
+      <td>+0000</td>
+      <td>NaN</td>
+      <td>4196.67</td>
+      <td>NAVD88</td>
+      <td>1</td>
+      <td>USGS</td>
+      <td>m</td>
+      <td>2</td>
+      <td>S</td>
+      <td>O</td>
+      <td>A</td>
+      <td>62611</td>
+    </tr>
+    <tr>
+      <th>1945-10-12 22:35:00+00:00</th>
+      <td>USGS</td>
+      <td>434400121275801</td>
+      <td>GW</td>
+      <td>1945-10-12</td>
+      <td>22:35</td>
+      <td>+0000</td>
+      <td>27.35</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>USGS</td>
+      <td>m</td>
+      <td>2</td>
+      <td>S</td>
+      <td>O</td>
+      <td>A</td>
+      <td>72019</td>
+    </tr>
+    <tr>
+      <th>1999-06-04 18:00:00+00:00</th>
+      <td>USGS</td>
+      <td>434400121275801</td>
+      <td>GW</td>
+      <td>1999-06-04</td>
+      <td>18:00</td>
+      <td>+0000</td>
+      <td>NaN</td>
+      <td>4203.22</td>
+      <td>NGVD29</td>
+      <td>1</td>
+      <td>USGS</td>
+      <td>m</td>
+      <td>2</td>
+      <td>S</td>
+      <td>S</td>
+      <td>A</td>
+      <td>62610</td>
+    </tr>
+    <tr>
+      <th>1999-06-04 18:00:00+00:00</th>
+      <td>USGS</td>
+      <td>434400121275801</td>
+      <td>GW</td>
+      <td>1999-06-04</td>
+      <td>18:00</td>
+      <td>+0000</td>
+      <td>NaN</td>
+      <td>4207.24</td>
+      <td>NAVD88</td>
+      <td>1</td>
+      <td>USGS</td>
+      <td>m</td>
+      <td>2</td>
+      <td>S</td>
+      <td>S</td>
+      <td>A</td>
+      <td>62611</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>NaT</th>
+      <td>USGS</td>
+      <td>434400121275801</td>
+      <td>GW</td>
+      <td>1999-03-19</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4204.97</td>
+      <td>NAVD88</td>
+      <td>1</td>
+      <td>NaN</td>
+      <td>D</td>
+      <td>2</td>
+      <td>NaN</td>
+      <td>S</td>
+      <td>A</td>
+      <td>62611</td>
+    </tr>
+    <tr>
+      <th>NaT</th>
+      <td>USGS</td>
+      <td>434400121275801</td>
+      <td>GW</td>
+      <td>1999-03-19</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>19.05</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>NaN</td>
+      <td>D</td>
+      <td>2</td>
+      <td>NaN</td>
+      <td>S</td>
+      <td>A</td>
+      <td>72019</td>
+    </tr>
+    <tr>
+      <th>NaT</th>
+      <td>USGS</td>
+      <td>434400121275801</td>
+      <td>GW</td>
+      <td>1999-05-14</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4201.99</td>
+      <td>NGVD29</td>
+      <td>1</td>
+      <td>USGS</td>
+      <td>D</td>
+      <td>2</td>
+      <td>S</td>
+      <td>S</td>
+      <td>A</td>
+      <td>62610</td>
+    </tr>
+    <tr>
+      <th>NaT</th>
+      <td>USGS</td>
+      <td>434400121275801</td>
+      <td>GW</td>
+      <td>1999-05-14</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4206.01</td>
+      <td>NAVD88</td>
+      <td>1</td>
+      <td>USGS</td>
+      <td>D</td>
+      <td>2</td>
+      <td>S</td>
+      <td>S</td>
+      <td>A</td>
+      <td>62611</td>
+    </tr>
+    <tr>
+      <th>NaT</th>
+      <td>USGS</td>
+      <td>434400121275801</td>
+      <td>GW</td>
+      <td>1999-05-14</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18.01</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>USGS</td>
+      <td>D</td>
+      <td>2</td>
+      <td>S</td>
+      <td>S</td>
+      <td>A</td>
+      <td>72019</td>
+    </tr>
+  </tbody>
+</table>
+<p>933 rows × 17 columns</p>
+</div></div>
 </div>
 <p>Some groundwater level data have dates that include only a year or a month and year, but no day.</p>
 <p>Example 3: Retrieve groundwater level data that have dates without a day.</p>
