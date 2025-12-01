@@ -668,32 +668,40 @@ def _arrange_cols(
         return df.rename(columns={"id": output_id})
 
 
-def _cleanup_cols(df: pd.DataFrame, service: str = "daily") -> pd.DataFrame:
+def _type_cols(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Cleans and standardizes columns in a pandas DataFrame for water data endpoints.
+    Casts columns into appropriate types.
 
     Parameters
     ----------
     df : pd.DataFrame
         The input DataFrame containing water data.
-    service : str, optional
-        The type of water data service (default is "daily").
 
     Returns
     -------
     pd.DataFrame
         The cleaned DataFrame with standardized columns.
 
-    Notes
-    -----
-    - If the 'time' column exists and service is "daily", it is converted to date objects.
-    - The 'value' and 'contributing_drainage_area' columns are coerced to numeric types.
     """
-    if "time" in df.columns and service == "daily":
-        df["time"] = pd.to_datetime(df["time"]).dt.date
-    for col in ["value", "contributing_drainage_area"]:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
+    cols = set(df.columns)
+    numerical_cols = ["value", "contributing_drainage_area"]
+    time_cols = ["time", "datetime", "last_modified"]
+    categorical_cols = [
+        "approval_status",
+        "monitoring_location_id",
+        "parameter_code",
+        "unit_of_measure",
+        ]
+
+    for col in cols.intersection(time_cols):
+        df[col] = pd.to_datetime(df[col], errors="coerce")
+
+    for col in cols.intersection(numerical_cols):
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    for col in cols.intersection(categorical_cols):
+        df[col] = df[col].astype("category")
+
     return df
 
 
@@ -749,8 +757,10 @@ def get_ogc_data(
     )
     # Manage some aspects of the returned dataset
     return_list = _deal_with_empty(return_list, properties, service)
+
     if convert_type:
-        return_list = _cleanup_cols(return_list, service=service)
+        return_list = _type_cols(return_list)
+
     return_list = _arrange_cols(return_list, properties, output_id)
     # Create metadata object from response
     metadata = BaseMetadata(response)
