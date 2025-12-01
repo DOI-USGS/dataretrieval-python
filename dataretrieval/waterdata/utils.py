@@ -680,7 +680,7 @@ def _type_cols(df: pd.DataFrame) -> pd.DataFrame:
     Returns
     -------
     pd.DataFrame
-        The cleaned DataFrame with standardized columns.
+        The DataFrame with columns cast to appropriate types.
 
     """
     cols = set(df.columns)
