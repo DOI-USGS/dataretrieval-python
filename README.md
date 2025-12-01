@@ -66,7 +66,7 @@ location for water year 2025, where a "/" between two dates in the "time"
 input argument indicates a desired date range:
 
 ```python
-import dataretrieval.waterdata as waterdata
+from dataretrieval import waterdata
 
 # Get daily streamflow data (returns DataFrame and metadata)
 df, metadata = waterdata.get_daily(
@@ -130,7 +130,7 @@ logging.basicConfig(filename='waterdata.log', level=logging.INFO)
 The `nwis` module accesses legacy NWIS Water Services:
 
 ```python
-import dataretrieval.nwis as nwis
+from dataretrieval import nwis
 
 # Get site information
 info, metadata = nwis.get_info(sites='01646500')
@@ -153,7 +153,7 @@ print(f"Retrieved {len(dv)} daily values")
 Access water quality data from multiple agencies:
 
 ```python
-import dataretrieval.wqp as wqp
+from dataretrieval import wqp
 
 # Find water quality monitoring sites
 sites = wqp.what_sites(
@@ -177,7 +177,7 @@ print(f"Retrieved {len(results)} temperature measurements")
 Discover and navigate hydrologic networks:
 
 ```python
-import dataretrieval.nldi as nldi
+from dataretrieval import nldi
 
 # Get watershed basin for a stream reach
 basin = nldi.get_basin(
