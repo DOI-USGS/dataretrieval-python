@@ -382,10 +382,10 @@ def _construct_api_requests(
     # Set skipGeometry parameter (API expects camelCase)
     params["skipGeometry"] = skip_geometry
     
-    # If limit is none or greater than 10000, then set limit to max results. Otherwise,
+    # If limit is none or greater than 50000, then set limit to max results. Otherwise,
     # use the limit
     params["limit"] = (
-        10000 if limit is None or limit > 10000 else limit
+        50000 if limit is None or limit > 50000 else limit
         )
 
     # Indicate if function needs to perform POST conversion
