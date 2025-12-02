@@ -684,8 +684,25 @@ def _type_cols(df: pd.DataFrame) -> pd.DataFrame:
 
     """
     cols = set(df.columns)
-    numerical_cols = ["value", "contributing_drainage_area", "drainage_area", "altitude", "altitude_accuracy", "well_constructed_depth", "hole_constructed_depth"]
-    time_cols = ["time", "datetime", "last_modified"]
+    numerical_cols = [
+        "altitude",
+        "altitude_accuracy",
+        "contributing_drainage_area",
+        "drainage_area",
+        "hole_constructed_depth",
+        "value",
+        "well_constructed_depth",
+        ]
+    time_cols = [
+        "begin",
+        "begin_utc",
+        "construction_date",
+        "end",
+        "end_utc",
+        "datetime", # unused
+        "last_modified",
+        "time",
+        ]
     categorical_cols = [
         "approval_status",
         "monitoring_location_id",

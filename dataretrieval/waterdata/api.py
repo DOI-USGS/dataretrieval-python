@@ -165,8 +165,8 @@ def get_daily(
         if your internet connection is spotty. The default (NA) will set the
         limit to the maximum allowable limit for the service.
     convert_type : boolean, optional
-        If True, the function will convert the data to dates and qualifier to
-        string vector
+        If True, converts columns to appropriate types like numeric, datetime,
+        boolean, categorical, etc.
 
     Returns
     -------
@@ -475,6 +475,9 @@ def get_monitoring_locations(
         The returning object will be a data frame with no spatial information.
         Note that the USGS Water Data APIs use camelCase "skipGeometry" in
         CQL2 queries.
+    convert_type : boolean, optional
+        If True, converts columns to appropriate types like numeric, datetime,
+        boolean, categorical, etc.
 
     Returns
     -------
@@ -666,8 +669,8 @@ def get_time_series_metadata(
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
     convert_type : boolean, optional
-        If True, the function will convert the data to dates and qualifier to
-        string vector
+        If True, converts columns to appropriate types like numeric, datetime,
+        boolean, categorical, etc.
 
     Returns
     -------
@@ -842,8 +845,8 @@ def get_latest_continuous(
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
     convert_type : boolean, optional
-        If True, the function will convert the data to dates and qualifier to
-        string vector
+        If True, converts columns to appropriate types like numeric, datetime,
+        boolean, categorical, etc.
 
     Returns
     -------
@@ -1017,8 +1020,8 @@ def get_latest_daily(
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
     convert_type : boolean, optional
-        If True, the function will convert the data to dates and qualifier to
-        string vector
+        If True, converts columns to appropriate types like numeric, datetime,
+        boolean, categorical, etc.
 
     Returns
     -------
@@ -1183,8 +1186,8 @@ def get_field_measurements(
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
     convert_type : boolean, optional
-        If True, the function will convert the data to dates and qualifier to
-        string vector
+        If True, converts columns to appropriate types like numeric, datetime,
+        boolean, categorical, etc.
 
     Returns
     -------
