@@ -703,21 +703,12 @@ def _type_cols(df: pd.DataFrame) -> pd.DataFrame:
         "last_modified",
         "time",
         ]
-    categorical_cols = [
-        "approval_status",
-        "monitoring_location_id",
-        "parameter_code",
-        "unit_of_measure",
-        ]
 
     for col in cols.intersection(time_cols):
         df[col] = pd.to_datetime(df[col], errors="coerce")
 
     for col in cols.intersection(numerical_cols):
         df[col] = pd.to_numeric(df[col], errors="coerce")
-
-    for col in cols.intersection(categorical_cols):
-        df[col] = df[col].astype("category")
 
     return df
 
