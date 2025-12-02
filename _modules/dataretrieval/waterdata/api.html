@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+gff92fa9dc documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g237ed8149 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=22888dc2"></script>
+      <script src="../../../_static/documentation_options.js?v=a2c1a0f2"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -243,8 +243,7 @@
 <span class="sd">        if your internet connection is spotty. The default (NA) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
 <span class="sd">    convert_type : boolean, optional</span>
-<span class="sd">        If True, the function will convert the data to dates and qualifier to</span>
-<span class="sd">        string vector</span>
+<span class="sd">        If True, converts columns to appropriate types.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -556,6 +555,8 @@
 <span class="sd">        The returning object will be a data frame with no spatial information.</span>
 <span class="sd">        Note that the USGS Water Data APIs use camelCase &quot;skipGeometry&quot; in</span>
 <span class="sd">        CQL2 queries.</span>
+<span class="sd">    convert_type : boolean, optional</span>
+<span class="sd">        If True, converts columns to appropriate types.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -750,8 +751,7 @@
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
 <span class="sd">    convert_type : boolean, optional</span>
-<span class="sd">        If True, the function will convert the data to dates and qualifier to</span>
-<span class="sd">        string vector</span>
+<span class="sd">        If True, converts columns to appropriate types.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -929,8 +929,7 @@
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
 <span class="sd">    convert_type : boolean, optional</span>
-<span class="sd">        If True, the function will convert the data to dates and qualifier to</span>
-<span class="sd">        string vector</span>
+<span class="sd">        If True, converts columns to appropriate types.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1107,8 +1106,7 @@
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
 <span class="sd">    convert_type : boolean, optional</span>
-<span class="sd">        If True, the function will convert the data to dates and qualifier to</span>
-<span class="sd">        string vector</span>
+<span class="sd">        If True, converts columns to appropriate types.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1276,8 +1274,7 @@
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
 <span class="sd">    convert_type : boolean, optional</span>
-<span class="sd">        If True, the function will convert the data to dates and qualifier to</span>
-<span class="sd">        string vector</span>
+<span class="sd">        If True, converts columns to appropriate types.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
