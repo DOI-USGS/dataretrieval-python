@@ -755,23 +755,3 @@ def get_ogc_data(
     metadata = BaseMetadata(response)
     return return_list, metadata
 
-
-# def _get_description(service: str):
-#     tags = _get_collection().get("tags", [])
-#     for tag in tags:
-#         if tag.get("name") == service:
-#             return tag.get("description")
-#     return None
-
-# def _get_params(service: str):
-#     url = f"{_base_url()}collections/{service}/schema"
-#     resp = requests.get(url, headers=_default_headers())
-#     resp.raise_for_status()
-#     properties = resp.json().get("properties", {})
-#     return {k: v.get("description") for k, v in properties.items()}
-
-# def _get_collection():
-#     url = f"{_base_url()}openapi?f=json"
-#     resp = requests.get(url, headers=_default_headers())
-#     resp.raise_for_status()
-#     return resp.json()
