@@ -161,12 +161,11 @@ def get_daily(
     limit : numeric, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
-        allowable limit is 10000. It may be beneficial to set this number lower
+        allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (NA) will set the
         limit to the maximum allowable limit for the service.
     convert_type : boolean, optional
-        If True, the function will convert the data to dates and qualifier to
-        string vector
+        If True, converts columns to appropriate types.
 
     Returns
     -------
@@ -632,7 +631,7 @@ def get_monitoring_locations(
     limit : numeric, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
-        allowable limit is 10000. It may be beneficial to set this number lower
+        allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (NA) will set the
         limit to the maximum allowable limit for the service.
     skip_geometry : boolean, optional
@@ -640,6 +639,8 @@ def get_monitoring_locations(
         The returning object will be a data frame with no spatial information.
         Note that the USGS Water Data APIs use camelCase "skipGeometry" in
         CQL2 queries.
+    convert_type : boolean, optional
+        If True, converts columns to appropriate types.
 
     Returns
     -------
@@ -827,12 +828,11 @@ def get_time_series_metadata(
     limit : numeric, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
-        allowable limit is 10000. It may be beneficial to set this number lower
+        allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
     convert_type : boolean, optional
-        If True, the function will convert the data to dates and qualifier to
-        string vector
+        If True, converts columns to appropriate types.
 
     Returns
     -------
@@ -1003,12 +1003,11 @@ def get_latest_continuous(
     limit : numeric, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
-        allowable limit is 10000. It may be beneficial to set this number lower
+        allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
     convert_type : boolean, optional
-        If True, the function will convert the data to dates and qualifier to
-        string vector
+        If True, converts columns to appropriate types.
 
     Returns
     -------
@@ -1178,12 +1177,11 @@ def get_latest_daily(
     limit : numeric, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
-        allowable limit is 10000. It may be beneficial to set this number lower
+        allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
     convert_type : boolean, optional
-        If True, the function will convert the data to dates and qualifier to
-        string vector
+        If True, converts columns to appropriate types.
 
     Returns
     -------
@@ -1344,12 +1342,11 @@ def get_field_measurements(
     limit : numeric, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
-        allowable limit is 10000. It may be beneficial to set this number lower
+        allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
     convert_type : boolean, optional
-        If True, the function will convert the data to dates and qualifier to
-        string vector
+        If True, converts columns to appropriate types.
 
     Returns
     -------

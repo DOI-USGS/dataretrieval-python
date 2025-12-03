@@ -382,10 +382,10 @@ def _construct_api_requests(
     # Set skipGeometry parameter (API expects camelCase)
     params["skipGeometry"] = skip_geometry
     
-    # If limit is none or greater than 10000, then set limit to max results. Otherwise,
+    # If limit is none or greater than 50000, then set limit to max results. Otherwise,
     # use the limit
     params["limit"] = (
-        10000 if limit is None or limit > 10000 else limit
+        50000 if limit is None or limit > 50000 else limit
         )
 
     # Indicate if function needs to perform POST conversion
@@ -667,32 +667,48 @@ def _arrange_cols(
         return df.rename(columns={"id": output_id})
 
 
-def _cleanup_cols(df: pd.DataFrame, service: str = "daily") -> pd.DataFrame:
+def _type_cols(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Cleans and standardizes columns in a pandas DataFrame for water data endpoints.
+    Casts columns into appropriate types.
 
     Parameters
     ----------
     df : pd.DataFrame
         The input DataFrame containing water data.
-    service : str, optional
-        The type of water data service (default is "daily").
 
     Returns
     -------
     pd.DataFrame
-        The cleaned DataFrame with standardized columns.
+        The DataFrame with columns cast to appropriate types.
 
-    Notes
-    -----
-    - If the 'time' column exists and service is "daily", it is converted to date objects.
-    - The 'value' and 'contributing_drainage_area' columns are coerced to numeric types.
     """
-    if "time" in df.columns and service == "daily":
-        df["time"] = pd.to_datetime(df["time"]).dt.date
-    for col in ["value", "contributing_drainage_area"]:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
+    cols = set(df.columns)
+    numerical_cols = [
+        "altitude",
+        "altitude_accuracy",
+        "contributing_drainage_area",
+        "drainage_area",
+        "hole_constructed_depth",
+        "value",
+        "well_constructed_depth",
+        ]
+    time_cols = [
+        "begin",
+        "begin_utc",
+        "construction_date",
+        "end",
+        "end_utc",
+        "datetime", # unused
+        "last_modified",
+        "time",
+        ]
+
+    for col in cols.intersection(time_cols):
+        df[col] = pd.to_datetime(df[col], errors="coerce")
+
+    for col in cols.intersection(numerical_cols):
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+
     return df
 
 
@@ -748,8 +764,10 @@ def get_ogc_data(
     )
     # Manage some aspects of the returned dataset
     return_list = _deal_with_empty(return_list, properties, service)
+
     if convert_type:
-        return_list = _cleanup_cols(return_list, service=service)
+        return_list = _type_cols(return_list)
+
     return_list = _arrange_cols(return_list, properties, output_id)
     # Create metadata object from response
     metadata = BaseMetadata(response)
