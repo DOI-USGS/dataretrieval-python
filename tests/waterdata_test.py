@@ -177,12 +177,7 @@ def test_get_latest_continuous():
     assert df.statistic_id.unique().tolist() == ["00011"]
     assert hasattr(md, 'url')
     assert hasattr(md, 'query_time')
-    try:
-        datetime.datetime.strptime(df['time'].iloc[0], "%Y-%m-%dT%H:%M:%S+00:00")
-        out=True
-    except:
-        out=False
-    assert out
+    assert df['time'].dtype == 'datetime64[ns, UTC]'
 
 def test_get_latest_daily():
     df, md = get_latest_daily(
