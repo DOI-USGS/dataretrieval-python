@@ -216,7 +216,6 @@ def get_continuous(
     qualifier: Optional[Union[str, List[str]]] = None,
     value: Optional[Union[str, List[str]]] = None,
     last_modified: Optional[str] = None,
-    skip_geometry: Optional[bool] = None,
     time: Optional[Union[str, List[str]]] = None,
     limit: Optional[int] = None,
     convert_type: bool = True,
@@ -224,7 +223,9 @@ def get_continuous(
     """This is an early version of the continuous endpoint. It is
     feature-complete and provides access to the full continuous data record,
     and is being made available as we continue to work on performance
-    improvements. Continuous data are collected via automated sensors
+    improvements. Geometries are not included with the continuous endpoint.
+    
+    Continuous data are collected via automated sensors
     installed at a monitoring location. They are collected at a high
     frequency and often at a fixed 15-minute interval. Depending on the
     specific monitoring location, the data may be transmitted automatically
@@ -307,11 +308,6 @@ def get_continuous(
 
         Only features that have a last_modified that intersects the value of
         datetime are selected.
-    skip_geometry : boolean, optional
-        This option can be used to skip response geometries for each feature.
-        The returning object will be a data frame with no spatial information.
-        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
-        CQL2 queries.
     time : string, optional
         The date an observation represents. You can query this field using
         date-times or intervals, adhering to RFC 3339, or using ISO 8601
@@ -353,7 +349,7 @@ def get_continuous(
         >>> # single site from a single year
         >>> df, md = dataretrieval.waterdata.get_continuous(
         ...     monitoring_location_id="USGS-02238500",
-        ...     parameter_code="00060",
+        ...     parameter_code="00065",
         ...     time="2021-01-01T00:00:00Z/2022-01-01T00:00:00Z",
         ... )
     """
