@@ -6,7 +6,7 @@
 
 ## Latest Announcements
 
-:mega: **11/24/2025:** `dataretrieval` now features the new `waterdata` module,
+:mega: **12/03/2025:** `dataretrieval` now features the new `waterdata` module,
 which provides access to USGS's modernized [Water Data
 APIs](https://api.waterdata.usgs.gov/). The Water Data API endpoints include
 daily values, instantaneous values, field measurements, time series metadata,
@@ -69,27 +69,27 @@ input argument indicates a desired date range:
 from dataretrieval import waterdata
 
 # Get daily streamflow data (returns DataFrame and metadata)
-df, metadata = waterdata.get_daily(
+daily, metadata = waterdata.get_daily(
     monitoring_location_id='USGS-01646500', 
     parameter_code='00060',  # Discharge
     time='2024-10-01/2025-09-30'
 )
 
-print(f"Retrieved {len(df)} records")
-print(f"Site: {df['monitoring_location_id'].iloc[0]}")
-print(f"Mean discharge: {df['value'].mean():.2f} {df['unit_of_measure'].iloc[0]}")
+print(f"Retrieved {len(daily)} records")
+print(f"Site: {daily['monitoring_location_id'].iloc[0]}")
+print(f"Mean discharge: {daily['value'].mean():.2f} {daily['unit_of_measure'].iloc[0]}")
 ```
 Fetch daily discharge data for multiple sites from a start date to present
 using the following code:
 
 ```python
-df, metadata = waterdata.get_daily(
+daily_twosites, metadata = waterdata.get_daily(
     monitoring_location_id=["USGS-13018750","USGS-13013650"],
     parameter_code='00060',
     time='2024-10-01/..'
 )
 
-print(f"Retrieved {len(df)} records")
+print(f"Retrieved {len(daily_twosites)} records")
 ```
 The following example downloads location information for all monitoring
 locations that are categorized as stream sites in the state of Maryland:
@@ -103,6 +103,21 @@ locations, metadata = waterdata.get_monitoring_locations(
 
 print(f"Found {len(locations)} stream monitoring locations in Maryland")
 ```
+Finally, this example downloads continuous (a.k.a. "instantaneous") data
+for one monitoring location over one year. You are *strongly advised* to
+break up continuous data requests into smaller time periods and smaller
+collections of sites to avoid timeouts and other issues:
+
+```python
+# Get continuous data for a single monitoring location and water year
+continuous, metadata = waterdata.get_continuous(
+    monitoring_location_id='USGS-01646500', 
+    parameter_code='00065',  # Gage height
+    time='2024-10-01/2025-09-30'
+)
+print(f"Retrieved {len(continuous)} continuous gage height measurements")
+```
+
 Visit the
 [API Reference](https://doi-usgs.github.io/dataretrieval-python/reference/waterdata.html)
 for more information and examples on available services and input parameters. 
@@ -202,13 +217,13 @@ print(f"Found {len(flowlines)} upstream tributaries within 50km")
 
 ### Modern USGS Water Data APIs (Recommended)
 - **Daily values**: Daily statistical summaries (mean, min, max)
+- **Instantaneous values**: High-frequency continuous data
 - **Field measurements**: Discrete measurements from field visits
 - **Monitoring locations**: Site information and metadata
 - **Time series metadata**: Information about available data parameters
 - **Latest daily values**: Most recent daily statistical summary data
 - **Latest instantaneous values**: Most recent high-frequency continuous data
 - **Samples data**: Discrete USGS water quality data
-- **Instantaneous values** (*COMING SOON*): High-frequency continuous data
 
 ### Legacy NWIS Services (Deprecated)
 - **Daily values (dv)**: Legacy daily statistical data

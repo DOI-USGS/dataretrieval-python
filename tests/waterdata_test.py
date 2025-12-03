@@ -10,6 +10,7 @@ from dataretrieval.waterdata import (
     _check_profiles,
     get_samples,
     get_daily,
+    get_continuous,
     get_monitoring_locations,
     get_latest_continuous,
     get_latest_daily,
@@ -142,7 +143,7 @@ def test_get_daily_properties():
     assert df.parameter_code.unique().tolist() == ["00060"]
 
 def test_get_daily_no_geometry():
-    df, md = get_daily(
+    df,_ = get_daily(
         monitoring_location_id="USGS-05427718",
         parameter_code="00060",
         time="2025-01-01/..",
@@ -151,6 +152,18 @@ def test_get_daily_no_geometry():
     assert "geometry" not in df.columns
     assert df.shape[1] == 11
     assert isinstance(df, DataFrame)
+
+def test_get_continuous():
+    df,_ = get_continuous(
+        monitoring_location_id="USGS-06904500",
+        parameter_code="00065",
+        time="2025-01-01/2025-12-31"
+    )
+    assert isinstance(df, DataFrame)
+    assert "geometry" not in df.columns
+    assert df.shape[1] == 11
+    assert df['time'].dtype == 'datetime64[ns, UTC]'
+    assert "continuous_id" in df.columns
 
 def test_get_monitoring_locations():
     df, md = get_monitoring_locations(
@@ -162,7 +175,7 @@ def test_get_monitoring_locations():
     assert hasattr(md, 'query_time')
 
 def test_get_monitoring_locations_hucs():
-    df, md = get_monitoring_locations(
+    df,_ = get_monitoring_locations(
         hydrologic_unit_code=["010802050102", "010802050103"]
     )
     assert set(df.hydrologic_unit_code.unique().tolist()) == {"010802050102", "010802050103"}
