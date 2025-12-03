@@ -263,7 +263,7 @@ def get_continuous(
     time_series_id : string or list of strings, optional
         A unique identifier representing a single time series. This
         corresponds to the id field in the time-series-metadata endpoint.
-    daily_id : string or list of strings, optional
+    continuous_id : string or list of strings, optional
         A universally unique identifier (UUID) representing a single version of
         a record. It is not stable over time. Every time the record is refreshed
         in our database (which may happen as part of normal operations and does
