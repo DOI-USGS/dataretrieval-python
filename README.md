@@ -6,13 +6,15 @@
 
 ## Latest Announcements
 
-:mega: **12/03/2025:** `dataretrieval` now features the new `waterdata` module,
+:mega: **12/04/2025:** `dataretrieval` now features the new `waterdata` module,
 which provides access to USGS's modernized [Water Data
 APIs](https://api.waterdata.usgs.gov/). The Water Data API endpoints include
-daily values, instantaneous values, field measurements, time series metadata,
+daily values, **instantaneous values**, field measurements, time series metadata,
 and discrete water quality data from the Samples database. This new module will
 eventually replace the `nwis` module, which provides access to the legacy [NWIS
 Water Services](https://waterservices.usgs.gov/).
+
+Check out the [NEWS](NEWS.md) file for all updates and announcements.
 
 **Important:** Users of the Water Data APIs are strongly encouraged to obtain an
 API key for higher rate limits and greater access to USGS data. [Register for
@@ -23,8 +25,6 @@ environment variable:
 import os
 os.environ["API_USGS_PAT"] = "your_api_key_here"
 ```
-
-Check out the [NEWS](NEWS.md) file for all updates and announcements.
 
 ## What is dataretrieval?
 
