@@ -220,22 +220,22 @@ def get_continuous(
     limit: Optional[int] = None,
     convert_type: bool = True,
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
-    """This is an early version of the continuous endpoint. It is
-    feature-complete and provides access to the full continuous data record,
-    and is being made available as we continue to work on performance
-    improvements. Geometries are not included with the continuous endpoint.
-    
-    Continuous data are collected via automated sensors
-    installed at a monitoring location. They are collected at a high
-    frequency and often at a fixed 15-minute interval. Depending on the
-    specific monitoring location, the data may be transmitted automatically
-    via telemetry and be available on WDFN within minutes of collection,
-    while other times the delivery of data may be delayed if the monitoring
-    location does not have the capacity to automatically transmit data.
-    Continuous data are described by parameter name and parameter code
-    (pcode). These data might also be referred to as "instantaneous values"
-    or "IV".
+    """
+    Continuous data provide instantanous water conditions.
 
+    This is an early version of the continuous endpoint that is feature-complete
+    and is being made available for limited use.  Geometries are not included
+    with the continuous endpoint.
+    
+    Continuous data are collected at a high frequency, typically 15-minute
+    intervals. Depending on the specific monitoring location, the data may be
+    transmitted automatically via telemetry and be available on WDFN within
+    minutes of collection, while other times the delivery of data may be delayed
+    if the monitoring location does not have the capacity to automatically
+    transmit data.  Continuous data are described by parameter name and
+    parameter code (pcode). These data might also be referred to as
+    "instantaneous values" or "IV".
+    
     Parameters
     ----------
     monitoring_location_id : string or list of strings, optional
