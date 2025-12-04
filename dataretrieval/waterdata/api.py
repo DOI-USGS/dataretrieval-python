@@ -225,7 +225,9 @@ def get_continuous(
 
     This is an early version of the continuous endpoint that is feature-complete
     and is being made available for limited use.  Geometries are not included
-    with the continuous endpoint.
+    with the continuous endpoint. If the "time" input is left blank, the service
+    will return the most recent year of measurements. Users may request no more
+    than three years of data with each function call.
     
     Continuous data are collected at a high frequency, typically 15-minute
     intervals. Depending on the specific monitoring location, the data may be
@@ -252,8 +254,10 @@ def get_continuous(
         https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
     statistic_id : string or list of strings, optional
         A code corresponding to the statistic an observation represents.
-        Example codes include 00001 (max), 00002 (min), and 00003 (mean).
-        A complete list of codes and their descriptions can be found at
+        Continuous data are nearly always associated with statistic id
+        00011. Using a different code (such as 00003 for mean) will
+        typically return no results. A complete list of codes and their
+        descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
     properties : string or list of strings, optional
         A vector of requested columns to be returned from the query.
