@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g237ed8149 documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g50466c8c4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=a2c1a0f2"></script>
+      <script src="../../../_static/documentation_options.js?v=054ccaf4"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -272,6 +272,174 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;daily&quot;</span>
     <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;daily_id&quot;</span>
+
+    <span class="c1"># Build argument dictionary, omitting None values</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;service&quot;</span><span class="p">,</span> <span class="s2">&quot;output_id&quot;</span><span class="p">}</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_continuous">
+<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_continuous">[docs]</a>
+<span class="k">def</span> <span class="nf">get_continuous</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">statistic_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">time_series_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">continuous_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">approval_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">unit_of_measure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">qualifier</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">last_modified</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">time</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Continuous data provide instantanous water conditions.</span>
+
+<span class="sd">    This is an early version of the continuous endpoint that is feature-complete</span>
+<span class="sd">    and is being made available for limited use.  Geometries are not included</span>
+<span class="sd">    with the continuous endpoint. If the &quot;time&quot; input is left blank, the service</span>
+<span class="sd">    will return the most recent year of measurements. Users may request no more</span>
+<span class="sd">    than three years of data with each function call.</span>
+<span class="sd">    </span>
+<span class="sd">    Continuous data are collected at a high frequency, typically 15-minute</span>
+<span class="sd">    intervals. Depending on the specific monitoring location, the data may be</span>
+<span class="sd">    transmitted automatically via telemetry and be available on WDFN within</span>
+<span class="sd">    minutes of collection, while other times the delivery of data may be delayed</span>
+<span class="sd">    if the monitoring location does not have the capacity to automatically</span>
+<span class="sd">    transmit data.  Continuous data are described by parameter name and</span>
+<span class="sd">    parameter code (pcode). These data might also be referred to as</span>
+<span class="sd">    &quot;instantaneous values&quot; or &quot;IV&quot;.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    monitoring_location_id : string or list of strings, optional</span>
+<span class="sd">        A unique identifier representing a single monitoring location. This</span>
+<span class="sd">        corresponds to the id field in the monitoring-locations endpoint.</span>
+<span class="sd">        Monitoring location IDs are created by combining the agency code of</span>
+<span class="sd">        the agency responsible for the monitoring location (e.g. USGS) with</span>
+<span class="sd">        the ID number of the monitoring location (e.g. 02238500), separated</span>
+<span class="sd">        by a hyphen (e.g. USGS-02238500).</span>
+<span class="sd">    parameter_code : string or list of strings, optional</span>
+<span class="sd">        Parameter codes are 5-digit codes used to identify the constituent</span>
+<span class="sd">        measured and the units of measure. A complete list of parameter</span>
+<span class="sd">        codes and associated groupings can be found at</span>
+<span class="sd">        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.</span>
+<span class="sd">    statistic_id : string or list of strings, optional</span>
+<span class="sd">        A code corresponding to the statistic an observation represents.</span>
+<span class="sd">        Continuous data are nearly always associated with statistic id</span>
+<span class="sd">        00011. Using a different code (such as 00003 for mean) will</span>
+<span class="sd">        typically return no results. A complete list of codes and their</span>
+<span class="sd">        descriptions can be found at</span>
+<span class="sd">        https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&amp;fmt=html.</span>
+<span class="sd">    properties : string or list of strings, optional</span>
+<span class="sd">        A vector of requested columns to be returned from the query.</span>
+<span class="sd">        Available options are: geometry, id, time_series_id,</span>
+<span class="sd">        monitoring_location_id, parameter_code, statistic_id, time, value,</span>
+<span class="sd">        unit_of_measure, approval_status, qualifier, last_modified</span>
+<span class="sd">    time_series_id : string or list of strings, optional</span>
+<span class="sd">        A unique identifier representing a single time series. This</span>
+<span class="sd">        corresponds to the id field in the time-series-metadata endpoint.</span>
+<span class="sd">    continuous_id : string or list of strings, optional</span>
+<span class="sd">        A universally unique identifier (UUID) representing a single version of</span>
+<span class="sd">        a record. It is not stable over time. Every time the record is refreshed</span>
+<span class="sd">        in our database (which may happen as part of normal operations and does</span>
+<span class="sd">        not imply any change to the data itself) a new ID will be generated. To</span>
+<span class="sd">        uniquely identify a single observation over time, compare the time and</span>
+<span class="sd">        time_series_id fields; each time series will only have a single</span>
+<span class="sd">        observation at a given time.</span>
+<span class="sd">    approval_status : string or list of strings, optional</span>
+<span class="sd">        Some of the data that you have obtained from this U.S. Geological Survey</span>
+<span class="sd">        database may not have received Director&#39;s approval. Any such data values</span>
+<span class="sd">        are qualified as provisional and are subject to revision. Provisional</span>
+<span class="sd">        data are released on the condition that neither the USGS nor the United</span>
+<span class="sd">        States Government may be held liable for any damages resulting from its</span>
+<span class="sd">        use. This field reflects the approval status of each record, and is either</span>
+<span class="sd">        &quot;Approved&quot;, meaining processing review has been completed and the data is</span>
+<span class="sd">        approved for publication, or &quot;Provisional&quot; and subject to revision. For</span>
+<span class="sd">        more information about provisional data, go to:</span>
+<span class="sd">        https://waterdata.usgs.gov/provisional-data-statement/.</span>
+<span class="sd">    unit_of_measure : string or list of strings, optional</span>
+<span class="sd">        A human-readable description of the units of measurement associated</span>
+<span class="sd">        with an observation.</span>
+<span class="sd">    qualifier : string or list of strings, optional</span>
+<span class="sd">        This field indicates any qualifiers associated with an observation, for</span>
+<span class="sd">        instance if a sensor may have been impacted by ice or if values were</span>
+<span class="sd">        estimated.</span>
+<span class="sd">    value : string or list of strings, optional</span>
+<span class="sd">        The value of the observation. Values are transmitted as strings in</span>
+<span class="sd">        the JSON response format in order to preserve precision.</span>
+<span class="sd">    last_modified : string, optional</span>
+<span class="sd">        The last time a record was refreshed in our database. This may happen</span>
+<span class="sd">        due to regular operational processes and does not necessarily indicate</span>
+<span class="sd">        anything about the measurement has changed. You can query this field</span>
+<span class="sd">        using date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
+<span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
+<span class="sd">        at start or end).</span>
+<span class="sd">        Examples:</span>
+
+<span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
+<span class="sd">            * A bounded interval: &quot;2018-02-12T00:00:00Z/2018-03-18T12:31:12Z&quot;</span>
+<span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or &quot;../2018-03-18T12:31:12Z&quot;</span>
+<span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or &quot;PT36H&quot; for the last 36 hours</span>
+
+<span class="sd">        Only features that have a last_modified that intersects the value of</span>
+<span class="sd">        datetime are selected.</span>
+<span class="sd">    time : string, optional</span>
+<span class="sd">        The date an observation represents. You can query this field using</span>
+<span class="sd">        date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
+<span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
+<span class="sd">        at start or end). Only features that have a time that intersects the</span>
+<span class="sd">        value of datetime are selected. If a feature has multiple temporal</span>
+<span class="sd">        properties, it is the decision of the server whether only a single</span>
+<span class="sd">        temporal property is used to determine the extent or all relevant</span>
+<span class="sd">        temporal properties.</span>
+<span class="sd">        Examples:</span>
+
+<span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
+<span class="sd">            * A bounded interval: &quot;2018-02-12T00:00:00Z/2018-03-18T12:31:12Z&quot;</span>
+<span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or &quot;../2018-03-18T12:31:12Z&quot;</span>
+<span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or &quot;PT36H&quot; for the last 36 hours</span>
+
+<span class="sd">    limit : numeric, optional</span>
+<span class="sd">        The optional limit parameter is used to control the subset of the</span>
+<span class="sd">        selected features that should be returned in each page. The maximum</span>
+<span class="sd">        allowable limit is 10000. It may be beneficial to set this number lower</span>
+<span class="sd">        if your internet connection is spotty. The default (NA) will set the</span>
+<span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">    convert_type : boolean, optional</span>
+<span class="sd">        If True, the function will convert the data to dates and qualifier to</span>
+<span class="sd">        string vector</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
+<span class="sd">        Formatted data returned from the API query.</span>
+<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">        A custom metadata object</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; # Get instantaneous gage height data from a</span>
+<span class="sd">        &gt;&gt;&gt; # single site from a single year</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_continuous(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
+<span class="sd">        ...     parameter_code=&quot;00065&quot;,</span>
+<span class="sd">        ...     time=&quot;2021-01-01T00:00:00Z/2022-01-01T00:00:00Z&quot;,</span>
+<span class="sd">        ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;continuous&quot;</span>
+    <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;continuous_id&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
     <span class="n">args</span> <span class="o">=</span> <span class="p">{</span>

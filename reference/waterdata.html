@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g237ed8149 documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g50466c8c4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=a2c1a0f2"></script>
+      <script src="../_static/documentation_options.js?v=054ccaf4"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -58,6 +58,7 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.waterdata</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata._check_profiles"><code class="docutils literal notranslate"><span class="pre">_check_profiles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_codes"><code class="docutils literal notranslate"><span class="pre">get_codes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_continuous"><code class="docutils literal notranslate"><span class="pre">get_continuous()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_daily"><code class="docutils literal notranslate"><span class="pre">get_daily()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_field_measurements"><code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_latest_continuous"><code class="docutils literal notranslate"><span class="pre">get_latest_continuous()</span></code></a></li>
@@ -130,6 +131,137 @@ including the USGS Aquarius Samples database.</p>
 or “observedproperty”</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.waterdata.get_continuous">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.waterdata.</span></span><span class="sig-name descname"><span class="pre">get_continuous</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">monitoring_location_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statistic_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_series_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approval_status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit_of_measure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualifier</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_modified</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/waterdata/api.html#get_continuous"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.waterdata.get_continuous" title="Link to this definition"></a></dt>
+<dd><p>Continuous data provide instantanous water conditions.</p>
+<p>This is an early version of the continuous endpoint that is feature-complete
+and is being made available for limited use.  Geometries are not included
+with the continuous endpoint. If the “time” input is left blank, the service
+will return the most recent year of measurements. Users may request no more
+than three years of data with each function call.</p>
+<p>Continuous data are collected at a high frequency, typically 15-minute
+intervals. Depending on the specific monitoring location, the data may be
+transmitted automatically via telemetry and be available on WDFN within
+minutes of collection, while other times the delivery of data may be delayed
+if the monitoring location does not have the capacity to automatically
+transmit data.  Continuous data are described by parameter name and
+parameter code (pcode). These data might also be referred to as
+“instantaneous values” or “IV”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>monitoring_location_id</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A unique identifier representing a single monitoring location. This
+corresponds to the id field in the monitoring-locations endpoint.
+Monitoring location IDs are created by combining the agency code of
+the agency responsible for the monitoring location (e.g. USGS) with
+the ID number of the monitoring location (e.g. 02238500), separated
+by a hyphen (e.g. USGS-02238500).</p></li>
+<li><p><strong>parameter_code</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Parameter codes are 5-digit codes used to identify the constituent
+measured and the units of measure. A complete list of parameter
+codes and associated groupings can be found at
+<a class="reference external" href="https://help.waterdata.usgs.gov/codes-and-parameters/parameters">https://help.waterdata.usgs.gov/codes-and-parameters/parameters</a>.</p></li>
+<li><p><strong>statistic_id</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A code corresponding to the statistic an observation represents.
+Continuous data are nearly always associated with statistic id
+00011. Using a different code (such as 00003 for mean) will
+typically return no results. A complete list of codes and their
+descriptions can be found at
+<a class="reference external" href="https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&amp;fmt=html">https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&amp;fmt=html</a>.</p></li>
+<li><p><strong>properties</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A vector of requested columns to be returned from the query.
+Available options are: geometry, id, time_series_id,
+monitoring_location_id, parameter_code, statistic_id, time, value,
+unit_of_measure, approval_status, qualifier, last_modified</p></li>
+<li><p><strong>time_series_id</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A unique identifier representing a single time series. This
+corresponds to the id field in the time-series-metadata endpoint.</p></li>
+<li><p><strong>continuous_id</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A universally unique identifier (UUID) representing a single version of
+a record. It is not stable over time. Every time the record is refreshed
+in our database (which may happen as part of normal operations and does
+not imply any change to the data itself) a new ID will be generated. To
+uniquely identify a single observation over time, compare the time and
+time_series_id fields; each time series will only have a single
+observation at a given time.</p></li>
+<li><p><strong>approval_status</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Some of the data that you have obtained from this U.S. Geological Survey
+database may not have received Director’s approval. Any such data values
+are qualified as provisional and are subject to revision. Provisional
+data are released on the condition that neither the USGS nor the United
+States Government may be held liable for any damages resulting from its
+use. This field reflects the approval status of each record, and is either
+“Approved”, meaining processing review has been completed and the data is
+approved for publication, or “Provisional” and subject to revision. For
+more information about provisional data, go to:
+<a class="reference external" href="https://waterdata.usgs.gov/provisional-data-statement/">https://waterdata.usgs.gov/provisional-data-statement/</a>.</p></li>
+<li><p><strong>unit_of_measure</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A human-readable description of the units of measurement associated
+with an observation.</p></li>
+<li><p><strong>qualifier</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – This field indicates any qualifiers associated with an observation, for
+instance if a sensor may have been impacted by ice or if values were
+estimated.</p></li>
+<li><p><strong>value</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The value of the observation. Values are transmitted as strings in
+the JSON response format in order to preserve precision.</p></li>
+<li><p><strong>last_modified</strong> (<em>string</em><em>, </em><em>optional</em>) – <p>The last time a record was refreshed in our database. This may happen
+due to regular operational processes and does not necessarily indicate
+anything about the measurement has changed. You can query this field
+using date-times or intervals, adhering to RFC 3339, or using ISO 8601
+duration objects. Intervals may be bounded or half-bounded (double-dots
+at start or end).
+Examples:</p>
+<blockquote>
+<div><ul>
+<li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
+<li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
+<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or “../2018-03-18T12:31:12Z”</p></li>
+<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for the last 36 hours</p></li>
+</ul>
+</div></blockquote>
+<p>Only features that have a last_modified that intersects the value of
+datetime are selected.</p>
+</p></li>
+<li><p><strong>time</strong> (<em>string</em><em>, </em><em>optional</em>) – <p>The date an observation represents. You can query this field using
+date-times or intervals, adhering to RFC 3339, or using ISO 8601
+duration objects. Intervals may be bounded or half-bounded (double-dots
+at start or end). Only features that have a time that intersects the
+value of datetime are selected. If a feature has multiple temporal
+properties, it is the decision of the server whether only a single
+temporal property is used to determine the extent or all relevant
+temporal properties.
+Examples:</p>
+<blockquote>
+<div><ul>
+<li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
+<li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
+<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or “../2018-03-18T12:31:12Z”</p></li>
+<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for the last 36 hours</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>limit</strong> (<em>numeric</em><em>, </em><em>optional</em>) – The optional limit parameter is used to control the subset of the
+selected features that should be returned in each page. The maximum
+allowable limit is 10000. It may be beneficial to set this number lower
+if your internet connection is spotty. The default (NA) will set the
+limit to the maximum allowable limit for the service.</p></li>
+<li><p><strong>convert_type</strong> (<em>boolean</em><em>, </em><em>optional</em>) – If True, the function will convert the data to dates and qualifier to
+string vector</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> or <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code>) – Formatted data returned from the API query.</p></li>
+<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get instantaneous gage height data from a</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># single site from a single year</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-02238500&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00065&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2021-01-01T00:00:00Z/2022-01-01T00:00:00Z&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
