@@ -204,6 +204,171 @@ def get_daily(
 
     return get_ogc_data(args, output_id, service)
 
+def get_continuous(
+    monitoring_location_id: Optional[Union[str, List[str]]] = None,
+    parameter_code: Optional[Union[str, List[str]]] = None,
+    statistic_id: Optional[Union[str, List[str]]] = None,
+    properties: Optional[List[str]] = None,
+    time_series_id: Optional[Union[str, List[str]]] = None,
+    continuous_id: Optional[Union[str, List[str]]] = None,
+    approval_status: Optional[Union[str, List[str]]] = None,
+    unit_of_measure: Optional[Union[str, List[str]]] = None,
+    qualifier: Optional[Union[str, List[str]]] = None,
+    value: Optional[Union[str, List[str]]] = None,
+    last_modified: Optional[str] = None,
+    time: Optional[Union[str, List[str]]] = None,
+    limit: Optional[int] = None,
+    convert_type: bool = True,
+) -> Tuple[pd.DataFrame, BaseMetadata]:
+    """
+    Continuous data provide instantanous water conditions.
+
+    This is an early version of the continuous endpoint that is feature-complete
+    and is being made available for limited use.  Geometries are not included
+    with the continuous endpoint. If the "time" input is left blank, the service
+    will return the most recent year of measurements. Users may request no more
+    than three years of data with each function call.
+    
+    Continuous data are collected at a high frequency, typically 15-minute
+    intervals. Depending on the specific monitoring location, the data may be
+    transmitted automatically via telemetry and be available on WDFN within
+    minutes of collection, while other times the delivery of data may be delayed
+    if the monitoring location does not have the capacity to automatically
+    transmit data.  Continuous data are described by parameter name and
+    parameter code (pcode). These data might also be referred to as
+    "instantaneous values" or "IV".
+    
+    Parameters
+    ----------
+    monitoring_location_id : string or list of strings, optional
+        A unique identifier representing a single monitoring location. This
+        corresponds to the id field in the monitoring-locations endpoint.
+        Monitoring location IDs are created by combining the agency code of
+        the agency responsible for the monitoring location (e.g. USGS) with
+        the ID number of the monitoring location (e.g. 02238500), separated
+        by a hyphen (e.g. USGS-02238500).
+    parameter_code : string or list of strings, optional
+        Parameter codes are 5-digit codes used to identify the constituent
+        measured and the units of measure. A complete list of parameter
+        codes and associated groupings can be found at
+        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+    statistic_id : string or list of strings, optional
+        A code corresponding to the statistic an observation represents.
+        Continuous data are nearly always associated with statistic id
+        00011. Using a different code (such as 00003 for mean) will
+        typically return no results. A complete list of codes and their
+        descriptions can be found at
+        https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
+    properties : string or list of strings, optional
+        A vector of requested columns to be returned from the query.
+        Available options are: geometry, id, time_series_id,
+        monitoring_location_id, parameter_code, statistic_id, time, value,
+        unit_of_measure, approval_status, qualifier, last_modified
+    time_series_id : string or list of strings, optional
+        A unique identifier representing a single time series. This
+        corresponds to the id field in the time-series-metadata endpoint.
+    continuous_id : string or list of strings, optional
+        A universally unique identifier (UUID) representing a single version of
+        a record. It is not stable over time. Every time the record is refreshed
+        in our database (which may happen as part of normal operations and does
+        not imply any change to the data itself) a new ID will be generated. To
+        uniquely identify a single observation over time, compare the time and
+        time_series_id fields; each time series will only have a single
+        observation at a given time.
+    approval_status : string or list of strings, optional
+        Some of the data that you have obtained from this U.S. Geological Survey
+        database may not have received Director's approval. Any such data values
+        are qualified as provisional and are subject to revision. Provisional
+        data are released on the condition that neither the USGS nor the United
+        States Government may be held liable for any damages resulting from its
+        use. This field reflects the approval status of each record, and is either
+        "Approved", meaining processing review has been completed and the data is
+        approved for publication, or "Provisional" and subject to revision. For
+        more information about provisional data, go to:
+        https://waterdata.usgs.gov/provisional-data-statement/.
+    unit_of_measure : string or list of strings, optional
+        A human-readable description of the units of measurement associated
+        with an observation.
+    qualifier : string or list of strings, optional
+        This field indicates any qualifiers associated with an observation, for
+        instance if a sensor may have been impacted by ice or if values were
+        estimated.
+    value : string or list of strings, optional
+        The value of the observation. Values are transmitted as strings in
+        the JSON response format in order to preserve precision.
+    last_modified : string, optional
+        The last time a record was refreshed in our database. This may happen
+        due to regular operational processes and does not necessarily indicate
+        anything about the measurement has changed. You can query this field
+        using date-times or intervals, adhering to RFC 3339, or using ISO 8601
+        duration objects. Intervals may be bounded or half-bounded (double-dots
+        at start or end).
+        Examples:
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+
+        Only features that have a last_modified that intersects the value of
+        datetime are selected.
+    time : string, optional
+        The date an observation represents. You can query this field using
+        date-times or intervals, adhering to RFC 3339, or using ISO 8601
+        duration objects. Intervals may be bounded or half-bounded (double-dots
+        at start or end). Only features that have a time that intersects the
+        value of datetime are selected. If a feature has multiple temporal
+        properties, it is the decision of the server whether only a single
+        temporal property is used to determine the extent or all relevant
+        temporal properties.
+        Examples:
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+
+    limit : numeric, optional
+        The optional limit parameter is used to control the subset of the
+        selected features that should be returned in each page. The maximum
+        allowable limit is 10000. It may be beneficial to set this number lower
+        if your internet connection is spotty. The default (NA) will set the
+        limit to the maximum allowable limit for the service.
+    convert_type : boolean, optional
+        If True, the function will convert the data to dates and qualifier to
+        string vector
+
+    Returns
+    -------
+    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
+        Formatted data returned from the API query.
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
+
+    Examples
+    --------
+    .. code::
+
+        >>> # Get instantaneous gage height data from a
+        >>> # single site from a single year
+        >>> df, md = dataretrieval.waterdata.get_continuous(
+        ...     monitoring_location_id="USGS-02238500",
+        ...     parameter_code="00065",
+        ...     time="2021-01-01T00:00:00Z/2022-01-01T00:00:00Z",
+        ... )
+    """
+    service = "continuous"
+    output_id = "continuous_id"
+
+    # Build argument dictionary, omitting None values
+    args = {
+        k: v
+        for k, v in locals().items()
+        if k not in {"service", "output_id"} and v is not None
+    }
+
+    return get_ogc_data(args, output_id, service)
+
 
 def get_monitoring_locations(
     monitoring_location_id: Optional[List[str]] = None,

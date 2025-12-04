@@ -13,6 +13,7 @@ from __future__ import annotations
 from .api import (
     _check_profiles,
     get_codes,
+    get_continuous,
     get_daily,
     get_field_measurements,
     get_latest_continuous,
@@ -30,6 +31,7 @@ from .types import (
 
 __all__ = [
     "get_codes",
+    "get_continuous",
     "get_daily",
     "get_field_measurements",
     "get_latest_continuous",
