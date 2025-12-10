@@ -122,16 +122,18 @@ def test_get_daily():
     )
     assert "daily_id" in df.columns
     assert "geometry" in df.columns
+    assert df.columns[-1] == "daily_id"
     assert df.shape[1] == 12
     assert df.parameter_code.unique().tolist() == ["00060"]
     assert df.monitoring_location_id.unique().tolist() == ["USGS-05427718"]
     assert df["time"].apply(lambda x: isinstance(x, datetime.date)).all()
+    assert df["time"].iloc[0] < df["time"].iloc[-1]
     assert hasattr(md, 'url')
     assert hasattr(md, 'query_time')
     assert df["value"].dtype == "float64"
 
 def test_get_daily_properties():
-    df, md = get_daily(
+    df,_ = get_daily(
         monitoring_location_id="USGS-05427718",
         parameter_code="00060",
         time="2025-01-01/..",
