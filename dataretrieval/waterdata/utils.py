@@ -662,9 +662,24 @@ def _arrange_cols(
                 plural = output_id.replace("_id", "s_id")
                 if plural in properties:
                     df = df.rename(columns={"id": plural})
-        return df.loc[:, [col for col in properties if col in df.columns]]
+        df = df.loc[:, [col for col in properties if col in df.columns]]
     else:
-        return df.rename(columns={"id": output_id})
+        df = df.rename(columns={"id": output_id})
+    
+    # Move meaningless-to-user, extra id columns to the end
+    # of the dataframe, if they exist
+    extra_id_cols = set(df.columns).intersection({
+        "latest_continuous_id",
+        "latest_daily_id",
+        "daily_id",
+        "continuous_id",
+        "field_measurement_id"
+        })
+    if extra_id_cols:
+        id_col_order = [col for col in df.columns if col not in extra_id_cols] + list(extra_id_cols)
+        df = df.loc[:, id_col_order]
+    
+    return df
 
 
 def _type_cols(df: pd.DataFrame) -> pd.DataFrame:
@@ -709,6 +724,36 @@ def _type_cols(df: pd.DataFrame) -> pd.DataFrame:
     for col in cols.intersection(numerical_cols):
         df[col] = pd.to_numeric(df[col], errors="coerce")
 
+    return df
+
+
+def _sort_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Sorts rows by 'time' and 'monitoring_location_id' columns if they
+    exist.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The input DataFrame containing water data.
+
+    Returns
+    -------
+    pd.DataFrame
+        The DataFrame with rows ordered by time and site.
+
+    """
+    if "time" in df.columns and "monitoring_location_id" in df.columns:
+        df = df.sort_values(
+            by=["time", "monitoring_location_id"],
+            ignore_index=True
+            )
+    elif "time" in df.columns:
+        df = df.sort_values(
+            by="time",
+            ignore_index=True
+            )
+    
     return df
 
 
@@ -769,7 +814,10 @@ def get_ogc_data(
         return_list = _type_cols(return_list)
 
     return_list = _arrange_cols(return_list, properties, output_id)
+
+    return_list = _sort_rows(return_list)
     # Create metadata object from response
     metadata = BaseMetadata(response)
     return return_list, metadata
+
 
