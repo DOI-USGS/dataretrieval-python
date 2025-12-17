@@ -1,4 +1,4 @@
-.. _nwis
+.. _nwis:
 
 dataretrieval.nwis
 ------------------

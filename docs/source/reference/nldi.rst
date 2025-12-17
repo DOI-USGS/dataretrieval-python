@@ -1,4 +1,4 @@
-.. _nldi
+.. _nldi:
 
 dataretrieval.nldi
 ------------------

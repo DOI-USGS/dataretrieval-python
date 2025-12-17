@@ -11,18 +11,17 @@ from typing import TYPE_CHECKING, Literal, get_args
 import pandas as pd
 import warnings
 
-from dataretrieval.utils import BaseMetadata, to_str
-from dataretrieval.waterdata import get_samples
+from dataretrieval.utils import BaseMetadata
 
 if TYPE_CHECKING:
     from typing import Optional, Tuple, Union
-    from dataretrieval.waterdata import _SERVICES, _PROFILES
+    from dataretrieval.waterdata import SERVICES, PROFILES
     from pandas import DataFrame
 
 def get_usgs_samples(
     ssl_check: bool = True,
-    service: _SERVICES = "results",
-    profile: _PROFILES = "fullphyschem",
+    service: SERVICES = "results",
+    profile: PROFILES = "fullphyschem",
     activityMediaName: Optional[Union[str, list[str]]] = None,
     activityStartDateLower: Optional[str] = None,
     activityStartDateUpper: Optional[str] = None,
@@ -212,7 +211,8 @@ def get_usgs_samples(
         DeprecationWarning,
         stacklevel=2,
     )
-    
+
+    from dataretrieval.waterdata import get_samples
     result = get_samples(
         ssl_check=ssl_check,
         service=service,

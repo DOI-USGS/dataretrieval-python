@@ -10,7 +10,6 @@ API reference
     nadp
     nldi
     nwis
-    samples
     streamstats
     utils
     waterdata
