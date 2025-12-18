@@ -27,6 +27,9 @@ dynamic = ["version"]
 [tool.setuptools]
 packages = ["dataretrieval", "dataretrieval.codes"]
 
+[tool.setuptools.package-data]
+dataretrieval = ["py.typed"]
+
 [project.optional-dependencies]
 test = [
   "pytest > 5.0.0",
