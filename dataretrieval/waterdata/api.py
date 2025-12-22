@@ -1438,9 +1438,13 @@ def get_reference_table(
 
     # Give ID column a more meaningful name
     if collection.endswith("s"):
-        return_list = return_list.rename(columns={"id": f"{collection[:-1].replace("-", "_")}_id"})
+        return_list = return_list.rename(
+            columns={"id": f"{collection[:-1].replace("-", "_")}_id"}
+            )
     else:
-        return_list = return_list.rename(columns={"id": f"{collection.replace("-", "_")}_id"})
+        return_list = return_list.rename(
+            columns={"id": f"{collection.replace("-", "_")}_id"}
+            )
 
     # Create metadata object from response
     metadata = BaseMetadata(response)
