@@ -674,7 +674,7 @@ def _arrange_cols(
     # If the arbitrary id column is returned (either due to properties
     # being none or NaN), then move it to the end of the dataframe, but
     # if part of properties, keep in requested order
-    if extra_id_col and properties is None or all(pd.isna(properties)):
+    if extra_id_col and (properties is None or all(pd.isna(properties))):
         id_col_order = [col for col in df.columns if col not in extra_id_col] + list(extra_id_col)
         df = df.loc[:, id_col_order]
     
