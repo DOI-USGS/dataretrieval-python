@@ -16,6 +16,7 @@ from dataretrieval.waterdata import (
     get_latest_daily,
     get_field_measurements,
     get_time_series_metadata,
+    get_reference_table
 )
 
 def mock_request(requests_mock, request_url, file_path):
@@ -227,4 +228,14 @@ def test_get_time_series_metadata():
     assert hasattr(md, 'url')
     assert hasattr(md, 'query_time')
 
+def test_get_reference_table():
+    df, md = get_reference_table("agency-codes")
+    assert "agency_code_id" in df.columns
+    assert df.shape[0] > 0
+    assert hasattr(md, 'url')
+    assert hasattr(md, 'query_time')
+
+def test_get_reference_table_wrong_name():
+    with pytest.raises(ValueError):
+        get_reference_table("agency-cod")
 
