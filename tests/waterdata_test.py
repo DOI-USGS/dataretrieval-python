@@ -214,6 +214,15 @@ def test_get_latest_daily():
     assert hasattr(md, 'url')
     assert hasattr(md, 'query_time')
 
+def test_get_latest_daily_properties_geometry():
+    df, md = get_latest_daily(
+        monitoring_location_id=["USGS-05427718", "USGS-05427719"],
+        parameter_code=["00060", "00065"],
+        properties=['monitoring_location_id', 'parameter_code', 'time', 'value', 'unit_of_measure']
+    )
+    assert "geometry" in df.columns
+    assert df.shape[1] == 6
+
 def test_get_field_measurements():
     df, md = get_field_measurements(
         monitoring_location_id="USGS-05427718",

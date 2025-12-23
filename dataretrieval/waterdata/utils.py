@@ -653,7 +653,11 @@ def _arrange_cols(
     df = df.rename(columns={"id": output_id})
 
     # If properties are provided, filter to only those columns
+    # plus geometry if skip_geometry is False
     if properties and not all(pd.isna(properties)):
+        # Make sure geometry stays in the dataframe if skip_geometry is False
+        if 'geometry' in df.columns and 'geometry' not in properties:
+            properties.append('geometry')
         # id is technically a valid column from the service, but these
         # functions make the name more specific. So, if someone requests
         # 'id', give them the output_id column
