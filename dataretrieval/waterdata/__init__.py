@@ -19,6 +19,7 @@ from .api import (
     get_latest_continuous,
     get_latest_daily,
     get_monitoring_locations,
+    get_reference_table,
     get_samples,
     get_time_series_metadata,
 )
@@ -37,6 +38,7 @@ __all__ = [
     "get_latest_continuous",
     "get_latest_daily",
     "get_monitoring_locations",
+    "get_reference_table",
     "get_samples",
     "get_time_series_metadata",
     "_check_profiles",

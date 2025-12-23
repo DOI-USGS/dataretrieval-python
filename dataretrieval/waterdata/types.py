@@ -11,6 +11,27 @@ CODE_SERVICES = Literal[
     "states",
 ]
 
+METADATA_COLLECTIONS = Literal[
+    "agency-codes",
+    "altitude-datums",
+    "aquifer-codes",
+    "aquifer-types",
+    "coordinate-accuracy-codes",
+    "coordinate-datum-codes",
+    "coordinate-method-codes",
+    "counties",
+    "hydrologic-unit-codes",
+    "medium-codes",
+    "national-aquifer-codes",
+    "parameter-codes",
+    "reliability-codes",
+    "site-types",
+    "states",
+    "statistic-codes",
+    "topographic-codes",
+    "time-zone-codes",
+]
+
 SERVICES = Literal[
     "activities",
     "locations",
