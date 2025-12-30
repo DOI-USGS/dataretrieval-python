@@ -27,6 +27,8 @@ BASE_URL = "https://api.waterdata.usgs.gov"
 OGC_API_VERSION = "v0"
 OGC_API_URL = f"{BASE_URL}/ogcapi/{OGC_API_VERSION}"
 SAMPLES_URL = f"{BASE_URL}/samples-data"
+STATISTICS_API_VERSION = "v0"
+STATISTICS_API_URL = f"{BASE_URL}/statistics/{STATISTICS_API_VERSION}"
 
 
 def _switch_arg_id(ls: Dict[str, Any], id_name: str, service: str):
@@ -819,5 +821,153 @@ def get_ogc_data(
     # Create metadata object from response
     metadata = BaseMetadata(response)
     return return_list, metadata
+
+def get_stats_data(
+    args: Dict[str, Any],
+    service: str,
+    geopd: bool,
+    client: Optional[requests.Session] = None,
+    ) -> Tuple[pd.DataFrame, BaseMetadata]:
+    """
+    Retrieves statistical data from a specified water data endpoint and returns it as a pandas DataFrame with metadata.
+
+    This function prepares request arguments, constructs API requests, handles pagination, processes the results,
+    and formats the output DataFrame according to the specified parameters.
+
+    Parameters
+    ----------
+    args : Dict[str, Any]
+        Dictionary of request arguments for the statistics service.
+    service : str
+        The statistics service type (e.g., "observationNormals", "observationIntervals").
+    geopd : bool, optional
+        If True, returns a GeoDataFrame if geometries are present; otherwise, returns a pandas DataFrame.
+        Defaults to False.
+
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame containing the retrieved and processed statistical data.
+    BaseMetadata
+        A metadata object containing request information including URL and query time.
+    """
+
+    url = f"{STATISTICS_API_URL}/{service}"
+
+    if not geopd:
+        logger.info(
+            "Geopandas not installed. Geometries will be flattened into pandas DataFrames."
+        )
+
+    headers = _default_headers()
+
+    request = requests.Request(
+            method="GET",
+            url=url,
+            headers=headers,
+            params=args,
+        )
+
+    req = request.prepare()
+    logger.info("Request: %s", req.url)
+
+    # Get first response from client
+    # using GET or POST call
+    close_client = client is None
+    client = client or requests.Session()
+
+    try:
+        resp = client.send(req)
+        if resp.status_code != 200:
+            raise Exception(_error_body(resp))
+
+        # Store the initial response for metadata
+        initial_response = resp
+
+        # Grab some aspects of the original request: headers and the
+        # request type (GET or POST)
+        method = req.method.upper()
+        headers = dict(req.headers)
+
+        # Check if it's an empty response
+        body = resp.json()
+        if body is None:
+            return pd.DataFrame()
+
+        # If geopandas not installed, return a pandas dataframe
+        # otherwise return a geodataframe
+        if not geopd:
+            df = pd.json_normalize(resp['features'])
+        else:
+            df = gpd.GeoDataFrame.from_features(resp["features"]).drop(columns=['data'])
+        
+        dat = pd.json_normalize(
+            resp,
+            record_path=["features", "properties", "data", "values"],
+            meta=[
+                ["features", "properties", "monitoring_location_id"],
+                ["features", "properties", "data", "parameter_code"],
+                ["features", "properties", "data", "unit_of_measure"],
+                ["features", "properties", "data", "parent_time_series_id"],
+                ["features", "geometry", "coordinates"],
+                ],
+                meta_prefix="",
+                errors="ignore",
+                )
+        dat.columns = dat.columns.str.split('.').str[-1]
+
+        dfs = df.merge(dat, on='monitoring_location_id', how='left')
+
+        curr_url = body['next']
+
+        while curr_url:
+            try:
+                resp = client.request(
+                    method,
+                    curr_url,
+                    headers=headers,
+                    )
+                if resp.status_code != 200:
+                    error_text = _error_body(resp)
+                    raise Exception(error_text)
+                        # Check if it's an empty response
+                body = resp.json()
+                if body is None:
+                    return pd.DataFrame()
+
+                # If geopandas not installed, return a pandas dataframe
+                # otherwise return a geodataframe
+                if not geopd:
+                    df1 = pd.json_normalize(resp['features'])
+                else:
+                    df1 = gpd.GeoDataFrame.from_features(resp["features"]).drop(columns=['data'])
+                
+                dat = pd.json_normalize(
+                    resp,
+                    record_path=["features", "properties", "data", "values"],
+                    meta=[
+                        ["features", "properties", "monitoring_location_id"],
+                        ["features", "properties", "data", "parameter_code"],
+                        ["features", "properties", "data", "unit_of_measure"],
+                        ["features", "properties", "data", "parent_time_series_id"],
+                        ["features", "geometry", "coordinates"],
+                        ],
+                        meta_prefix="",
+                        errors="ignore",
+                        )
+                dat.columns = dat.columns.str.split('.').str[-1]
+
+                df1 = df1.merge(dat, on='monitoring_location_id', how='left')
+                dfs = pd.concat([dfs, df1], ignore_index=True)
+                curr_url = body['next']
+            except Exception:
+                warnings.warn(f"{error_text}. Data request incomplete.")
+                logger.error("Request incomplete. %s", error_text)
+                logger.warning("Request failed for URL: %s. Data download interrupted.", curr_url)
+                curr_url = None
+        return dfs, BaseMetadata(initial_response)
+    finally:
+        if close_client:
+            client.close()
 
 
