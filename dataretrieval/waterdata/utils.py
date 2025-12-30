@@ -848,7 +848,8 @@ def _handle_stats_nesting(
     # If geopandas not installed, return a pandas dataframe
     # otherwise return a geodataframe
     if not geopd:
-        df = pd.json_normalize(body['features'])
+        df = pd.json_normalize(body['features']).drop(columns=['type', 'properties.data'])
+        df.columns = df.columns.str.split('.').str[-1]
     else:
         df = gpd.GeoDataFrame.from_features(body["features"]).drop(columns=['data'])
     
@@ -862,7 +863,7 @@ def _handle_stats_nesting(
             ["features", "properties", "data", "parameter_code"],
             ["features", "properties", "data", "unit_of_measure"],
             ["features", "properties", "data", "parent_time_series_id"],
-            ["features", "geometry", "coordinates"],
+            #["features", "geometry", "coordinates"],
             ],
             meta_prefix="",
             errors="ignore",
@@ -946,7 +947,7 @@ def get_stats_data(
                     headers=headers,
                     )
                 body = resp.json()
-                df1 = _handle_stats_nesting(body, geopd=GEOPANDAS)
+                df1 = _handle_stats_nesting(body, geopd=False)
                 dfs = pd.concat([dfs, df1], ignore_index=True)
                 next_token = body['next']
             except Exception:
