@@ -586,7 +586,6 @@ def _walk_pages(
                 curr_url = _next_req_url(resp)
             except Exception:
                 error_text = _error_body(resp)
-                warnings.warn(f"{error_text}. Data request incomplete.")
                 logger.error("Request incomplete. %s", error_text)
                 logger.warning("Request failed for URL: %s. Data download interrupted.", curr_url)
                 curr_url = None
@@ -952,7 +951,6 @@ def get_stats_data(
                 next_token = body['next']
             except Exception:
                 error_text = _error_body(resp)
-                warnings.warn(f"{error_text}. Data request incomplete.")
                 logger.error("Request incomplete. %s", error_text)
                 logger.warning("Request failed for URL: %s. Data download interrupted.", resp.url)
                 next_token = None
