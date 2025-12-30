@@ -544,7 +544,7 @@ def _walk_pages(
     Raises
     ------
     Exception
-        If a request fails or returns a non-200 status code.
+        If a request fails/returns a non-200 status code.
     """
     logger.info("Requesting: %s", req.url)
 
@@ -581,9 +581,6 @@ def _walk_pages(
                     headers=headers,
                     data=content if method == "POST" else None,
                     )
-                if resp.status_code != 200:
-                    error_text = _error_body(resp)
-                    raise Exception(error_text)
                 df1 = _get_resp_data(resp, geopd=geopd)
                 dfs = pd.concat([dfs, df1], ignore_index=True)
                 curr_url = _next_req_url(resp)
