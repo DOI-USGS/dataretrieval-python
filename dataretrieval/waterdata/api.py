@@ -1653,8 +1653,8 @@ def get_statistics(
         country_code: Optional[str] = None,
         state_code: Optional[str] = None,
         county_code: Optional[str] = None,
-        start_date: Optional[Union[str, datetime]] = None,
-        end_date: Optional[Union[str, datetime]] = None,
+        start_date: Optional[Union[str, pd.datetime]] = None,
+        end_date: Optional[Union[str, pd.datetime]] = None,
         monitoring_location_id: Optional[str] = None,
         page_size: int = 1000,
         parent_timeseries_id: Optional[str] = None,
@@ -1741,12 +1741,12 @@ def get_statistics(
     params = {
         k: v
         for k, v in locals().items()
-        if k not in ["service"] and v is not None
+        if k not in ["service", "valid_services"] and v is not None
     }
     
     return get_stats_data(
         args=params,
-        service=service,
+        service=service
         )
 
 

@@ -20,6 +20,7 @@ from .api import (
     get_latest_daily,
     get_monitoring_locations,
     get_samples,
+    get_statistics,
     get_time_series_metadata,
 )
 from .types import (
@@ -38,6 +39,7 @@ __all__ = [
     "get_latest_daily",
     "get_monitoring_locations",
     "get_samples",
+    "get_statistics",
     "get_time_series_metadata",
     "_check_profiles",
     "CODE_SERVICES",

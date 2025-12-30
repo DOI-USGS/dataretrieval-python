@@ -588,6 +588,7 @@ def _walk_pages(
                 dfs = pd.concat([dfs, df1], ignore_index=True)
                 curr_url = _next_req_url(resp)
             except Exception:
+                error_text = _error_body(resp)
                 warnings.warn(f"{error_text}. Data request incomplete.")
                 logger.error("Request incomplete. %s", error_text)
                 logger.warning("Request failed for URL: %s. Data download interrupted.", curr_url)
@@ -822,10 +823,62 @@ def get_ogc_data(
     metadata = BaseMetadata(response)
     return return_list, metadata
 
+def _handle_stats_nesting(
+        body: Dict[str, Any],
+        geopd: bool = False,
+) -> pd.DataFrame:
+    """
+    Takes nested json from stats service and flattens into a dataframe with
+    one row per monitoring location, parameter, and statistic.
+
+    Parameters
+    ----------
+    body : Dict[str, Any]
+        The JSON response body from the statistics service containing nested data.
+
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame containing the flattened statistical data.
+    """
+    if body is None:
+            return pd.DataFrame()
+    
+    if not geopd:
+        logger.info(
+            "Geopandas not installed. Geometries will be flattened into pandas DataFrames."
+        )
+
+    # If geopandas not installed, return a pandas dataframe
+    # otherwise return a geodataframe
+    if not geopd:
+        df = pd.json_normalize(body['features'])
+    else:
+        df = gpd.GeoDataFrame.from_features(body["features"]).drop(columns=['data'])
+    
+    # Unnest json features, properties, data, and values while retaining necessary
+    # metadata to merge with main dataframe.   
+    dat = pd.json_normalize(
+        body,
+        record_path=["features", "properties", "data", "values"],
+        meta=[
+            ["features", "properties", "monitoring_location_id"],
+            ["features", "properties", "data", "parameter_code"],
+            ["features", "properties", "data", "unit_of_measure"],
+            ["features", "properties", "data", "parent_time_series_id"],
+            ["features", "geometry", "coordinates"],
+            ],
+            meta_prefix="",
+            errors="ignore",
+            )
+    dat.columns = dat.columns.str.split('.').str[-1]
+
+    return df.merge(dat, on='monitoring_location_id', how='left')
+
+
 def get_stats_data(
     args: Dict[str, Any],
     service: str,
-    geopd: bool,
     client: Optional[requests.Session] = None,
     ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """
@@ -840,9 +893,6 @@ def get_stats_data(
         Dictionary of request arguments for the statistics service.
     service : str
         The statistics service type (e.g., "observationNormals", "observationIntervals").
-    geopd : bool, optional
-        If True, returns a GeoDataFrame if geometries are present; otherwise, returns a pandas DataFrame.
-        Defaults to False.
 
     Returns
     -------
@@ -854,11 +904,6 @@ def get_stats_data(
 
     url = f"{STATISTICS_API_URL}/{service}"
 
-    if not geopd:
-        logger.info(
-            "Geopandas not installed. Geometries will be flattened into pandas DataFrames."
-        )
-
     headers = _default_headers()
 
     request = requests.Request(
@@ -867,12 +912,11 @@ def get_stats_data(
             headers=headers,
             params=args,
         )
-
     req = request.prepare()
     logger.info("Request: %s", req.url)
 
-    # Get first response from client
-    # using GET or POST call
+    # create temp client if not provided
+    # and close it after the request is done
     close_client = client is None
     client = client or requests.Session()
 
@@ -889,82 +933,32 @@ def get_stats_data(
         method = req.method.upper()
         headers = dict(req.headers)
 
-        # Check if it's an empty response
         body = resp.json()
-        if body is None:
-            return pd.DataFrame()
+        dfs = _handle_stats_nesting(body, geopd=GEOPANDAS)
 
-        # If geopandas not installed, return a pandas dataframe
-        # otherwise return a geodataframe
-        if not geopd:
-            df = pd.json_normalize(resp['features'])
-        else:
-            df = gpd.GeoDataFrame.from_features(resp["features"]).drop(columns=['data'])
-        
-        dat = pd.json_normalize(
-            resp,
-            record_path=["features", "properties", "data", "values"],
-            meta=[
-                ["features", "properties", "monitoring_location_id"],
-                ["features", "properties", "data", "parameter_code"],
-                ["features", "properties", "data", "unit_of_measure"],
-                ["features", "properties", "data", "parent_time_series_id"],
-                ["features", "geometry", "coordinates"],
-                ],
-                meta_prefix="",
-                errors="ignore",
-                )
-        dat.columns = dat.columns.str.split('.').str[-1]
+        # Look for a next code in the response body
+        next_token = body['next']
 
-        dfs = df.merge(dat, on='monitoring_location_id', how='left')
+        while next_token:
+            args['next_token'] = next_token
 
-        curr_url = body['next']
-
-        while curr_url:
             try:
                 resp = client.request(
                     method,
-                    curr_url,
+                    url=url,
+                    params=args,
                     headers=headers,
                     )
-                if resp.status_code != 200:
-                    error_text = _error_body(resp)
-                    raise Exception(error_text)
-                        # Check if it's an empty response
                 body = resp.json()
-                if body is None:
-                    return pd.DataFrame()
-
-                # If geopandas not installed, return a pandas dataframe
-                # otherwise return a geodataframe
-                if not geopd:
-                    df1 = pd.json_normalize(resp['features'])
-                else:
-                    df1 = gpd.GeoDataFrame.from_features(resp["features"]).drop(columns=['data'])
-                
-                dat = pd.json_normalize(
-                    resp,
-                    record_path=["features", "properties", "data", "values"],
-                    meta=[
-                        ["features", "properties", "monitoring_location_id"],
-                        ["features", "properties", "data", "parameter_code"],
-                        ["features", "properties", "data", "unit_of_measure"],
-                        ["features", "properties", "data", "parent_time_series_id"],
-                        ["features", "geometry", "coordinates"],
-                        ],
-                        meta_prefix="",
-                        errors="ignore",
-                        )
-                dat.columns = dat.columns.str.split('.').str[-1]
-
-                df1 = df1.merge(dat, on='monitoring_location_id', how='left')
+                df1 = _handle_stats_nesting(body, geopd=GEOPANDAS)
                 dfs = pd.concat([dfs, df1], ignore_index=True)
-                curr_url = body['next']
+                next_token = body['next']
             except Exception:
+                error_text = _error_body(resp)
                 warnings.warn(f"{error_text}. Data request incomplete.")
                 logger.error("Request incomplete. %s", error_text)
-                logger.warning("Request failed for URL: %s. Data download interrupted.", curr_url)
-                curr_url = None
+                logger.warning("Request failed for URL: %s. Data download interrupted.", resp.url)
+                next_token = None
         return dfs, BaseMetadata(initial_response)
     finally:
         if close_client:
