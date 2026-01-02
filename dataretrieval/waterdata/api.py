@@ -17,7 +17,6 @@ from dataretrieval.utils import BaseMetadata, to_str
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,
     METADATA_COLLECTIONS,
-    PROFILE_LOOKUP,
     PROFILES,
     SERVICES,
 )
@@ -25,7 +24,8 @@ from dataretrieval.waterdata.utils import (
     SAMPLES_URL,
     get_ogc_data,
     _construct_api_requests,
-    _walk_pages
+    _walk_pages,
+    _check_profiles
 )
 
 # Set up logger for this module
@@ -1703,31 +1703,3 @@ def get_samples(
 
     return df, BaseMetadata(response)
 
-
-def _check_profiles(
-    service: SERVICES,
-    profile: PROFILES,
-) -> None:
-    """Check whether a service profile is valid.
-
-    Parameters
-    ----------
-    service : string
-        One of the service names from the "services" list.
-    profile : string
-        One of the profile names from "results_profiles",
-        "locations_profiles", "activities_profiles",
-        "projects_profiles" or "organizations_profiles".
-    """
-    valid_services = get_args(SERVICES)
-    if service not in valid_services:
-        raise ValueError(
-            f"Invalid service: '{service}'. Valid options are: {valid_services}."
-        )
-
-    valid_profiles = PROFILE_LOOKUP[service]
-    if profile not in valid_profiles:
-        raise ValueError(
-            f"Invalid profile: '{profile}' for service '{service}'. "
-            f"Valid options are: {valid_profiles}."
-        )

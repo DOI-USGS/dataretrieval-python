@@ -4,7 +4,7 @@ import warnings
 import os
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, get_args
 
 import pandas as pd
 import requests
@@ -12,6 +12,12 @@ from zoneinfo import ZoneInfo
 
 from dataretrieval.utils import BaseMetadata
 from dataretrieval import __version__
+
+from dataretrieval.waterdata.types import (
+    PROFILE_LOOKUP,
+    PROFILES,
+    SERVICES,
+)
 
 try:
     import geopandas as gpd
@@ -823,4 +829,32 @@ def get_ogc_data(
     metadata = BaseMetadata(response)
     return return_list, metadata
 
+
+def _check_profiles(
+    service: SERVICES,
+    profile: PROFILES,
+) -> None:
+    """Check whether a service profile is valid.
+
+    Parameters
+    ----------
+    service : string
+        One of the service names from the "services" list.
+    profile : string
+        One of the profile names from "results_profiles",
+        "locations_profiles", "activities_profiles",
+        "projects_profiles" or "organizations_profiles".
+    """
+    valid_services = get_args(SERVICES)
+    if service not in valid_services:
+        raise ValueError(
+            f"Invalid service: '{service}'. Valid options are: {valid_services}."
+        )
+
+    valid_profiles = PROFILE_LOOKUP[service]
+    if profile not in valid_profiles:
+        raise ValueError(
+            f"Invalid profile: '{profile}' for service '{service}'. "
+            f"Valid options are: {valid_profiles}."
+        )
 
