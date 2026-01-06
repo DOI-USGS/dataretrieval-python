@@ -691,6 +691,8 @@ def get_time_series_metadata(
     parameter_name: Optional[Union[str, List[str]]] = None,
     properties: Optional[Union[str, List[str]]] = None,
     statistic_id: Optional[Union[str, List[str]]] = None,
+    hydrologic_unit_code: Optional[Union[str, List[str]]] = None,
+    state_name: Optional[Union[str, List[str]]] = None,
     last_modified: Optional[Union[str, List[str]]] = None,
     begin: Optional[Union[str, List[str]]] = None,
     end: Optional[Union[str, List[str]]] = None,
@@ -742,6 +744,17 @@ def get_time_series_metadata(
         Example codes include 00001 (max), 00002 (min), and 00003 (mean).
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
+    hydrologic_unit_code : string or list of strings, optional
+        The United States is divided and sub-divided into successively smaller
+        hydrologic units which are classified into four levels: regions,
+        sub-regions, accounting units, and cataloging units. The hydrologic
+        units are arranged within each other, from the smallest (cataloging units)
+        to the largest (regions). Each hydrologic unit is identified by a unique
+        hydrologic unit code (HUC) consisting of two to eight digits based on the
+        four levels of classification in the hydrologic unit system.
+    state_name : string or list of strings, optional
+        The name of the state or state equivalent in which the monitoring location
+        is located.
     last_modified : string, optional
         The last time a record was refreshed in our database. This may happen
         due to regular operational processes and does not necessarily indicate
