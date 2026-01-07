@@ -11,7 +11,6 @@ from __future__ import annotations
 
 # Public API exports
 from .api import (
-    _check_profiles,
     get_codes,
     get_continuous,
     get_daily,
@@ -19,6 +18,7 @@ from .api import (
     get_latest_continuous,
     get_latest_daily,
     get_monitoring_locations,
+    get_reference_table,
     get_samples,
     get_time_series_metadata,
 )
@@ -37,9 +37,9 @@ __all__ = [
     "get_latest_continuous",
     "get_latest_daily",
     "get_monitoring_locations",
+    "get_reference_table",
     "get_samples",
     "get_time_series_metadata",
-    "_check_profiles",
     "CODE_SERVICES",
     "SERVICES",
     "PROFILES",

@@ -16,11 +16,17 @@ from requests.models import PreparedRequest
 from dataretrieval.utils import BaseMetadata, to_str
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,
-    PROFILE_LOOKUP,
+    METADATA_COLLECTIONS,
     PROFILES,
     SERVICES,
 )
-from dataretrieval.waterdata.utils import SAMPLES_URL, get_ogc_data
+from dataretrieval.waterdata.utils import (
+    SAMPLES_URL,
+    get_ogc_data,
+    _construct_api_requests,
+    _walk_pages,
+    _check_profiles
+)
 
 # Set up logger for this module
 logger = logging.getLogger(__name__)
@@ -685,6 +691,8 @@ def get_time_series_metadata(
     parameter_name: Optional[Union[str, List[str]]] = None,
     properties: Optional[Union[str, List[str]]] = None,
     statistic_id: Optional[Union[str, List[str]]] = None,
+    hydrologic_unit_code: Optional[Union[str, List[str]]] = None,
+    state_name: Optional[Union[str, List[str]]] = None,
     last_modified: Optional[Union[str, List[str]]] = None,
     begin: Optional[Union[str, List[str]]] = None,
     end: Optional[Union[str, List[str]]] = None,
@@ -736,6 +744,17 @@ def get_time_series_metadata(
         Example codes include 00001 (max), 00002 (min), and 00003 (mean).
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
+    hydrologic_unit_code : string or list of strings, optional
+        The United States is divided and sub-divided into successively smaller
+        hydrologic units which are classified into four levels: regions,
+        sub-regions, accounting units, and cataloging units. The hydrologic
+        units are arranged within each other, from the smallest (cataloging units)
+        to the largest (regions). Each hydrologic unit is identified by a unique
+        hydrologic unit code (HUC) consisting of two to eight digits based on the
+        four levels of classification in the hydrologic unit system.
+    state_name : string or list of strings, optional
+        The name of the state or state equivalent in which the monitoring location
+        is located.
     last_modified : string, optional
         The last time a record was refreshed in our database. This may happen
         due to regular operational processes and does not necessarily indicate
@@ -1388,6 +1407,62 @@ def get_field_measurements(
 
     return get_ogc_data(args, output_id, service)
 
+def get_reference_table(
+        collection: str,
+        limit: Optional[int] = None,
+        ) -> Tuple[pd.DataFrame, BaseMetadata]:
+    """Get metadata reference tables for the USGS Water Data API.
+
+    Reference tables provide the range of allowable values for parameter
+    arguments in the waterdata module. 
+
+    Parameters
+    ----------
+    collection : string
+        One of the following options: "agency-codes", "altitude-datums",
+        "aquifer-codes", "aquifer-types", "coordinate-accuracy-codes",
+        "coordinate-datum-codes", "coordinate-method-codes", "counties",
+        "hydrologic-unit-codes", "medium-codes", "national-aquifer-codes",
+        "parameter-codes", "reliability-codes", "site-types", "states",
+        "statistic-codes", "topographic-codes", "time-zone-codes"
+    limit : numeric, optional
+        The optional limit parameter is used to control the subset of the
+        selected features that should be returned in each page. The maximum
+        allowable limit is 50000. It may be beneficial to set this number lower
+        if your internet connection is spotty. The default (None) will set the
+        limit to the maximum allowable limit for the service.
+    """
+    valid_code_services = get_args(METADATA_COLLECTIONS)
+    if collection not in valid_code_services:
+        raise ValueError(
+            f"Invalid code service: '{collection}'. "
+            f"Valid options are: {valid_code_services}."
+        )
+    
+    req = _construct_api_requests(
+        service=collection,
+        limit=limit,
+        skip_geometry=True,
+    )
+    # Run API request and iterate through pages if needed
+    return_list, response = _walk_pages(
+        geopd=False, req=req
+    )
+
+    # Give ID column a more meaningful name
+    if collection.endswith("s"):
+        return_list = return_list.rename(
+            columns={"id": f"{collection[:-1].replace('-', '_')}_id"}
+            )
+    else:
+        return_list = return_list.rename(
+            columns={"id": f"{collection.replace('-', '_')}_id"}
+            )
+
+    # Create metadata object from response
+    metadata = BaseMetadata(response)
+    return return_list, metadata
+
 
 def get_codes(code_service: CODE_SERVICES) -> pd.DataFrame:
     """Return codes from a Samples code service.
@@ -1641,31 +1716,3 @@ def get_samples(
 
     return df, BaseMetadata(response)
 
-
-def _check_profiles(
-    service: SERVICES,
-    profile: PROFILES,
-) -> None:
-    """Check whether a service profile is valid.
-
-    Parameters
-    ----------
-    service : string
-        One of the service names from the "services" list.
-    profile : string
-        One of the profile names from "results_profiles",
-        "locations_profiles", "activities_profiles",
-        "projects_profiles" or "organizations_profiles".
-    """
-    valid_services = get_args(SERVICES)
-    if service not in valid_services:
-        raise ValueError(
-            f"Invalid service: '{service}'. Valid options are: {valid_services}."
-        )
-
-    valid_profiles = PROFILE_LOOKUP[service]
-    if profile not in valid_profiles:
-        raise ValueError(
-            f"Invalid profile: '{profile}' for service '{service}'. "
-            f"Valid options are: {valid_profiles}."
-        )

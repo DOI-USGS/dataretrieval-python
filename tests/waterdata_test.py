@@ -16,6 +16,7 @@ from dataretrieval.waterdata import (
     get_latest_daily,
     get_field_measurements,
     get_time_series_metadata,
+    get_reference_table
 )
 
 def mock_request(requests_mock, request_url, file_path):
@@ -139,10 +140,19 @@ def test_get_daily_properties():
         time="2025-01-01/..",
         properties=["daily_id", "monitoring_location_id", "parameter_code", "time", "value", "geometry"]
     )
-    assert "daily_id" in df.columns
-    assert "geometry" in df.columns
+    assert "daily_id" == df.columns[0]
+    assert "geometry" == df.columns[-1]
     assert df.shape[1] == 6
     assert df.parameter_code.unique().tolist() == ["00060"]
+
+def test_get_daily_properties_id():
+    df,_ = get_daily(
+        monitoring_location_id="USGS-05427718",
+        parameter_code="00060",
+        time="2025-01-01/..",
+        properties=["monitoring_location_id", "id", "parameter_code", "time", "value", "geometry"]
+    )
+    assert "daily_id" == df.columns[1]
 
 def test_get_daily_no_geometry():
     df,_ = get_daily(
@@ -187,7 +197,7 @@ def test_get_latest_continuous():
         monitoring_location_id=["USGS-05427718", "USGS-05427719"],
         parameter_code=["00060", "00065"]
     )
-    assert "latest_continuous_id" in df.columns
+    assert "latest_continuous_id" == df.columns[-1]
     assert df.shape[0] <= 4
     assert df.statistic_id.unique().tolist() == ["00011"]
     assert hasattr(md, 'url')
@@ -203,6 +213,15 @@ def test_get_latest_daily():
     assert df.shape[1] == 12
     assert hasattr(md, 'url')
     assert hasattr(md, 'query_time')
+
+def test_get_latest_daily_properties_geometry():
+    df, md = get_latest_daily(
+        monitoring_location_id=["USGS-05427718", "USGS-05427719"],
+        parameter_code=["00060", "00065"],
+        properties=['monitoring_location_id', 'parameter_code', 'time', 'value', 'unit_of_measure']
+    )
+    assert "geometry" in df.columns
+    assert df.shape[1] == 6
 
 def test_get_field_measurements():
     df, md = get_field_measurements(
@@ -227,4 +246,14 @@ def test_get_time_series_metadata():
     assert hasattr(md, 'url')
     assert hasattr(md, 'query_time')
 
+def test_get_reference_table():
+    df, md = get_reference_table("agency-codes")
+    assert "agency_code_id" in df.columns
+    assert df.shape[0] > 0
+    assert hasattr(md, 'url')
+    assert hasattr(md, 'query_time')
+
+def test_get_reference_table_wrong_name():
+    with pytest.raises(ValueError):
+        get_reference_table("agency-cod")
 

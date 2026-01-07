@@ -4,7 +4,7 @@ import warnings
 import os
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, get_args
 
 import pandas as pd
 import requests
@@ -12,6 +12,12 @@ from zoneinfo import ZoneInfo
 
 from dataretrieval.utils import BaseMetadata
 from dataretrieval import __version__
+
+from dataretrieval.waterdata.types import (
+    PROFILE_LOOKUP,
+    PROFILES,
+    SERVICES,
+)
 
 try:
     import geopandas as gpd
@@ -547,7 +553,7 @@ def _walk_pages(
     logger.info("Requesting: %s", req.url)
 
     if not geopd:
-        logger.warning(
+        logger.info(
             "Geopandas not installed. Geometries will be flattened into pandas DataFrames."
         )
 
@@ -648,35 +654,38 @@ def _arrange_cols(
     pd.DataFrame or gpd.GeoDataFrame
         The DataFrame with columns rearranged and/or renamed according to the specified properties and output_id.
     """
+
+    # Rename id column to output_id
+    df = df.rename(columns={"id": output_id})
+
+    # If properties are provided, filter to only those columns
+    # plus geometry if skip_geometry is False
     if properties and not all(pd.isna(properties)):
-        if "id" not in properties:
-            # If user refers to service-specific output id in properties,
-            # then rename the "id" column to the output_id (id column is
-            # automatically included).
-            if output_id in properties:
-                df = df.rename(columns={"id": output_id})
-            # If output id is not in properties, but user requests the plural
-            # of the output_id (e.g. "monitoring_locations_id"), then rename
-            # "id" to plural. This is pretty niche.
-            else:
-                plural = output_id.replace("_id", "s_id")
-                if plural in properties:
-                    df = df.rename(columns={"id": plural})
+        # Make sure geometry stays in the dataframe if skip_geometry is False
+        if 'geometry' in df.columns and 'geometry' not in properties:
+            properties.append('geometry')
+        # id is technically a valid column from the service, but these
+        # functions make the name more specific. So, if someone requests
+        # 'id', give them the output_id column
+        if 'id' in properties:
+            properties[properties.index('id')] = output_id
         df = df.loc[:, [col for col in properties if col in df.columns]]
-    else:
-        df = df.rename(columns={"id": output_id})
-    
+
     # Move meaningless-to-user, extra id columns to the end
     # of the dataframe, if they exist
-    extra_id_cols = set(df.columns).intersection({
+    extra_id_col = set(df.columns).intersection({
         "latest_continuous_id",
         "latest_daily_id",
         "daily_id",
         "continuous_id",
         "field_measurement_id"
         })
-    if extra_id_cols:
-        id_col_order = [col for col in df.columns if col not in extra_id_cols] + list(extra_id_cols)
+
+    # If the arbitrary id column is returned (either due to properties
+    # being none or NaN), then move it to the end of the dataframe, but
+    # if part of properties, keep in requested order
+    if extra_id_col and (properties is None or all(pd.isna(properties))):
+        id_col_order = [col for col in df.columns if col not in extra_id_col] + list(extra_id_col)
         df = df.loc[:, id_col_order]
     
     return df
@@ -820,4 +829,32 @@ def get_ogc_data(
     metadata = BaseMetadata(response)
     return return_list, metadata
 
+
+def _check_profiles(
+    service: SERVICES,
+    profile: PROFILES,
+) -> None:
+    """Check whether a service profile is valid.
+
+    Parameters
+    ----------
+    service : string
+        One of the service names from the "services" list.
+    profile : string
+        One of the profile names from "results_profiles",
+        "locations_profiles", "activities_profiles",
+        "projects_profiles" or "organizations_profiles".
+    """
+    valid_services = get_args(SERVICES)
+    if service not in valid_services:
+        raise ValueError(
+            f"Invalid service: '{service}'. Valid options are: {valid_services}."
+        )
+
+    valid_profiles = PROFILE_LOOKUP[service]
+    if profile not in valid_profiles:
+        raise ValueError(
+            f"Invalid profile: '{profile}' for service '{service}'. "
+            f"Valid options are: {valid_profiles}."
+        )
 
