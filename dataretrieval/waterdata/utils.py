@@ -1,6 +1,5 @@
 import json
 import logging
-import warnings
 import os
 import re
 from datetime import datetime
@@ -873,9 +872,53 @@ def _handle_stats_nesting(
     return df.merge(dat, on='monitoring_location_id', how='left')
 
 
+def _expand_percentiles(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Takes percentile value and thresholds columns containing lists
+    of values and turns each list element into its own row in the
+    original dataframe. 'nan's are removed from the dataframe.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The dataframe returned from using one of the statistics services.
+
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame containing the flattened percentile data.
+    """
+    if len(df) > 0 and "percentile" in df['computation'].unique():
+
+        # Explode percentile lists into rows called "value" and "percentile"
+        percentiles = df.loc[df['computation'] == "percentile"]
+        percentiles_explode = percentiles[['computation_id', 'values', 'percentiles']].explode(['values', 'percentiles'], ignore_index=True)
+        percentiles_explode = percentiles_explode.loc[percentiles_explode['values']!="nan"]
+        percentiles_explode['value'] = pd.to_numeric(percentiles_explode['values'])
+        percentiles_explode['percentile'] = pd.to_numeric(percentiles_explode['percentiles'])
+        percentiles_explode = percentiles_explode.drop(columns=['values', 'percentiles'])
+        
+        # Merge exploded values back to other metadata/geometry
+        percentiles = percentiles.drop(columns=['values', 'percentiles', 'value']).merge(percentiles_explode, on='computation_id', how='left')
+        
+        # Concatenate back to original
+        dfs = pd.concat([df.loc[df['computation'] != "percentile"], percentiles]).drop(columns=['values', 'percentiles'])
+
+        # Move percentile column
+        cols = dfs.columns.tolist()
+        cols.remove("percentile")
+        col_index = cols.index("value") + 1
+        cols.insert(col_index, "percentile")
+
+        return dfs[cols]
+    
+    else:
+        return df
+
 def get_stats_data(
     args: Dict[str, Any],
     service: str,
+    expand_percentiles: bool,
     client: Optional[requests.Session] = None,
     ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """
@@ -955,6 +998,10 @@ def get_stats_data(
                 logger.error("Request incomplete. %s", error_text)
                 logger.warning("Request failed for URL: %s. Data download interrupted.", resp.url)
                 next_token = None
+
+        if expand_percentiles:
+            dfs = _expand_percentiles(dfs)
+
         return dfs, BaseMetadata(initial_response)
     finally:
         if close_client:

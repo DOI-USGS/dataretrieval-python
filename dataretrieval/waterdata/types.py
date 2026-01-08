@@ -11,11 +11,6 @@ CODE_SERVICES = Literal[
     "states",
 ]
 
-STATISTICS_SERVICES = Literal[
-    "observationNormals",
-    "observationIntervals"
-]
-
 SERVICES = Literal[
     "activities",
     "locations",
