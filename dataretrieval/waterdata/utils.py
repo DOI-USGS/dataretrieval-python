@@ -1,6 +1,5 @@
 import json
 import logging
-import warnings
 import os
 import re
 from datetime import datetime
@@ -27,6 +26,8 @@ BASE_URL = "https://api.waterdata.usgs.gov"
 OGC_API_VERSION = "v0"
 OGC_API_URL = f"{BASE_URL}/ogcapi/{OGC_API_VERSION}"
 SAMPLES_URL = f"{BASE_URL}/samples-data"
+STATISTICS_API_VERSION = "v0"
+STATISTICS_API_URL = f"{BASE_URL}/statistics/{STATISTICS_API_VERSION}"
 
 
 def _switch_arg_id(ls: Dict[str, Any], id_name: str, service: str):
@@ -542,7 +543,7 @@ def _walk_pages(
     Raises
     ------
     Exception
-        If a request fails or returns a non-200 status code.
+        If a request fails/returns a non-200 status code.
     """
     logger.info("Requesting: %s", req.url)
 
@@ -579,14 +580,11 @@ def _walk_pages(
                     headers=headers,
                     data=content if method == "POST" else None,
                     )
-                if resp.status_code != 200:
-                    error_text = _error_body(resp)
-                    raise Exception(error_text)
                 df1 = _get_resp_data(resp, geopd=geopd)
                 dfs = pd.concat([dfs, df1], ignore_index=True)
                 curr_url = _next_req_url(resp)
             except Exception:
-                warnings.warn(f"{error_text}. Data request incomplete.")
+                error_text = _error_body(resp)
                 logger.error("Request incomplete. %s", error_text)
                 logger.warning("Request failed for URL: %s. Data download interrupted.", curr_url)
                 curr_url = None
@@ -819,5 +817,194 @@ def get_ogc_data(
     # Create metadata object from response
     metadata = BaseMetadata(response)
     return return_list, metadata
+
+def _handle_stats_nesting(
+        body: Dict[str, Any],
+        geopd: bool = False,
+) -> pd.DataFrame:
+    """
+    Takes nested json from stats service and flattens into a dataframe with
+    one row per monitoring location, parameter, and statistic.
+
+    Parameters
+    ----------
+    body : Dict[str, Any]
+        The JSON response body from the statistics service containing nested data.
+
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame containing the flattened statistical data.
+    """
+    if body is None:
+            return pd.DataFrame()
+    
+    if not geopd:
+        logger.info(
+            "Geopandas not installed. Geometries will be flattened into pandas DataFrames."
+        )
+
+    # If geopandas not installed, return a pandas dataframe
+    # otherwise return a geodataframe
+    if not geopd:
+        df = pd.json_normalize(body['features']).drop(columns=['type', 'properties.data'])
+        df.columns = df.columns.str.split('.').str[-1]
+    else:
+        df = gpd.GeoDataFrame.from_features(body["features"]).drop(columns=['data'])
+    
+    # Unnest json features, properties, data, and values while retaining necessary
+    # metadata to merge with main dataframe.   
+    dat = pd.json_normalize(
+        body,
+        record_path=["features", "properties", "data", "values"],
+        meta=[
+            ["features", "properties", "monitoring_location_id"],
+            ["features", "properties", "data", "parameter_code"],
+            ["features", "properties", "data", "unit_of_measure"],
+            ["features", "properties", "data", "parent_time_series_id"],
+            #["features", "geometry", "coordinates"],
+            ],
+            meta_prefix="",
+            errors="ignore",
+            )
+    dat.columns = dat.columns.str.split('.').str[-1]
+
+    return df.merge(dat, on='monitoring_location_id', how='left')
+
+
+def _expand_percentiles(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Takes percentile value and thresholds columns containing lists
+    of values and turns each list element into its own row in the
+    original dataframe. 'nan's are removed from the dataframe.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The dataframe returned from using one of the statistics services.
+
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame containing the flattened percentile data.
+    """
+    if len(df) > 0 and "percentile" in df['computation'].unique():
+
+        # Explode percentile lists into rows called "value" and "percentile"
+        percentiles = df.loc[df['computation'] == "percentile"]
+        percentiles_explode = percentiles[['computation_id', 'values', 'percentiles']].explode(['values', 'percentiles'], ignore_index=True)
+        percentiles_explode = percentiles_explode.loc[percentiles_explode['values']!="nan"]
+        percentiles_explode['value'] = pd.to_numeric(percentiles_explode['values'])
+        percentiles_explode['percentile'] = pd.to_numeric(percentiles_explode['percentiles'])
+        percentiles_explode = percentiles_explode.drop(columns=['values', 'percentiles'])
+        
+        # Merge exploded values back to other metadata/geometry
+        percentiles = percentiles.drop(columns=['values', 'percentiles', 'value']).merge(percentiles_explode, on='computation_id', how='left')
+        
+        # Concatenate back to original
+        dfs = pd.concat([df.loc[df['computation'] != "percentile"], percentiles]).drop(columns=['values', 'percentiles'])
+
+        # Move percentile column
+        cols = dfs.columns.tolist()
+        cols.remove("percentile")
+        col_index = cols.index("value") + 1
+        cols.insert(col_index, "percentile")
+
+        return dfs[cols]
+    
+    else:
+        return df
+
+def get_stats_data(
+    args: Dict[str, Any],
+    service: str,
+    expand_percentiles: bool,
+    client: Optional[requests.Session] = None,
+    ) -> Tuple[pd.DataFrame, BaseMetadata]:
+    """
+    Retrieves statistical data from a specified water data endpoint and returns it as a pandas DataFrame with metadata.
+
+    This function prepares request arguments, constructs API requests, handles pagination, processes the results,
+    and formats the output DataFrame according to the specified parameters.
+
+    Parameters
+    ----------
+    args : Dict[str, Any]
+        Dictionary of request arguments for the statistics service.
+    service : str
+        The statistics service type (e.g., "observationNormals", "observationIntervals").
+
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame containing the retrieved and processed statistical data.
+    BaseMetadata
+        A metadata object containing request information including URL and query time.
+    """
+
+    url = f"{STATISTICS_API_URL}/{service}"
+
+    headers = _default_headers()
+
+    request = requests.Request(
+            method="GET",
+            url=url,
+            headers=headers,
+            params=args,
+        )
+    req = request.prepare()
+    logger.info("Request: %s", req.url)
+
+    # create temp client if not provided
+    # and close it after the request is done
+    close_client = client is None
+    client = client or requests.Session()
+
+    try:
+        resp = client.send(req)
+        if resp.status_code != 200:
+            raise Exception(_error_body(resp))
+
+        # Store the initial response for metadata
+        initial_response = resp
+
+        # Grab some aspects of the original request: headers and the
+        # request type (GET or POST)
+        method = req.method.upper()
+        headers = dict(req.headers)
+
+        body = resp.json()
+        dfs = _handle_stats_nesting(body, geopd=GEOPANDAS)
+
+        # Look for a next code in the response body
+        next_token = body['next']
+
+        while next_token:
+            args['next_token'] = next_token
+
+            try:
+                resp = client.request(
+                    method,
+                    url=url,
+                    params=args,
+                    headers=headers,
+                    )
+                body = resp.json()
+                df1 = _handle_stats_nesting(body, geopd=False)
+                dfs = pd.concat([dfs, df1], ignore_index=True)
+                next_token = body['next']
+            except Exception:
+                error_text = _error_body(resp)
+                logger.error("Request incomplete. %s", error_text)
+                logger.warning("Request failed for URL: %s. Data download interrupted.", resp.url)
+                next_token = None
+
+        if expand_percentiles:
+            dfs = _expand_percentiles(dfs)
+
+        return dfs, BaseMetadata(initial_response)
+    finally:
+        if close_client:
+            client.close()
 
 
