@@ -8,7 +8,6 @@ requests-mock
 coverage
 pytest
 flake8
-docutils<0.22
 sphinx
 sphinx-rtd-theme
 ipython
