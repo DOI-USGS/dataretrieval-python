@@ -696,6 +696,8 @@ def get_time_series_metadata(
     last_modified: Optional[Union[str, List[str]]] = None,
     begin: Optional[Union[str, List[str]]] = None,
     end: Optional[Union[str, List[str]]] = None,
+    begin_utc: Optional[Union[str, List[str]]] = None,
+    end_utc: Optional[Union[str, List[str]]] = None,
     unit_of_measure: Optional[Union[str, List[str]]] = None,
     computation_period_identifier: Optional[Union[str, List[str]]] = None,
     computation_identifier: Optional[Union[str, List[str]]] = None,
@@ -773,6 +775,14 @@ def get_time_series_metadata(
                 for the last 36 hours
 
     begin : string or list of strings, optional
+        This field contains the same information as "begin_utc", but in the
+        local time of the monitoring location. It is retained for backwards
+        compatibility, but will be removed in V1 of these APIs.
+    end : string or list of strings, optional
+        This field contains the same information as "end_utc", but in the
+        local time of the monitoring location. It is retained for backwards
+        compatibility, but will be removed in V1 of these APIs.
+    begin_utc : string or list of strings, optional
         The datetime of the earliest observation in the time series. Together
         with end, this field represents the period of record of a time series.
         Note that some time series may have large gaps in their collection
@@ -789,7 +799,7 @@ def get_time_series_metadata(
             * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
             * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
 
-    end : string or list of strings, optional
+    end_utc : string or list of strings, optional
         The datetime of the most recent observation in the time series. Data returned by
         this endpoint updates at most once per day, and potentially less frequently than
         that, and as such there may be more recent observations within a time series
