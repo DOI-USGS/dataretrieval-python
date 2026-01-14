@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g7298d3b28 documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g67444e528 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=2f3b80f5"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/documentation_options.js?v=ce380998"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -64,6 +64,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_latest_continuous"><code class="docutils literal notranslate"><span class="pre">get_latest_continuous()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_latest_daily"><code class="docutils literal notranslate"><span class="pre">get_latest_daily()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_monitoring_locations"><code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_reference_table"><code class="docutils literal notranslate"><span class="pre">get_reference_table()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_samples"><code class="docutils literal notranslate"><span class="pre">get_samples()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_time_series_metadata"><code class="docutils literal notranslate"><span class="pre">get_time_series_metadata()</span></code></a></li>
 </ul>
@@ -1030,6 +1031,31 @@ CQL2 queries.</p></li>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.waterdata.get_reference_table">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.waterdata.</span></span><span class="sig-name descname"><span class="pre">get_reference_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/waterdata/api.html#get_reference_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.waterdata.get_reference_table" title="Link to this definition"></a></dt>
+<dd><p>Get metadata reference tables for the USGS Water Data API.</p>
+<p>Reference tables provide the range of allowable values for parameter
+arguments in the waterdata module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>collection</strong> (<em>string</em>) – One of the following options: “agency-codes”, “altitude-datums”,
+“aquifer-codes”, “aquifer-types”, “coordinate-accuracy-codes”,
+“coordinate-datum-codes”, “coordinate-method-codes”, “counties”,
+“hydrologic-unit-codes”, “medium-codes”, “national-aquifer-codes”,
+“parameter-codes”, “reliability-codes”, “site-types”, “states”,
+“statistic-codes”, “topographic-codes”, “time-zone-codes”</p></li>
+<li><p><strong>limit</strong> (<em>numeric</em><em>, </em><em>optional</em>) – The optional limit parameter is used to control the subset of the
+selected features that should be returned in each page. The maximum
+allowable limit is 50000. It may be beneficial to set this number lower
+if your internet connection is spotty. The default (None) will set the
+limit to the maximum allowable limit for the service.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">

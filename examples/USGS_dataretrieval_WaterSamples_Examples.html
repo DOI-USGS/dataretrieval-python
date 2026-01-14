@@ -6,20 +6,20 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_samples() Examples &mdash; dataretrieval 0.1.dev1+g7298d3b28 documentation</title>
+  <title>USGS dataretrieval Python Package get_samples() Examples &mdash; dataretrieval 0.1.dev1+g67444e528 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=2f3b80f5"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/documentation_options.js?v=ce380998"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
       <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -126,10 +126,10 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g7298d3b28)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g67444e528)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
 Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.3)
-Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.3.5)
+Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.4.1)
 Requirement already satisfied: python-dateutil&gt;=2.8.2 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2.8.2)
 Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2024.1)
 Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2025.3)
@@ -194,7 +194,7 @@ Eastern-most longitude - Northern-most longitude Example: [-92.8,44.2,-88.9,46.0
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved data for 2333 samples.
+Retrieved data for 2341 samples.
 </pre></div></div>
 </div>
 </section>
@@ -403,10 +403,10 @@ Retrieved data for 2333 samples.
       <td>...</td>
     </tr>
     <tr>
-      <th>2328</th>
+      <th>2336</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["USGS","UT2610000"]</td>
+      <td>["USGS","UT2510000"]</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -422,15 +422,63 @@ Retrieved data for 2333 samples.
       <td>NaN</td>
       <td>Physical</td>
       <td>Federal/US Government</td>
-      <td>2025-12-08</td>
+      <td>2026-01-02</td>
+      <td>4</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2337</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS","UT2510000"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2026-01-02</td>
       <td>95</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>2329</th>
+      <th>2338</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["USGS","UT2610000"]</td>
+      <td>["USGS","UT2510000"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2026-01-02</td>
+      <td>65</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2339</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS","UT2510000"]</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -446,15 +494,15 @@ Retrieved data for 2333 samples.
       <td>NaN</td>
       <td>Information</td>
       <td>Federal/US Government</td>
-      <td>2025-12-08</td>
+      <td>2026-01-02</td>
       <td>9</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>2330</th>
+      <th>2340</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["USGS","UT2610000"]</td>
+      <td>["USGS","UT2510000"]</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -468,63 +516,15 @@ Retrieved data for 2333 samples.
       <td>NaN</td>
       <td>USGS</td>
       <td>NaN</td>
-      <td>Physical</td>
+      <td>Information</td>
       <td>Federal/US Government</td>
-      <td>2025-12-08</td>
-      <td>4</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2331</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["USGS","UT2610000"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-10109000</td>
-      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-12-09</td>
-      <td>10</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2332</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["USGS","UT2610000"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-10109000</td>
-      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-12-09</td>
-      <td>65</td>
+      <td>2026-01-02</td>
+      <td>63</td>
       <td>NaN</td>
     </tr>
   </tbody>
 </table>
-<p>2333 rows × 181 columns</p>
+<p>2341 rows × 181 columns</p>
 </div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
@@ -594,7 +594,7 @@ The query URL used to retrieve the data from USGS Samples was: https://api.water
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved data for 304 samples.
+Retrieved data for 306 samples.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -788,54 +788,6 @@ Retrieved data for 304 samples.
       <td>...</td>
     </tr>
     <tr>
-      <th>299</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","NA00V18"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-12-09</td>
-      <td>65</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>300</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","NA00V18"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2025-12-09</td>
-      <td>65</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
       <th>301</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
@@ -879,7 +831,7 @@ Retrieved data for 304 samples.
       <td>NaN</td>
       <td>Physical</td>
       <td>Federal/US Government</td>
-      <td>2025-12-12</td>
+      <td>2025-12-19</td>
       <td>65</td>
       <td>NaN</td>
     </tr>
@@ -903,13 +855,61 @@ Retrieved data for 304 samples.
       <td>NaN</td>
       <td>Physical</td>
       <td>Federal/US Government</td>
-      <td>2025-12-09</td>
+      <td>2025-12-31</td>
+      <td>65</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>304</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","NA00V18"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2026-01-06</td>
+      <td>65</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>305</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","NA00V18"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2026-01-13</td>
       <td>65</td>
       <td>NaN</td>
     </tr>
   </tbody>
 </table>
-<p>304 rows × 181 columns</p>
+<p>306 rows × 181 columns</p>
 </div></div>
 </div>
 </section>
@@ -934,7 +934,7 @@ Retrieved data for 304 samples.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved data for 304 samples.
+Retrieved data for 306 samples.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -1275,7 +1275,7 @@ Retrieved data for 304 samples.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved data for 2333 sample results.
+Retrieved data for 2341 sample results.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -1504,31 +1504,6 @@ Retrieved data for 2333 sample results.
       <td>...</td>
     </tr>
     <tr>
-      <th>2025-06-17</th>
-      <th>11:31:00</th>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>51.3</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>9.8</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
       <th>2025-07-08</th>
       <th>12:14:00</th>
       <td>NaN</td>
@@ -1628,9 +1603,34 @@ Retrieved data for 2333 sample results.
       <td>NaN</td>
       <td>NaN</td>
     </tr>
+    <tr>
+      <th>2025-12-29</th>
+      <th>16:07:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>48.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>3.6</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
   </tbody>
 </table>
-<p>353 rows × 34 columns</p>
+<p>354 rows × 34 columns</p>
 </div></div>
 </div>
 </section>

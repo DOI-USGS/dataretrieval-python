@@ -5,16 +5,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g7298d3b28 documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g67444e528 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=2f3b80f5"></script>
-      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/documentation_options.js?v=ce380998"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -92,11 +92,17 @@
 <span class="kn">from</span> <span class="nn">dataretrieval.utils</span> <span class="kn">import</span> <span class="n">BaseMetadata</span><span class="p">,</span> <span class="n">to_str</span>
 <span class="kn">from</span> <span class="nn">dataretrieval.waterdata.types</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">CODE_SERVICES</span><span class="p">,</span>
+    <span class="n">METADATA_COLLECTIONS</span><span class="p">,</span>
     <span class="n">PROFILE_LOOKUP</span><span class="p">,</span>
     <span class="n">PROFILES</span><span class="p">,</span>
     <span class="n">SERVICES</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">dataretrieval.waterdata.utils</span> <span class="kn">import</span> <span class="n">SAMPLES_URL</span><span class="p">,</span> <span class="n">get_ogc_data</span>
+<span class="kn">from</span> <span class="nn">dataretrieval.waterdata.utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SAMPLES_URL</span><span class="p">,</span>
+    <span class="n">get_ogc_data</span><span class="p">,</span>
+    <span class="n">_construct_api_requests</span><span class="p">,</span>
+    <span class="n">_walk_pages</span>
+<span class="p">)</span>
 
 <span class="c1"># Set up logger for this module</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -1483,6 +1489,65 @@
     <span class="p">}</span>
 
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_reference_table">
+<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_reference_table">[docs]</a>
+<span class="k">def</span> <span class="nf">get_reference_table</span><span class="p">(</span>
+        <span class="n">collection</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get metadata reference tables for the USGS Water Data API.</span>
+
+<span class="sd">    Reference tables provide the range of allowable values for parameter</span>
+<span class="sd">    arguments in the waterdata module. </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    collection : string</span>
+<span class="sd">        One of the following options: &quot;agency-codes&quot;, &quot;altitude-datums&quot;,</span>
+<span class="sd">        &quot;aquifer-codes&quot;, &quot;aquifer-types&quot;, &quot;coordinate-accuracy-codes&quot;,</span>
+<span class="sd">        &quot;coordinate-datum-codes&quot;, &quot;coordinate-method-codes&quot;, &quot;counties&quot;,</span>
+<span class="sd">        &quot;hydrologic-unit-codes&quot;, &quot;medium-codes&quot;, &quot;national-aquifer-codes&quot;,</span>
+<span class="sd">        &quot;parameter-codes&quot;, &quot;reliability-codes&quot;, &quot;site-types&quot;, &quot;states&quot;,</span>
+<span class="sd">        &quot;statistic-codes&quot;, &quot;topographic-codes&quot;, &quot;time-zone-codes&quot;</span>
+<span class="sd">    limit : numeric, optional</span>
+<span class="sd">        The optional limit parameter is used to control the subset of the</span>
+<span class="sd">        selected features that should be returned in each page. The maximum</span>
+<span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
+<span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
+<span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">valid_code_services</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">METADATA_COLLECTIONS</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">collection</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_code_services</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Invalid code service: &#39;</span><span class="si">{</span><span class="n">collection</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Valid options are: </span><span class="si">{</span><span class="n">valid_code_services</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+    
+    <span class="n">req</span> <span class="o">=</span> <span class="n">_construct_api_requests</span><span class="p">(</span>
+        <span class="n">service</span><span class="o">=</span><span class="n">collection</span><span class="p">,</span>
+        <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+        <span class="n">skip_geometry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># Run API request and iterate through pages if needed</span>
+    <span class="n">return_list</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="n">_walk_pages</span><span class="p">(</span>
+        <span class="n">geopd</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">req</span><span class="o">=</span><span class="n">req</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Give ID column a more meaningful name</span>
+    <span class="k">if</span> <span class="n">collection</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">):</span>
+        <span class="n">return_list</span> <span class="o">=</span> <span class="n">return_list</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">collection</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">_id&quot;</span><span class="p">}</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">return_list</span> <span class="o">=</span> <span class="n">return_list</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">collection</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">_id&quot;</span><span class="p">}</span>
+            <span class="p">)</span>
+
+    <span class="c1"># Create metadata object from response</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">BaseMetadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">return_list</span><span class="p">,</span> <span class="n">metadata</span></div>
 
 
 
