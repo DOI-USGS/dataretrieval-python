@@ -504,6 +504,7 @@ def _get_resp_data(resp: requests.Response, geopd: bool) -> pd.DataFrame:
         )
         df.columns = [col.replace("properties_", "") for col in df.columns]
         df.rename(columns={"geometry_coordinates": "geometry"}, inplace=True)
+        df = df.loc[:, ~df.columns.duplicated()]
         return df
 
     # Organize json into geodataframe and make sure id column comes along.
