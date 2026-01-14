@@ -16,11 +16,17 @@ from requests.models import PreparedRequest
 from dataretrieval.utils import BaseMetadata, to_str
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,
+    METADATA_COLLECTIONS,
     PROFILE_LOOKUP,
     PROFILES,
     SERVICES,
 )
-from dataretrieval.waterdata.utils import SAMPLES_URL, get_ogc_data
+from dataretrieval.waterdata.utils import (
+    SAMPLES_URL,
+    get_ogc_data,
+    _construct_api_requests,
+    _walk_pages
+)
 
 # Set up logger for this module
 logger = logging.getLogger(__name__)
@@ -1387,6 +1393,62 @@ def get_field_measurements(
     }
 
     return get_ogc_data(args, output_id, service)
+
+def get_reference_table(
+        collection: str,
+        limit: Optional[int] = None,
+        ) -> Tuple[pd.DataFrame, BaseMetadata]:
+    """Get metadata reference tables for the USGS Water Data API.
+
+    Reference tables provide the range of allowable values for parameter
+    arguments in the waterdata module. 
+
+    Parameters
+    ----------
+    collection : string
+        One of the following options: "agency-codes", "altitude-datums",
+        "aquifer-codes", "aquifer-types", "coordinate-accuracy-codes",
+        "coordinate-datum-codes", "coordinate-method-codes", "counties",
+        "hydrologic-unit-codes", "medium-codes", "national-aquifer-codes",
+        "parameter-codes", "reliability-codes", "site-types", "states",
+        "statistic-codes", "topographic-codes", "time-zone-codes"
+    limit : numeric, optional
+        The optional limit parameter is used to control the subset of the
+        selected features that should be returned in each page. The maximum
+        allowable limit is 50000. It may be beneficial to set this number lower
+        if your internet connection is spotty. The default (None) will set the
+        limit to the maximum allowable limit for the service.
+    """
+    valid_code_services = get_args(METADATA_COLLECTIONS)
+    if collection not in valid_code_services:
+        raise ValueError(
+            f"Invalid code service: '{collection}'. "
+            f"Valid options are: {valid_code_services}."
+        )
+    
+    req = _construct_api_requests(
+        service=collection,
+        limit=limit,
+        skip_geometry=True,
+    )
+    # Run API request and iterate through pages if needed
+    return_list, response = _walk_pages(
+        geopd=False, req=req
+    )
+
+    # Give ID column a more meaningful name
+    if collection.endswith("s"):
+        return_list = return_list.rename(
+            columns={"id": f"{collection[:-1].replace('-', '_')}_id"}
+            )
+    else:
+        return_list = return_list.rename(
+            columns={"id": f"{collection.replace('-', '_')}_id"}
+            )
+
+    # Create metadata object from response
+    metadata = BaseMetadata(response)
+    return return_list, metadata
 
 
 def get_codes(code_service: CODE_SERVICES) -> pd.DataFrame:
