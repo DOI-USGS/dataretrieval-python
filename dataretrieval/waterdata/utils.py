@@ -547,7 +547,7 @@ def _walk_pages(
     logger.info("Requesting: %s", req.url)
 
     if not geopd:
-        logger.info(
+        logger.warning(
             "Geopandas not installed. Geometries will be flattened into pandas DataFrames."
         )
 
