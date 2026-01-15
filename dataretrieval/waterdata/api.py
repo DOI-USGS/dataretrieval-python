@@ -1394,6 +1394,7 @@ def get_field_measurements(
 
     return get_ogc_data(args, output_id, service)
 
+
 def get_reference_table(
         collection: str,
         limit: Optional[int] = None,
@@ -1426,29 +1427,19 @@ def get_reference_table(
             f"Valid options are: {valid_code_services}."
         )
     
-    req = _construct_api_requests(
-        service=collection,
-        limit=limit,
-        skip_geometry=True,
-    )
-    # Run API request and iterate through pages if needed
-    return_list, response = _walk_pages(
-        geopd=False, req=req
-    )
-
-    # Give ID column a more meaningful name
-    if collection.endswith("s"):
-        return_list = return_list.rename(
-            columns={"id": f"{collection[:-1].replace('-', '_')}_id"}
-            )
+    # Give ID column the collection name with underscores
+    if collection.endswith("s") and collection != "counties":
+        output_id = f"{collection[:-1].replace('-', '_')}"
+    elif collection == "counties":
+        output_id = "county"
     else:
-        return_list = return_list.rename(
-            columns={"id": f"{collection.replace('-', '_')}_id"}
-            )
-
-    # Create metadata object from response
-    metadata = BaseMetadata(response)
-    return return_list, metadata
+        output_id = f"{collection.replace('-', '_')}"
+    
+    return get_ogc_data(
+        args={},
+        output_id=output_id,
+        service=collection
+        )
 
 
 def get_codes(code_service: CODE_SERVICES) -> pd.DataFrame:

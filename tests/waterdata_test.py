@@ -248,7 +248,7 @@ def test_get_time_series_metadata():
 
 def test_get_reference_table():
     df, md = get_reference_table("agency-codes")
-    assert "agency_code_id" in df.columns
+    assert "agency_code" in df.columns
     assert df.shape[0] > 0
     assert hasattr(md, 'url')
     assert hasattr(md, 'query_time')
