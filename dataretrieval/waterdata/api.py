@@ -1419,6 +1419,27 @@ def get_reference_table(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
+    
+    Returns
+    -------
+    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
+        Formatted data returned from the API query. The primary metadata
+        of each reference table will show up in the first column, where
+        the name of the column is the singular form of the collection name,
+        separated by underscores (e.g. the "medium-codes" reference table
+        has a column called "medium_code", which contains all possible
+        medium code values).
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object including the URL request and query time.
+    
+    Examples
+    --------
+    .. code::
+
+        >>> # Get table of USGS parameter codes
+        >>> ref, md = dataretrieval.waterdata.get_reference_table(
+        ...     collection="parameter-codes
+        ... )
     """
     valid_code_services = get_args(METADATA_COLLECTIONS)
     if collection not in valid_code_services:
