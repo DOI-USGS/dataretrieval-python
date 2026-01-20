@@ -1,0 +1,1644 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Using the waterdata module to pull data from the USGS Water Data APIs &mdash; dataretrieval 0.1.dev1+g3d96d5cda documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=70ba9caa"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Examples from the Readme file on retrieving NWIS data" href="readme_examples.html" />
+    <link rel="prev" title="Examples" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#introduction-to-the-waterdata-module-of-dataretrieval">Introduction to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code></a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Using the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module to pull data from the USGS Water Data APIs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Prerequisite:-Get-your-Water-Data-API-key">Prerequisite: Get your Water Data API key</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Lay-of-the-Land">Lay of the Land</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Examples">Examples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Additional-Resources">Additional Resources</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">Using the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module to pull data from the USGS Water Data APIs</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/WaterData_demo.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Using-the-waterdata-module-to-pull-data-from-the-USGS-Water-Data-APIs">
+<h1>Using the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module to pull data from the USGS Water Data APIs<a class="headerlink" href="#Using-the-waterdata-module-to-pull-data-from-the-USGS-Water-Data-APIs" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module replaces the <code class="docutils literal notranslate"><span class="pre">nwis</span></code> module for accessing USGS water data. It leverages the <a class="reference external" href="https://api.waterdata.usgs.gov/">Water Data APIs</a> to download metadata, daily values, and instantaneous values.</p>
+<p>While the specifics of this transition timeline are opaque, it is advised to switch to the new functions as soon as possible to reduce unexpected interruptions in your workflow.</p>
+<p>As always, please report any issues you encounter on our <a class="reference external" href="https://github.com/DOI-USGS/dataretrieval-python/issues">Issues</a> page. If you have questions or need help, please reach out to us at <a class="reference external" href="mailto:comptools&#37;&#52;&#48;usgs&#46;gov">comptools<span>&#64;</span>usgs<span>&#46;</span>gov</a>.</p>
+<section id="Prerequisite:-Get-your-Water-Data-API-key">
+<h2>Prerequisite: Get your Water Data API key<a class="headerlink" href="#Prerequisite:-Get-your-Water-Data-API-key" title="Link to this heading"></a></h2>
+<p>We highly suggest signing up for your own API key <a class="reference external" href="https://api.waterdata.usgs.gov/signup/">here</a> to afford yourself higher rate limits and more reliable access to the data. If you opt not to register for an API key, then the number of requests you can make to the Water Data APIs is considerably lower, and if you share an IP address across users or workflows, you may hit those limits even faster. Luckily, registering for an API key is free and easy.</p>
+<p>Once you’ve copied your API key and saved it in a safe place, you can set it as an environment variable in your python script for the current session:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;API_USGS_PAT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;your_api_key_here&#39;</span>
+</pre></div>
+</div>
+<p>Note that the environment variable name is <code class="docutils literal notranslate"><span class="pre">API_USGS_PAT</span></code>, which stands for “API USGS Personal Access Token”.</p>
+<p>If you’d like a more permanent, repository-specific solution, you can use the <code class="docutils literal notranslate"><span class="pre">python-dotenv</span></code> package to read your API key from a <code class="docutils literal notranslate"><span class="pre">.env</span></code> file in your repository root directory, like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">dotenv</span> <span class="c1"># only run this line once to install the package in your environment</span>
+<span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+<span class="n">load_dotenv</span><span class="p">()</span>  <span class="c1"># this will load the environment variables from the .env file</span>
+</pre></div>
+</div>
+<p>Make sure your <code class="docutils literal notranslate"><span class="pre">.env</span></code> file contains the following line:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>API_USGS_PAT=your_api_key_here
+</pre></div>
+</div>
+<p>Also, do not commit your <code class="docutils literal notranslate"><span class="pre">.env</span></code> file to version control, as it contains sensitive information. You can add it to your <code class="docutils literal notranslate"><span class="pre">.gitignore</span></code> file to prevent accidental commits.</p>
+</section>
+<section id="Lay-of-the-Land">
+<h2>Lay of the Land<a class="headerlink" href="#Lay-of-the-Land" title="Link to this heading"></a></h2>
+<p>Now that your API key is configured, it’s time to take a 10,000-ft view of the functions in the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module.</p>
+<section id="Metadata-endpoints">
+<h3>Metadata endpoints<a class="headerlink" href="#Metadata-endpoints" title="Link to this heading"></a></h3>
+<p>These functions retrieve metadata tables that can be used to refine your data requests.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">get_reference_table()</span></code> - Not sure which parameter code you’re looking for, or which hydrologic unit your study area is in? This function will help you find the right input values for the data endpoints to retrieve the information you want.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_codes()</span></code> - Similar to <code class="docutils literal notranslate"><span class="pre">get_reference_table()</span></code>, this function retrieves dataframes containing available input values that correspond to the Samples water quality database.</p></li>
+</ul>
+</section>
+<section id="Data-endpoints">
+<h3>Data endpoints<a class="headerlink" href="#Data-endpoints" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> - Daily values for monitoring locations, parameters, stat codes, and more.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_continuous()</span></code> - Instantaneous values for monitoring locations, parameters, statistical codes, and more.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code>- Monitoring location information such as name, monitoring location ID, latitude, longitude, huc code, site types, and more.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_time_series_metadata()</span></code> - Timeseries metadata across monitoring locations, parameter codes, statistical codes, and more. Can be used to answer the question: what types of data are collected at my site(s) of interest and over what time period are/were they collected?</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_latest_continuous()</span></code> - Latest instantaneous values for requested monitoring locations, parameter codes, statistical codes, and more.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_latest_daily()</span></code> - Latest daily values for requested monitoring locations, parameter codes, statistical codes, and more.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> - Physically measured values (a.k.a discrete) of gage height, discharge, groundwater levels, and more for requested monitoring locations.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> - Discrete water quality sample results for monitoring locations, observed properties, and more.</p></li>
+</ul>
+</section>
+<section id="A-few-key-tips">
+<h3>A few key tips<a class="headerlink" href="#A-few-key-tips" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>You’ll notice that each of the data functions have many unique inputs you can specify. <strong>DO NOT</strong> specify too many! Specify <em>just enough</em> inputs to return what you need. But do not provide redundant geographical or parameter information as this may slow down your query and lead to errors.</p></li>
+<li><p>Each function returns a Tuple, containing a dataframe and a Metadata class. If you have <code class="docutils literal notranslate"><span class="pre">geopandas</span></code> installed in your environment, the dataframe will be a <code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code> with a geometry included. If you do not have <code class="docutils literal notranslate"><span class="pre">geopandas</span></code>, the dataframe will be a <code class="docutils literal notranslate"><span class="pre">pandas</span></code> dataframe with the geometry contained in a coordinates column. The Metadata object contains information about your query, like the query url.</p></li>
+<li><p>If you do not want to return the <code class="docutils literal notranslate"><span class="pre">geometry</span></code> column, use the input <code class="docutils literal notranslate"><span class="pre">skip_geometry=True</span></code>.</p></li>
+<li><p>All of these functions (except <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code>) have a <code class="docutils literal notranslate"><span class="pre">limit</span></code> argument, which signifies the number of rows returned with each “page” of data. The Water Data APIs use paging to chunk up large responses and send data most efficiently to the requester. The <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> functions collect the rows of data from each page and combine them into one final dataframe at the end. The default and maximum limit per page is 50,000 rows. In other words, if you request 100,000 rows of data from the
+database, it will return all the data in 2 pages, and each page counts as a “request” using your API key. If you were to change the argument to <code class="docutils literal notranslate"><span class="pre">limit=10000</span></code>, then each page returned would contain 10,000 rows, and it would take 10 requests/pages to return the total 100,000 rows. In general, there is no need to adjust the <code class="docutils literal notranslate"><span class="pre">limit</span></code> argument. However, if you are working with slow internet speeds, adjusting the <code class="docutils literal notranslate"><span class="pre">limit</span></code> argument may reduce chances of failures due to bandwidth.</p></li>
+<li><p>You can find some other helpful tips in the <a class="reference external" href="https://api.waterdata.usgs.gov/docs/ogcapi/">Water Data API documentation</a>.</p></li>
+</ul>
+</section>
+</section>
+<section id="Examples">
+<h2>Examples<a class="headerlink" href="#Examples" title="Link to this heading"></a></h2>
+<p>Let’s get into some examples using the functions listed above. First, we need to load the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module and a few other packages and functions to go through the examples. To run the entirety of this notebook, you will need to install <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code>, <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>, and <code class="docutils literal notranslate"><span class="pre">geopandas</span></code> packages. <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> is needed to create the plots, and <code class="docutils literal notranslate"><span class="pre">geopandas</span></code> is needed to create the interactive maps.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install necessary packages to run notebook</span>
+<span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>dataretrieval
+<span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>matplotlib
+<span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>geopandas
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g3d96d5cda)
+Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
+Requirement already satisfied: pandas==2.* in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.3)
+Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2.4.1)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2.8.2)
+Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas==2.*-&gt;dataretrieval) (2024.1)
+Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.12/site-packages (from pandas==2.*-&gt;dataretrieval) (2025.3)
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: matplotlib in /home/runner/.local/lib/python3.12/site-packages (3.10.8)
+Requirement already satisfied: contourpy&gt;=1.0.1 in /home/runner/.local/lib/python3.12/site-packages (from matplotlib) (1.3.3)
+Requirement already satisfied: cycler&gt;=0.10 in /home/runner/.local/lib/python3.12/site-packages (from matplotlib) (0.12.1)
+Requirement already satisfied: fonttools&gt;=4.22.0 in /home/runner/.local/lib/python3.12/site-packages (from matplotlib) (4.61.1)
+Requirement already satisfied: kiwisolver&gt;=1.3.1 in /home/runner/.local/lib/python3.12/site-packages (from matplotlib) (1.4.9)
+Requirement already satisfied: numpy&gt;=1.23 in /home/runner/.local/lib/python3.12/site-packages (from matplotlib) (2.4.1)
+Requirement already satisfied: packaging&gt;=20.0 in /usr/lib/python3/dist-packages (from matplotlib) (24.0)
+Requirement already satisfied: pillow&gt;=8 in /home/runner/.local/lib/python3.12/site-packages (from matplotlib) (12.1.0)
+Requirement already satisfied: pyparsing&gt;=3 in /usr/lib/python3/dist-packages (from matplotlib) (3.1.1)
+Requirement already satisfied: python-dateutil&gt;=2.7 in /usr/lib/python3/dist-packages (from matplotlib) (2.8.2)
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: geopandas in /home/runner/.local/lib/python3.12/site-packages (1.1.2)
+Requirement already satisfied: numpy&gt;=1.24 in /home/runner/.local/lib/python3.12/site-packages (from geopandas) (2.4.1)
+Requirement already satisfied: pyogrio&gt;=0.7.2 in /home/runner/.local/lib/python3.12/site-packages (from geopandas) (0.12.1)
+Requirement already satisfied: packaging in /usr/lib/python3/dist-packages (from geopandas) (24.0)
+Requirement already satisfied: pandas&gt;=2.0.0 in /home/runner/.local/lib/python3.12/site-packages (from geopandas) (2.3.3)
+Requirement already satisfied: pyproj&gt;=3.5.0 in /home/runner/.local/lib/python3.12/site-packages (from geopandas) (3.7.2)
+Requirement already satisfied: shapely&gt;=2.0.0 in /home/runner/.local/lib/python3.12/site-packages (from geopandas) (2.1.2)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /usr/lib/python3/dist-packages (from pandas&gt;=2.0.0-&gt;geopandas) (2.8.2)
+Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas&gt;=2.0.0-&gt;geopandas) (2024.1)
+Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.12/site-packages (from pandas&gt;=2.0.0-&gt;geopandas) (2025.3)
+Requirement already satisfied: certifi in /usr/lib/python3/dist-packages (from pyogrio&gt;=0.7.2-&gt;geopandas) (2023.11.17)
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib.dates</span> <span class="k">as</span> <span class="nn">mdates</span>
+<span class="kn">import</span> <span class="nn">matplotlib.ticker</span> <span class="k">as</span> <span class="nn">mtick</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+<span class="kn">from</span> <span class="nn">dateutil.relativedelta</span> <span class="kn">import</span> <span class="n">relativedelta</span>
+<span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">waterdata</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pcodes</span><span class="p">,</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_reference_table</span><span class="p">(</span><span class="s2">&quot;parameter-codes&quot;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">pcodes</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Geopandas not installed. Geometries will be flattened into pandas DataFrames.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>parameter_code_id</th>
+      <th>parameter_name</th>
+      <th>unit_of_measure</th>
+      <th>parameter_group_code</th>
+      <th>parameter_description</th>
+      <th>medium</th>
+      <th>statistical_basis</th>
+      <th>time_basis</th>
+      <th>weight_basis</th>
+      <th>particle_size_basis</th>
+      <th>sample_fraction</th>
+      <th>temperature_basis</th>
+      <th>epa_equivalence</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>00001</td>
+      <td>Xsec loc, US from rb</td>
+      <td>ft</td>
+      <td>INF</td>
+      <td>Location in cross section, distance from right...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Agree</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>00002</td>
+      <td>Xsec loc, US from rb</td>
+      <td>%</td>
+      <td>INF</td>
+      <td>Location in cross section, distance from right...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Agree</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>00003</td>
+      <td>Sampling depth</td>
+      <td>ft</td>
+      <td>INF</td>
+      <td>Sampling depth, feet</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Agree</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>00004</td>
+      <td>Stream width</td>
+      <td>ft</td>
+      <td>PHY</td>
+      <td>Stream width, feet</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Agree</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>00005</td>
+      <td>Loctn in X-sec,depth</td>
+      <td>%</td>
+      <td>INF</td>
+      <td>Location in cross section, fraction of total d...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Total</td>
+      <td>None</td>
+      <td>Agree</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Let’s say we want to find all parameter codes relating to streamflow discharge. We can use some string matching to find applicable codes.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">streamflow_pcodes</span> <span class="o">=</span> <span class="n">pcodes</span><span class="p">[</span><span class="n">pcodes</span><span class="p">[</span><span class="s1">&#39;parameter_name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s1">&#39;streamflow|discharge&#39;</span><span class="p">,</span> <span class="n">case</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">na</span><span class="o">=</span><span class="kc">False</span><span class="p">)]</span>
+<span class="n">display</span><span class="p">(</span><span class="n">streamflow_pcodes</span><span class="p">[[</span><span class="s1">&#39;parameter_code_id&#39;</span><span class="p">,</span> <span class="s1">&#39;parameter_name&#39;</span><span class="p">]])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>parameter_code_id</th>
+      <th>parameter_name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>42</th>
+      <td>00060</td>
+      <td>Discharge</td>
+    </tr>
+    <tr>
+      <th>43</th>
+      <td>00061</td>
+      <td>Discharge, instant.</td>
+    </tr>
+    <tr>
+      <th>479</th>
+      <td>01351</td>
+      <td>Streamflow, severity</td>
+    </tr>
+    <tr>
+      <th>769</th>
+      <td>04122</td>
+      <td>Bedload discharge, daily mean</td>
+    </tr>
+    <tr>
+      <th>1701</th>
+      <td>30208</td>
+      <td>Discharge</td>
+    </tr>
+    <tr>
+      <th>1702</th>
+      <td>30209</td>
+      <td>Instantaneous Discharge</td>
+    </tr>
+    <tr>
+      <th>3704</th>
+      <td>50042</td>
+      <td>Discharge</td>
+    </tr>
+    <tr>
+      <th>8838</th>
+      <td>62856</td>
+      <td>Discharge, storm event peak</td>
+    </tr>
+    <tr>
+      <th>13745</th>
+      <td>70227</td>
+      <td>Direction,StreamFlow</td>
+    </tr>
+    <tr>
+      <th>13952</th>
+      <td>72122</td>
+      <td>Discharge, storm event median</td>
+    </tr>
+    <tr>
+      <th>13953</th>
+      <td>72123</td>
+      <td>Discharge, storm event mean</td>
+    </tr>
+    <tr>
+      <th>13967</th>
+      <td>72137</td>
+      <td>Discharge,tide fltrd</td>
+    </tr>
+    <tr>
+      <th>13968</th>
+      <td>72138</td>
+      <td>Discharge,tide fltrd</td>
+    </tr>
+    <tr>
+      <th>13969</th>
+      <td>72139</td>
+      <td>Discharge,tide fltrd</td>
+    </tr>
+    <tr>
+      <th>14006</th>
+      <td>72177</td>
+      <td>Discharge, GW</td>
+    </tr>
+    <tr>
+      <th>14070</th>
+      <td>72243</td>
+      <td>Discharge</td>
+    </tr>
+    <tr>
+      <th>14085</th>
+      <td>72258</td>
+      <td>Discharge factor</td>
+    </tr>
+    <tr>
+      <th>14099</th>
+      <td>72272</td>
+      <td>Discharge, cumul</td>
+    </tr>
+    <tr>
+      <th>14260</th>
+      <td>72433</td>
+      <td>Discharge, cumulative</td>
+    </tr>
+    <tr>
+      <th>14261</th>
+      <td>72434</td>
+      <td>Discharge, cumulative</td>
+    </tr>
+    <tr>
+      <th>14296</th>
+      <td>74082</td>
+      <td>Streamflow, daily</td>
+    </tr>
+    <tr>
+      <th>14643</th>
+      <td>81380</td>
+      <td>Discharge velocity</td>
+    </tr>
+    <tr>
+      <th>14644</th>
+      <td>81381</td>
+      <td>Discharge duration</td>
+    </tr>
+    <tr>
+      <th>14686</th>
+      <td>81799</td>
+      <td>Discharge, sample mean</td>
+    </tr>
+    <tr>
+      <th>18706</th>
+      <td>99060</td>
+      <td>Discharge</td>
+    </tr>
+    <tr>
+      <th>18707</th>
+      <td>99061</td>
+      <td>Discharge, instantaneous</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Interesting that there are so many different streamflow-related parameter codes! Going on experience, let’s use the most common one, <code class="docutils literal notranslate"><span class="pre">00060</span></code>, which is “Discharge, cubic feet per second”.</p>
+<section id="Timeseries-metadata">
+<h3>Timeseries metadata<a class="headerlink" href="#Timeseries-metadata" title="Link to this heading"></a></h3>
+<p>Now that we know which parameter code we want to use, let’s find all the stream monitoring locations that have recent discharge data and at least 10 years of daily values in the state of Nebraska. We will use the <code class="docutils literal notranslate"><span class="pre">waterdata.get_time_series_metadata()</span></code> function to suss out which sites fit the bill. This function will return a row for each <em>timeseries</em> that matches our inputs. It doesn’t contain the daily discharge values themselves, just information <em>about</em> that timeseries.</p>
+<p>First, let’s get our expected date range in order. Note that the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> functions are capable of taking in bounded and unbounded date and datetime ranges. In this case, we want the start date of the discharge timeseries to be no more recent than 10 years ago, and we want the end date of the timeseries to be from at most a week ago. We can use the notation <code class="docutils literal notranslate"><span class="pre">{date}/..</span></code> to mean that we want all timeseries that end a week ago or more recently. Similarly, we can use the notation
+<code class="docutils literal notranslate"><span class="pre">../{date}</span></code> to mean we want all timeseries that started at least 10 years ago (and thus likely have at least 10 years of data).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ten_years_ago</span> <span class="o">=</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span> <span class="o">-</span> <span class="n">relativedelta</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">one_week_ago</span> <span class="o">=</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">7</span><span class="p">))</span><span class="o">.</span><span class="n">date</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>We will also use the <code class="docutils literal notranslate"><span class="pre">skip_geometry</span></code> argument in our timeseries metadata call. By default, most <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> functions return a geometry column containing the monitoring location’s coordinates. This is a really cool feature that we will use later, but for this particular data pull, we don’t need it. Setting <code class="docutils literal notranslate"><span class="pre">skip_geometry=True</span></code> makes the returned dataframe smaller and more efficient.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">NE_discharge</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_time_series_metadata</span><span class="p">(</span>
+    <span class="n">state_name</span><span class="o">=</span><span class="s2">&quot;Nebraska&quot;</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s1">&#39;00060&#39;</span><span class="p">,</span>
+    <span class="n">begin</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;../</span><span class="si">{</span><span class="n">ten_years_ago</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">end</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">one_week_ago</span><span class="si">}</span><span class="s2">/..&quot;</span><span class="p">,</span>
+    <span class="n">skip_geometry</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">NE_discharge</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;There are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">NE_discharge</span><span class="p">[</span><span class="s1">&#39;monitoring_location_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span><span class="si">}</span><span class="s2"> sites with recent discharge data available in the state of Nebraska&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time_series_id</th>
+      <th>unit_of_measure</th>
+      <th>parameter_name</th>
+      <th>parameter_code</th>
+      <th>statistic_id</th>
+      <th>hydrologic_unit_code</th>
+      <th>state_name</th>
+      <th>last_modified</th>
+      <th>begin</th>
+      <th>end</th>
+      <th>...</th>
+      <th>end_utc</th>
+      <th>computation_period_identifier</th>
+      <th>computation_identifier</th>
+      <th>thresholds</th>
+      <th>sublocation_identifier</th>
+      <th>primary</th>
+      <th>monitoring_location_id</th>
+      <th>web_description</th>
+      <th>parameter_description</th>
+      <th>parent_time_series_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>28</th>
+      <td>2daeaac402fb46e594ad265d1fed145c</td>
+      <td>ft^3/s</td>
+      <td>Discharge</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>101701040305</td>
+      <td>Nebraska</td>
+      <td>2026-01-20 13:55:58.275629</td>
+      <td>1957-10-01 00:00:00.000001</td>
+      <td>2026-01-19 00:00:00.000001</td>
+      <td>...</td>
+      <td>2026-01-19 06:00:00+00:00</td>
+      <td>Daily</td>
+      <td>Mean</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-06453600</td>
+      <td>None</td>
+      <td>Discharge, cubic feet per second</td>
+      <td>c8f66a81be244941a4c8975ac4393f57</td>
+    </tr>
+    <tr>
+      <th>162</th>
+      <td>c8f66a81be244941a4c8975ac4393f57</td>
+      <td>ft^3/s</td>
+      <td>Discharge</td>
+      <td>00060</td>
+      <td>00011</td>
+      <td>101701040305</td>
+      <td>Nebraska</td>
+      <td>2026-01-20 06:30:35.849042</td>
+      <td>1990-10-01 05:30:00.000001</td>
+      <td>2026-01-20 06:15:00.000001</td>
+      <td>...</td>
+      <td>2026-01-20 12:15:00+00:00</td>
+      <td>Points</td>
+      <td>Instantaneous</td>
+      <td>[{'Name': 'Peak of record discharge on March 2...</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-06453600</td>
+      <td>Discharge from Primary Sensor</td>
+      <td>Discharge, cubic feet per second</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>126</th>
+      <td>9d41bfe5d9374b998cb9c93310bbbdd8</td>
+      <td>ft^3/s</td>
+      <td>Discharge</td>
+      <td>00060</td>
+      <td>00011</td>
+      <td>101500040905</td>
+      <td>Nebraska</td>
+      <td>2026-01-20 09:58:48.427069</td>
+      <td>1991-05-17 05:00:00.000001</td>
+      <td>2026-01-20 09:45:00.000001</td>
+      <td>...</td>
+      <td>2026-01-20 15:45:00+00:00</td>
+      <td>Points</td>
+      <td>Instantaneous</td>
+      <td>[{'Name': 'VERY HIGH', 'Type': 'ThresholdAbove...</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-06461500</td>
+      <td>None</td>
+      <td>Discharge, cubic feet per second</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>133</th>
+      <td>a661caa558244bf8a054018ccae0553a</td>
+      <td>ft^3/s</td>
+      <td>Discharge</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>101500040905</td>
+      <td>Nebraska</td>
+      <td>2026-01-20 06:58:48.177794</td>
+      <td>1945-10-01 00:00:00.000001</td>
+      <td>2026-01-19 00:00:00.000001</td>
+      <td>...</td>
+      <td>2026-01-19 06:00:00+00:00</td>
+      <td>Daily</td>
+      <td>Mean</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-06461500</td>
+      <td>None</td>
+      <td>Discharge, cubic feet per second</td>
+      <td>9d41bfe5d9374b998cb9c93310bbbdd8</td>
+    </tr>
+    <tr>
+      <th>202</th>
+      <td>f5f7a38d1ad548dbb6f4cb876f9833a5</td>
+      <td>ft^3/s</td>
+      <td>Discharge</td>
+      <td>00060</td>
+      <td>00011</td>
+      <td>101500041309</td>
+      <td>Nebraska</td>
+      <td>2026-01-20 09:50:32.314326</td>
+      <td>1990-10-01 05:30:00.000001</td>
+      <td>2026-01-20 09:45:00.000001</td>
+      <td>...</td>
+      <td>2026-01-20 15:45:00+00:00</td>
+      <td>Points</td>
+      <td>Instantaneous</td>
+      <td>[{'Name': 'VERY LOW', 'Type': 'ThresholdBelow'...</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-06463500</td>
+      <td>None</td>
+      <td>Discharge, cubic feet per second</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 21 columns</p>
+</div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+There are 102 sites with recent discharge data available in the state of Nebraska
+</pre></div></div>
+</div>
+<p>In the dataframe above, we are looking at 5 timeseries returned, ordered by monitoring location. You can also see that the first two rows show two different kinds of discharge for the same monitoring location: a mean daily discharge timeseries (with <a class="reference external" href="https://api.waterdata.usgs.gov/docs/ogcapi/">statistic id</a> 00003, which represents “mean”) and an instantaneous discharge timeseries (with statistic id 00011, which represents “points” or “instantaneous” values). Look closely and you may also
+notice that the <code class="docutils literal notranslate"><span class="pre">parent_timeseries_id</span></code> column for daily mean discharge matches the <code class="docutils literal notranslate"><span class="pre">time_series_id</span></code> for the instantaneous discharge. This is because once instantaneous measurements began at the site, they were used to calculate the daily mean.</p>
+</section>
+<section id="Monitoring-locations">
+<h3>Monitoring locations<a class="headerlink" href="#Monitoring-locations" title="Link to this heading"></a></h3>
+<p>Now that we know which sites have recent discharge data, let’s find stream sites and plot them on a map. We will use the <code class="docutils literal notranslate"><span class="pre">waterdata.get_monitoring_locations()</span></code> function to grab more metadata about these sites.</p>
+<p>We can feed the unique monitoring location IDs from <code class="docutils literal notranslate"><span class="pre">NE_discharge</span></code> into the <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> function to get the metadata for just those sites. However, there is a limit to the number of IDs that can be passed in one call to the API. Further down in this notebook, you’ll see an example where we successfully feed all ~100 IDs in one call to the API. However, for demonstration purposes, we will split the list of monitoring location IDs into a few chunks of 50 sent to the API and
+stitch the resulting dataframes together. A loose rule of thumb is to keep the number of IDs below 200, but this exact number will depend on the typical length of each monitoring location ID (i.e. if your monitoring location IDs are &gt; 13 characters long: “USGS-XXXXXXXX”+, you will need to feed in less than 200 at a time).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">50</span>
+<span class="n">site_list</span> <span class="o">=</span> <span class="n">NE_discharge</span><span class="p">[</span><span class="s1">&#39;monitoring_location_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="n">chunks</span> <span class="o">=</span> <span class="p">[</span><span class="n">site_list</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span> <span class="o">+</span> <span class="n">chunk_size</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">site_list</span><span class="p">),</span> <span class="n">chunk_size</span><span class="p">)]</span>
+<span class="n">NE_locations</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">site_group</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">chunk_data</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
+                <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site_group</span><span class="p">,</span>
+                <span class="n">site_type_code</span><span class="o">=</span><span class="s2">&quot;ST&quot;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">chunk_data</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="n">NE_locations</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">NE_locations</span><span class="p">,</span> <span class="n">chunk_data</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Chunk failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">NE_locations</span><span class="p">[[</span><span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">,</span> <span class="s2">&quot;monitoring_location_name&quot;</span><span class="p">,</span> <span class="s2">&quot;hydrologic_unit_code&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>monitoring_location_id</th>
+      <th>monitoring_location_name</th>
+      <th>hydrologic_unit_code</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS-06453600</td>
+      <td>Ponca Creek at Verdel, Nebr.</td>
+      <td>101701040305</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USGS-06463720</td>
+      <td>Niobrara River at Mariaville, Nebr.</td>
+      <td>101500041506</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USGS-06600900</td>
+      <td>South Omaha Creek at Walthill, Nebr.</td>
+      <td>102300010103</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USGS-06610770</td>
+      <td>Big Papillion Creek at Q Street at Omaha, Nebr.</td>
+      <td>102300060205</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USGS-06610795</td>
+      <td>Papillion Creek at Fort Crook, Nebr.</td>
+      <td>102300060206</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>That took a little bit of work to loop through the site chunks and bind the data back together. Admittedly, there may be times where chunking and iterating might be the most efficient workflow. But in this particular case, we have a less onerous option available: <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> has a <code class="docutils literal notranslate"><span class="pre">state_name</span></code> argument. It will likely be faster to pull all stream sites for Nebraska and then filter down to the sites present in the timeseries dataframe: no iteration needed. Let’s try this too.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">NE_locations</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
+    <span class="n">state_name</span><span class="o">=</span><span class="s2">&quot;Nebraska&quot;</span><span class="p">,</span>
+    <span class="n">site_type_code</span><span class="o">=</span><span class="s2">&quot;ST&quot;</span>
+    <span class="p">)</span>
+
+<span class="n">NE_locations_discharge</span> <span class="o">=</span> <span class="n">NE_locations</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">NE_locations</span><span class="p">[</span><span class="s1">&#39;monitoring_location_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">NE_discharge</span><span class="p">[</span><span class="s1">&#39;monitoring_location_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">())]</span>
+<span class="n">display</span><span class="p">(</span><span class="n">NE_locations_discharge</span><span class="p">[[</span><span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">,</span> <span class="s2">&quot;monitoring_location_name&quot;</span><span class="p">,</span> <span class="s2">&quot;hydrologic_unit_code&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>monitoring_location_id</th>
+      <th>monitoring_location_name</th>
+      <th>hydrologic_unit_code</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>14</th>
+      <td>USGS-06453600</td>
+      <td>Ponca Creek at Verdel, Nebr.</td>
+      <td>101701040305</td>
+    </tr>
+    <tr>
+      <th>44</th>
+      <td>USGS-06461500</td>
+      <td>Niobrara River near Sparks, Nebr.</td>
+      <td>101500040905</td>
+    </tr>
+    <tr>
+      <th>61</th>
+      <td>USGS-06463500</td>
+      <td>Long Pine Creek near Riverview, Nebr.</td>
+      <td>101500041309</td>
+    </tr>
+    <tr>
+      <th>63</th>
+      <td>USGS-06463720</td>
+      <td>Niobrara River at Mariaville, Nebr.</td>
+      <td>101500041506</td>
+    </tr>
+    <tr>
+      <th>79</th>
+      <td>USGS-06465500</td>
+      <td>Niobrara River near Verdel, Nebr.</td>
+      <td>101500071004</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>If you have <code class="docutils literal notranslate"><span class="pre">geopandas</span></code> installed, the function will return a <code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code> with a <code class="docutils literal notranslate"><span class="pre">geometry</span></code> column containing the monitoring locations’ coordinates. You can use <code class="docutils literal notranslate"><span class="pre">gpd.explore()</span></code> to view your geometry coordinates on an interactive map. We will demo this functionality below (Hover over the site points to see all the columns returned from <code class="docutils literal notranslate"><span class="pre">waterdata.get_monitoring_locations()</span></code>). If you don’t have <code class="docutils literal notranslate"><span class="pre">geopandas</span></code> installed, <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> will return a regular <code class="docutils literal notranslate"><span class="pre">pandas</span></code> DataFrame with
+coordinate columns instead.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">NE_locations_discharge</span><span class="o">.</span><span class="n">set_crs</span><span class="p">(</span><span class="n">crs</span><span class="o">=</span><span class="s2">&quot;WGS84&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">explore</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/explore.py:291</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
+<span class="ansi-green-fg">    289</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">re</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">291</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">branca</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">bc</span>
+<span class="ansi-green-fg">    292</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">folium</span>
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;branca&#39;
+
+During handling of the above exception, another exception occurred:
+
+<span class="ansi-red-fg">ImportError</span>                               Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[10]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span class="ansi-yellow-bg">NE_locations_discharge</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">set_crs</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">crs</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">WGS84</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">explore</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/geodataframe.py:2479</span>, in <span class="ansi-cyan-fg">GeoDataFrame.explore</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
+<span class="ansi-green-fg">   2477</span> <span style="color: rgb(175,0,255)">@doc</span>(_explore)
+<span class="ansi-green-fg">   2478</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span> <span class="ansi-blue-fg">explore</span>(<span style="color: rgb(0,135,0)">self</span>, *args, **kwargs) -&gt; folium.Map:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">2479</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">_explore</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">args</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">kwargs</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/explore.py:299</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
+<span class="ansi-green-fg">    296</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">matplotlib</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> colors
+<span class="ansi-green-fg">    298</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> (<span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>, <span class="ansi-bold" style="color: rgb(215,95,95)">ModuleNotFoundError</span>):
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">299</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>(
+<span class="ansi-green-fg">    300</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">The </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">folium&gt;=0.12</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">, </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">matplotlib</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> and </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">mapclassify</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> packages </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">    301</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">are required for </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">explore()</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">. You can install them using </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">    302</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">conda install -c conda-forge </span><span class="ansi-bold" style="color: rgb(175,95,0)">\&#34;</span><span class="ansi-yellow-fg">folium&gt;=0.12</span><span class="ansi-bold" style="color: rgb(175,95,0)">\&#34;</span><span class="ansi-yellow-fg"> matplotlib mapclassify</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">    303</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">or </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">pip install </span><span class="ansi-bold" style="color: rgb(175,95,0)">\&#34;</span><span class="ansi-yellow-fg">folium&gt;=0.12</span><span class="ansi-bold" style="color: rgb(175,95,0)">\&#34;</span><span class="ansi-yellow-fg"> matplotlib mapclassify</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">.</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">    304</span>     )
+<span class="ansi-green-fg">    306</span> <span style="color: rgb(95,135,135)"># xyservices is an optional dependency</span>
+<span class="ansi-green-fg">    307</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+
+<span class="ansi-red-fg">ImportError</span>: The &#39;folium&gt;=0.12&#39;, &#39;matplotlib&#39; and &#39;mapclassify&#39; packages are required for &#39;explore()&#39;. You can install them using &#39;conda install -c conda-forge &#34;folium&gt;=0.12&#34; matplotlib mapclassify&#39; or &#39;pip install &#34;folium&gt;=0.12&#34; matplotlib mapclassify&#39;.
+</pre></div></div>
+</div>
+</section>
+<section id="Latest-daily-and-instantaneous-values">
+<h3>Latest daily and instantaneous values<a class="headerlink" href="#Latest-daily-and-instantaneous-values" title="Link to this heading"></a></h3>
+<p>Now that we know which sites in Nebraska have recent discharge data, and we know where they are located, we can start downloading some actual flow values. Let’s start with some of the most “lightweight” functions, <code class="docutils literal notranslate"><span class="pre">waterdata.get_latest_daily()</span></code> and <code class="docutils literal notranslate"><span class="pre">waterdata.get_latest_continuous()</span></code>, which will return only the latest value for each monitoring location requested.</p>
+<p>Recall from above, we are working with ~100 sites with discharge data. Conveniently, the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> functions are <em>usually</em> pretty good at handling requests of up to ~200 monitoring locations. However, if you have more than 200, you may be better off chopping up your list of sites into a few lists that you loop over.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">latest_dv</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_latest_daily</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">NE_locations_discharge</span><span class="p">[</span><span class="s1">&#39;monitoring_location_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+    <span class="n">statistic_id</span><span class="o">=</span><span class="s2">&quot;00003&quot;</span>
+<span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">latest_dv</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+      <th>time_series_id</th>
+      <th>monitoring_location_id</th>
+      <th>parameter_code</th>
+      <th>statistic_id</th>
+      <th>time</th>
+      <th>value</th>
+      <th>unit_of_measure</th>
+      <th>approval_status</th>
+      <th>qualifier</th>
+      <th>last_modified</th>
+      <th>latest_daily_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>POINT (-96.59513 40.85717)</td>
+      <td>25d572ff16a347438fe186769cbe4cde</td>
+      <td>USGS-06803520</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2026-01-14</td>
+      <td>0.18</td>
+      <td>ft^3/s</td>
+      <td>Provisional</td>
+      <td>None</td>
+      <td>2026-01-16 14:44:14.656890+00:00</td>
+      <td>86629764-e9b9-40b8-9238-51dbd3a3ea17</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>POINT (-96.96086 40.59658)</td>
+      <td>842bef886d234a7cb938653ce45e95e9</td>
+      <td>USGS-06881000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2026-01-16</td>
+      <td>112.00</td>
+      <td>ft^3/s</td>
+      <td>Provisional</td>
+      <td>None</td>
+      <td>2026-01-20 14:32:21.866365+00:00</td>
+      <td>1c79e4b5-f7b0-4a76-8001-e1940fbd0a39</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>POINT (-96.04283 41.15599)</td>
+      <td>986fee425cde4663bcd93b2cf4c952bf</td>
+      <td>USGS-06610793</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2026-01-17</td>
+      <td>NaN</td>
+      <td>ft^3/s</td>
+      <td>Provisional</td>
+      <td>[SEASONAL]</td>
+      <td>2026-01-18 08:16:24.878111+00:00</td>
+      <td>13531589-12d2-40aa-b95b-4db862e34b5e</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>POINT (-96.48793 42.32141)</td>
+      <td>af8d503229314a349970e47209c27480</td>
+      <td>USGS-06601000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2026-01-18</td>
+      <td>NaN</td>
+      <td>ft^3/s</td>
+      <td>Provisional</td>
+      <td>[ICE]</td>
+      <td>2026-01-19 08:17:58.835730+00:00</td>
+      <td>28a8c3a5-50eb-4370-a956-ed8dde8ec32e</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>POINT (-98.1754 42.81086)</td>
+      <td>2daeaac402fb46e594ad265d1fed145c</td>
+      <td>USGS-06453600</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2026-01-19</td>
+      <td>NaN</td>
+      <td>ft^3/s</td>
+      <td>Provisional</td>
+      <td>[ICE]</td>
+      <td>2026-01-20 08:08:07.867606+00:00</td>
+      <td>33075b64-7adc-46d3-8f0d-a9b2045ec89a</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Note that because these measurements are less than a week old, most of them are still tagged as “Provisional” in the <code class="docutils literal notranslate"><span class="pre">approval_status</span></code> column. Some may also be missing values in the <code class="docutils literal notranslate"><span class="pre">value</span></code> column. You can often check the <code class="docutils literal notranslate"><span class="pre">qualifier</span></code> column for clues as to why a value is missing, or additional information specific to that measurement. Let’s map out the monitoring locations again and color the points based on the latest daily value.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">latest_dv</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">latest_dv</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+<span class="n">latest_dv</span><span class="p">[[</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span> <span class="s1">&#39;monitoring_location_id&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="s1">&#39;unit_of_measure&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">set_crs</span><span class="p">(</span><span class="n">crs</span><span class="o">=</span><span class="s2">&quot;WGS84&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">column</span><span class="o">=</span><span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="n">tiles</span><span class="o">=</span><span class="s1">&#39;CartoDB dark matter&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;YlOrRd&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/explore.py:291</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
+<span class="ansi-green-fg">    289</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">re</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">291</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">branca</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">bc</span>
+<span class="ansi-green-fg">    292</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">folium</span>
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;branca&#39;
+
+During handling of the above exception, another exception occurred:
+
+<span class="ansi-red-fg">ImportError</span>                               Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[12]</span><span class="ansi-green-fg">, line 2</span>
+<span class="ansi-green-fg">      1</span> latest_dv[<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">date</span><span class="ansi-yellow-fg">&#39;</span>] = latest_dv[<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">time</span><span class="ansi-yellow-fg">&#39;</span>].astype(<span style="color: rgb(0,135,0)">str</span>)
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> <span class="ansi-yellow-bg">latest_dv</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-fg ansi-yellow-bg">geometry</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-fg ansi-yellow-bg">monitoring_location_id</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-fg ansi-yellow-bg">date</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-fg ansi-yellow-bg">value</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-fg ansi-yellow-bg">unit_of_measure</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">set_crs</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">crs</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">WGS84</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">explore</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">column</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-fg ansi-yellow-bg">value</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">tiles</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-fg ansi-yellow-bg">CartoDB dark matter</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">cmap</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-fg ansi-yellow-bg">YlOrRd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">scheme</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">None</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">legend</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">True</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/geodataframe.py:2479</span>, in <span class="ansi-cyan-fg">GeoDataFrame.explore</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
+<span class="ansi-green-fg">   2477</span> <span style="color: rgb(175,0,255)">@doc</span>(_explore)
+<span class="ansi-green-fg">   2478</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span> <span class="ansi-blue-fg">explore</span>(<span style="color: rgb(0,135,0)">self</span>, *args, **kwargs) -&gt; folium.Map:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">2479</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">_explore</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">args</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">kwargs</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/explore.py:299</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
+<span class="ansi-green-fg">    296</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">matplotlib</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> colors
+<span class="ansi-green-fg">    298</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> (<span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>, <span class="ansi-bold" style="color: rgb(215,95,95)">ModuleNotFoundError</span>):
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">299</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>(
+<span class="ansi-green-fg">    300</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">The </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">folium&gt;=0.12</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">, </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">matplotlib</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> and </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">mapclassify</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> packages </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">    301</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">are required for </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">explore()</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">. You can install them using </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">    302</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">conda install -c conda-forge </span><span class="ansi-bold" style="color: rgb(175,95,0)">\&#34;</span><span class="ansi-yellow-fg">folium&gt;=0.12</span><span class="ansi-bold" style="color: rgb(175,95,0)">\&#34;</span><span class="ansi-yellow-fg"> matplotlib mapclassify</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">    303</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">or </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">pip install </span><span class="ansi-bold" style="color: rgb(175,95,0)">\&#34;</span><span class="ansi-yellow-fg">folium&gt;=0.12</span><span class="ansi-bold" style="color: rgb(175,95,0)">\&#34;</span><span class="ansi-yellow-fg"> matplotlib mapclassify</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">.</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">    304</span>     )
+<span class="ansi-green-fg">    306</span> <span style="color: rgb(95,135,135)"># xyservices is an optional dependency</span>
+<span class="ansi-green-fg">    307</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+
+<span class="ansi-red-fg">ImportError</span>: The &#39;folium&gt;=0.12&#39;, &#39;matplotlib&#39; and &#39;mapclassify&#39; packages are required for &#39;explore()&#39;. You can install them using &#39;conda install -c conda-forge &#34;folium&gt;=0.12&#34; matplotlib mapclassify&#39; or &#39;pip install &#34;folium&gt;=0.12&#34; matplotlib mapclassify&#39;.
+</pre></div></div>
+</div>
+<p>Let’s do the same routine with <code class="docutils literal notranslate"><span class="pre">waterdata.get_latest_continuous()</span></code>, but note that we do not need to specify the <code class="docutils literal notranslate"><span class="pre">statistic_id</span></code>: all instantaneous values have the statistical code “00011”.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">latest_instantaneous</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_latest_continuous</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">NE_locations_discharge</span><span class="p">[</span><span class="s1">&#39;monitoring_location_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span>
+<span class="p">)</span>
+
+<span class="n">latest_instantaneous</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">latest_instantaneous</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+<span class="n">latest_instantaneous</span><span class="p">[[</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span> <span class="s1">&#39;monitoring_location_id&#39;</span><span class="p">,</span> <span class="s1">&#39;datetime&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="s1">&#39;unit_of_measure&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">set_crs</span><span class="p">(</span><span class="n">crs</span><span class="o">=</span><span class="s2">&quot;WGS84&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">column</span><span class="o">=</span><span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;YlOrRd&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/explore.py:291</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
+<span class="ansi-green-fg">    289</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">re</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">291</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">branca</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">bc</span>
+<span class="ansi-green-fg">    292</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">folium</span>
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;branca&#39;
+
+During handling of the above exception, another exception occurred:
+
+<span class="ansi-red-fg">ImportError</span>                               Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[13]</span><span class="ansi-green-fg">, line 7</span>
+<span class="ansi-green-fg">      1</span> latest_instantaneous,_ = waterdata.get_latest_continuous(
+<span class="ansi-green-fg">      2</span>     monitoring_location_id=NE_locations_discharge[<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">monitoring_location_id</span><span class="ansi-yellow-fg">&#39;</span>].tolist(),
+<span class="ansi-green-fg">      3</span>     parameter_code=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">00060</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">      4</span> )
+<span class="ansi-green-fg">      6</span> latest_instantaneous[<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#39;</span>] = latest_instantaneous[<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">time</span><span class="ansi-yellow-fg">&#39;</span>].astype(<span style="color: rgb(0,135,0)">str</span>)
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">7</span> <span class="ansi-yellow-bg">latest_instantaneous</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-fg ansi-yellow-bg">geometry</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-fg ansi-yellow-bg">monitoring_location_id</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-fg ansi-yellow-bg">datetime</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-fg ansi-yellow-bg">value</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-fg ansi-yellow-bg">unit_of_measure</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">set_crs</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">crs</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">WGS84</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">explore</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">column</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-fg ansi-yellow-bg">value</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">cmap</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-fg ansi-yellow-bg">YlOrRd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">scheme</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">None</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">legend</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">True</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/geodataframe.py:2479</span>, in <span class="ansi-cyan-fg">GeoDataFrame.explore</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
+<span class="ansi-green-fg">   2477</span> <span style="color: rgb(175,0,255)">@doc</span>(_explore)
+<span class="ansi-green-fg">   2478</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span> <span class="ansi-blue-fg">explore</span>(<span style="color: rgb(0,135,0)">self</span>, *args, **kwargs) -&gt; folium.Map:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">2479</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">_explore</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">args</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">kwargs</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/explore.py:299</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
+<span class="ansi-green-fg">    296</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">matplotlib</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> colors
+<span class="ansi-green-fg">    298</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> (<span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>, <span class="ansi-bold" style="color: rgb(215,95,95)">ModuleNotFoundError</span>):
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">299</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>(
+<span class="ansi-green-fg">    300</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">The </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">folium&gt;=0.12</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">, </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">matplotlib</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> and </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">mapclassify</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> packages </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">    301</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">are required for </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">explore()</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">. You can install them using </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">    302</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">conda install -c conda-forge </span><span class="ansi-bold" style="color: rgb(175,95,0)">\&#34;</span><span class="ansi-yellow-fg">folium&gt;=0.12</span><span class="ansi-bold" style="color: rgb(175,95,0)">\&#34;</span><span class="ansi-yellow-fg"> matplotlib mapclassify</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">    303</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">or </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">pip install </span><span class="ansi-bold" style="color: rgb(175,95,0)">\&#34;</span><span class="ansi-yellow-fg">folium&gt;=0.12</span><span class="ansi-bold" style="color: rgb(175,95,0)">\&#34;</span><span class="ansi-yellow-fg"> matplotlib mapclassify</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">.</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">    304</span>     )
+<span class="ansi-green-fg">    306</span> <span style="color: rgb(95,135,135)"># xyservices is an optional dependency</span>
+<span class="ansi-green-fg">    307</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+
+<span class="ansi-red-fg">ImportError</span>: The &#39;folium&gt;=0.12&#39;, &#39;matplotlib&#39; and &#39;mapclassify&#39; packages are required for &#39;explore()&#39;. You can install them using &#39;conda install -c conda-forge &#34;folium&gt;=0.12&#34; matplotlib mapclassify&#39; or &#39;pip install &#34;folium&gt;=0.12&#34; matplotlib mapclassify&#39;.
+</pre></div></div>
+</div>
+</section>
+<section id="Daily-and-continuous-values-datasets">
+<h3>Daily and continuous values datasets<a class="headerlink" href="#Daily-and-continuous-values-datasets" title="Link to this heading"></a></h3>
+<p>While the “latest” functions might be helpful for “realtime” or “current” dashboards or reports, many users desire to work with a complete timeseries of daily summary (min, max, mean) or instantaneous values for their analyses. For these workflows, <code class="docutils literal notranslate"><span class="pre">waterdata.get_daily()</span></code> and <code class="docutils literal notranslate"><span class="pre">waterdata.get_continuous()</span></code> are helpful.</p>
+<p>Using our current example, let’s say that you want to compare daily and instantaneous discharge values for monitoring locations along the Missouri River in Nebraska.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">missouri_river_sites</span> <span class="o">=</span> <span class="n">NE_locations_discharge</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">NE_locations_discharge</span><span class="p">[</span><span class="s1">&#39;monitoring_location_name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s2">&quot;Missouri&quot;</span><span class="p">)]</span>
+<span class="n">display</span><span class="p">(</span><span class="n">missouri_river_sites</span><span class="p">[[</span>
+    <span class="s1">&#39;county_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;site_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;monitoring_location_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;monitoring_location_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;drainage_area&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;altitude&#39;</span>
+    <span class="p">]])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>county_name</th>
+      <th>site_type</th>
+      <th>monitoring_location_id</th>
+      <th>monitoring_location_name</th>
+      <th>drainage_area</th>
+      <th>altitude</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>111</th>
+      <td>Dakota County</td>
+      <td>Stream</td>
+      <td>USGS-06486000</td>
+      <td>Missouri River at Sioux City, IA</td>
+      <td>314600.0</td>
+      <td>1057.42</td>
+    </tr>
+    <tr>
+      <th>136</th>
+      <td>Douglas County</td>
+      <td>Stream</td>
+      <td>USGS-06610000</td>
+      <td>Missouri River at Omaha, NE</td>
+      <td>322800.0</td>
+      <td>948.97</td>
+    </tr>
+    <tr>
+      <th>675</th>
+      <td>Otoe County</td>
+      <td>Stream</td>
+      <td>USGS-06807000</td>
+      <td>Missouri River at Nebraska City, NE</td>
+      <td>410000.0</td>
+      <td>905.61</td>
+    </tr>
+    <tr>
+      <th>687</th>
+      <td>Richardson County</td>
+      <td>Stream</td>
+      <td>USGS-06813500</td>
+      <td>Missouri River at Rulo, NE</td>
+      <td>414900.0</td>
+      <td>838.16</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Currently, users may only request 3 years or less of continuous data in one pull. For this example, let’s pull the last 1 year of daily mean values and instantaneous values for these Missouri River sites. We’ll skip pulling geometry in the <code class="docutils literal notranslate"><span class="pre">waterdata.get_daily()</span></code> function; the <code class="docutils literal notranslate"><span class="pre">waterdata.get_continuous()</span></code> function does not return geometry at all to economize the size of the dataset returned.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">one_year_ago</span> <span class="o">=</span> <span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span> <span class="o">-</span> <span class="n">relativedelta</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">missouri_site_ids</span> <span class="o">=</span> <span class="n">missouri_river_sites</span><span class="p">[</span><span class="s1">&#39;monitoring_location_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="n">missouri_site_names</span> <span class="o">=</span> <span class="n">missouri_river_sites</span><span class="p">[</span><span class="s1">&#39;monitoring_location_name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">daily_values</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">missouri_site_ids</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+    <span class="n">statistic_id</span><span class="o">=</span><span class="s2">&quot;00003&quot;</span><span class="p">,</span> <span class="c1"># mean daily value</span>
+    <span class="n">time</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">one_year_ago</span><span class="si">}</span><span class="s2">/..&quot;</span><span class="p">,</span>
+    <span class="n">skip_geometry</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">instantaneous_values</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">missouri_site_ids</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">one_year_ago</span><span class="si">}</span><span class="s2">T00:00:00Z/..&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>With these two datasets, let’s plot daily and instantaneous discharge values for the four Missouri River sites using <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>. We will plot each site on a different subplot, with instantaneous values represented by a blue line and daily mean values represented by black points.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">axes</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+<span class="c1"># Y-axis formatter (with thousands separators)</span>
+<span class="n">tick_fmt</span> <span class="o">=</span> <span class="n">mtick</span><span class="o">.</span><span class="n">StrMethodFormatter</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{x:,.0f}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">site</span><span class="p">,</span> <span class="n">site_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">missouri_site_ids</span><span class="p">,</span> <span class="n">missouri_site_names</span><span class="p">):</span>
+    <span class="c1"># Filter per site &amp; sort by time</span>
+    <span class="n">inst</span> <span class="o">=</span> <span class="n">instantaneous_values</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">instantaneous_values</span><span class="p">[</span><span class="s1">&#39;monitoring_location_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">site</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+    <span class="n">daily</span> <span class="o">=</span> <span class="n">daily_values</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">daily_values</span><span class="p">[</span><span class="s1">&#39;monitoring_location_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">site</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Instantaneous (line)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">inst</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">inst</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#1f77b4&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Instantaneous&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Daily mean (black dots)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+        <span class="n">daily</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">daily</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span>
+        <span class="n">c</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Daily mean&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Axes styling</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">site</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">site_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">tick_fmt</span><span class="p">)</span>
+
+    <span class="c1"># Time ticks</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">mdates</span><span class="o">.</span><span class="n">MonthLocator</span><span class="p">())</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">mdates</span><span class="o">.</span><span class="n">DateFormatter</span><span class="p">(</span><span class="s2">&quot;%b %Y&quot;</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_minor_locator</span><span class="p">(</span><span class="n">mdates</span><span class="o">.</span><span class="n">WeekdayLocator</span><span class="p">(</span><span class="n">byweekday</span><span class="o">=</span><span class="n">mdates</span><span class="o">.</span><span class="n">MO</span><span class="p">))</span>
+
+<span class="c1"># Common axis labels (left y on both left subplots; x labels on bottom row)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Discharge (cubic feet per second)&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Discharge (cubic feet per second)&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">handles</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_legend_handles_labels</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;lower center&quot;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missouri River sites - Daily Mean vs Instantaneous Discharge&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">autofmt_xdate</span><span class="p">()</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_WaterData_demo_37_0.png" src="../_images/examples_WaterData_demo_37_0.png" />
+</div>
+</div>
+</section>
+<section id="Field-values">
+<h3>Field values<a class="headerlink" href="#Field-values" title="Link to this heading"></a></h3>
+<p>Finally, let’s see if there are any discharge field measurements for these sites. These are manually recorded measurements (by a human), often used during calibration checks. We will use <code class="docutils literal notranslate"><span class="pre">waterdata.get_field_measurements()</span></code> to check. More commonly, a user would head to this function to gather groundwater level data, which are categorized as field measurements.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">field_measurements</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_field_measurements</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">missouri_site_ids</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">one_year_ago</span><span class="si">}</span><span class="s2">T00:00:00Z/..&quot;</span>
+<span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">field_measurements</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+      <th>field_visit_id</th>
+      <th>parameter_code</th>
+      <th>monitoring_location_id</th>
+      <th>observing_procedure_code</th>
+      <th>observing_procedure</th>
+      <th>value</th>
+      <th>unit_of_measure</th>
+      <th>time</th>
+      <th>qualifier</th>
+      <th>vertical_datum</th>
+      <th>approval_status</th>
+      <th>measuring_agency</th>
+      <th>last_modified</th>
+      <th>field_measurement_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>POINT (-95.42175 40.05206)</td>
+      <td>0c25bcf0-f8f9-4044-b051-bb73bd19498c</td>
+      <td>00060</td>
+      <td>USGS-06813500</td>
+      <td>Z</td>
+      <td>Acoustic Doppler Current Profiler</td>
+      <td>18000</td>
+      <td>ft^3/s</td>
+      <td>2025-01-28 19:19:42+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2025-06-13 18:55:43.542508+00:00</td>
+      <td>844b8fa8-de6e-4d42-aed2-be587511305b</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>POINT (-95.84708 40.68181)</td>
+      <td>8d9e937b-7e60-4106-9b3d-dcc32c7323b1</td>
+      <td>00060</td>
+      <td>USGS-06807000</td>
+      <td>Z</td>
+      <td>Acoustic Doppler Current Profiler</td>
+      <td>21100</td>
+      <td>ft^3/s</td>
+      <td>2025-01-29 16:37:11+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2025-06-17 19:41:06.711794+00:00</td>
+      <td>8d21a28b-e818-4cff-a6cc-9448f298eb7a</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>POINT (-96.41308 42.48619)</td>
+      <td>9c2d9eb3-de9d-44d8-aca7-aa46de633040</td>
+      <td>00060</td>
+      <td>USGS-06486000</td>
+      <td>Z</td>
+      <td>Acoustic Doppler Current Profiler</td>
+      <td>16900</td>
+      <td>ft^3/s</td>
+      <td>2025-01-30 17:17:12+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2025-06-16 20:30:51.750716+00:00</td>
+      <td>4f8ffeda-3d65-4219-9f65-6759beb27f82</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>POINT (-95.92325 41.25906)</td>
+      <td>df9e30ec-5f70-431c-97f3-fc0ebd31044f</td>
+      <td>00060</td>
+      <td>USGS-06610000</td>
+      <td>Z</td>
+      <td>Acoustic Doppler Current Profiler</td>
+      <td>19100</td>
+      <td>ft^3/s</td>
+      <td>2025-01-31 16:48:25+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2025-06-17 19:35:53.102935+00:00</td>
+      <td>dc9a2b8b-932c-4053-b858-c1f22d4ccaa7</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>POINT (-96.41308 42.48619)</td>
+      <td>e9a04cf4-54fd-45f2-b742-d526250cae66</td>
+      <td>00060</td>
+      <td>USGS-06486000</td>
+      <td>Z</td>
+      <td>Acoustic Doppler Current Profiler</td>
+      <td>16300</td>
+      <td>ft^3/s</td>
+      <td>2025-02-03 17:10:55+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2025-06-16 20:30:51.750716+00:00</td>
+      <td>06d4b3c4-ca1e-4c1b-bf73-a80c91a420f1</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Hey! We have some! Let’s add these to our plots from above. We’ll loop through each monitoring location plot and add in field measurements as red points.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">site</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">missouri_site_ids</span><span class="p">):</span>
+    <span class="n">field</span> <span class="o">=</span> <span class="n">field_measurements</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+        <span class="n">field_measurements</span><span class="p">[</span><span class="s1">&#39;monitoring_location_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">site</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]</span>
+    <span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+        <span class="n">field</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">field</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span>
+        <span class="n">c</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Field&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span>
+    <span class="p">)</span>
+
+<span class="c1"># Remove any existing figure-level legends</span>
+<span class="k">for</span> <span class="n">leg</span> <span class="ow">in</span> <span class="n">fig</span><span class="o">.</span><span class="n">legends</span><span class="p">:</span>
+    <span class="n">leg</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+<span class="n">handles</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_legend_handles_labels</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;lower center&quot;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Redraw the figure</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw_idle</span><span class="p">()</span>
+<span class="n">fig</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_WaterData_demo_41_0.png" src="../_images/examples_WaterData_demo_41_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Additional-Resources">
+<h2>Additional Resources<a class="headerlink" href="#Additional-Resources" title="Link to this heading"></a></h2>
+<p>The USGS Water Data APIs belong to the Water Data for the Nation (WDFN) group of applications and tools. These products exist under the broader National Water Information System (NWIS) program. Check out the links below for more information on the USGS Water Data APIs and other ways to download or view USGS water data:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://api.waterdata.usgs.gov/">Water Data APIs Home</a></p></li>
+<li><p><a class="reference external" href="https://api.waterdata.usgs.gov/signup/">Get an API Key</a></p></li>
+<li><p><a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections?f=html">Water Data API OGC Endpoint Catalog</a></p></li>
+<li><p><a class="reference external" href="https://api.waterdata.usgs.gov/download">Water Data Download Form</a></p></li>
+<li><p><a class="reference external" href="https://waterdata.usgs.gov/">Water Data for the Nation Home</a></p></li>
+<li><p><a class="reference external" href="https://waterdata.usgs.gov/questions-comments/?referrerUrl=https://api.waterdata.usgs.gov">Water Data for the Nation Feedback Form</a></p></li>
+<li><p><a class="reference external" href="https://github.com/DOI-USGS/dataretrieval">R dataRetrieval package</a></p></li>
+<li><p><a class="reference external" href="https://waterdata.usgs.gov/blog/nwisweb-decommission-campaign2/">WDFN Blog Post on NWISWeb Decommissioning Timeline</a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="readme_examples.html" class="btn btn-neutral float-right" title="Examples from the Readme file on retrieving NWIS data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

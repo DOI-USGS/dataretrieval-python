@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g67444e528 documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g3d96d5cda documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ce380998"></script>
+      <script src="../../../_static/documentation_options.js?v=70ba9caa"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -93,7 +93,6 @@
 <span class="kn">from</span> <span class="nn">dataretrieval.waterdata.types</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">CODE_SERVICES</span><span class="p">,</span>
     <span class="n">METADATA_COLLECTIONS</span><span class="p">,</span>
-    <span class="n">PROFILE_LOOKUP</span><span class="p">,</span>
     <span class="n">PROFILES</span><span class="p">,</span>
     <span class="n">SERVICES</span><span class="p">,</span>
 <span class="p">)</span>
@@ -101,7 +100,8 @@
     <span class="n">SAMPLES_URL</span><span class="p">,</span>
     <span class="n">get_ogc_data</span><span class="p">,</span>
     <span class="n">_construct_api_requests</span><span class="p">,</span>
-    <span class="n">_walk_pages</span>
+    <span class="n">_walk_pages</span><span class="p">,</span>
+    <span class="n">_check_profiles</span>
 <span class="p">)</span>
 
 <span class="c1"># Set up logger for this module</span>
@@ -778,9 +778,13 @@
     <span class="n">parameter_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">properties</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">statistic_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">hydrologic_unit_code</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">state_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">last_modified</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">begin</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">end</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">begin_utc</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">end_utc</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">unit_of_measure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">computation_period_identifier</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">computation_identifier</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -829,6 +833,17 @@
 <span class="sd">        Example codes include 00001 (max), 00002 (min), and 00003 (mean).</span>
 <span class="sd">        A complete list of codes and their descriptions can be found at</span>
 <span class="sd">        https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&amp;fmt=html.</span>
+<span class="sd">    hydrologic_unit_code : string or list of strings, optional</span>
+<span class="sd">        The United States is divided and sub-divided into successively smaller</span>
+<span class="sd">        hydrologic units which are classified into four levels: regions,</span>
+<span class="sd">        sub-regions, accounting units, and cataloging units. The hydrologic</span>
+<span class="sd">        units are arranged within each other, from the smallest (cataloging units)</span>
+<span class="sd">        to the largest (regions). Each hydrologic unit is identified by a unique</span>
+<span class="sd">        hydrologic unit code (HUC) consisting of two to eight digits based on the</span>
+<span class="sd">        four levels of classification in the hydrologic unit system.</span>
+<span class="sd">    state_name : string or list of strings, optional</span>
+<span class="sd">        The name of the state or state equivalent in which the monitoring location</span>
+<span class="sd">        is located.</span>
 <span class="sd">    last_modified : string, optional</span>
 <span class="sd">        The last time a record was refreshed in our database. This may happen</span>
 <span class="sd">        due to regular operational processes and does not necessarily indicate</span>
@@ -847,6 +862,14 @@
 <span class="sd">                for the last 36 hours</span>
 
 <span class="sd">    begin : string or list of strings, optional</span>
+<span class="sd">        This field contains the same information as &quot;begin_utc&quot;, but in the</span>
+<span class="sd">        local time of the monitoring location. It is retained for backwards</span>
+<span class="sd">        compatibility, but will be removed in V1 of these APIs.</span>
+<span class="sd">    end : string or list of strings, optional</span>
+<span class="sd">        This field contains the same information as &quot;end_utc&quot;, but in the</span>
+<span class="sd">        local time of the monitoring location. It is retained for backwards</span>
+<span class="sd">        compatibility, but will be removed in V1 of these APIs.</span>
+<span class="sd">    begin_utc : string or list of strings, optional</span>
 <span class="sd">        The datetime of the earliest observation in the time series. Together</span>
 <span class="sd">        with end, this field represents the period of record of a time series.</span>
 <span class="sd">        Note that some time series may have large gaps in their collection</span>
@@ -863,7 +886,7 @@
 <span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or &quot;../2018-03-18T12:31:12Z&quot;</span>
 <span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or &quot;PT36H&quot; for the last 36 hours</span>
 
-<span class="sd">    end : string or list of strings, optional</span>
+<span class="sd">    end_utc : string or list of strings, optional</span>
 <span class="sd">        The datetime of the most recent observation in the time series. Data returned by</span>
 <span class="sd">        this endpoint updates at most once per day, and potentially less frequently than</span>
 <span class="sd">        that, and as such there may be more recent observations within a time series</span>
@@ -1808,37 +1831,6 @@
 
     <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
 
-
-
-<div class="viewcode-block" id="_check_profiles">
-<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata._check_profiles">[docs]</a>
-<span class="k">def</span> <span class="nf">_check_profiles</span><span class="p">(</span>
-    <span class="n">service</span><span class="p">:</span> <span class="n">SERVICES</span><span class="p">,</span>
-    <span class="n">profile</span><span class="p">:</span> <span class="n">PROFILES</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check whether a service profile is valid.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    service : string</span>
-<span class="sd">        One of the service names from the &quot;services&quot; list.</span>
-<span class="sd">    profile : string</span>
-<span class="sd">        One of the profile names from &quot;results_profiles&quot;,</span>
-<span class="sd">        &quot;locations_profiles&quot;, &quot;activities_profiles&quot;,</span>
-<span class="sd">        &quot;projects_profiles&quot; or &quot;organizations_profiles&quot;.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">valid_services</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">SERVICES</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">service</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_services</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Invalid service: &#39;</span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2">&#39;. Valid options are: </span><span class="si">{</span><span class="n">valid_services</span><span class="si">}</span><span class="s2">.&quot;</span>
-        <span class="p">)</span>
-
-    <span class="n">valid_profiles</span> <span class="o">=</span> <span class="n">PROFILE_LOOKUP</span><span class="p">[</span><span class="n">service</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">profile</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_profiles</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Invalid profile: &#39;</span><span class="si">{</span><span class="n">profile</span><span class="si">}</span><span class="s2">&#39; for service &#39;</span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;Valid options are: </span><span class="si">{</span><span class="n">valid_profiles</span><span class="si">}</span><span class="s2">.&quot;</span>
-        <span class="p">)</span></div>
 
 </pre></div>
 
