@@ -39,6 +39,7 @@ test = [
   "flake8",
 ]
 doc = [
+  "docutils<0.22",
   "sphinx",
   "sphinx-rtd-theme",
   "nbsphinx",
@@ -46,6 +47,8 @@ doc = [
   "ipython",
   "ipykernel",
   "matplotlib",
+  "folium>=0.12",
+  "mapclassify"
 ]
 nldi = [
   'geopandas>=0.10'
