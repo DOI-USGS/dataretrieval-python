@@ -6,8 +6,8 @@ from pandas import DataFrame
 if sys.version_info < (3, 10):
     pytest.skip("Skip entire module on Python < 3.10", allow_module_level=True)
 
+from dataretrieval.waterdata.utils import _check_profiles
 from dataretrieval.waterdata import (
-    _check_profiles,
     get_samples,
     get_daily,
     get_continuous,
