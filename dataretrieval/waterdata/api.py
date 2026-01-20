@@ -17,7 +17,6 @@ from dataretrieval.utils import BaseMetadata, to_str
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,
     METADATA_COLLECTIONS,
-    PROFILE_LOOKUP,
     PROFILES,
     SERVICES,
 )
@@ -25,7 +24,8 @@ from dataretrieval.waterdata.utils import (
     SAMPLES_URL,
     get_ogc_data,
     _construct_api_requests,
-    _walk_pages
+    _walk_pages,
+    _check_profiles
 )
 
 # Set up logger for this module
@@ -691,9 +691,13 @@ def get_time_series_metadata(
     parameter_name: Optional[Union[str, List[str]]] = None,
     properties: Optional[Union[str, List[str]]] = None,
     statistic_id: Optional[Union[str, List[str]]] = None,
+    hydrologic_unit_code: Optional[Union[str, List[str]]] = None,
+    state_name: Optional[Union[str, List[str]]] = None,
     last_modified: Optional[Union[str, List[str]]] = None,
     begin: Optional[Union[str, List[str]]] = None,
     end: Optional[Union[str, List[str]]] = None,
+    begin_utc: Optional[Union[str, List[str]]] = None,
+    end_utc: Optional[Union[str, List[str]]] = None,
     unit_of_measure: Optional[Union[str, List[str]]] = None,
     computation_period_identifier: Optional[Union[str, List[str]]] = None,
     computation_identifier: Optional[Union[str, List[str]]] = None,
@@ -742,6 +746,17 @@ def get_time_series_metadata(
         Example codes include 00001 (max), 00002 (min), and 00003 (mean).
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
+    hydrologic_unit_code : string or list of strings, optional
+        The United States is divided and sub-divided into successively smaller
+        hydrologic units which are classified into four levels: regions,
+        sub-regions, accounting units, and cataloging units. The hydrologic
+        units are arranged within each other, from the smallest (cataloging units)
+        to the largest (regions). Each hydrologic unit is identified by a unique
+        hydrologic unit code (HUC) consisting of two to eight digits based on the
+        four levels of classification in the hydrologic unit system.
+    state_name : string or list of strings, optional
+        The name of the state or state equivalent in which the monitoring location
+        is located.
     last_modified : string, optional
         The last time a record was refreshed in our database. This may happen
         due to regular operational processes and does not necessarily indicate
@@ -760,6 +775,14 @@ def get_time_series_metadata(
                 for the last 36 hours
 
     begin : string or list of strings, optional
+        This field contains the same information as "begin_utc", but in the
+        local time of the monitoring location. It is retained for backwards
+        compatibility, but will be removed in V1 of these APIs.
+    end : string or list of strings, optional
+        This field contains the same information as "end_utc", but in the
+        local time of the monitoring location. It is retained for backwards
+        compatibility, but will be removed in V1 of these APIs.
+    begin_utc : string or list of strings, optional
         The datetime of the earliest observation in the time series. Together
         with end, this field represents the period of record of a time series.
         Note that some time series may have large gaps in their collection
@@ -776,7 +799,7 @@ def get_time_series_metadata(
             * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
             * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
 
-    end : string or list of strings, optional
+    end_utc : string or list of strings, optional
         The datetime of the most recent observation in the time series. Data returned by
         this endpoint updates at most once per day, and potentially less frequently than
         that, and as such there may be more recent observations within a time series
@@ -1703,31 +1726,3 @@ def get_samples(
 
     return df, BaseMetadata(response)
 
-
-def _check_profiles(
-    service: SERVICES,
-    profile: PROFILES,
-) -> None:
-    """Check whether a service profile is valid.
-
-    Parameters
-    ----------
-    service : string
-        One of the service names from the "services" list.
-    profile : string
-        One of the profile names from "results_profiles",
-        "locations_profiles", "activities_profiles",
-        "projects_profiles" or "organizations_profiles".
-    """
-    valid_services = get_args(SERVICES)
-    if service not in valid_services:
-        raise ValueError(
-            f"Invalid service: '{service}'. Valid options are: {valid_services}."
-        )
-
-    valid_profiles = PROFILE_LOOKUP[service]
-    if profile not in valid_profiles:
-        raise ValueError(
-            f"Invalid profile: '{profile}' for service '{service}'. "
-            f"Valid options are: {valid_profiles}."
-        )
