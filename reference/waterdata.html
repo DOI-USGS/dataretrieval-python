@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g3d96d5cda documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g6328e0997 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=70ba9caa"></script>
+      <script src="../_static/documentation_options.js?v=401219a3"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -1038,7 +1038,26 @@ if your internet connection is spotty. The default (None) will set the
 limit to the maximum allowable limit for the service.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> or <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code>) – Formatted data returned from the API query. The primary metadata
+of each reference table will show up in the first column, where
+the name of the column is the singular form of the collection name,
+separated by underscores (e.g. the “medium-codes” reference table
+has a column called “medium_code”, which contains all possible
+medium code values).</p></li>
+<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object including the URL request and query time.</p></li>
+</ul>
+</p>
+</dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get table of USGS parameter codes</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_reference_table</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">collection</span><span class="o">=</span><span class="s2">&quot;parameter-codes&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">

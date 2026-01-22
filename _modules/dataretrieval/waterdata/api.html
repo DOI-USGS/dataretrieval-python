@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g3d96d5cda documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g6328e0997 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=70ba9caa"></script>
+      <script src="../../../_static/documentation_options.js?v=401219a3"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -1514,6 +1514,7 @@
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
 
+
 <div class="viewcode-block" id="get_reference_table">
 <a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_reference_table">[docs]</a>
 <span class="k">def</span> <span class="nf">get_reference_table</span><span class="p">(</span>
@@ -1540,6 +1541,27 @@
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
+<span class="sd">        Formatted data returned from the API query. The primary metadata</span>
+<span class="sd">        of each reference table will show up in the first column, where</span>
+<span class="sd">        the name of the column is the singular form of the collection name,</span>
+<span class="sd">        separated by underscores (e.g. the &quot;medium-codes&quot; reference table</span>
+<span class="sd">        has a column called &quot;medium_code&quot;, which contains all possible</span>
+<span class="sd">        medium code values).</span>
+<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">        A custom metadata object including the URL request and query time.</span>
+<span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; # Get table of USGS parameter codes</span>
+<span class="sd">        &gt;&gt;&gt; ref, md = dataretrieval.waterdata.get_reference_table(</span>
+<span class="sd">        ...     collection=&quot;parameter-codes&quot;</span>
+<span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">valid_code_services</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">METADATA_COLLECTIONS</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">collection</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_code_services</span><span class="p">:</span>
@@ -1548,29 +1570,19 @@
             <span class="sa">f</span><span class="s2">&quot;Valid options are: </span><span class="si">{</span><span class="n">valid_code_services</span><span class="si">}</span><span class="s2">.&quot;</span>
         <span class="p">)</span>
     
-    <span class="n">req</span> <span class="o">=</span> <span class="n">_construct_api_requests</span><span class="p">(</span>
-        <span class="n">service</span><span class="o">=</span><span class="n">collection</span><span class="p">,</span>
-        <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
-        <span class="n">skip_geometry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="c1"># Run API request and iterate through pages if needed</span>
-    <span class="n">return_list</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="n">_walk_pages</span><span class="p">(</span>
-        <span class="n">geopd</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">req</span><span class="o">=</span><span class="n">req</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Give ID column a more meaningful name</span>
-    <span class="k">if</span> <span class="n">collection</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">):</span>
-        <span class="n">return_list</span> <span class="o">=</span> <span class="n">return_list</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
-            <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">collection</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">_id&quot;</span><span class="p">}</span>
-            <span class="p">)</span>
+    <span class="c1"># Give ID column the collection name with underscores</span>
+    <span class="k">if</span> <span class="n">collection</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">collection</span> <span class="o">!=</span> <span class="s2">&quot;counties&quot;</span><span class="p">:</span>
+        <span class="n">output_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">collection</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">elif</span> <span class="n">collection</span> <span class="o">==</span> <span class="s2">&quot;counties&quot;</span><span class="p">:</span>
+        <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;county&quot;</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">return_list</span> <span class="o">=</span> <span class="n">return_list</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
-            <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">collection</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">_id&quot;</span><span class="p">}</span>
-            <span class="p">)</span>
-
-    <span class="c1"># Create metadata object from response</span>
-    <span class="n">metadata</span> <span class="o">=</span> <span class="n">BaseMetadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">return_list</span><span class="p">,</span> <span class="n">metadata</span></div>
+        <span class="n">output_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">collection</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span>
+        <span class="n">args</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">output_id</span><span class="o">=</span><span class="n">output_id</span><span class="p">,</span>
+        <span class="n">service</span><span class="o">=</span><span class="n">collection</span>
+        <span class="p">)</span></div>
 
 
 
