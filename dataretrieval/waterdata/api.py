@@ -1417,6 +1417,7 @@ def get_field_measurements(
 
     return get_ogc_data(args, output_id, service)
 
+
 def get_reference_table(
         collection: str,
         limit: Optional[int] = None,
@@ -1441,6 +1442,27 @@ def get_reference_table(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
+    
+    Returns
+    -------
+    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
+        Formatted data returned from the API query. The primary metadata
+        of each reference table will show up in the first column, where
+        the name of the column is the singular form of the collection name,
+        separated by underscores (e.g. the "medium-codes" reference table
+        has a column called "medium_code", which contains all possible
+        medium code values).
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object including the URL request and query time.
+    
+    Examples
+    --------
+    .. code::
+
+        >>> # Get table of USGS parameter codes
+        >>> ref, md = dataretrieval.waterdata.get_reference_table(
+        ...     collection="parameter-codes"
+        ... )
     """
     valid_code_services = get_args(METADATA_COLLECTIONS)
     if collection not in valid_code_services:
@@ -1449,29 +1471,19 @@ def get_reference_table(
             f"Valid options are: {valid_code_services}."
         )
     
-    req = _construct_api_requests(
-        service=collection,
-        limit=limit,
-        skip_geometry=True,
-    )
-    # Run API request and iterate through pages if needed
-    return_list, response = _walk_pages(
-        geopd=False, req=req
-    )
-
-    # Give ID column a more meaningful name
-    if collection.endswith("s"):
-        return_list = return_list.rename(
-            columns={"id": f"{collection[:-1].replace('-', '_')}_id"}
-            )
+    # Give ID column the collection name with underscores
+    if collection.endswith("s") and collection != "counties":
+        output_id = f"{collection[:-1].replace('-', '_')}"
+    elif collection == "counties":
+        output_id = "county"
     else:
-        return_list = return_list.rename(
-            columns={"id": f"{collection.replace('-', '_')}_id"}
-            )
-
-    # Create metadata object from response
-    metadata = BaseMetadata(response)
-    return return_list, metadata
+        output_id = f"{collection.replace('-', '_')}"
+    
+    return get_ogc_data(
+        args={},
+        output_id=output_id,
+        service=collection
+        )
 
 
 def get_codes(code_service: CODE_SERVICES) -> pd.DataFrame:
