@@ -1461,7 +1461,7 @@ def get_reference_table(
 
         >>> # Get table of USGS parameter codes
         >>> ref, md = dataretrieval.waterdata.get_reference_table(
-        ...     collection="parameter-codes
+        ...     collection="parameter-codes"
         ... )
     """
     valid_code_services = get_args(METADATA_COLLECTIONS)
