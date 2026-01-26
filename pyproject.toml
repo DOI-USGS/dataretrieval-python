@@ -20,7 +20,7 @@ classifiers = [
 ]
 dependencies = [
     "requests",
-    "pandas==2.*",
+    "pandas>=2.0.0,<3.0.0",
 ]
 dynamic = ["version"]
 
