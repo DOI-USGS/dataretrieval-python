@@ -1421,6 +1421,7 @@ def get_field_measurements(
 def get_reference_table(
         collection: str,
         limit: Optional[int] = None,
+        query: Optional[dict] = {},
         ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """Get metadata reference tables for the USGS Water Data API.
 
@@ -1442,7 +1443,10 @@ def get_reference_table(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
-    
+    query: dictionary, optional
+        The optional args parameter can be used to pass a dictionary of
+        query parameters to the collection API call.
+
     Returns
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
@@ -1463,6 +1467,12 @@ def get_reference_table(
         >>> ref, md = dataretrieval.waterdata.get_reference_table(
         ...     collection="parameter-codes"
         ... )
+
+        >>> # Get table of selected USGS parameter codes
+        >>> ref, md = dataretrieval.waterdata.get_reference_table(
+        ...     collection="parameter-codes"
+        ...     query={'id': '00001,00002'}
+        ... )
     """
     valid_code_services = get_args(METADATA_COLLECTIONS)
     if collection not in valid_code_services:
@@ -1480,7 +1490,7 @@ def get_reference_table(
         output_id = f"{collection.replace('-', '_')}"
     
     return get_ogc_data(
-        args={},
+        args=query,
         output_id=output_id,
         service=collection
         )
