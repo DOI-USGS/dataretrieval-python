@@ -253,6 +253,14 @@ def test_get_reference_table():
     assert hasattr(md, 'url')
     assert hasattr(md, 'query_time')
 
+def test_get_reference_table_with_query():
+    query = {"id": "AK001,AK008"}
+    df, md = get_reference_table("agency-codes", query=query)
+    assert "agency_code" in df.columns
+    assert df.shape[0] == 2
+    assert hasattr(md, 'url')
+    assert hasattr(md, 'query_time')
+
 def test_get_reference_table_wrong_name():
     with pytest.raises(ValueError):
         get_reference_table("agency-cod")
