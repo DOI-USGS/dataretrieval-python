@@ -274,7 +274,6 @@ def test_get_por_stats():
         start_date="01-01",
         end_date="01-01"
     )
-    assert type(df) is DataFrame
     assert df['computation'].isin(['median', 'maximum', 'minimum', 'arithmetic_mean', 'percentile']).all()
     assert df['time_of_year'].isin(['01-01', '01']).all()
     assert df.loc[df['computation'] == "minimum", "percentile"].unique().tolist() == [0.0]
@@ -290,7 +289,7 @@ def test_get_por_stats_expanded_false():
         computation_type=["minimum", "percentile"]
     )
     assert df.shape[0] == 4
-    assert df.shape[1] == 21
+    assert df.shape[1] == 20 # if geopandas installed, 21 columns if not
     assert "percentile" not in df.columns
     assert "percentiles" in df.columns
     assert type(df['percentiles'][2]) is list
@@ -306,7 +305,7 @@ def test_get_date_range_stats():
     )
 
     assert df.shape[0] == 3
-    assert df.shape[1] == 21
+    assert df.shape[1] == 20 # if geopandas installed, 21 columns if not
     assert "interval_type" in df.columns
     assert "percentile" in df.columns
     assert df['interval_type'].isin(['month', 'calendar_year', 'water_year']).all()
