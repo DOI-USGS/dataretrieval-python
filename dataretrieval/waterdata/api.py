@@ -1765,12 +1765,12 @@ def get_por_stats(
         ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """Get day-of-year and month-of-year water data statistics from the
     USGS Water Data API.
-    This service provides endpoints for access to computations on the
-    historical record regarding water conditions, including minimum, maximum,
-    mean, median, and percentiles for day of year, month, month-year, and 
-    water/calendar years. For more information regarding the calculation of
-    statistics and other details, please visit the Statistics documentation
-    page: https://waterdata.usgs.gov/statistics-documentation/.
+    This service (called the "observationNormals" endpoint on api.waterdata.usgs.gov)
+    provides endpoints for access to computations on the historical record regarding
+    water conditions, including minimum, maximum, mean, median, and percentiles for
+    day of year and month of year. For more information regarding the calculation of
+    statistics and other details, please visit the Statistics documentation page:
+    https://waterdata.usgs.gov/statistics-documentation/.
     
     Note: This API is under active beta development and subject to
     change. Improved handling of significant figures will be
@@ -1778,11 +1778,6 @@ def get_por_stats(
 
     Parameters
     ----------
-    service: string, One of the following options: "observationNormals"
-        or "observationIntervals". "observationNormals" returns
-        day-of-year and month-of-year statistics matching your query,
-        while "observationIntervals" returns monthly and annual statistics
-        matching your query.
     approval_status: string, optional
         Whether to include approved and/or provisional observations.
         At this time, only approved observations are returned.
@@ -1888,12 +1883,12 @@ def get_date_range_stats(
         expand_percentiles: bool = True
         ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """Get monthly and annual water data statistics from the USGS Water Data API.
-    This service provides endpoints for access to computations on the
-    historical record regarding water conditions, including minimum, maximum,
-    mean, median, and percentiles for day of year, month, month-year, and 
-    water/calendar years. For more information regarding the calculation of
-    statistics and other details, please visit the Statistics documentation
-    page: https://waterdata.usgs.gov/statistics-documentation/.
+    This service (called the "observationIntervals" endpoint on api.waterdata.usgs.gov)
+    provides endpoints for access to computations on the historical record regarding
+    water conditions, including minimum, maximum, mean, median, and percentiles for
+    month-year, and water/calendar years. For more information regarding the calculation
+    of statistics and other details, please visit the Statistics documentation page:
+    https://waterdata.usgs.gov/statistics-documentation/.
     
     Note: This API is under active beta development and subject to
     change. Improved handling of significant figures will be
@@ -1901,11 +1896,6 @@ def get_date_range_stats(
 
     Parameters
     ----------
-    service: string, One of the following options: "observationNormals"
-        or "observationIntervals". "observationNormals" returns
-        day-of-year and month-of-year statistics matching your query,
-        while "observationIntervals" returns monthly and annual statistics
-        matching your query.
     approval_status: string, optional
         Whether to include approved and/or provisional observations.
         At this time, only approved observations are returned.
