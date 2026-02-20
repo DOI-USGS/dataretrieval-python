@@ -913,7 +913,7 @@ def _expand_percentiles(df: pd.DataFrame) -> pd.DataFrame:
             percentiles_explode = percentiles_explode.drop(columns=['values', 'percentiles'])
             
             # Merge exploded values back to other metadata/geometry
-            percentiles = percentiles.drop(columns=['values', 'percentiles', 'value']).merge(percentiles_explode, on='computation_id', how='left')
+            percentiles = percentiles.drop(columns=['values', 'percentiles', 'value'], errors="ignore").merge(percentiles_explode, on='computation_id', how='left')
             
             # Concatenate back to original
             dfs = pd.concat([df.loc[df['computation'] != "percentile"], percentiles]).drop(columns=['values', 'percentiles'])

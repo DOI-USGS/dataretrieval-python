@@ -1836,6 +1836,28 @@ def get_por_stats(
         individual rows in the dataframe. Missing percentile values expressed
         as 'nan' in the list of string values are removed from the dataframe
         to save space.
+
+    Examples
+    --------
+    .. code::
+
+        >>> # Get daily, monthly, and annual percentiles for streamflow at
+        >>> # a monitoring location of interest
+        >>> df, md = dataretrieval.waterdata.get_por_stats(
+        ...     monitoring_location_id="USGS-05114000",
+        ...     parameter_code="00060",
+        ...     computation_type="percentile"
+        ... )
+
+        >>> # Get all daily and monthly statistics for the month of January
+        >>> # over the entire period of record for streamflow and gage height
+        >>> # at a monitoring location of interest
+        >>> df, md = dataretrieval.waterdata.get_por_stats(
+        ...     monitoring_location_id="USGS-05114000",
+        ...     parameter_code=["00060", "00065"],
+        ...     start_date="01-01",
+        ...     end_date="01-31"
+        ... )
     """
     params = {
         k: v
