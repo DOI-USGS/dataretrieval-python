@@ -20,6 +20,7 @@ from .api import (
     get_latest_daily,
     get_monitoring_locations,
     get_por_stats,
+    get_reference_table,
     get_samples,
     get_time_series_metadata,
 )
@@ -40,6 +41,7 @@ __all__ = [
     "get_latest_daily",
     "get_monitoring_locations",
     "get_por_stats",
+    "get_reference_table",
     "get_samples",
     "get_time_series_metadata",
     "CODE_SERVICES",
