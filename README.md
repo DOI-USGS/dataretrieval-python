@@ -6,13 +6,12 @@
 
 ## Latest Announcements
 
-:mega: **12/04/2025:** `dataretrieval` now features the new `waterdata` module,
+:mega: **01/16/2025:** `dataretrieval` now features the `waterdata` module,
 which provides access to USGS's modernized [Water Data
 APIs](https://api.waterdata.usgs.gov/). The Water Data API endpoints include
 daily values, **instantaneous values**, field measurements, time series metadata,
-and discrete water quality data from the Samples database. This new module will
-eventually replace the `nwis` module, which provides access to the legacy [NWIS
-Water Services](https://waterservices.usgs.gov/).
+and discrete water quality data from the [Samples database](https://waterdata.usgs.gov/download-samples/#dataProfile=site). This new module replaces the `nwis` module, which provides access to the legacy [NWIS
+Water Services](https://waterservices.usgs.gov/). Take a look at the new [`waterdata` module demo notebook](demos/WaterData_demo.ipynb), which walks through an extended example using a majority of the available `waterdata` functions.
 
 Check out the [NEWS](NEWS.md) file for all updates and announcements.
 

@@ -4,6 +4,17 @@
 Examples
 ========
 
+Introduction to the ``waterdata`` module of ``dataretrieval``
+-------------------------------------------------------------
+The ``waterdata`` module will replace the ``nwis`` module as the primary
+set of data download functions for USGS water data. This Jupyter notebook
+covers a basic introduction to module functions and usage.
+
+.. toctree::
+    :maxdepth: 1
+
+    WaterData_demo
+
 Simple uses of the ``dataretrieval`` package
 --------------------------------------------
 

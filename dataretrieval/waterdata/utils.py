@@ -3,7 +3,7 @@ import logging
 import os
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, get_args
 
 import pandas as pd
 import requests
@@ -11,6 +11,12 @@ from zoneinfo import ZoneInfo
 
 from dataretrieval.utils import BaseMetadata
 from dataretrieval import __version__
+
+from dataretrieval.waterdata.types import (
+    PROFILE_LOOKUP,
+    PROFILES,
+    SERVICES,
+)
 
 try:
     import geopandas as gpd
@@ -499,6 +505,7 @@ def _get_resp_data(resp: requests.Response, geopd: bool) -> pd.DataFrame:
         )
         df.columns = [col.replace("properties_", "") for col in df.columns]
         df.rename(columns={"geometry_coordinates": "geometry"}, inplace=True)
+        df = df.loc[:, ~df.columns.duplicated()]
         return df
 
     # Organize json into geodataframe and make sure id column comes along.
@@ -646,35 +653,38 @@ def _arrange_cols(
     pd.DataFrame or gpd.GeoDataFrame
         The DataFrame with columns rearranged and/or renamed according to the specified properties and output_id.
     """
+
+    # Rename id column to output_id
+    df = df.rename(columns={"id": output_id})
+
+    # If properties are provided, filter to only those columns
+    # plus geometry if skip_geometry is False
     if properties and not all(pd.isna(properties)):
-        if "id" not in properties:
-            # If user refers to service-specific output id in properties,
-            # then rename the "id" column to the output_id (id column is
-            # automatically included).
-            if output_id in properties:
-                df = df.rename(columns={"id": output_id})
-            # If output id is not in properties, but user requests the plural
-            # of the output_id (e.g. "monitoring_locations_id"), then rename
-            # "id" to plural. This is pretty niche.
-            else:
-                plural = output_id.replace("_id", "s_id")
-                if plural in properties:
-                    df = df.rename(columns={"id": plural})
+        # Make sure geometry stays in the dataframe if skip_geometry is False
+        if 'geometry' in df.columns and 'geometry' not in properties:
+            properties.append('geometry')
+        # id is technically a valid column from the service, but these
+        # functions make the name more specific. So, if someone requests
+        # 'id', give them the output_id column
+        if 'id' in properties:
+            properties[properties.index('id')] = output_id
         df = df.loc[:, [col for col in properties if col in df.columns]]
-    else:
-        df = df.rename(columns={"id": output_id})
-    
+
     # Move meaningless-to-user, extra id columns to the end
     # of the dataframe, if they exist
-    extra_id_cols = set(df.columns).intersection({
+    extra_id_col = set(df.columns).intersection({
         "latest_continuous_id",
         "latest_daily_id",
         "daily_id",
         "continuous_id",
         "field_measurement_id"
         })
-    if extra_id_cols:
-        id_col_order = [col for col in df.columns if col not in extra_id_cols] + list(extra_id_cols)
+
+    # If the arbitrary id column is returned (either due to properties
+    # being none or NaN), then move it to the end of the dataframe, but
+    # if part of properties, keep in requested order
+    if extra_id_col and (properties is None or all(pd.isna(properties))):
+        id_col_order = [col for col in df.columns if col not in extra_id_col] + list(extra_id_col)
         df = df.loc[:, id_col_order]
     
     return df
@@ -876,7 +886,10 @@ def _expand_percentiles(df: pd.DataFrame) -> pd.DataFrame:
     """
     Takes percentile value and thresholds columns containing lists
     of values and turns each list element into its own row in the
-    original dataframe. 'nan's are removed from the dataframe.
+    original dataframe. 'nan's are removed from the dataframe. If
+    no percentile data exist, it adds a percentile column and
+    populates column with percentile assigned to min, max, and
+    median.
 
     Parameters
     ----------
@@ -888,22 +901,34 @@ def _expand_percentiles(df: pd.DataFrame) -> pd.DataFrame:
     pd.DataFrame
         A DataFrame containing the flattened percentile data.
     """
-    if len(df) > 0 and "percentile" in df['computation'].unique():
+    if len(df) > 0:
 
-        # Explode percentile lists into rows called "value" and "percentile"
-        percentiles = df.loc[df['computation'] == "percentile"]
-        percentiles_explode = percentiles[['computation_id', 'values', 'percentiles']].explode(['values', 'percentiles'], ignore_index=True)
-        percentiles_explode = percentiles_explode.loc[percentiles_explode['values']!="nan"]
-        percentiles_explode['value'] = pd.to_numeric(percentiles_explode['values'])
-        percentiles_explode['percentile'] = pd.to_numeric(percentiles_explode['percentiles'])
-        percentiles_explode = percentiles_explode.drop(columns=['values', 'percentiles'])
+        if "percentile" in df['computation'].unique():
+            # Explode percentile lists into rows called "value" and "percentile"
+            percentiles = df.loc[df['computation'] == "percentile"]
+            percentiles_explode = percentiles[['computation_id', 'values', 'percentiles']].explode(['values', 'percentiles'], ignore_index=True)
+            percentiles_explode = percentiles_explode.loc[percentiles_explode['values']!="nan"]
+            percentiles_explode['value'] = pd.to_numeric(percentiles_explode['values'])
+            percentiles_explode['percentile'] = pd.to_numeric(percentiles_explode['percentiles'])
+            percentiles_explode = percentiles_explode.drop(columns=['values', 'percentiles'])
+            
+            # Merge exploded values back to other metadata/geometry
+            percentiles = percentiles.drop(columns=['values', 'percentiles', 'value']).merge(percentiles_explode, on='computation_id', how='left')
+            
+            # Concatenate back to original
+            dfs = pd.concat([df.loc[df['computation'] != "percentile"], percentiles]).drop(columns=['values', 'percentiles'])
+        else:
+            dfs = df
+            dfs['percentile'] = pd.NA
         
-        # Merge exploded values back to other metadata/geometry
-        percentiles = percentiles.drop(columns=['values', 'percentiles', 'value']).merge(percentiles_explode, on='computation_id', how='left')
-        
-        # Concatenate back to original
-        dfs = pd.concat([df.loc[df['computation'] != "percentile"], percentiles]).drop(columns=['values', 'percentiles'])
+        # Give min, max, median a percentile value
+        dfs.loc[dfs['computation'] == "maximum", 'percentile'] = 100
+        dfs.loc[dfs['computation'] == "minimum", 'percentile'] = 0
+        dfs.loc[dfs['computation'] == "median", 'percentile'] = 50
 
+        # Make sure numeric
+        dfs['percentile'] = pd.to_numeric(dfs['percentile'])
+        
         # Move percentile column
         cols = dfs.columns.tolist()
         cols.remove("percentile")
@@ -933,6 +958,10 @@ def get_stats_data(
         Dictionary of request arguments for the statistics service.
     service : str
         The statistics service type (e.g., "observationNormals", "observationIntervals").
+    expand_percentiles : bool
+        Determines whether the percentiles column is expanded so that each percentile gets its own row in the
+        returned dataframe. If set to True and user requests a computation_type other than percentiles, a
+        percentile column will be returned with the dataset.
 
     Returns
     -------
@@ -999,6 +1028,8 @@ def get_stats_data(
                 logger.warning("Request failed for URL: %s. Data download interrupted.", resp.url)
                 next_token = None
 
+        #. If expand percentiles is True, make each percentile
+        # its own row in the returned dataset.
         if expand_percentiles:
             dfs = _expand_percentiles(dfs)
 
@@ -1007,4 +1038,32 @@ def get_stats_data(
         if close_client:
             client.close()
 
+
+def _check_profiles(
+    service: SERVICES,
+    profile: PROFILES,
+) -> None:
+    """Check whether a service profile is valid.
+
+    Parameters
+    ----------
+    service : string
+        One of the service names from the "services" list.
+    profile : string
+        One of the profile names from "results_profiles",
+        "locations_profiles", "activities_profiles",
+        "projects_profiles" or "organizations_profiles".
+    """
+    valid_services = get_args(SERVICES)
+    if service not in valid_services:
+        raise ValueError(
+            f"Invalid service: '{service}'. Valid options are: {valid_services}."
+        )
+
+    valid_profiles = PROFILE_LOOKUP[service]
+    if profile not in valid_profiles:
+        raise ValueError(
+            f"Invalid profile: '{profile}' for service '{service}'. "
+            f"Valid options are: {valid_profiles}."
+        )
 

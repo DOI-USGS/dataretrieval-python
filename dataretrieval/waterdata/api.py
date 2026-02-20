@@ -16,14 +16,15 @@ from requests.models import PreparedRequest
 from dataretrieval.utils import BaseMetadata, to_str
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,
-    PROFILE_LOOKUP,
+    METADATA_COLLECTIONS,
     PROFILES,
     SERVICES,
 )
 from dataretrieval.waterdata.utils import (
     SAMPLES_URL,
     get_ogc_data,
-    get_stats_data
+    get_stats_data,
+    _check_profiles
 )
 
 # Set up logger for this module
@@ -689,9 +690,13 @@ def get_time_series_metadata(
     parameter_name: Optional[Union[str, List[str]]] = None,
     properties: Optional[Union[str, List[str]]] = None,
     statistic_id: Optional[Union[str, List[str]]] = None,
+    hydrologic_unit_code: Optional[Union[str, List[str]]] = None,
+    state_name: Optional[Union[str, List[str]]] = None,
     last_modified: Optional[Union[str, List[str]]] = None,
     begin: Optional[Union[str, List[str]]] = None,
     end: Optional[Union[str, List[str]]] = None,
+    begin_utc: Optional[Union[str, List[str]]] = None,
+    end_utc: Optional[Union[str, List[str]]] = None,
     unit_of_measure: Optional[Union[str, List[str]]] = None,
     computation_period_identifier: Optional[Union[str, List[str]]] = None,
     computation_identifier: Optional[Union[str, List[str]]] = None,
@@ -740,6 +745,17 @@ def get_time_series_metadata(
         Example codes include 00001 (max), 00002 (min), and 00003 (mean).
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
+    hydrologic_unit_code : string or list of strings, optional
+        The United States is divided and sub-divided into successively smaller
+        hydrologic units which are classified into four levels: regions,
+        sub-regions, accounting units, and cataloging units. The hydrologic
+        units are arranged within each other, from the smallest (cataloging units)
+        to the largest (regions). Each hydrologic unit is identified by a unique
+        hydrologic unit code (HUC) consisting of two to eight digits based on the
+        four levels of classification in the hydrologic unit system.
+    state_name : string or list of strings, optional
+        The name of the state or state equivalent in which the monitoring location
+        is located.
     last_modified : string, optional
         The last time a record was refreshed in our database. This may happen
         due to regular operational processes and does not necessarily indicate
@@ -758,6 +774,14 @@ def get_time_series_metadata(
                 for the last 36 hours
 
     begin : string or list of strings, optional
+        This field contains the same information as "begin_utc", but in the
+        local time of the monitoring location. It is retained for backwards
+        compatibility, but will be removed in V1 of these APIs.
+    end : string or list of strings, optional
+        This field contains the same information as "end_utc", but in the
+        local time of the monitoring location. It is retained for backwards
+        compatibility, but will be removed in V1 of these APIs.
+    begin_utc : string or list of strings, optional
         The datetime of the earliest observation in the time series. Together
         with end, this field represents the period of record of a time series.
         Note that some time series may have large gaps in their collection
@@ -774,7 +798,7 @@ def get_time_series_metadata(
             * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
             * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
 
-    end : string or list of strings, optional
+    end_utc : string or list of strings, optional
         The datetime of the most recent observation in the time series. Data returned by
         this endpoint updates at most once per day, and potentially less frequently than
         that, and as such there may be more recent observations within a time series
@@ -1393,6 +1417,84 @@ def get_field_measurements(
     return get_ogc_data(args, output_id, service)
 
 
+def get_reference_table(
+        collection: str,
+        limit: Optional[int] = None,
+        query: Optional[dict] = {},
+        ) -> Tuple[pd.DataFrame, BaseMetadata]:
+    """Get metadata reference tables for the USGS Water Data API.
+
+    Reference tables provide the range of allowable values for parameter
+    arguments in the waterdata module. 
+
+    Parameters
+    ----------
+    collection : string
+        One of the following options: "agency-codes", "altitude-datums",
+        "aquifer-codes", "aquifer-types", "coordinate-accuracy-codes",
+        "coordinate-datum-codes", "coordinate-method-codes", "counties",
+        "hydrologic-unit-codes", "medium-codes", "national-aquifer-codes",
+        "parameter-codes", "reliability-codes", "site-types", "states",
+        "statistic-codes", "topographic-codes", "time-zone-codes"
+    limit : numeric, optional
+        The optional limit parameter is used to control the subset of the
+        selected features that should be returned in each page. The maximum
+        allowable limit is 50000. It may be beneficial to set this number lower
+        if your internet connection is spotty. The default (None) will set the
+        limit to the maximum allowable limit for the service.
+    query: dictionary, optional
+        The optional args parameter can be used to pass a dictionary of
+        query parameters to the collection API call.
+
+    Returns
+    -------
+    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
+        Formatted data returned from the API query. The primary metadata
+        of each reference table will show up in the first column, where
+        the name of the column is the singular form of the collection name,
+        separated by underscores (e.g. the "medium-codes" reference table
+        has a column called "medium_code", which contains all possible
+        medium code values).
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object including the URL request and query time.
+    
+    Examples
+    --------
+    .. code::
+
+        >>> # Get table of USGS parameter codes
+        >>> ref, md = dataretrieval.waterdata.get_reference_table(
+        ...     collection="parameter-codes"
+        ... )
+
+        >>> # Get table of selected USGS parameter codes
+        >>> ref, md = dataretrieval.waterdata.get_reference_table(
+        ...     collection="parameter-codes"
+        ...     query={'id': '00001,00002'}
+        ... )
+    """
+    valid_code_services = get_args(METADATA_COLLECTIONS)
+    if collection not in valid_code_services:
+        raise ValueError(
+            f"Invalid code service: '{collection}'. "
+            f"Valid options are: {valid_code_services}."
+        )
+    
+    # Give ID column the collection name with underscores
+    if collection.endswith("s") and collection != "counties":
+        output_id = f"{collection[:-1].replace('-', '_')}"
+    elif collection == "counties":
+        output_id = "county"
+    else:
+        output_id = f"{collection.replace('-', '_')}"
+    
+    return get_ogc_data(
+        args=query,
+        output_id=output_id,
+        service=collection
+        )
+
+
 def get_codes(code_service: CODE_SERVICES) -> pd.DataFrame:
     """Return codes from a Samples code service.
 
@@ -1661,7 +1763,8 @@ def get_por_stats(
         parameter_code: Optional[Union[str, list[str]]] = None,
         expand_percentiles: bool = True
         ) -> Tuple[pd.DataFrame, BaseMetadata]:
-    """Get water data statistics from the USGS Water Data API.
+    """Get day-of-year and month-of-year water data statistics from the
+    USGS Water Data API.
     This service provides endpoints for access to computations on the
     historical record regarding water conditions, including minimum, maximum,
     mean, median, and percentiles for day of year, month, month-year, and 
@@ -1762,7 +1865,7 @@ def get_date_range_stats(
         parameter_code: Optional[Union[str, list[str]]] = None,
         expand_percentiles: bool = True
         ) -> Tuple[pd.DataFrame, BaseMetadata]:
-    """Get water data statistics from the USGS Water Data API.
+    """Get monthly and annual water data statistics from the USGS Water Data API.
     This service provides endpoints for access to computations on the
     historical record regarding water conditions, including minimum, maximum,
     mean, median, and percentiles for day of year, month, month-year, and 
@@ -1836,6 +1939,29 @@ def get_date_range_stats(
         individual rows in the dataframe. Missing percentile values expressed
         as 'nan' in the list of string values are removed from the dataframe
         to save space.
+
+    Examples
+    --------
+    .. code::
+
+        >>> # Get monthly and yearly medians for streamflow at streams in Rhode Island
+        >>> # from calendar year 2024.
+        >>> df, md = dataretrieval.waterdata.get_date_range_stats(
+        ...     state_code="US:44", # State code for Rhode Island
+        ...     parameter_code="00060",
+        ...     site_type_code="ST",
+        ...     start_date="2024-01-01",
+        ...     end_date="2024-12-31",
+        ...     computation_type="median"
+        ... )
+
+        >>> # Get monthly and yearly minimum and maximums for gage height at
+        >>> # a monitoring location of interest
+        >>> df, md = dataretrieval.waterdata.get_date_range_stats(
+        ...     monitoring_location_id="USGS-05114000",
+        ...     parameter_code="00065",
+        ...     computation_type=["minimum", "maximum"]
+        ... )
     """
     params = {
         k: v
@@ -1849,31 +1975,3 @@ def get_date_range_stats(
         expand_percentiles=expand_percentiles
         )
 
-
-def _check_profiles(
-    service: SERVICES,
-    profile: PROFILES,
-) -> None:
-    """Check whether a service profile is valid.
-
-    Parameters
-    ----------
-    service : string
-        One of the service names from the "services" list.
-    profile : string
-        One of the profile names from "results_profiles",
-        "locations_profiles", "activities_profiles",
-        "projects_profiles" or "organizations_profiles".
-    """
-    valid_services = get_args(SERVICES)
-    if service not in valid_services:
-        raise ValueError(
-            f"Invalid service: '{service}'. Valid options are: {valid_services}."
-        )
-
-    valid_profiles = PROFILE_LOOKUP[service]
-    if profile not in valid_profiles:
-        raise ValueError(
-            f"Invalid profile: '{profile}' for service '{service}'. "
-            f"Valid options are: {valid_profiles}."
-        )
