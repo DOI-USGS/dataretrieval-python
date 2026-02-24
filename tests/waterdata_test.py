@@ -16,7 +16,9 @@ from dataretrieval.waterdata import (
     get_latest_daily,
     get_field_measurements,
     get_time_series_metadata,
-    get_reference_table
+    get_reference_table,
+    get_stats_por,
+    get_stats_date_range
 )
 
 def mock_request(requests_mock, request_url, file_path):
@@ -264,4 +266,47 @@ def test_get_reference_table_with_query():
 def test_get_reference_table_wrong_name():
     with pytest.raises(ValueError):
         get_reference_table("agency-cod")
+
+def test_get_stats_por():
+    df,_ = get_stats_por(
+        monitoring_location_id="USGS-12451000",
+        parameter_code="00060",
+        start_date="01-01",
+        end_date="01-01"
+    )
+    assert df['computation'].isin(['median', 'maximum', 'minimum', 'arithmetic_mean', 'percentile']).all()
+    assert df['time_of_year'].isin(['01-01', '01']).all()
+    assert df.loc[df['computation'] == "minimum", "percentile"].unique().tolist() == [0.0]
+    assert df.loc[df['computation'] == "arithmetic_mean", "percentile"].isnull().all()
+
+def test_get_stats_por_expanded_false():
+    df,_ = get_stats_por(
+        monitoring_location_id="USGS-12451000",
+        parameter_code="00060",
+        start_date="01-01",
+        end_date="01-01",
+        expand_percentiles=False,
+        computation_type=["minimum", "percentile"]
+    )
+    assert df.shape[0] == 4
+    assert df.shape[1] == 20 # if geopandas installed, 21 columns if not
+    assert "percentile" not in df.columns
+    assert "percentiles" in df.columns
+    assert type(df['percentiles'][2]) is list
+    assert df.loc[~df['percentiles'].isna(), "value"].isnull().all()
+
+def test_get_stats_date_range():
+    df,_ = get_stats_date_range(
+        monitoring_location_id="USGS-12451000",
+        parameter_code="00060",
+        start_date="2025-01-01",
+        end_date="2025-01-01",
+        computation_type="maximum"
+    )
+
+    assert df.shape[0] == 3
+    assert df.shape[1] == 20 # if geopandas installed, 21 columns if not
+    assert "interval_type" in df.columns
+    assert "percentile" in df.columns
+    assert df['interval_type'].isin(['month', 'calendar_year', 'water_year']).all()
 

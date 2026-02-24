@@ -23,8 +23,7 @@ from dataretrieval.waterdata.types import (
 from dataretrieval.waterdata.utils import (
     SAMPLES_URL,
     get_ogc_data,
-    _construct_api_requests,
-    _walk_pages,
+    get_stats_data,
     _check_profiles
 )
 
@@ -1747,4 +1746,262 @@ def get_samples(
     df = pd.read_csv(StringIO(response.text), delimiter=",")
 
     return df, BaseMetadata(response)
+
+def get_stats_por(
+        approval_status: Optional[str] = None,
+        computation_type: Optional[Union[str, list[str]]] = None,
+        country_code: Optional[Union[str, list[str]]] = None,
+        state_code: Optional[Union[str, list[str]]] = None,
+        county_code: Optional[Union[str, list[str]]] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        monitoring_location_id: Optional[Union[str, list[str]]] = None,
+        page_size: int = 1000,
+        parent_time_series_id: Optional[Union[str, list[str]]] = None,
+        site_type_code: Optional[Union[str, list[str]]] = None,
+        site_type_name: Optional[Union[str, list[str]]] = None,
+        parameter_code: Optional[Union[str, list[str]]] = None,
+        expand_percentiles: bool = True
+        ) -> Tuple[pd.DataFrame, BaseMetadata]:
+    """Get day-of-year and month-of-year water data statistics from the
+    USGS Water Data API.
+    This service (called the "observationNormals" endpoint on api.waterdata.usgs.gov)
+    provides endpoints for access to computations on the historical record regarding
+    water conditions, including minimum, maximum, mean, median, and percentiles for
+    day of year and month of year. For more information regarding the calculation of
+    statistics and other details, please visit the Statistics documentation page:
+    https://waterdata.usgs.gov/statistics-documentation/.
+    
+    Note: This API is under active beta development and subject to
+    change. Improved handling of significant figures will be
+    addressed in a future release.
+
+    Parameters
+    ----------
+    approval_status: string, optional
+        Whether to include approved and/or provisional observations.
+        At this time, only approved observations are returned.
+    computation_type: string, optional
+        Desired statistical computation method. Available values are:
+        arithmetic_mean, maximum, median, minimum, percentile.
+    country_code: string, optional
+        Country query parameter. API defaults to "US".
+    state_code: string, optional
+        State query parameter. Takes the format "US:XX", where XX is
+        the two-digit state code. API defaults to "US:42" (Pennsylvania).
+    county_code: string, optional
+        County query parameter. Takes the format "US:XX:YYY", where XX is
+        the two-digit state code and YYY is the three-digit county code.
+        API defaults to "US:42:103" (Pennsylvania, Pike County).
+    start_date: string or datetime, optional
+        Start day for the query in the month-day format (MM-DD).
+    end_date: string or datetime, optional
+        End day for the query in the month-day format (MM-DD).
+    monitoring_location_id : string or list of strings, optional
+        A unique identifier representing a single monitoring location. This
+        corresponds to the id field in the monitoring-locations endpoint.
+        Monitoring location IDs are created by combining the agency code of the
+        agency responsible for the monitoring location (e.g. USGS) with the ID
+        number of the monitoring location (e.g. 02238500), separated by a hyphen
+        (e.g. USGS-02238500).
+    page_size : int, optional
+        The number of results to return per page, where one result represents a
+        monitoring location. The default is 1000.
+    parent_time_series_id: string, optional
+        The parent_time_series_id returns statistics tied to a particular datbase entry.
+    site_type_code: string, optional
+        Site type code query parameter. You can see a list of valid site type codes here:
+        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
+        Example: "GW" (Groundwater site)
+    site_type_name: string, optional
+        Site type name query parameter. You can see a list of valid site type names here:
+        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
+        Example: "Well"
+    parameter_code : string or list of strings, optional
+        Parameter codes are 5-digit codes used to identify the constituent
+        measured and the units of measure. A complete list of parameter codes
+        and associated groupings can be found at
+        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+    expand_percentiles : boolean
+        Percentile data for a given day of year or month of year by default
+        are returned from the service as lists of string values and percentile
+        thresholds in the "values" and "percentiles" columns, respectively.
+        When `expand_percentiles` is set to True (default), each value and
+        percentile threshold specific to a computation id are returned as
+        individual rows in the dataframe, with the value reported in the
+        "value" column and the corresponding percentile reported in a
+        "percentile" column (and the "values" and "percentiles" columns
+        are removed). Missing percentile values expressed as 'nan' in the
+        list of string values are removed from the dataframe to save space.
+        Setting `expand_percentiles` to False retains the "values" and
+        "percentiles" columns produced by the service. Including
+        both 'percentiles' and one or more other statistics ('median',
+        'minimum', 'maximum', or 'arithmetic_mean') in the `computation_type`
+        argument will return both the "values" column, containing the list
+        of percentile threshold values, and a "value" column, containing
+        the singular summary value for the other statistics.
+
+    Examples
+    --------
+    .. code::
+
+        >>> # Get daily, monthly, and annual percentiles for streamflow at
+        >>> # a monitoring location of interest
+        >>> df, md = dataretrieval.waterdata.get_stats_por(
+        ...     monitoring_location_id="USGS-05114000",
+        ...     parameter_code="00060",
+        ...     computation_type="percentile"
+        ... )
+
+        >>> # Get all daily and monthly statistics for the month of January
+        >>> # over the entire period of record for streamflow and gage height
+        >>> # at a monitoring location of interest
+        >>> df, md = dataretrieval.waterdata.get_stats_por(
+        ...     monitoring_location_id="USGS-05114000",
+        ...     parameter_code=["00060", "00065"],
+        ...     start_date="01-01",
+        ...     end_date="01-31"
+        ... )
+    """
+    params = {
+        k: v
+        for k, v in locals().items()
+        if k not in ["expand_percentiles"] and v is not None
+    }
+    
+    return get_stats_data(
+        args=params,
+        service="observationNormals",
+        expand_percentiles=expand_percentiles
+        )
+
+def get_stats_date_range(
+        approval_status: Optional[str] = None,
+        computation_type: Optional[Union[str, list[str]]] = None,
+        country_code: Optional[Union[str, list[str]]] = None,
+        state_code: Optional[Union[str, list[str]]] = None,
+        county_code: Optional[Union[str, list[str]]] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        monitoring_location_id: Optional[Union[str, list[str]]] = None,
+        page_size: int = 1000,
+        parent_time_series_id: Optional[Union[str, list[str]]] = None,
+        site_type_code: Optional[Union[str, list[str]]] = None,
+        site_type_name: Optional[Union[str, list[str]]] = None,
+        parameter_code: Optional[Union[str, list[str]]] = None,
+        expand_percentiles: bool = True
+        ) -> Tuple[pd.DataFrame, BaseMetadata]:
+    """Get monthly and annual water data statistics from the USGS Water Data API.
+    This service (called the "observationIntervals" endpoint on api.waterdata.usgs.gov)
+    provides endpoints for access to computations on the historical record regarding
+    water conditions, including minimum, maximum, mean, median, and percentiles for
+    month-year, and water/calendar years. For more information regarding the calculation
+    of statistics and other details, please visit the Statistics documentation page:
+    https://waterdata.usgs.gov/statistics-documentation/.
+    
+    Note: This API is under active beta development and subject to
+    change. Improved handling of significant figures will be
+    addressed in a future release.
+
+    Parameters
+    ----------
+    approval_status: string, optional
+        Whether to include approved and/or provisional observations.
+        At this time, only approved observations are returned.
+    computation_type: string, optional
+        Desired statistical computation method. Available values are:
+        arithmetic_mean, maximum, median, minimum, percentile.
+    country_code: string, optional
+        Country query parameter. API defaults to "US".
+    state_code: string, optional
+        State query parameter. Takes the format "US:XX", where XX is
+        the two-digit state code. API defaults to "US:42" (Pennsylvania).
+    county_code: string, optional
+        County query parameter. Takes the format "US:XX:YYY", where XX is
+        the two-digit state code and YYY is the three-digit county code.
+        API defaults to "US:42:103" (Pennsylvania, Pike County).
+    start_date: string or datetime, optional
+        Start date for the query in the year-month-day format
+        (YYYY-MM-DD).
+    end_date: string or datetime, optional
+        End date for the query in the year-month-day format
+        (YYYY-MM-DD).
+    monitoring_location_id : string or list of strings, optional
+        A unique identifier representing a single monitoring location. This
+        corresponds to the id field in the monitoring-locations endpoint.
+        Monitoring location IDs are created by combining the agency code of the
+        agency responsible for the monitoring location (e.g. USGS) with the ID
+        number of the monitoring location (e.g. 02238500), separated by a hyphen
+        (e.g. USGS-02238500).
+    page_size : int, optional
+        The number of results to return per page, where one result represents a
+        monitoring location. The default is 1000.
+    parent_time_series_id: string, optional
+        The parent_time_series_id returns statistics tied to a particular datbase entry.
+    site_type_code: string, optional
+        Site type code query parameter. You can see a list of valid site type codes here:
+        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
+        Example: "GW" (Groundwater site)
+    site_type_name: string, optional
+        Site type name query parameter. You can see a list of valid site type names here:
+        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
+        Example: "Well"
+    parameter_code : string or list of strings, optional
+        Parameter codes are 5-digit codes used to identify the constituent
+        measured and the units of measure. A complete list of parameter codes
+        and associated groupings can be found at
+        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+    expand_percentiles : boolean
+        Percentile data for a given day of year or month of year by default
+        are returned from the service as lists of string values and percentile
+        thresholds in the "values" and "percentiles" columns, respectively.
+        When `expand_percentiles` is set to True (default), each value and
+        percentile threshold specific to a computation id are returned as
+        individual rows in the dataframe, with the value reported in the
+        "value" column and the corresponding percentile reported in a
+        "percentile" column (and the "values" and "percentiles" columns
+        are removed). Missing percentile values expressed as 'nan' in the
+        list of string values are removed from the dataframe to save space.
+        Setting `expand_percentiles` to False retains the "values" and
+        "percentiles" columns produced by the service. Including
+        both 'percentiles' and one or more other statistics ('median',
+        'minimum', 'maximum', or 'arithmetic_mean') in the `computation_type`
+        argument will return both the "values" column, containing the list
+        of percentile threshold values, and a "value" column, containing
+        the singular summary value for the other statistics.
+
+    Examples
+    --------
+    .. code::
+
+        >>> # Get monthly and yearly medians for streamflow at streams in Rhode Island
+        >>> # from calendar year 2024.
+        >>> df, md = dataretrieval.waterdata.get_stats_date_range(
+        ...     state_code="US:44", # State code for Rhode Island
+        ...     parameter_code="00060",
+        ...     site_type_code="ST",
+        ...     start_date="2024-01-01",
+        ...     end_date="2024-12-31",
+        ...     computation_type="median"
+        ... )
+
+        >>> # Get monthly and yearly minimum and maximums for gage height at
+        >>> # a monitoring location of interest
+        >>> df, md = dataretrieval.waterdata.get_stats_date_range(
+        ...     monitoring_location_id="USGS-05114000",
+        ...     parameter_code="00065",
+        ...     computation_type=["minimum", "maximum"]
+        ... )
+    """
+    params = {
+        k: v
+        for k, v in locals().items()
+        if k not in ["expand_percentiles"] and v is not None
+    }
+    
+    return get_stats_data(
+        args=params,
+        service="observationIntervals",
+        expand_percentiles=expand_percentiles
+        )
 
