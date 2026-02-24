@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g9e64dd18d documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g4dc9f6a68 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=9d9b5532"></script>
+      <script src="../_static/documentation_options.js?v=bb1e5188"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -65,6 +65,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_monitoring_locations"><code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_reference_table"><code class="docutils literal notranslate"><span class="pre">get_reference_table()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_samples"><code class="docutils literal notranslate"><span class="pre">get_samples()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_stats_date_range"><code class="docutils literal notranslate"><span class="pre">get_stats_date_range()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_stats_por"><code class="docutils literal notranslate"><span class="pre">get_stats_por()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_time_series_metadata"><code class="docutils literal notranslate"><span class="pre">get_time_series_metadata()</span></code></a></li>
 </ul>
 </li>
@@ -1209,6 +1211,188 @@ for the “results” service.</p></li>
 <span class="gp">... </span>        <span class="s2">&quot;USGS-393343111454101&quot;</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="p">],</span>
 <span class="gp">... </span>    <span class="n">usgsPCode</span><span class="o">=</span><span class="s2">&quot;00400&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.waterdata.get_stats_date_range">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.waterdata.</span></span><span class="sig-name descname"><span class="pre">get_stats_date_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">approval_status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">computation_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">country_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">county_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitoring_location_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_time_series_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site_type_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site_type_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_percentiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/waterdata/api.html#get_stats_date_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.waterdata.get_stats_date_range" title="Link to this definition"></a></dt>
+<dd><p>Get monthly and annual water data statistics from the USGS Water Data API.
+This service (called the “observationIntervals” endpoint on api.waterdata.usgs.gov)
+provides endpoints for access to computations on the historical record regarding
+water conditions, including minimum, maximum, mean, median, and percentiles for
+month-year, and water/calendar years. For more information regarding the calculation
+of statistics and other details, please visit the Statistics documentation page:
+<a class="reference external" href="https://waterdata.usgs.gov/statistics-documentation/">https://waterdata.usgs.gov/statistics-documentation/</a>.</p>
+<p>Note: This API is under active beta development and subject to
+change. Improved handling of significant figures will be
+addressed in a future release.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>approval_status</strong> (<em>string</em><em>, </em><em>optional</em>) – Whether to include approved and/or provisional observations.
+At this time, only approved observations are returned.</p></li>
+<li><p><strong>computation_type</strong> (<em>string</em><em>, </em><em>optional</em>) – Desired statistical computation method. Available values are:
+arithmetic_mean, maximum, median, minimum, percentile.</p></li>
+<li><p><strong>country_code</strong> (<em>string</em><em>, </em><em>optional</em>) – Country query parameter. API defaults to “US”.</p></li>
+<li><p><strong>state_code</strong> (<em>string</em><em>, </em><em>optional</em>) – State query parameter. Takes the format “US:XX”, where XX is
+the two-digit state code. API defaults to “US:42” (Pennsylvania).</p></li>
+<li><p><strong>county_code</strong> (<em>string</em><em>, </em><em>optional</em>) – County query parameter. Takes the format “US:XX:YYY”, where XX is
+the two-digit state code and YYY is the three-digit county code.
+API defaults to “US:42:103” (Pennsylvania, Pike County).</p></li>
+<li><p><strong>start_date</strong> (<em>string</em><em> or </em><em>datetime</em><em>, </em><em>optional</em>) – Start date for the query in the year-month-day format
+(YYYY-MM-DD).</p></li>
+<li><p><strong>end_date</strong> (<em>string</em><em> or </em><em>datetime</em><em>, </em><em>optional</em>) – End date for the query in the year-month-day format
+(YYYY-MM-DD).</p></li>
+<li><p><strong>monitoring_location_id</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A unique identifier representing a single monitoring location. This
+corresponds to the id field in the monitoring-locations endpoint.
+Monitoring location IDs are created by combining the agency code of the
+agency responsible for the monitoring location (e.g. USGS) with the ID
+number of the monitoring location (e.g. 02238500), separated by a hyphen
+(e.g. USGS-02238500).</p></li>
+<li><p><strong>page_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of results to return per page, where one result represents a
+monitoring location. The default is 1000.</p></li>
+<li><p><strong>parent_time_series_id</strong> (<em>string</em><em>, </em><em>optional</em>) – The parent_time_series_id returns statistics tied to a particular datbase entry.</p></li>
+<li><p><strong>site_type_code</strong> (<em>string</em><em>, </em><em>optional</em>) – Site type code query parameter. You can see a list of valid site type codes here:
+<a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items">https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items</a>.
+Example: “GW” (Groundwater site)</p></li>
+<li><p><strong>site_type_name</strong> (<em>string</em><em>, </em><em>optional</em>) – Site type name query parameter. You can see a list of valid site type names here:
+<a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items">https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items</a>.
+Example: “Well”</p></li>
+<li><p><strong>parameter_code</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Parameter codes are 5-digit codes used to identify the constituent
+measured and the units of measure. A complete list of parameter codes
+and associated groupings can be found at
+<a class="reference external" href="https://help.waterdata.usgs.gov/codes-and-parameters/parameters">https://help.waterdata.usgs.gov/codes-and-parameters/parameters</a>.</p></li>
+<li><p><strong>expand_percentiles</strong> (<em>boolean</em>) – Percentile data for a given day of year or month of year by default
+are returned from the service as lists of string values and percentile
+thresholds in the “values” and “percentiles” columns, respectively.
+When <cite>expand_percentiles</cite> is set to True (default), each value and
+percentile threshold specific to a computation id are returned as
+individual rows in the dataframe, with the value reported in the
+“value” column and the corresponding percentile reported in a
+“percentile” column (and the “values” and “percentiles” columns
+are removed). Missing percentile values expressed as ‘nan’ in the
+list of string values are removed from the dataframe to save space.
+Setting <cite>expand_percentiles</cite> to False retains the “values” and
+“percentiles” columns produced by the service. Including
+both ‘percentiles’ and one or more other statistics (‘median’,
+‘minimum’, ‘maximum’, or ‘arithmetic_mean’) in the <cite>computation_type</cite>
+argument will return both the “values” column, containing the list
+of percentile threshold values, and a “value” column, containing
+the singular summary value for the other statistics.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get monthly and yearly medians for streamflow at streams in Rhode Island</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># from calendar year 2024.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_date_range</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">state_code</span><span class="o">=</span><span class="s2">&quot;US:44&quot;</span><span class="p">,</span> <span class="c1"># State code for Rhode Island</span>
+<span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">site_type_code</span><span class="o">=</span><span class="s2">&quot;ST&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;2024-01-01&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">end_date</span><span class="o">=</span><span class="s2">&quot;2024-12-31&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">computation_type</span><span class="o">=</span><span class="s2">&quot;median&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get monthly and yearly minimum and maximums for gage height at</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># a monitoring location of interest</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_date_range</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00065&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">computation_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;minimum&quot;</span><span class="p">,</span> <span class="s2">&quot;maximum&quot;</span><span class="p">]</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.waterdata.get_stats_por">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.waterdata.</span></span><span class="sig-name descname"><span class="pre">get_stats_por</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">approval_status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">computation_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">country_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">county_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitoring_location_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_time_series_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site_type_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site_type_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_percentiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/waterdata/api.html#get_stats_por"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.waterdata.get_stats_por" title="Link to this definition"></a></dt>
+<dd><p>Get day-of-year and month-of-year water data statistics from the
+USGS Water Data API.
+This service (called the “observationNormals” endpoint on api.waterdata.usgs.gov)
+provides endpoints for access to computations on the historical record regarding
+water conditions, including minimum, maximum, mean, median, and percentiles for
+day of year and month of year. For more information regarding the calculation of
+statistics and other details, please visit the Statistics documentation page:
+<a class="reference external" href="https://waterdata.usgs.gov/statistics-documentation/">https://waterdata.usgs.gov/statistics-documentation/</a>.</p>
+<p>Note: This API is under active beta development and subject to
+change. Improved handling of significant figures will be
+addressed in a future release.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>approval_status</strong> (<em>string</em><em>, </em><em>optional</em>) – Whether to include approved and/or provisional observations.
+At this time, only approved observations are returned.</p></li>
+<li><p><strong>computation_type</strong> (<em>string</em><em>, </em><em>optional</em>) – Desired statistical computation method. Available values are:
+arithmetic_mean, maximum, median, minimum, percentile.</p></li>
+<li><p><strong>country_code</strong> (<em>string</em><em>, </em><em>optional</em>) – Country query parameter. API defaults to “US”.</p></li>
+<li><p><strong>state_code</strong> (<em>string</em><em>, </em><em>optional</em>) – State query parameter. Takes the format “US:XX”, where XX is
+the two-digit state code. API defaults to “US:42” (Pennsylvania).</p></li>
+<li><p><strong>county_code</strong> (<em>string</em><em>, </em><em>optional</em>) – County query parameter. Takes the format “US:XX:YYY”, where XX is
+the two-digit state code and YYY is the three-digit county code.
+API defaults to “US:42:103” (Pennsylvania, Pike County).</p></li>
+<li><p><strong>start_date</strong> (<em>string</em><em> or </em><em>datetime</em><em>, </em><em>optional</em>) – Start day for the query in the month-day format (MM-DD).</p></li>
+<li><p><strong>end_date</strong> (<em>string</em><em> or </em><em>datetime</em><em>, </em><em>optional</em>) – End day for the query in the month-day format (MM-DD).</p></li>
+<li><p><strong>monitoring_location_id</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A unique identifier representing a single monitoring location. This
+corresponds to the id field in the monitoring-locations endpoint.
+Monitoring location IDs are created by combining the agency code of the
+agency responsible for the monitoring location (e.g. USGS) with the ID
+number of the monitoring location (e.g. 02238500), separated by a hyphen
+(e.g. USGS-02238500).</p></li>
+<li><p><strong>page_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of results to return per page, where one result represents a
+monitoring location. The default is 1000.</p></li>
+<li><p><strong>parent_time_series_id</strong> (<em>string</em><em>, </em><em>optional</em>) – The parent_time_series_id returns statistics tied to a particular datbase entry.</p></li>
+<li><p><strong>site_type_code</strong> (<em>string</em><em>, </em><em>optional</em>) – Site type code query parameter. You can see a list of valid site type codes here:
+<a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items">https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items</a>.
+Example: “GW” (Groundwater site)</p></li>
+<li><p><strong>site_type_name</strong> (<em>string</em><em>, </em><em>optional</em>) – Site type name query parameter. You can see a list of valid site type names here:
+<a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items">https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items</a>.
+Example: “Well”</p></li>
+<li><p><strong>parameter_code</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Parameter codes are 5-digit codes used to identify the constituent
+measured and the units of measure. A complete list of parameter codes
+and associated groupings can be found at
+<a class="reference external" href="https://help.waterdata.usgs.gov/codes-and-parameters/parameters">https://help.waterdata.usgs.gov/codes-and-parameters/parameters</a>.</p></li>
+<li><p><strong>expand_percentiles</strong> (<em>boolean</em>) – Percentile data for a given day of year or month of year by default
+are returned from the service as lists of string values and percentile
+thresholds in the “values” and “percentiles” columns, respectively.
+When <cite>expand_percentiles</cite> is set to True (default), each value and
+percentile threshold specific to a computation id are returned as
+individual rows in the dataframe, with the value reported in the
+“value” column and the corresponding percentile reported in a
+“percentile” column (and the “values” and “percentiles” columns
+are removed). Missing percentile values expressed as ‘nan’ in the
+list of string values are removed from the dataframe to save space.
+Setting <cite>expand_percentiles</cite> to False retains the “values” and
+“percentiles” columns produced by the service. Including
+both ‘percentiles’ and one or more other statistics (‘median’,
+‘minimum’, ‘maximum’, or ‘arithmetic_mean’) in the <cite>computation_type</cite>
+argument will return both the “values” column, containing the list
+of percentile threshold values, and a “value” column, containing
+the singular summary value for the other statistics.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get daily, monthly, and annual percentiles for streamflow at</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># a monitoring location of interest</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_por</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">computation_type</span><span class="o">=</span><span class="s2">&quot;percentile&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get all daily and monthly statistics for the month of January</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># over the entire period of record for streamflow and gage height</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># at a monitoring location of interest</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_por</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="s2">&quot;00065&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;01-01&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">end_date</span><span class="o">=</span><span class="s2">&quot;01-31&quot;</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>

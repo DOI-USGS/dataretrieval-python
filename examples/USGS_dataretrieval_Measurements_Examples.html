@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_discharge_measurements() Examples &mdash; dataretrieval 0.1.dev1+g9e64dd18d documentation</title>
+  <title>USGS dataretrieval Python Package get_discharge_measurements() Examples &mdash; dataretrieval 0.1.dev1+g4dc9f6a68 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=9d9b5532"></script>
+      <script src="../_static/documentation_options.js?v=bb1e5188"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -127,7 +127,7 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g9e64dd18d)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g4dc9f6a68)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
 Requirement already satisfied: pandas&lt;3.0.0,&gt;=2.0.0 in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas&lt;3.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.2)
@@ -171,7 +171,7 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 958 data values.
+Retrieved 576 data values.
 </pre></div></div>
 </div>
 </section>
@@ -210,225 +210,57 @@ Retrieved 958 data values.
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>measurement_nu</th>
-      <th>measurement_dt</th>
-      <th>tz_cd</th>
-      <th>q_meas_used_fg</th>
-      <th>party_nm</th>
-      <th>site_visit_coll_agency_cd</th>
-      <th>gage_height_va</th>
-      <th>discharge_va</th>
-      <th>measured_rating_diff</th>
-      <th>gage_va_change</th>
-      <th>gage_va_time</th>
-      <th>control_type_cd</th>
-      <th>discharge_cd</th>
+      <th>&lt;!DOCTYPE html&gt;</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>146</td>
-      <td>1951-09-06 09:40:00</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>AFP</td>
-      <td>USGS</td>
-      <td>0.94</td>
-      <td>17.0</td>
-      <td>Excellent</td>
-      <td>0.00</td>
-      <td>0.80</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <td>&lt;head&gt;</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>148</td>
-      <td>1951-12-13 12:10:00</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>BSR</td>
-      <td>USGS</td>
-      <td>0.88</td>
-      <td>12.5</td>
-      <td>Unspecified</td>
-      <td>0.00</td>
-      <td>0.70</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <td>&lt;meta http-equiv="Content-Type" conten...</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>151</td>
-      <td>1952-04-23 10:25:00</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>AFP</td>
-      <td>USGS</td>
-      <td>1.80</td>
-      <td>203.0</td>
-      <td>Good</td>
-      <td>-0.01</td>
-      <td>1.10</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <td>&lt;meta http-equiv="X-UA-Compatible" con...</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>152</td>
-      <td>1952-05-22 01:35:00</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>BSR</td>
-      <td>USGS</td>
-      <td>2.54</td>
-      <td>506.0</td>
-      <td>Excellent</td>
-      <td>0.00</td>
-      <td>0.20</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <td>&lt;meta name="viewport" content="width=d...</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>153</td>
-      <td>1952-05-27 09:45:00</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>WNJ</td>
-      <td>USGS</td>
-      <td>2.80</td>
-      <td>652.0</td>
-      <td>Good</td>
-      <td>-0.03</td>
-      <td>1.00</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <td>&lt;meta name="format-detection" content=...</td>
     </tr>
     <tr>
       <th>...</th>
       <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
     </tr>
     <tr>
-      <th>953</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1103</td>
-      <td>2025-07-08 12:46:26</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>EHQM</td>
-      <td>USGS</td>
-      <td>2.84</td>
-      <td>154.0</td>
-      <td>Fair</td>
-      <td>0.01</td>
-      <td>0.90</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <th>571</th>
+      <td>&lt;/div&gt;</td>
     </tr>
     <tr>
-      <th>954</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1104</td>
-      <td>2025-08-06 15:24:32</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>EHQM</td>
-      <td>USGS</td>
-      <td>2.49</td>
-      <td>83.2</td>
-      <td>Fair</td>
-      <td>0.01</td>
-      <td>0.50</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <th>572</th>
+      <td>&lt;/div&gt;</td>
     </tr>
     <tr>
-      <th>955</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1105</td>
-      <td>2025-09-15 14:07:00</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>EHQM</td>
-      <td>USGS</td>
-      <td>2.51</td>
-      <td>89.0</td>
-      <td>Fair</td>
-      <td>0.02</td>
-      <td>0.60</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <th>573</th>
+      <td>&lt;script type="module" crossorigin="" src="...</td>
     </tr>
     <tr>
-      <th>956</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1106</td>
-      <td>2025-11-18 09:23:49</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>MJF</td>
-      <td>USGS</td>
-      <td>2.60</td>
-      <td>105.0</td>
-      <td>Good</td>
-      <td>0.01</td>
-      <td>0.77</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <th>574</th>
+      <td>&lt;/body&gt;</td>
     </tr>
     <tr>
-      <th>957</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1107</td>
-      <td>2025-12-29 16:31:15</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>EHQM</td>
-      <td>USGS</td>
-      <td>2.57</td>
-      <td>98.6</td>
-      <td>Fair</td>
-      <td>0.05</td>
-      <td>0.03</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <th>575</th>
+      <td>&lt;/html&gt;</td>
     </tr>
   </tbody>
 </table>
-<p>958 rows × 15 columns</p>
+<p>576 rows × 1 columns</p>
 </div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
@@ -445,21 +277,7 @@ Retrieved 958 data values.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-agency_cd                     object
-site_no                       object
-measurement_nu                object
-measurement_dt                object
-tz_cd                         object
-q_meas_used_fg                object
-party_nm                      object
-site_visit_coll_agency_cd     object
-gage_height_va               float64
-discharge_va                 float64
-measured_rating_diff          object
-gage_va_change               float64
-gage_va_time                 float64
-control_type_cd               object
-discharge_cd                  object
+&lt;!DOCTYPE html&gt;    object
 dtype: object
 </pre></div></div>
 </div>
@@ -477,7 +295,7 @@ dtype: object
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-The query URL used to retrieve the data from NWIS was: https://nwis.waterdata.usgs.gov/nwis/measurements?site_no=10109000&amp;format=rdb
+The query URL used to retrieve the data from NWIS was: https://waterdata.usgs.gov/monitoring-location/USGS-10109000/
 </pre></div></div>
 </div>
 </section>
@@ -499,7 +317,7 @@ The query URL used to retrieve the data from NWIS was: https://nwis.waterdata.us
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 9 data values.
+Retrieved 576 data values.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -524,188 +342,57 @@ Retrieved 9 data values.
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>measurement_nu</th>
-      <th>measurement_dt</th>
-      <th>tz_cd</th>
-      <th>q_meas_used_fg</th>
-      <th>party_nm</th>
-      <th>site_visit_coll_agency_cd</th>
-      <th>gage_height_va</th>
-      <th>discharge_va</th>
-      <th>measured_rating_diff</th>
-      <th>gage_va_change</th>
-      <th>gage_va_time</th>
-      <th>control_type_cd</th>
-      <th>discharge_cd</th>
+      <th>&lt;!DOCTYPE html&gt;</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1034</td>
-      <td>2019-01-29 12:57:30</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>MJF</td>
-      <td>USGS</td>
-      <td>2.43</td>
-      <td>83.8</td>
-      <td>Good</td>
-      <td>-0.04</td>
-      <td>0.55</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <td>&lt;head&gt;</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1035</td>
-      <td>2019-03-11 13:29:30</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>MJF</td>
-      <td>USGS</td>
-      <td>2.46</td>
-      <td>94.2</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>0.55</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <td>&lt;meta http-equiv="Content-Type" conten...</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1036</td>
-      <td>2019-04-23 15:39:16</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>MJF</td>
-      <td>USGS</td>
-      <td>3.29</td>
-      <td>337.0</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>0.33</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <td>&lt;meta http-equiv="X-UA-Compatible" con...</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1037</td>
-      <td>2019-06-12 08:02:56</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>MJF</td>
-      <td>USGS</td>
-      <td>4.09</td>
-      <td>709.0</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>1.02</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <td>&lt;meta name="viewport" content="width=d...</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1038</td>
-      <td>2019-07-30 11:57:17</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>MJF/BTR</td>
-      <td>USGS</td>
-      <td>2.84</td>
-      <td>167.0</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>0.67</td>
-      <td>VegetationLight</td>
-      <td>NONE</td>
+      <td>&lt;meta name="format-detection" content=...</td>
     </tr>
     <tr>
-      <th>5</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1039</td>
-      <td>2019-07-30 12:06:00</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>MJF/BTR</td>
-      <td>USGS</td>
-      <td>2.84</td>
-      <td>162.0</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>0.83</td>
-      <td>VegetationLight</td>
-      <td>NONE</td>
+      <th>...</th>
+      <td>...</td>
     </tr>
     <tr>
-      <th>6</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1040</td>
-      <td>2019-09-16 10:59:19</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>MJF</td>
-      <td>USGS</td>
-      <td>2.64</td>
-      <td>126.0</td>
-      <td>Good</td>
-      <td>0.03</td>
-      <td>0.75</td>
-      <td>VegetationLight</td>
-      <td>NONE</td>
+      <th>571</th>
+      <td>&lt;/div&gt;</td>
     </tr>
     <tr>
-      <th>7</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1041</td>
-      <td>2019-10-28 13:06:42</td>
-      <td>MDT</td>
-      <td>Yes</td>
-      <td>MJF/NML</td>
-      <td>USGS</td>
-      <td>2.64</td>
-      <td>133.0</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>0.65</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <th>572</th>
+      <td>&lt;/div&gt;</td>
     </tr>
     <tr>
-      <th>8</th>
-      <td>USGS</td>
-      <td>10109000</td>
-      <td>1042</td>
-      <td>2019-12-03 13:53:15</td>
-      <td>MST</td>
-      <td>Yes</td>
-      <td>NML</td>
-      <td>USGS</td>
-      <td>2.60</td>
-      <td>122.0</td>
-      <td>Good</td>
-      <td>0.02</td>
-      <td>0.60</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <th>573</th>
+      <td>&lt;script type="module" crossorigin="" src="...</td>
+    </tr>
+    <tr>
+      <th>574</th>
+      <td>&lt;/body&gt;</td>
+    </tr>
+    <tr>
+      <th>575</th>
+      <td>&lt;/html&gt;</td>
     </tr>
   </tbody>
 </table>
+<p>576 rows × 1 columns</p>
 </div></div>
 </div>
 <p>Example 3: Get all of the surface water measurements for multiple sites</p>
@@ -724,7 +411,7 @@ Retrieved 9 data values.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 488 data values.
+Retrieved 60 data values.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -749,225 +436,252 @@ Retrieved 488 data values.
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>measurement_nu</th>
-      <th>measurement_dt</th>
-      <th>tz_cd</th>
-      <th>q_meas_used_fg</th>
-      <th>party_nm</th>
-      <th>site_visit_coll_agency_cd</th>
-      <th>gage_height_va</th>
-      <th>discharge_va</th>
-      <th>measured_rating_diff</th>
-      <th>gage_va_change</th>
-      <th>gage_va_time</th>
-      <th>control_type_cd</th>
-      <th>discharge_cd</th>
+      <th>&lt;!doctype html&gt;&lt;html itemscope itemtype=http://schema.org/WebPage lang=en class=no-js&gt;&lt;head&gt;&lt;meta charset=utf-8&gt;&lt;meta name=viewport content="width=device-widthinitial-scale=1shrink-to-fit=no"&gt;&lt;script src=/blog/wdfn-viz/uswds-init.min.js&gt;&lt;/script&gt;&lt;link rel=stylesheet href=/blog/wdfn-viz/wdfnviz-all.css&gt;&lt;meta name=generator content="Hugo 0.145.0"&gt;&lt;link rel="shortcut icon" href=/blog/favicons/favicon.ico&gt;&lt;title&gt;New Feature - Field Measurements | Water Data For The Nation Blog&lt;/title&gt;</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>USGS</td>
-      <td>01594440</td>
-      <td>1</td>
-      <td>1955-04-07 14:05:00</td>
-      <td>EST</td>
-      <td>Yes</td>
-      <td>JMD</td>
-      <td>USGS</td>
-      <td>3.11</td>
-      <td>152.00</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>1.5</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <td>&lt;span class=usa-banner__button-text&gt;Here’s how...</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>USGS</td>
-      <td>01594440</td>
-      <td>2</td>
-      <td>1955-05-04 16:05:00</td>
-      <td>EST</td>
-      <td>Yes</td>
-      <td>DGB</td>
-      <td>USGS</td>
-      <td>2.76</td>
-      <td>127.00</td>
-      <td>Fair</td>
-      <td>-0.01</td>
-      <td>1.0</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <td>United States.&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class="usa-...</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>USGS</td>
-      <td>01594440</td>
-      <td>3</td>
-      <td>1955-06-10 08:35:00</td>
-      <td>EST</td>
-      <td>Yes</td>
-      <td>DGB</td>
-      <td>USGS</td>
-      <td>4.26</td>
-      <td>310.00</td>
-      <td>Good</td>
-      <td>-0.14</td>
-      <td>1.9</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <td>&lt;span class=icon-lock&gt;&lt;svg width="52" height="...</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>USGS</td>
-      <td>01594440</td>
-      <td>4</td>
-      <td>1955-07-21 12:15:00</td>
-      <td>EST</td>
-      <td>Yes</td>
-      <td>JMD</td>
-      <td>USGS</td>
-      <td>1.83</td>
-      <td>46.60</td>
-      <td>Good</td>
-      <td>0.00</td>
-      <td>0.8</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <td>&lt;/span&gt;) or &lt;strong&gt;https://&lt;/strong&gt; means yo...</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>USGS</td>
-      <td>01594440</td>
-      <td>5</td>
-      <td>1955-09-08 17:15:00</td>
-      <td>EST</td>
-      <td>Yes</td>
-      <td>AGT</td>
-      <td>USGS</td>
-      <td>3.25</td>
-      <td>175.00</td>
-      <td>Poor</td>
-      <td>0.00</td>
-      <td>1.3</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <td>sensitive information only on official, secure...</td>
     </tr>
     <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
+      <th>5</th>
+      <td>&lt;input class=usa-input id=search-query type=se...</td>
     </tr>
     <tr>
-      <th>483</th>
-      <td>USGS</td>
-      <td>040851325</td>
-      <td>93</td>
-      <td>2014-05-20 11:42:30</td>
-      <td>CDT</td>
-      <td>Yes</td>
-      <td>PCR</td>
-      <td>USGS</td>
-      <td>2.78</td>
-      <td>34.50</td>
-      <td>Unspecified</td>
-      <td>-0.03</td>
-      <td>0.6</td>
-      <td>NaN</td>
-      <td>NONE</td>
+      <th>6</th>
+      <td>&lt;button class=usa-button type=submit&gt;</td>
     </tr>
     <tr>
-      <th>484</th>
-      <td>USGS</td>
-      <td>040851325</td>
-      <td>94</td>
-      <td>2014-06-25 16:27:00</td>
-      <td>CDT</td>
-      <td>Yes</td>
-      <td>DLO,ENC</td>
-      <td>USGS</td>
-      <td>2.26</td>
-      <td>11.40</td>
-      <td>Good</td>
-      <td>0.01</td>
-      <td>0.4</td>
-      <td>Clear</td>
-      <td>NONE</td>
+      <th>7</th>
+      <td>&lt;img src=/blog/wdfn-viz/img/usa-icons-bg/searc...</td>
     </tr>
     <tr>
-      <th>485</th>
-      <td>USGS</td>
-      <td>040851325</td>
-      <td>95</td>
-      <td>2014-08-13 16:23:30</td>
-      <td>CDT</td>
-      <td>Yes</td>
-      <td>DLO</td>
-      <td>USGS</td>
-      <td>1.91</td>
-      <td>0.82</td>
-      <td>Fair</td>
-      <td>0.00</td>
-      <td>0.4</td>
-      <td>VegetationModerate</td>
-      <td>NONE</td>
+      <th>8</th>
+      <td>&lt;span class=text-bold&gt;September 23, 2025&lt;/span&gt;</td>
     </tr>
     <tr>
-      <th>486</th>
-      <td>USGS</td>
-      <td>040851325</td>
-      <td>96</td>
-      <td>2014-09-24 16:26:00</td>
-      <td>CDT</td>
-      <td>Yes</td>
-      <td>DLO</td>
-      <td>USGS</td>
-      <td>2.23</td>
-      <td>8.90</td>
-      <td>Good</td>
-      <td>0.02</td>
-      <td>0.4</td>
-      <td>VegetationModerate</td>
-      <td>NONE</td>
+      <th>9</th>
+      <td>&lt;span class="display-block text-uppercase marg...</td>
     </tr>
     <tr>
-      <th>487</th>
-      <td>USGS</td>
-      <td>040851325</td>
-      <td>97</td>
-      <td>2016-07-20 08:25:30</td>
-      <td>CDT</td>
-      <td>Yes</td>
-      <td>AJD</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>0.68</td>
-      <td>Fair</td>
-      <td>NaN</td>
-      <td>0.5</td>
-      <td>NaN</td>
-      <td>NONE</td>
+      <th>10</th>
+      <td>&lt;span class=text-bold&gt;February 18, 2026&lt;/span&gt;...</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>&lt;span class=text-bold&gt;Leah Lenoch&lt;/span&gt;&lt;br&gt;&lt;a...</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>&lt;span class=text-bold&gt;7 minutes&lt;/span&gt;</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>&lt;span class="display-block text-uppercase marg...</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>&lt;a href="http://www.facebook.com/sharer.php?sr...</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>&lt;/a&gt;&lt;a href="https://twitter.com/intent/tweet?...</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>&lt;/a&gt;&lt;a href="https://www.reddit.com/submit?url...</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>to how you access USGS water data as we work t...</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>. We started with re-organizing and expanding ...</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>and are now working to deliver additional data...</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>NWISWeb, field measurements of groundwater and...</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>showing the number of data types available wit...</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>) or under the “View related graphs” action bu...</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>to learn more.&lt;/p&gt;&lt;h4 id=my-favorites-graphed&gt;...</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>to learn more.&lt;/p&gt;&lt;div style=padding:5px;backg...</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>endpoint.&lt;/p&gt;&lt;div class=grid-row&gt;&lt;figure&gt;&lt;img ...</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>. In 2026, we will continue working to support...</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>on USGS water data APIs. The field-measurement...</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>. Data from the APIs can be returned in severa...</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>, which is the new central hub for all moderni...</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td>tab that provides a central place for long-for...</td>
+    </tr>
+    <tr>
+      <th>31</th>
+      <td>that delivered these data. In Decommission Cam...</td>
+    </tr>
+    <tr>
+      <th>32</th>
+      <td>and stay up-to-date with our decommission timi...</td>
+    </tr>
+    <tr>
+      <th>33</th>
+      <td>.&lt;/p&gt;&lt;h2 id=were-here-to-help&gt;We&amp;rsquo;re here...</td>
+    </tr>
+    <tr>
+      <th>34</th>
+      <td>with any questions. You can get regular update...</td>
+    </tr>
+    <tr>
+      <th>35</th>
+      <td>.&lt;/p&gt;&lt;p&gt;The WDFN websites and services advance...</td>
+    </tr>
+    <tr>
+      <th>36</th>
+      <td>.&lt;/p&gt;&lt;div class="grid-row border-y display-fle...</td>
+    </tr>
+    <tr>
+      <th>37</th>
+      <td>&lt;/a&gt;&lt;a href="https://twitter.com/intent/tweet?...</td>
+    </tr>
+    <tr>
+      <th>38</th>
+      <td>&lt;/a&gt;&lt;a href="https://www.reddit.com/submit?url...</td>
+    </tr>
+    <tr>
+      <th>39</th>
+      <td>to how you access USGS water data as we work t...</td>
+    </tr>
+    <tr>
+      <th>40</th>
+      <td>. We started with re-organizing and expanding ...</td>
+    </tr>
+    <tr>
+      <th>41</th>
+      <td>and are now working to deliver additional data...</td>
+    </tr>
+    <tr>
+      <th>42</th>
+      <td>, which offered unique statistics delivery tha...</td>
+    </tr>
+    <tr>
+      <th>43</th>
+      <td>. These APIs underpin all other USGS web deliv...</td>
+    </tr>
+    <tr>
+      <th>44</th>
+      <td>(WDFN) – and have been incredibly effective at...</td>
+    </tr>
+    <tr>
+      <th>45</th>
+      <td>&lt;a class=usgs-footer-link href=https://www.usg...</td>
+    </tr>
+    <tr>
+      <th>46</th>
+      <td>&lt;a class=usgs-footer-link href=https://www.usg...</td>
+    </tr>
+    <tr>
+      <th>47</th>
+      <td>&lt;a class=usgs-footer-link href=https://www.usg...</td>
+    </tr>
+    <tr>
+      <th>48</th>
+      <td>&lt;a class=usgs-footer-link href=https://answers...</td>
+    </tr>
+    <tr>
+      <th>49</th>
+      <td>&lt;a href=https://twitter.com/usgs title="USGS T...</td>
+    </tr>
+    <tr>
+      <th>50</th>
+      <td>&lt;/a&gt;&lt;a href=http://facebook.com/usgeologicalsu...</td>
+    </tr>
+    <tr>
+      <th>51</th>
+      <td>&lt;/a&gt;&lt;a href=http://github.com/DOI-USGS title="...</td>
+    </tr>
+    <tr>
+      <th>52</th>
+      <td>&lt;/a&gt;&lt;a href=http://flickr.com/usgeologicalsurv...</td>
+    </tr>
+    <tr>
+      <th>53</th>
+      <td>&lt;/a&gt;&lt;a href=http://youtube.com/usgs title="USG...</td>
+    </tr>
+    <tr>
+      <th>54</th>
+      <td>&lt;/a&gt;&lt;a href=http://instagram.com/usgs title="U...</td>
+    </tr>
+    <tr>
+      <th>55</th>
+      <td>&lt;a class=usgs-footer-link href=https://www.doi...</td>
+    </tr>
+    <tr>
+      <th>56</th>
+      <td>&lt;a class=usgs-footer-link href=https://www.whi...</td>
+    </tr>
+    <tr>
+      <th>57</th>
+      <td>&lt;a class=usgs-footer-link href=https://www.doi...</td>
+    </tr>
+    <tr>
+      <th>58</th>
+      <td>&lt;a class=usgs-footer-link href=https://www2.us...</td>
+    </tr>
+    <tr>
+      <th>59</th>
+      <td>&lt;/a&gt;&lt;script src=https://cdn.jsdelivr.net/npm/m...</td>
     </tr>
   </tbody>
 </table>
-<p>488 rows × 15 columns</p>
 </div></div>
 </div>
 </section>

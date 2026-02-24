@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_gwlevels() Examples &mdash; dataretrieval 0.1.dev1+g9e64dd18d documentation</title>
+  <title>USGS dataretrieval Python Package get_gwlevels() Examples &mdash; dataretrieval 0.1.dev1+g4dc9f6a68 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=9d9b5532"></script>
+      <script src="../_static/documentation_options.js?v=bb1e5188"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -127,7 +127,7 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g9e64dd18d)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g4dc9f6a68)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
 Requirement already satisfied: pandas&lt;3.0.0,&gt;=2.0.0 in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas&lt;3.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.2)
@@ -170,21 +170,80 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
+<div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 744 data values.
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/home/runner/.local/lib/python3.12/site-packages/dataretrieval/utils.py:90: UserWarning: Warning: 567 incomplete dates found, consider setting datetime_index to False.
-  warnings.warn(
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3812</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3811</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3812</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   3813</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:167</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:196</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7088</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7096</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-red-fg">KeyError</span>: &#39;lev_tz_cd&#39;
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 5</span>
+<span class="ansi-green-fg">      2</span> site_id = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">434400121275801</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">      4</span> <span style="color: rgb(95,135,135)"># Retrieve the data</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">5</span> data = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_gwlevels</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">site_id</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">      6</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#34;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(data[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> data values.</span><span class="ansi-yellow-fg">&#34;</span>)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:346</span>, in <span class="ansi-cyan-fg">get_gwlevels</span><span class="ansi-blue-fg">(sites, start, end, multi_index, datetime_index, ssl_check, **kwargs)</span>
+<span class="ansi-green-fg">    343</span> df = _read_rdb(response.text)
+<span class="ansi-green-fg">    345</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">346</span>     df = <span class="ansi-yellow-bg">format_datetime</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_tm</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_tz_cd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    348</span> <span style="color: rgb(95,135,135)"># Filter by kwarg parameterCd because the service doesn&#39;t do it</span>
+<span class="ansi-green-fg">    349</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">parameterCd</span><span class="ansi-yellow-fg">&#34;</span> <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> kwargs:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/utils.py:79</span>, in <span class="ansi-cyan-fg">format_datetime</span><span class="ansi-blue-fg">(df, date_field, time_field, tz_field)</span>
+<span class="ansi-green-fg">     56</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Creates a datetime field from separate date, time, and</span>
+<span class="ansi-green-fg">     57</span> <span class="ansi-yellow-fg">time zone fields.</span>
+<span class="ansi-green-fg">     58</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     76</span>
+<span class="ansi-green-fg">     77</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">     78</span> <span style="color: rgb(95,135,135)"># create a datetime index from the columns in qwdata response</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">79</span> df[tz_field] = <span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">tz_field</span><span class="ansi-yellow-bg">]</span>.map(tz)
+<span class="ansi-green-fg">     81</span> df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#34;</span>] = pd.to_datetime(
+<span class="ansi-green-fg">     82</span>     df[date_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[time_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[tz_field],
+<span class="ansi-green-fg">     83</span>     <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">ISO8601</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">     84</span>     utc=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
+<span class="ansi-green-fg">     85</span> )
+<span class="ansi-green-fg">     87</span> <span style="color: rgb(95,135,135)"># if there are any incomplete dates, warn the user</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/frame.py:4113</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   4111</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
+<span class="ansi-green-fg">   4112</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4113</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   4114</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
+<span class="ansi-green-fg">   4115</span>     indexer = [indexer]
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3819</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3814</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
+<span class="ansi-green-fg">   3815</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
+<span class="ansi-green-fg">   3816</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
+<span class="ansi-green-fg">   3817</span>     ):
+<span class="ansi-green-fg">   3818</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3819</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">err</span>
+<span class="ansi-green-fg">   3820</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
+<span class="ansi-green-fg">   3821</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
+<span class="ansi-green-fg">   3822</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
+<span class="ansi-green-fg">   3823</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
+<span class="ansi-green-fg">   3824</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
+
+<span class="ansi-red-fg">KeyError</span>: &#39;lev_tz_cd&#39;
 </pre></div></div>
 </div>
 </section>
@@ -204,289 +263,15 @@ Retrieved 744 data values.
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[4]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> display(<span class="ansi-yellow-bg">data</span>[<span class="ansi-green-fg">0</span>])
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>site_tp_cd</th>
-      <th>lev_dt</th>
-      <th>lev_tm</th>
-      <th>lev_tz_cd</th>
-      <th>lev_va</th>
-      <th>sl_lev_va</th>
-      <th>sl_datum_cd</th>
-      <th>lev_status_cd</th>
-      <th>lev_agency_cd</th>
-      <th>lev_dt_acy_cd</th>
-      <th>lev_acy_cd</th>
-      <th>lev_src_cd</th>
-      <th>lev_meth_cd</th>
-      <th>lev_age_cd</th>
-      <th>parameter_cd</th>
-    </tr>
-    <tr>
-      <th>datetime</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>1945-10-12 22:35:00+00:00</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1945-10-12</td>
-      <td>22:35</td>
-      <td>+0000</td>
-      <td>NaN</td>
-      <td>4192.65</td>
-      <td>NGVD29</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>m</td>
-      <td>2</td>
-      <td>S</td>
-      <td>O</td>
-      <td>A</td>
-      <td>62610</td>
-    </tr>
-    <tr>
-      <th>1945-10-12 22:35:00+00:00</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1945-10-12</td>
-      <td>22:35</td>
-      <td>+0000</td>
-      <td>NaN</td>
-      <td>4196.67</td>
-      <td>NAVD88</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>m</td>
-      <td>2</td>
-      <td>S</td>
-      <td>O</td>
-      <td>A</td>
-      <td>62611</td>
-    </tr>
-    <tr>
-      <th>1945-10-12 22:35:00+00:00</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1945-10-12</td>
-      <td>22:35</td>
-      <td>+0000</td>
-      <td>27.35</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>m</td>
-      <td>2</td>
-      <td>S</td>
-      <td>O</td>
-      <td>A</td>
-      <td>72019</td>
-    </tr>
-    <tr>
-      <th>1999-06-04 18:00:00+00:00</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1999-06-04</td>
-      <td>18:00</td>
-      <td>+0000</td>
-      <td>NaN</td>
-      <td>4203.22</td>
-      <td>NGVD29</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>m</td>
-      <td>2</td>
-      <td>S</td>
-      <td>S</td>
-      <td>A</td>
-      <td>62610</td>
-    </tr>
-    <tr>
-      <th>1999-06-04 18:00:00+00:00</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1999-06-04</td>
-      <td>18:00</td>
-      <td>+0000</td>
-      <td>NaN</td>
-      <td>4207.24</td>
-      <td>NAVD88</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>m</td>
-      <td>2</td>
-      <td>S</td>
-      <td>S</td>
-      <td>A</td>
-      <td>62611</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1999-03-19</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4204.97</td>
-      <td>NAVD88</td>
-      <td>1</td>
-      <td>NaN</td>
-      <td>D</td>
-      <td>2</td>
-      <td>NaN</td>
-      <td>S</td>
-      <td>A</td>
-      <td>62611</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1999-03-19</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>19.05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>1</td>
-      <td>NaN</td>
-      <td>D</td>
-      <td>2</td>
-      <td>NaN</td>
-      <td>S</td>
-      <td>A</td>
-      <td>72019</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1999-05-14</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4201.99</td>
-      <td>NGVD29</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>D</td>
-      <td>2</td>
-      <td>S</td>
-      <td>S</td>
-      <td>A</td>
-      <td>62610</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1999-05-14</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4206.01</td>
-      <td>NAVD88</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>D</td>
-      <td>2</td>
-      <td>S</td>
-      <td>S</td>
-      <td>A</td>
-      <td>62611</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1999-05-14</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>18.01</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>D</td>
-      <td>2</td>
-      <td>S</td>
-      <td>S</td>
-      <td>A</td>
-      <td>72019</td>
-    </tr>
-  </tbody>
-</table>
-<p>744 rows × 17 columns</p>
-</div></div>
+<span class="ansi-red-fg">NameError</span>: name &#39;data&#39; is not defined
+</pre></div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
 <div class="nbinput docutils container">
@@ -502,24 +287,12 @@ Retrieved 744 data values.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-agency_cd         object
-site_no           object
-site_tp_cd        object
-lev_dt            object
-lev_tm            object
-lev_tz_cd         object
-lev_va           float64
-sl_lev_va        float64
-sl_datum_cd       object
-lev_status_cd     object
-lev_agency_cd     object
-lev_dt_acy_cd     object
-lev_acy_cd         int64
-lev_src_cd        object
-lev_meth_cd       object
-lev_age_cd        object
-parameter_cd      object
-dtype: object
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[5]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-bg">data</span>[<span class="ansi-green-fg">0</span>].dtypes)
+
+<span class="ansi-red-fg">NameError</span>: name &#39;data&#39; is not defined
 </pre></div></div>
 </div>
 <p>Get summary statistics for the daily streamflow values.</p>
@@ -532,20 +305,16 @@ dtype: object
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
-</pre></div>
+<div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-count    248.000000
-mean      23.690605
-std        5.265540
-min       10.900000
-25%       20.127500
-50%       24.495000
-75%       27.375000
-max       41.630000
-Name: lev_va, dtype: float64
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span class="ansi-yellow-bg">data</span>[<span class="ansi-green-fg">0</span>][<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">lev_va</span><span class="ansi-yellow-fg">&#39;</span>].describe()
+
+<span class="ansi-red-fg">NameError</span>: name &#39;data&#39; is not defined
 </pre></div></div>
 </div>
 <p>Make a quick time series plot.</p>
@@ -559,21 +328,20 @@ Name: lev_va, dtype: float64
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Text(0, 0.5, &#39;Water Level (feet below land surface)&#39;)
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/examples_USGS_dataretrieval_GroundwaterLevels_Examples_16_1.png" src="../_images/examples_USGS_dataretrieval_GroundwaterLevels_Examples_16_1.png" />
-</div>
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> ax = <span class="ansi-yellow-bg">data</span>[<span class="ansi-green-fg">0</span>].plot(x = <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">lev_dt</span><span class="ansi-yellow-fg">&#39;</span>, y=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">lev_va</span><span class="ansi-yellow-fg">&#39;</span>)
+<span class="ansi-green-fg">      2</span> ax.set_xlabel(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Date</span><span class="ansi-yellow-fg">&#39;</span>)
+<span class="ansi-green-fg">      3</span> ax.set_ylabel(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">Water Level (feet below land surface)</span><span class="ansi-yellow-fg">&#39;</span>)
+
+<span class="ansi-red-fg">NameError</span>: name &#39;data&#39; is not defined
+</pre></div></div>
 </div>
 <p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_gwlevels()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.</p>
 <div class="nbinput docutils container">
@@ -589,7 +357,12 @@ Text(0, 0.5, &#39;Water Level (feet below land surface)&#39;)
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-The query URL used to retrieve the data from  NWIS was: https://nwis.waterdata.usgs.gov/nwis/gwlevels?format=rdb&amp;begin_date=1851-01-01&amp;site_no=434400121275801
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[8]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">The query URL used to retrieve the data from  NWIS was: </span><span class="ansi-yellow-fg">&#34;</span> + <span class="ansi-yellow-bg">data</span>[<span class="ansi-green-fg">1</span>].url)
+
+<span class="ansi-red-fg">NameError</span>: name &#39;data&#39; is not defined
 </pre></div></div>
 </div>
 </section>
@@ -608,301 +381,81 @@ The query URL used to retrieve the data from  NWIS was: https://nwis.waterdata.u
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
+<div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 933 data values.
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/home/runner/.local/lib/python3.12/site-packages/dataretrieval/utils.py:90: UserWarning: Warning: 621 incomplete dates found, consider setting datetime_index to False.
-  warnings.warn(
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3812</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3811</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3812</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   3813</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:167</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
 
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th></th>
-      <th>agency_cd</th>
-      <th>site_tp_cd</th>
-      <th>lev_dt</th>
-      <th>lev_tm</th>
-      <th>lev_tz_cd</th>
-      <th>lev_va</th>
-      <th>sl_lev_va</th>
-      <th>sl_datum_cd</th>
-      <th>lev_status_cd</th>
-      <th>lev_agency_cd</th>
-      <th>lev_dt_acy_cd</th>
-      <th>lev_acy_cd</th>
-      <th>lev_src_cd</th>
-      <th>lev_meth_cd</th>
-      <th>lev_age_cd</th>
-      <th>parameter_cd</th>
-    </tr>
-    <tr>
-      <th>site_no</th>
-      <th>datetime</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th rowspan="5" valign="top">375907091432201</th>
-      <th>2007-01-26 17:08:00+00:00</th>
-      <td>USGS</td>
-      <td>GW</td>
-      <td>2007-01-26</td>
-      <td>17:08</td>
-      <td>+0000</td>
-      <td>NaN</td>
-      <td>871.79</td>
-      <td>NGVD29</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>m</td>
-      <td>2</td>
-      <td>S</td>
-      <td>V</td>
-      <td>A</td>
-      <td>62610</td>
-    </tr>
-    <tr>
-      <th>2007-01-26 17:08:00+00:00</th>
-      <td>USGS</td>
-      <td>GW</td>
-      <td>2007-01-26</td>
-      <td>17:08</td>
-      <td>+0000</td>
-      <td>NaN</td>
-      <td>871.93</td>
-      <td>NAVD88</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>m</td>
-      <td>2</td>
-      <td>S</td>
-      <td>V</td>
-      <td>A</td>
-      <td>62611</td>
-    </tr>
-    <tr>
-      <th>2007-01-26 17:08:00+00:00</th>
-      <td>USGS</td>
-      <td>GW</td>
-      <td>2007-01-26</td>
-      <td>17:08</td>
-      <td>+0000</td>
-      <td>317.21</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>m</td>
-      <td>2</td>
-      <td>S</td>
-      <td>V</td>
-      <td>A</td>
-      <td>72019</td>
-    </tr>
-    <tr>
-      <th>2007-06-11 19:30:00+00:00</th>
-      <td>USGS</td>
-      <td>GW</td>
-      <td>2007-06-11</td>
-      <td>19:30</td>
-      <td>+0000</td>
-      <td>NaN</td>
-      <td>879.68</td>
-      <td>NGVD29</td>
-      <td>1</td>
-      <td>MO005</td>
-      <td>m</td>
-      <td>2</td>
-      <td>A</td>
-      <td>T</td>
-      <td>A</td>
-      <td>62610</td>
-    </tr>
-    <tr>
-      <th>2007-06-11 19:30:00+00:00</th>
-      <td>USGS</td>
-      <td>GW</td>
-      <td>2007-06-11</td>
-      <td>19:30</td>
-      <td>+0000</td>
-      <td>NaN</td>
-      <td>879.82</td>
-      <td>NAVD88</td>
-      <td>1</td>
-      <td>MO005</td>
-      <td>m</td>
-      <td>2</td>
-      <td>A</td>
-      <td>T</td>
-      <td>A</td>
-      <td>62611</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th rowspan="5" valign="top">434400121275801</th>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>GW</td>
-      <td>1999-03-19</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4204.97</td>
-      <td>NAVD88</td>
-      <td>1</td>
-      <td>NaN</td>
-      <td>D</td>
-      <td>2</td>
-      <td>NaN</td>
-      <td>S</td>
-      <td>A</td>
-      <td>62611</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>GW</td>
-      <td>1999-03-19</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>19.05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>1</td>
-      <td>NaN</td>
-      <td>D</td>
-      <td>2</td>
-      <td>NaN</td>
-      <td>S</td>
-      <td>A</td>
-      <td>72019</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>GW</td>
-      <td>1999-05-14</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4201.99</td>
-      <td>NGVD29</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>D</td>
-      <td>2</td>
-      <td>S</td>
-      <td>S</td>
-      <td>A</td>
-      <td>62610</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>GW</td>
-      <td>1999-05-14</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4206.01</td>
-      <td>NAVD88</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>D</td>
-      <td>2</td>
-      <td>S</td>
-      <td>S</td>
-      <td>A</td>
-      <td>62611</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>GW</td>
-      <td>1999-05-14</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>18.01</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>D</td>
-      <td>2</td>
-      <td>S</td>
-      <td>S</td>
-      <td>A</td>
-      <td>72019</td>
-    </tr>
-  </tbody>
-</table>
-<p>933 rows × 16 columns</p>
-</div></div>
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:196</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7088</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7096</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-red-fg">KeyError</span>: &#39;lev_tz_cd&#39;
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[9]</span><span class="ansi-green-fg">, line 2</span>
+<span class="ansi-green-fg">      1</span> site_ids = [<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">434400121275801</span><span class="ansi-yellow-fg">&#34;</span>, <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">375907091432201</span><span class="ansi-yellow-fg">&#34;</span>]
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> data2 = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_gwlevels</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">site_ids</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">      3</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#34;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(data2[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> data values.</span><span class="ansi-yellow-fg">&#34;</span>)
+<span class="ansi-green-fg">      4</span> display(data2[<span class="ansi-green-fg">0</span>])
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:346</span>, in <span class="ansi-cyan-fg">get_gwlevels</span><span class="ansi-blue-fg">(sites, start, end, multi_index, datetime_index, ssl_check, **kwargs)</span>
+<span class="ansi-green-fg">    343</span> df = _read_rdb(response.text)
+<span class="ansi-green-fg">    345</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">346</span>     df = <span class="ansi-yellow-bg">format_datetime</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_tm</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_tz_cd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    348</span> <span style="color: rgb(95,135,135)"># Filter by kwarg parameterCd because the service doesn&#39;t do it</span>
+<span class="ansi-green-fg">    349</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">parameterCd</span><span class="ansi-yellow-fg">&#34;</span> <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> kwargs:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/utils.py:79</span>, in <span class="ansi-cyan-fg">format_datetime</span><span class="ansi-blue-fg">(df, date_field, time_field, tz_field)</span>
+<span class="ansi-green-fg">     56</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Creates a datetime field from separate date, time, and</span>
+<span class="ansi-green-fg">     57</span> <span class="ansi-yellow-fg">time zone fields.</span>
+<span class="ansi-green-fg">     58</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     76</span>
+<span class="ansi-green-fg">     77</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">     78</span> <span style="color: rgb(95,135,135)"># create a datetime index from the columns in qwdata response</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">79</span> df[tz_field] = <span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">tz_field</span><span class="ansi-yellow-bg">]</span>.map(tz)
+<span class="ansi-green-fg">     81</span> df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#34;</span>] = pd.to_datetime(
+<span class="ansi-green-fg">     82</span>     df[date_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[time_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[tz_field],
+<span class="ansi-green-fg">     83</span>     <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">ISO8601</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">     84</span>     utc=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
+<span class="ansi-green-fg">     85</span> )
+<span class="ansi-green-fg">     87</span> <span style="color: rgb(95,135,135)"># if there are any incomplete dates, warn the user</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/frame.py:4113</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   4111</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
+<span class="ansi-green-fg">   4112</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4113</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   4114</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
+<span class="ansi-green-fg">   4115</span>     indexer = [indexer]
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3819</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3814</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
+<span class="ansi-green-fg">   3815</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
+<span class="ansi-green-fg">   3816</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
+<span class="ansi-green-fg">   3817</span>     ):
+<span class="ansi-green-fg">   3818</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3819</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">err</span>
+<span class="ansi-green-fg">   3820</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
+<span class="ansi-green-fg">   3821</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
+<span class="ansi-green-fg">   3822</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
+<span class="ansi-green-fg">   3823</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
+<span class="ansi-green-fg">   3824</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
+
+<span class="ansi-red-fg">KeyError</span>: &#39;lev_tz_cd&#39;
+</pre></div></div>
 </div>
 <p>The following example is the same as the previous example but with multi index turned off (multi_index=False)</p>
 <div class="nbinput docutils container">
@@ -916,309 +469,81 @@ Retrieved 933 data values.
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
+<div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 933 data values.
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/home/runner/.local/lib/python3.12/site-packages/dataretrieval/utils.py:90: UserWarning: Warning: 621 incomplete dates found, consider setting datetime_index to False.
-  warnings.warn(
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3812</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3811</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3812</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   3813</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:167</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
 
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>site_tp_cd</th>
-      <th>lev_dt</th>
-      <th>lev_tm</th>
-      <th>lev_tz_cd</th>
-      <th>lev_va</th>
-      <th>sl_lev_va</th>
-      <th>sl_datum_cd</th>
-      <th>lev_status_cd</th>
-      <th>lev_agency_cd</th>
-      <th>lev_dt_acy_cd</th>
-      <th>lev_acy_cd</th>
-      <th>lev_src_cd</th>
-      <th>lev_meth_cd</th>
-      <th>lev_age_cd</th>
-      <th>parameter_cd</th>
-    </tr>
-    <tr>
-      <th>datetime</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>1945-10-12 22:35:00+00:00</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1945-10-12</td>
-      <td>22:35</td>
-      <td>+0000</td>
-      <td>NaN</td>
-      <td>4192.65</td>
-      <td>NGVD29</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>m</td>
-      <td>2</td>
-      <td>S</td>
-      <td>O</td>
-      <td>A</td>
-      <td>62610</td>
-    </tr>
-    <tr>
-      <th>1945-10-12 22:35:00+00:00</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1945-10-12</td>
-      <td>22:35</td>
-      <td>+0000</td>
-      <td>NaN</td>
-      <td>4196.67</td>
-      <td>NAVD88</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>m</td>
-      <td>2</td>
-      <td>S</td>
-      <td>O</td>
-      <td>A</td>
-      <td>62611</td>
-    </tr>
-    <tr>
-      <th>1945-10-12 22:35:00+00:00</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1945-10-12</td>
-      <td>22:35</td>
-      <td>+0000</td>
-      <td>27.35</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>m</td>
-      <td>2</td>
-      <td>S</td>
-      <td>O</td>
-      <td>A</td>
-      <td>72019</td>
-    </tr>
-    <tr>
-      <th>1999-06-04 18:00:00+00:00</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1999-06-04</td>
-      <td>18:00</td>
-      <td>+0000</td>
-      <td>NaN</td>
-      <td>4203.22</td>
-      <td>NGVD29</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>m</td>
-      <td>2</td>
-      <td>S</td>
-      <td>S</td>
-      <td>A</td>
-      <td>62610</td>
-    </tr>
-    <tr>
-      <th>1999-06-04 18:00:00+00:00</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1999-06-04</td>
-      <td>18:00</td>
-      <td>+0000</td>
-      <td>NaN</td>
-      <td>4207.24</td>
-      <td>NAVD88</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>m</td>
-      <td>2</td>
-      <td>S</td>
-      <td>S</td>
-      <td>A</td>
-      <td>62611</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1999-03-19</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4204.97</td>
-      <td>NAVD88</td>
-      <td>1</td>
-      <td>NaN</td>
-      <td>D</td>
-      <td>2</td>
-      <td>NaN</td>
-      <td>S</td>
-      <td>A</td>
-      <td>62611</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1999-03-19</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>19.05</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>1</td>
-      <td>NaN</td>
-      <td>D</td>
-      <td>2</td>
-      <td>NaN</td>
-      <td>S</td>
-      <td>A</td>
-      <td>72019</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1999-05-14</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4201.99</td>
-      <td>NGVD29</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>D</td>
-      <td>2</td>
-      <td>S</td>
-      <td>S</td>
-      <td>A</td>
-      <td>62610</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1999-05-14</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4206.01</td>
-      <td>NAVD88</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>D</td>
-      <td>2</td>
-      <td>S</td>
-      <td>S</td>
-      <td>A</td>
-      <td>62611</td>
-    </tr>
-    <tr>
-      <th>NaT</th>
-      <td>USGS</td>
-      <td>434400121275801</td>
-      <td>GW</td>
-      <td>1999-05-14</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>18.01</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>1</td>
-      <td>USGS</td>
-      <td>D</td>
-      <td>2</td>
-      <td>S</td>
-      <td>S</td>
-      <td>A</td>
-      <td>72019</td>
-    </tr>
-  </tbody>
-</table>
-<p>933 rows × 17 columns</p>
-</div></div>
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:196</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7088</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7096</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-red-fg">KeyError</span>: &#39;lev_tz_cd&#39;
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[10]</span><span class="ansi-green-fg">, line 2</span>
+<span class="ansi-green-fg">      1</span> site_ids = [<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">434400121275801</span><span class="ansi-yellow-fg">&#34;</span>, <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">375907091432201</span><span class="ansi-yellow-fg">&#34;</span>]
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> data2 = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_gwlevels</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">site_ids</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">multi_index</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">False</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">      3</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#34;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(data2[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> data values.</span><span class="ansi-yellow-fg">&#34;</span>)
+<span class="ansi-green-fg">      4</span> display(data2[<span class="ansi-green-fg">0</span>])
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:346</span>, in <span class="ansi-cyan-fg">get_gwlevels</span><span class="ansi-blue-fg">(sites, start, end, multi_index, datetime_index, ssl_check, **kwargs)</span>
+<span class="ansi-green-fg">    343</span> df = _read_rdb(response.text)
+<span class="ansi-green-fg">    345</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">346</span>     df = <span class="ansi-yellow-bg">format_datetime</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_tm</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_tz_cd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    348</span> <span style="color: rgb(95,135,135)"># Filter by kwarg parameterCd because the service doesn&#39;t do it</span>
+<span class="ansi-green-fg">    349</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">parameterCd</span><span class="ansi-yellow-fg">&#34;</span> <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> kwargs:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/utils.py:79</span>, in <span class="ansi-cyan-fg">format_datetime</span><span class="ansi-blue-fg">(df, date_field, time_field, tz_field)</span>
+<span class="ansi-green-fg">     56</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Creates a datetime field from separate date, time, and</span>
+<span class="ansi-green-fg">     57</span> <span class="ansi-yellow-fg">time zone fields.</span>
+<span class="ansi-green-fg">     58</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     76</span>
+<span class="ansi-green-fg">     77</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">     78</span> <span style="color: rgb(95,135,135)"># create a datetime index from the columns in qwdata response</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">79</span> df[tz_field] = <span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">tz_field</span><span class="ansi-yellow-bg">]</span>.map(tz)
+<span class="ansi-green-fg">     81</span> df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#34;</span>] = pd.to_datetime(
+<span class="ansi-green-fg">     82</span>     df[date_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[time_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[tz_field],
+<span class="ansi-green-fg">     83</span>     <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">ISO8601</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">     84</span>     utc=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
+<span class="ansi-green-fg">     85</span> )
+<span class="ansi-green-fg">     87</span> <span style="color: rgb(95,135,135)"># if there are any incomplete dates, warn the user</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/frame.py:4113</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   4111</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
+<span class="ansi-green-fg">   4112</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4113</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   4114</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
+<span class="ansi-green-fg">   4115</span>     indexer = [indexer]
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3819</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3814</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
+<span class="ansi-green-fg">   3815</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
+<span class="ansi-green-fg">   3816</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
+<span class="ansi-green-fg">   3817</span>     ):
+<span class="ansi-green-fg">   3818</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3819</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">err</span>
+<span class="ansi-green-fg">   3820</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
+<span class="ansi-green-fg">   3821</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
+<span class="ansi-green-fg">   3822</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
+<span class="ansi-green-fg">   3823</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
+<span class="ansi-green-fg">   3824</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
+
+<span class="ansi-red-fg">KeyError</span>: &#39;lev_tz_cd&#39;
+</pre></div></div>
 </div>
 <p>Some groundwater level data have dates that include only a year or a month and year, but no day.</p>
 <p>Example 3: Retrieve groundwater level data that have dates without a day.</p>
@@ -1235,27 +560,80 @@ Retrieved 933 data values.
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
+<div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 102 data values.
-DatetimeIndex([&#39;NaT&#39;, &#39;NaT&#39;, &#39;NaT&#39;, &#39;NaT&#39;, &#39;NaT&#39;, &#39;NaT&#39;, &#39;NaT&#39;, &#39;NaT&#39;, &#39;NaT&#39;,
-               &#39;NaT&#39;,
-               ...
-               &#39;NaT&#39;, &#39;NaT&#39;, &#39;NaT&#39;, &#39;NaT&#39;, &#39;NaT&#39;, &#39;NaT&#39;, &#39;NaT&#39;, &#39;NaT&#39;, &#39;NaT&#39;,
-               &#39;NaT&#39;],
-              dtype=&#39;datetime64[ns, UTC]&#39;, name=&#39;datetime&#39;, length=102, freq=None)
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/home/runner/.local/lib/python3.12/site-packages/dataretrieval/utils.py:90: UserWarning: Warning: 102 incomplete dates found, consider setting datetime_index to False.
-  warnings.warn(
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3812</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3811</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3812</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   3813</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:167</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:196</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7088</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7096</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-red-fg">KeyError</span>: &#39;lev_tz_cd&#39;
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[11]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> data3 = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_gwlevels</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">425957088141001</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">      2</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#34;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(data3[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> data values.</span><span class="ansi-yellow-fg">&#34;</span>)
+<span class="ansi-green-fg">      4</span> <span style="color: rgb(95,135,135)"># Print the date/time index values, which show up as NaT because</span>
+<span class="ansi-green-fg">      5</span> <span style="color: rgb(95,135,135)"># the dates can&#39;t be converted to a date/time data type</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:346</span>, in <span class="ansi-cyan-fg">get_gwlevels</span><span class="ansi-blue-fg">(sites, start, end, multi_index, datetime_index, ssl_check, **kwargs)</span>
+<span class="ansi-green-fg">    343</span> df = _read_rdb(response.text)
+<span class="ansi-green-fg">    345</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">346</span>     df = <span class="ansi-yellow-bg">format_datetime</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_tm</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_tz_cd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    348</span> <span style="color: rgb(95,135,135)"># Filter by kwarg parameterCd because the service doesn&#39;t do it</span>
+<span class="ansi-green-fg">    349</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">parameterCd</span><span class="ansi-yellow-fg">&#34;</span> <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> kwargs:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/utils.py:79</span>, in <span class="ansi-cyan-fg">format_datetime</span><span class="ansi-blue-fg">(df, date_field, time_field, tz_field)</span>
+<span class="ansi-green-fg">     56</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Creates a datetime field from separate date, time, and</span>
+<span class="ansi-green-fg">     57</span> <span class="ansi-yellow-fg">time zone fields.</span>
+<span class="ansi-green-fg">     58</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     76</span>
+<span class="ansi-green-fg">     77</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">     78</span> <span style="color: rgb(95,135,135)"># create a datetime index from the columns in qwdata response</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">79</span> df[tz_field] = <span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">tz_field</span><span class="ansi-yellow-bg">]</span>.map(tz)
+<span class="ansi-green-fg">     81</span> df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#34;</span>] = pd.to_datetime(
+<span class="ansi-green-fg">     82</span>     df[date_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[time_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[tz_field],
+<span class="ansi-green-fg">     83</span>     <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">ISO8601</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">     84</span>     utc=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
+<span class="ansi-green-fg">     85</span> )
+<span class="ansi-green-fg">     87</span> <span style="color: rgb(95,135,135)"># if there are any incomplete dates, warn the user</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/frame.py:4113</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   4111</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
+<span class="ansi-green-fg">   4112</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4113</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   4114</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
+<span class="ansi-green-fg">   4115</span>     indexer = [indexer]
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3819</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3814</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
+<span class="ansi-green-fg">   3815</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
+<span class="ansi-green-fg">   3816</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
+<span class="ansi-green-fg">   3817</span>     ):
+<span class="ansi-green-fg">   3818</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3819</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">err</span>
+<span class="ansi-green-fg">   3820</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
+<span class="ansi-green-fg">   3821</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
+<span class="ansi-green-fg">   3822</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
+<span class="ansi-green-fg">   3823</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
+<span class="ansi-green-fg">   3824</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
+
+<span class="ansi-red-fg">KeyError</span>: &#39;lev_tz_cd&#39;
 </pre></div></div>
 </div>
 <p>If you want to see the USGS RDB (delimited text) version of the data just retrieved, you can get the URL for the request that was sent to the USGS web service.</p>
@@ -1273,7 +651,13 @@ DatetimeIndex([&#39;NaT&#39;, &#39;NaT&#39;, &#39;NaT&#39;, &#39;NaT&#39;, &#39;
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-You can examine the data retrieved from NWIS at: https://nwis.waterdata.usgs.gov/nwis/gwlevels?format=rdb&amp;begin_date=1851-01-01&amp;site_no=425957088141001
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[12]</span><span class="ansi-green-fg">, line 2</span>
+<span class="ansi-green-fg">      1</span> <span style="color: rgb(95,135,135)"># Print the URL used to retrieve the data</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">You can examine the data retrieved from NWIS at: </span><span class="ansi-yellow-fg">&#34;</span> + <span class="ansi-yellow-bg">data3</span>[<span class="ansi-green-fg">1</span>].url)
+
+<span class="ansi-red-fg">NameError</span>: name &#39;data3&#39; is not defined
 </pre></div></div>
 </div>
 <p>You can also retrieve data for a site within a specified time window by specifying a start date and an end date.</p>
@@ -1287,21 +671,78 @@ You can examine the data retrieved from NWIS at: https://nwis.waterdata.usgs.gov
 <br/></pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
+<div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 213 data values.
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/home/runner/.local/lib/python3.12/site-packages/dataretrieval/utils.py:90: UserWarning: Warning: 189 incomplete dates found, consider setting datetime_index to False.
-  warnings.warn(
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3812</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3811</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3812</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   3813</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:167</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:196</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7088</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7096</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-red-fg">KeyError</span>: &#39;lev_tz_cd&#39;
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[13]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> data4 = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_gwlevels</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">site_id</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">start</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">1980-01-01</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">end</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">2000-12-31</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">      2</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#34;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(data4[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> data values.</span><span class="ansi-yellow-fg">&#34;</span>)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/nwis.py:346</span>, in <span class="ansi-cyan-fg">get_gwlevels</span><span class="ansi-blue-fg">(sites, start, end, multi_index, datetime_index, ssl_check, **kwargs)</span>
+<span class="ansi-green-fg">    343</span> df = _read_rdb(response.text)
+<span class="ansi-green-fg">    345</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> datetime_index <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">346</span>     df = <span class="ansi-yellow-bg">format_datetime</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_tm</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_tz_cd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    348</span> <span style="color: rgb(95,135,135)"># Filter by kwarg parameterCd because the service doesn&#39;t do it</span>
+<span class="ansi-green-fg">    349</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">parameterCd</span><span class="ansi-yellow-fg">&#34;</span> <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> kwargs:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/dataretrieval/utils.py:79</span>, in <span class="ansi-cyan-fg">format_datetime</span><span class="ansi-blue-fg">(df, date_field, time_field, tz_field)</span>
+<span class="ansi-green-fg">     56</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Creates a datetime field from separate date, time, and</span>
+<span class="ansi-green-fg">     57</span> <span class="ansi-yellow-fg">time zone fields.</span>
+<span class="ansi-green-fg">     58</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     76</span>
+<span class="ansi-green-fg">     77</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">     78</span> <span style="color: rgb(95,135,135)"># create a datetime index from the columns in qwdata response</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">79</span> df[tz_field] = <span class="ansi-yellow-bg">df</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">tz_field</span><span class="ansi-yellow-bg">]</span>.map(tz)
+<span class="ansi-green-fg">     81</span> df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">datetime</span><span class="ansi-yellow-fg">&#34;</span>] = pd.to_datetime(
+<span class="ansi-green-fg">     82</span>     df[date_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[time_field] + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> </span><span class="ansi-yellow-fg">&#34;</span> + df[tz_field],
+<span class="ansi-green-fg">     83</span>     <span style="color: rgb(0,135,0)">format</span>=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">ISO8601</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">     84</span>     utc=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
+<span class="ansi-green-fg">     85</span> )
+<span class="ansi-green-fg">     87</span> <span style="color: rgb(95,135,135)"># if there are any incomplete dates, warn the user</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/frame.py:4113</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   4111</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
+<span class="ansi-green-fg">   4112</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4113</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   4114</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
+<span class="ansi-green-fg">   4115</span>     indexer = [indexer]
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py:3819</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
+<span class="ansi-green-fg">   3814</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
+<span class="ansi-green-fg">   3815</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
+<span class="ansi-green-fg">   3816</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
+<span class="ansi-green-fg">   3817</span>     ):
+<span class="ansi-green-fg">   3818</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3819</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">err</span>
+<span class="ansi-green-fg">   3820</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
+<span class="ansi-green-fg">   3821</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
+<span class="ansi-green-fg">   3822</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
+<span class="ansi-green-fg">   3823</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
+<span class="ansi-green-fg">   3824</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
+
+<span class="ansi-red-fg">KeyError</span>: &#39;lev_tz_cd&#39;
 </pre></div></div>
 </div>
 </section>

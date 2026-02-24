@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g9e64dd18d documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g4dc9f6a68 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=9d9b5532"></script>
+      <script src="../../../_static/documentation_options.js?v=bb1e5188"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -99,8 +99,7 @@
 <span class="kn">from</span> <span class="nn">dataretrieval.waterdata.utils</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">SAMPLES_URL</span><span class="p">,</span>
     <span class="n">get_ogc_data</span><span class="p">,</span>
-    <span class="n">_construct_api_requests</span><span class="p">,</span>
-    <span class="n">_walk_pages</span><span class="p">,</span>
+    <span class="n">get_stats_data</span><span class="p">,</span>
     <span class="n">_check_profiles</span>
 <span class="p">)</span>
 
@@ -1852,6 +1851,270 @@
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_stats_por">
+<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_stats_por">[docs]</a>
+<span class="k">def</span> <span class="nf">get_stats_por</span><span class="p">(</span>
+        <span class="n">approval_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">computation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">country_code</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">state_code</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">county_code</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">start_date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end_date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">monitoring_location_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">parent_time_series_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">site_type_code</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">site_type_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">parameter_code</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">expand_percentiles</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get day-of-year and month-of-year water data statistics from the</span>
+<span class="sd">    USGS Water Data API.</span>
+<span class="sd">    This service (called the &quot;observationNormals&quot; endpoint on api.waterdata.usgs.gov)</span>
+<span class="sd">    provides endpoints for access to computations on the historical record regarding</span>
+<span class="sd">    water conditions, including minimum, maximum, mean, median, and percentiles for</span>
+<span class="sd">    day of year and month of year. For more information regarding the calculation of</span>
+<span class="sd">    statistics and other details, please visit the Statistics documentation page:</span>
+<span class="sd">    https://waterdata.usgs.gov/statistics-documentation/.</span>
+<span class="sd">    </span>
+<span class="sd">    Note: This API is under active beta development and subject to</span>
+<span class="sd">    change. Improved handling of significant figures will be</span>
+<span class="sd">    addressed in a future release.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    approval_status: string, optional</span>
+<span class="sd">        Whether to include approved and/or provisional observations.</span>
+<span class="sd">        At this time, only approved observations are returned.</span>
+<span class="sd">    computation_type: string, optional</span>
+<span class="sd">        Desired statistical computation method. Available values are:</span>
+<span class="sd">        arithmetic_mean, maximum, median, minimum, percentile.</span>
+<span class="sd">    country_code: string, optional</span>
+<span class="sd">        Country query parameter. API defaults to &quot;US&quot;.</span>
+<span class="sd">    state_code: string, optional</span>
+<span class="sd">        State query parameter. Takes the format &quot;US:XX&quot;, where XX is</span>
+<span class="sd">        the two-digit state code. API defaults to &quot;US:42&quot; (Pennsylvania).</span>
+<span class="sd">    county_code: string, optional</span>
+<span class="sd">        County query parameter. Takes the format &quot;US:XX:YYY&quot;, where XX is</span>
+<span class="sd">        the two-digit state code and YYY is the three-digit county code.</span>
+<span class="sd">        API defaults to &quot;US:42:103&quot; (Pennsylvania, Pike County).</span>
+<span class="sd">    start_date: string or datetime, optional</span>
+<span class="sd">        Start day for the query in the month-day format (MM-DD).</span>
+<span class="sd">    end_date: string or datetime, optional</span>
+<span class="sd">        End day for the query in the month-day format (MM-DD).</span>
+<span class="sd">    monitoring_location_id : string or list of strings, optional</span>
+<span class="sd">        A unique identifier representing a single monitoring location. This</span>
+<span class="sd">        corresponds to the id field in the monitoring-locations endpoint.</span>
+<span class="sd">        Monitoring location IDs are created by combining the agency code of the</span>
+<span class="sd">        agency responsible for the monitoring location (e.g. USGS) with the ID</span>
+<span class="sd">        number of the monitoring location (e.g. 02238500), separated by a hyphen</span>
+<span class="sd">        (e.g. USGS-02238500).</span>
+<span class="sd">    page_size : int, optional</span>
+<span class="sd">        The number of results to return per page, where one result represents a</span>
+<span class="sd">        monitoring location. The default is 1000.</span>
+<span class="sd">    parent_time_series_id: string, optional</span>
+<span class="sd">        The parent_time_series_id returns statistics tied to a particular datbase entry.</span>
+<span class="sd">    site_type_code: string, optional</span>
+<span class="sd">        Site type code query parameter. You can see a list of valid site type codes here:</span>
+<span class="sd">        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.</span>
+<span class="sd">        Example: &quot;GW&quot; (Groundwater site)</span>
+<span class="sd">    site_type_name: string, optional</span>
+<span class="sd">        Site type name query parameter. You can see a list of valid site type names here:</span>
+<span class="sd">        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.</span>
+<span class="sd">        Example: &quot;Well&quot;</span>
+<span class="sd">    parameter_code : string or list of strings, optional</span>
+<span class="sd">        Parameter codes are 5-digit codes used to identify the constituent</span>
+<span class="sd">        measured and the units of measure. A complete list of parameter codes</span>
+<span class="sd">        and associated groupings can be found at</span>
+<span class="sd">        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.</span>
+<span class="sd">    expand_percentiles : boolean</span>
+<span class="sd">        Percentile data for a given day of year or month of year by default</span>
+<span class="sd">        are returned from the service as lists of string values and percentile</span>
+<span class="sd">        thresholds in the &quot;values&quot; and &quot;percentiles&quot; columns, respectively.</span>
+<span class="sd">        When `expand_percentiles` is set to True (default), each value and</span>
+<span class="sd">        percentile threshold specific to a computation id are returned as</span>
+<span class="sd">        individual rows in the dataframe, with the value reported in the</span>
+<span class="sd">        &quot;value&quot; column and the corresponding percentile reported in a</span>
+<span class="sd">        &quot;percentile&quot; column (and the &quot;values&quot; and &quot;percentiles&quot; columns</span>
+<span class="sd">        are removed). Missing percentile values expressed as &#39;nan&#39; in the</span>
+<span class="sd">        list of string values are removed from the dataframe to save space.</span>
+<span class="sd">        Setting `expand_percentiles` to False retains the &quot;values&quot; and</span>
+<span class="sd">        &quot;percentiles&quot; columns produced by the service. Including</span>
+<span class="sd">        both &#39;percentiles&#39; and one or more other statistics (&#39;median&#39;,</span>
+<span class="sd">        &#39;minimum&#39;, &#39;maximum&#39;, or &#39;arithmetic_mean&#39;) in the `computation_type`</span>
+<span class="sd">        argument will return both the &quot;values&quot; column, containing the list</span>
+<span class="sd">        of percentile threshold values, and a &quot;value&quot; column, containing</span>
+<span class="sd">        the singular summary value for the other statistics.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; # Get daily, monthly, and annual percentiles for streamflow at</span>
+<span class="sd">        &gt;&gt;&gt; # a monitoring location of interest</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_stats_por(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-05114000&quot;,</span>
+<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
+<span class="sd">        ...     computation_type=&quot;percentile&quot;</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Get all daily and monthly statistics for the month of January</span>
+<span class="sd">        &gt;&gt;&gt; # over the entire period of record for streamflow and gage height</span>
+<span class="sd">        &gt;&gt;&gt; # at a monitoring location of interest</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_stats_por(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-05114000&quot;,</span>
+<span class="sd">        ...     parameter_code=[&quot;00060&quot;, &quot;00065&quot;],</span>
+<span class="sd">        ...     start_date=&quot;01-01&quot;,</span>
+<span class="sd">        ...     end_date=&quot;01-31&quot;</span>
+<span class="sd">        ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;expand_percentiles&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="p">}</span>
+    
+    <span class="k">return</span> <span class="n">get_stats_data</span><span class="p">(</span>
+        <span class="n">args</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+        <span class="n">service</span><span class="o">=</span><span class="s2">&quot;observationNormals&quot;</span><span class="p">,</span>
+        <span class="n">expand_percentiles</span><span class="o">=</span><span class="n">expand_percentiles</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_stats_date_range">
+<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_stats_date_range">[docs]</a>
+<span class="k">def</span> <span class="nf">get_stats_date_range</span><span class="p">(</span>
+        <span class="n">approval_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">computation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">country_code</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">state_code</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">county_code</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">start_date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end_date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">monitoring_location_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">parent_time_series_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">site_type_code</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">site_type_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">parameter_code</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">expand_percentiles</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get monthly and annual water data statistics from the USGS Water Data API.</span>
+<span class="sd">    This service (called the &quot;observationIntervals&quot; endpoint on api.waterdata.usgs.gov)</span>
+<span class="sd">    provides endpoints for access to computations on the historical record regarding</span>
+<span class="sd">    water conditions, including minimum, maximum, mean, median, and percentiles for</span>
+<span class="sd">    month-year, and water/calendar years. For more information regarding the calculation</span>
+<span class="sd">    of statistics and other details, please visit the Statistics documentation page:</span>
+<span class="sd">    https://waterdata.usgs.gov/statistics-documentation/.</span>
+<span class="sd">    </span>
+<span class="sd">    Note: This API is under active beta development and subject to</span>
+<span class="sd">    change. Improved handling of significant figures will be</span>
+<span class="sd">    addressed in a future release.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    approval_status: string, optional</span>
+<span class="sd">        Whether to include approved and/or provisional observations.</span>
+<span class="sd">        At this time, only approved observations are returned.</span>
+<span class="sd">    computation_type: string, optional</span>
+<span class="sd">        Desired statistical computation method. Available values are:</span>
+<span class="sd">        arithmetic_mean, maximum, median, minimum, percentile.</span>
+<span class="sd">    country_code: string, optional</span>
+<span class="sd">        Country query parameter. API defaults to &quot;US&quot;.</span>
+<span class="sd">    state_code: string, optional</span>
+<span class="sd">        State query parameter. Takes the format &quot;US:XX&quot;, where XX is</span>
+<span class="sd">        the two-digit state code. API defaults to &quot;US:42&quot; (Pennsylvania).</span>
+<span class="sd">    county_code: string, optional</span>
+<span class="sd">        County query parameter. Takes the format &quot;US:XX:YYY&quot;, where XX is</span>
+<span class="sd">        the two-digit state code and YYY is the three-digit county code.</span>
+<span class="sd">        API defaults to &quot;US:42:103&quot; (Pennsylvania, Pike County).</span>
+<span class="sd">    start_date: string or datetime, optional</span>
+<span class="sd">        Start date for the query in the year-month-day format</span>
+<span class="sd">        (YYYY-MM-DD).</span>
+<span class="sd">    end_date: string or datetime, optional</span>
+<span class="sd">        End date for the query in the year-month-day format</span>
+<span class="sd">        (YYYY-MM-DD).</span>
+<span class="sd">    monitoring_location_id : string or list of strings, optional</span>
+<span class="sd">        A unique identifier representing a single monitoring location. This</span>
+<span class="sd">        corresponds to the id field in the monitoring-locations endpoint.</span>
+<span class="sd">        Monitoring location IDs are created by combining the agency code of the</span>
+<span class="sd">        agency responsible for the monitoring location (e.g. USGS) with the ID</span>
+<span class="sd">        number of the monitoring location (e.g. 02238500), separated by a hyphen</span>
+<span class="sd">        (e.g. USGS-02238500).</span>
+<span class="sd">    page_size : int, optional</span>
+<span class="sd">        The number of results to return per page, where one result represents a</span>
+<span class="sd">        monitoring location. The default is 1000.</span>
+<span class="sd">    parent_time_series_id: string, optional</span>
+<span class="sd">        The parent_time_series_id returns statistics tied to a particular datbase entry.</span>
+<span class="sd">    site_type_code: string, optional</span>
+<span class="sd">        Site type code query parameter. You can see a list of valid site type codes here:</span>
+<span class="sd">        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.</span>
+<span class="sd">        Example: &quot;GW&quot; (Groundwater site)</span>
+<span class="sd">    site_type_name: string, optional</span>
+<span class="sd">        Site type name query parameter. You can see a list of valid site type names here:</span>
+<span class="sd">        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.</span>
+<span class="sd">        Example: &quot;Well&quot;</span>
+<span class="sd">    parameter_code : string or list of strings, optional</span>
+<span class="sd">        Parameter codes are 5-digit codes used to identify the constituent</span>
+<span class="sd">        measured and the units of measure. A complete list of parameter codes</span>
+<span class="sd">        and associated groupings can be found at</span>
+<span class="sd">        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.</span>
+<span class="sd">    expand_percentiles : boolean</span>
+<span class="sd">        Percentile data for a given day of year or month of year by default</span>
+<span class="sd">        are returned from the service as lists of string values and percentile</span>
+<span class="sd">        thresholds in the &quot;values&quot; and &quot;percentiles&quot; columns, respectively.</span>
+<span class="sd">        When `expand_percentiles` is set to True (default), each value and</span>
+<span class="sd">        percentile threshold specific to a computation id are returned as</span>
+<span class="sd">        individual rows in the dataframe, with the value reported in the</span>
+<span class="sd">        &quot;value&quot; column and the corresponding percentile reported in a</span>
+<span class="sd">        &quot;percentile&quot; column (and the &quot;values&quot; and &quot;percentiles&quot; columns</span>
+<span class="sd">        are removed). Missing percentile values expressed as &#39;nan&#39; in the</span>
+<span class="sd">        list of string values are removed from the dataframe to save space.</span>
+<span class="sd">        Setting `expand_percentiles` to False retains the &quot;values&quot; and</span>
+<span class="sd">        &quot;percentiles&quot; columns produced by the service. Including</span>
+<span class="sd">        both &#39;percentiles&#39; and one or more other statistics (&#39;median&#39;,</span>
+<span class="sd">        &#39;minimum&#39;, &#39;maximum&#39;, or &#39;arithmetic_mean&#39;) in the `computation_type`</span>
+<span class="sd">        argument will return both the &quot;values&quot; column, containing the list</span>
+<span class="sd">        of percentile threshold values, and a &quot;value&quot; column, containing</span>
+<span class="sd">        the singular summary value for the other statistics.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; # Get monthly and yearly medians for streamflow at streams in Rhode Island</span>
+<span class="sd">        &gt;&gt;&gt; # from calendar year 2024.</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_stats_date_range(</span>
+<span class="sd">        ...     state_code=&quot;US:44&quot;, # State code for Rhode Island</span>
+<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
+<span class="sd">        ...     site_type_code=&quot;ST&quot;,</span>
+<span class="sd">        ...     start_date=&quot;2024-01-01&quot;,</span>
+<span class="sd">        ...     end_date=&quot;2024-12-31&quot;,</span>
+<span class="sd">        ...     computation_type=&quot;median&quot;</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Get monthly and yearly minimum and maximums for gage height at</span>
+<span class="sd">        &gt;&gt;&gt; # a monitoring location of interest</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_stats_date_range(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-05114000&quot;,</span>
+<span class="sd">        ...     parameter_code=&quot;00065&quot;,</span>
+<span class="sd">        ...     computation_type=[&quot;minimum&quot;, &quot;maximum&quot;]</span>
+<span class="sd">        ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;expand_percentiles&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="p">}</span>
+    
+    <span class="k">return</span> <span class="n">get_stats_data</span><span class="p">(</span>
+        <span class="n">args</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+        <span class="n">service</span><span class="o">=</span><span class="s2">&quot;observationIntervals&quot;</span><span class="p">,</span>
+        <span class="n">expand_percentiles</span><span class="o">=</span><span class="n">expand_percentiles</span>
+        <span class="p">)</span></div>
 
 
 </pre></div>
