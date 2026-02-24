@@ -1747,7 +1747,7 @@ def get_samples(
 
     return df, BaseMetadata(response)
 
-def get_por_stats(
+def get_stats_por(
         approval_status: Optional[str] = None,
         computation_type: Optional[Union[str, list[str]]] = None,
         country_code: Optional[Union[str, list[str]]] = None,
@@ -1828,9 +1828,18 @@ def get_por_stats(
         thresholds in the "values" and "percentiles" columns, respectively.
         When `expand_percentiles` is set to True (default), each value and
         percentile threshold specific to a computation id are returned as
-        individual rows in the dataframe. Missing percentile values expressed
-        as 'nan' in the list of string values are removed from the dataframe
-        to save space.
+        individual rows in the dataframe, with the value reported in the
+        "value" column and the corresponding percentile reported in a
+        "percentile" column (and the "values" and "percentiles" columns
+        are removed). Missing percentile values expressed as 'nan' in the
+        list of string values are removed from the dataframe to save space.
+        Setting `expand_percentiles` to False retains the "values" and
+        "percentiles" columns produced by the service. Including
+        both 'percentiles' and one or more other statistics ('median',
+        'minimum', 'maximum', or 'arithmetic_mean') in the `computation_type`
+        argument will return both the "values" column, containing the list
+        of percentile threshold values, and a "value" column, containing
+        the singular summary value for the other statistics.
 
     Examples
     --------
@@ -1838,7 +1847,7 @@ def get_por_stats(
 
         >>> # Get daily, monthly, and annual percentiles for streamflow at
         >>> # a monitoring location of interest
-        >>> df, md = dataretrieval.waterdata.get_por_stats(
+        >>> df, md = dataretrieval.waterdata.get_stats_por(
         ...     monitoring_location_id="USGS-05114000",
         ...     parameter_code="00060",
         ...     computation_type="percentile"
@@ -1847,7 +1856,7 @@ def get_por_stats(
         >>> # Get all daily and monthly statistics for the month of January
         >>> # over the entire period of record for streamflow and gage height
         >>> # at a monitoring location of interest
-        >>> df, md = dataretrieval.waterdata.get_por_stats(
+        >>> df, md = dataretrieval.waterdata.get_stats_por(
         ...     monitoring_location_id="USGS-05114000",
         ...     parameter_code=["00060", "00065"],
         ...     start_date="01-01",
@@ -1866,7 +1875,7 @@ def get_por_stats(
         expand_percentiles=expand_percentiles
         )
 
-def get_date_range_stats(
+def get_stats_date_range(
         approval_status: Optional[str] = None,
         computation_type: Optional[Union[str, list[str]]] = None,
         country_code: Optional[Union[str, list[str]]] = None,
@@ -1948,9 +1957,18 @@ def get_date_range_stats(
         thresholds in the "values" and "percentiles" columns, respectively.
         When `expand_percentiles` is set to True (default), each value and
         percentile threshold specific to a computation id are returned as
-        individual rows in the dataframe. Missing percentile values expressed
-        as 'nan' in the list of string values are removed from the dataframe
-        to save space.
+        individual rows in the dataframe, with the value reported in the
+        "value" column and the corresponding percentile reported in a
+        "percentile" column (and the "values" and "percentiles" columns
+        are removed). Missing percentile values expressed as 'nan' in the
+        list of string values are removed from the dataframe to save space.
+        Setting `expand_percentiles` to False retains the "values" and
+        "percentiles" columns produced by the service. Including
+        both 'percentiles' and one or more other statistics ('median',
+        'minimum', 'maximum', or 'arithmetic_mean') in the `computation_type`
+        argument will return both the "values" column, containing the list
+        of percentile threshold values, and a "value" column, containing
+        the singular summary value for the other statistics.
 
     Examples
     --------
@@ -1958,7 +1976,7 @@ def get_date_range_stats(
 
         >>> # Get monthly and yearly medians for streamflow at streams in Rhode Island
         >>> # from calendar year 2024.
-        >>> df, md = dataretrieval.waterdata.get_date_range_stats(
+        >>> df, md = dataretrieval.waterdata.get_stats_date_range(
         ...     state_code="US:44", # State code for Rhode Island
         ...     parameter_code="00060",
         ...     site_type_code="ST",
@@ -1969,7 +1987,7 @@ def get_date_range_stats(
 
         >>> # Get monthly and yearly minimum and maximums for gage height at
         >>> # a monitoring location of interest
-        >>> df, md = dataretrieval.waterdata.get_date_range_stats(
+        >>> df, md = dataretrieval.waterdata.get_stats_date_range(
         ...     monitoring_location_id="USGS-05114000",
         ...     parameter_code="00065",
         ...     computation_type=["minimum", "maximum"]

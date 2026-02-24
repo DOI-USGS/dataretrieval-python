@@ -17,8 +17,8 @@ from dataretrieval.waterdata import (
     get_field_measurements,
     get_time_series_metadata,
     get_reference_table,
-    get_por_stats,
-    get_date_range_stats
+    get_stats_por,
+    get_stats_date_range
 )
 
 def mock_request(requests_mock, request_url, file_path):
@@ -267,8 +267,8 @@ def test_get_reference_table_wrong_name():
     with pytest.raises(ValueError):
         get_reference_table("agency-cod")
 
-def test_get_por_stats():
-    df,_ = get_por_stats(
+def test_get_stats_por():
+    df,_ = get_stats_por(
         monitoring_location_id="USGS-12451000",
         parameter_code="00060",
         start_date="01-01",
@@ -279,8 +279,8 @@ def test_get_por_stats():
     assert df.loc[df['computation'] == "minimum", "percentile"].unique().tolist() == [0.0]
     assert df.loc[df['computation'] == "arithmetic_mean", "percentile"].isnull().all()
 
-def test_get_por_stats_expanded_false():
-    df,_ = get_por_stats(
+def test_get_stats_por_expanded_false():
+    df,_ = get_stats_por(
         monitoring_location_id="USGS-12451000",
         parameter_code="00060",
         start_date="01-01",
@@ -295,8 +295,8 @@ def test_get_por_stats_expanded_false():
     assert type(df['percentiles'][2]) is list
     assert df.loc[~df['percentiles'].isna(), "value"].isnull().all()
 
-def test_get_date_range_stats():
-    df,_ = get_date_range_stats(
+def test_get_stats_date_range():
+    df,_ = get_stats_date_range(
         monitoring_location_id="USGS-12451000",
         parameter_code="00060",
         start_date="2025-01-01",
