@@ -6,10 +6,12 @@
 
 ## Latest Announcements
 
-:mega: **01/16/2025:** `dataretrieval` now features the `waterdata` module,
+**02/24/2026** The `get_gwlevels`, `get_discharge_measurements` in the `nwis` module are deprecated and have been replaced with the `get_field_measurements` function in the `waterdata` module. The `get_pmcodes` function in the `nwis` module has been replaced with the `get_reference_table(collection='parameter_code)` function.
+
+:mega: **01/16/2026:** `dataretrieval` now features the `waterdata` module,
 which provides access to USGS's modernized [Water Data
 APIs](https://api.waterdata.usgs.gov/). The Water Data API endpoints include
-daily values, **instantaneous values**, field measurements, time series metadata,
+daily values, instantaneous values, field measurements, time series metadata, statistics,
 and discrete water quality data from the [Samples database](https://waterdata.usgs.gov/download-samples/#dataProfile=site). This new module replaces the `nwis` module, which provides access to the legacy [NWIS
 Water Services](https://waterservices.usgs.gov/). Take a look at the new [`waterdata` module demo notebook](demos/WaterData_demo.ipynb), which walks through an extended example using a majority of the available `waterdata` functions.
 
@@ -219,6 +221,7 @@ print(f"Found {len(flowlines)} upstream tributaries within 50km")
 - **Time series metadata**: Information about available data parameters
 - **Latest daily values**: Most recent daily statistical summary data
 - **Latest instantaneous values**: Most recent high-frequency continuous data
+- **Daily, monthly, and annual statistics**: Median, maximum, minimum, arithmetic mean, and percentile statistics
 - **Samples data**: Discrete USGS water quality data
 
 ### Legacy NWIS Services (Deprecated)
@@ -227,7 +230,6 @@ print(f"Found {len(flowlines)} upstream tributaries within 50km")
 - **Site info (site)**: Basic site information  
 - **Statistics (stat)**: Statistical summaries
 - **Discharge peaks (peaks)**: Annual peak discharge events
-- **Discharge measurements (measurements)**: Direct flow measurements
 
 ### Water Quality Portal
 - **Results**: Water quality analytical results from USGS, EPA, and other agencies
