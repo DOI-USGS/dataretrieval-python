@@ -4,13 +4,10 @@ import pytest
 from pandas import DataFrame
 
 from dataretrieval.nwis import (
-    get_discharge_measurements,
     get_discharge_peaks,
     get_dv,
-    get_gwlevels,
     get_info,
     get_iv,
-    get_pmcodes,
     get_ratings,
     get_record,
     get_stats,
@@ -202,45 +199,6 @@ def test_get_info(requests_mock):
     assert_metadata(requests_mock, request_url, md, site, [parameter_cd], format)
 
 
-def test_get_gwlevels(requests_mock):
-    """Tests get_gwlevels method correctly generates the request url and returns the result in a DataFrame."""
-    format = "rdb"
-    site = "434400121275801"
-    request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/gwlevels?format={}&begin_date=1851-01-01"
-        "&site_no={}".format(format, site)
-    )
-    response_file_path = "tests/data/waterdata_gwlevels.txt"
-    mock_request(requests_mock, request_url, response_file_path)
-    df, md = get_gwlevels(sites=site)
-    if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
-
-    assert df.size == 16
-    assert_metadata(requests_mock, request_url, md, site, None, format)
-
-
-@pytest.mark.parametrize("site_input_type_list", [True, False])
-def test_get_gwlevels_site_value_types(requests_mock, site_input_type_list):
-    """Tests get_gwlevels method for valid input types for the 'sites' parameter."""
-    _format = "rdb"
-    site = "434400121275801"
-    request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/gwlevels?format={}&begin_date=1851-01-01"
-        "&site_no={}".format(_format, site)
-    )
-    response_file_path = "tests/data/waterdata_gwlevels.txt"
-    mock_request(requests_mock, request_url, response_file_path)
-    if site_input_type_list:
-        sites = [site]
-    else:
-        sites = site
-    df, md = get_gwlevels(sites=sites)
-    if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
-    assert df.size == 16
-
-
 def test_get_discharge_peaks(requests_mock):
     """Tests get_discharge_peaks method correctly generates the request url and returns the result in a DataFrame"""
     format = "rdb"
@@ -283,89 +241,8 @@ def test_get_discharge_peaks_sites_value_types(requests_mock, site_input_type_li
     assert df.size == 240
 
 
-def test_get_discharge_measurements(requests_mock):
-    """Tests get_discharge_measurements method correctly generates the request url and returns the result in a
-    DataFrame"""
-    format = "rdb"
-    site = "01594440"
-    request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/measurements?site_no={}"
-        "&begin_date=2000-02-14&end_date=2020-02-15&format={}".format(site, format)
-    )
-    response_file_path = "tests/data/waterdata_measurements.txt"
-    mock_request(requests_mock, request_url, response_file_path)
-    df, md = get_discharge_measurements(
-        sites=[site], start="2000-02-14", end="2020-02-15"
-    )
-    if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
-
-    assert df.size == 2130
-    assert_metadata(requests_mock, request_url, md, site, None, format)
-
-
-@pytest.mark.parametrize("site_input_type_list", [True, False])
-def test_get_discharge_measurements_sites_value_types(
-    requests_mock, site_input_type_list
-):
-    """Tests get_discharge_measurements method for valid input types for 'sites' parameter"""
-    format = "rdb"
-    site = "01594440"
-    request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/measurements?site_no={}"
-        "&begin_date=2000-02-14&end_date=2020-02-15&format={}".format(site, format)
-    )
-    response_file_path = "tests/data/waterdata_measurements.txt"
-    mock_request(requests_mock, request_url, response_file_path)
-    if site_input_type_list:
-        sites = [site]
-    else:
-        sites = site
-    df, md = get_discharge_measurements(
-        sites=sites, start="2000-02-14", end="2020-02-15"
-    )
-    if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
-    assert df.size == 2130
-
-
-def test_get_pmcodes(requests_mock):
-    """Tests get_pmcodes method correctly generates the request url and returns the result in a
-    DataFrame"""
-    format = "rdb"
-    request_url = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?fmt=rdb&parm_nm_cd=%2500618%25"
-    response_file_path = "tests/data/waterdata_pmcodes.txt"
-    mock_request(requests_mock, request_url, response_file_path)
-    df, md = get_pmcodes(parameterCd="00618")
-    if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
-    assert df.size == 13
-    assert_metadata(requests_mock, request_url, md, None, None, format)
-
-
-@pytest.mark.parametrize("parameterCd_input_type_list", [True, False])
-def test_get_pmcodes_parameterCd_value_types(
-    requests_mock, parameterCd_input_type_list
-):
-    """Tests get_pmcodes method for valid input types for the 'parameterCd' parameter"""
-    _format = "rdb"
-    parameterCd = "00618"
-    request_url = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?fmt={}&parm_nm_cd=%25{}%25"
-    request_url = request_url.format(_format, parameterCd)
-    response_file_path = "tests/data/waterdata_pmcodes.txt"
-    mock_request(requests_mock, request_url, response_file_path)
-    if parameterCd_input_type_list:
-        parameterCd = [parameterCd]
-    else:
-        parameterCd = parameterCd
-    df, md = get_pmcodes(parameterCd=parameterCd)
-    if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
-    assert df.size == 13
-
-
 def test_get_water_use_national(requests_mock):
-    """Tests get_discharge_measurements method correctly generates the request url and returns the result in a
+    """Tests get_water_use method correctly generates the request url and returns the result in a
     DataFrame"""
     format = "rdb"
     request_url = (
@@ -448,7 +325,7 @@ def test_get_water_use_national_county_value_types(
 
 
 def test_get_water_use_allegheny(requests_mock):
-    """Tests get_discharge_measurements method correctly generates the request url and returns the result in a
+    """Tests get_water_use method correctly generates the request url and returns the result in a
     DataFrame"""
     format = "rdb"
     request_url = (
@@ -584,17 +461,6 @@ def assert_metadata(requests_mock, request_url, md, site, parameter_cd, format):
         site_info, _ = md.site_info
         if not isinstance(site_info, DataFrame):
             raise AssertionError(f"{type(site_info)} is not DataFrame base class type")
-    if parameter_cd is None:
-        assert md.variable_info is None
-    else:
-        for param in parameter_cd:
-            pcode_request_url = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?fmt=rdb&parm_nm_cd=%25{}%25".format(
-                param
-            )
-            with open("tests/data/waterdata_pmcodes.txt") as text:
-                requests_mock.get(pcode_request_url, text=text.read())
-        variable_info, _ = md.variable_info
-        assert type(variable_info) is DataFrame
 
     if format == "rdb":
         assert md.comment is not None
