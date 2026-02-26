@@ -38,7 +38,6 @@ ALLPARAMCODES_URL = "https://help.waterdata.usgs.gov/code/parameter_cd_query?"
 WATERSERVICES_SERVICES = ["dv", "iv", "site", "stat"]
 WATERDATA_SERVICES = [
     "peaks",
-    "water_use",
     "ratings",
 ]
 # NAD83
@@ -132,7 +131,7 @@ def get_qwdata(
     **kwargs,
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """
-    Get water sample data from qwdata service - deprecated, use `get_samples()`
+    This function is defunct, use `get_samples()`
     in the waterdata module.
 
     """
@@ -149,9 +148,8 @@ def get_discharge_measurements(
     **kwargs,
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """
-    Get discharge measurements from the waterdata service -
-    deprecated, use `get_field_measurements()` in the waterdata
-    module.
+    This function is defunct, use `get_field_measurements()`
+    in the waterdata module.
 
     """
     raise NameError(
@@ -239,9 +237,8 @@ def get_gwlevels(
     **kwargs,
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """
-    Queries the groundwater level service from waterservices -
-    deprecated, use `get_field_measurements()` in the waterdata
-    module.
+    This function is defunct, use `get_field_measurements()`
+    in the waterdata module.
 
     """
     raise NameError(
@@ -679,9 +676,9 @@ def get_pmcodes(
     partial: bool = True,
     ssl_check: bool = True,
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
-    """
-    Return a ``pandas.DataFrame`` containing all NWIS parameter codes -
-    deprecated, use `get_reference_table(collection="parameter-codes")`.
+    """    
+    This function is defunct, use
+    `get_reference_table(collection="parameter-codes")`.
 
     """
 
@@ -698,74 +695,12 @@ def get_water_use(
     ssl_check: bool = True,
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """
-    Water use data retrieval from USGS (NWIS).
-
-    Parameters
-    ----------
-    years: string or list of strings
-        List or comma delimited string of years.  Must be years ending in 0 or
-        5, or "ALL", which retrieves all available years, default is "ALL"
-    state: string, optional, default is None
-        full name, abbreviation or id
-    counties: string or list of strings
-        County IDs from county lookup or "ALL", default is "ALL"
-    categories: string or list of strings
-        List or comma delimited string of Two-letter category abbreviations,
-        default is "ALL"
-    ssl_check: bool, optional
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
-
-    Returns
-    -------
-    df: ``pandas.DataFrame``
-        Data from NWIS
-    md: :obj:`dataretrieval.utils.Metadata`
-        A custom metadata object
-
-    Examples
-    --------
-    .. doctest::
-
-        >>> # Get total population for RI from the NWIS water use service
-        >>> df, md = dataretrieval.nwis.get_water_use(
-        ...     years="2000", state="RI", categories="TP"
-        ... )
-
-        >>> # Get the national total water use for livestock in Bgal/day
-        >>> df, md = dataretrieval.nwis.get_water_use(years="2010", categories="L")
-
-        >>> # Get 2005 domestic water use for Apache County in Arizona
-        >>> df, md = dataretrieval.nwis.get_water_use(
-        ...     years="2005", state="Arizona", counties="001", categories="DO"
-        ... )
+    This function is defunct and currently has no replacement.
 
     """
-    if years:
-        if not isinstance(years, list) and not isinstance(years, str):
-            raise TypeError("years must be a string or a list of strings")
-
-    if counties:
-        if not isinstance(counties, list) and not isinstance(counties, str):
-            raise TypeError("counties must be a string or a list of strings")
-
-    if categories:
-        if not isinstance(categories, list) and not isinstance(categories, str):
-            raise TypeError("categories must be a string or a list of strings")
-
-    payload = {
-        "rdb_compression": "value",
-        "format": "rdb",
-        "wu_year": years,
-        "wu_category": categories,
-        "wu_county": counties,
-    }
-    url = WATERDATA_URL + "water_use"
-    if state is not None:
-        url = WATERDATA_BASE_URL + state + "/nwis/water_use"
-        payload.update({"wu_area": "county"})
-    response = query(url, payload, ssl_check=ssl_check)
-    return _read_rdb(response.text), NWIS_Metadata(response)
+    raise NameError(
+        "`nwis.get_water_use` is defunct."
+        )
 
 
 def get_ratings(

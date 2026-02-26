@@ -11,7 +11,6 @@ from dataretrieval.nwis import (
     get_ratings,
     get_record,
     get_stats,
-    get_water_use,
     query_waterdata,
     query_waterservices,
     what_sites,
@@ -239,106 +238,6 @@ def test_get_discharge_peaks_sites_value_types(requests_mock, site_input_type_li
         raise AssertionError(f"{type(df)} is not DataFrame base class type")
 
     assert df.size == 240
-
-
-def test_get_water_use_national(requests_mock):
-    """Tests get_water_use method correctly generates the request url and returns the result in a
-    DataFrame"""
-    format = "rdb"
-    request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format={}&wu_year=ALL"
-        "&wu_category=ALL&wu_county=ALL".format(format)
-    )
-    response_file_path = "tests/data/water_use_national.txt"
-    mock_request(requests_mock, request_url, response_file_path)
-    df, md = get_water_use()
-    if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
-    assert df.size == 225
-    assert_metadata(requests_mock, request_url, md, None, None, format)
-
-
-@pytest.mark.parametrize("year_input_type_list", [True, False])
-def test_get_water_use_national_year_value_types(requests_mock, year_input_type_list):
-    """Tests get_water_use method for valid input types for the 'years' parameter"""
-    _format = "rdb"
-    year = "ALL"
-    request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format={}&wu_year=ALL"
-        "&wu_category=ALL&wu_county=ALL".format(_format)
-    )
-    response_file_path = "tests/data/water_use_national.txt"
-    mock_request(requests_mock, request_url, response_file_path)
-    if year_input_type_list:
-        years = [year]
-    else:
-        years = year
-    df, md = get_water_use(years=years)
-    assert type(df) is DataFrame
-    assert df.size == 225
-
-
-@pytest.mark.parametrize("county_input_type_list", [True, False])
-def test_get_water_use_national_county_value_types(
-    requests_mock, county_input_type_list
-):
-    """Tests get_water_use method for valid input types for the 'counties' parameter"""
-    _format = "rdb"
-    county = "ALL"
-    request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format={}&wu_year=ALL"
-        "&wu_category=ALL&wu_county=ALL".format(_format)
-    )
-    response_file_path = "tests/data/water_use_national.txt"
-    mock_request(requests_mock, request_url, response_file_path)
-    if county_input_type_list:
-        counties = [county]
-    else:
-        counties = county
-    df, md = get_water_use(counties=counties)
-    if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
-    assert df.size == 225
-
-
-@pytest.mark.parametrize("category_input_type_list", [True, False])
-def test_get_water_use_national_county_value_types(
-    requests_mock, category_input_type_list
-):
-    """Tests get_water_use method for valid input types for the 'categories' parameter"""
-    _format = "rdb"
-    category = "ALL"
-    request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format={}&wu_year=ALL"
-        "&wu_category=ALL&wu_county=ALL".format(_format)
-    )
-    response_file_path = "tests/data/water_use_national.txt"
-    mock_request(requests_mock, request_url, response_file_path)
-    if category_input_type_list:
-        categories = [category]
-    else:
-        categories = category
-    df, md = get_water_use(categories=categories)
-    if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
-    assert df.size == 225
-
-
-def test_get_water_use_allegheny(requests_mock):
-    """Tests get_water_use method correctly generates the request url and returns the result in a
-    DataFrame"""
-    format = "rdb"
-    request_url = (
-        "https://nwis.waterdata.usgs.gov/PA/nwis/water_use?rdb_compression=value&format=rdb&wu_year=ALL"
-        "&wu_category=ALL&wu_county=003&wu_area=county"
-    )
-    response_file_path = "tests/data/water_use_allegheny.txt"
-    mock_request(requests_mock, request_url, response_file_path)
-    df, md = get_water_use(state="PA", counties="003")
-    if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
-    assert df.size == 1981
-    assert_metadata(requests_mock, request_url, md, None, None, format)
 
 
 def test_get_ratings_validation():
