@@ -843,7 +843,6 @@ def get_record(
         - 'dv' : daily mean data
         - 'site' : site description
         - 'peaks': discharge peaks
-        - 'water_use': get water use data
         - 'ratings': get rating table
         - 'stat': get statistics
     ssl_check: bool, optional
@@ -871,11 +870,6 @@ def get_record(
 
         >>> # Get discharge peaks for site 01585200
         >>> df = dataretrieval.nwis.get_record(sites="01585200", service="peaks")
-
-        >>> # Get water use data for livestock nationally in 2010
-        >>> df = dataretrieval.nwis.get_record(
-        ...     service="water_use", years="2010", categories="L"
-        ... )
 
         >>> # Get rating table for USGS streamgage 01585200
         >>> df = dataretrieval.nwis.get_record(sites="01585200", service="ratings")
@@ -929,10 +923,6 @@ def get_record(
             ssl_check=ssl_check,
             **kwargs,
         )
-        return df
-
-    elif service == "water_use":
-        df, _ = get_water_use(state=state, ssl_check=ssl_check, **kwargs)
         return df
 
     elif service == "ratings":
