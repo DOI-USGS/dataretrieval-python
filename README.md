@@ -6,7 +6,7 @@
 
 ## Latest Announcements
 
-**02/24/2026** The `get_gwlevels`, `get_discharge_measurements` in the `nwis` module are deprecated and have been replaced with the `get_field_measurements` function in the `waterdata` module. The `get_pmcodes` function in the `nwis` module has been replaced with the `get_reference_table(collection='parameter_code)` function.
+**02/24/2026** The `get_gwlevels`, `get_discharge_measurements` functions in the `nwis` module are defunct and have been replaced with the `get_field_measurements` function in the `waterdata` module. The `get_pmcodes` function in the `nwis` module has been replaced with the `get_reference_table(collection='parameter_code)` function. Finally, the `get_water_use` function in the `nwis` module is defunct with no current replacement.
 
 :mega: **01/16/2026:** `dataretrieval` now features the `waterdata` module,
 which provides access to USGS's modernized [Water Data
@@ -138,7 +138,7 @@ To log messages to a file, you can specify a filename in the
 logging.basicConfig(filename='waterdata.log', level=logging.INFO)
 ```
 
-### NWIS Legacy Services (Deprecated but still functional)
+### Legacy NWIS Services (Deprecated but still functional)
 
 The `nwis` module accesses legacy NWIS Water Services:
 
