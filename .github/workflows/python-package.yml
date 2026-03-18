@@ -5,7 +5,7 @@ name: Python package
 
 on:
   push:
-    branches: ['main']
+    branches: ['**']
   pull_request:
     branches: ['main']
 
@@ -15,6 +15,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871
+        with:
+          # On PRs, lint the head commit directly to avoid stale merge-ref confusion.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Set up Python 3.13
         uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3
         with:
