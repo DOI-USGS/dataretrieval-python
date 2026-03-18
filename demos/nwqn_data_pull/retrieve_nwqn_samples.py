@@ -1,15 +1,16 @@
 # Retrieve data from the National Water Quality Assessment Program (NAWQA)
 
-import lithops
 import math
 import os
-import pandas as pd
-
 from random import randint
 from time import sleep
+
+import lithops
+import pandas as pd
+
 from dataretrieval import nldi, nwis, wqp
 
-DESTINATION_BUCKET = os.environ.get('DESTINATION_BUCKET')
+DESTINATION_BUCKET = os.environ.get("DESTINATION_BUCKET")
 PROJECT = "National Water Quality Assessment Program (NAWQA)"
 # some sites are not found in NLDI, avoid them for now
 NOT_FOUND_SITES = [
@@ -38,17 +39,20 @@ def map_retrieval(site):
     # reformat for wqp
     site_list = [f"USGS-{site}" for site in site_list]
 
-    df, _ = wqp_get_results(siteid=site_list,
-                            project=PROJECT,
-                            )
+    df, _ = wqp_get_results(
+        siteid=site_list,
+        project=PROJECT,
+    )
 
     try:
         # merge sites
-        df['MonitoringLocationIdentifier'] = f"USGS-{site}"
-        df.astype(str).to_parquet(f's3://{DESTINATION_BUCKET}/nwqn-samples.parquet',
-                                  engine='pyarrow',
-                                  partition_cols=['MonitoringLocationIdentifier'],
-                                  compression='zstd')
+        df["MonitoringLocationIdentifier"] = f"USGS-{site}"
+        df.astype(str).to_parquet(
+            f"s3://{DESTINATION_BUCKET}/nwqn-samples.parquet",
+            engine="pyarrow",
+            partition_cols=["MonitoringLocationIdentifier"],
+            compression="zstd",
+        )
         # optionally, `return df` for further processing
 
     except Exception as e:
@@ -57,6 +61,7 @@ def map_retrieval(site):
 
 def exponential_backoff(max_retries=5, base_delay=1):
     """Exponential backoff decorator with configurable retries and base delay"""
+
     def decorator(func):
         def wrapper(*args, **kwargs):
             attempts = 0
@@ -67,10 +72,12 @@ def exponential_backoff(max_retries=5, base_delay=1):
                     attempts += 1
                     if attempts > max_retries:
                         raise e
-                    wait_time = base_delay * (2 ** attempts)
+                    wait_time = base_delay * (2**attempts)
                     print(f"Retrying in {wait_time} seconds...")
                     sleep(wait_time)
+
         return wrapper
+
     return decorator
 
 
@@ -116,17 +123,17 @@ def find_neighboring_sites(site, search_factor=0.1, fudge_factor=3.0):
             navigation_mode=mode,
             distance=search_distance,
             data_source="nwissite",
-            )
+        )
         for mode in ["UM", "DM"]  # upstream and downstream
     ]
 
     features = pd.concat(gdfs, ignore_index=True)
 
-    df, _ = nwis_get_info(sites=list(features.identifier.str.strip('USGS-')))
+    df, _ = nwis_get_info(sites=list(features.identifier.str.strip("USGS-")))
     # drop sites with disimilar different drainage areas
     df = df.where(
         (df["drain_area_va"] / drain_area_sq_mi) > search_factor,
-        ).dropna(how="all")
+    ).dropna(how="all")
 
     site_list = df["site_no"].to_list()
 
@@ -160,13 +167,13 @@ if __name__ == "__main__":
     project = "National Water Quality Assessment Program (NAWQA)"
 
     site_df = pd.read_csv(
-        'NWQN_sites.csv',
-        comment='#',
-        dtype={'SITE_QW_ID': str, 'SITE_FLOW_ID': str},
-        )
+        "NWQN_sites.csv",
+        comment="#",
+        dtype={"SITE_QW_ID": str, "SITE_FLOW_ID": str},
+    )
 
-    site_list = site_df['SITE_QW_ID'].to_list()
-    #site_list = site_list[:2]  # prune for testing
+    site_list = site_df["SITE_QW_ID"].to_list()
+    # site_list = site_list[:2]  # prune for testing
 
     fexec = lithops.FunctionExecutor(config_file="lithops.yaml")
     futures = fexec.map(map_retrieval, site_list)

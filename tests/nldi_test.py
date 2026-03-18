@@ -94,7 +94,9 @@ def test_features_by_feature_source_with_navigation(requests_mock):
     request_url = (
         f"{NLDI_API_BASE_URL}/WQP/USGS-054279485/navigation/UM/nwissite?distance=50"
     )
-    response_file_path = "tests/data/nldi_get_features_by_feature_source_with_nav_mode.json"
+    response_file_path = (
+        "tests/data/nldi_get_features_by_feature_source_with_nav_mode.json"
+    )
     mock_request_data_sources(requests_mock)
     mock_request(requests_mock, request_url, response_file_path)
 
@@ -207,7 +209,9 @@ def test_search_for_features_by_feature_source_with_navigation(requests_mock):
     request_url = (
         f"{NLDI_API_BASE_URL}/WQP/USGS-054279485/navigation/UM/nwissite?distance=50"
     )
-    response_file_path = "tests/data/nldi_get_features_by_feature_source_with_nav_mode.json"
+    response_file_path = (
+        "tests/data/nldi_get_features_by_feature_source_with_nav_mode.json"
+    )
     mock_request_data_sources(requests_mock)
     mock_request(requests_mock, request_url, response_file_path)
 

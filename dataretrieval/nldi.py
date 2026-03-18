@@ -281,7 +281,7 @@ def get_features(
             query_params = {}
 
     if lat:
-        err_msg = f"Error getting features for lat '{lat}'" f" and long '{long}'"
+        err_msg = f"Error getting features for lat '{lat}' and long '{long}'"
     elif feature_source:
         err_msg = (
             f"Error getting features for feature source '{feature_source}'"

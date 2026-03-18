@@ -4,10 +4,7 @@ import unittest.mock as mock
 
 import pytest
 
-from dataretrieval import (
-    utils,
-    nwis
-)
+from dataretrieval import nwis, utils
 
 
 class Test_query:

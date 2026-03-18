@@ -9,38 +9,38 @@ import sys
 from importlib.metadata import version
 
 # path to repository head
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath("../.."))
 
 # Project Information
-project = 'dataretrieval'
+project = "dataretrieval"
 release = version(project)
-version = '.'.join(release.split('.')[:2])
-author = 'Hodson et al'
+version = ".".join(release.split(".")[:2])
+author = "Hodson et al"
 
 # -- General configuration ------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
-    'nbsphinx',
-    'nbsphinx_link',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.doctest",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.todo",
+    "sphinx.ext.coverage",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.githubpages",
+    "nbsphinx",
+    "nbsphinx_link",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # suffix of source documents
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The main toctree document.
-main_doc = 'index'
+main_doc = "index"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -51,15 +51,15 @@ main_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = 'en'
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'default'
+pygments_style = "default"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
@@ -81,48 +81,48 @@ napoleon_use_rtype = True
 autosummary_generate = True
 automodapi_inheritance_diagram = False
 autodoc_default_options = {
-    'members': True,
-    'inherited-members': False,
-    'private-members': True,
+    "members": True,
+    "inherited-members": False,
+    "private-members": True,
 }
 
 # doctest
-doctest_global_setup = '''
+doctest_global_setup = """
 import dataretrieval
 import numpy as np
 import pandas as pd
 import matplotlib
-'''
+"""
 
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 
 html_theme_options = {
-    'logo_only': False,
-    'display_version': True,
+    "logo_only": False,
+    "display_version": True,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # -- Options for linkcheck -------------------------------------------
 
 # Links to not "check" because they are problematic for the link checker
 linkcheck_ignore = [
-    r'https://streamstats.usgs.gov/streamstatsservices/#/',
-    r'https://www.waterqualitydata.us/public_srsnames/',
-    r'https://waterqualitydata.us',
-    r'https://github.com/USGS-python/dataretrieval/tree/main/demos/hydroshare',
+    r"https://streamstats.usgs.gov/streamstatsservices/#/",
+    r"https://www.waterqualitydata.us/public_srsnames/",
+    r"https://waterqualitydata.us",
+    r"https://github.com/USGS-python/dataretrieval/tree/main/demos/hydroshare",
 ]
 
 # Some notebooks have warnings, which nbsphinx should ignore

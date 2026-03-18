@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 
 result_profiles_wqx3 = ["basicPhysChem", "fullPhysChem", "narrow"]
-result_profiles_legacy = ["biological", "narrowResult","resultPhysChem"] 
+result_profiles_legacy = ["biological", "narrowResult", "resultPhysChem"]
 activity_profiles_legacy = ["activityAll"]
 services_wqx3 = ["Activity", "Result", "Station"]
 services_legacy = [

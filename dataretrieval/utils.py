@@ -229,6 +229,5 @@ class NoSitesError(Exception):
 
     def __str__(self):
         return (
-            "No sites/data found using the selection criteria specified in url: "
-            "{url}"
+            "No sites/data found using the selection criteria specified in url: {url}"
         ).format(url=self.url)
