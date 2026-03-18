@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g28d7c6897 documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g5c9ac1f8d documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=f967d7a6"></script>
+      <script src="../_static/documentation_options.js?v=6f13279f"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -120,7 +120,8 @@ Monitoring location IDs are created by combining the agency code of
 the agency responsible for the monitoring location (e.g. USGS) with
 the ID number of the monitoring location (e.g. 02238500), separated
 by a hyphen (e.g. USGS-02238500).</p></li>
-<li><p><strong>field_visit_id</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A universally unique identifier (UUID) for the field visit. Multiple measurements
+<li><p><strong>field_visit_id</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A universally unique identifier (UUID) for the field visit.
+Multiple measurements
 may be made during a single field visit.</p></li>
 <li><p><strong>measurement_number</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Measurement number.</p></li>
 <li><p><strong>time</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – <p>The date an observation represents. You can query this field using
@@ -136,10 +137,11 @@ Examples:</p>
 <div><ul>
 <li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
-<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or “../2018-03-18T12:31:12Z”</p></li>
-<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for</p></li>
+<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</p></li>
 </ul>
-<p>the last 36 hours</p>
+<p>”../2018-03-18T12:31:12Z”
+* Duration objects: “P1M” for data from the past month or “PT36H” for
+the last 36 hours</p>
 </div></blockquote>
 </p></li>
 <li><p><strong>channel_name</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The channel name.</p></li>
@@ -170,10 +172,11 @@ Examples:</p>
 <div><ul>
 <li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
-<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or “../2018-03-18T12:31:12Z”</p></li>
-<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for the</p></li>
+<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</p></li>
 </ul>
-<p>last 36 hours</p>
+<p>”../2018-03-18T12:31:12Z”
+* Duration objects: “P1M” for data from the past month or “PT36H” for the
+last 36 hours</p>
 </div></blockquote>
 <p>Only features that have a last_modified that intersects the value of
 datetime are selected.</p>
@@ -305,8 +308,16 @@ Examples:</p>
 <div><ul>
 <li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
-<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or “../2018-03-18T12:31:12Z”</p></li>
-<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for the last 36 hours</p></li>
+<li><dl class="simple">
+<dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Duration objects: “P1M” for data from the past month or</dt><dd><p>”PT36H” for the last 36 hours</p>
+</dd>
+</dl>
+</li>
 </ul>
 </div></blockquote>
 <p>Only features that have a last_modified that intersects the value of
@@ -325,8 +336,16 @@ Examples:</p>
 <div><ul>
 <li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
-<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or “../2018-03-18T12:31:12Z”</p></li>
-<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for the last 36 hours</p></li>
+<li><dl class="simple">
+<dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Duration objects: “P1M” for data from the past month or</dt><dd><p>”PT36H” for the last 36 hours</p>
+</dd>
+</dl>
+</li>
 </ul>
 </div></blockquote>
 </p></li>
@@ -431,8 +450,16 @@ Examples:</p>
 <div><ul>
 <li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
-<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or “../2018-03-18T12:31:12Z”</p></li>
-<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for the last 36 hours</p></li>
+<li><dl class="simple">
+<dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Duration objects: “P1M” for data from the past month or</dt><dd><p>”PT36H” for the last 36 hours</p>
+</dd>
+</dl>
+</li>
 </ul>
 </div></blockquote>
 <p>Only features that have a last_modified that intersects the value of
@@ -455,8 +482,16 @@ Examples:</p>
 <div><ul>
 <li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
-<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or “../2018-03-18T12:31:12Z”</p></li>
-<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for the last 36 hours</p></li>
+<li><dl class="simple">
+<dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Duration objects: “P1M” for data from the past month or</dt><dd><p>”PT36H” for the last 36 hours</p>
+</dd>
+</dl>
+</li>
 </ul>
 </div></blockquote>
 </p></li>
@@ -560,17 +595,25 @@ Examples:</p>
 <div><ul>
 <li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
-<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or “../2018-03-18T12:31:12Z”</p></li>
-<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for the last 36 hours</p></li>
+<li><dl class="simple">
+<dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Duration objects: “P1M” for data from the past month or</dt><dd><p>”PT36H” for the last 36 hours</p>
+</dd>
+</dl>
+</li>
 </ul>
 </div></blockquote>
 </p></li>
 <li><p><strong>observing_procedure</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Water measurement or water-quality observing procedure descriptions.</p></li>
-<li><p><strong>vertical_datum</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The datum used to determine altitude and vertical position at the monitoring location.
-A list of codes is available.</p></li>
+<li><p><strong>vertical_datum</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The datum used to determine altitude and vertical position at the
+monitoring location.</p></li>
 <li><p><strong>measuring_agency</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The agency performing the measurement.</p></li>
-<li><p><strong>skip_geometry</strong> (<em>boolean</em><em>, </em><em>optional</em>) – This option can be used to skip response geometries for each feature. The returning
-object will be a data frame with no spatial information.
+<li><p><strong>skip_geometry</strong> (<em>boolean</em><em>, </em><em>optional</em>) – This option can be used to skip response geometries for each feature.
+The returning object will be a data frame with no spatial information.
 Note that the USGS Water Data APIs use camelCase “skipGeometry” in
 CQL2 queries.</p></li>
 <li><p><strong>time</strong> (<em>string</em><em>, </em><em>optional</em>) – <p>The date an observation represents. You can query this field using date-times
@@ -585,8 +628,16 @@ Examples:</p>
 <div><ul>
 <li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
-<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or “../2018-03-18T12:31:12Z”</p></li>
-<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for the last 36 hours</p></li>
+<li><dl class="simple">
+<dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Duration objects: “P1M” for data from the past month or</dt><dd><p>”PT36H” for the last 36 hours</p>
+</dd>
+</dl>
+</li>
 </ul>
 </div></blockquote>
 </p></li>
@@ -706,8 +757,16 @@ Examples:</p>
 <div><ul>
 <li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
-<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or “../2018-03-18T12:31:12Z”</p></li>
-<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for the last 36 hours</p></li>
+<li><dl class="simple">
+<dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Duration objects: “P1M” for data from the past month or</dt><dd><p>”PT36H” for the last 36 hours</p>
+</dd>
+</dl>
+</li>
 </ul>
 </div></blockquote>
 </p></li>
@@ -728,8 +787,16 @@ Examples:</p>
 <div><ul>
 <li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
-<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or “../2018-03-18T12:31:12Z”</p></li>
-<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for the last 36 hours</p></li>
+<li><dl class="simple">
+<dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Duration objects: “P1M” for data from the past month or</dt><dd><p>”PT36H” for the last 36 hours</p>
+</dd>
+</dl>
+</li>
 </ul>
 </div></blockquote>
 </p></li>
@@ -843,8 +910,16 @@ Examples:</p>
 <div><ul>
 <li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
-<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or “../2018-03-18T12:31:12Z”</p></li>
-<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for the last 36 hours</p></li>
+<li><dl class="simple">
+<dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Duration objects: “P1M” for data from the past month or</dt><dd><p>”PT36H” for the last 36 hours</p>
+</dd>
+</dl>
+</li>
 </ul>
 </div></blockquote>
 </p></li>
@@ -865,8 +940,16 @@ Examples:</p>
 <div><ul>
 <li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
-<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or “../2018-03-18T12:31:12Z”</p></li>
-<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for the last 36 hours</p></li>
+<li><dl class="simple">
+<dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Duration objects: “P1M” for data from the past month or</dt><dd><p>”PT36H” for the last 36 hours</p>
+</dd>
+</dl>
+</li>
 </ul>
 </div></blockquote>
 </p></li>
@@ -926,9 +1009,7 @@ the agency responsible for the monitoring location (e.g. USGS) with
 the ID number of the monitoring location (e.g. 02238500), separated
 by a hyphen (e.g. USGS-02238500).</p></li>
 <li><p><strong>agency_code</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The agency that is reporting the data. Agency codes are fixed values
-assigned by the National Water Information System (NWIS). A list of
-agency codes is available at:
-<a class="reference external" href="https://help.waterdata.usgs.gov/code/agency_cd_query?fmt=html">https://help.waterdata.usgs.gov/code/agency_cd_query?fmt=html</a>.</p></li>
+assigned by the National Water Information System (NWIS).</p></li>
 <li><p><strong>agency_name</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The name of the agency that is reporting the data.</p></li>
 <li><p><strong>monitoring_location_number</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Each monitoring location in the USGS data base has a unique 8- to
 15-digit identification number. Monitoring location numbers are
@@ -962,13 +1043,9 @@ the monitoring location is located. A <a class="reference external" href="https:
 </p></li>
 <li><p><strong>minor_civil_division_code</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Codes for primary governmental or administrative divisions of the county or
 county equivalent in which the monitoring location is located.</p></li>
-<li><p><strong>site_type_code</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – <p>A code describing the hydrologic setting of the monitoring location. A <a class="reference external" href="https://help.waterdata.usgs.gov/code/site_tp_query?fmt=html">list of
-codes</a> is available.
-Example: “US:15:001” (United States: Hawaii, Hawaii County)</p>
-</p></li>
-<li><p><strong>site_type</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – <p>A description of the hydrologic setting of the monitoring location. A <a class="reference external" href="https://help.waterdata.usgs.gov/code/site_tp_query?fmt=html">list of
-codes</a> is available.</p>
-</p></li>
+<li><p><strong>site_type_code</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A code describing the hydrologic setting of the monitoring location.
+Example: “US:15:001” (United States: Hawaii, Hawaii County)</p></li>
+<li><p><strong>site_type</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A description of the hydrologic setting of the monitoring location.</p></li>
 <li><p><strong>hydrologic_unit_code</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The United States is divided and sub-divided into successively smaller
 hydrologic units which are classified into four levels: regions,
 sub-regions, accounting units, and cataloging units. The hydrologic
@@ -987,42 +1064,22 @@ Datum.</p></li>
 entered as “.1”. Many altitudes are interpolated from the contours on
 topographic maps; accuracies determined in this way are generally
 entered as one-half of the contour interval.</p></li>
-<li><p><strong>altitude_method_code</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – <p>Codes representing the method used to measure altitude. A <a class="reference external" href="https://help.waterdata.usgs.gov/code/alt_meth_cd_query?fmt=html">list of
-codes</a> is available.</p>
-</p></li>
-<li><p><strong>altitude_method_name</strong> (<em>float</em><em>, </em><em>optional</em>) – <p>The name of the the method used to measure altitude. A <a class="reference external" href="https://help.waterdata.usgs.gov/code/alt_meth_cd_query?fmt=html">list of
-codes</a> is available.</p>
-</p></li>
-<li><p><strong>vertical_datum</strong> (<em>float</em><em>, </em><em>optional</em>) – <p>The datum used to determine altitude and vertical position at the
-monitoring location. A <a class="reference external" href="https://help.waterdata.usgs.gov/code/alt_datum_cd_query?fmt=html">list of
-codes</a> is available.</p>
-</p></li>
-<li><p><strong>vertical_datum_name</strong> (<em>float</em><em>, </em><em>optional</em>) – <p>The datum used to determine altitude and vertical position at the
-monitoring location. A <a class="reference external" href="https://help.waterdata.usgs.gov/code/alt_datum_cd_query?fmt=html">list of
-codes</a> is available.</p>
-</p></li>
-<li><p><strong>horizontal_positional_accuracy_code</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – <p>Indicates the accuracy of the latitude longitude values. A <a class="reference external" href="https://help.waterdata.usgs.gov/code/coord_acy_cd_query?fmt=html">list of
-codes</a> is available.</p>
-</p></li>
-<li><p><strong>horizontal_positional_accuracy</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – <p>Indicates the accuracy of the latitude longitude values. A <a class="reference external" href="https://help.waterdata.usgs.gov/code/coord_acy_cd_query?fmt=html">list of
-codes</a> is available.</p>
-</p></li>
-<li><p><strong>horizontal_position_method_code</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – <p>Indicates the method used to determine latitude longitude values. A <a class="reference external" href="https://help.waterdata.usgs.gov/code/coord_meth_cd_query?fmt=html">list of
-codes</a> is available.</p>
-</p></li>
-<li><p><strong>horizontal_position_method_name</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – <p>Indicates the method used to determine latitude longitude values. A <a class="reference external" href="https://help.waterdata.usgs.gov/code/coord_meth_cd_query?fmt=html">list of
-codes</a> is available.</p>
-</p></li>
-<li><p><strong>original_horizontal_datum</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – <p>Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System
+<li><p><strong>altitude_method_code</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Codes representing the method used to measure altitude.</p></li>
+<li><p><strong>altitude_method_name</strong> (<em>float</em><em>, </em><em>optional</em>) – The name of the the method used to measure altitude.</p></li>
+<li><p><strong>vertical_datum</strong> (<em>float</em><em>, </em><em>optional</em>) – The datum used to determine altitude and vertical position at the
+monitoring location.’</p></li>
+<li><p><strong>vertical_datum_name</strong> (<em>float</em><em>, </em><em>optional</em>) – The datum used to determine altitude and vertical position at the
+monitoring location.</p></li>
+<li><p><strong>horizontal_positional_accuracy_code</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Indicates the accuracy of the latitude longitude values.</p></li>
+<li><p><strong>horizontal_positional_accuracy</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Indicates the accuracy of the latitude longitude values.</p></li>
+<li><p><strong>horizontal_position_method_code</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Indicates the method used to determine latitude longitude values.</p></li>
+<li><p><strong>horizontal_position_method_name</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Indicates the method used to determine latitude longitude values.</p></li>
+<li><p><strong>original_horizontal_datum</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System
 1984. This field indicates the original datum used to determine
-coordinates before they were converted. A <a class="reference external" href="https://help.waterdata.usgs.gov/code/coord_datum_cd_query?fmt=html">list of
-codes</a> is available.</p>
-</p></li>
-<li><p><strong>original_horizontal_datum_name</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – <p>Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System
+coordinates before they were converted.</p></li>
+<li><p><strong>original_horizontal_datum_name</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System
 1984. This field indicates the original datum used to determine coordinates
-before they were converted. A <a class="reference external" href="https://help.waterdata.usgs.gov/code/coord_datum_cd_query?fmt=html">list of
-codes</a> is available.</p>
-</p></li>
+before they were converted.</p></li>
 <li><p><strong>drainage_area</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The area enclosed by a topographic divide from which direct surface runoff
 from precipitation normally drains by gravity into the stream above that
 point.</p></li>
@@ -1129,7 +1186,7 @@ CQL2 queries.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.waterdata.get_reference_table">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.waterdata.</span></span><span class="sig-name descname"><span class="pre">get_reference_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/waterdata/api.html#get_reference_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.waterdata.get_reference_table" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.waterdata.</span></span><span class="sig-name descname"><span class="pre">get_reference_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/waterdata/api.html#get_reference_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.waterdata.get_reference_table" title="Link to this definition"></a></dt>
 <dd><p>Get metadata reference tables for the USGS Water Data API.</p>
 <p>Reference tables provide the range of allowable values for parameter
 arguments in the waterdata module.</p>
@@ -1363,11 +1420,14 @@ number of the monitoring location (e.g. 02238500), separated by a hyphen
 (e.g. USGS-02238500).</p></li>
 <li><p><strong>page_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of results to return per page, where one result represents a
 monitoring location. The default is 1000.</p></li>
-<li><p><strong>parent_time_series_id</strong> (<em>string</em><em>, </em><em>optional</em>) – The parent_time_series_id returns statistics tied to a particular datbase entry.</p></li>
-<li><p><strong>site_type_code</strong> (<em>string</em><em>, </em><em>optional</em>) – Site type code query parameter. You can see a list of valid site type codes here:
+<li><p><strong>parent_time_series_id</strong> (<em>string</em><em>, </em><em>optional</em>) – The parent_time_series_id returns statistics tied to a
+particular datbase entry.</p></li>
+<li><p><strong>site_type_code</strong> (<em>string</em><em>, </em><em>optional</em>) – Site type code query parameter.
+You can see a list of valid site type codes here:
 <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items">https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items</a>.
 Example: “GW” (Groundwater site)</p></li>
-<li><p><strong>site_type_name</strong> (<em>string</em><em>, </em><em>optional</em>) – Site type name query parameter. You can see a list of valid site type names here:
+<li><p><strong>site_type_name</strong> (<em>string</em><em>, </em><em>optional</em>) – Site type name query parameter.
+You can see a list of valid site type names here:
 <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items">https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items</a>.
 Example: “Well”</p></li>
 <li><p><strong>parameter_code</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Parameter codes are 5-digit codes used to identify the constituent
@@ -1398,12 +1458,12 @@ the singular summary value for the other statistics.</p></li>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get monthly and yearly medians for streamflow at streams in Rhode Island</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># from calendar year 2024.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_date_range</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">state_code</span><span class="o">=</span><span class="s2">&quot;US:44&quot;</span><span class="p">,</span> <span class="c1"># State code for Rhode Island</span>
+<span class="gp">... </span>    <span class="n">state_code</span><span class="o">=</span><span class="s2">&quot;US:44&quot;</span><span class="p">,</span>  <span class="c1"># State code for Rhode Island</span>
 <span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">site_type_code</span><span class="o">=</span><span class="s2">&quot;ST&quot;</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;2024-01-01&quot;</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">end_date</span><span class="o">=</span><span class="s2">&quot;2024-12-31&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">computation_type</span><span class="o">=</span><span class="s2">&quot;median&quot;</span>
+<span class="gp">... </span>    <span class="n">computation_type</span><span class="o">=</span><span class="s2">&quot;median&quot;</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get monthly and yearly minimum and maximums for gage height at</span>
@@ -1411,7 +1471,7 @@ the singular summary value for the other statistics.</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_date_range</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00065&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">computation_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;minimum&quot;</span><span class="p">,</span> <span class="s2">&quot;maximum&quot;</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="n">computation_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;minimum&quot;</span><span class="p">,</span> <span class="s2">&quot;maximum&quot;</span><span class="p">],</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1454,13 +1514,13 @@ number of the monitoring location (e.g. 02238500), separated by a hyphen
 (e.g. USGS-02238500).</p></li>
 <li><p><strong>page_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of results to return per page, where one result represents a
 monitoring location. The default is 1000.</p></li>
-<li><p><strong>parent_time_series_id</strong> (<em>string</em><em>, </em><em>optional</em>) – The parent_time_series_id returns statistics tied to a particular datbase entry.</p></li>
-<li><p><strong>site_type_code</strong> (<em>string</em><em>, </em><em>optional</em>) – Site type code query parameter. You can see a list of valid site type codes here:
+<li><p><strong>parent_time_series_id</strong> (<em>string</em><em>, </em><em>optional</em>) – The parent_time_series_id returns statistics tied to a
+particular datbase entry.</p></li>
+<li><p><strong>site_type_code</strong> (<em>string</em><em>, </em><em>optional</em>) – Site type code query parameter.
+A list of valid site type codes is available at:
 <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items">https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items</a>.
 Example: “GW” (Groundwater site)</p></li>
-<li><p><strong>site_type_name</strong> (<em>string</em><em>, </em><em>optional</em>) – Site type name query parameter. You can see a list of valid site type names here:
-<a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items">https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items</a>.
-Example: “Well”</p></li>
+<li><p><strong>site_type_name</strong> (<em>string</em><em>, </em><em>optional</em>) – Site type name query parameter.</p></li>
 <li><p><strong>parameter_code</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Parameter codes are 5-digit codes used to identify the constituent
 measured and the units of measure. A complete list of parameter codes
 and associated groupings can be found at
@@ -1491,7 +1551,7 @@ the singular summary value for the other statistics.</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_por</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">computation_type</span><span class="o">=</span><span class="s2">&quot;percentile&quot;</span>
+<span class="gp">... </span>    <span class="n">computation_type</span><span class="o">=</span><span class="s2">&quot;percentile&quot;</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get all daily and monthly statistics for the month of January</span>
@@ -1501,7 +1561,7 @@ the singular summary value for the other statistics.</p></li>
 <span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="s2">&quot;00065&quot;</span><span class="p">],</span>
 <span class="gp">... </span>    <span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;01-01&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">end_date</span><span class="o">=</span><span class="s2">&quot;01-31&quot;</span>
+<span class="gp">... </span>    <span class="n">end_date</span><span class="o">=</span><span class="s2">&quot;01-31&quot;</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1592,8 +1652,16 @@ Examples:</p>
 <div><ul>
 <li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
-<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or “../2018-03-18T12:31:12Z”</p></li>
-<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for the last 36 hours</p></li>
+<li><dl class="simple">
+<dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Duration objects: “P1M” for data from the past month or</dt><dd><p>”PT36H” for the last 36 hours</p>
+</dd>
+</dl>
+</li>
 </ul>
 </div></blockquote>
 </p></li>
@@ -1603,8 +1671,9 @@ that, and as such there may be more recent observations within a time series
 than the time series end value reflects. Together with begin, this field
 represents the period of record of a time series. It is additionally used to
 determine whether a time series is “active”. We intend to update this in
-version v0 to use UTC with a time zone. You can query this field using date-times
-or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals
+version v0 to use UTC with a time zone.
+You can query this field using date-times or intervals,
+adhering to RFC 3339, or using ISO 8601 duration objects. Intervals
 may be bounded or half-bounded (double-dots at start or end). Only
 features that have a end that intersects the value of datetime are
 selected.
@@ -1613,8 +1682,16 @@ Examples:</p>
 <div><ul>
 <li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
-<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or “../2018-03-18T12:31:12Z”</p></li>
-<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for the last 36 hours</p></li>
+<li><dl class="simple">
+<dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Duration objects: “P1M” for data from the past month or</dt><dd><p>”PT36H” for the last 36 hours</p>
+</dd>
+</dl>
+</li>
 </ul>
 </div></blockquote>
 </p></li>
@@ -1672,8 +1749,8 @@ limit to the maximum allowable limit for the service.</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get timeseries metadata information from multiple sites</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># that begin after January 1, 1990.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_time_series_metadata</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">monitoring_location_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-09423350&quot;</span><span class="p">],</span>
-<span class="gp">... </span>    <span class="n">begin</span> <span class="o">=</span> <span class="s2">&quot;1990-01-01/..&quot;</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-09423350&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">begin</span><span class="o">=</span><span class="s2">&quot;1990-01-01/..&quot;</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>

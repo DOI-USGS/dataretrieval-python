@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g28d7c6897 documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g5c9ac1f8d documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=f967d7a6"></script>
+      <script src="../../_static/documentation_options.js?v=6f13279f"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -117,16 +117,16 @@
 <span class="sd">        &#39;0+10+42&#39;</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">listlike</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">listlike</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">listlike</span><span class="p">])</span>
 
-    <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">listlike</span><span class="p">)</span> <span class="o">==</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">listlike</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">listlike</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
 
-    <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">listlike</span><span class="p">)</span> <span class="o">==</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">indexes</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">Index</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">listlike</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">indexes</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">Index</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">listlike</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
 
-    <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">listlike</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">listlike</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">listlike</span></div>
 
 
@@ -172,6 +172,7 @@
             <span class="sa">f</span><span class="s2">&quot;Warning: </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> incomplete dates found, &quot;</span>
             <span class="o">+</span> <span class="s2">&quot;consider setting datetime_index to False.&quot;</span><span class="p">,</span>
             <span class="ne">UserWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">df</span></div>
@@ -330,8 +331,7 @@
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError.__str__">[docs]</a>
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="s2">&quot;No sites/data found using the selection criteria specified in url: &quot;</span>
-            <span class="s2">&quot;</span><span class="si">{url}</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;No sites/data found using the selection criteria specified in url: </span><span class="si">{url}</span><span class="s2">&quot;</span>
         <span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span></div>
 </div>
 

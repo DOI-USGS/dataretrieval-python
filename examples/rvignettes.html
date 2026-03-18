@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Python Equivalents to R Vignette Examples &mdash; dataretrieval 0.1.dev1+g28d7c6897 documentation</title>
+  <title>Python Equivalents to R Vignette Examples &mdash; dataretrieval 0.1.dev1+g5c9ac1f8d documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=f967d7a6"></script>
+      <script src="../_static/documentation_options.js?v=6f13279f"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -97,9 +97,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">nwis</span>
-<span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">waterdata</span>
-<span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">wqp</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">nwis</span><span class="p">,</span> <span class="n">waterdata</span><span class="p">,</span> <span class="n">wqp</span>
 </pre></div>
 </div>
 </div>
@@ -109,7 +107,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">library(dataRetrieval)</span>
 <span class="sd"># Choptank River near Greensboro, MD</span>
 <span class="sd">siteNumber &lt;- &quot;01491000&quot;</span>
@@ -126,19 +124,26 @@
 <span class="sd">                      activityStartDateLower=&quot;1980-01-01&quot;, activityStartDateUpper=&quot;2010-01-01&quot;)</span>
 
 <span class="sd">pCode &lt;- readNWISpCode(parameterCd)</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># Choptank River near Greensboro, MD</span>
-<span class="n">siteNumber</span> <span class="o">=</span> <span class="s1">&#39;01491000&#39;</span>
+<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;01491000&quot;</span>
 <span class="n">chop_tank_info</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">)</span>
-<span class="n">parameterCd</span> <span class="o">=</span> <span class="s1">&#39;00060&#39;</span>
+<span class="n">parameterCd</span> <span class="o">=</span> <span class="s2">&quot;00060&quot;</span>
 
 <span class="c1"># raw daily data</span>
-<span class="n">rawDailyData</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;1980-01-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2010-01-01&quot;</span><span class="p">)</span>
+<span class="n">rawDailyData</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span>
+    <span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;1980-01-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2010-01-01&quot;</span>
+<span class="p">)</span>
 
 <span class="c1"># sample data Nitrate:</span>
 <span class="n">parameterCd</span> <span class="o">=</span> <span class="s2">&quot;00618&quot;</span>
-<span class="n">samples_data</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;USGS-</span><span class="si">{</span><span class="n">siteNumber</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">usgsPCode</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span> <span class="n">activityStartDateLower</span><span class="o">=</span><span class="s2">&quot;1980-01-01&quot;</span><span class="p">,</span> <span class="n">activityStartDateUpper</span><span class="o">=</span><span class="s2">&quot;2010-01-01&quot;</span><span class="p">)</span>
+<span class="n">samples_data</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span>
+    <span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;USGS-</span><span class="si">{</span><span class="n">siteNumber</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">usgsPCode</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
+    <span class="n">activityStartDateLower</span><span class="o">=</span><span class="s2">&quot;1980-01-01&quot;</span><span class="p">,</span>
+    <span class="n">activityStartDateUpper</span><span class="o">=</span><span class="s2">&quot;2010-01-01&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="n">pCode</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_pmcodes</span><span class="p">(</span><span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">)</span>
 </pre></div>
@@ -148,12 +153,12 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">{r getSite, echo=TRUE, eval=FALSE}</span>
 <span class="sd">siteNumbers &lt;- c(&quot;01491000&quot;,&quot;01645000&quot;)</span>
 <span class="sd">siteINFO &lt;- readNWISsite(siteNumbers)</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="n">siteNumbers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;01491000&quot;</span><span class="p">,</span><span class="s2">&quot;01645000&quot;</span><span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">siteNumbers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;01491000&quot;</span><span class="p">,</span> <span class="s2">&quot;01645000&quot;</span><span class="p">]</span>
 <span class="n">siteINFO</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumbers</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -162,12 +167,12 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd"># Continuing from the previous example:</span>
 <span class="sd"># This pulls out just the daily, mean data:</span>
 <span class="sd">dailyDataAvailable &lt;- whatNWISdata(siteNumbers,</span>
 <span class="sd">                    service=&quot;dv&quot;, statCd=&quot;00003&quot;)</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="n">dailyDataAvailable</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumbers</span><span class="p">,</span> <span class="n">statCd</span><span class="o">=</span><span class="s2">&quot;00003&quot;</span><span class="p">)</span>
 </pre></div>
@@ -177,11 +182,11 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd"># Using defaults:</span>
 <span class="sd">parameterCd &lt;- &quot;00618&quot;</span>
 <span class="sd">parameterINFO &lt;- readNWISpCode(parameterCd)</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="n">pCode</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_pmcodes</span><span class="p">(</span><span class="n">parameterCd</span><span class="o">=</span><span class="s2">&quot;00618&quot;</span><span class="p">)</span>
 </pre></div>
@@ -191,7 +196,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd"># Choptank River near Greensboro, MD:</span>
 <span class="sd">siteNumber &lt;- &quot;01491000&quot;</span>
 <span class="sd">parameterCd &lt;- &quot;00060&quot;  # Discharge</span>
@@ -200,14 +205,16 @@
 
 <span class="sd">discharge &lt;- readNWISdv(siteNumber,</span>
 <span class="sd">                    parameterCd, startDate, endDate)</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="c1"># Choptank River near Greensboro, MD:</span>
 <span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;01491000&quot;</span>
 <span class="n">parameterCd</span> <span class="o">=</span> <span class="s2">&quot;00060&quot;</span>  <span class="c1"># Discharge</span>
 <span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;2009-10-01&quot;</span>
 <span class="n">endDate</span> <span class="o">=</span> <span class="s2">&quot;2012-09-30&quot;</span>
 
-<span class="n">discharge</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">)</span>
+<span class="n">discharge</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span>
+    <span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -215,7 +222,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">siteNumber &lt;- &quot;01491000&quot;</span>
 <span class="sd">parameterCd &lt;- c(&quot;00010&quot;,&quot;00060&quot;)  # Temperature and discharge</span>
 <span class="sd">statCd &lt;- c(&quot;00001&quot;,&quot;00003&quot;)  # Mean and maximum</span>
@@ -224,15 +231,20 @@
 
 <span class="sd">temperatureAndFlow &lt;- readNWISdv(siteNumber, parameterCd,</span>
 <span class="sd">        startDate, endDate, statCd=statCd)</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;01491000&quot;</span>
-<span class="n">parameterCd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;00010&quot;</span><span class="p">,</span><span class="s2">&quot;00060&quot;</span><span class="p">]</span>  <span class="c1"># Temperature and discharge</span>
-<span class="n">statCd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;00001&quot;</span><span class="p">,</span><span class="s2">&quot;00003&quot;</span><span class="p">]</span>  <span class="c1"># Mean and maximum</span>
+<span class="n">parameterCd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;00010&quot;</span><span class="p">,</span> <span class="s2">&quot;00060&quot;</span><span class="p">]</span>  <span class="c1"># Temperature and discharge</span>
+<span class="n">statCd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;00001&quot;</span><span class="p">,</span> <span class="s2">&quot;00003&quot;</span><span class="p">]</span>  <span class="c1"># Mean and maximum</span>
 <span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;2012-01-01&quot;</span>
 <span class="n">endDate</span> <span class="o">=</span> <span class="s2">&quot;2012-05-01&quot;</span>
 
-<span class="n">temperatureAndFlow</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
-                                     <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">,</span> <span class="n">statCd</span><span class="o">=</span><span class="n">statCd</span><span class="p">)</span>
+<span class="n">temperatureAndFlow</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span>
+    <span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span>
+    <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
+    <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span>
+    <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">,</span>
+    <span class="n">statCd</span><span class="o">=</span><span class="n">statCd</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -240,19 +252,20 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">parameterCd &lt;- &quot;00060&quot;  # Discharge</span>
 <span class="sd">startDate &lt;- &quot;2012-05-12&quot;</span>
 <span class="sd">endDate &lt;- &quot;2012-05-13&quot;</span>
 <span class="sd">dischargeUnit &lt;- readNWISuv(siteNumber, parameterCd,</span>
 <span class="sd">        startDate, endDate)</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;01491000&quot;</span>
 <span class="n">parameterCd</span> <span class="o">=</span> <span class="s2">&quot;00060&quot;</span>  <span class="c1"># Discharge</span>
 <span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;2012-05-12&quot;</span>
 <span class="n">endDate</span> <span class="o">=</span> <span class="s2">&quot;2012-05-13&quot;</span>
-<span class="n">dischargeUnit</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
-                            <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">)</span>
+<span class="n">dischargeUnit</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span>
+    <span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -260,20 +273,24 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd"># Dissolved Nitrate parameter codes:</span>
 <span class="sd">parameterCd &lt;- c(&quot;00618&quot;,&quot;71851&quot;)</span>
 <span class="sd">startDate &lt;- &quot;1985-10-01&quot;</span>
 <span class="sd">endDate &lt;- &quot;2012-09-30&quot;</span>
 <span class="sd">dfLong &lt;- read_USGS_samples(monitoringLocationIdentifier=sprintf(&quot;USGS-%s&quot;, siteNumber), usgsPCode=parameterCd,</span>
 <span class="sd">      activityStartDateLower=startDate, activityStartDateUpper=endDate)</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;01491000&quot;</span>
-<span class="n">parameterCd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;00618&quot;</span><span class="p">,</span><span class="s2">&quot;71851&quot;</span><span class="p">]</span>
+<span class="n">parameterCd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;00618&quot;</span><span class="p">,</span> <span class="s2">&quot;71851&quot;</span><span class="p">]</span>
 <span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;1985-10-01&quot;</span>
 <span class="n">endDate</span> <span class="o">=</span> <span class="s2">&quot;2012-09-30&quot;</span>
-<span class="n">dfLong</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;USGS-</span><span class="si">{</span><span class="n">siteNumber</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">usgsPCode</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
-                                      <span class="n">activityStartDateLower</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">activityStartDateUpper</span><span class="o">=</span><span class="n">endDate</span><span class="p">)</span>
+<span class="n">dfLong</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span>
+    <span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;USGS-</span><span class="si">{</span><span class="n">siteNumber</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">usgsPCode</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
+    <span class="n">activityStartDateLower</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span>
+    <span class="n">activityStartDateUpper</span><span class="o">=</span><span class="n">endDate</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -281,10 +298,10 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">siteNumber &lt;- &quot;434400121275801&quot;</span>
 <span class="sd">groundWater &lt;- readNWISgwl(siteNumber)</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;434400121275801&quot;</span>
 <span class="n">groundWater</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_gwlevels</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">)</span>
 </pre></div>
@@ -316,10 +333,10 @@ The above exception was the direct cause of the following exception:
 
 <span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
 <span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[10]</span><span class="ansi-green-fg">, line 6</span>
-<span class="ansi-green-fg">      1</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
+<span class="ansi-green-fg">      1</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
 <span class="ansi-green-fg">      2</span> <span class="ansi-yellow-fg">siteNumber &lt;- &#34;434400121275801&#34;</span>
 <span class="ansi-green-fg">      3</span> <span class="ansi-yellow-fg">groundWater &lt;- readNWISgwl(siteNumber)</span>
-<span class="ansi-green-fg">      4</span> <span class="ansi-yellow-fg">&#39;&#39;&#39;</span>
+<span class="ansi-green-fg">      4</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
 <span class="ansi-green-fg">      5</span> siteNumber = <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">434400121275801</span><span class="ansi-yellow-fg">&#34;</span>
 <span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">6</span> groundWater, md = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_gwlevels</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sites</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">siteNumber</span><span class="ansi-yellow-bg">)</span>
 
@@ -372,11 +389,11 @@ The above exception was the direct cause of the following exception:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">siteNumber &lt;- &#39;01594440&#39;</span>
 <span class="sd">peakData &lt;- readNWISpeak(siteNumber)</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="n">siteNumber</span> <span class="o">=</span> <span class="s1">&#39;01594440&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;01594440&quot;</span>
 <span class="n">peakData</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_discharge_peaks</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -385,11 +402,11 @@ The above exception was the direct cause of the following exception:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">ratingData &lt;- readNWISrating(siteNumber, &quot;base&quot;)</span>
 <span class="sd">attr(ratingData, &quot;RATING&quot;)</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="n">ratings_data</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="s1">&#39;01594440&#39;</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="s2">&quot;base&quot;</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">ratings_data</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="s2">&quot;01594440&quot;</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="s2">&quot;base&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -397,8 +414,8 @@ The above exception was the direct cause of the following exception:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;surfaceData &lt;- readNWISmeas(siteNumber)&#39;&#39;&#39;</span>
-<span class="n">siteNumber</span> <span class="o">=</span> <span class="s1">&#39;01594440&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;surfaceData &lt;- readNWISmeas(siteNumber)&quot;&quot;&quot;</span>
+<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;01594440&quot;</span>
 <span class="n">surface_data</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_discharge_measurements</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -407,13 +424,13 @@ The above exception was the direct cause of the following exception:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">allegheny &lt;- readNWISuse(stateCd = &quot;Pennsylvania&quot;,</span>
 <span class="sd">                         countyCd = &quot;Allegheny&quot;)</span>
 <span class="sd">national &lt;- readNWISuse(stateCd = NULL,</span>
 <span class="sd">                        countyCd = NULL,</span>
 <span class="sd">                        transform = TRUE)</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="n">allegheny</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_water_use</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s2">&quot;PA&quot;</span><span class="p">,</span> <span class="n">counties</span><span class="o">=</span><span class="s2">&quot;003&quot;</span><span class="p">)</span>
 
 <span class="n">national</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_water_use</span><span class="p">()</span>
@@ -424,12 +441,14 @@ The above exception was the direct cause of the following exception:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">discharge_stats &lt;- readNWISstat(siteNumbers=c(&quot;02319394&quot;),</span>
 <span class="sd">                   parameterCd=c(&quot;00060&quot;),</span>
 <span class="sd">                   statReportType=&quot;annual&quot;)</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="n">discharge_stats</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s1">&#39;02319394&#39;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="n">statReportType</span><span class="o">=</span><span class="s1">&#39;annual&#39;</span><span class="p">,</span> <span class="n">statTypeCd</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">discharge_stats</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span>
+    <span class="n">sites</span><span class="o">=</span><span class="s2">&quot;02319394&quot;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="n">statReportType</span><span class="o">=</span><span class="s2">&quot;annual&quot;</span><span class="p">,</span> <span class="n">statTypeCd</span><span class="o">=</span><span class="s2">&quot;all&quot;</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -504,7 +523,7 @@ The above exception was the direct cause of the following exception:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;site &lt;- whatWQPsamples(siteid=&quot;USGS-01594440&quot;)&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;site &lt;- whatWQPsamples(siteid=&quot;USGS-01594440&quot;)&quot;&quot;&quot;</span>
 
 <span class="n">site</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">wqp</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">siteid</span><span class="o">=</span><span class="s2">&quot;USGS-01594440&quot;</span><span class="p">)</span>
 </pre></div>
@@ -514,12 +533,12 @@ The above exception was the direct cause of the following exception:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">type &lt;- &quot;Stream&quot;</span>
 <span class="sd">sites &lt;- whatWQPmetrics(countycode=&quot;US:55:025&quot;,siteType=type)</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="n">streamType</span> <span class="o">=</span> <span class="s2">&quot;Stream&quot;</span>
-<span class="n">sites</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">wqp</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">countycode</span><span class="o">=</span><span class="s2">&quot;US:55:025&quot;</span><span class="p">,</span><span class="n">siteType</span><span class="o">=</span><span class="n">streamType</span><span class="p">)</span>
+<span class="n">sites</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">wqp</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">countycode</span><span class="o">=</span><span class="s2">&quot;US:55:025&quot;</span><span class="p">,</span> <span class="n">siteType</span><span class="o">=</span><span class="n">streamType</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

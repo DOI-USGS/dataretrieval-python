@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_iv() Examples &mdash; dataretrieval 0.1.dev1+g28d7c6897 documentation</title>
+  <title>USGS dataretrieval Python Package get_iv() Examples &mdash; dataretrieval 0.1.dev1+g5c9ac1f8d documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=f967d7a6"></script>
+      <script src="../_static/documentation_options.js?v=6f13279f"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -127,7 +127,7 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g28d7c6897)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g5c9ac1f8d)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
 Requirement already satisfied: pandas&lt;3.0.0,&gt;=2.0.0 in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas&lt;3.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.3)
@@ -141,9 +141,11 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">nwis</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+
 <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+
+<span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">nwis</span>
 </pre></div>
 </div>
 </div>
@@ -164,14 +166,16 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the parameters needed for the web service call</span>
-<span class="n">siteID</span> <span class="o">=</span> <span class="s1">&#39;10109000&#39;</span>  <span class="c1"># LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</span>
-<span class="n">parameterCode</span> <span class="o">=</span> <span class="s1">&#39;00060&#39;</span>  <span class="c1"># Discharge</span>
-<span class="n">startDate</span> <span class="o">=</span> <span class="s1">&#39;2021-09-01&#39;</span>
-<span class="n">endDate</span> <span class="o">=</span> <span class="s1">&#39;2021-09-30&#39;</span>
+<span class="n">siteID</span> <span class="o">=</span> <span class="s2">&quot;10109000&quot;</span>  <span class="c1"># LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</span>
+<span class="n">parameterCode</span> <span class="o">=</span> <span class="s2">&quot;00060&quot;</span>  <span class="c1"># Discharge</span>
+<span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;2021-09-01&quot;</span>
+<span class="n">endDate</span> <span class="o">=</span> <span class="s2">&quot;2021-09-30&quot;</span>
 
 <span class="c1"># Get the data</span>
-<span class="n">discharge</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteID</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; data values.&#39;</span><span class="p">)</span>
+<span class="n">discharge</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span>
+    <span class="n">sites</span><span class="o">=</span><span class="n">siteID</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -400,9 +404,9 @@ dtype: object
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">discharge</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="s1">&#39;00060&#39;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Streamflow (cfs)&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">discharge</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Date&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Streamflow (cfs)&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -427,7 +431,7 @@ Text(0, 0.5, &#39;Streamflow (cfs)&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The query URL used to retrieve the data from NWIS was: &#39;</span> <span class="o">+</span> <span class="n">discharge</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The query URL used to retrieve the data from NWIS was: &quot;</span> <span class="o">+</span> <span class="n">discharge</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -449,12 +453,14 @@ The query URL used to retrieve the data from NWIS was: https://nwis.waterservice
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_id</span> <span class="o">=</span> <span class="s1">&#39;05114000&#39;</span>
-<span class="n">startDate</span> <span class="o">=</span> <span class="s1">&#39;2014-10-10&#39;</span>
-<span class="n">endDate</span> <span class="o">=</span> <span class="s1">&#39;2014-10-10&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_id</span> <span class="o">=</span> <span class="s2">&quot;05114000&quot;</span>
+<span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;2014-10-10&quot;</span>
+<span class="n">endDate</span> <span class="o">=</span> <span class="s2">&quot;2014-10-10&quot;</span>
 
-<span class="n">discharge2</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site_id</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge2</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; data values.&#39;</span><span class="p">)</span>
+<span class="n">discharge2</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span>
+    <span class="n">sites</span><span class="o">=</span><span class="n">site_id</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge2</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">discharge2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -580,8 +586,10 @@ Retrieved 96 data values.
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">today</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">())</span>
-<span class="n">discharge_today</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site_id</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">today</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">today</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge_today</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; data values.&#39;</span><span class="p">)</span>
+<span class="n">discharge_today</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span>
+    <span class="n">sites</span><span class="o">=</span><span class="n">site_id</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">today</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">today</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge_today</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">discharge_today</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -591,7 +599,7 @@ Retrieved 96 data values.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 57 data values.
+Retrieved 73 data values.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -659,319 +667,44 @@ Retrieved 57 data values.
       <td>P, Ice</td>
     </tr>
     <tr>
-      <th>2026-03-18 06:15:00+00:00</th>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2026-03-18 22:00:00+00:00</th>
       <td>05114000</td>
       <td>-999999.0</td>
       <td>P, Ice</td>
     </tr>
     <tr>
-      <th>2026-03-18 06:30:00+00:00</th>
+      <th>2026-03-18 22:15:00+00:00</th>
       <td>05114000</td>
       <td>-999999.0</td>
       <td>P, Ice</td>
     </tr>
     <tr>
-      <th>2026-03-18 06:45:00+00:00</th>
+      <th>2026-03-18 22:30:00+00:00</th>
       <td>05114000</td>
       <td>-999999.0</td>
       <td>P, Ice</td>
     </tr>
     <tr>
-      <th>2026-03-18 07:00:00+00:00</th>
+      <th>2026-03-18 22:45:00+00:00</th>
       <td>05114000</td>
       <td>-999999.0</td>
       <td>P, Ice</td>
     </tr>
     <tr>
-      <th>2026-03-18 07:15:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 07:30:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 07:45:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 08:00:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 08:15:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 08:30:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 08:45:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 09:00:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 09:15:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 09:30:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 09:45:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 10:00:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 10:15:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 10:30:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 10:45:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 11:00:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 11:15:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 11:30:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 11:45:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 12:00:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 12:15:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 12:30:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 12:45:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 13:00:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 13:15:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 13:30:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 13:45:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 14:00:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 14:15:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 14:30:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 14:45:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 15:00:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 15:15:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 15:30:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 15:45:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 16:00:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 16:15:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 16:30:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 16:45:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 17:00:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 17:15:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 17:30:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 17:45:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 18:00:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 18:15:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 18:30:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 18:45:00+00:00</th>
-      <td>05114000</td>
-      <td>-999999.0</td>
-      <td>P, Ice</td>
-    </tr>
-    <tr>
-      <th>2026-03-18 19:00:00+00:00</th>
+      <th>2026-03-18 23:00:00+00:00</th>
       <td>05114000</td>
       <td>-999999.0</td>
       <td>P, Ice</td>
     </tr>
   </tbody>
 </table>
+<p>73 rows × 3 columns</p>
 </div></div>
 </div>
 </section>
@@ -982,9 +715,13 @@ Retrieved 57 data values.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">discharge_UTC</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site_id</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span>
-                            <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2014-10-10T00:00Z&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2014-10-10T23:59Z&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge_UTC</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; data values.&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">discharge_UTC</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span>
+    <span class="n">sites</span><span class="o">=</span><span class="n">site_id</span><span class="p">,</span>
+    <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span>
+    <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2014-10-10T00:00Z&quot;</span><span class="p">,</span>
+    <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2014-10-10T23:59Z&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge_UTC</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">discharge_UTC</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -1109,9 +846,13 @@ Retrieved 96 data values.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">discharge_multisite</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;04024430&#39;</span><span class="p">,</span> <span class="s1">&#39;04024000&#39;</span><span class="p">],</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span>
-                                  <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2013-10-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2013-10-01&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge_multisite</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; data values.&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">discharge_multisite</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span>
+    <span class="n">sites</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;04024430&quot;</span><span class="p">,</span> <span class="s2">&quot;04024000&quot;</span><span class="p">],</span>
+    <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span>
+    <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2013-10-01&quot;</span><span class="p">,</span>
+    <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2013-10-01&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge_multisite</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">discharge_multisite</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -1226,9 +967,14 @@ Retrieved 192 data values.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">discharge_multisite</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;04024430&#39;</span><span class="p">,</span> <span class="s1">&#39;04024000&#39;</span><span class="p">],</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span>
-                                  <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2013-10-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2013-10-01&#39;</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge_multisite</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; data values.&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">discharge_multisite</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span>
+    <span class="n">sites</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;04024430&quot;</span><span class="p">,</span> <span class="s2">&quot;04024000&quot;</span><span class="p">],</span>
+    <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span>
+    <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2013-10-01&quot;</span><span class="p">,</span>
+    <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2013-10-01&quot;</span><span class="p">,</span>
+    <span class="n">multi_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge_multisite</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">discharge_multisite</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>

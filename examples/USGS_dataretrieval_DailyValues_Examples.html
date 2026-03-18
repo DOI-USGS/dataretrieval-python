@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_dv() Examples &mdash; dataretrieval 0.1.dev1+g28d7c6897 documentation</title>
+  <title>USGS dataretrieval Python Package get_dv() Examples &mdash; dataretrieval 0.1.dev1+g5c9ac1f8d documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=f967d7a6"></script>
+      <script src="../_static/documentation_options.js?v=6f13279f"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -127,7 +127,7 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g28d7c6897)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g5c9ac1f8d)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
 Requirement already satisfied: pandas&lt;3.0.0,&gt;=2.0.0 in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas&lt;3.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.3)
@@ -141,8 +141,9 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">nwis</span>
-<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
+
+<span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">nwis</span>
 </pre></div>
 </div>
 </div>
@@ -164,13 +165,15 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the parameters needed to retrieve data</span>
-<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;10109000&quot;</span> <span class="c1"># LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</span>
-<span class="n">parameterCode</span> <span class="o">=</span> <span class="s2">&quot;00060&quot;</span> <span class="c1"># Discharge</span>
+<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;10109000&quot;</span>  <span class="c1"># LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</span>
+<span class="n">parameterCode</span> <span class="o">=</span> <span class="s2">&quot;00060&quot;</span>  <span class="c1"># Discharge</span>
 <span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;2020-10-01&quot;</span>
 <span class="n">endDate</span> <span class="o">=</span> <span class="s2">&quot;2021-09-30&quot;</span>
 
 <span class="c1"># Retrieve the data</span>
-<span class="n">dailyStreamflow</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">)</span>
+<span class="n">dailyStreamflow</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span>
+    <span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span>
+<span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dailyStreamflow</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -399,9 +402,9 @@ dtype: object
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">dailyStreamflow</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="s1">&#39;00060_Mean&#39;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Streamflow (cfs)&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">dailyStreamflow</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="s2">&quot;00060_Mean&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Date&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Streamflow (cfs)&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -426,7 +429,9 @@ Text(0, 0.5, &#39;Streamflow (cfs)&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The query URL used to retrieve the data from NWIS was: &quot;</span> <span class="o">+</span> <span class="n">dailyStreamflow</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;The query URL used to retrieve the data from NWIS was: &quot;</span> <span class="o">+</span> <span class="n">dailyStreamflow</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -450,9 +455,13 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteID</span> <span class="o">=</span> <span class="s2">&quot;04085427&quot;</span>
-<span class="n">dailyQAndT</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteID</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00010&quot;</span><span class="p">,</span> <span class="s2">&quot;00060&quot;</span><span class="p">],</span>
-                         <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">,</span>
-                         <span class="n">statCd</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00001&quot;</span><span class="p">,</span> <span class="s2">&quot;00003&quot;</span><span class="p">])</span>
+<span class="n">dailyQAndT</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span>
+    <span class="n">sites</span><span class="o">=</span><span class="n">siteID</span><span class="p">,</span>
+    <span class="n">parameterCd</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00010&quot;</span><span class="p">,</span> <span class="s2">&quot;00060&quot;</span><span class="p">],</span>
+    <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span>
+    <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">,</span>
+    <span class="n">statCd</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00001&quot;</span><span class="p">,</span> <span class="s2">&quot;00003&quot;</span><span class="p">],</span>
+<span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">dailyQAndT</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -619,8 +628,13 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dailyMultiSites</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;01491000&quot;</span><span class="p">,</span> <span class="s2">&quot;01645000&quot;</span><span class="p">],</span> <span class="n">parameterCd</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00010&quot;</span><span class="p">,</span> <span class="s2">&quot;00060&quot;</span><span class="p">],</span>
-                              <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2012-01-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2012-06-30&quot;</span><span class="p">,</span> <span class="n">statCd</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00001&quot;</span><span class="p">,</span><span class="s2">&quot;00003&quot;</span><span class="p">])</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dailyMultiSites</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span>
+    <span class="n">sites</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;01491000&quot;</span><span class="p">,</span> <span class="s2">&quot;01645000&quot;</span><span class="p">],</span>
+    <span class="n">parameterCd</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00010&quot;</span><span class="p">,</span> <span class="s2">&quot;00060&quot;</span><span class="p">],</span>
+    <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2012-01-01&quot;</span><span class="p">,</span>
+    <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2012-06-30&quot;</span><span class="p">,</span>
+    <span class="n">statCd</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00001&quot;</span><span class="p">,</span> <span class="s2">&quot;00003&quot;</span><span class="p">],</span>
+<span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">dailyMultiSites</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -779,9 +793,14 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dailyMultiSites</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;01491000&quot;</span><span class="p">,</span> <span class="s2">&quot;01645000&quot;</span><span class="p">],</span> <span class="n">parameterCd</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00010&quot;</span><span class="p">,</span> <span class="s2">&quot;00060&quot;</span><span class="p">],</span>
-                              <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2012-01-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2012-06-30&quot;</span><span class="p">,</span> <span class="n">statCd</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00001&quot;</span><span class="p">,</span><span class="s2">&quot;00003&quot;</span><span class="p">],</span>
-                              <span class="n">multi_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dailyMultiSites</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span>
+    <span class="n">sites</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;01491000&quot;</span><span class="p">,</span> <span class="s2">&quot;01645000&quot;</span><span class="p">],</span>
+    <span class="n">parameterCd</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00010&quot;</span><span class="p">,</span> <span class="s2">&quot;00060&quot;</span><span class="p">],</span>
+    <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2012-01-01&quot;</span><span class="p">,</span>
+    <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2012-06-30&quot;</span><span class="p">,</span>
+    <span class="n">statCd</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00001&quot;</span><span class="p">,</span> <span class="s2">&quot;00003&quot;</span><span class="p">],</span>
+    <span class="n">multi_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">dailyMultiSites</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -949,7 +968,9 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteID</span> <span class="o">=</span> <span class="s2">&quot;05212700&quot;</span>
-<span class="n">notActive</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteID</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2014-01-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2014-01-07&quot;</span><span class="p">)</span>
+<span class="n">notActive</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span>
+    <span class="n">sites</span><span class="o">=</span><span class="n">siteID</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2014-01-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2014-01-07&quot;</span>
+<span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">notActive</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>

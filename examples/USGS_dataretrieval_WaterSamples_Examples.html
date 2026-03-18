@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_samples() Examples &mdash; dataretrieval 0.1.dev1+g28d7c6897 documentation</title>
+  <title>USGS dataretrieval Python Package get_samples() Examples &mdash; dataretrieval 0.1.dev1+g5c9ac1f8d documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=f967d7a6"></script>
+      <script src="../_static/documentation_options.js?v=6f13279f"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -127,7 +127,7 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g28d7c6897)
+Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g5c9ac1f8d)
 Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
 Requirement already satisfied: pandas&lt;3.0.0,&gt;=2.0.0 in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas&lt;3.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.3)
@@ -141,8 +141,9 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">waterdata</span>
-<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
+
+<span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">waterdata</span>
 </pre></div>
 </div>
 </div>
@@ -184,9 +185,9 @@ Eastern-most longitude - Northern-most longitude Example: [-92.8,44.2,-88.9,46.0
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteID</span> <span class="o">=</span> <span class="s1">&#39;USGS-10109000&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteID</span> <span class="o">=</span> <span class="s2">&quot;USGS-10109000&quot;</span>
 <span class="n">wq_data</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="n">siteID</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved data for &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; samples.&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved data for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; samples.&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -561,7 +562,9 @@ Length: 181, dtype: object
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The query URL used to retrieve the data from USGS Samples was: &#39;</span> <span class="o">+</span> <span class="n">wq_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;The query URL used to retrieve the data from USGS Samples was: &quot;</span> <span class="o">+</span> <span class="n">wq_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -582,10 +585,12 @@ The query URL used to retrieve the data from USGS Samples was: https://api.water
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;USGS-04024430&#39;</span><span class="p">,</span> <span class="s1">&#39;USGS-04024000&#39;</span><span class="p">]</span>
-<span class="n">parameter_code</span> <span class="o">=</span> <span class="s1">&#39;00065&#39;</span>
-<span class="n">wq_multi_site</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span> <span class="n">usgsPCode</span><span class="o">=</span><span class="n">parameter_code</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved data for &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_multi_site</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; samples.&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;USGS-04024430&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-04024000&quot;</span><span class="p">]</span>
+<span class="n">parameter_code</span> <span class="o">=</span> <span class="s2">&quot;00065&quot;</span>
+<span class="n">wq_multi_site</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span>
+    <span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span> <span class="n">usgsPCode</span><span class="o">=</span><span class="n">parameter_code</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved data for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_multi_site</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; samples.&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">wq_multi_site</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -920,14 +925,17 @@ Retrieved data for 306 samples.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;USGS-04024430&#39;</span><span class="p">,</span> <span class="s1">&#39;USGS-04024000&#39;</span><span class="p">]</span>
-<span class="n">parameterCd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;34247&#39;</span><span class="p">,</span> <span class="s1">&#39;30234&#39;</span><span class="p">,</span> <span class="s1">&#39;32104&#39;</span><span class="p">,</span> <span class="s1">&#39;34220&#39;</span><span class="p">]</span>
-<span class="n">startDate</span> <span class="o">=</span> <span class="s1">&#39;2012-01-01&#39;</span>
-<span class="n">wq_data2</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span> <span class="n">usgsPCode</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
-                           <span class="n">activityStartDateLower</span><span class="o">=</span><span class="n">startDate</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved data for &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_multi_site</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39; samples.&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;USGS-04024430&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-04024000&quot;</span><span class="p">]</span>
+<span class="n">parameterCd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;34247&quot;</span><span class="p">,</span> <span class="s2">&quot;30234&quot;</span><span class="p">,</span> <span class="s2">&quot;32104&quot;</span><span class="p">,</span> <span class="s2">&quot;34220&quot;</span><span class="p">]</span>
+<span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;2012-01-01&quot;</span>
+<span class="n">wq_data2</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span>
+    <span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span>
+    <span class="n">usgsPCode</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
+    <span class="n">activityStartDateLower</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved data for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_multi_site</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; samples.&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">wq_data2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<br/></pre></div>
+</pre></div>
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -1261,14 +1269,21 @@ Retrieved data for 306 samples.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteID</span> <span class="o">=</span> <span class="s1">&#39;USGS-10109000&#39;</span>
-<span class="n">wq_data</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="n">siteID</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrieved data for &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_data</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39; sample results.&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteID</span> <span class="o">=</span> <span class="s2">&quot;USGS-10109000&quot;</span>
+<span class="n">wq_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="n">siteID</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved data for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_data</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot; sample results.&quot;</span><span class="p">)</span>
 
-<span class="n">wq_data</span><span class="p">[</span><span class="s2">&quot;characteristic_unit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">wq_data</span><span class="p">[</span><span class="s2">&quot;Result_Characteristic&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span> <span class="o">+</span> <span class="n">wq_data</span><span class="p">[</span><span class="s2">&quot;Result_MeasureUnit&quot;</span><span class="p">]</span>
-<span class="n">wq_data_wide</span> <span class="o">=</span> <span class="n">wq_data</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Location_Identifier&#39;</span><span class="p">,</span> <span class="s1">&#39;Activity_StartDate&#39;</span><span class="p">,</span> <span class="s1">&#39;Activity_StartTime&#39;</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="s2">&quot;characteristic_unit&quot;</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="s2">&quot;Result_Measure&quot;</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">)</span>
+<span class="n">wq_data</span><span class="p">[</span><span class="s2">&quot;characteristic_unit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">wq_data</span><span class="p">[</span><span class="s2">&quot;Result_Characteristic&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span> <span class="o">+</span> <span class="n">wq_data</span><span class="p">[</span><span class="s2">&quot;Result_MeasureUnit&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">wq_data_wide</span> <span class="o">=</span> <span class="n">wq_data</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
+    <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Location_Identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;Activity_StartDate&quot;</span><span class="p">,</span> <span class="s2">&quot;Activity_StartTime&quot;</span><span class="p">],</span>
+    <span class="n">columns</span><span class="o">=</span><span class="s2">&quot;characteristic_unit&quot;</span><span class="p">,</span>
+    <span class="n">values</span><span class="o">=</span><span class="s2">&quot;Result_Measure&quot;</span><span class="p">,</span>
+    <span class="n">aggfunc</span><span class="o">=</span><span class="s2">&quot;first&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">wq_data_wide</span><span class="p">)</span>
-<br/></pre></div>
+</pre></div>
 </div>
 </div>
 <div class="nboutput docutils container">

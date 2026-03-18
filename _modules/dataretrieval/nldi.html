@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g28d7c6897 documentation</title>
+  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g5c9ac1f8d documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=f967d7a6"></script>
+      <script src="../../_static/documentation_options.js?v=6f13279f"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -81,8 +81,8 @@
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;Install geopandas to use the NLDI module.&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;Install geopandas to use the NLDI module.&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">err</span>
 
 <span class="n">NLDI_API_BASE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://api.water.usgs.gov/nldi/linked-data&quot;</span>
 <span class="n">_AVAILABLE_DATA_SOURCES</span> <span class="o">=</span> <span class="kc">None</span>
@@ -365,7 +365,7 @@
             <span class="n">query_params</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="k">if</span> <span class="n">lat</span><span class="p">:</span>
-        <span class="n">err_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Error getting features for lat &#39;</span><span class="si">{</span><span class="n">lat</span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="sa">f</span><span class="s2">&quot; and long &#39;</span><span class="si">{</span><span class="n">long</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="n">err_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Error getting features for lat &#39;</span><span class="si">{</span><span class="n">lat</span><span class="si">}</span><span class="s2">&#39; and long &#39;</span><span class="si">{</span><span class="n">long</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
     <span class="k">elif</span> <span class="n">feature_source</span><span class="p">:</span>
         <span class="n">err_msg</span> <span class="o">=</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Error getting features for feature source &#39;</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
