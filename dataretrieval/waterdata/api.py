@@ -2005,3 +2005,168 @@ def get_stats_date_range(
         expand_percentiles=expand_percentiles
         )
 
+
+def get_channel(
+    monitoring_location_id: Optional[Union[str, List[str]]] = None,
+    field_visit_id: Optional[Union[str, List[str]]] = None,
+    measurement_number: Optional[Union[str, List[str]]] = None,
+    time: Optional[Union[str, List[str]]] = None,
+    channel_name: Optional[Union[str, List[str]]] = None,
+    channel_flow: Optional[Union[str, List[str]]] = None,
+    channel_flow_unit: Optional[Union[str, List[str]]] = None,
+    channel_width: Optional[Union[str, List[str]]] = None,
+    channel_width_unit: Optional[Union[str, List[str]]] = None,
+    channel_area: Optional[Union[str, List[str]]] = None,
+    channel_area_unit: Optional[Union[str, List[str]]] = None,
+    channel_velocity: Optional[Union[str, List[str]]] = None,
+    channel_velocity_unit: Optional[Union[str, List[str]]] = None,
+    channel_location_distance: Optional[Union[str, List[str]]] = None,
+    channel_location_distance_unit: Optional[Union[str, List[str]]] = None,
+    channel_stability: Optional[Union[str, List[str]]] = None,
+    channel_material: Optional[Union[str, List[str]]] = None,
+    channel_evenness: Optional[Union[str, List[str]]] = None,
+    horizontal_velocity_description: Optional[Union[str, List[str]]] = None,
+    vertical_velocity_description: Optional[Union[str, List[str]]] = None,
+    longitudinal_velocity_description: Optional[Union[str, List[str]]] = None,
+    measurement_type: Optional[Union[str, List[str]]] = None,
+    last_modified: Optional[Union[str, List[str]]] = None,
+    channel_measurement_type: Optional[Union[str, List[str]]] = None,
+    properties: Optional[List[str]] = None,
+    skip_geometry: Optional[bool] = None,
+    bbox: Optional[List[float]] = None,
+    limit: Optional[int] = None,
+    convert_type: bool = True,
+) -> Tuple[pd.DataFrame, BaseMetadata]:
+    """
+    Channel measurements taken as part of streamflow field measurements.
+
+    Parameters
+    ----------
+    monitoring_location_id : string or list of strings, optional
+        A unique identifier representing a single monitoring location. This
+        corresponds to the id field in the monitoring-locations endpoint.
+        Monitoring location IDs are created by combining the agency code of
+        the agency responsible for the monitoring location (e.g. USGS) with
+        the ID number of the monitoring location (e.g. 02238500), separated
+        by a hyphen (e.g. USGS-02238500).
+    field_visit_id : string or list of strings, optional
+        A universally unique identifier (UUID) for the field visit. Multiple measurements
+        may be made during a single field visit.
+    measurement_number : string or list of strings, optional
+        Measurement number.
+    time : string or list of strings, optional
+        The date an observation represents. You can query this field using
+        date-times or intervals, adhering to RFC 3339, or using ISO 8601
+        duration objects. Intervals may be bounded or half-bounded (double-dots
+        at start or end). Only features that have a time that intersects the
+        value of datetime are selected. If a feature has multiple temporal
+        properties, it is the decision of the server whether only a single
+        temporal property is used to determine the extent or all relevant
+        temporal properties.
+        Examples:
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for
+            the last 36 hours
+    channel_name : string or list of strings, optional
+        The channel name.
+    channel_flow : string or list of strings, optional
+        The units for channel discharge.
+    channel_width : string or list of strings, optional
+        The channel width.
+    channel_width_unit : string or list of strings, optional
+        The units for channel width.
+    channel_area : string or list of strings, optional
+        The channel area.
+    channel_area_unit : string or list of strings, optional
+        The units for channel area.
+    channel_velocity :  string or list of strings, optional
+        The mean channel velocity.
+    channel_velocity_unit : string or list of strings, optional
+        The units for channel velocity.
+    channel_location_distance : string or list of strings, optional
+        The channel location distance.
+    channel_location_distance_unit : string or list of strings, optional
+        The units for channel location distance.
+    channel_stability : string or list of strings, optional
+        The stability of the channel material.
+    channel_material : string or list of strings, optional
+        The channel material.
+    channel_evenness : string or list of strings, optional
+        The channel evenness from bank to bank.
+    horizontal_velocity_description : string or list of strings, optional
+        The horizontal velocity description.
+    vertical_velocity_description : string or list of strings, optional
+        The vertical velocity description.
+    longitudinal_velocity_description : string or list of strings, optional
+        The longitudinal velocity description.
+    measurement_type : string or list of strings, optional
+        The measurement type.
+        The last time a record was refreshed in our database. This may happen
+        due to regular operational processes and does not necessarily indicate
+        anything about the measurement has changed. You can query this field
+        using date-times or intervals, adhering to RFC 3339, or using ISO 8601
+        duration objects. Intervals may be bounded or half-bounded (double-dots
+        at start or end).
+        Examples:
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the
+            last 36 hours
+
+        Only features that have a last_modified that intersects the value of
+        datetime are selected.
+    skip_geometry : boolean, optional
+        This option can be used to skip response geometries for each feature.
+        The returning object will be a data frame with no spatial information.
+        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
+        CQL2 queries.
+    channel_measurement_type : string or list of strings, optional
+        The channel measurement type.
+    properties : string or list of strings, optional
+        A vector of requested columns to be returned from the query. Available
+        options are: geometry, channel_measurements_id, monitoring_location_id,
+        field_visit_id, measurement_number, time, channel_name, channel_flow,
+        channel_flow_unit, channel_width, channel_width_unit, channel_area,
+        channel_area_unit, channel_velocity, channel_velocity_unit,
+        channel_location_distance, channel_location_distance_unit, channel_stability,
+        channel_material, channel_evenness, horizontal_velocity_description,
+        vertical_velocity_description, longitudinal_velocity_description,
+        measurement_type, last_modified, channel_measurement_type. The default (NA) will
+        return all columns of the data.
+    convert_type : boolean, optional
+        If True, the function will convert the data to dates and qualifier to
+        string vector
+
+    Returns
+    -------
+    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
+        Formatted data returned from the API query.
+    md: :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object
+
+    Examples
+    --------
+    .. code::
+
+        >>> # Get channel data from a
+        >>> # single site from a single year
+        >>> df, md = dataretrieval.waterdata.get_channel(
+        ...     monitoring_location_id="USGS-02238500",
+        ... )
+    """
+    service = "channel-measurements"
+    output_id = "channel_measurements_id"
+
+    # Build argument dictionary, omitting None values
+    args = {
+        k: v
+        for k, v in locals().items()
+        if k not in {"service", "output_id"} and v is not None
+    }
+
+    return get_ogc_data(args, output_id, service)

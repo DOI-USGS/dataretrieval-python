@@ -18,7 +18,8 @@ from dataretrieval.waterdata import (
     get_time_series_metadata,
     get_reference_table,
     get_stats_por,
-    get_stats_date_range
+    get_stats_date_range,
+    get_channel
 )
 
 def mock_request(requests_mock, request_url, file_path):
@@ -310,3 +311,9 @@ def test_get_stats_date_range():
     assert "percentile" in df.columns
     assert df['interval_type'].isin(['month', 'calendar_year', 'water_year']).all()
 
+def test_get_channel():
+    df, _ = get_channel(monitoring_location_id="USGS-02238500")
+
+    assert df.shape[0] > 470
+    assert df.shape[1] == 27  # if geopandas installed, 21 columns if not
+    assert "channel_measurements_id" in df.columns
