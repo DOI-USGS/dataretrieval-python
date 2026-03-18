@@ -18,7 +18,8 @@ from dataretrieval.waterdata import (
     get_time_series_metadata,
     get_reference_table,
     get_stats_por,
-    get_stats_date_range
+    get_stats_date_range,
+    get_channel
 )
 
 def mock_request(requests_mock, request_url, file_path):
