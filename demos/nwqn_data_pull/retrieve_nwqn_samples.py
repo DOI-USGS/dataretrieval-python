@@ -129,7 +129,7 @@ def find_neighboring_sites(site, search_factor=0.1, fudge_factor=3.0):
 
     features = pd.concat(gdfs, ignore_index=True)
 
-    df, _ = nwis_get_info(sites=list(features.identifier.str.strip("USGS-")))
+    df, _ = nwis_get_info(sites=list(features.identifier.str.removeprefix("USGS-")))
     # drop sites with disimilar different drainage areas
     df = df.where(
         (df["drain_area_va"] / drain_area_sq_mi) > search_factor,

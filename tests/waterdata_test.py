@@ -8,6 +8,7 @@ if sys.version_info < (3, 10):
     pytest.skip("Skip entire module on Python < 3.10", allow_module_level=True)
 
 from dataretrieval.waterdata import (
+    get_channel,
     get_continuous,
     get_daily,
     get_field_measurements,
@@ -18,12 +19,7 @@ from dataretrieval.waterdata import (
     get_samples,
     get_stats_date_range,
     get_stats_por,
-<<<<<<< HEAD
-    get_stats_date_range,
-    get_channel
-=======
     get_time_series_metadata,
->>>>>>> dc5b10f (Ruff fixes)
 )
 from dataretrieval.waterdata.utils import _check_profiles
 
@@ -371,8 +367,8 @@ def test_get_stats_date_range():
     assert df.shape[1] == 20  # if geopandas installed, 21 columns if not
     assert "interval_type" in df.columns
     assert "percentile" in df.columns
-<<<<<<< HEAD
-    assert df['interval_type'].isin(['month', 'calendar_year', 'water_year']).all()
+    assert df["interval_type"].isin(["month", "calendar_year", "water_year"]).all()
+
 
 def test_get_channel():
     df, _ = get_channel(monitoring_location_id="USGS-02238500")
@@ -380,6 +376,3 @@ def test_get_channel():
     assert df.shape[0] > 470
     assert df.shape[1] == 27  # if geopandas installed, 21 columns if not
     assert "channel_measurements_id" in df.columns
-=======
-    assert df["interval_type"].isin(["month", "calendar_year", "water_year"]).all()
->>>>>>> dc5b10f (Ruff fixes)

@@ -318,9 +318,15 @@ def _error_body(resp: requests.Response):
     """
     status = resp.status_code
     if status == 429:
-        return "429: Too many requests made. Please obtain an API token or try again later."
+        return (
+            "429: Too many requests made. Please obtain an API token "
+            "or try again later."
+        )
     elif status == 403:
-        return "403: Query request denied. Possible reasons include query exceeding server limits."
+        return (
+            "403: Query request denied. Possible reasons include "
+            "query exceeding server limits."
+        )
     j_txt = resp.json()
     return (
         f"{status}: {j_txt.get('code', 'Unknown type')}. "
@@ -478,9 +484,11 @@ def _get_resp_data(resp: requests.Response, geopd: bool) -> pd.DataFrame:
     Parameters
     ----------
     resp : requests.Response
-        The HTTP response object expected to contain a JSON body with a "features" key.
+        The HTTP response object expected to contain a JSON body
+        with a "features" key.
     geopd : bool
-        Indicates whether geopandas is installed and should be used to handle geometries.
+        Indicates whether geopandas is installed and should be used to
+        handle geometries.
 
     Returns
     -------
@@ -524,7 +532,8 @@ def _walk_pages(
     client: Optional[requests.Session] = None,
 ) -> Tuple[pd.DataFrame, requests.Response]:
     """
-    Iterates through paginated API responses and aggregates the results into a single DataFrame.
+    Iterates through paginated API responses and aggregates the results
+    into a single DataFrame.
 
     Parameters
     ----------
@@ -553,7 +562,8 @@ def _walk_pages(
 
     if not geopd:
         logger.warning(
-            "Geopandas not installed. Geometries will be flattened into pandas DataFrames."
+            "Geopandas not installed. Geometries will be flattened "
+            "into pandas DataFrames."
         )
 
     # Get first response from client
@@ -607,7 +617,8 @@ def _deal_with_empty(
     Handles empty DataFrame results by returning a DataFrame with appropriate columns.
 
     If `return_list` is empty, determines the column names to use:
-    - If `properties` is not provided or contains only NaN values, retrieves the schema properties from the specified service.
+        - If `properties` is not provided or contains only NaN values,
+            retrieves schema properties from the specified service.
     - Otherwise, uses the provided `properties` list as column names.
 
     Parameters
@@ -622,7 +633,8 @@ def _deal_with_empty(
     Returns
     -------
     pd.DataFrame
-        The original DataFrame if not empty, otherwise an empty DataFrame with the appropriate columns.
+        The original DataFrame if not empty, otherwise an empty
+        DataFrame with the appropriate columns.
     """
     if return_list.empty:
         if not properties or all(pd.isna(properties)):
@@ -636,21 +648,24 @@ def _arrange_cols(
     df: pd.DataFrame, properties: Optional[List[str]], output_id: str
 ) -> pd.DataFrame:
     """
-    Rearranges and renames columns in a DataFrame based on provided properties and service's output id.
+    Rearranges and renames columns in a DataFrame based on provided
+    properties and the service output id.
 
     Parameters
     ----------
     df : pd.DataFrame
         The input DataFrame whose columns are to be rearranged or renamed.
     properties : Optional[List[str]]
-        A list of column names to possibly rename. If None or contains only NaN, the function will rename 'id' to output_id.
+        A list of column names to possibly rename. If None or contains
+        only NaN, the function renames 'id' to output_id.
     output_id : str
         The name to which the 'id' column should be renamed if applicable.
 
     Returns
     -------
     pd.DataFrame or gpd.GeoDataFrame
-        The DataFrame with columns rearranged and/or renamed according to the specified properties and output_id.
+        The DataFrame with columns rearranged and/or renamed according
+        to the specified properties and output_id.
     """
 
     # Rename id column to output_id
@@ -766,10 +781,12 @@ def get_ogc_data(
     args: Dict[str, Any], output_id: str, service: str
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """
-    Retrieves OGC (Open Geospatial Consortium) data from a specified water data endpoint and returns it as a pandas DataFrame with metadata.
+    Retrieves OGC (Open Geospatial Consortium) data from a specified
+    endpoint and returns it as a pandas DataFrame with metadata.
 
-    This function prepares request arguments, constructs API requests, handles pagination, processes the results,
-    and formats the output DataFrame according to the specified parameters.
+    This function prepares request arguments, constructs API requests,
+    handles pagination, processes the results, and formats output
+    according to the specified parameters.
 
     Parameters
     ----------
@@ -847,7 +864,8 @@ def _handle_stats_nesting(
 
     if not geopd:
         logger.info(
-            "Geopandas not installed. Geometries will be flattened into pandas DataFrames."
+            "Geopandas not installed. Geometries will be flattened "
+            "into pandas DataFrames."
         )
 
     # If geopandas not installed, return a pandas dataframe
@@ -957,21 +975,25 @@ def get_stats_data(
     client: Optional[requests.Session] = None,
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """
-    Retrieves statistical data from a specified water data endpoint and returns it as a pandas DataFrame with metadata.
+    Retrieves statistical data from a specified endpoint and returns it
+    as a pandas DataFrame with metadata.
 
-    This function prepares request arguments, constructs API requests, handles pagination, processes the results,
-    and formats the output DataFrame according to the specified parameters.
+    This function prepares request arguments, constructs API requests,
+    handles pagination, processes results, and formats output according
+    to the specified parameters.
 
     Parameters
     ----------
     args : Dict[str, Any]
         Dictionary of request arguments for the statistics service.
     service : str
-        The statistics service type (e.g., "observationNormals", "observationIntervals").
+        The statistics service type (for example,
+        "observationNormals" or "observationIntervals").
     expand_percentiles : bool
-        Determines whether the percentiles column is expanded so that each percentile gets its own row in the
-        returned dataframe. If set to True and user requests a computation_type other than percentiles, a
-        percentile column will be returned with the dataset.
+        Determines whether the percentiles column is expanded so that
+        each percentile gets its own row in the returned dataframe. If
+        True and user requests a computation_type other than
+        percentiles, a percentile column is still returned.
 
     Returns
     -------

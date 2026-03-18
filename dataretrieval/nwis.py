@@ -696,7 +696,8 @@ def get_info(ssl_check: bool = True, **kwargs) -> Tuple[pd.DataFrame, BaseMetada
                 "refer to https://waterdata.usgs.gov.nwis/qwdata and "
                 "https://doi-usgs.github.io/dataRetrieval/articles/Status.html "
                 "or email CompTools@usgs.gov."
-            )
+            ),
+            stacklevel=2,
         )
         # convert bool to string if necessary
         kwargs["seriesCatalogOutput"] = "True"

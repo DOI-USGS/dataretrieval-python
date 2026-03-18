@@ -47,15 +47,10 @@ doc = [
   "ipython",
   "ipykernel",
   "matplotlib",
-  "folium>=0.12",
-  "mapclassify"
+  "folium>=0.12"
 ]
 nldi = [
   'geopandas>=0.10'
-]
-
-waterdata = [
-  'geopandas>=0.10',
 ]
 
 [project.urls]
@@ -85,4 +80,7 @@ extend-select = [
   "W291", "W292", "W293", "W605",
   "E231", "E252", "E261", "E262", "E303", "E501",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"demos/*.ipynb" = ["E501", "W291"]
 

@@ -158,4 +158,4 @@ class Watershed:
 
     def __init__(self, rcode, xlocation, ylocation):
         """Init method that calls the :obj:`from_streamstats_json` method."""
-        self = get_watershed(rcode, xlocation, ylocation)
+        get_watershed(rcode, xlocation, ylocation)

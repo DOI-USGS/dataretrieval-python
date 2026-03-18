@@ -213,7 +213,10 @@ def get_usgs_samples(
     """
 
     warnings.warn(
-        "`get_usgs_samples` is deprecated and will be removed. Use `waterdata.get_samples` instead.",
+        (
+            "`get_usgs_samples` is deprecated and will be removed. "
+            "Use `waterdata.get_samples` instead."
+        ),
         DeprecationWarning,
         stacklevel=2,
     )

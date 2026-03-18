@@ -18,7 +18,10 @@ class Test_query:
         # all sites in MD
         sites, _ = nwis.what_sites(stateCd="MD")
         # expected error message
-        _msg = "Request URL too long. Modify your query to use fewer sites. API response reason: Request-URI Too Long"
+        _msg = (
+            "Request URL too long. Modify your query to use fewer sites. "
+            "API response reason: Request-URI Too Long"
+        )
         # raise error by trying to query them all, so URL is way too long
         with pytest.raises(ValueError, match=_msg):
             nwis.get_iv(sites=sites.site_no.values.tolist())
@@ -52,6 +55,6 @@ class Test_BaseMetadata:
 
         ## Test NotImplementedError parameters
         with pytest.raises(NotImplementedError):
-            md.site_info
+            _ = md.site_info
         with pytest.raises(NotImplementedError):
-            md.variable_info
+            _ = md.variable_info

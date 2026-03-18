@@ -101,7 +101,7 @@ def test_inc_date_01():
     with pytest.warns(UserWarning):
         df = get_record(site, "1980-01-01", "1990-01-01", service="gwlevels")
     # assert that there are indeed incomplete dates
-    assert any(pd.isna(df.index) == True)
+    assert pd.isna(df.index).any()
     # assert that the datetime index is there
     assert df.index.name == "datetime"
     # make call without defining a datetime index and check that it isn't there
@@ -121,7 +121,7 @@ def test_inc_date_02():
     with pytest.warns(UserWarning):
         df = get_record(site, "1900-01-01", "2013-01-01", service="gwlevels")
     # assert that there are indeed incomplete dates
-    assert any(pd.isna(df.index) == True)
+    assert pd.isna(df.index).any()
     # assert that the datetime index is there
     assert df.index.name == "datetime"
     # make call without defining a datetime index and check that it isn't there
@@ -141,7 +141,7 @@ def test_inc_date_03():
     with pytest.warns(UserWarning):
         df = get_record(site, "1975-01-01", "2000-01-01", service="gwlevels")
     # assert that there are indeed incomplete dates
-    assert any(pd.isna(df.index) == True)
+    assert pd.isna(df.index).any()
     # assert that the datetime index is there
     assert df.index.name == "datetime"
     # make call without defining a datetime index and check that it isn't there

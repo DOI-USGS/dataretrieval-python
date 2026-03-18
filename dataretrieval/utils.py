@@ -39,16 +39,16 @@ def to_str(listlike, delimiter=","):
         '0+10+42'
 
     """
-    if type(listlike) == list:
+    if isinstance(listlike, list):
         return delimiter.join([str(x) for x in listlike])
 
-    elif type(listlike) == pd.core.series.Series:
+    elif isinstance(listlike, pd.core.series.Series):
         return delimiter.join(listlike.tolist())
 
-    elif type(listlike) == pd.core.indexes.base.Index:
+    elif isinstance(listlike, pd.core.indexes.base.Index):
         return delimiter.join(listlike.tolist())
 
-    elif type(listlike) == str:
+    elif isinstance(listlike, str):
         return listlike
 
 
@@ -91,6 +91,7 @@ def format_datetime(df, date_field, time_field, tz_field):
             f"Warning: {count} incomplete dates found, "
             + "consider setting datetime_index to False.",
             UserWarning,
+            stacklevel=2,
         )
 
     return df
