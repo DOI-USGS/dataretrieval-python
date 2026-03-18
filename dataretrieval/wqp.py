@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 
 result_profiles_wqx3 = ["basicPhysChem", "fullPhysChem", "narrow"]
-result_profiles_legacy = ["biological", "narrowResult","resultPhysChem"] 
+result_profiles_legacy = ["biological", "narrowResult", "resultPhysChem"]
 activity_profiles_legacy = ["activityAll"]
 services_wqx3 = ["Activity", "Result", "Station"]
 services_legacy = [
@@ -712,7 +712,7 @@ def _warn_wqx3_use():
         "Support for the WQX3.0 profiles is experimental. "
         "Queries may be slow or fail intermitttently."
     )
-    warnings.warn(message, UserWarning)
+    warnings.warn(message, UserWarning, stacklevel=2)
 
 
 def _warn_legacy_use():
@@ -723,4 +723,4 @@ def _warn_legacy_use():
         "information on updated WQX3.0 profiles. Setting `legacy=False` "
         "will remove this warning."
     )
-    warnings.warn(message, DeprecationWarning)
+    warnings.warn(message, DeprecationWarning, stacklevel=2)

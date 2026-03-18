@@ -22,9 +22,9 @@ from dataretrieval.waterdata.types import (
 )
 from dataretrieval.waterdata.utils import (
     SAMPLES_URL,
+    _check_profiles,
     get_ogc_data,
     get_stats_data,
-    _check_profiles
 )
 
 # Set up logger for this module
@@ -129,8 +129,10 @@ def get_daily(
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
-            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or
+                "PT36H" for the last 36 hours
 
         Only features that have a last_modified that intersects the value of
         datetime are selected.
@@ -152,8 +154,10 @@ def get_daily(
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
-            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or
+                "PT36H" for the last 36 hours
 
     bbox : list of numbers, optional
         Only features that have a geometry that intersects the bounding box are
@@ -209,6 +213,7 @@ def get_daily(
 
     return get_ogc_data(args, output_id, service)
 
+
 def get_continuous(
     monitoring_location_id: Optional[Union[str, List[str]]] = None,
     parameter_code: Optional[Union[str, List[str]]] = None,
@@ -233,7 +238,7 @@ def get_continuous(
     with the continuous endpoint. If the "time" input is left blank, the service
     will return the most recent year of measurements. Users may request no more
     than three years of data with each function call.
-    
+
     Continuous data are collected at a high frequency, typically 15-minute
     intervals. Depending on the specific monitoring location, the data may be
     transmitted automatically via telemetry and be available on WDFN within
@@ -242,7 +247,7 @@ def get_continuous(
     transmit data.  Continuous data are described by parameter name and
     parameter code (pcode). These data might also be referred to as
     "instantaneous values" or "IV".
-    
+
     Parameters
     ----------
     monitoring_location_id : string or list of strings, optional
@@ -312,8 +317,10 @@ def get_continuous(
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
-            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or
+                "PT36H" for the last 36 hours
 
         Only features that have a last_modified that intersects the value of
         datetime are selected.
@@ -330,8 +337,10 @@ def get_continuous(
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
-            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or
+                "PT36H" for the last 36 hours
 
     limit : numeric, optional
         The optional limit parameter is used to control the subset of the
@@ -441,9 +450,7 @@ def get_monitoring_locations(
         by a hyphen (e.g. USGS-02238500).
     agency_code : string or list of strings, optional
         The agency that is reporting the data. Agency codes are fixed values
-        assigned by the National Water Information System (NWIS). A list of
-        agency codes is available at:
-        https://help.waterdata.usgs.gov/code/agency_cd_query?fmt=html.
+        assigned by the National Water Information System (NWIS).
     agency_name : string or list of strings, optional
         The name of the agency that is reporting the data.
     monitoring_location_number : string or list of strings, optional
@@ -481,22 +488,20 @@ def get_monitoring_locations(
         is located.
     county_code : string or list of strings, optional
         The code for the county or county equivalent (parish, borough, etc.) in which
-        the monitoring location is located. A `list of codes 
+        the monitoring location is located. A `list of codes
         <https://help.waterdata.usgs.gov/code/county_query?fmt=html>`_ is available.
     county_name : string or list of strings, optional
         The name of the county or county equivalent (parish, borough, etc.) in which
-        the monitoring location is located. A `list of codes 
+        the monitoring location is located. A `list of codes
         <https://help.waterdata.usgs.gov/code/county_query?fmt=html>`_ is available.
     minor_civil_division_code : string or list of strings, optional
         Codes for primary governmental or administrative divisions of the county or
         county equivalent in which the monitoring location is located.
     site_type_code : string or list of strings, optional
-        A code describing the hydrologic setting of the monitoring location. A `list of
-        codes <https://help.waterdata.usgs.gov/code/site_tp_query?fmt=html>`_ is available.
+        A code describing the hydrologic setting of the monitoring location.
         Example: "US:15:001" (United States: Hawaii, Hawaii County)
     site_type : string or list of strings, optional
-        A description of the hydrologic setting of the monitoring location. A `list of
-        codes <https://help.waterdata.usgs.gov/code/site_tp_query?fmt=html>`_ is available.
+        A description of the hydrologic setting of the monitoring location.
     hydrologic_unit_code : string or list of strings, optional
         The United States is divided and sub-divided into successively smaller
         hydrologic units which are classified into four levels: regions,
@@ -520,41 +525,31 @@ def get_monitoring_locations(
         topographic maps; accuracies determined in this way are generally
         entered as one-half of the contour interval.
     altitude_method_code : string or list of strings, optional
-        Codes representing the method used to measure altitude. A `list of
-        codes <https://help.waterdata.usgs.gov/code/alt_meth_cd_query?fmt=html>`_ is available.
+        Codes representing the method used to measure altitude.
     altitude_method_name : float, optional
-        The name of the the method used to measure altitude. A `list of
-        codes <https://help.waterdata.usgs.gov/code/alt_meth_cd_query?fmt=html>`_ is available.
+        The name of the the method used to measure altitude.
     vertical_datum : float, optional
         The datum used to determine altitude and vertical position at the
-        monitoring location. A `list of
-        codes <https://help.waterdata.usgs.gov/code/alt_datum_cd_query?fmt=html>`_ is available.
+        monitoring location.'
     vertical_datum_name : float, optional
         The datum used to determine altitude and vertical position at the
-        monitoring location. A `list of
-        codes <https://help.waterdata.usgs.gov/code/alt_datum_cd_query?fmt=html>`_ is available.
+        monitoring location.
     horizontal_positional_accuracy_code : string or list of strings, optional
-        Indicates the accuracy of the latitude longitude values. A `list of
-        codes <https://help.waterdata.usgs.gov/code/coord_acy_cd_query?fmt=html>`_ is available.
+        Indicates the accuracy of the latitude longitude values.
     horizontal_positional_accuracy : string or list of strings, optional
-        Indicates the accuracy of the latitude longitude values. A `list of
-        codes <https://help.waterdata.usgs.gov/code/coord_acy_cd_query?fmt=html>`_ is available.
+        Indicates the accuracy of the latitude longitude values.
     horizontal_position_method_code : string or list of strings, optional
-        Indicates the method used to determine latitude longitude values. A `list of
-        codes <https://help.waterdata.usgs.gov/code/coord_meth_cd_query?fmt=html>`_ is available.
+        Indicates the method used to determine latitude longitude values.
     horizontal_position_method_name : string or list of strings, optional
-        Indicates the method used to determine latitude longitude values. A `list of
-        codes <https://help.waterdata.usgs.gov/code/coord_meth_cd_query?fmt=html>`_ is available.
+        Indicates the method used to determine latitude longitude values.
     original_horizontal_datum : string or list of strings, optional
         Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System
         1984. This field indicates the original datum used to determine
-        coordinates before they were converted. A `list of
-        codes <https://help.waterdata.usgs.gov/code/coord_datum_cd_query?fmt=html>`_ is available.
+        coordinates before they were converted.
     original_horizontal_datum_name : string or list of strings, optional
         Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System
         1984. This field indicates the original datum used to determine coordinates
-        before they were converted. A `list of
-        codes <https://help.waterdata.usgs.gov/code/coord_datum_cd_query?fmt=html>`_ is available.
+        before they were converted.
     drainage_area : string or list of strings, optional
         The area enclosed by a topographic divide from which direct surface runoff
         from precipitation normally drains by gravity into the stream above that
@@ -795,8 +790,10 @@ def get_time_series_metadata(
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
-            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or
+                "PT36H" for the last 36 hours
 
     end_utc : string or list of strings, optional
         The datetime of the most recent observation in the time series. Data returned by
@@ -805,8 +802,9 @@ def get_time_series_metadata(
         than the time series end value reflects. Together with begin, this field
         represents the period of record of a time series. It is additionally used to
         determine whether a time series is "active". We intend to update this in
-        version v0 to use UTC with a time zone. You can query this field using date-times
-        or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals
+        version v0 to use UTC with a time zone.
+        You can query this field using date-times or intervals,
+        adhering to RFC 3339, or using ISO 8601 duration objects. Intervals
         may be bounded or half-bounded (double-dots at start or end). Only
         features that have a end that intersects the value of datetime are
         selected.
@@ -814,8 +812,10 @@ def get_time_series_metadata(
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
-            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or
+                "PT36H" for the last 36 hours
 
     unit_of_measure : string or list of strings, optional
         A human-readable description of the units of measurement associated
@@ -882,8 +882,8 @@ def get_time_series_metadata(
         >>> # Get timeseries metadata information from multiple sites
         >>> # that begin after January 1, 1990.
         >>> df, md = dataretrieval.waterdata.get_time_series_metadata(
-        ...     monitoring_location_id = ["USGS-05114000", "USGS-09423350"],
-        ...     begin = "1990-01-01/.."
+        ...     monitoring_location_id=["USGS-05114000", "USGS-09423350"],
+        ...     begin="1990-01-01/..",
         ... )
     """
     service = "time-series-metadata"
@@ -996,8 +996,10 @@ def get_latest_continuous(
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
-            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or
+                "PT36H" for the last 36 hours
 
     skip_geometry : boolean, optional
         This option can be used to skip response geometries for each feature.
@@ -1017,8 +1019,10 @@ def get_latest_continuous(
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
-            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or
+                "PT36H" for the last 36 hours
 
     bbox : list of numbers, optional
         Only features that have a geometry that intersects the bounding box are
@@ -1170,8 +1174,10 @@ def get_latest_daily(
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
-            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or
+                "PT36H" for the last 36 hours
 
     skip_geometry : boolean, optional
         This option can be used to skip response geometries for each feature.
@@ -1191,8 +1197,10 @@ def get_latest_daily(
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
-            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or
+                "PT36H" for the last 36 hours
 
     bbox : list of numbers, optional
         Only features that have a geometry that intersects the bounding box are
@@ -1243,6 +1251,7 @@ def get_latest_daily(
     }
 
     return get_ogc_data(args, output_id, service)
+
 
 def get_field_measurements(
     monitoring_location_id: Optional[Union[str, List[str]]] = None,
@@ -1329,19 +1338,21 @@ def get_field_measurements(
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
-            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or
+                "PT36H" for the last 36 hours
 
     observing_procedure : string or list of strings, optional
         Water measurement or water-quality observing procedure descriptions.
     vertical_datum : string or list of strings, optional
-        The datum used to determine altitude and vertical position at the monitoring location.
-        A list of codes is available.
+        The datum used to determine altitude and vertical position at the
+        monitoring location.
     measuring_agency : string or list of strings, optional
         The agency performing the measurement.
     skip_geometry : boolean, optional
-        This option can be used to skip response geometries for each feature. The returning
-        object will be a data frame with no spatial information.
+        This option can be used to skip response geometries for each feature.
+        The returning object will be a data frame with no spatial information.
         Note that the USGS Water Data APIs use camelCase "skipGeometry" in
         CQL2 queries.
     time : string, optional
@@ -1356,8 +1367,10 @@ def get_field_measurements(
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
-            * Duration objects: "P1M" for data from the past month or "PT36H" for the last 36 hours
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or
+                "PT36H" for the last 36 hours
 
     bbox : list of numbers, optional
         Only features that have a geometry that intersects the bounding box are
@@ -1418,14 +1431,14 @@ def get_field_measurements(
 
 
 def get_reference_table(
-        collection: str,
-        limit: Optional[int] = None,
-        query: Optional[dict] = {},
-        ) -> Tuple[pd.DataFrame, BaseMetadata]:
+    collection: str,
+    limit: Optional[int] = None,
+    query: Optional[dict] = None,
+) -> Tuple[pd.DataFrame, BaseMetadata]:
     """Get metadata reference tables for the USGS Water Data API.
 
     Reference tables provide the range of allowable values for parameter
-    arguments in the waterdata module. 
+    arguments in the waterdata module.
 
     Parameters
     ----------
@@ -1457,7 +1470,7 @@ def get_reference_table(
         medium code values).
     md: :obj:`dataretrieval.utils.Metadata`
         A custom metadata object including the URL request and query time.
-    
+
     Examples
     --------
     .. code::
@@ -1479,7 +1492,7 @@ def get_reference_table(
             f"Invalid code service: '{collection}'. "
             f"Valid options are: {valid_code_services}."
         )
-    
+
     # Give ID column the collection name with underscores
     if collection.endswith("s") and collection != "counties":
         output_id = f"{collection[:-1].replace('-', '_')}"
@@ -1487,12 +1500,9 @@ def get_reference_table(
         output_id = "county"
     else:
         output_id = f"{collection.replace('-', '_')}"
-    
-    return get_ogc_data(
-        args=query,
-        output_id=output_id,
-        service=collection
-        )
+
+    query_args = query or {}
+    return get_ogc_data(args=query_args, output_id=output_id, service=collection)
 
 
 def get_codes(code_service: CODE_SERVICES) -> pd.DataFrame:
@@ -1747,22 +1757,23 @@ def get_samples(
 
     return df, BaseMetadata(response)
 
+
 def get_stats_por(
-        approval_status: Optional[str] = None,
-        computation_type: Optional[Union[str, list[str]]] = None,
-        country_code: Optional[Union[str, list[str]]] = None,
-        state_code: Optional[Union[str, list[str]]] = None,
-        county_code: Optional[Union[str, list[str]]] = None,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
-        monitoring_location_id: Optional[Union[str, list[str]]] = None,
-        page_size: int = 1000,
-        parent_time_series_id: Optional[Union[str, list[str]]] = None,
-        site_type_code: Optional[Union[str, list[str]]] = None,
-        site_type_name: Optional[Union[str, list[str]]] = None,
-        parameter_code: Optional[Union[str, list[str]]] = None,
-        expand_percentiles: bool = True
-        ) -> Tuple[pd.DataFrame, BaseMetadata]:
+    approval_status: Optional[str] = None,
+    computation_type: Optional[Union[str, list[str]]] = None,
+    country_code: Optional[Union[str, list[str]]] = None,
+    state_code: Optional[Union[str, list[str]]] = None,
+    county_code: Optional[Union[str, list[str]]] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    monitoring_location_id: Optional[Union[str, list[str]]] = None,
+    page_size: int = 1000,
+    parent_time_series_id: Optional[Union[str, list[str]]] = None,
+    site_type_code: Optional[Union[str, list[str]]] = None,
+    site_type_name: Optional[Union[str, list[str]]] = None,
+    parameter_code: Optional[Union[str, list[str]]] = None,
+    expand_percentiles: bool = True,
+) -> Tuple[pd.DataFrame, BaseMetadata]:
     """Get day-of-year and month-of-year water data statistics from the
     USGS Water Data API.
     This service (called the "observationNormals" endpoint on api.waterdata.usgs.gov)
@@ -1771,7 +1782,7 @@ def get_stats_por(
     day of year and month of year. For more information regarding the calculation of
     statistics and other details, please visit the Statistics documentation page:
     https://waterdata.usgs.gov/statistics-documentation/.
-    
+
     Note: This API is under active beta development and subject to
     change. Improved handling of significant figures will be
     addressed in a future release.
@@ -1808,15 +1819,15 @@ def get_stats_por(
         The number of results to return per page, where one result represents a
         monitoring location. The default is 1000.
     parent_time_series_id: string, optional
-        The parent_time_series_id returns statistics tied to a particular datbase entry.
+        The parent_time_series_id returns statistics tied to a
+        particular datbase entry.
     site_type_code: string, optional
-        Site type code query parameter. You can see a list of valid site type codes here:
+        Site type code query parameter.
+        A list of valid site type codes is available at:
         https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
         Example: "GW" (Groundwater site)
     site_type_name: string, optional
-        Site type name query parameter. You can see a list of valid site type names here:
-        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
-        Example: "Well"
+        Site type name query parameter.
     parameter_code : string or list of strings, optional
         Parameter codes are 5-digit codes used to identify the constituent
         measured and the units of measure. A complete list of parameter codes
@@ -1850,7 +1861,7 @@ def get_stats_por(
         >>> df, md = dataretrieval.waterdata.get_stats_por(
         ...     monitoring_location_id="USGS-05114000",
         ...     parameter_code="00060",
-        ...     computation_type="percentile"
+        ...     computation_type="percentile",
         ... )
 
         >>> # Get all daily and monthly statistics for the month of January
@@ -1860,7 +1871,7 @@ def get_stats_por(
         ...     monitoring_location_id="USGS-05114000",
         ...     parameter_code=["00060", "00065"],
         ...     start_date="01-01",
-        ...     end_date="01-31"
+        ...     end_date="01-31",
         ... )
     """
     params = {
@@ -1868,29 +1879,28 @@ def get_stats_por(
         for k, v in locals().items()
         if k not in ["expand_percentiles"] and v is not None
     }
-    
+
     return get_stats_data(
-        args=params,
-        service="observationNormals",
-        expand_percentiles=expand_percentiles
-        )
+        args=params, service="observationNormals", expand_percentiles=expand_percentiles
+    )
+
 
 def get_stats_date_range(
-        approval_status: Optional[str] = None,
-        computation_type: Optional[Union[str, list[str]]] = None,
-        country_code: Optional[Union[str, list[str]]] = None,
-        state_code: Optional[Union[str, list[str]]] = None,
-        county_code: Optional[Union[str, list[str]]] = None,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
-        monitoring_location_id: Optional[Union[str, list[str]]] = None,
-        page_size: int = 1000,
-        parent_time_series_id: Optional[Union[str, list[str]]] = None,
-        site_type_code: Optional[Union[str, list[str]]] = None,
-        site_type_name: Optional[Union[str, list[str]]] = None,
-        parameter_code: Optional[Union[str, list[str]]] = None,
-        expand_percentiles: bool = True
-        ) -> Tuple[pd.DataFrame, BaseMetadata]:
+    approval_status: Optional[str] = None,
+    computation_type: Optional[Union[str, list[str]]] = None,
+    country_code: Optional[Union[str, list[str]]] = None,
+    state_code: Optional[Union[str, list[str]]] = None,
+    county_code: Optional[Union[str, list[str]]] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    monitoring_location_id: Optional[Union[str, list[str]]] = None,
+    page_size: int = 1000,
+    parent_time_series_id: Optional[Union[str, list[str]]] = None,
+    site_type_code: Optional[Union[str, list[str]]] = None,
+    site_type_name: Optional[Union[str, list[str]]] = None,
+    parameter_code: Optional[Union[str, list[str]]] = None,
+    expand_percentiles: bool = True,
+) -> Tuple[pd.DataFrame, BaseMetadata]:
     """Get monthly and annual water data statistics from the USGS Water Data API.
     This service (called the "observationIntervals" endpoint on api.waterdata.usgs.gov)
     provides endpoints for access to computations on the historical record regarding
@@ -1898,7 +1908,7 @@ def get_stats_date_range(
     month-year, and water/calendar years. For more information regarding the calculation
     of statistics and other details, please visit the Statistics documentation page:
     https://waterdata.usgs.gov/statistics-documentation/.
-    
+
     Note: This API is under active beta development and subject to
     change. Improved handling of significant figures will be
     addressed in a future release.
@@ -1937,13 +1947,16 @@ def get_stats_date_range(
         The number of results to return per page, where one result represents a
         monitoring location. The default is 1000.
     parent_time_series_id: string, optional
-        The parent_time_series_id returns statistics tied to a particular datbase entry.
+        The parent_time_series_id returns statistics tied to a
+        particular datbase entry.
     site_type_code: string, optional
-        Site type code query parameter. You can see a list of valid site type codes here:
+        Site type code query parameter.
+        You can see a list of valid site type codes here:
         https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
         Example: "GW" (Groundwater site)
     site_type_name: string, optional
-        Site type name query parameter. You can see a list of valid site type names here:
+        Site type name query parameter.
+        You can see a list of valid site type names here:
         https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
         Example: "Well"
     parameter_code : string or list of strings, optional
@@ -1977,12 +1990,12 @@ def get_stats_date_range(
         >>> # Get monthly and yearly medians for streamflow at streams in Rhode Island
         >>> # from calendar year 2024.
         >>> df, md = dataretrieval.waterdata.get_stats_date_range(
-        ...     state_code="US:44", # State code for Rhode Island
+        ...     state_code="US:44",  # State code for Rhode Island
         ...     parameter_code="00060",
         ...     site_type_code="ST",
         ...     start_date="2024-01-01",
         ...     end_date="2024-12-31",
-        ...     computation_type="median"
+        ...     computation_type="median",
         ... )
 
         >>> # Get monthly and yearly minimum and maximums for gage height at
@@ -1990,7 +2003,7 @@ def get_stats_date_range(
         >>> df, md = dataretrieval.waterdata.get_stats_date_range(
         ...     monitoring_location_id="USGS-05114000",
         ...     parameter_code="00065",
-        ...     computation_type=["minimum", "maximum"]
+        ...     computation_type=["minimum", "maximum"],
         ... )
     """
     params = {
@@ -1998,12 +2011,12 @@ def get_stats_date_range(
         for k, v in locals().items()
         if k not in ["expand_percentiles"] and v is not None
     }
-    
+
     return get_stats_data(
         args=params,
         service="observationIntervals",
-        expand_percentiles=expand_percentiles
-        )
+        expand_percentiles=expand_percentiles,
+    )
 
 
 def get_channel(
@@ -2050,7 +2063,8 @@ def get_channel(
         the ID number of the monitoring location (e.g. 02238500), separated
         by a hyphen (e.g. USGS-02238500).
     field_visit_id : string or list of strings, optional
-        A universally unique identifier (UUID) for the field visit. Multiple measurements
+        A universally unique identifier (UUID) for the field visit.
+        Multiple measurements
         may be made during a single field visit.
     measurement_number : string or list of strings, optional
         Measurement number.
@@ -2067,7 +2081,8 @@ def get_channel(
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+            "../2018-03-18T12:31:12Z"
             * Duration objects: "P1M" for data from the past month or "PT36H" for
             the last 36 hours
     channel_name : string or list of strings, optional
@@ -2114,7 +2129,8 @@ def get_channel(
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+            "../2018-03-18T12:31:12Z"
             * Duration objects: "P1M" for data from the past month or "PT36H" for the
             last 36 hours
 

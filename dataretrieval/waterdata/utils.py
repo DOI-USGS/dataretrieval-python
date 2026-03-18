@@ -9,9 +9,8 @@ import pandas as pd
 import requests
 from zoneinfo import ZoneInfo
 
-from dataretrieval.utils import BaseMetadata
 from dataretrieval import __version__
-
+from dataretrieval.utils import BaseMetadata
 from dataretrieval.waterdata.types import (
     PROFILE_LOOKUP,
     PROFILES,
@@ -319,12 +318,18 @@ def _error_body(resp: requests.Response):
     """
     status = resp.status_code
     if status == 429:
-        return "429: Too many requests made. Please obtain an API token or try again later."
+        return (
+            "429: Too many requests made. Please obtain an API token "
+            "or try again later."
+        )
     elif status == 403:
-        return "403: Query request denied. Possible reasons include query exceeding server limits."
+        return (
+            "403: Query request denied. Possible reasons include "
+            "query exceeding server limits."
+        )
     j_txt = resp.json()
     return (
-        f"{status}: {j_txt.get('code', 'Unknown type')}. " 
+        f"{status}: {j_txt.get('code', 'Unknown type')}. "
         f"{j_txt.get('description', 'No description provided')}."
     )
 
@@ -373,7 +378,7 @@ def _construct_api_requests(
     - The function sets appropriate headers for GET and POST requests.
     """
     service_url = f"{OGC_API_URL}/collections/{service}/items"
-    
+
     # Single parameters can only have one value
     single_params = {"datetime", "last_modified", "begin", "end", "time"}
 
@@ -388,12 +393,10 @@ def _construct_api_requests(
     params = {k: v for k, v in kwargs.items() if k not in post_params}
     # Set skipGeometry parameter (API expects camelCase)
     params["skipGeometry"] = skip_geometry
-    
+
     # If limit is none or greater than 50000, then set limit to max results. Otherwise,
     # use the limit
-    params["limit"] = (
-        50000 if limit is None or limit > 50000 else limit
-        )
+    params["limit"] = 50000 if limit is None or limit > 50000 else limit
 
     # Indicate if function needs to perform POST conversion
     POST = bool(post_params)
@@ -481,9 +484,11 @@ def _get_resp_data(resp: requests.Response, geopd: bool) -> pd.DataFrame:
     Parameters
     ----------
     resp : requests.Response
-        The HTTP response object expected to contain a JSON body with a "features" key.
+        The HTTP response object expected to contain a JSON body
+        with a "features" key.
     geopd : bool
-        Indicates whether geopandas is installed and should be used to handle geometries.
+        Indicates whether geopandas is installed and should be used to
+        handle geometries.
 
     Returns
     -------
@@ -527,7 +532,8 @@ def _walk_pages(
     client: Optional[requests.Session] = None,
 ) -> Tuple[pd.DataFrame, requests.Response]:
     """
-    Iterates through paginated API responses and aggregates the results into a single DataFrame.
+    Iterates through paginated API responses and aggregates the results
+    into a single DataFrame.
 
     Parameters
     ----------
@@ -556,7 +562,8 @@ def _walk_pages(
 
     if not geopd:
         logger.warning(
-            "Geopandas not installed. Geometries will be flattened into pandas DataFrames."
+            "Geopandas not installed. Geometries will be flattened "
+            "into pandas DataFrames."
         )
 
     # Get first response from client
@@ -586,14 +593,16 @@ def _walk_pages(
                     curr_url,
                     headers=headers,
                     data=content if method == "POST" else None,
-                    )
+                )
                 df1 = _get_resp_data(resp, geopd=geopd)
                 dfs = pd.concat([dfs, df1], ignore_index=True)
                 curr_url = _next_req_url(resp)
             except Exception:
                 error_text = _error_body(resp)
                 logger.error("Request incomplete. %s", error_text)
-                logger.warning("Request failed for URL: %s. Data download interrupted.", curr_url)
+                logger.warning(
+                    "Request failed for URL: %s. Data download interrupted.", curr_url
+                )
                 curr_url = None
         return dfs, initial_response
     finally:
@@ -608,7 +617,8 @@ def _deal_with_empty(
     Handles empty DataFrame results by returning a DataFrame with appropriate columns.
 
     If `return_list` is empty, determines the column names to use:
-    - If `properties` is not provided or contains only NaN values, retrieves the schema properties from the specified service.
+        - If `properties` is not provided or contains only NaN values,
+            retrieves schema properties from the specified service.
     - Otherwise, uses the provided `properties` list as column names.
 
     Parameters
@@ -623,7 +633,8 @@ def _deal_with_empty(
     Returns
     -------
     pd.DataFrame
-        The original DataFrame if not empty, otherwise an empty DataFrame with the appropriate columns.
+        The original DataFrame if not empty, otherwise an empty
+        DataFrame with the appropriate columns.
     """
     if return_list.empty:
         if not properties or all(pd.isna(properties)):
@@ -637,21 +648,24 @@ def _arrange_cols(
     df: pd.DataFrame, properties: Optional[List[str]], output_id: str
 ) -> pd.DataFrame:
     """
-    Rearranges and renames columns in a DataFrame based on provided properties and service's output id.
+    Rearranges and renames columns in a DataFrame based on provided
+    properties and the service output id.
 
     Parameters
     ----------
     df : pd.DataFrame
         The input DataFrame whose columns are to be rearranged or renamed.
     properties : Optional[List[str]]
-        A list of column names to possibly rename. If None or contains only NaN, the function will rename 'id' to output_id.
+        A list of column names to possibly rename. If None or contains
+        only NaN, the function renames 'id' to output_id.
     output_id : str
         The name to which the 'id' column should be renamed if applicable.
 
     Returns
     -------
     pd.DataFrame or gpd.GeoDataFrame
-        The DataFrame with columns rearranged and/or renamed according to the specified properties and output_id.
+        The DataFrame with columns rearranged and/or renamed according
+        to the specified properties and output_id.
     """
 
     # Rename id column to output_id
@@ -661,32 +675,36 @@ def _arrange_cols(
     # plus geometry if skip_geometry is False
     if properties and not all(pd.isna(properties)):
         # Make sure geometry stays in the dataframe if skip_geometry is False
-        if 'geometry' in df.columns and 'geometry' not in properties:
-            properties.append('geometry')
+        if "geometry" in df.columns and "geometry" not in properties:
+            properties.append("geometry")
         # id is technically a valid column from the service, but these
         # functions make the name more specific. So, if someone requests
         # 'id', give them the output_id column
-        if 'id' in properties:
-            properties[properties.index('id')] = output_id
+        if "id" in properties:
+            properties[properties.index("id")] = output_id
         df = df.loc[:, [col for col in properties if col in df.columns]]
 
     # Move meaningless-to-user, extra id columns to the end
     # of the dataframe, if they exist
-    extra_id_col = set(df.columns).intersection({
-        "latest_continuous_id",
-        "latest_daily_id",
-        "daily_id",
-        "continuous_id",
-        "field_measurement_id"
-        })
+    extra_id_col = set(df.columns).intersection(
+        {
+            "latest_continuous_id",
+            "latest_daily_id",
+            "daily_id",
+            "continuous_id",
+            "field_measurement_id",
+        }
+    )
 
     # If the arbitrary id column is returned (either due to properties
     # being none or NaN), then move it to the end of the dataframe, but
     # if part of properties, keep in requested order
     if extra_id_col and (properties is None or all(pd.isna(properties))):
-        id_col_order = [col for col in df.columns if col not in extra_id_col] + list(extra_id_col)
+        id_col_order = [col for col in df.columns if col not in extra_id_col] + list(
+            extra_id_col
+        )
         df = df.loc[:, id_col_order]
-    
+
     return df
 
 
@@ -714,17 +732,17 @@ def _type_cols(df: pd.DataFrame) -> pd.DataFrame:
         "hole_constructed_depth",
         "value",
         "well_constructed_depth",
-        ]
+    ]
     time_cols = [
         "begin",
         "begin_utc",
         "construction_date",
         "end",
         "end_utc",
-        "datetime", # unused
+        "datetime",  # unused
         "last_modified",
         "time",
-        ]
+    ]
 
     for col in cols.intersection(time_cols):
         df[col] = pd.to_datetime(df[col], errors="coerce")
@@ -752,16 +770,10 @@ def _sort_rows(df: pd.DataFrame) -> pd.DataFrame:
 
     """
     if "time" in df.columns and "monitoring_location_id" in df.columns:
-        df = df.sort_values(
-            by=["time", "monitoring_location_id"],
-            ignore_index=True
-            )
+        df = df.sort_values(by=["time", "monitoring_location_id"], ignore_index=True)
     elif "time" in df.columns:
-        df = df.sort_values(
-            by="time",
-            ignore_index=True
-            )
-    
+        df = df.sort_values(by="time", ignore_index=True)
+
     return df
 
 
@@ -769,10 +781,12 @@ def get_ogc_data(
     args: Dict[str, Any], output_id: str, service: str
 ) -> Tuple[pd.DataFrame, BaseMetadata]:
     """
-    Retrieves OGC (Open Geospatial Consortium) data from a specified water data endpoint and returns it as a pandas DataFrame with metadata.
+    Retrieves OGC (Open Geospatial Consortium) data from a specified
+    endpoint and returns it as a pandas DataFrame with metadata.
 
-    This function prepares request arguments, constructs API requests, handles pagination, processes the results,
-    and formats the output DataFrame according to the specified parameters.
+    This function prepares request arguments, constructs API requests,
+    handles pagination, processes the results, and formats output
+    according to the specified parameters.
 
     Parameters
     ----------
@@ -812,9 +826,7 @@ def get_ogc_data(
     # Build API request
     req = _construct_api_requests(**args)
     # Run API request and iterate through pages if needed
-    return_list, response = _walk_pages(
-        geopd=GEOPANDAS, req=req
-    )
+    return_list, response = _walk_pages(geopd=GEOPANDAS, req=req)
     # Manage some aspects of the returned dataset
     return_list = _deal_with_empty(return_list, properties, service)
 
@@ -828,9 +840,10 @@ def get_ogc_data(
     metadata = BaseMetadata(response)
     return return_list, metadata
 
+
 def _handle_stats_nesting(
-        body: Dict[str, Any],
-        geopd: bool = False,
+    body: Dict[str, Any],
+    geopd: bool = False,
 ) -> pd.DataFrame:
     """
     Takes nested json from stats service and flattens into a dataframe with
@@ -847,23 +860,26 @@ def _handle_stats_nesting(
         A DataFrame containing the flattened statistical data.
     """
     if body is None:
-            return pd.DataFrame()
-    
+        return pd.DataFrame()
+
     if not geopd:
         logger.info(
-            "Geopandas not installed. Geometries will be flattened into pandas DataFrames."
+            "Geopandas not installed. Geometries will be flattened "
+            "into pandas DataFrames."
         )
 
     # If geopandas not installed, return a pandas dataframe
     # otherwise return a geodataframe
     if not geopd:
-        df = pd.json_normalize(body['features']).drop(columns=['type', 'properties.data'])
-        df.columns = df.columns.str.split('.').str[-1]
+        df = pd.json_normalize(body["features"]).drop(
+            columns=["type", "properties.data"]
+        )
+        df.columns = df.columns.str.split(".").str[-1]
     else:
-        df = gpd.GeoDataFrame.from_features(body["features"]).drop(columns=['data'])
-    
+        df = gpd.GeoDataFrame.from_features(body["features"]).drop(columns=["data"])
+
     # Unnest json features, properties, data, and values while retaining necessary
-    # metadata to merge with main dataframe.   
+    # metadata to merge with main dataframe.
     dat = pd.json_normalize(
         body,
         record_path=["features", "properties", "data", "values"],
@@ -872,14 +888,14 @@ def _handle_stats_nesting(
             ["features", "properties", "data", "parameter_code"],
             ["features", "properties", "data", "unit_of_measure"],
             ["features", "properties", "data", "parent_time_series_id"],
-            #["features", "geometry", "coordinates"],
-            ],
-            meta_prefix="",
-            errors="ignore",
-            )
-    dat.columns = dat.columns.str.split('.').str[-1]
+            # ["features", "geometry", "coordinates"],
+        ],
+        meta_prefix="",
+        errors="ignore",
+    )
+    dat.columns = dat.columns.str.split(".").str[-1]
 
-    return df.merge(dat, on='monitoring_location_id', how='left')
+    return df.merge(dat, on="monitoring_location_id", how="left")
 
 
 def _expand_percentiles(df: pd.DataFrame) -> pd.DataFrame:
@@ -902,33 +918,44 @@ def _expand_percentiles(df: pd.DataFrame) -> pd.DataFrame:
         A DataFrame containing the flattened percentile data.
     """
     if len(df) > 0:
-
-        if "percentile" in df['computation'].unique():
+        if "percentile" in df["computation"].unique():
             # Explode percentile lists into rows called "value" and "percentile"
-            percentiles = df.loc[df['computation'] == "percentile"]
-            percentiles_explode = percentiles[['computation_id', 'values', 'percentiles']].explode(['values', 'percentiles'], ignore_index=True)
-            percentiles_explode = percentiles_explode.loc[percentiles_explode['values']!="nan"]
-            percentiles_explode['value'] = pd.to_numeric(percentiles_explode['values'])
-            percentiles_explode['percentile'] = pd.to_numeric(percentiles_explode['percentiles'])
-            percentiles_explode = percentiles_explode.drop(columns=['values', 'percentiles'])
-            
+            percentiles = df.loc[df["computation"] == "percentile"]
+            percentiles_explode = percentiles[
+                ["computation_id", "values", "percentiles"]
+            ].explode(["values", "percentiles"], ignore_index=True)
+            percentiles_explode = percentiles_explode.loc[
+                percentiles_explode["values"] != "nan"
+            ]
+            percentiles_explode["value"] = pd.to_numeric(percentiles_explode["values"])
+            percentiles_explode["percentile"] = pd.to_numeric(
+                percentiles_explode["percentiles"]
+            )
+            percentiles_explode = percentiles_explode.drop(
+                columns=["values", "percentiles"]
+            )
+
             # Merge exploded values back to other metadata/geometry
-            percentiles = percentiles.drop(columns=['values', 'percentiles', 'value'], errors="ignore").merge(percentiles_explode, on='computation_id', how='left')
-            
+            percentiles = percentiles.drop(
+                columns=["values", "percentiles", "value"], errors="ignore"
+            ).merge(percentiles_explode, on="computation_id", how="left")
+
             # Concatenate back to original
-            dfs = pd.concat([df.loc[df['computation'] != "percentile"], percentiles]).drop(columns=['values', 'percentiles'])
+            dfs = pd.concat(
+                [df.loc[df["computation"] != "percentile"], percentiles]
+            ).drop(columns=["values", "percentiles"])
         else:
             dfs = df
-            dfs['percentile'] = pd.NA
-        
+            dfs["percentile"] = pd.NA
+
         # Give min, max, median a percentile value
-        dfs.loc[dfs['computation'] == "maximum", 'percentile'] = 100
-        dfs.loc[dfs['computation'] == "minimum", 'percentile'] = 0
-        dfs.loc[dfs['computation'] == "median", 'percentile'] = 50
+        dfs.loc[dfs["computation"] == "maximum", "percentile"] = 100
+        dfs.loc[dfs["computation"] == "minimum", "percentile"] = 0
+        dfs.loc[dfs["computation"] == "median", "percentile"] = 50
 
         # Make sure numeric
-        dfs['percentile'] = pd.to_numeric(dfs['percentile'])
-        
+        dfs["percentile"] = pd.to_numeric(dfs["percentile"])
+
         # Move percentile column
         cols = dfs.columns.tolist()
         cols.remove("percentile")
@@ -936,32 +963,37 @@ def _expand_percentiles(df: pd.DataFrame) -> pd.DataFrame:
         cols.insert(col_index, "percentile")
 
         return dfs[cols]
-    
+
     else:
         return df
+
 
 def get_stats_data(
     args: Dict[str, Any],
     service: str,
     expand_percentiles: bool,
     client: Optional[requests.Session] = None,
-    ) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> Tuple[pd.DataFrame, BaseMetadata]:
     """
-    Retrieves statistical data from a specified water data endpoint and returns it as a pandas DataFrame with metadata.
+    Retrieves statistical data from a specified endpoint and returns it
+    as a pandas DataFrame with metadata.
 
-    This function prepares request arguments, constructs API requests, handles pagination, processes the results,
-    and formats the output DataFrame according to the specified parameters.
+    This function prepares request arguments, constructs API requests,
+    handles pagination, processes results, and formats output according
+    to the specified parameters.
 
     Parameters
     ----------
     args : Dict[str, Any]
         Dictionary of request arguments for the statistics service.
     service : str
-        The statistics service type (e.g., "observationNormals", "observationIntervals").
+        The statistics service type (for example,
+        "observationNormals" or "observationIntervals").
     expand_percentiles : bool
-        Determines whether the percentiles column is expanded so that each percentile gets its own row in the
-        returned dataframe. If set to True and user requests a computation_type other than percentiles, a
-        percentile column will be returned with the dataset.
+        Determines whether the percentiles column is expanded so that
+        each percentile gets its own row in the returned dataframe. If
+        True and user requests a computation_type other than
+        percentiles, a percentile column is still returned.
 
     Returns
     -------
@@ -976,11 +1008,11 @@ def get_stats_data(
     headers = _default_headers()
 
     request = requests.Request(
-            method="GET",
-            url=url,
-            headers=headers,
-            params=args,
-        )
+        method="GET",
+        url=url,
+        headers=headers,
+        params=args,
+    )
     req = request.prepare()
     logger.info("Request: %s", req.url)
 
@@ -1006,10 +1038,10 @@ def get_stats_data(
         dfs = _handle_stats_nesting(body, geopd=GEOPANDAS)
 
         # Look for a next code in the response body
-        next_token = body['next']
+        next_token = body["next"]
 
         while next_token:
-            args['next_token'] = next_token
+            args["next_token"] = next_token
 
             try:
                 resp = client.request(
@@ -1017,18 +1049,20 @@ def get_stats_data(
                     url=url,
                     params=args,
                     headers=headers,
-                    )
+                )
                 body = resp.json()
                 df1 = _handle_stats_nesting(body, geopd=False)
                 dfs = pd.concat([dfs, df1], ignore_index=True)
-                next_token = body['next']
+                next_token = body["next"]
             except Exception:
                 error_text = _error_body(resp)
                 logger.error("Request incomplete. %s", error_text)
-                logger.warning("Request failed for URL: %s. Data download interrupted.", resp.url)
+                logger.warning(
+                    "Request failed for URL: %s. Data download interrupted.", resp.url
+                )
                 next_token = None
 
-        #. If expand percentiles is True, make each percentile
+        # . If expand percentiles is True, make each percentile
         # its own row in the returned dataset.
         if expand_percentiles:
             dfs = _expand_percentiles(dfs)
@@ -1066,4 +1100,3 @@ def _check_profiles(
             f"Invalid profile: '{profile}' for service '{service}'. "
             f"Valid options are: {valid_profiles}."
         )
-

@@ -26,7 +26,7 @@ warnings.warn(
     "The 'nwis' services are deprecated and being decommissioned. "
     "Please use the 'waterdata' module to access the new services.",
     DeprecationWarning,
-    stacklevel=2
+    stacklevel=2,
 )
 
 WATERDATA_BASE_URL = "https://nwis.waterdata.usgs.gov/"
@@ -141,7 +141,7 @@ def get_qwdata(
     """
     raise NameError(
         "`nwis.get_qwdata` has been replaced with `waterdata.get_samples()`."
-        )
+    )
 
 
 def get_discharge_measurements(
@@ -157,7 +157,7 @@ def get_discharge_measurements(
     Parameters
     ----------
     sites: string or list of strings, optional, default is None
-    start: string, optional, default is None 
+    start: string, optional, default is None
         Supply date in the format: YYYY-MM-DD
     end: string, optional, default is None
         Supply date in the format: YYYY-MM-DD
@@ -344,7 +344,7 @@ def get_gwlevels(
 
     if datetime_index is True:
         df = format_datetime(df, "lev_dt", "lev_tm", "lev_tz_cd")
-    
+
     # Filter by kwarg parameterCd because the service doesn't do it
     if "parameterCd" in kwargs:
         pcodes = kwargs["parameterCd"]
@@ -696,7 +696,8 @@ def get_info(ssl_check: bool = True, **kwargs) -> Tuple[pd.DataFrame, BaseMetada
                 "refer to https://waterdata.usgs.gov.nwis/qwdata and "
                 "https://doi-usgs.github.io/dataRetrieval/articles/Status.html "
                 "or email CompTools@usgs.gov."
-            )
+            ),
+            stacklevel=2,
         )
         # convert bool to string if necessary
         kwargs["seriesCatalogOutput"] = "True"

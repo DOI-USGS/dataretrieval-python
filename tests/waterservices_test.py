@@ -86,7 +86,7 @@ def test_get_record_validation():
 
 
 def test_get_dv(requests_mock):
-    """Tests get_dv method correctly generates the request url and returns the result in a DataFrame"""
+    """Verify get_dv builds the expected request URL and returns a DataFrame."""
     format = "json"
     site = "01491000%2C01645000"
     request_url = (
@@ -129,7 +129,7 @@ def test_get_dv_site_value_types(requests_mock, site_input_type_list):
 
 
 def test_get_iv(requests_mock):
-    """Tests get_iv method correctly generates the request url and returns the result in a DataFrame"""
+    """Verify get_iv builds the expected request URL and returns a DataFrame."""
     format = "json"
     site = "01491000%2C01645000"
     request_url = (
@@ -173,7 +173,7 @@ def test_get_iv_site_value_types(requests_mock, site_input_type_list):
 
 def test_get_info(requests_mock):
     """
-    Tests get_info method correctly generates the request url and returns the result in a DataFrame.
+    Verify get_info builds the expected request URL and returns a DataFrame.
     Note that only sites and format are passed as query params
     """
     size = 24
@@ -203,7 +203,7 @@ def test_get_info(requests_mock):
 
 
 def test_get_gwlevels(requests_mock):
-    """Tests get_gwlevels method correctly generates the request url and returns the result in a DataFrame."""
+    """Verify get_gwlevels builds the expected request URL and returns a DataFrame."""
     format = "rdb"
     site = "434400121275801"
     request_url = (
@@ -242,7 +242,7 @@ def test_get_gwlevels_site_value_types(requests_mock, site_input_type_list):
 
 
 def test_get_discharge_peaks(requests_mock):
-    """Tests get_discharge_peaks method correctly generates the request url and returns the result in a DataFrame"""
+    """Verify get_discharge_peaks builds the expected URL and returns a DataFrame."""
     format = "rdb"
     site = "01594440"
     request_url = (
@@ -284,8 +284,10 @@ def test_get_discharge_peaks_sites_value_types(requests_mock, site_input_type_li
 
 
 def test_get_discharge_measurements(requests_mock):
-    """Tests get_discharge_measurements method correctly generates the request url and returns the result in a
-    DataFrame"""
+    """Verify get_discharge_measurements builds the expected URL.
+
+    Confirm it returns a DataFrame.
+    """
     format = "rdb"
     site = "01594440"
     request_url = (
@@ -308,7 +310,7 @@ def test_get_discharge_measurements(requests_mock):
 def test_get_discharge_measurements_sites_value_types(
     requests_mock, site_input_type_list
 ):
-    """Tests get_discharge_measurements method for valid input types for 'sites' parameter"""
+    """Verify get_discharge_measurements accepts valid sites input types."""
     format = "rdb"
     site = "01594440"
     request_url = (
@@ -330,8 +332,7 @@ def test_get_discharge_measurements_sites_value_types(
 
 
 def test_get_pmcodes(requests_mock):
-    """Tests get_pmcodes method correctly generates the request url and returns the result in a
-    DataFrame"""
+    """Verify get_pmcodes builds the expected request URL and returns DataFrame."""
     format = "rdb"
     request_url = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?fmt=rdb&parm_nm_cd=%2500618%25"
     response_file_path = "tests/data/waterdata_pmcodes.txt"
@@ -365,8 +366,7 @@ def test_get_pmcodes_parameterCd_value_types(
 
 
 def test_get_water_use_national(requests_mock):
-    """Tests get_discharge_measurements method correctly generates the request url and returns the result in a
-    DataFrame"""
+    """Verify get_water_use builds the national request URL and returns DataFrame."""
     format = "rdb"
     request_url = (
         "https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format={}&wu_year=ALL"
@@ -425,10 +425,10 @@ def test_get_water_use_national_county_value_types(
 
 
 @pytest.mark.parametrize("category_input_type_list", [True, False])
-def test_get_water_use_national_county_value_types(
+def test_get_water_use_national_category_value_types(
     requests_mock, category_input_type_list
 ):
-    """Tests get_water_use method for valid input types for the 'categories' parameter"""
+    """Verify get_water_use accepts valid categories input types."""
     _format = "rdb"
     category = "ALL"
     request_url = (
@@ -448,8 +448,7 @@ def test_get_water_use_national_county_value_types(
 
 
 def test_get_water_use_allegheny(requests_mock):
-    """Tests get_discharge_measurements method correctly generates the request url and returns the result in a
-    DataFrame"""
+    """Verify get_water_use builds county request URL and returns DataFrame."""
     format = "rdb"
     request_url = (
         "https://nwis.waterdata.usgs.gov/PA/nwis/water_use?rdb_compression=value&format=rdb&wu_year=ALL"
@@ -465,7 +464,7 @@ def test_get_water_use_allegheny(requests_mock):
 
 
 def test_get_ratings_validation():
-    """Tests get_ratings method correctly generates the request url and returns the result in a DataFrame"""
+    """Verify get_ratings validates file_type values."""
     site = "01594440"
     with pytest.raises(ValueError) as value_error:
         get_ratings(site=site, file_type="BAD")
@@ -475,7 +474,7 @@ def test_get_ratings_validation():
 
 
 def test_get_ratings(requests_mock):
-    """Tests get_ratings method correctly generates the request url and returns the result in a DataFrame"""
+    """Verify get_ratings builds the expected URL and returns a DataFrame."""
     format = "rdb"
     site = "01594440"
     request_url = "https://nwis.waterdata.usgs.gov/nwisweb/get_ratings/?site_no={}&file_type=base".format(
@@ -492,7 +491,7 @@ def test_get_ratings(requests_mock):
 
 
 def test_what_sites(requests_mock):
-    """Tests what_sites method correctly generates the request url and returns the result in a DataFrame"""
+    """Verify what_sites builds the expected URL and returns a DataFrame."""
     size = 2472
     format = "rdb"
     parameter_cd = "00010%2C00060"
@@ -529,7 +528,7 @@ def test_what_sites(requests_mock):
 
 
 def test_get_stats(requests_mock):
-    """Tests get_stats method correctly generates the request url and returns the result in a DataFrame"""
+    """Verify get_stats builds the expected URL and returns a DataFrame."""
     format = "rdb"
     request_url = "https://waterservices.usgs.gov/nwis/stat?sites=01491000%2C01645000&format={}".format(
         format

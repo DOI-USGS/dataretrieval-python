@@ -7,12 +7,12 @@ import pytest
 
 from dataretrieval.nwis import (
     NWIS_Metadata,
+    get_gwlevels,
     get_info,
     get_iv,
     get_record,
     preformat_peaks_response,
     what_sites,
-    get_gwlevels
 )
 
 START_DATE = "2018-01-24"
@@ -101,7 +101,7 @@ def test_inc_date_01():
     with pytest.warns(UserWarning):
         df = get_record(site, "1980-01-01", "1990-01-01", service="gwlevels")
     # assert that there are indeed incomplete dates
-    assert any(pd.isna(df.index) == True)
+    assert pd.isna(df.index).any()
     # assert that the datetime index is there
     assert df.index.name == "datetime"
     # make call without defining a datetime index and check that it isn't there
@@ -121,7 +121,7 @@ def test_inc_date_02():
     with pytest.warns(UserWarning):
         df = get_record(site, "1900-01-01", "2013-01-01", service="gwlevels")
     # assert that there are indeed incomplete dates
-    assert any(pd.isna(df.index) == True)
+    assert pd.isna(df.index).any()
     # assert that the datetime index is there
     assert df.index.name == "datetime"
     # make call without defining a datetime index and check that it isn't there
@@ -141,7 +141,7 @@ def test_inc_date_03():
     with pytest.warns(UserWarning):
         df = get_record(site, "1975-01-01", "2000-01-01", service="gwlevels")
     # assert that there are indeed incomplete dates
-    assert any(pd.isna(df.index) == True)
+    assert pd.isna(df.index).any()
     # assert that the datetime index is there
     assert df.index.name == "datetime"
     # make call without defining a datetime index and check that it isn't there
@@ -298,24 +298,27 @@ class TestMetaData:
         # assert that site_info is implemented
         assert md.site_info
 
+
 class Testgwlevels:
     """Tests of get_gwlevels function
 
     Notes
     -----
     - gwlevels moved to a new web service endpoint in 2024
-    - The new endpoint has quirks and doesn't recognize the 
+    - The new endpoint has quirks and doesn't recognize the
         parameterCd kwarg advertisted by the service.
     """
+
     def test_gwlevels_one_parameterCd(self):
         pcode = "72019"
-        df,_ = get_gwlevels(sites="434400121275801", start = "2010-01-01", parameterCd=pcode)
-        assert set(df['parameter_cd'].unique().tolist()) == set([pcode])
+        df, _ = get_gwlevels(
+            sites="434400121275801", start="2010-01-01", parameterCd=pcode
+        )
+        assert set(df["parameter_cd"].unique().tolist()) == set([pcode])
 
     def test_gwlevels_two_parameterCds(self):
         pcode = ["72019", "62610"]
-        df,_ = get_gwlevels(sites="434400121275801", start = "2010-01-01", parameterCd=pcode)
-        assert set(df['parameter_cd'].unique().tolist()) == set(pcode)
-
-    
-
+        df, _ = get_gwlevels(
+            sites="434400121275801", start="2010-01-01", parameterCd=pcode
+        )
+        assert set(df["parameter_cd"].unique().tolist()) == set(pcode)

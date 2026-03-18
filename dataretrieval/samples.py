@@ -6,17 +6,18 @@ See https://api.waterdata.usgs.gov/samples-data/docs#/ for API reference
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, get_args
-
-import pandas as pd
 import warnings
+from typing import TYPE_CHECKING
 
 from dataretrieval.utils import BaseMetadata
 
 if TYPE_CHECKING:
     from typing import Optional, Tuple, Union
-    from dataretrieval.waterdata import SERVICES, PROFILES
+
     from pandas import DataFrame
+
+    from dataretrieval.waterdata import PROFILES, SERVICES
+
 
 def get_usgs_samples(
     ssl_check: bool = True,
@@ -111,7 +112,7 @@ def get_usgs_samples(
         A user supplied characteristic name describing one or more results.
     boundingBox: list of four floats, optional
         Filters on the the associated monitoring location's point location
-        by checking if it is located within the specified geographic area. 
+        by checking if it is located within the specified geographic area.
         The logic is inclusive, i.e. it will include locations that overlap
         with the edge of the bounding box. Values are separated by commas,
         expressed in decimal degrees, NAD83, and longitudes west of Greenwich
@@ -120,7 +121,7 @@ def get_usgs_samples(
         - Western-most longitude
         - Southern-most latitude
         - Eastern-most longitude
-        - Northern-most longitude 
+        - Northern-most longitude
         Example: [-92.8,44.2,-88.9,46.0]
     countryFips : string or list of strings, optional
         Example: "US" (United States)
@@ -143,7 +144,7 @@ def get_usgs_samples(
     usgsPCode : string or list of strings, optional
         5-digit number used in the US Geological Survey computerized
         data system, National Water Information System (NWIS), to
-        uniquely identify a specific constituent. Check the 
+        uniquely identify a specific constituent. Check the
         `characteristic_lookup()` function in this module for all possible
         inputs.
         Example: "00060" (Discharge, cubic feet per second)
@@ -173,7 +174,7 @@ def get_usgs_samples(
     recordIdentifierUserSupplied : string or list of strings, optional
         Internal AQS record identifier that returns 1 entry. Only available
         for the "results" service.
-    
+
     Returns
     -------
     df : ``pandas.DataFrame``
@@ -187,8 +188,8 @@ def get_usgs_samples(
 
         >>> # Get PFAS results within a bounding box
         >>> df, md = dataretrieval.samples.get_usgs_samples(
-        ...     boundingBox=[-90.2,42.6,-88.7,43.2],
-        ...     characteristicGroup="Organics, PFAS"
+        ...     boundingBox=[-90.2, 42.6, -88.7, 43.2],
+        ...     characteristicGroup="Organics, PFAS",
         ... )
 
         >>> # Get all activities for the Commonwealth of Virginia over a date range
@@ -197,22 +198,31 @@ def get_usgs_samples(
         ...     profile="sampact",
         ...     activityStartDateLower="2023-10-01",
         ...     activityStartDateUpper="2024-01-01",
-        ...     stateFips="US:51")
+        ...     stateFips="US:51",
+        ... )
 
         >>> # Get all pH samples for two sites in Utah
         >>> df, md = dataretrieval.samples.get_usgs_samples(
-        ...     monitoringLocationIdentifier=['USGS-393147111462301', 'USGS-393343111454101'],
-        ...     usgsPCode='00400')
+        ...     monitoringLocationIdentifier=[
+        ...         "USGS-393147111462301",
+        ...         "USGS-393343111454101",
+        ...     ],
+        ...     usgsPCode="00400",
+        ... )
 
     """
 
     warnings.warn(
-        "`get_usgs_samples` is deprecated and will be removed. Use `waterdata.get_samples` instead.",
+        (
+            "`get_usgs_samples` is deprecated and will be removed. "
+            "Use `waterdata.get_samples` instead."
+        ),
         DeprecationWarning,
         stacklevel=2,
     )
 
     from dataretrieval.waterdata import get_samples
+
     result = get_samples(
         ssl_check=ssl_check,
         service=service,
@@ -242,5 +252,3 @@ def get_usgs_samples(
     )
 
     return result
-
-

@@ -5,8 +5,8 @@ from dataretrieval.utils import query
 
 try:
     import geopandas as gpd
-except ImportError:
-    raise ImportError("Install geopandas to use the NLDI module.")
+except ImportError as err:
+    raise ImportError("Install geopandas to use the NLDI module.") from err
 
 NLDI_API_BASE_URL = "https://api.water.usgs.gov/nldi/linked-data"
 _AVAILABLE_DATA_SOURCES = None
@@ -281,7 +281,7 @@ def get_features(
             query_params = {}
 
     if lat:
-        err_msg = f"Error getting features for lat '{lat}'" f" and long '{long}'"
+        err_msg = f"Error getting features for lat '{lat}' and long '{long}'"
     elif feature_source:
         err_msg = (
             f"Error getting features for feature source '{feature_source}'"
