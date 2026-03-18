@@ -1,27 +1,23 @@
 # This workflow will install Python dependencies, run tests and lint with a variety of Python versions
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
+
 name: Python package
 
 on:
   push:
-    branches: ['**']
+    branches: ['main']
   pull_request:
     branches: ['main']
-
 jobs:
   ruff:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871
-        with:
-          # On PRs, lint the head commit directly to avoid stale merge-ref confusion.
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - name: Set up Python 3.13
+      - name: Set up Python 3.14
         uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3
         with:
-          python-version: '3.13'
+          python-version: '3.14'
       - name: Install Ruff
         run: |
           python -m pip install --upgrade pip
@@ -32,6 +28,7 @@ jobs:
       - name: Ruff format check
         run: |
           ruff format --check .
+
 
   build:
     needs: ruff
