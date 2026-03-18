@@ -11,6 +11,7 @@ from __future__ import annotations
 
 # Public API exports
 from .api import (
+    get_channel,
     get_codes,
     get_continuous,
     get_daily,
@@ -32,6 +33,7 @@ from .types import (
 )
 
 __all__ = [
+    "get_channel",
     "get_codes",
     "get_continuous",
     "get_daily",

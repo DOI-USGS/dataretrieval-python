@@ -310,3 +310,9 @@ def test_get_stats_date_range():
     assert "percentile" in df.columns
     assert df['interval_type'].isin(['month', 'calendar_year', 'water_year']).all()
 
+def test_get_channel():
+    df, _ = get_channel(monitoring_location_id="USGS-02238500")
+
+    assert df.shape[0] > 470
+    assert df.shape[1] == 27  # if geopandas installed, 21 columns if not
+    assert "channel_measurements_id" in df.columns
