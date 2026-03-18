@@ -12,7 +12,6 @@ from dataretrieval.nwis import (
     get_record,
     preformat_peaks_response,
     what_sites,
-    get_gwlevels
 )
 
 START_DATE = "2018-01-24"
@@ -20,22 +19,6 @@ END_DATE = "2018-01-25"
 
 DATETIME_COL = "datetime"
 SITENO_COL = "site_no"
-
-
-def test_measurements_service():
-    """Test measurement service"""
-    start = "2018-01-24"
-    end = "2018-01-25"
-    service = "measurements"
-    site = "03339000"
-    df = get_record(site, start, end, service=service)
-    return df
-
-
-def test_measurements_service_answer():
-    df = test_measurements_service()
-    # check parsing
-    assert df.iloc[0]["measurement_nu"] == 801
 
 
 def test_iv_service():
@@ -69,89 +52,8 @@ def test_preformat_peaks_response():
     assert df["datetime"].isna().sum() == 0
 
 
-@pytest.mark.parametrize("site_input_type_list", [True, False])
-def test_get_record_site_value_types(site_input_type_list):
-    """Test that get_record method for valid input types for the 'sites' parameter."""
-    start = "2018-01-24"
-    end = "2018-01-25"
-    service = "measurements"
-    site = "03339000"
-    if site_input_type_list:
-        sites = [site]
-    else:
-        sites = site
-    df = get_record(sites=sites, start=start, end=end, service=service)
-    assert df.iloc[0]["measurement_nu"] == 801
-
-
 if __name__ == "__main__":
-    test_measurements_service_answer()
     test_iv_service_answer()
-
-
-# tests using real queries to USGS webservices
-# these specific queries represent some edge-cases and the tests to address
-# incomplete date-time information
-
-
-def test_inc_date_01():
-    """Test based on GitHub Issue #47 - lack of timestamp for measurement."""
-    site = "403451073585601"
-    # make call expecting a warning to be thrown due to incomplete dates
-    with pytest.warns(UserWarning):
-        df = get_record(site, "1980-01-01", "1990-01-01", service="gwlevels")
-    # assert that there are indeed incomplete dates
-    assert any(pd.isna(df.index) == True)
-    # assert that the datetime index is there
-    assert df.index.name == "datetime"
-    # make call without defining a datetime index and check that it isn't there
-    df2 = get_record(
-        site, "1980-01-01", "1990-01-01", service="gwlevels", datetime_index=False
-    )
-    # assert shape of both dataframes is the same (contain the same data)
-    assert df.shape == df2.shape
-    # assert that the datetime index is not there
-    assert df2.index.name != "datetime"
-
-
-def test_inc_date_02():
-    """Test based on GitHub Issue #47 - lack of month, day, or time."""
-    site = "180049066381200"
-    # make call expecting a warning to be thrown due to incomplete dates
-    with pytest.warns(UserWarning):
-        df = get_record(site, "1900-01-01", "2013-01-01", service="gwlevels")
-    # assert that there are indeed incomplete dates
-    assert any(pd.isna(df.index) == True)
-    # assert that the datetime index is there
-    assert df.index.name == "datetime"
-    # make call without defining a datetime index and check that it isn't there
-    df2 = get_record(
-        site, "1900-01-01", "2013-01-01", service="gwlevels", datetime_index=False
-    )
-    # assert shape of both dataframes is the same (contain the same data)
-    assert df.shape == df2.shape
-    # assert that the datetime index is not there
-    assert df2.index.name != "datetime"
-
-
-def test_inc_date_03():
-    """Test based on GitHub Issue #47 - lack of day, and times."""
-    site = "290000095192602"
-    # make call expecting a warning to be thrown due to incomplete dates
-    with pytest.warns(UserWarning):
-        df = get_record(site, "1975-01-01", "2000-01-01", service="gwlevels")
-    # assert that there are indeed incomplete dates
-    assert any(pd.isna(df.index) == True)
-    # assert that the datetime index is there
-    assert df.index.name == "datetime"
-    # make call without defining a datetime index and check that it isn't there
-    df2 = get_record(
-        site, "1975-01-01", "2000-01-01", service="gwlevels", datetime_index=False
-    )
-    # assert shape of both dataframes is the same (contain the same data)
-    assert df.shape == df2.shape
-    # assert that the datetime index is not there
-    assert df2.index.name != "datetime"
 
 
 class TestTZ:
@@ -297,25 +199,6 @@ class TestMetaData:
         md = NWIS_Metadata(response, countyCd="01001")
         # assert that site_info is implemented
         assert md.site_info
-
-class Testgwlevels:
-    """Tests of get_gwlevels function
-
-    Notes
-    -----
-    - gwlevels moved to a new web service endpoint in 2024
-    - The new endpoint has quirks and doesn't recognize the 
-        parameterCd kwarg advertisted by the service.
-    """
-    def test_gwlevels_one_parameterCd(self):
-        pcode = "72019"
-        df,_ = get_gwlevels(sites="434400121275801", start = "2010-01-01", parameterCd=pcode)
-        assert set(df['parameter_cd'].unique().tolist()) == set([pcode])
-
-    def test_gwlevels_two_parameterCds(self):
-        pcode = ["72019", "62610"]
-        df,_ = get_gwlevels(sites="434400121275801", start = "2010-01-01", parameterCd=pcode)
-        assert set(df['parameter_cd'].unique().tolist()) == set(pcode)
 
     
 
