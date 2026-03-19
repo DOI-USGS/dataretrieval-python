@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Retrieving site information &mdash; dataretrieval 0.1.dev1+g5c9ac1f8d documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+  <title>Retrieving site information &mdash; dataretrieval 0.1.dev1+g2c775e4c4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=6f13279f"></script>
+      <script src="../_static/documentation_options.js?v=583b92f2"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -99,7 +99,7 @@ example illustrates the use of the <code class="docutils literal notranslate"><s
 the resulting column names for the output dataframes (example prompted by
 <a class="reference external" href="https://github.com/DOI-USGS/dataretrieval-python/issues/34">GitHub Issue #34</a>).</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go"># first import the functions for downloading data from NWIS</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">dataretrieval.nwis</span> <span class="k">as</span> <span class="nn">nwis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval.nwis</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nwis</span>
 
 <span class="go"># fetch data from a major HUC basin with seriesCatalogOutput set to True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">huc</span><span class="o">=</span><span class="s1">&#39;20&#39;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;00060&#39;</span><span class="p">,</span>

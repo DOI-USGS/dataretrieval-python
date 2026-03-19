@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+g5c9ac1f8d documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+g2c775e4c4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=6f13279f"></script>
+      <script src="../../_static/documentation_options.js?v=583b92f2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -81,14 +81,14 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 
-<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
 
 <div class="viewcode-block" id="download_workspace">
 <a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.download_workspace">[docs]</a>
-<span class="k">def</span> <span class="nf">download_workspace</span><span class="p">(</span><span class="n">workspaceID</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_workspace</span><span class="p">(</span><span class="n">workspaceID</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Function to download streamstats workspace.</span>
 
 <span class="sd">    Parameters</span>
@@ -125,7 +125,7 @@
 
 <div class="viewcode-block" id="get_sample_watershed">
 <a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.get_sample_watershed">[docs]</a>
-<span class="k">def</span> <span class="nf">get_sample_watershed</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_sample_watershed</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Sample function to get a watershed object for a location in NY.</span>
 
 <span class="sd">    Makes the function call :obj:`dataretrieval.streamstats.get_watershed`</span>
@@ -145,7 +145,7 @@
 
 <div class="viewcode-block" id="get_watershed">
 <a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.get_watershed">[docs]</a>
-<span class="k">def</span> <span class="nf">get_watershed</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_watershed</span><span class="p">(</span>
     <span class="n">rcode</span><span class="p">,</span>
     <span class="n">xlocation</span><span class="p">,</span>
     <span class="n">ylocation</span><span class="p">,</span>
@@ -231,13 +231,13 @@
 
 <div class="viewcode-block" id="Watershed">
 <a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.Watershed">[docs]</a>
-<span class="k">class</span> <span class="nc">Watershed</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Watershed</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to extract information from the streamstats JSON object.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Watershed.from_streamstats_json">
 <a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.Watershed.from_streamstats_json">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_streamstats_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">streamstats_json</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_streamstats_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">streamstats_json</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Method that creates a Watershed object from a streamstats JSON.&quot;&quot;&quot;</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">watershed_point</span> <span class="o">=</span> <span class="n">streamstats_json</span><span class="p">[</span><span class="s2">&quot;featurecollection&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;feature&quot;</span><span class="p">]</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">watershed_polygon</span> <span class="o">=</span> <span class="n">streamstats_json</span><span class="p">[</span><span class="s2">&quot;featurecollection&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;feature&quot;</span><span class="p">]</span>
@@ -248,7 +248,7 @@
 
 <div class="viewcode-block" id="Watershed.__init__">
 <a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.Watershed.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rcode</span><span class="p">,</span> <span class="n">xlocation</span><span class="p">,</span> <span class="n">ylocation</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rcode</span><span class="p">,</span> <span class="n">xlocation</span><span class="p">,</span> <span class="n">ylocation</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Init method that calls the :obj:`from_streamstats_json` method.&quot;&quot;&quot;</span>
         <span class="n">get_watershed</span><span class="p">(</span><span class="n">rcode</span><span class="p">,</span> <span class="n">xlocation</span><span class="p">,</span> <span class="n">ylocation</span><span class="p">)</span></div>
 </div>

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g5c9ac1f8d documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g2c775e4c4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=6f13279f"></script>
+      <script src="../../_static/documentation_options.js?v=583b92f2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -78,18 +78,18 @@
 <span class="sd">Useful utilities for data munging.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
-<span class="kn">import</span> <span class="nn">dataretrieval</span>
-<span class="kn">from</span> <span class="nn">dataretrieval.codes</span> <span class="kn">import</span> <span class="n">tz</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.codes</span><span class="w"> </span><span class="kn">import</span> <span class="n">tz</span>
 
 
 <div class="viewcode-block" id="to_str">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.to_str">[docs]</a>
-<span class="k">def</span> <span class="nf">to_str</span><span class="p">(</span><span class="n">listlike</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">to_str</span><span class="p">(</span><span class="n">listlike</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Translates list-like objects into strings.</span>
 
 <span class="sd">    Parameters</span>
@@ -120,10 +120,7 @@
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">listlike</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">listlike</span><span class="p">])</span>
 
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">listlike</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">listlike</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
-
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">listlike</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">indexes</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">Index</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">listlike</span><span class="p">,</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">indexes</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">Index</span><span class="p">)):</span>
         <span class="k">return</span> <span class="n">delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">listlike</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
 
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">listlike</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -133,7 +130,7 @@
 
 <div class="viewcode-block" id="format_datetime">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.format_datetime">[docs]</a>
-<span class="k">def</span> <span class="nf">format_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">date_field</span><span class="p">,</span> <span class="n">time_field</span><span class="p">,</span> <span class="n">tz_field</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">format_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">date_field</span><span class="p">,</span> <span class="n">time_field</span><span class="p">,</span> <span class="n">tz_field</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a datetime field from separate date, time, and</span>
 <span class="sd">    time zone fields.</span>
 
@@ -161,7 +158,7 @@
 
     <span class="n">df</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span>
         <span class="n">df</span><span class="p">[</span><span class="n">date_field</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="n">time_field</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="n">tz_field</span><span class="p">],</span>
-        <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;ISO8601&quot;</span><span class="p">,</span>
+        <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;mixed&quot;</span><span class="p">,</span>
         <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span>
 
@@ -181,7 +178,7 @@
 
 <div class="viewcode-block" id="BaseMetadata">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.BaseMetadata">[docs]</a>
-<span class="k">class</span> <span class="nc">BaseMetadata</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BaseMetadata</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for metadata.</span>
 
 <span class="sd">    Attributes</span>
@@ -197,7 +194,7 @@
 
 <div class="viewcode-block" id="BaseMetadata.__init__">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.BaseMetadata.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a standard set of metadata informed by the response.</span>
 
 <span class="sd">        Parameters</span>
@@ -227,20 +224,20 @@
 
     <span class="c1"># These properties are to be set by `nwis` or `wqp`-specific metadata classes.</span>
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">site_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">site_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="s2">&quot;site_info must be implemented by utils.BaseMetadata children&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">variable_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">variable_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="s2">&quot;variable_info must be implemented by utils.BaseMetadata children&quot;</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="BaseMetadata.__repr__">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.BaseMetadata.__repr__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(url=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">)&quot;</span></div>
 </div>
 
@@ -248,7 +245,7 @@
 
 <div class="viewcode-block" id="query">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.query">[docs]</a>
-<span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Send a query.</span>
 
 <span class="sd">    Wrapper for requests.get that handles errors, converts listed</span>
@@ -318,21 +315,22 @@
 
 <div class="viewcode-block" id="NoSitesError">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError">[docs]</a>
-<span class="k">class</span> <span class="nc">NoSitesError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">NoSitesError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom error class used when selection criteria returns no sites/data.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="NoSitesError.__init__">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span></div>
 
 
 <div class="viewcode-block" id="NoSitesError.__str__">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError.__str__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="s2">&quot;No sites/data found using the selection criteria specified in url: </span><span class="si">{url}</span><span class="s2">&quot;</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span></div>
+            <span class="s2">&quot;No sites/data found using the selection criteria specified in &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;url: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span></div>
 </div>
 
 </pre></div>

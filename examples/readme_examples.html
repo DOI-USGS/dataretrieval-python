@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Examples from the Readme file on retrieving NWIS data &mdash; dataretrieval 0.1.dev1+g5c9ac1f8d documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+  <title>Examples from the Readme file on retrieving NWIS data &mdash; dataretrieval 0.1.dev1+g2c775e4c4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=6f13279f"></script>
+      <script src="../_static/documentation_options.js?v=583b92f2"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -95,7 +95,7 @@
 <p>NWIS stands for the National Water Information System</p>
 </div>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># first import the functions for downloading data from NWIS</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">dataretrieval.nwis</span> <span class="k">as</span> <span class="nn">nwis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval.nwis</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nwis</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># specify the USGS site code for which we want data.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">site</span> <span class="o">=</span> <span class="s1">&#39;03339000&#39;</span>
@@ -114,15 +114,6 @@
 
 <span class="go">[5 rows x 21 columns]</span>
 
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># get water quality samples (qwdata)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;qwdata&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2018-12-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2019-01-01&#39;</span><span class="p">)</span>
-
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df2</span><span class="p">)</span>
-<span class="go">                          agency_cd   site_no   sample_dt sample_tm  sample_end_dt  sample_end_tm  ... p80154 p82398 p84164  p91157  p91158  p91159</span>
-<span class="go">datetime                                                                                           ...</span>
-<span class="go">2018-12-10 17:30:00+00:00      USGS  03339000  2018-12-10     11:30            NaN            NaN  ...     16     50   3060  0.0165  0.0141  0.0024</span>
-
-<span class="go">[1 rows x 33 columns]</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># get basic info about the site</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df3</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>

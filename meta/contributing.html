@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Contributing &mdash; dataretrieval 0.1.dev1+g5c9ac1f8d documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+  <title>Contributing &mdash; dataretrieval 0.1.dev1+g2c775e4c4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=6f13279f"></script>
+      <script src="../_static/documentation_options.js?v=583b92f2"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -182,7 +182,7 @@ must be done:</p>
 <div><ul>
 <li><p>Example:</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">):</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">):</span>
 <span class="sd">&quot;&quot;&quot;Example function with types documented in the docstring.</span>
 
 <span class="sd">A more detailed description of the function and its implementation.</span>
@@ -227,11 +227,11 @@ must be done:</p>
     <span class="s1">&#39;Pirate&#39;</span><span class="p">:</span>  <span class="s2">&quot;Arr! Thar be </span><span class="si">%(number_of_lights)s</span><span class="s2"> lights.&quot;</span>
 <span class="p">}</span>
 
-<span class="k">def</span> <span class="nf">lights_message</span><span class="p">(</span><span class="n">language</span><span class="p">,</span> <span class="n">number_of_lights</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">lights_message</span><span class="p">(</span><span class="n">language</span><span class="p">,</span> <span class="n">number_of_lights</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a language-appropriate string reporting the light count.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">LIGHT_MESSAGES</span><span class="p">[</span><span class="n">language</span><span class="p">]</span> <span class="o">%</span> <span class="nb">locals</span><span class="p">()</span>
 
-<span class="k">def</span> <span class="nf">is_pirate</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_pirate</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if the given message sounds piratical.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(?i)(arr|avast|yohoho)!&quot;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 </pre></div>

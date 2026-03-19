@@ -6,15 +6,15 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_info() Examples &mdash; dataretrieval 0.1.dev1+g5c9ac1f8d documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+  <title>USGS dataretrieval Python Package get_info() Examples &mdash; dataretrieval 0.1.dev1+g2c775e4c4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=6f13279f"></script>
+      <script src="../_static/documentation_options.js?v=583b92f2"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -127,14 +127,16 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g5c9ac1f8d)
-Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
-Requirement already satisfied: pandas&lt;3.0.0,&gt;=2.0.0 in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.3)
-Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas&lt;3.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.3)
-Requirement already satisfied: python-dateutil&gt;=2.8.2 in /usr/lib/python3/dist-packages (from pandas&lt;3.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.8.2)
-Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas&lt;3.0.0,&gt;=2.0.0-&gt;dataretrieval) (2024.1)
-Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.12/site-packages (from pandas&lt;3.0.0,&gt;=2.0.0-&gt;dataretrieval) (2025.3)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (0.1.dev1+g2c775e4c4)
+Requirement already satisfied: requests in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (2.32.5)
+Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.1)
+Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.3)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.9.0.post0)
+Requirement already satisfied: six&gt;=1.5 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
+Requirement already satisfied: charset_normalizer&lt;4,&gt;=2 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (3.4.6)
+Requirement already satisfied: idna&lt;4,&gt;=2.5 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (3.11)
+Requirement already satisfied: urllib3&lt;3,&gt;=1.21.1 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2.6.3)
+Requirement already satisfied: certifi&gt;=2017.4.17 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2026.2.25)
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
@@ -142,9 +144,9 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
 
-<span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">nwis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">nwis</span>
 </pre></div>
 </div>
 </div>
@@ -301,41 +303,41 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-agency_cd                  object
-site_no                    object
-station_nm                 object
-site_tp_cd                 object
+agency_cd                     str
+site_no                       str
+station_nm                    str
+site_tp_cd                    str
 lat_va                    float64
 long_va                   float64
 dec_lat_va                float64
 dec_long_va               float64
-coord_meth_cd              object
+coord_meth_cd                 str
 coord_acy_cd                int64
-coord_datum_cd             object
-dec_coord_datum_cd         object
+coord_datum_cd                str
+dec_coord_datum_cd            str
 district_cd                 int64
 state_cd                    int64
 county_cd                   int64
-country_cd                 object
-land_net_ds                object
-map_nm                     object
+country_cd                    str
+land_net_ds                   str
+map_nm                        str
 map_scale_fc                int64
 alt_va                    float64
-alt_meth_cd                object
+alt_meth_cd                   str
 alt_acy_va                float64
-alt_datum_cd               object
+alt_datum_cd                  str
 huc_cd                      int64
 basin_cd                    int64
 topo_cd                   float64
-instruments_cd             object
+instruments_cd                str
 construction_dt           float64
 inventory_dt              float64
 drain_area_va               int64
 contrib_drain_area_va     float64
-tz_cd                      object
-local_time_fg              object
+tz_cd                         str
+local_time_fg                 str
 reliability_cd            float64
-gw_file_cd                 object
+gw_file_cd                    str
 nat_aqfr_cd               float64
 aqfr_cd                   float64
 aqfr_type_cd              float64

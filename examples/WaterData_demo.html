@@ -6,15 +6,15 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Using the waterdata module to pull data from the USGS Water Data APIs &mdash; dataretrieval 0.1.dev1+g5c9ac1f8d documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+  <title>Using the waterdata module to pull data from the USGS Water Data APIs &mdash; dataretrieval 0.1.dev1+g2c775e4c4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=6f13279f"></script>
+      <script src="../_static/documentation_options.js?v=583b92f2"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -105,14 +105,14 @@
 <h2>Prerequisite: Get your Water Data API key<a class="headerlink" href="#Prerequisite:-Get-your-Water-Data-API-key" title="Link to this heading"></a></h2>
 <p>We highly suggest signing up for your own API key <a class="reference external" href="https://api.waterdata.usgs.gov/signup/">here</a> to afford yourself higher rate limits and more reliable access to the data. If you opt not to register for an API key, then the number of requests you can make to the Water Data APIs is considerably lower, and if you share an IP address across users or workflows, you may hit those limits even faster. Luckily, registering for an API key is free and easy.</p>
 <p>Once you’ve copied your API key and saved it in a safe place, you can set it as an environment variable in your python script for the current session:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;API_USGS_PAT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;your_api_key_here&#39;</span>
 </pre></div>
 </div>
 <p>Note that the environment variable name is <code class="docutils literal notranslate"><span class="pre">API_USGS_PAT</span></code>, which stands for “API USGS Personal Access Token”.</p>
 <p>If you’d like a more permanent, repository-specific solution, you can use the <code class="docutils literal notranslate"><span class="pre">python-dotenv</span></code> package to read your API key from a <code class="docutils literal notranslate"><span class="pre">.env</span></code> file in your repository root directory, like this:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">dotenv</span> <span class="c1"># only run this line once to install the package in your environment</span>
-<span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dotenv</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dotenv</span>
 <span class="n">load_dotenv</span><span class="p">()</span>  <span class="c1"># this will load the environment variables from the .env file</span>
 </pre></div>
 </div>
@@ -173,16 +173,16 @@ database, it will return all the data in 2 pages, and each page counts as a “r
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
 
-<span class="kn">import</span> <span class="nn">matplotlib.dates</span> <span class="k">as</span> <span class="nn">mdates</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">matplotlib.ticker</span> <span class="k">as</span> <span class="nn">mtick</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">dateutil.relativedelta</span> <span class="kn">import</span> <span class="n">relativedelta</span>
-<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.dates</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mdates</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.ticker</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mtick</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dateutil.relativedelta</span><span class="w"> </span><span class="kn">import</span> <span class="n">relativedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
 
-<span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">waterdata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
 </pre></div>
 </div>
 </div>
@@ -240,13 +240,13 @@ database, it will return all the data in 2 pages, and each page counts as a “r
       <td>ft</td>
       <td>INF</td>
       <td>Location in cross section, distance from right...</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>Agree</td>
     </tr>
     <tr>
@@ -256,13 +256,13 @@ database, it will return all the data in 2 pages, and each page counts as a “r
       <td>%</td>
       <td>INF</td>
       <td>Location in cross section, distance from right...</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>Agree</td>
     </tr>
     <tr>
@@ -272,13 +272,13 @@ database, it will return all the data in 2 pages, and each page counts as a “r
       <td>ft</td>
       <td>INF</td>
       <td>Sampling depth, feet</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>Agree</td>
     </tr>
     <tr>
@@ -288,13 +288,13 @@ database, it will return all the data in 2 pages, and each page counts as a “r
       <td>ft</td>
       <td>PHY</td>
       <td>Stream width, feet</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>Agree</td>
     </tr>
     <tr>
@@ -304,13 +304,13 @@ database, it will return all the data in 2 pages, and each page counts as a “r
       <td>%</td>
       <td>INF</td>
       <td>Location in cross section, fraction of total d...</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
-      <td>None</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>Total</td>
-      <td>None</td>
+      <td>NaN</td>
       <td>Agree</td>
     </tr>
   </tbody>
@@ -586,20 +586,20 @@ database, it will return all the data in 2 pages, and each page counts as a “r
       <td>00011</td>
       <td>101701040305</td>
       <td>Nebraska</td>
-      <td>2026-03-18 05:31:39.403562</td>
+      <td>2026-03-19 06:29:58.321056</td>
       <td>1990-10-01 05:30:00.000001</td>
-      <td>2026-03-18 05:15:00.000001</td>
+      <td>2026-03-19 06:15:00.000001</td>
       <td>...</td>
-      <td>2026-03-18 10:15:00+00:00</td>
+      <td>2026-03-19 11:15:00+00:00</td>
       <td>Points</td>
       <td>Instantaneous</td>
       <td>[{'Name': 'Peak of record discharge on March 2...</td>
-      <td>None</td>
+      <td>NaN</td>
       <td>Primary</td>
       <td>USGS-06453600</td>
       <td>Discharge from Primary Sensor</td>
       <td>Discharge, cubic feet per second</td>
-      <td>None</td>
+      <td>NaN</td>
     </tr>
     <tr>
       <th>30</th>
@@ -610,18 +610,18 @@ database, it will return all the data in 2 pages, and each page counts as a “r
       <td>00003</td>
       <td>101701040305</td>
       <td>Nebraska</td>
-      <td>2026-03-18 06:33:31.475954</td>
+      <td>2026-03-19 06:30:07.151455</td>
       <td>1957-10-01 00:00:00.000001</td>
-      <td>2026-03-16 00:00:00.000001</td>
+      <td>2026-03-17 00:00:00.000001</td>
       <td>...</td>
-      <td>2026-03-16 05:00:00+00:00</td>
+      <td>2026-03-17 05:00:00+00:00</td>
       <td>Daily</td>
       <td>Mean</td>
       <td>[]</td>
-      <td>None</td>
+      <td>NaN</td>
       <td>Primary</td>
       <td>USGS-06453600</td>
-      <td>None</td>
+      <td>NaN</td>
       <td>Discharge, cubic feet per second</td>
       <td>c8f66a81be244941a4c8975ac4393f57</td>
     </tr>
@@ -634,18 +634,18 @@ database, it will return all the data in 2 pages, and each page counts as a “r
       <td>00003</td>
       <td>101500040905</td>
       <td>Nebraska</td>
-      <td>2026-03-18 06:59:51.656886</td>
+      <td>2026-03-19 06:59:13.289772</td>
       <td>1945-10-01 00:00:00.000001</td>
-      <td>2026-03-16 00:00:00.000001</td>
+      <td>2026-03-18 00:00:00.000001</td>
       <td>...</td>
-      <td>2026-03-16 05:00:00+00:00</td>
+      <td>2026-03-18 05:00:00+00:00</td>
       <td>Daily</td>
       <td>Mean</td>
       <td>[]</td>
-      <td>None</td>
+      <td>NaN</td>
       <td>Primary</td>
       <td>USGS-06461500</td>
-      <td>None</td>
+      <td>NaN</td>
       <td>Discharge, cubic feet per second</td>
       <td>9d41bfe5d9374b998cb9c93310bbbdd8</td>
     </tr>
@@ -658,20 +658,20 @@ database, it will return all the data in 2 pages, and each page counts as a “r
       <td>00011</td>
       <td>101500040905</td>
       <td>Nebraska</td>
-      <td>2026-03-18 09:58:43.516079</td>
+      <td>2026-03-19 10:58:46.854649</td>
       <td>1991-05-17 05:00:00.000001</td>
-      <td>2026-03-18 09:45:00.000001</td>
+      <td>2026-03-19 10:45:00.000001</td>
       <td>...</td>
-      <td>2026-03-18 14:45:00+00:00</td>
+      <td>2026-03-19 15:45:00+00:00</td>
       <td>Points</td>
       <td>Instantaneous</td>
       <td>[{'Name': 'VERY HIGH', 'Type': 'ThresholdAbove...</td>
-      <td>None</td>
+      <td>NaN</td>
       <td>Primary</td>
       <td>USGS-06461500</td>
-      <td>None</td>
+      <td>NaN</td>
       <td>Discharge, cubic feet per second</td>
-      <td>None</td>
+      <td>NaN</td>
     </tr>
     <tr>
       <th>214</th>
@@ -682,20 +682,20 @@ database, it will return all the data in 2 pages, and each page counts as a “r
       <td>00011</td>
       <td>101500041309</td>
       <td>Nebraska</td>
-      <td>2026-03-18 09:51:34.921311</td>
+      <td>2026-03-19 09:51:21.375975</td>
       <td>1990-10-01 05:30:00.000001</td>
-      <td>2026-03-18 08:45:00.000001</td>
+      <td>2026-03-19 09:45:00.000001</td>
       <td>...</td>
-      <td>2026-03-18 13:45:00+00:00</td>
+      <td>2026-03-19 14:45:00+00:00</td>
       <td>Points</td>
       <td>Instantaneous</td>
       <td>[{'Name': 'VERY LOW', 'Type': 'ThresholdBelow'...</td>
-      <td>None</td>
+      <td>NaN</td>
       <td>Primary</td>
       <td>USGS-06463500</td>
-      <td>None</td>
+      <td>NaN</td>
       <td>Discharge, cubic feet per second</td>
-      <td>None</td>
+      <td>NaN</td>
     </tr>
   </tbody>
 </table>
@@ -907,10 +907,10 @@ coordinate columns instead.</p>
 <div class="highlight"><pre>
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
 <span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/explore.py:294</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
-<span class="ansi-green-fg">    293</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">matplotlib</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">pyplot</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">plt</span>
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">294</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">mapclassify</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> classify
-<span class="ansi-green-fg">    295</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">matplotlib</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> colormaps <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> cm
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/geopandas/explore.py:294</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
+<span class="ansi-green-fg">    293</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">matplotlib</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">pyplot</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">as</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">plt</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">294</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">mapclassify</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">import</span> classify
+<span class="ansi-green-fg">    295</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">matplotlib</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">import</span> colormaps <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> cm
 
 <span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;mapclassify&#39;
 
@@ -920,13 +920,13 @@ During handling of the above exception, another exception occurred:
 <span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[9]</span><span class="ansi-green-fg">, line 1</span>
 <span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span class="ansi-yellow-bg">NE_locations_discharge</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">set_crs</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">crs</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">WGS84</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">explore</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/geodataframe.py:2479</span>, in <span class="ansi-cyan-fg">GeoDataFrame.explore</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/geopandas/geodataframe.py:2479</span>, in <span class="ansi-cyan-fg">GeoDataFrame.explore</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
 <span class="ansi-green-fg">   2477</span> <span style="color: rgb(175,0,255)">@doc</span>(_explore)
-<span class="ansi-green-fg">   2478</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span> <span class="ansi-blue-fg">explore</span>(<span style="color: rgb(0,135,0)">self</span>, *args, **kwargs) -&gt; folium.Map:
+<span class="ansi-green-fg">   2478</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-fg">explore</span>(<span style="color: rgb(0,135,0)">self</span>, *args, **kwargs) -&gt; folium.Map:
 <span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">2479</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">_explore</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">args</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">kwargs</span><span class="ansi-yellow-bg">)</span>
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/explore.py:299</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
-<span class="ansi-green-fg">    296</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">matplotlib</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> colors
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/geopandas/explore.py:299</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
+<span class="ansi-green-fg">    296</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">matplotlib</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">import</span> colors
 <span class="ansi-green-fg">    298</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> (<span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>, <span class="ansi-bold" style="color: rgb(215,95,95)">ModuleNotFoundError</span>):
 <span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">299</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>(
 <span class="ansi-green-fg">    300</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">The </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">folium&gt;=0.12</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">, </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">matplotlib</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> and </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">mapclassify</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> packages </span><span class="ansi-yellow-fg">&#34;</span>
@@ -997,78 +997,78 @@ During handling of the above exception, another exception occurred:
   <tbody>
     <tr>
       <th>0</th>
-      <td>POINT (-98.22286 42.73979)</td>
-      <td>9084ec7fa6234f85bfb62c9d79a71f8c</td>
-      <td>USGS-06465500</td>
+      <td>POINT (-97.67545 41.32923)</td>
+      <td>7a8ce57b22f648629eea22fa24aa7b87</td>
+      <td>USGS-06773500</td>
       <td>00060</td>
       <td>00003</td>
-      <td>2026-03-15</td>
-      <td>3790.00</td>
+      <td>2026-03-16</td>
+      <td>8.24</td>
       <td>ft^3/s</td>
       <td>Provisional</td>
       <td>None</td>
-      <td>2026-03-17 14:40:17.525531+00:00</td>
-      <td>bfcd783b-3228-4774-9be2-ab3e6e672c7b</td>
+      <td>2026-03-18 08:23:11.965681+00:00</td>
+      <td>2b584dc3-5188-4056-9698-104958e6ab2a</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>POINT (-96.13879 41.18016)</td>
-      <td>ae9bbef1272c4dc3b72e903adb36a392</td>
-      <td>USGS-06610788</td>
+      <td>POINT (-97.49474 41.36814)</td>
+      <td>f29be12ae9ea4316963b3c0401f2374e</td>
+      <td>USGS-06774000</td>
       <td>00060</td>
       <td>00003</td>
-      <td>2026-03-15</td>
-      <td>0.87</td>
+      <td>2026-03-17</td>
+      <td>1000.00</td>
       <td>ft^3/s</td>
       <td>Provisional</td>
       <td>None</td>
-      <td>2026-03-18 01:07:17.186142+00:00</td>
-      <td>bac7725f-1f44-4f51-9ee7-3e9c3d2dfc50</td>
+      <td>2026-03-18 14:06:14.696210+00:00</td>
+      <td>6a011cce-e546-4212-ab7c-37183b2a6251</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>POINT (-96.68465 40.80474)</td>
-      <td>3624cfa7deb24a7b86d5d6c11d72e0eb</td>
-      <td>USGS-06803300</td>
+      <td>POINT (-98.1754 42.81086)</td>
+      <td>2daeaac402fb46e594ad265d1fed145c</td>
+      <td>USGS-06453600</td>
       <td>00060</td>
       <td>00003</td>
-      <td>2026-03-15</td>
-      <td>0.47</td>
+      <td>2026-03-18</td>
+      <td>42.00</td>
       <td>ft^3/s</td>
       <td>Provisional</td>
       <td>None</td>
-      <td>2026-03-18 20:12:34.520806+00:00</td>
-      <td>59a2145c-66a9-4318-9763-9cc347c44fc7</td>
+      <td>2026-03-19 08:09:17.887869+00:00</td>
+      <td>dcebf24f-97f4-4158-b698-5752ce163688</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>POINT (-96.48358 42.14819)</td>
-      <td>302919c2cfee4754b5764203783f3edf</td>
-      <td>USGS-06600900</td>
+      <td>POINT (-100.36253 42.90208)</td>
+      <td>a661caa558244bf8a054018ccae0553a</td>
+      <td>USGS-06461500</td>
       <td>00060</td>
       <td>00003</td>
-      <td>2026-03-16</td>
-      <td>8.14</td>
+      <td>2026-03-18</td>
+      <td>1080.00</td>
       <td>ft^3/s</td>
       <td>Provisional</td>
       <td>None</td>
-      <td>2026-03-17 14:52:14.330117+00:00</td>
-      <td>0718342c-b40e-4844-8133-7572e4b5d847</td>
+      <td>2026-03-19 08:19:05.704884+00:00</td>
+      <td>553bfab6-5922-4a34-bee2-b703bc2ffae9</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>POINT (-98.28219 40.87412)</td>
-      <td>197f91224e7046a198ccd6083bb513ca</td>
-      <td>USGS-06770500</td>
+      <td>POINT (-99.67945 42.68964)</td>
+      <td>58fcf157597f4f8f9b351312a1993e05</td>
+      <td>USGS-06463500</td>
       <td>00060</td>
       <td>00003</td>
-      <td>2026-03-16</td>
-      <td>NaN</td>
+      <td>2026-03-18</td>
+      <td>160.00</td>
       <td>ft^3/s</td>
       <td>Provisional</td>
-      <td>[ICE]</td>
-      <td>2026-03-17 12:08:20.789723+00:00</td>
-      <td>438af8cc-01c9-43b3-ba01-c412a23c6d2e</td>
+      <td>None</td>
+      <td>2026-03-19 08:12:48.543622+00:00</td>
+      <td>8f141a96-6155-47a9-9968-7c8515d9d696</td>
     </tr>
   </tbody>
 </table>
@@ -1095,10 +1095,10 @@ During handling of the above exception, another exception occurred:
 <div class="highlight"><pre>
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
 <span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/explore.py:294</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
-<span class="ansi-green-fg">    293</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">matplotlib</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">pyplot</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">plt</span>
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">294</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">mapclassify</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> classify
-<span class="ansi-green-fg">    295</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">matplotlib</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> colormaps <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> cm
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/geopandas/explore.py:294</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
+<span class="ansi-green-fg">    293</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">matplotlib</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">pyplot</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">as</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">plt</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">294</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">mapclassify</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">import</span> classify
+<span class="ansi-green-fg">    295</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">matplotlib</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">import</span> colormaps <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> cm
 
 <span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;mapclassify&#39;
 
@@ -1113,13 +1113,13 @@ During handling of the above exception, another exception occurred:
 <span class="ansi-green-fg">      5</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">column</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">value</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">tiles</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">CartoDB dark matter</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">cmap</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">YlOrRd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">scheme</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">None</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">legend</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">True</span>
 <span class="ansi-green-fg">      6</span> <span class="ansi-yellow-bg">)</span>
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/geodataframe.py:2479</span>, in <span class="ansi-cyan-fg">GeoDataFrame.explore</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/geopandas/geodataframe.py:2479</span>, in <span class="ansi-cyan-fg">GeoDataFrame.explore</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
 <span class="ansi-green-fg">   2477</span> <span style="color: rgb(175,0,255)">@doc</span>(_explore)
-<span class="ansi-green-fg">   2478</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span> <span class="ansi-blue-fg">explore</span>(<span style="color: rgb(0,135,0)">self</span>, *args, **kwargs) -&gt; folium.Map:
+<span class="ansi-green-fg">   2478</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-fg">explore</span>(<span style="color: rgb(0,135,0)">self</span>, *args, **kwargs) -&gt; folium.Map:
 <span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">2479</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">_explore</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">args</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">kwargs</span><span class="ansi-yellow-bg">)</span>
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/explore.py:299</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
-<span class="ansi-green-fg">    296</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">matplotlib</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> colors
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/geopandas/explore.py:299</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
+<span class="ansi-green-fg">    296</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">matplotlib</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">import</span> colors
 <span class="ansi-green-fg">    298</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> (<span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>, <span class="ansi-bold" style="color: rgb(215,95,95)">ModuleNotFoundError</span>):
 <span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">299</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>(
 <span class="ansi-green-fg">    300</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">The </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">folium&gt;=0.12</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">, </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">matplotlib</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> and </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">mapclassify</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> packages </span><span class="ansi-yellow-fg">&#34;</span>
@@ -1157,10 +1157,10 @@ During handling of the above exception, another exception occurred:
 <div class="highlight"><pre>
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
 <span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/explore.py:294</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
-<span class="ansi-green-fg">    293</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> <span class="ansi-blue-intense-fg ansi-bold">matplotlib</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">pyplot</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> <span class="ansi-blue-intense-fg ansi-bold">plt</span>
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">294</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">mapclassify</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> classify
-<span class="ansi-green-fg">    295</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">matplotlib</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> colormaps <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> cm
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/geopandas/explore.py:294</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
+<span class="ansi-green-fg">    293</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">matplotlib</span><span class="ansi-blue-intense-fg ansi-bold">.</span><span class="ansi-blue-intense-fg ansi-bold">pyplot</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">as</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">plt</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">294</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">mapclassify</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">import</span> classify
+<span class="ansi-green-fg">    295</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">matplotlib</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">import</span> colormaps <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> cm
 
 <span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;mapclassify&#39;
 
@@ -1177,13 +1177,13 @@ During handling of the above exception, another exception occurred:
 <span class="ansi-green-fg">      8</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">geometry</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">monitoring_location_id</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">datetime</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">value</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">unit_of_measure</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">]</span>
 <span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span> <span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">set_crs</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">crs</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">WGS84</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">explore</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">column</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">value</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">cmap</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">YlOrRd</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">scheme</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">None</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">legend</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">True</span><span class="ansi-yellow-bg">)</span>
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/geodataframe.py:2479</span>, in <span class="ansi-cyan-fg">GeoDataFrame.explore</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/geopandas/geodataframe.py:2479</span>, in <span class="ansi-cyan-fg">GeoDataFrame.explore</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
 <span class="ansi-green-fg">   2477</span> <span style="color: rgb(175,0,255)">@doc</span>(_explore)
-<span class="ansi-green-fg">   2478</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span> <span class="ansi-blue-fg">explore</span>(<span style="color: rgb(0,135,0)">self</span>, *args, **kwargs) -&gt; folium.Map:
+<span class="ansi-green-fg">   2478</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-fg">explore</span>(<span style="color: rgb(0,135,0)">self</span>, *args, **kwargs) -&gt; folium.Map:
 <span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">2479</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">_explore</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">args</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">kwargs</span><span class="ansi-yellow-bg">)</span>
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/.local/lib/python3.12/site-packages/geopandas/explore.py:299</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
-<span class="ansi-green-fg">    296</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-blue-intense-fg ansi-bold">matplotlib</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> colors
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/geopandas/explore.py:299</span>, in <span class="ansi-cyan-fg">_explore</span><span class="ansi-blue-fg">(df, column, cmap, color, m, tiles, attr, tooltip, popup, highlight, categorical, legend, scheme, k, vmin, vmax, width, height, categories, classification_kwds, control_scale, marker_type, marker_kwds, style_kwds, highlight_kwds, missing_kwds, tooltip_kwds, popup_kwds, legend_kwds, map_kwds, **kwargs)</span>
+<span class="ansi-green-fg">    296</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">matplotlib</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">import</span> colors
 <span class="ansi-green-fg">    298</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> (<span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>, <span class="ansi-bold" style="color: rgb(215,95,95)">ModuleNotFoundError</span>):
 <span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">299</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ImportError</span>(
 <span class="ansi-green-fg">    300</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">The </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">folium&gt;=0.12</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">, </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">matplotlib</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> and </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">mapclassify</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> packages </span><span class="ansi-yellow-fg">&#34;</span>
@@ -1458,26 +1458,6 @@ During handling of the above exception, another exception occurred:
   <tbody>
     <tr>
       <th>0</th>
-      <td>POINT (-95.92325 41.25906)</td>
-      <td>a1897fbc-4ace-467b-aec8-bedf05317ce3</td>
-      <td>00060</td>
-      <td>USGS-06610000</td>
-      <td>Z</td>
-      <td>Acoustic Doppler Current Profiler</td>
-      <td>17200</td>
-      <td>ft^3/s</td>
-      <td>2025-03-18 14:26:14+00:00</td>
-      <td>None</td>
-      <td>None</td>
-      <td>Approved</td>
-      <td>usgs</td>
-      <td>2026-02-04 21:25:53.168440+00:00</td>
-      <td>Clear</td>
-      <td>Good</td>
-      <td>fe33be39-8725-4e12-97c8-437f25af1e22</td>
-    </tr>
-    <tr>
-      <th>1</th>
       <td>POINT (-96.41308 42.48619)</td>
       <td>819cfd00-7504-42f8-929b-36eaac3a3366</td>
       <td>00060</td>
@@ -1497,7 +1477,7 @@ During handling of the above exception, another exception occurred:
       <td>1f8ecf07-6fb9-4b56-97a7-1b09b0207063</td>
     </tr>
     <tr>
-      <th>2</th>
+      <th>1</th>
       <td>POINT (-95.84708 40.68181)</td>
       <td>330e194f-0469-4eb0-b039-f1a8cd2d0058</td>
       <td>00060</td>
@@ -1517,7 +1497,7 @@ During handling of the above exception, another exception occurred:
       <td>3d90139d-b2b7-41d3-8fe8-57e53bd10f46</td>
     </tr>
     <tr>
-      <th>3</th>
+      <th>2</th>
       <td>POINT (-95.92325 41.25906)</td>
       <td>3307b2c5-c018-42ac-b058-e13eccd8f751</td>
       <td>00060</td>
@@ -1537,7 +1517,7 @@ During handling of the above exception, another exception occurred:
       <td>8bb84a75-e590-4ef5-a03e-6be18aee0955</td>
     </tr>
     <tr>
-      <th>4</th>
+      <th>3</th>
       <td>POINT (-95.42175 40.05206)</td>
       <td>3c26784e-8b52-45ba-b2f2-2c3ec828175e</td>
       <td>00060</td>
@@ -1555,6 +1535,26 @@ During handling of the above exception, another exception occurred:
       <td>Clear</td>
       <td>Fair</td>
       <td>81f27173-316f-42cf-acdb-a9a0e078024d</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>POINT (-96.41308 42.48619)</td>
+      <td>65879fd4-b0e1-4402-a0e4-a0de11a28771</td>
+      <td>00060</td>
+      <td>USGS-06486000</td>
+      <td>Z</td>
+      <td>Acoustic Doppler Current Profiler</td>
+      <td>28300</td>
+      <td>ft^3/s</td>
+      <td>2025-03-31 16:07:05+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-02-03 22:01:24.267511+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>d126e14d-ca65-49cf-839e-464f793f50a7</td>
     </tr>
   </tbody>
 </table>

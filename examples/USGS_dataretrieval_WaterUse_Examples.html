@@ -6,15 +6,15 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_water_use() Examples &mdash; dataretrieval 0.1.dev1+g5c9ac1f8d documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+  <title>USGS dataretrieval Python Package get_water_use() Examples &mdash; dataretrieval 0.1.dev1+g2c775e4c4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=6f13279f"></script>
+      <script src="../_static/documentation_options.js?v=583b92f2"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -125,14 +125,16 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: dataretrieval in /home/runner/.local/lib/python3.12/site-packages (0.1.dev1+g5c9ac1f8d)
-Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from dataretrieval) (2.31.0)
-Requirement already satisfied: pandas&lt;3.0.0,&gt;=2.0.0 in /home/runner/.local/lib/python3.12/site-packages (from dataretrieval) (2.3.3)
-Requirement already satisfied: numpy&gt;=1.26.0 in /home/runner/.local/lib/python3.12/site-packages (from pandas&lt;3.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.3)
-Requirement already satisfied: python-dateutil&gt;=2.8.2 in /usr/lib/python3/dist-packages (from pandas&lt;3.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.8.2)
-Requirement already satisfied: pytz&gt;=2020.1 in /usr/lib/python3/dist-packages (from pandas&lt;3.0.0,&gt;=2.0.0-&gt;dataretrieval) (2024.1)
-Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/python3.12/site-packages (from pandas&lt;3.0.0,&gt;=2.0.0-&gt;dataretrieval) (2025.3)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (0.1.dev1+g2c775e4c4)
+Requirement already satisfied: requests in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (2.32.5)
+Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.1)
+Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.3)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.9.0.post0)
+Requirement already satisfied: six&gt;=1.5 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
+Requirement already satisfied: charset_normalizer&lt;4,&gt;=2 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (3.4.6)
+Requirement already satisfied: idna&lt;4,&gt;=2.5 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (3.11)
+Requirement already satisfied: urllib3&lt;3,&gt;=1.21.1 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2.6.3)
+Requirement already satisfied: certifi&gt;=2017.4.17 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2026.2.25)
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
@@ -140,9 +142,9 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
 
-<span class="kn">from</span> <span class="nn">dataretrieval</span> <span class="kn">import</span> <span class="n">nwis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">nwis</span>
 </pre></div>
 </div>
 </div>
@@ -173,7 +175,33 @@ Requirement already satisfied: tzdata&gt;=2022.7 in /home/runner/.local/lib/pyth
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 55 water use records.
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> pennsylvania = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_water_use</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">state</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">PA</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">      2</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#34;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(pennsylvania[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> water use records.</span><span class="ansi-yellow-fg">&#34;</span>)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/dataretrieval/nwis.py:941</span>, in <span class="ansi-cyan-fg">get_water_use</span><span class="ansi-blue-fg">(years, state, counties, categories, ssl_check)</span>
+<span class="ansi-green-fg">    939</span>     payload.update({<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">wu_area</span><span class="ansi-yellow-fg">&#34;</span>: <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">county</span><span class="ansi-yellow-fg">&#34;</span>})
+<span class="ansi-green-fg">    940</span> response = query(url, payload, ssl_check=ssl_check)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">941</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">_read_rdb</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">response</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">text</span><span class="ansi-yellow-bg">)</span>, NWIS_Metadata(response)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/dataretrieval/nwis.py:1350</span>, in <span class="ansi-cyan-fg">_read_rdb</span><span class="ansi-blue-fg">(rdb)</span>
+<span class="ansi-green-fg">   1335</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">   1336</span> <span class="ansi-yellow-fg">Convert NWIS rdb table into a ``pandas.dataframe``.</span>
+<span class="ansi-green-fg">   1337</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">   1347</span>
+<span class="ansi-green-fg">   1348</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">   1349</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">&lt;html&gt;</span><span class="ansi-yellow-fg">&#34;</span> <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> rdb.lower() <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">&lt;!doctype html&gt;</span><span class="ansi-yellow-fg">&#34;</span> <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> rdb.lower():
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1350</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(
+<span class="ansi-green-fg">   1351</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Received HTML response instead of RDB. This often indicates </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">   1352</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">that the service has been moved or is currently unavailable.</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">   1353</span>     )
+<span class="ansi-green-fg">   1355</span> count = <span class="ansi-green-fg">0</span>
+<span class="ansi-green-fg">   1357</span> <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> line <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> rdb.splitlines():
+<span class="ansi-green-fg">   1358</span>     <span style="color: rgb(95,135,135)"># ignore comment lines</span>
+
+<span class="ansi-red-fg">ValueError</span>: Received HTML response instead of RDB. This often indicates that the service has been moved or is currently unavailable.
 </pre></div></div>
 </div>
 </section>
@@ -194,252 +222,15 @@ Retrieved 55 water use records.
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[4]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> display(<span class="ansi-yellow-bg">pennsylvania</span>[<span class="ansi-green-fg">0</span>])
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>&lt;!DOCTYPE html&gt;</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>&lt;head&gt;</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>&lt;meta charset="UTF-8" /&gt;</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>&lt;meta name="viewport" content="width=devic...</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>&lt;link rel="icon" id="favicon" href="/nwaa-...</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>&lt;title&gt;U.S. Geological Survey&lt;/title&gt;</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>&lt;meta name="description" content=""&gt;</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>&lt;!--</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>NWDC Google Tag Manager</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>- NWDC Pixel</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>- DAP Pixel</td>
-    </tr>
-    <tr>
-      <th>10</th>
-      <td>--&gt;</td>
-    </tr>
-    <tr>
-      <th>11</th>
-      <td>&lt;script&gt;(function(w,d,s,l,i){w[l]=w[l]||[]...</td>
-    </tr>
-    <tr>
-      <th>12</th>
-      <td>new Date().getTime(),event:'gtm.js'});va...</td>
-    </tr>
-    <tr>
-      <th>13</th>
-      <td>j=d.createElement(s),dl=l!='dataLayer'?'...</td>
-    </tr>
-    <tr>
-      <th>14</th>
-      <td>'https://www.googletagmanager.com/gtm.js...</td>
-    </tr>
-    <tr>
-      <th>15</th>
-      <td>})(window,document,'script','dataLayer',...</td>
-    </tr>
-    <tr>
-      <th>16</th>
-      <td>&lt;/script&gt;</td>
-    </tr>
-    <tr>
-      <th>17</th>
-      <td>&lt;!-- End Google Tag Manager --&gt;</td>
-    </tr>
-    <tr>
-      <th>18</th>
-      <td>&lt;!-- CHS Google Tag Manager --&gt;</td>
-    </tr>
-    <tr>
-      <th>19</th>
-      <td>&lt;script&gt;(function(w,d,s,l,i){w[l]=w[l]||[]...</td>
-    </tr>
-    <tr>
-      <th>20</th>
-      <td>new Date().getTime(),event:'gtm.js'});va...</td>
-    </tr>
-    <tr>
-      <th>21</th>
-      <td>j=d.createElement(s),dl=l!='dataLayer'?'...</td>
-    </tr>
-    <tr>
-      <th>22</th>
-      <td>'https://www.googletagmanager.com/gtm.js...</td>
-    </tr>
-    <tr>
-      <th>23</th>
-      <td>})(window,document,'script','dataLayer',...</td>
-    </tr>
-    <tr>
-      <th>24</th>
-      <td>&lt;/script&gt;</td>
-    </tr>
-    <tr>
-      <th>25</th>
-      <td>&lt;!-- End Google Tag Manager --&gt;</td>
-    </tr>
-    <tr>
-      <th>26</th>
-      <td>&lt;!-- START Google Font - Source Sans Pro --&gt;</td>
-    </tr>
-    <tr>
-      <th>27</th>
-      <td>&lt;link rel="preconnect" href="https://fon...</td>
-    </tr>
-    <tr>
-      <th>28</th>
-      <td>&lt;link rel="preconnect" href="https://fon...</td>
-    </tr>
-    <tr>
-      <th>29</th>
-      <td>&lt;link href="https://fonts.googleapis.com...</td>
-    </tr>
-    <tr>
-      <th>30</th>
-      <td>&lt;!-- END Google Font - Source Sans Pro --&gt;</td>
-    </tr>
-    <tr>
-      <th>31</th>
-      <td>&lt;script type="module" crossorigin src="/nw...</td>
-    </tr>
-    <tr>
-      <th>32</th>
-      <td>&lt;link rel="stylesheet" href="/nwaa-data/as...</td>
-    </tr>
-    <tr>
-      <th>33</th>
-      <td>&lt;/head&gt;</td>
-    </tr>
-    <tr>
-      <th>34</th>
-      <td>&lt;body&gt;</td>
-    </tr>
-    <tr>
-      <th>35</th>
-      <td>&lt;!-- NWDC Google Tag Manager (noscript) --&gt;</td>
-    </tr>
-    <tr>
-      <th>36</th>
-      <td>&lt;noscript&gt;</td>
-    </tr>
-    <tr>
-      <th>37</th>
-      <td>&lt;iframe src="https://www.googletagmanage...</td>
-    </tr>
-    <tr>
-      <th>38</th>
-      <td>height="0" width="0" style="display:no...</td>
-    </tr>
-    <tr>
-      <th>39</th>
-      <td>&lt;/iframe&gt;</td>
-    </tr>
-    <tr>
-      <th>40</th>
-      <td>&lt;/noscript&gt;</td>
-    </tr>
-    <tr>
-      <th>41</th>
-      <td>&lt;!-- End Google Tag Manager (noscript) --&gt;</td>
-    </tr>
-    <tr>
-      <th>42</th>
-      <td>&lt;!-- Google Tag Manager (noscript) --&gt;</td>
-    </tr>
-    <tr>
-      <th>43</th>
-      <td>&lt;noscript&gt;</td>
-    </tr>
-    <tr>
-      <th>44</th>
-      <td>&lt;iframe src="https://www.googletagmanage...</td>
-    </tr>
-    <tr>
-      <th>45</th>
-      <td>height="0" width="0" style="display:no...</td>
-    </tr>
-    <tr>
-      <th>46</th>
-      <td>&lt;/iframe&gt;</td>
-    </tr>
-    <tr>
-      <th>47</th>
-      <td>&lt;/noscript&gt;</td>
-    </tr>
-    <tr>
-      <th>48</th>
-      <td>&lt;!-- End Google Tag Manager (noscript) --&gt;</td>
-    </tr>
-    <tr>
-      <th>49</th>
-      <td>&lt;link rel="stylesheet" href="/nwaa-data/as...</td>
-    </tr>
-    <tr>
-      <th>50</th>
-      <td>&lt;div id="app"&gt;&lt;/div&gt;</td>
-    </tr>
-    <tr>
-      <th>51</th>
-      <td>&lt;script src="/nwaa-data/assets/uswds/js/us...</td>
-    </tr>
-    <tr>
-      <th>52</th>
-      <td>&lt;script src="/nwaa-data/assets/uswds/js/us...</td>
-    </tr>
-    <tr>
-      <th>53</th>
-      <td>&lt;/body&gt;</td>
-    </tr>
-    <tr>
-      <th>54</th>
-      <td>&lt;/html&gt;</td>
-    </tr>
-  </tbody>
-</table>
-</div></div>
+<span class="ansi-red-fg">NameError</span>: name &#39;pennsylvania&#39; is not defined
+</pre></div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
 <div class="nbinput docutils container">
@@ -455,8 +246,12 @@ Retrieved 55 water use records.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-&lt;!DOCTYPE html&gt;    object
-dtype: object
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[5]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-bg">pennsylvania</span>[<span class="ansi-green-fg">0</span>].dtypes)
+
+<span class="ansi-red-fg">NameError</span>: name &#39;pennsylvania&#39; is not defined
 </pre></div></div>
 </div>
 <section id="Example-2:-Retrieve-data-for-an-entire-state-for-certain-years">
@@ -472,263 +267,40 @@ dtype: object
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
+<div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 55 water use records.
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> ohio = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_water_use</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">years</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">[</span><span class="ansi-green-fg ansi-yellow-bg">2000</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-green-fg ansi-yellow-bg">2005</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-green-fg ansi-yellow-bg">2010</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">state</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">OH</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">      2</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#34;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(ohio[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> water use records.</span><span class="ansi-yellow-fg">&#34;</span>)
+<span class="ansi-green-fg">      3</span> display(ohio[<span class="ansi-green-fg">0</span>])
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/dataretrieval/nwis.py:941</span>, in <span class="ansi-cyan-fg">get_water_use</span><span class="ansi-blue-fg">(years, state, counties, categories, ssl_check)</span>
+<span class="ansi-green-fg">    939</span>     payload.update({<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">wu_area</span><span class="ansi-yellow-fg">&#34;</span>: <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">county</span><span class="ansi-yellow-fg">&#34;</span>})
+<span class="ansi-green-fg">    940</span> response = query(url, payload, ssl_check=ssl_check)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">941</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">_read_rdb</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">response</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">text</span><span class="ansi-yellow-bg">)</span>, NWIS_Metadata(response)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/dataretrieval/nwis.py:1350</span>, in <span class="ansi-cyan-fg">_read_rdb</span><span class="ansi-blue-fg">(rdb)</span>
+<span class="ansi-green-fg">   1335</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">   1336</span> <span class="ansi-yellow-fg">Convert NWIS rdb table into a ``pandas.dataframe``.</span>
+<span class="ansi-green-fg">   1337</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">   1347</span>
+<span class="ansi-green-fg">   1348</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">   1349</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">&lt;html&gt;</span><span class="ansi-yellow-fg">&#34;</span> <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> rdb.lower() <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">&lt;!doctype html&gt;</span><span class="ansi-yellow-fg">&#34;</span> <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> rdb.lower():
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1350</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(
+<span class="ansi-green-fg">   1351</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Received HTML response instead of RDB. This often indicates </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">   1352</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">that the service has been moved or is currently unavailable.</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">   1353</span>     )
+<span class="ansi-green-fg">   1355</span> count = <span class="ansi-green-fg">0</span>
+<span class="ansi-green-fg">   1357</span> <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> line <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> rdb.splitlines():
+<span class="ansi-green-fg">   1358</span>     <span style="color: rgb(95,135,135)"># ignore comment lines</span>
+
+<span class="ansi-red-fg">ValueError</span>: Received HTML response instead of RDB. This often indicates that the service has been moved or is currently unavailable.
 </pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>&lt;!DOCTYPE html&gt;</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>&lt;head&gt;</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>&lt;meta charset="UTF-8" /&gt;</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>&lt;meta name="viewport" content="width=devic...</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>&lt;link rel="icon" id="favicon" href="/nwaa-...</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>&lt;title&gt;U.S. Geological Survey&lt;/title&gt;</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>&lt;meta name="description" content=""&gt;</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>&lt;!--</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>NWDC Google Tag Manager</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>- NWDC Pixel</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>- DAP Pixel</td>
-    </tr>
-    <tr>
-      <th>10</th>
-      <td>--&gt;</td>
-    </tr>
-    <tr>
-      <th>11</th>
-      <td>&lt;script&gt;(function(w,d,s,l,i){w[l]=w[l]||[]...</td>
-    </tr>
-    <tr>
-      <th>12</th>
-      <td>new Date().getTime(),event:'gtm.js'});va...</td>
-    </tr>
-    <tr>
-      <th>13</th>
-      <td>j=d.createElement(s),dl=l!='dataLayer'?'...</td>
-    </tr>
-    <tr>
-      <th>14</th>
-      <td>'https://www.googletagmanager.com/gtm.js...</td>
-    </tr>
-    <tr>
-      <th>15</th>
-      <td>})(window,document,'script','dataLayer',...</td>
-    </tr>
-    <tr>
-      <th>16</th>
-      <td>&lt;/script&gt;</td>
-    </tr>
-    <tr>
-      <th>17</th>
-      <td>&lt;!-- End Google Tag Manager --&gt;</td>
-    </tr>
-    <tr>
-      <th>18</th>
-      <td>&lt;!-- CHS Google Tag Manager --&gt;</td>
-    </tr>
-    <tr>
-      <th>19</th>
-      <td>&lt;script&gt;(function(w,d,s,l,i){w[l]=w[l]||[]...</td>
-    </tr>
-    <tr>
-      <th>20</th>
-      <td>new Date().getTime(),event:'gtm.js'});va...</td>
-    </tr>
-    <tr>
-      <th>21</th>
-      <td>j=d.createElement(s),dl=l!='dataLayer'?'...</td>
-    </tr>
-    <tr>
-      <th>22</th>
-      <td>'https://www.googletagmanager.com/gtm.js...</td>
-    </tr>
-    <tr>
-      <th>23</th>
-      <td>})(window,document,'script','dataLayer',...</td>
-    </tr>
-    <tr>
-      <th>24</th>
-      <td>&lt;/script&gt;</td>
-    </tr>
-    <tr>
-      <th>25</th>
-      <td>&lt;!-- End Google Tag Manager --&gt;</td>
-    </tr>
-    <tr>
-      <th>26</th>
-      <td>&lt;!-- START Google Font - Source Sans Pro --&gt;</td>
-    </tr>
-    <tr>
-      <th>27</th>
-      <td>&lt;link rel="preconnect" href="https://fon...</td>
-    </tr>
-    <tr>
-      <th>28</th>
-      <td>&lt;link rel="preconnect" href="https://fon...</td>
-    </tr>
-    <tr>
-      <th>29</th>
-      <td>&lt;link href="https://fonts.googleapis.com...</td>
-    </tr>
-    <tr>
-      <th>30</th>
-      <td>&lt;!-- END Google Font - Source Sans Pro --&gt;</td>
-    </tr>
-    <tr>
-      <th>31</th>
-      <td>&lt;script type="module" crossorigin src="/nw...</td>
-    </tr>
-    <tr>
-      <th>32</th>
-      <td>&lt;link rel="stylesheet" href="/nwaa-data/as...</td>
-    </tr>
-    <tr>
-      <th>33</th>
-      <td>&lt;/head&gt;</td>
-    </tr>
-    <tr>
-      <th>34</th>
-      <td>&lt;body&gt;</td>
-    </tr>
-    <tr>
-      <th>35</th>
-      <td>&lt;!-- NWDC Google Tag Manager (noscript) --&gt;</td>
-    </tr>
-    <tr>
-      <th>36</th>
-      <td>&lt;noscript&gt;</td>
-    </tr>
-    <tr>
-      <th>37</th>
-      <td>&lt;iframe src="https://www.googletagmanage...</td>
-    </tr>
-    <tr>
-      <th>38</th>
-      <td>height="0" width="0" style="display:no...</td>
-    </tr>
-    <tr>
-      <th>39</th>
-      <td>&lt;/iframe&gt;</td>
-    </tr>
-    <tr>
-      <th>40</th>
-      <td>&lt;/noscript&gt;</td>
-    </tr>
-    <tr>
-      <th>41</th>
-      <td>&lt;!-- End Google Tag Manager (noscript) --&gt;</td>
-    </tr>
-    <tr>
-      <th>42</th>
-      <td>&lt;!-- Google Tag Manager (noscript) --&gt;</td>
-    </tr>
-    <tr>
-      <th>43</th>
-      <td>&lt;noscript&gt;</td>
-    </tr>
-    <tr>
-      <th>44</th>
-      <td>&lt;iframe src="https://www.googletagmanage...</td>
-    </tr>
-    <tr>
-      <th>45</th>
-      <td>height="0" width="0" style="display:no...</td>
-    </tr>
-    <tr>
-      <th>46</th>
-      <td>&lt;/iframe&gt;</td>
-    </tr>
-    <tr>
-      <th>47</th>
-      <td>&lt;/noscript&gt;</td>
-    </tr>
-    <tr>
-      <th>48</th>
-      <td>&lt;!-- End Google Tag Manager (noscript) --&gt;</td>
-    </tr>
-    <tr>
-      <th>49</th>
-      <td>&lt;link rel="stylesheet" href="/nwaa-data/as...</td>
-    </tr>
-    <tr>
-      <th>50</th>
-      <td>&lt;div id="app"&gt;&lt;/div&gt;</td>
-    </tr>
-    <tr>
-      <th>51</th>
-      <td>&lt;script src="/nwaa-data/assets/uswds/js/us...</td>
-    </tr>
-    <tr>
-      <th>52</th>
-      <td>&lt;script src="/nwaa-data/assets/uswds/js/us...</td>
-    </tr>
-    <tr>
-      <th>53</th>
-      <td>&lt;/body&gt;</td>
-    </tr>
-    <tr>
-      <th>54</th>
-      <td>&lt;/html&gt;</td>
-    </tr>
-  </tbody>
-</table>
-</div></div>
 </div>
 </section>
 <section id="Example-3:-Retrieve-two-specific-water-use-categories-for-an-entire-state">
@@ -744,263 +316,41 @@ Retrieved 55 water use records.
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
+<div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 55 water use records.
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 2</span>
+<span class="ansi-green-fg">      1</span> <span style="color: rgb(95,135,135)"># Get water use data for livestock (LI) and irrigation (IT)</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> kansas = <span class="ansi-yellow-bg">nwis</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_water_use</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">state</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">KS</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">categories</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">IT</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">LI</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">      3</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retrieved </span><span class="ansi-yellow-fg">&#34;</span> + <span style="color: rgb(0,135,0)">str</span>(<span style="color: rgb(0,135,0)">len</span>(kansas[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg"> water use records.</span><span class="ansi-yellow-fg">&#34;</span>)
+<span class="ansi-green-fg">      4</span> display(kansas[<span class="ansi-green-fg">0</span>])
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/dataretrieval/nwis.py:941</span>, in <span class="ansi-cyan-fg">get_water_use</span><span class="ansi-blue-fg">(years, state, counties, categories, ssl_check)</span>
+<span class="ansi-green-fg">    939</span>     payload.update({<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">wu_area</span><span class="ansi-yellow-fg">&#34;</span>: <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">county</span><span class="ansi-yellow-fg">&#34;</span>})
+<span class="ansi-green-fg">    940</span> response = query(url, payload, ssl_check=ssl_check)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">941</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">_read_rdb</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">response</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">text</span><span class="ansi-yellow-bg">)</span>, NWIS_Metadata(response)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/dataretrieval/nwis.py:1350</span>, in <span class="ansi-cyan-fg">_read_rdb</span><span class="ansi-blue-fg">(rdb)</span>
+<span class="ansi-green-fg">   1335</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">   1336</span> <span class="ansi-yellow-fg">Convert NWIS rdb table into a ``pandas.dataframe``.</span>
+<span class="ansi-green-fg">   1337</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">   1347</span>
+<span class="ansi-green-fg">   1348</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">   1349</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">&lt;html&gt;</span><span class="ansi-yellow-fg">&#34;</span> <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> rdb.lower() <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">&lt;!doctype html&gt;</span><span class="ansi-yellow-fg">&#34;</span> <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> rdb.lower():
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1350</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(
+<span class="ansi-green-fg">   1351</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Received HTML response instead of RDB. This often indicates </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">   1352</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">that the service has been moved or is currently unavailable.</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">   1353</span>     )
+<span class="ansi-green-fg">   1355</span> count = <span class="ansi-green-fg">0</span>
+<span class="ansi-green-fg">   1357</span> <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> line <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> rdb.splitlines():
+<span class="ansi-green-fg">   1358</span>     <span style="color: rgb(95,135,135)"># ignore comment lines</span>
+
+<span class="ansi-red-fg">ValueError</span>: Received HTML response instead of RDB. This often indicates that the service has been moved or is currently unavailable.
 </pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>&lt;!DOCTYPE html&gt;</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>&lt;head&gt;</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>&lt;meta charset="UTF-8" /&gt;</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>&lt;meta name="viewport" content="width=devic...</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>&lt;link rel="icon" id="favicon" href="/nwaa-...</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>&lt;title&gt;U.S. Geological Survey&lt;/title&gt;</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>&lt;meta name="description" content=""&gt;</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>&lt;!--</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>NWDC Google Tag Manager</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>- NWDC Pixel</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>- DAP Pixel</td>
-    </tr>
-    <tr>
-      <th>10</th>
-      <td>--&gt;</td>
-    </tr>
-    <tr>
-      <th>11</th>
-      <td>&lt;script&gt;(function(w,d,s,l,i){w[l]=w[l]||[]...</td>
-    </tr>
-    <tr>
-      <th>12</th>
-      <td>new Date().getTime(),event:'gtm.js'});va...</td>
-    </tr>
-    <tr>
-      <th>13</th>
-      <td>j=d.createElement(s),dl=l!='dataLayer'?'...</td>
-    </tr>
-    <tr>
-      <th>14</th>
-      <td>'https://www.googletagmanager.com/gtm.js...</td>
-    </tr>
-    <tr>
-      <th>15</th>
-      <td>})(window,document,'script','dataLayer',...</td>
-    </tr>
-    <tr>
-      <th>16</th>
-      <td>&lt;/script&gt;</td>
-    </tr>
-    <tr>
-      <th>17</th>
-      <td>&lt;!-- End Google Tag Manager --&gt;</td>
-    </tr>
-    <tr>
-      <th>18</th>
-      <td>&lt;!-- CHS Google Tag Manager --&gt;</td>
-    </tr>
-    <tr>
-      <th>19</th>
-      <td>&lt;script&gt;(function(w,d,s,l,i){w[l]=w[l]||[]...</td>
-    </tr>
-    <tr>
-      <th>20</th>
-      <td>new Date().getTime(),event:'gtm.js'});va...</td>
-    </tr>
-    <tr>
-      <th>21</th>
-      <td>j=d.createElement(s),dl=l!='dataLayer'?'...</td>
-    </tr>
-    <tr>
-      <th>22</th>
-      <td>'https://www.googletagmanager.com/gtm.js...</td>
-    </tr>
-    <tr>
-      <th>23</th>
-      <td>})(window,document,'script','dataLayer',...</td>
-    </tr>
-    <tr>
-      <th>24</th>
-      <td>&lt;/script&gt;</td>
-    </tr>
-    <tr>
-      <th>25</th>
-      <td>&lt;!-- End Google Tag Manager --&gt;</td>
-    </tr>
-    <tr>
-      <th>26</th>
-      <td>&lt;!-- START Google Font - Source Sans Pro --&gt;</td>
-    </tr>
-    <tr>
-      <th>27</th>
-      <td>&lt;link rel="preconnect" href="https://fon...</td>
-    </tr>
-    <tr>
-      <th>28</th>
-      <td>&lt;link rel="preconnect" href="https://fon...</td>
-    </tr>
-    <tr>
-      <th>29</th>
-      <td>&lt;link href="https://fonts.googleapis.com...</td>
-    </tr>
-    <tr>
-      <th>30</th>
-      <td>&lt;!-- END Google Font - Source Sans Pro --&gt;</td>
-    </tr>
-    <tr>
-      <th>31</th>
-      <td>&lt;script type="module" crossorigin src="/nw...</td>
-    </tr>
-    <tr>
-      <th>32</th>
-      <td>&lt;link rel="stylesheet" href="/nwaa-data/as...</td>
-    </tr>
-    <tr>
-      <th>33</th>
-      <td>&lt;/head&gt;</td>
-    </tr>
-    <tr>
-      <th>34</th>
-      <td>&lt;body&gt;</td>
-    </tr>
-    <tr>
-      <th>35</th>
-      <td>&lt;!-- NWDC Google Tag Manager (noscript) --&gt;</td>
-    </tr>
-    <tr>
-      <th>36</th>
-      <td>&lt;noscript&gt;</td>
-    </tr>
-    <tr>
-      <th>37</th>
-      <td>&lt;iframe src="https://www.googletagmanage...</td>
-    </tr>
-    <tr>
-      <th>38</th>
-      <td>height="0" width="0" style="display:no...</td>
-    </tr>
-    <tr>
-      <th>39</th>
-      <td>&lt;/iframe&gt;</td>
-    </tr>
-    <tr>
-      <th>40</th>
-      <td>&lt;/noscript&gt;</td>
-    </tr>
-    <tr>
-      <th>41</th>
-      <td>&lt;!-- End Google Tag Manager (noscript) --&gt;</td>
-    </tr>
-    <tr>
-      <th>42</th>
-      <td>&lt;!-- Google Tag Manager (noscript) --&gt;</td>
-    </tr>
-    <tr>
-      <th>43</th>
-      <td>&lt;noscript&gt;</td>
-    </tr>
-    <tr>
-      <th>44</th>
-      <td>&lt;iframe src="https://www.googletagmanage...</td>
-    </tr>
-    <tr>
-      <th>45</th>
-      <td>height="0" width="0" style="display:no...</td>
-    </tr>
-    <tr>
-      <th>46</th>
-      <td>&lt;/iframe&gt;</td>
-    </tr>
-    <tr>
-      <th>47</th>
-      <td>&lt;/noscript&gt;</td>
-    </tr>
-    <tr>
-      <th>48</th>
-      <td>&lt;!-- End Google Tag Manager (noscript) --&gt;</td>
-    </tr>
-    <tr>
-      <th>49</th>
-      <td>&lt;link rel="stylesheet" href="/nwaa-data/as...</td>
-    </tr>
-    <tr>
-      <th>50</th>
-      <td>&lt;div id="app"&gt;&lt;/div&gt;</td>
-    </tr>
-    <tr>
-      <th>51</th>
-      <td>&lt;script src="/nwaa-data/assets/uswds/js/us...</td>
-    </tr>
-    <tr>
-      <th>52</th>
-      <td>&lt;script src="/nwaa-data/assets/uswds/js/us...</td>
-    </tr>
-    <tr>
-      <th>53</th>
-      <td>&lt;/body&gt;</td>
-    </tr>
-    <tr>
-      <th>54</th>
-      <td>&lt;/html&gt;</td>
-    </tr>
-  </tbody>
-</table>
-</div></div>
 </div>
 </section>
 </section>
