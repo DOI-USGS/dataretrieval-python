@@ -5,7 +5,7 @@ name: Python package
 
 on:
   push:
-    branches: ['main']
+    branches: ['**']
   pull_request:
     branches: ['main']
 
@@ -13,13 +13,20 @@ permissions:
   contents: read
 
 jobs:
-  ruff:
+  lint:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      - name: Debug checkout ref
+        run: |
+          echo "event_name=${{ github.event_name }}"
+          echo "github_ref=${{ github.ref }}"
+          echo "github_sha=${{ github.sha }}"
+          echo "pr_head_sha=${{ github.event.pull_request.head.sha }}"
+          git rev-parse HEAD
       - name: Set up Python 3.14
         uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3
         with:
@@ -34,7 +41,7 @@ jobs:
         run: ruff format --check .
 
   build:
-    needs: ruff
+    needs: lint
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -45,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3
         with:
