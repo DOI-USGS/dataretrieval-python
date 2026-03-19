@@ -30,10 +30,8 @@ the data as a GDAL memory-mapped file when no path is specified.
 """
 
 import io
-import os
 import re
 import zipfile
-from os.path import basename
 
 import requests
 
@@ -118,7 +116,7 @@ def get_annual_MDN_map(measurement_type, year, path):
     if path:
         z.extractall(path)
 
-    return f"{path}{os.sep}{basename(filename)}"
+    return str(path)
 
 
 def get_annual_NTN_map(measurement_type, measurement=None, year=None, path="."):
@@ -174,7 +172,7 @@ def get_annual_NTN_map(measurement_type, measurement=None, year=None, path="."):
     if path:
         z.extractall(path)
 
-    return f"{path}{os.sep}{basename(filename)}"
+    return str(path)
 
 
 def get_zip(url, filename):

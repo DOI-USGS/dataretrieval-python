@@ -29,15 +29,6 @@ Examples from the Readme file on retrieving NWIS data
     <BLANKLINE>
     [5 rows x 21 columns]
 
-    >>> # get water quality samples (qwdata)
-    >>> df2 = nwis.get_record(sites=site, service='qwdata', start='2018-12-01', end='2019-01-01')
-
-    >>> print(df2)
-                              agency_cd   site_no   sample_dt sample_tm  sample_end_dt  sample_end_tm  ... p80154 p82398 p84164  p91157  p91158  p91159
-    datetime                                                                                           ...
-    2018-12-10 17:30:00+00:00      USGS  03339000  2018-12-10     11:30            NaN            NaN  ...     16     50   3060  0.0165  0.0141  0.0024
-    <BLANKLINE>
-    [1 rows x 33 columns]
 
     >>> # get basic info about the site
     >>> df3 = nwis.get_record(sites=site, service='site')

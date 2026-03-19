@@ -19,13 +19,13 @@ class TestMDNmap:
         z_path = nadp.get_annual_MDN_map(
             measurement_type="conc", year="2010", path=tmp_path
         )
-        exp_path = os.path.join(tmp_path, "Hg_conc_2010.zip")
-        # assert path matches expectation
-        assert z_path == str(exp_path)
-        # assert unpacked zip exists as a directory
-        assert os.path.exists(exp_path[:-4])
+        # assert path matches expectation (now returns the path directory)
+        assert z_path == str(tmp_path)
+        # assert unpacked directory exists
+        exp_dir = os.path.join(tmp_path, "Hg_conc_2010")
+        assert os.path.exists(exp_dir)
         # assert tif exists in directory
-        assert os.path.exists(os.path.join(z_path[:-4], "conc_Hg_2010.tif"))
+        assert os.path.exists(os.path.join(exp_dir, "conc_Hg_2010.tif"))
 
 
 class TestNTNmap:
@@ -36,10 +36,10 @@ class TestNTNmap:
         z_path = nadp.get_annual_NTN_map(
             measurement_type="Precip", year="2015", path=tmp_path
         )
-        exp_path = os.path.join(tmp_path, "Precip_2015.zip")
         # assert path matches expectation
-        assert z_path == str(exp_path)
-        # assert unpacked zip exists as a directory
-        assert os.path.exists(exp_path[:-4])
+        assert z_path == str(tmp_path)
+        # assert unpacked directory exists
+        exp_dir = os.path.join(tmp_path, "Precip_2015")
+        assert os.path.exists(exp_dir)
         # assert tif exists in directory
-        assert os.path.exists(os.path.join(z_path[:-4], "Precip_2015.tif"))
+        assert os.path.exists(os.path.join(exp_dir, "Precip_2015.tif"))
