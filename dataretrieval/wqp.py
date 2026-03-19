@@ -204,10 +204,7 @@ def what_sites(
 
     kwargs = _check_kwargs(kwargs)
 
-    if legacy is True:
-        url = wqp_url("Station")
-    else:
-        url = wqx3_url("Station")
+    url = wqp_url("Station") if legacy is True else wqx3_url("Station")
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
@@ -377,10 +374,7 @@ def what_activities(
 
     kwargs = _check_kwargs(kwargs)
 
-    if legacy is True:
-        url = wqp_url("Activity")
-    else:
-        url = wqx3_url("Activity")
+    url = wqp_url("Activity") if legacy is True else wqx3_url("Activity")
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 

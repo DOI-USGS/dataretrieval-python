@@ -162,8 +162,8 @@ def test_get_daily_properties():
             "geometry",
         ],
     )
-    assert "daily_id" == df.columns[0]
-    assert "geometry" == df.columns[-1]
+    assert df.columns[0] == "daily_id"
+    assert df.columns[-1] == "geometry"
     assert df.shape[1] == 6
     assert df.parameter_code.unique().tolist() == ["00060"]
 
@@ -182,7 +182,7 @@ def test_get_daily_properties_id():
             "geometry",
         ],
     )
-    assert "daily_id" == df.columns[1]
+    assert df.columns[1] == "daily_id"
 
 
 def test_get_daily_no_geometry():
@@ -234,7 +234,7 @@ def test_get_latest_continuous():
         monitoring_location_id=["USGS-05427718", "USGS-05427719"],
         parameter_code=["00060", "00065"],
     )
-    assert "latest_continuous_id" == df.columns[-1]
+    assert df.columns[-1] == "latest_continuous_id"
     assert df.shape[0] <= 4
     assert df.statistic_id.unique().tolist() == ["00011"]
     assert hasattr(md, "url")

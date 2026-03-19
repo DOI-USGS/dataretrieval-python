@@ -31,18 +31,19 @@ def test_query_waterdata_validation():
     """Tests the validation parameters of the query_waterservices method"""
     with pytest.raises(TypeError) as type_error:
         query_waterdata(service="pmcodes", format="rdb")
-    assert "Query must specify a major filter: site_no, stateCd, bBox" == str(
-        type_error.value
+    assert (
+        str(type_error.value)
+        == "Query must specify a major filter: site_no, stateCd, bBox"
     )
 
     with pytest.raises(TypeError) as type_error:
         query_waterdata(service=None, site_no="sites")
-    assert "Service not recognized" == str(type_error.value)
+    assert str(type_error.value) == "Service not recognized"
 
     with pytest.raises(TypeError) as type_error:
         query_waterdata(service="pmcodes", nw_longitude_va="something")
-    assert "One or more lat/long coordinates missing or invalid." == str(
-        type_error.value
+    assert (
+        str(type_error.value) == "One or more lat/long coordinates missing or invalid."
     )
 
 
@@ -51,13 +52,13 @@ def test_query_waterservices_validation():
     with pytest.raises(TypeError) as type_error:
         query_waterservices(service="dv", format="rdb")
     assert (
-        "Query must specify a major filter: sites, stateCd, bBox, huc, or countyCd"
-        == str(type_error.value)
+        str(type_error.value)
+        == "Query must specify a major filter: sites, stateCd, bBox, huc, or countyCd"
     )
 
     with pytest.raises(TypeError) as type_error:
         query_waterservices(service=None, sites="sites")
-    assert "Service not recognized" == str(type_error.value)
+    assert str(type_error.value) == "Service not recognized"
 
 
 def test_query_validation(requests_mock):
@@ -82,7 +83,7 @@ def test_get_record_validation():
     """Tests the validation parameters of the get_record method"""
     with pytest.raises(TypeError) as type_error:
         get_record(sites=["01491000"], service="not_a_service")
-    assert "Unrecognized service: not_a_service" == str(type_error.value)
+    assert str(type_error.value) == "Unrecognized service: not_a_service"
 
 
 def test_get_dv(requests_mock):
