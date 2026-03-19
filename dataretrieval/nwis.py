@@ -35,9 +35,8 @@ WATERSERVICE_URL = "https://waterservices.usgs.gov/nwis/"
 PARAMCODES_URL = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?"
 ALLPARAMCODES_URL = "https://help.waterdata.usgs.gov/code/parameter_cd_query?"
 
-WATERSERVICES_SERVICES = ["dv", "iv", "site", "stat"]
+WATERSERVICES_SERVICES = ["dv", "iv", "site", "stat", "gwlevels"]
 WATERDATA_SERVICES = [
-    "gwlevels",
     "measurements",
     "peaks",
     "pmcodes",
@@ -322,35 +321,46 @@ def get_gwlevels(
     """
     _check_sites_value_types(sites)
 
-    # Make kwargs backwards compatible with waterservices
-    # vocabulary
-    if "startDT" in kwargs:
-        kwargs["begin_date"] = kwargs.pop("startDT")
-    if "endDT" in kwargs:
-        kwargs["end_date"] = kwargs.pop("endDT")
-    if "sites" in kwargs:
-        kwargs["site_no"] = kwargs.pop("sites")
-    if "stateCd" in kwargs:
-        kwargs["state_cd"] = kwargs.pop("stateCd")
-
-    kwargs["begin_date"] = kwargs.pop("begin_date", start)
-    kwargs["end_date"] = kwargs.pop("end_date", end)
-    kwargs["site_no"] = kwargs.pop("site_no", sites)
+    kwargs["startDT"] = kwargs.pop("startDT", start)
+    kwargs["endDT"] = kwargs.pop("endDT", end)
+    kwargs["sites"] = kwargs.pop("sites", sites)
     kwargs["multi_index"] = multi_index
 
-    response = query_waterdata("gwlevels", format="rdb", ssl_check=ssl_check, **kwargs)
+    response = query_waterservices("gwlevels", format="rdb", ssl_check=ssl_check, **kwargs)
 
     df = _read_rdb(response.text)
 
-    if datetime_index is True:
+    if datetime_index is True and "lev_tz_cd" in df.columns:
         df = format_datetime(df, "lev_dt", "lev_tm", "lev_tz_cd")
+    elif datetime_index is True:
+        # Fallback if lev_tz_cd is missing (e.g. some modern services)
+        # Try to use 'tz_cd' if it exists, otherwise just format date/time
+        tz_col = "lev_tz_cd" if "lev_tz_cd" in df.columns else "tz_cd"
+        if "lev_dt" in df.columns and "lev_tm" in df.columns:
+            if tz_col in df.columns:
+                df = format_datetime(df, "lev_dt", "lev_tm", tz_col)
+            else:
+                # If no TZ, just combine dt and tm
+                df["datetime"] = pd.to_datetime(
+                    df["lev_dt"] + " " + df["lev_tm"], format="mixed", utc=True
+                )
 
     # Filter by kwarg parameterCd because the service doesn't do it
     if "parameterCd" in kwargs:
         pcodes = kwargs["parameterCd"]
         if isinstance(pcodes, str):
             pcodes = [pcodes]
-        df = df[df["parameter_cd"].isin(pcodes)]
+        if "parameter_cd" in df.columns:
+            df = df[df["parameter_cd"].isin(pcodes)]
+        elif len(pcodes) == 1:
+            # If the column is missing (modern service) but we requested one pcode,
+            # we can safely add it to the dataframe for backward compatibility.
+            df["parameter_cd"] = pcodes[0]
+            # No need to filter since we just added it as the only value.
+        else:
+            # Multiple pcodes requested but only one returned (or none)
+            # Add the column but don't fill it if we can't be sure
+            df["parameter_cd"] = pd.NA
 
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
@@ -1342,6 +1352,12 @@ def _read_rdb(rdb):
         A formatted pandas data frame
 
     """
+    if "<html>" in rdb.lower() or "<!doctype html>" in rdb.lower():
+        raise ValueError(
+            "Received HTML response instead of RDB. This often indicates "
+            "that the service has been moved or is currently unavailable."
+        )
+
     count = 0
 
     for line in rdb.splitlines():
@@ -1352,8 +1368,8 @@ def _read_rdb(rdb):
         else:
             break
 
-    fields = re.split("[\t]", rdb.splitlines()[count])
-    fields = [field.replace(",", "") for field in fields]
+    fields = rdb.splitlines()[count].split("\t")
+    fields = [field.replace(",", "").strip() for field in fields if field.strip()]
     dtypes = {
         "site_no": str,
         "dec_long_va": float,
@@ -1370,6 +1386,7 @@ def _read_rdb(rdb):
         na_values="NaN",
         dtype=dtypes,
     )
+    # print(f"DEBUG: _read_rdb columns: {df.columns.tolist()}")
 
     df = format_response(df)
     return df

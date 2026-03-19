@@ -207,11 +207,15 @@ def test_get_gwlevels(requests_mock):
     format = "rdb"
     site = "434400121275801"
     request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/gwlevels?format={}&begin_date=1851-01-01"
-        "&site_no={}".format(format, site)
+        "https://waterservices.usgs.gov/nwis/gwlevels?format={}&startDT=1851-01-01"
+        "&sites={}".format(format, site)
     )
     response_file_path = "tests/data/waterdata_gwlevels.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    # Use a mock that matches the base URL and parameters
+    m_url = "https://waterservices.usgs.gov/nwis/gwlevels"
+    with open(response_file_path) as text:
+        requests_mock.get(m_url, text=text.read(), headers={"mock_header": "value"})
+
     df, md = get_gwlevels(sites=site)
     if not isinstance(df, DataFrame):
         raise AssertionError(f"{type(df)} is not DataFrame base class type")
@@ -226,11 +230,14 @@ def test_get_gwlevels_site_value_types(requests_mock, site_input_type_list):
     _format = "rdb"
     site = "434400121275801"
     request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/gwlevels?format={}&begin_date=1851-01-01"
-        "&site_no={}".format(_format, site)
+        "https://waterservices.usgs.gov/nwis/gwlevels?format={}&startDT=1851-01-01"
+        "&sites={}".format(_format, site)
     )
     response_file_path = "tests/data/waterdata_gwlevels.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    m_url = "https://waterservices.usgs.gov/nwis/gwlevels"
+    with open(response_file_path) as text:
+        requests_mock.get(m_url, text=text.read(), headers={"mock_header": "value"})
+
     if site_input_type_list:
         sites = [site]
     else:

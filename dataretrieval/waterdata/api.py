@@ -23,6 +23,7 @@ from dataretrieval.waterdata.types import (
 from dataretrieval.waterdata.utils import (
     SAMPLES_URL,
     _check_profiles,
+    _default_headers,
     get_ogc_data,
     get_stats_data,
 )
@@ -1524,7 +1525,7 @@ def get_codes(code_service: CODE_SERVICES) -> pd.DataFrame:
 
     url = f"{SAMPLES_URL}/codeservice/{code_service}?mimeType=application%2Fjson"
 
-    response = requests.get(url)
+    response = requests.get(url, headers=_default_headers())
 
     response.raise_for_status()
 
@@ -1749,7 +1750,9 @@ def get_samples(
     req.prepare_url(url, params=params)
     logger.info("Request: %s", req.url)
 
-    response = requests.get(url, params=params, verify=ssl_check)
+    response = requests.get(
+        url, params=params, verify=ssl_check, headers=_default_headers()
+    )
 
     response.raise_for_status()
 

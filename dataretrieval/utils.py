@@ -80,7 +80,7 @@ def format_datetime(df, date_field, time_field, tz_field):
 
     df["datetime"] = pd.to_datetime(
         df[date_field] + " " + df[time_field] + " " + df[tz_field],
-        format="ISO8601",
+        format="mixed",
         utc=True,
     )
 
