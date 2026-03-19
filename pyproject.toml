@@ -77,12 +77,6 @@ repository = "https://github.com/DOI-USGS/dataretrieval-python.git"
 [tool.setuptools_scm]
 write_to = "dataretrieval/_version.py"
 
-[tool.isort]
-profile = "black"
-
-[tool.black]
-skip-string-normalization = true
-
 [tool.ruff.format]
 quote-style = "double"
 docstring-code-format = true
@@ -99,4 +93,6 @@ extend-select = [
 
 [tool.ruff.lint.per-file-ignores]
 "demos/*.ipynb" = ["E501", "W291"]
+"dataretrieval/__init__.py" = ["F403"]
+"dataretrieval/codes/__init__.py" = ["F403"]
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from json import JSONDecodeError
 from typing import Literal, Optional, Union
 
@@ -246,12 +248,12 @@ def get_features(
                 " be provided with lat or long"
             )
 
+    if not lat and (comid or data_source) and navigation_mode is None:
+        raise ValueError(
+            "navigation_mode is required if comid or data_source is provided"
+        )
+
     if not lat:
-        if comid or data_source:
-            if navigation_mode is None:
-                raise ValueError(
-                    "navigation_mode is required if comid or data_source is provided"
-                )
         # validate the feature source and comid
         _validate_feature_source_comid(feature_source, feature_id, comid)
         # validate the data source

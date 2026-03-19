@@ -4,6 +4,8 @@
 
 """
 
+from __future__ import annotations
+
 import re
 import warnings
 from io import StringIO
@@ -79,10 +81,9 @@ def format_response(
     if service == "peaks":
         df = preformat_peaks_response(df)
 
-    if gpd is not None:
-        if "dec_lat_va" in list(df):
-            geoms = gpd.points_from_xy(df.dec_long_va.values, df.dec_lat_va.values)
-            df = gpd.GeoDataFrame(df, geometry=geoms, crs=_CRS)
+    if gpd is not None and "dec_lat_va" in list(df):
+        geoms = gpd.points_from_xy(df.dec_long_va.values, df.dec_lat_va.values)
+        df = gpd.GeoDataFrame(df, geometry=geoms, crs=_CRS)
 
     # check for multiple sites:
     if "datetime" not in df.columns:
