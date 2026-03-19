@@ -68,10 +68,10 @@ def exponential_backoff(max_retries=5, base_delay=1):
             while True:
                 try:
                     return func(*args, **kwargs)
-                except Exception as e:
+                except Exception:
                     attempts += 1
                     if attempts > max_retries:
-                        raise e
+                        raise
                     wait_time = base_delay * (2**attempts)
                     print(f"Retrying in {wait_time} seconds...")
                     sleep(wait_time)

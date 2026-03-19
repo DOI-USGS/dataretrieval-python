@@ -67,6 +67,9 @@ profile = "black"
 [tool.black]
 skip-string-normalization = true
 
+[tool.ruff]
+extend-exclude = ["demos"]
+
 [tool.ruff.format]
 quote-style = "double"
 docstring-code-format = true
@@ -80,7 +83,3 @@ extend-select = [
   "W291", "W292", "W293", "W605",
   "E231", "E252", "E261", "E262", "E303", "E501",
 ]
-
-[tool.ruff.lint.per-file-ignores]
-"demos/*.ipynb" = ["E501", "W291"]
-

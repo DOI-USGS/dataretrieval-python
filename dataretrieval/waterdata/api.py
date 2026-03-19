@@ -4,10 +4,12 @@ Aquarius Samples database.
 See https://api.waterdata.usgs.gov/ for API reference.
 """
 
+from __future__ import annotations
+
 import json
 import logging
 from io import StringIO
-from typing import List, Optional, Tuple, Union, get_args
+from typing import get_args
 
 import pandas as pd
 import requests
@@ -33,23 +35,23 @@ logger = logging.getLogger(__name__)
 
 
 def get_daily(
-    monitoring_location_id: Optional[Union[str, List[str]]] = None,
-    parameter_code: Optional[Union[str, List[str]]] = None,
-    statistic_id: Optional[Union[str, List[str]]] = None,
-    properties: Optional[List[str]] = None,
-    time_series_id: Optional[Union[str, List[str]]] = None,
-    daily_id: Optional[Union[str, List[str]]] = None,
-    approval_status: Optional[Union[str, List[str]]] = None,
-    unit_of_measure: Optional[Union[str, List[str]]] = None,
-    qualifier: Optional[Union[str, List[str]]] = None,
-    value: Optional[Union[str, List[str]]] = None,
-    last_modified: Optional[str] = None,
-    skip_geometry: Optional[bool] = None,
-    time: Optional[Union[str, List[str]]] = None,
-    bbox: Optional[List[float]] = None,
-    limit: Optional[int] = None,
+    monitoring_location_id: str | list[str] | None = None,
+    parameter_code: str | list[str] | None = None,
+    statistic_id: str | list[str] | None = None,
+    properties: list[str] | None = None,
+    time_series_id: str | list[str] | None = None,
+    daily_id: str | list[str] | None = None,
+    approval_status: str | list[str] | None = None,
+    unit_of_measure: str | list[str] | None = None,
+    qualifier: str | list[str] | None = None,
+    value: str | list[str] | None = None,
+    last_modified: str | None = None,
+    skip_geometry: bool | None = None,
+    time: str | list[str] | None = None,
+    bbox: list[float] | None = None,
+    limit: int | None = None,
     convert_type: bool = True,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data provide one data value to represent water conditions for the
     day.
 
@@ -216,21 +218,21 @@ def get_daily(
 
 
 def get_continuous(
-    monitoring_location_id: Optional[Union[str, List[str]]] = None,
-    parameter_code: Optional[Union[str, List[str]]] = None,
-    statistic_id: Optional[Union[str, List[str]]] = None,
-    properties: Optional[List[str]] = None,
-    time_series_id: Optional[Union[str, List[str]]] = None,
-    continuous_id: Optional[Union[str, List[str]]] = None,
-    approval_status: Optional[Union[str, List[str]]] = None,
-    unit_of_measure: Optional[Union[str, List[str]]] = None,
-    qualifier: Optional[Union[str, List[str]]] = None,
-    value: Optional[Union[str, List[str]]] = None,
-    last_modified: Optional[str] = None,
-    time: Optional[Union[str, List[str]]] = None,
-    limit: Optional[int] = None,
+    monitoring_location_id: str | list[str] | None = None,
+    parameter_code: str | list[str] | None = None,
+    statistic_id: str | list[str] | None = None,
+    properties: list[str] | None = None,
+    time_series_id: str | list[str] | None = None,
+    continuous_id: str | list[str] | None = None,
+    approval_status: str | list[str] | None = None,
+    unit_of_measure: str | list[str] | None = None,
+    qualifier: str | list[str] | None = None,
+    value: str | list[str] | None = None,
+    last_modified: str | None = None,
+    time: str | list[str] | None = None,
+    limit: int | None = None,
     convert_type: bool = True,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Continuous data provide instantanous water conditions.
 
@@ -386,53 +388,53 @@ def get_continuous(
 
 
 def get_monitoring_locations(
-    monitoring_location_id: Optional[List[str]] = None,
-    agency_code: Optional[List[str]] = None,
-    agency_name: Optional[List[str]] = None,
-    monitoring_location_number: Optional[List[str]] = None,
-    monitoring_location_name: Optional[List[str]] = None,
-    district_code: Optional[List[str]] = None,
-    country_code: Optional[List[str]] = None,
-    country_name: Optional[List[str]] = None,
-    state_code: Optional[List[str]] = None,
-    state_name: Optional[List[str]] = None,
-    county_code: Optional[List[str]] = None,
-    county_name: Optional[List[str]] = None,
-    minor_civil_division_code: Optional[List[str]] = None,
-    site_type_code: Optional[List[str]] = None,
-    site_type: Optional[List[str]] = None,
-    hydrologic_unit_code: Optional[List[str]] = None,
-    basin_code: Optional[List[str]] = None,
-    altitude: Optional[List[str]] = None,
-    altitude_accuracy: Optional[List[str]] = None,
-    altitude_method_code: Optional[List[str]] = None,
-    altitude_method_name: Optional[List[str]] = None,
-    vertical_datum: Optional[List[str]] = None,
-    vertical_datum_name: Optional[List[str]] = None,
-    horizontal_positional_accuracy_code: Optional[List[str]] = None,
-    horizontal_positional_accuracy: Optional[List[str]] = None,
-    horizontal_position_method_code: Optional[List[str]] = None,
-    horizontal_position_method_name: Optional[List[str]] = None,
-    original_horizontal_datum: Optional[List[str]] = None,
-    original_horizontal_datum_name: Optional[List[str]] = None,
-    drainage_area: Optional[List[str]] = None,
-    contributing_drainage_area: Optional[List[str]] = None,
-    time_zone_abbreviation: Optional[List[str]] = None,
-    uses_daylight_savings: Optional[List[str]] = None,
-    construction_date: Optional[List[str]] = None,
-    aquifer_code: Optional[List[str]] = None,
-    national_aquifer_code: Optional[List[str]] = None,
-    aquifer_type_code: Optional[List[str]] = None,
-    well_constructed_depth: Optional[List[str]] = None,
-    hole_constructed_depth: Optional[List[str]] = None,
-    depth_source_code: Optional[List[str]] = None,
-    properties: Optional[List[str]] = None,
-    skip_geometry: Optional[bool] = None,
-    time: Optional[Union[str, List[str]]] = None,
-    bbox: Optional[List[float]] = None,
-    limit: Optional[int] = None,
+    monitoring_location_id: list[str] | None = None,
+    agency_code: list[str] | None = None,
+    agency_name: list[str] | None = None,
+    monitoring_location_number: list[str] | None = None,
+    monitoring_location_name: list[str] | None = None,
+    district_code: list[str] | None = None,
+    country_code: list[str] | None = None,
+    country_name: list[str] | None = None,
+    state_code: list[str] | None = None,
+    state_name: list[str] | None = None,
+    county_code: list[str] | None = None,
+    county_name: list[str] | None = None,
+    minor_civil_division_code: list[str] | None = None,
+    site_type_code: list[str] | None = None,
+    site_type: list[str] | None = None,
+    hydrologic_unit_code: list[str] | None = None,
+    basin_code: list[str] | None = None,
+    altitude: list[str] | None = None,
+    altitude_accuracy: list[str] | None = None,
+    altitude_method_code: list[str] | None = None,
+    altitude_method_name: list[str] | None = None,
+    vertical_datum: list[str] | None = None,
+    vertical_datum_name: list[str] | None = None,
+    horizontal_positional_accuracy_code: list[str] | None = None,
+    horizontal_positional_accuracy: list[str] | None = None,
+    horizontal_position_method_code: list[str] | None = None,
+    horizontal_position_method_name: list[str] | None = None,
+    original_horizontal_datum: list[str] | None = None,
+    original_horizontal_datum_name: list[str] | None = None,
+    drainage_area: list[str] | None = None,
+    contributing_drainage_area: list[str] | None = None,
+    time_zone_abbreviation: list[str] | None = None,
+    uses_daylight_savings: list[str] | None = None,
+    construction_date: list[str] | None = None,
+    aquifer_code: list[str] | None = None,
+    national_aquifer_code: list[str] | None = None,
+    aquifer_type_code: list[str] | None = None,
+    well_constructed_depth: list[str] | None = None,
+    hole_constructed_depth: list[str] | None = None,
+    depth_source_code: list[str] | None = None,
+    properties: list[str] | None = None,
+    skip_geometry: bool | None = None,
+    time: str | list[str] | None = None,
+    bbox: list[float] | None = None,
+    limit: int | None = None,
     convert_type: bool = True,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """Location information is basic information about the monitoring location
     including the name, identifier, agency responsible for data collection, and
     the date the location was established. It also includes information about
@@ -681,33 +683,33 @@ def get_monitoring_locations(
 
 
 def get_time_series_metadata(
-    monitoring_location_id: Optional[Union[str, List[str]]] = None,
-    parameter_code: Optional[Union[str, List[str]]] = None,
-    parameter_name: Optional[Union[str, List[str]]] = None,
-    properties: Optional[Union[str, List[str]]] = None,
-    statistic_id: Optional[Union[str, List[str]]] = None,
-    hydrologic_unit_code: Optional[Union[str, List[str]]] = None,
-    state_name: Optional[Union[str, List[str]]] = None,
-    last_modified: Optional[Union[str, List[str]]] = None,
-    begin: Optional[Union[str, List[str]]] = None,
-    end: Optional[Union[str, List[str]]] = None,
-    begin_utc: Optional[Union[str, List[str]]] = None,
-    end_utc: Optional[Union[str, List[str]]] = None,
-    unit_of_measure: Optional[Union[str, List[str]]] = None,
-    computation_period_identifier: Optional[Union[str, List[str]]] = None,
-    computation_identifier: Optional[Union[str, List[str]]] = None,
-    thresholds: Optional[int] = None,
-    sublocation_identifier: Optional[Union[str, List[str]]] = None,
-    primary: Optional[Union[str, List[str]]] = None,
-    parent_time_series_id: Optional[Union[str, List[str]]] = None,
-    time_series_id: Optional[Union[str, List[str]]] = None,
-    web_description: Optional[Union[str, List[str]]] = None,
-    skip_geometry: Optional[bool] = None,
-    time: Optional[Union[str, List[str]]] = None,
-    bbox: Optional[List[float]] = None,
-    limit: Optional[int] = None,
+    monitoring_location_id: str | list[str] | None = None,
+    parameter_code: str | list[str] | None = None,
+    parameter_name: str | list[str] | None = None,
+    properties: str | list[str] | None = None,
+    statistic_id: str | list[str] | None = None,
+    hydrologic_unit_code: str | list[str] | None = None,
+    state_name: str | list[str] | None = None,
+    last_modified: str | list[str] | None = None,
+    begin: str | list[str] | None = None,
+    end: str | list[str] | None = None,
+    begin_utc: str | list[str] | None = None,
+    end_utc: str | list[str] | None = None,
+    unit_of_measure: str | list[str] | None = None,
+    computation_period_identifier: str | list[str] | None = None,
+    computation_identifier: str | list[str] | None = None,
+    thresholds: int | None = None,
+    sublocation_identifier: str | list[str] | None = None,
+    primary: str | list[str] | None = None,
+    parent_time_series_id: str | list[str] | None = None,
+    time_series_id: str | list[str] | None = None,
+    web_description: str | list[str] | None = None,
+    skip_geometry: bool | None = None,
+    time: str | list[str] | None = None,
+    bbox: list[float] | None = None,
+    limit: int | None = None,
     convert_type: bool = True,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data and continuous measurements are grouped into time series,
     which represent a collection of observations of a single parameter,
     potentially aggregated using a standard statistic, at a single monitoring
@@ -901,23 +903,23 @@ def get_time_series_metadata(
 
 
 def get_latest_continuous(
-    monitoring_location_id: Optional[Union[str, List[str]]] = None,
-    parameter_code: Optional[Union[str, List[str]]] = None,
-    statistic_id: Optional[Union[str, List[str]]] = None,
-    properties: Optional[Union[str, List[str]]] = None,
-    time_series_id: Optional[Union[str, List[str]]] = None,
-    latest_continuous_id: Optional[Union[str, List[str]]] = None,
-    approval_status: Optional[Union[str, List[str]]] = None,
-    unit_of_measure: Optional[Union[str, List[str]]] = None,
-    qualifier: Optional[Union[str, List[str]]] = None,
-    value: Optional[int] = None,
-    last_modified: Optional[Union[str, List[str]]] = None,
-    skip_geometry: Optional[bool] = None,
-    time: Optional[Union[str, List[str]]] = None,
-    bbox: Optional[List[float]] = None,
-    limit: Optional[int] = None,
+    monitoring_location_id: str | list[str] | None = None,
+    parameter_code: str | list[str] | None = None,
+    statistic_id: str | list[str] | None = None,
+    properties: str | list[str] | None = None,
+    time_series_id: str | list[str] | None = None,
+    latest_continuous_id: str | list[str] | None = None,
+    approval_status: str | list[str] | None = None,
+    unit_of_measure: str | list[str] | None = None,
+    qualifier: str | list[str] | None = None,
+    value: int | None = None,
+    last_modified: str | list[str] | None = None,
+    skip_geometry: bool | None = None,
+    time: str | list[str] | None = None,
+    bbox: list[float] | None = None,
+    limit: int | None = None,
     convert_type: bool = True,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """This endpoint provides the most recent observation for each time series
     of continuous data. Continuous data are collected via automated sensors
     installed at a monitoring location. They are collected at a high frequency
@@ -1077,23 +1079,23 @@ def get_latest_continuous(
 
 
 def get_latest_daily(
-    monitoring_location_id: Optional[Union[str, List[str]]] = None,
-    parameter_code: Optional[Union[str, List[str]]] = None,
-    statistic_id: Optional[Union[str, List[str]]] = None,
-    properties: Optional[Union[str, List[str]]] = None,
-    time_series_id: Optional[Union[str, List[str]]] = None,
-    latest_daily_id: Optional[Union[str, List[str]]] = None,
-    approval_status: Optional[Union[str, List[str]]] = None,
-    unit_of_measure: Optional[Union[str, List[str]]] = None,
-    qualifier: Optional[Union[str, List[str]]] = None,
-    value: Optional[int] = None,
-    last_modified: Optional[Union[str, List[str]]] = None,
-    skip_geometry: Optional[bool] = None,
-    time: Optional[Union[str, List[str]]] = None,
-    bbox: Optional[List[float]] = None,
-    limit: Optional[int] = None,
+    monitoring_location_id: str | list[str] | None = None,
+    parameter_code: str | list[str] | None = None,
+    statistic_id: str | list[str] | None = None,
+    properties: str | list[str] | None = None,
+    time_series_id: str | list[str] | None = None,
+    latest_daily_id: str | list[str] | None = None,
+    approval_status: str | list[str] | None = None,
+    unit_of_measure: str | list[str] | None = None,
+    qualifier: str | list[str] | None = None,
+    value: int | None = None,
+    last_modified: str | list[str] | None = None,
+    skip_geometry: bool | None = None,
+    time: str | list[str] | None = None,
+    bbox: list[float] | None = None,
+    limit: int | None = None,
     convert_type: bool = True,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data provide one data value to represent water conditions for the
     day.
 
@@ -1255,25 +1257,25 @@ def get_latest_daily(
 
 
 def get_field_measurements(
-    monitoring_location_id: Optional[Union[str, List[str]]] = None,
-    parameter_code: Optional[Union[str, List[str]]] = None,
-    observing_procedure_code: Optional[Union[str, List[str]]] = None,
-    properties: Optional[List[str]] = None,
-    field_visit_id: Optional[Union[str, List[str]]] = None,
-    approval_status: Optional[Union[str, List[str]]] = None,
-    unit_of_measure: Optional[Union[str, List[str]]] = None,
-    qualifier: Optional[Union[str, List[str]]] = None,
-    value: Optional[Union[str, List[str]]] = None,
-    last_modified: Optional[Union[str, List[str]]] = None,
-    observing_procedure: Optional[Union[str, List[str]]] = None,
-    vertical_datum: Optional[Union[str, List[str]]] = None,
-    measuring_agency: Optional[Union[str, List[str]]] = None,
-    skip_geometry: Optional[bool] = None,
-    time: Optional[Union[str, List[str]]] = None,
-    bbox: Optional[List[float]] = None,
-    limit: Optional[int] = None,
+    monitoring_location_id: str | list[str] | None = None,
+    parameter_code: str | list[str] | None = None,
+    observing_procedure_code: str | list[str] | None = None,
+    properties: list[str] | None = None,
+    field_visit_id: str | list[str] | None = None,
+    approval_status: str | list[str] | None = None,
+    unit_of_measure: str | list[str] | None = None,
+    qualifier: str | list[str] | None = None,
+    value: str | list[str] | None = None,
+    last_modified: str | list[str] | None = None,
+    observing_procedure: str | list[str] | None = None,
+    vertical_datum: str | list[str] | None = None,
+    measuring_agency: str | list[str] | None = None,
+    skip_geometry: bool | None = None,
+    time: str | list[str] | None = None,
+    bbox: list[float] | None = None,
+    limit: int | None = None,
     convert_type: bool = True,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """Field measurements are physically measured values collected during a
     visit to the monitoring location. Field measurements consist of measurements
     of gage height and discharge, and readings of groundwater levels, and are
@@ -1433,9 +1435,9 @@ def get_field_measurements(
 
 def get_reference_table(
     collection: str,
-    limit: Optional[int] = None,
-    query: Optional[dict] = None,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+    limit: int | None = None,
+    query: dict | None = None,
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get metadata reference tables for the USGS Water Data API.
 
     Reference tables provide the range of allowable values for parameter
@@ -1541,29 +1543,29 @@ def get_samples(
     ssl_check: bool = True,
     service: SERVICES = "results",
     profile: PROFILES = "fullphyschem",
-    activityMediaName: Optional[Union[str, list[str]]] = None,
-    activityStartDateLower: Optional[str] = None,
-    activityStartDateUpper: Optional[str] = None,
-    activityTypeCode: Optional[Union[str, list[str]]] = None,
-    characteristicGroup: Optional[Union[str, list[str]]] = None,
-    characteristic: Optional[Union[str, list[str]]] = None,
-    characteristicUserSupplied: Optional[Union[str, list[str]]] = None,
-    boundingBox: Optional[list[float]] = None,
-    countryFips: Optional[Union[str, list[str]]] = None,
-    stateFips: Optional[Union[str, list[str]]] = None,
-    countyFips: Optional[Union[str, list[str]]] = None,
-    siteTypeCode: Optional[Union[str, list[str]]] = None,
-    siteTypeName: Optional[Union[str, list[str]]] = None,
-    usgsPCode: Optional[Union[str, list[str]]] = None,
-    hydrologicUnit: Optional[Union[str, list[str]]] = None,
-    monitoringLocationIdentifier: Optional[Union[str, list[str]]] = None,
-    organizationIdentifier: Optional[Union[str, list[str]]] = None,
-    pointLocationLatitude: Optional[float] = None,
-    pointLocationLongitude: Optional[float] = None,
-    pointLocationWithinMiles: Optional[float] = None,
-    projectIdentifier: Optional[Union[str, list[str]]] = None,
-    recordIdentifierUserSupplied: Optional[Union[str, list[str]]] = None,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+    activityMediaName: str | list[str] | None = None,
+    activityStartDateLower: str | None = None,
+    activityStartDateUpper: str | None = None,
+    activityTypeCode: str | list[str] | None = None,
+    characteristicGroup: str | list[str] | None = None,
+    characteristic: str | list[str] | None = None,
+    characteristicUserSupplied: str | list[str] | None = None,
+    boundingBox: list[float] | None = None,
+    countryFips: str | list[str] | None = None,
+    stateFips: str | list[str] | None = None,
+    countyFips: str | list[str] | None = None,
+    siteTypeCode: str | list[str] | None = None,
+    siteTypeName: str | list[str] | None = None,
+    usgsPCode: str | list[str] | None = None,
+    hydrologicUnit: str | list[str] | None = None,
+    monitoringLocationIdentifier: str | list[str] | None = None,
+    organizationIdentifier: str | list[str] | None = None,
+    pointLocationLatitude: float | None = None,
+    pointLocationLongitude: float | None = None,
+    pointLocationWithinMiles: float | None = None,
+    projectIdentifier: str | list[str] | None = None,
+    recordIdentifierUserSupplied: str | list[str] | None = None,
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """Search Samples database for USGS water quality data.
     This is a wrapper function for the Samples database API. All potential
     filters are provided as arguments to the function, but please do not
@@ -1762,21 +1764,21 @@ def get_samples(
 
 
 def get_stats_por(
-    approval_status: Optional[str] = None,
-    computation_type: Optional[Union[str, list[str]]] = None,
-    country_code: Optional[Union[str, list[str]]] = None,
-    state_code: Optional[Union[str, list[str]]] = None,
-    county_code: Optional[Union[str, list[str]]] = None,
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
-    monitoring_location_id: Optional[Union[str, list[str]]] = None,
+    approval_status: str | None = None,
+    computation_type: str | list[str] | None = None,
+    country_code: str | list[str] | None = None,
+    state_code: str | list[str] | None = None,
+    county_code: str | list[str] | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    monitoring_location_id: str | list[str] | None = None,
     page_size: int = 1000,
-    parent_time_series_id: Optional[Union[str, list[str]]] = None,
-    site_type_code: Optional[Union[str, list[str]]] = None,
-    site_type_name: Optional[Union[str, list[str]]] = None,
-    parameter_code: Optional[Union[str, list[str]]] = None,
+    parent_time_series_id: str | list[str] | None = None,
+    site_type_code: str | list[str] | None = None,
+    site_type_name: str | list[str] | None = None,
+    parameter_code: str | list[str] | None = None,
     expand_percentiles: bool = True,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get day-of-year and month-of-year water data statistics from the
     USGS Water Data API.
     This service (called the "observationNormals" endpoint on api.waterdata.usgs.gov)
@@ -1889,21 +1891,21 @@ def get_stats_por(
 
 
 def get_stats_date_range(
-    approval_status: Optional[str] = None,
-    computation_type: Optional[Union[str, list[str]]] = None,
-    country_code: Optional[Union[str, list[str]]] = None,
-    state_code: Optional[Union[str, list[str]]] = None,
-    county_code: Optional[Union[str, list[str]]] = None,
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
-    monitoring_location_id: Optional[Union[str, list[str]]] = None,
+    approval_status: str | None = None,
+    computation_type: str | list[str] | None = None,
+    country_code: str | list[str] | None = None,
+    state_code: str | list[str] | None = None,
+    county_code: str | list[str] | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    monitoring_location_id: str | list[str] | None = None,
     page_size: int = 1000,
-    parent_time_series_id: Optional[Union[str, list[str]]] = None,
-    site_type_code: Optional[Union[str, list[str]]] = None,
-    site_type_name: Optional[Union[str, list[str]]] = None,
-    parameter_code: Optional[Union[str, list[str]]] = None,
+    parent_time_series_id: str | list[str] | None = None,
+    site_type_code: str | list[str] | None = None,
+    site_type_name: str | list[str] | None = None,
+    parameter_code: str | list[str] | None = None,
     expand_percentiles: bool = True,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get monthly and annual water data statistics from the USGS Water Data API.
     This service (called the "observationIntervals" endpoint on api.waterdata.usgs.gov)
     provides endpoints for access to computations on the historical record regarding
@@ -2023,36 +2025,36 @@ def get_stats_date_range(
 
 
 def get_channel(
-    monitoring_location_id: Optional[Union[str, List[str]]] = None,
-    field_visit_id: Optional[Union[str, List[str]]] = None,
-    measurement_number: Optional[Union[str, List[str]]] = None,
-    time: Optional[Union[str, List[str]]] = None,
-    channel_name: Optional[Union[str, List[str]]] = None,
-    channel_flow: Optional[Union[str, List[str]]] = None,
-    channel_flow_unit: Optional[Union[str, List[str]]] = None,
-    channel_width: Optional[Union[str, List[str]]] = None,
-    channel_width_unit: Optional[Union[str, List[str]]] = None,
-    channel_area: Optional[Union[str, List[str]]] = None,
-    channel_area_unit: Optional[Union[str, List[str]]] = None,
-    channel_velocity: Optional[Union[str, List[str]]] = None,
-    channel_velocity_unit: Optional[Union[str, List[str]]] = None,
-    channel_location_distance: Optional[Union[str, List[str]]] = None,
-    channel_location_distance_unit: Optional[Union[str, List[str]]] = None,
-    channel_stability: Optional[Union[str, List[str]]] = None,
-    channel_material: Optional[Union[str, List[str]]] = None,
-    channel_evenness: Optional[Union[str, List[str]]] = None,
-    horizontal_velocity_description: Optional[Union[str, List[str]]] = None,
-    vertical_velocity_description: Optional[Union[str, List[str]]] = None,
-    longitudinal_velocity_description: Optional[Union[str, List[str]]] = None,
-    measurement_type: Optional[Union[str, List[str]]] = None,
-    last_modified: Optional[Union[str, List[str]]] = None,
-    channel_measurement_type: Optional[Union[str, List[str]]] = None,
-    properties: Optional[List[str]] = None,
-    skip_geometry: Optional[bool] = None,
-    bbox: Optional[List[float]] = None,
-    limit: Optional[int] = None,
+    monitoring_location_id: str | list[str] | None = None,
+    field_visit_id: str | list[str] | None = None,
+    measurement_number: str | list[str] | None = None,
+    time: str | list[str] | None = None,
+    channel_name: str | list[str] | None = None,
+    channel_flow: str | list[str] | None = None,
+    channel_flow_unit: str | list[str] | None = None,
+    channel_width: str | list[str] | None = None,
+    channel_width_unit: str | list[str] | None = None,
+    channel_area: str | list[str] | None = None,
+    channel_area_unit: str | list[str] | None = None,
+    channel_velocity: str | list[str] | None = None,
+    channel_velocity_unit: str | list[str] | None = None,
+    channel_location_distance: str | list[str] | None = None,
+    channel_location_distance_unit: str | list[str] | None = None,
+    channel_stability: str | list[str] | None = None,
+    channel_material: str | list[str] | None = None,
+    channel_evenness: str | list[str] | None = None,
+    horizontal_velocity_description: str | list[str] | None = None,
+    vertical_velocity_description: str | list[str] | None = None,
+    longitudinal_velocity_description: str | list[str] | None = None,
+    measurement_type: str | list[str] | None = None,
+    last_modified: str | list[str] | None = None,
+    channel_measurement_type: str | list[str] | None = None,
+    properties: list[str] | None = None,
+    skip_geometry: bool | None = None,
+    bbox: list[float] | None = None,
+    limit: int | None = None,
     convert_type: bool = True,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Channel measurements taken as part of streamflow field measurements.
 

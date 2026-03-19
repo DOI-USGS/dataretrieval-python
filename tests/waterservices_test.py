@@ -90,8 +90,8 @@ def test_get_dv(requests_mock):
     format = "json"
     site = "01491000%2C01645000"
     request_url = (
-        "https://waterservices.usgs.gov/nwis/dv?format={}"
-        "&startDT=2020-02-14&endDT=2020-02-15&sites={}".format(format, site)
+        f"https://waterservices.usgs.gov/nwis/dv?format={format}"
+        f"&startDT=2020-02-14&endDT=2020-02-15&sites={site}"
     )
     response_file_path = "tests/data/waterservices_dv.txt"
     mock_request(requests_mock, request_url, response_file_path)
@@ -100,7 +100,7 @@ def test_get_dv(requests_mock):
     )
 
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
 
     assert df.size == 8
     assert_metadata(requests_mock, request_url, md, site, None, format)
@@ -112,8 +112,8 @@ def test_get_dv_site_value_types(requests_mock, site_input_type_list):
     _format = "json"
     site = "01491000"
     request_url = (
-        "https://waterservices.usgs.gov/nwis/dv?format={}"
-        "&startDT=2020-02-14&endDT=2020-02-15&sites={}".format(_format, site)
+        f"https://waterservices.usgs.gov/nwis/dv?format={_format}"
+        f"&startDT=2020-02-14&endDT=2020-02-15&sites={site}"
     )
     response_file_path = "tests/data/waterservices_dv.txt"
     mock_request(requests_mock, request_url, response_file_path)
@@ -121,9 +121,9 @@ def test_get_dv_site_value_types(requests_mock, site_input_type_list):
         sites = [site]
     else:
         sites = site
-    df, md = get_dv(sites=sites, start="2020-02-14", end="2020-02-15")
+    df, _md = get_dv(sites=sites, start="2020-02-14", end="2020-02-15")
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
 
     assert df.size == 8
 
@@ -133,8 +133,8 @@ def test_get_iv(requests_mock):
     format = "json"
     site = "01491000%2C01645000"
     request_url = (
-        "https://waterservices.usgs.gov/nwis/iv?format={}"
-        "&startDT=2019-02-14&endDT=2020-02-15&sites={}".format(format, site)
+        f"https://waterservices.usgs.gov/nwis/iv?format={format}"
+        f"&startDT=2019-02-14&endDT=2020-02-15&sites={site}"
     )
     response_file_path = "tests/data/waterservices_iv.txt"
     mock_request(requests_mock, request_url, response_file_path)
@@ -142,7 +142,7 @@ def test_get_iv(requests_mock):
         sites=["01491000", "01645000"], start="2019-02-14", end="2020-02-15"
     )
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
 
     assert df.size == 563380
     assert md.url == request_url
@@ -155,8 +155,8 @@ def test_get_iv_site_value_types(requests_mock, site_input_type_list):
     _format = "json"
     site = "01491000"
     request_url = (
-        "https://waterservices.usgs.gov/nwis/iv?format={}"
-        "&startDT=2019-02-14&endDT=2020-02-15&sites={}".format(_format, site)
+        f"https://waterservices.usgs.gov/nwis/iv?format={_format}"
+        f"&startDT=2019-02-14&endDT=2020-02-15&sites={site}"
     )
     response_file_path = "tests/data/waterservices_iv.txt"
     mock_request(requests_mock, request_url, response_file_path)
@@ -166,7 +166,7 @@ def test_get_iv_site_value_types(requests_mock, site_input_type_list):
         sites = site
     df, md = get_iv(sites=sites, start="2019-02-14", end="2020-02-15")
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 563380
     assert md.url == request_url
 
@@ -180,14 +180,12 @@ def test_get_info(requests_mock):
     format = "rdb"
     site = "01491000%2C01645000"
     parameter_cd = "00618"
-    request_url = "https://waterservices.usgs.gov/nwis/site?sites={}&parameterCd={}&siteOutput=Expanded&format={}".format(
-        site, parameter_cd, format
-    )
+    request_url = f"https://waterservices.usgs.gov/nwis/site?sites={site}&parameterCd={parameter_cd}&siteOutput=Expanded&format={format}"
     response_file_path = "tests/data/waterservices_site.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_info(sites=["01491000", "01645000"], parameterCd="00618")
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
 
     if "geometry" in list(df):
         geom_type = df.geom_type.unique()
@@ -207,8 +205,8 @@ def test_get_gwlevels(requests_mock):
     format = "rdb"
     site = "434400121275801"
     request_url = (
-        "https://waterservices.usgs.gov/nwis/gwlevels?format={}&startDT=1851-01-01"
-        "&sites={}".format(format, site)
+        f"https://waterservices.usgs.gov/nwis/gwlevels?format={format}&startDT=1851-01-01"
+        f"&sites={site}"
     )
     response_file_path = "tests/data/waterdata_gwlevels.txt"
     # Use a mock that matches the base URL and parameters
@@ -218,7 +216,7 @@ def test_get_gwlevels(requests_mock):
 
     df, md = get_gwlevels(sites=site)
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
 
     assert df.size == 16
     assert_metadata(requests_mock, request_url, md, site, None, format)
@@ -229,10 +227,6 @@ def test_get_gwlevels_site_value_types(requests_mock, site_input_type_list):
     """Tests get_gwlevels method for valid input types for the 'sites' parameter."""
     _format = "rdb"
     site = "434400121275801"
-    request_url = (
-        "https://waterservices.usgs.gov/nwis/gwlevels?format={}&startDT=1851-01-01"
-        "&sites={}".format(_format, site)
-    )
     response_file_path = "tests/data/waterdata_gwlevels.txt"
     m_url = "https://waterservices.usgs.gov/nwis/gwlevels"
     with open(response_file_path) as text:
@@ -242,9 +236,9 @@ def test_get_gwlevels_site_value_types(requests_mock, site_input_type_list):
         sites = [site]
     else:
         sites = site
-    df, md = get_gwlevels(sites=sites)
+    df, _md = get_gwlevels(sites=sites)
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 16
 
 
@@ -253,14 +247,14 @@ def test_get_discharge_peaks(requests_mock):
     format = "rdb"
     site = "01594440"
     request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/peaks?format={}&site_no={}"
-        "&begin_date=2000-02-14&end_date=2020-02-15".format(format, site)
+        f"https://nwis.waterdata.usgs.gov/nwis/peaks?format={format}&site_no={site}"
+        "&begin_date=2000-02-14&end_date=2020-02-15"
     )
     response_file_path = "tests/data/waterservices_peaks.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_discharge_peaks(sites=[site], start="2000-02-14", end="2020-02-15")
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
 
     assert df.size == 240
     assert_metadata(requests_mock, request_url, md, site, None, format)
@@ -273,8 +267,8 @@ def test_get_discharge_peaks_sites_value_types(requests_mock, site_input_type_li
     _format = "rdb"
     site = "01594440"
     request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/peaks?format={}&site_no={}"
-        "&begin_date=2000-02-14&end_date=2020-02-15".format(_format, site)
+        f"https://nwis.waterdata.usgs.gov/nwis/peaks?format={_format}&site_no={site}"
+        "&begin_date=2000-02-14&end_date=2020-02-15"
     )
     response_file_path = "tests/data/waterservices_peaks.txt"
     mock_request(requests_mock, request_url, response_file_path)
@@ -283,9 +277,9 @@ def test_get_discharge_peaks_sites_value_types(requests_mock, site_input_type_li
     else:
         sites = site
 
-    df, md = get_discharge_peaks(sites=sites, start="2000-02-14", end="2020-02-15")
+    df, _md = get_discharge_peaks(sites=sites, start="2000-02-14", end="2020-02-15")
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
 
     assert df.size == 240
 
@@ -298,8 +292,8 @@ def test_get_discharge_measurements(requests_mock):
     format = "rdb"
     site = "01594440"
     request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/measurements?site_no={}"
-        "&begin_date=2000-02-14&end_date=2020-02-15&format={}".format(site, format)
+        f"https://nwis.waterdata.usgs.gov/nwis/measurements?site_no={site}"
+        f"&begin_date=2000-02-14&end_date=2020-02-15&format={format}"
     )
     response_file_path = "tests/data/waterdata_measurements.txt"
     mock_request(requests_mock, request_url, response_file_path)
@@ -307,7 +301,7 @@ def test_get_discharge_measurements(requests_mock):
         sites=[site], start="2000-02-14", end="2020-02-15"
     )
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
 
     assert df.size == 2130
     assert_metadata(requests_mock, request_url, md, site, None, format)
@@ -321,8 +315,8 @@ def test_get_discharge_measurements_sites_value_types(
     format = "rdb"
     site = "01594440"
     request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/measurements?site_no={}"
-        "&begin_date=2000-02-14&end_date=2020-02-15&format={}".format(site, format)
+        f"https://nwis.waterdata.usgs.gov/nwis/measurements?site_no={site}"
+        f"&begin_date=2000-02-14&end_date=2020-02-15&format={format}"
     )
     response_file_path = "tests/data/waterdata_measurements.txt"
     mock_request(requests_mock, request_url, response_file_path)
@@ -330,11 +324,11 @@ def test_get_discharge_measurements_sites_value_types(
         sites = [site]
     else:
         sites = site
-    df, md = get_discharge_measurements(
+    df, _md = get_discharge_measurements(
         sites=sites, start="2000-02-14", end="2020-02-15"
     )
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 2130
 
 
@@ -346,7 +340,7 @@ def test_get_pmcodes(requests_mock):
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_pmcodes(parameterCd="00618")
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 13
     assert_metadata(requests_mock, request_url, md, None, None, format)
 
@@ -364,11 +358,9 @@ def test_get_pmcodes_parameterCd_value_types(
     mock_request(requests_mock, request_url, response_file_path)
     if parameterCd_input_type_list:
         parameterCd = [parameterCd]
-    else:
-        parameterCd = parameterCd
-    df, md = get_pmcodes(parameterCd=parameterCd)
+    df, _md = get_pmcodes(parameterCd=parameterCd)
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 13
 
 
@@ -376,14 +368,14 @@ def test_get_water_use_national(requests_mock):
     """Verify get_water_use builds the national request URL and returns DataFrame."""
     format = "rdb"
     request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format={}&wu_year=ALL"
-        "&wu_category=ALL&wu_county=ALL".format(format)
+        f"https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format={format}&wu_year=ALL"
+        "&wu_category=ALL&wu_county=ALL"
     )
     response_file_path = "tests/data/water_use_national.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_water_use()
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 225
     assert_metadata(requests_mock, request_url, md, None, None, format)
 
@@ -394,8 +386,8 @@ def test_get_water_use_national_year_value_types(requests_mock, year_input_type_
     _format = "rdb"
     year = "ALL"
     request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format={}&wu_year=ALL"
-        "&wu_category=ALL&wu_county=ALL".format(_format)
+        f"https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format={_format}&wu_year=ALL"
+        "&wu_category=ALL&wu_county=ALL"
     )
     response_file_path = "tests/data/water_use_national.txt"
     mock_request(requests_mock, request_url, response_file_path)
@@ -403,7 +395,7 @@ def test_get_water_use_national_year_value_types(requests_mock, year_input_type_
         years = [year]
     else:
         years = year
-    df, md = get_water_use(years=years)
+    df, _md = get_water_use(years=years)
     assert type(df) is DataFrame
     assert df.size == 225
 
@@ -416,8 +408,8 @@ def test_get_water_use_national_county_value_types(
     _format = "rdb"
     county = "ALL"
     request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format={}&wu_year=ALL"
-        "&wu_category=ALL&wu_county=ALL".format(_format)
+        f"https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format={_format}&wu_year=ALL"
+        "&wu_category=ALL&wu_county=ALL"
     )
     response_file_path = "tests/data/water_use_national.txt"
     mock_request(requests_mock, request_url, response_file_path)
@@ -425,9 +417,9 @@ def test_get_water_use_national_county_value_types(
         counties = [county]
     else:
         counties = county
-    df, md = get_water_use(counties=counties)
+    df, _md = get_water_use(counties=counties)
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 225
 
 
@@ -439,8 +431,8 @@ def test_get_water_use_national_category_value_types(
     _format = "rdb"
     category = "ALL"
     request_url = (
-        "https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format={}&wu_year=ALL"
-        "&wu_category=ALL&wu_county=ALL".format(_format)
+        f"https://nwis.waterdata.usgs.gov/nwis/water_use?rdb_compression=value&format={_format}&wu_year=ALL"
+        "&wu_category=ALL&wu_county=ALL"
     )
     response_file_path = "tests/data/water_use_national.txt"
     mock_request(requests_mock, request_url, response_file_path)
@@ -448,9 +440,9 @@ def test_get_water_use_national_category_value_types(
         categories = [category]
     else:
         categories = category
-    df, md = get_water_use(categories=categories)
+    df, _md = get_water_use(categories=categories)
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 225
 
 
@@ -465,7 +457,7 @@ def test_get_water_use_allegheny(requests_mock):
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_water_use(state="PA", counties="003")
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 1981
     assert_metadata(requests_mock, request_url, md, None, None, format)
 
@@ -484,14 +476,12 @@ def test_get_ratings(requests_mock):
     """Verify get_ratings builds the expected URL and returns a DataFrame."""
     format = "rdb"
     site = "01594440"
-    request_url = "https://nwis.waterdata.usgs.gov/nwisweb/get_ratings/?site_no={}&file_type=base".format(
-        site
-    )
+    request_url = f"https://nwis.waterdata.usgs.gov/nwisweb/get_ratings/?site_no={site}&file_type=base"
     response_file_path = "tests/data/waterservices_ratings.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_ratings(site_no=site)
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
 
     assert df.size == 33
     assert_metadata(requests_mock, request_url, md, site, None, format)
@@ -505,7 +495,7 @@ def test_what_sites(requests_mock):
     parameter_cd_list = ["00010", "00060"]
     request_url = (
         "https://waterservices.usgs.gov/nwis/site?bBox=-83.0%2C36.5%2C-81.0%2C38.5"
-        "&parameterCd={}&hasDataTypeCd=dv&format={}".format(parameter_cd, format)
+        f"&parameterCd={parameter_cd}&hasDataTypeCd=dv&format={format}"
     )
     response_file_path = "tests/data/nwis_sites.txt"
     mock_request(requests_mock, request_url, response_file_path)
@@ -516,7 +506,7 @@ def test_what_sites(requests_mock):
         hasDataTypeCd="dv",
     )
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
 
     if gpd is not None:
         if not isinstance(df, gpd.GeoDataFrame):
@@ -537,15 +527,13 @@ def test_what_sites(requests_mock):
 def test_get_stats(requests_mock):
     """Verify get_stats builds the expected URL and returns a DataFrame."""
     format = "rdb"
-    request_url = "https://waterservices.usgs.gov/nwis/stat?sites=01491000%2C01645000&format={}".format(
-        format
-    )
+    request_url = f"https://waterservices.usgs.gov/nwis/stat?sites=01491000%2C01645000&format={format}"
     response_file_path = "tests/data/waterservices_stats.txt"
     mock_request(requests_mock, request_url, response_file_path)
 
     df, md = get_stats(sites=["01491000", "01645000"])
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 51936
     assert_metadata(requests_mock, request_url, md, None, None, format)
 
@@ -555,8 +543,8 @@ def test_get_stats_site_value_types(requests_mock, site_input_type_list):
     """Tests get_stats method for valid input types for the 'sites' parameter"""
     _format = "rdb"
     site = "01491000"
-    request_url = "https://waterservices.usgs.gov/nwis/stat?sites={}&format={}".format(
-        site, _format
+    request_url = (
+        f"https://waterservices.usgs.gov/nwis/stat?sites={site}&format={_format}"
     )
     response_file_path = "tests/data/waterservices_stats.txt"
     mock_request(requests_mock, request_url, response_file_path)
@@ -564,9 +552,9 @@ def test_get_stats_site_value_types(requests_mock, site_input_type_list):
         sites = [site]
     else:
         sites = site
-    df, md = get_stats(sites=sites)
+    df, _md = get_stats(sites=sites)
     if not isinstance(df, DataFrame):
-        raise AssertionError(f"{type(df)} is not DataFrame base class type")
+        raise TypeError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 51936
 
 
@@ -583,7 +571,7 @@ def assert_metadata(requests_mock, request_url, md, site, parameter_cd, format):
     assert md.header == {"mock_header": "value"}
     if site is not None:
         site_request_url = (
-            "https://waterservices.usgs.gov/nwis/site?sites={}&format=rdb".format(site)
+            f"https://waterservices.usgs.gov/nwis/site?sites={site}&format=rdb"
         )
         with open("tests/data/waterservices_site.txt") as text:
             requests_mock.get(site_request_url, text=text.read())
@@ -594,9 +582,7 @@ def assert_metadata(requests_mock, request_url, md, site, parameter_cd, format):
         assert md.variable_info is None
     else:
         for param in parameter_cd:
-            pcode_request_url = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?fmt=rdb&parm_nm_cd=%25{}%25".format(
-                param
-            )
+            pcode_request_url = f"https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?fmt=rdb&parm_nm_cd=%25{param}%25"
             with open("tests/data/waterdata_pmcodes.txt") as text:
                 requests_mock.get(pcode_request_url, text=text.read())
         variable_info, _ = md.variable_info

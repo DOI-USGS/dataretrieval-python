@@ -205,7 +205,10 @@ def test_get_continuous():
     )
     assert isinstance(df, DataFrame)
     assert "geometry" not in df.columns
-    assert df["time"].dtype.name.startswith("datetime64[") and "UTC" in df["time"].dtype.name
+    assert (
+        df["time"].dtype.name.startswith("datetime64[")
+        and "UTC" in df["time"].dtype.name
+    )
     assert "continuous_id" in df.columns
 
 
@@ -235,7 +238,10 @@ def test_get_latest_continuous():
     assert df.shape[0] <= 4
     assert df.statistic_id.unique().tolist() == ["00011"]
     assert hasattr(md, "url")
-    assert df["time"].dtype.name.startswith("datetime64[") and "UTC" in df["time"].dtype.name
+    assert (
+        df["time"].dtype.name.startswith("datetime64[")
+        and "UTC" in df["time"].dtype.name
+    )
 
 
 def test_get_latest_daily():
@@ -250,7 +256,7 @@ def test_get_latest_daily():
 
 
 def test_get_latest_daily_properties_geometry():
-    df, md = get_latest_daily(
+    df, _md = get_latest_daily(
         monitoring_location_id=["USGS-05427718", "USGS-05427719"],
         parameter_code=["00060", "00065"],
         properties=[
