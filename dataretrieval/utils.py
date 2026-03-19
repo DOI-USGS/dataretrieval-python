@@ -42,10 +42,7 @@ def to_str(listlike, delimiter=","):
     if isinstance(listlike, list):
         return delimiter.join([str(x) for x in listlike])
 
-    elif isinstance(listlike, pd.core.series.Series):
-        return delimiter.join(listlike.tolist())
-
-    elif isinstance(listlike, pd.core.indexes.base.Index):
+    elif isinstance(listlike, (pd.core.series.Series, pd.core.indexes.base.Index)):
         return delimiter.join(listlike.tolist())
 
     elif isinstance(listlike, str):
@@ -80,7 +77,7 @@ def format_datetime(df, date_field, time_field, tz_field):
 
     df["datetime"] = pd.to_datetime(
         df[date_field] + " " + df[time_field] + " " + df[tz_field],
-        format="ISO8601",
+        format="mixed",
         utc=True,
     )
 
@@ -230,5 +227,6 @@ class NoSitesError(Exception):
 
     def __str__(self):
         return (
-            "No sites/data found using the selection criteria specified in url: {url}"
-        ).format(url=self.url)
+            "No sites/data found using the selection criteria specified in "
+            f"url: {self.url}"
+        )

@@ -33,6 +33,10 @@ from .types import (
 )
 
 __all__ = [
+    "CODE_SERVICES",
+    "PROFILES",
+    "PROFILE_LOOKUP",
+    "SERVICES",
     "get_channel",
     "get_codes",
     "get_continuous",
@@ -46,8 +50,4 @@ __all__ = [
     "get_stats_date_range",
     "get_stats_por",
     "get_time_series_metadata",
-    "CODE_SERVICES",
-    "SERVICES",
-    "PROFILES",
-    "PROFILE_LOOKUP",
 ]

@@ -20,7 +20,7 @@ classifiers = [
 ]
 dependencies = [
     "requests",
-    "pandas>=2.0.0,<3.0.0",
+    "pandas>=2.0.0,<4.0.0",
 ]
 dynamic = ["version"]
 
@@ -36,7 +36,7 @@ test = [
   "pytest-cov[all]",
   "coverage",
   "requests-mock",
-  "flake8",
+  "ruff",
 ]
 doc = [
   "docutils<0.22",
@@ -61,26 +61,35 @@ repository = "https://github.com/DOI-USGS/dataretrieval-python.git"
 [tool.setuptools_scm]
 write_to = "dataretrieval/_version.py"
 
-[tool.isort]
-profile = "black"
-
-[tool.black]
-skip-string-normalization = true
-
-[tool.ruff.format]
-quote-style = "double"
-docstring-code-format = true
-docstring-code-line-length = 72
+[tool.ruff]
+target-version = "py38"
+extend-exclude = ["demos"]
 
 [tool.ruff.lint]
 preview = true
-# Default ["E4", "E7", "E9", and "F"] --> Pyflakes ("F") and pycodestyle ("E")
-extend-select = [
-  "B", "I", "Q",
-  "W291", "W292", "W293", "W605",
-  "E231", "E252", "E261", "E262", "E303", "E501",
+# Select rules: Pyflakes(F), pycodestyle(E,W), isort(I), pyupgrade(UP),
+# flake8-bugbear(B), flake8-quotes(Q), flake8-simplify(SIM), flake8-tidy-imports(TID)
+select = [
+    "F", "E", "W", "I", "UP", "B", "Q", "SIM", "TID",
+    "C90", # mccabe
+    "E501", # line-length
+]
+ignore = [
+    "SIM105", # Use `contextlib.suppress(...)` instead of `try-except-pass`
+    "SIM117", # Use a single `with` statement with multiple contexts
 ]
 
-[tool.ruff.lint.per-file-ignores]
-"demos/*.ipynb" = ["E501", "W291"]
+[tool.ruff.lint.mccabe]
+max-complexity = 20
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["SIM108"]
+"**/__init__.py" = ["F403"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = 72

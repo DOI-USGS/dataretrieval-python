@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from __future__ import annotations
 
 import pandas as pd
 import requests
@@ -9,13 +9,13 @@ ResponseFormat = "json"  # json, xml
 waterwatch_url = "https://waterwatch.usgs.gov/webservices/"
 
 
-def _read_json(data: Dict) -> pd.DataFrame:
+def _read_json(data: dict) -> pd.DataFrame:
     return pd.DataFrame(data).T
 
 
 def get_flood_stage(
-    sites: List[str] = None, fmt: str = "DF"
-) -> Union[pd.DataFrame, Dict]:
+    sites: list[str] | None = None, fmt: str = "DF"
+) -> pd.DataFrame | dict:
     """
     Retrieves flood stages for a list of station numbers.
 

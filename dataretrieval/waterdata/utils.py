@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import json
 import logging
 import os
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, Union, get_args
+from typing import Any, get_args
 
 import pandas as pd
 import requests
@@ -35,7 +37,7 @@ STATISTICS_API_VERSION = "v0"
 STATISTICS_API_URL = f"{BASE_URL}/statistics/{STATISTICS_API_VERSION}"
 
 
-def _switch_arg_id(ls: Dict[str, Any], id_name: str, service: str):
+def _switch_arg_id(ls: dict[str, Any], id_name: str, service: str):
     """
     Switch argument id from its package-specific identifier to the standardized "id" key
     that the API recognizes.
@@ -80,7 +82,7 @@ def _switch_arg_id(ls: Dict[str, Any], id_name: str, service: str):
     return ls
 
 
-def _switch_properties_id(properties: Optional[List[str]], id_name: str, service: str):
+def _switch_properties_id(properties: list[str] | None, id_name: str, service: str):
     """
     Switch properties id from its package-specific identifier to the
     standardized "id" key that the API recognizes.
@@ -126,8 +128,8 @@ def _switch_properties_id(properties: Optional[List[str]], id_name: str, service
 
 
 def _format_api_dates(
-    datetime_input: Union[str, List[str]], date: bool = False
-) -> Union[str, None]:
+    datetime_input: str | list[str], date: bool = False
+) -> str | None:
     """
     Formats date or datetime input(s) for use with an API.
 
@@ -193,15 +195,17 @@ def _format_api_dates(
             try:
                 # Parse to naive datetime
                 parsed_dates = [
-                    datetime.strptime(dt, "%Y-%m-%d %H:%M:%S") for dt in datetime_input
+                    datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")  # noqa: DTZ007
+                    for dt in datetime_input
                 ]
-            except Exception:
+            except ValueError:
                 # Parse to date only
                 try:
                     parsed_dates = [
-                        datetime.strptime(dt, "%Y-%m-%d") for dt in datetime_input
+                        datetime.strptime(dt, "%Y-%m-%d")  # noqa: DTZ007
+                        for dt in datetime_input
                     ]
-                except Exception:
+                except ValueError:
                     return None
                 # If the service only accepts dates for this input, not
                 # datetimes (e.g. "daily"), return just the dates separated by a
@@ -221,7 +225,7 @@ def _format_api_dates(
         raise ValueError("datetime_input should only include 1-2 values")
 
 
-def _cql2_param(args: Dict[str, Any]) -> str:
+def _cql2_param(args: dict[str, Any]) -> str:
     """
     Convert query parameters to CQL2 JSON format for POST requests.
 
@@ -336,9 +340,9 @@ def _error_body(resp: requests.Response):
 
 def _construct_api_requests(
     service: str,
-    properties: Optional[List[str]] = None,
-    bbox: Optional[List[float]] = None,
-    limit: Optional[int] = None,
+    properties: list[str] | None = None,
+    bbox: list[float] | None = None,
+    limit: int | None = None,
     skip_geometry: bool = False,
     **kwargs,
 ):
@@ -436,7 +440,7 @@ def _construct_api_requests(
     return request.prepare()
 
 
-def _next_req_url(resp: requests.Response) -> Optional[str]:
+def _next_req_url(resp: requests.Response) -> str | None:
     """
     Extracts the URL for the next page of results from an HTTP response from a
     water data endpoint.
@@ -529,8 +533,8 @@ def _get_resp_data(resp: requests.Response, geopd: bool) -> pd.DataFrame:
 def _walk_pages(
     geopd: bool,
     req: requests.PreparedRequest,
-    client: Optional[requests.Session] = None,
-) -> Tuple[pd.DataFrame, requests.Response]:
+    client: requests.Session | None = None,
+) -> tuple[pd.DataFrame, requests.Response]:
     """
     Iterates through paginated API responses and aggregates the results
     into a single DataFrame.
@@ -573,7 +577,7 @@ def _walk_pages(
     try:
         resp = client.send(req)
         if resp.status_code != 200:
-            raise Exception(_error_body(resp))
+            raise RuntimeError(_error_body(resp))
 
         # Store the initial response for metadata
         initial_response = resp
@@ -597,7 +601,7 @@ def _walk_pages(
                 df1 = _get_resp_data(resp, geopd=geopd)
                 dfs = pd.concat([dfs, df1], ignore_index=True)
                 curr_url = _next_req_url(resp)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 error_text = _error_body(resp)
                 logger.error("Request incomplete. %s", error_text)
                 logger.warning(
@@ -611,7 +615,7 @@ def _walk_pages(
 
 
 def _deal_with_empty(
-    return_list: pd.DataFrame, properties: Optional[List[str]], service: str
+    return_list: pd.DataFrame, properties: list[str] | None, service: str
 ) -> pd.DataFrame:
     """
     Handles empty DataFrame results by returning a DataFrame with appropriate columns.
@@ -645,7 +649,7 @@ def _deal_with_empty(
 
 
 def _arrange_cols(
-    df: pd.DataFrame, properties: Optional[List[str]], output_id: str
+    df: pd.DataFrame, properties: list[str] | None, output_id: str
 ) -> pd.DataFrame:
     """
     Rearranges and renames columns in a DataFrame based on provided
@@ -778,8 +782,8 @@ def _sort_rows(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_ogc_data(
-    args: Dict[str, Any], output_id: str, service: str
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+    args: dict[str, Any], output_id: str, service: str
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Retrieves OGC (Open Geospatial Consortium) data from a specified
     endpoint and returns it as a pandas DataFrame with metadata.
@@ -842,7 +846,7 @@ def get_ogc_data(
 
 
 def _handle_stats_nesting(
-    body: Dict[str, Any],
+    body: dict[str, Any],
     geopd: bool = False,
 ) -> pd.DataFrame:
     """
@@ -969,11 +973,11 @@ def _expand_percentiles(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_stats_data(
-    args: Dict[str, Any],
+    args: dict[str, Any],
     service: str,
     expand_percentiles: bool,
-    client: Optional[requests.Session] = None,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+    client: requests.Session | None = None,
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Retrieves statistical data from a specified endpoint and returns it
     as a pandas DataFrame with metadata.
@@ -1024,7 +1028,7 @@ def get_stats_data(
     try:
         resp = client.send(req)
         if resp.status_code != 200:
-            raise Exception(_error_body(resp))
+            raise RuntimeError(_error_body(resp))
 
         # Store the initial response for metadata
         initial_response = resp
@@ -1054,7 +1058,7 @@ def get_stats_data(
                 df1 = _handle_stats_nesting(body, geopd=False)
                 dfs = pd.concat([dfs, df1], ignore_index=True)
                 next_token = body["next"]
-            except Exception:
+            except Exception:  # noqa: BLE001
                 error_text = _error_body(resp)
                 logger.error("Request incomplete. %s", error_text)
                 logger.warning(

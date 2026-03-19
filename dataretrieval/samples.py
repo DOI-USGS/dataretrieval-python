@@ -12,8 +12,6 @@ from typing import TYPE_CHECKING
 from dataretrieval.utils import BaseMetadata
 
 if TYPE_CHECKING:
-    from typing import Optional, Tuple, Union
-
     from pandas import DataFrame
 
     from dataretrieval.waterdata import PROFILES, SERVICES
@@ -23,29 +21,29 @@ def get_usgs_samples(
     ssl_check: bool = True,
     service: SERVICES = "results",
     profile: PROFILES = "fullphyschem",
-    activityMediaName: Optional[Union[str, list[str]]] = None,
-    activityStartDateLower: Optional[str] = None,
-    activityStartDateUpper: Optional[str] = None,
-    activityTypeCode: Optional[Union[str, list[str]]] = None,
-    characteristicGroup: Optional[Union[str, list[str]]] = None,
-    characteristic: Optional[Union[str, list[str]]] = None,
-    characteristicUserSupplied: Optional[Union[str, list[str]]] = None,
-    boundingBox: Optional[list[float]] = None,
-    countryFips: Optional[Union[str, list[str]]] = None,
-    stateFips: Optional[Union[str, list[str]]] = None,
-    countyFips: Optional[Union[str, list[str]]] = None,
-    siteTypeCode: Optional[Union[str, list[str]]] = None,
-    siteTypeName: Optional[Union[str, list[str]]] = None,
-    usgsPCode: Optional[Union[str, list[str]]] = None,
-    hydrologicUnit: Optional[Union[str, list[str]]] = None,
-    monitoringLocationIdentifier: Optional[Union[str, list[str]]] = None,
-    organizationIdentifier: Optional[Union[str, list[str]]] = None,
-    pointLocationLatitude: Optional[float] = None,
-    pointLocationLongitude: Optional[float] = None,
-    pointLocationWithinMiles: Optional[float] = None,
-    projectIdentifier: Optional[Union[str, list[str]]] = None,
-    recordIdentifierUserSupplied: Optional[Union[str, list[str]]] = None,
-) -> Tuple[DataFrame, BaseMetadata]:
+    activityMediaName: str | list[str] | None = None,
+    activityStartDateLower: str | None = None,
+    activityStartDateUpper: str | None = None,
+    activityTypeCode: str | list[str] | None = None,
+    characteristicGroup: str | list[str] | None = None,
+    characteristic: str | list[str] | None = None,
+    characteristicUserSupplied: str | list[str] | None = None,
+    boundingBox: list[float] | None = None,
+    countryFips: str | list[str] | None = None,
+    stateFips: str | list[str] | None = None,
+    countyFips: str | list[str] | None = None,
+    siteTypeCode: str | list[str] | None = None,
+    siteTypeName: str | list[str] | None = None,
+    usgsPCode: str | list[str] | None = None,
+    hydrologicUnit: str | list[str] | None = None,
+    monitoringLocationIdentifier: str | list[str] | None = None,
+    organizationIdentifier: str | list[str] | None = None,
+    pointLocationLatitude: float | None = None,
+    pointLocationLongitude: float | None = None,
+    pointLocationWithinMiles: float | None = None,
+    projectIdentifier: str | list[str] | None = None,
+    recordIdentifierUserSupplied: str | list[str] | None = None,
+) -> tuple[DataFrame, BaseMetadata]:
     """Search Samples database for USGS water quality data.
     This is a wrapper function for the Samples database API. All potential
     filters are provided as arguments to the function, but please do not

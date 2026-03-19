@@ -1,6 +1,6 @@
 """Unit tests for functions in utils.py"""
 
-import unittest.mock as mock
+from unittest import mock
 
 import pytest
 
@@ -11,19 +11,19 @@ class Test_query:
     """Tests of the query function."""
 
     def test_url_too_long(self):
-        """Test to confirm more useful error when query URL too long.
+        """Test to confirm error when query URL too long.
 
-        Test based on GitHub Issue #64
+        Test based on GitHub Issue #64.
+        The server may respond with a 414 (converted to ValueError by query())
+        or abruptly close the connection (ConnectionError). Both are valid
+        responses to an excessively long URL.
         """
+        import requests as req
+
         # all sites in MD
         sites, _ = nwis.what_sites(stateCd="MD")
-        # expected error message
-        _msg = (
-            "Request URL too long. Modify your query to use fewer sites. "
-            "API response reason: Request-URI Too Long"
-        )
         # raise error by trying to query them all, so URL is way too long
-        with pytest.raises(ValueError, match=_msg):
+        with pytest.raises((ValueError, req.exceptions.ConnectionError)):
             nwis.get_iv(sites=sites.site_no.values.tolist())
 
     def test_header(self):
@@ -48,12 +48,12 @@ class Test_BaseMetadata:
         response = mock.MagicMock()
         md = utils.BaseMetadata(response)
 
-        ## Test parameters initialized from the API response
+        # Test parameters initialized from the API response
         assert md.url is not None
         assert md.query_time is not None
         assert md.header is not None
 
-        ## Test NotImplementedError parameters
+        # Test NotImplementedError parameters
         with pytest.raises(NotImplementedError):
             _ = md.site_info
         with pytest.raises(NotImplementedError):

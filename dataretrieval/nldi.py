@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from json import JSONDecodeError
-from typing import Literal, Optional, Union
+from typing import Literal
 
 from dataretrieval.utils import query
 
@@ -32,13 +34,13 @@ def _query_nldi(url, query_params, error_message):
 def get_flowlines(
     navigation_mode: str,
     distance: int = 5,
-    feature_source: Optional[str] = None,
-    feature_id: Optional[str] = None,
-    comid: Optional[int] = None,
-    stop_comid: Optional[int] = None,
+    feature_source: str | None = None,
+    feature_id: str | None = None,
+    comid: int | None = None,
+    stop_comid: int | None = None,
     trim_start: bool = False,
     as_json: bool = False,
-) -> Union[gpd.GeoDataFrame, dict]:
+) -> gpd.GeoDataFrame | dict:
     """Gets the flowlines for the specified navigation either by comid or feature
     source in WGS84 lat/long coordinates as GeoDataFrame containing a polyline geometry.
 
@@ -116,7 +118,7 @@ def get_basin(
     simplified: bool = True,
     split_catchment: bool = False,
     as_json: bool = False,
-) -> Union[gpd.GeoDataFrame, dict]:
+) -> gpd.GeoDataFrame | dict:
     """Gets the aggregated basin for the specified feature in WGS84 lat/lon
     as GeoDataFrame or as JSON conatining a polygon geometry.
 
@@ -164,17 +166,17 @@ def get_basin(
 
 
 def get_features(
-    data_source: Optional[str] = None,
-    navigation_mode: Optional[str] = None,
+    data_source: str | None = None,
+    navigation_mode: str | None = None,
     distance: int = 50,
-    feature_source: Optional[str] = None,
-    feature_id: Optional[str] = None,
-    comid: Optional[int] = None,
-    lat: Optional[float] = None,
-    long: Optional[float] = None,
-    stop_comid: Optional[int] = None,
+    feature_source: str | None = None,
+    feature_id: str | None = None,
+    comid: int | None = None,
+    lat: float | None = None,
+    long: float | None = None,
+    stop_comid: int | None = None,
     as_json: bool = False,
-) -> Union[gpd.GeoDataFrame, dict]:
+) -> gpd.GeoDataFrame | dict:
     """Gets all features found along the specified navigation either by
     comid or feature source as points in WGS84 lat/long coordinates - a GeoDataFrame
     containing a point geometry.
@@ -247,11 +249,10 @@ def get_features(
             )
 
     if not lat:
-        if comid or data_source:
-            if navigation_mode is None:
-                raise ValueError(
-                    "navigation_mode is required if comid or data_source is provided"
-                )
+        if (comid or data_source) and navigation_mode is None:
+            raise ValueError(
+                "navigation_mode is required if comid or data_source is provided"
+            )
         # validate the feature source and comid
         _validate_feature_source_comid(feature_source, feature_id, comid)
         # validate the data source
@@ -334,14 +335,14 @@ def get_features_by_data_source(data_source: str) -> gpd.GeoDataFrame:
 
 
 def search(
-    feature_source: Optional[str] = None,
-    feature_id: Optional[str] = None,
-    navigation_mode: Optional[str] = None,
-    data_source: Optional[str] = None,
+    feature_source: str | None = None,
+    feature_id: str | None = None,
+    navigation_mode: str | None = None,
+    data_source: str | None = None,
     find: Literal["basin", "flowlines", "features"] = "features",
-    comid: Optional[int] = None,
-    lat: Optional[float] = None,
-    long: Optional[float] = None,
+    comid: int | None = None,
+    lat: float | None = None,
+    long: float | None = None,
     distance: int = 50,
 ) -> dict:
     """Searches for the specified feature in NLDI and returns the results
@@ -489,7 +490,7 @@ def _validate_navigation_mode(navigation_mode: str):
 
 
 def _validate_feature_source_comid(
-    feature_source: Optional[str], feature_id: Optional[str], comid: Optional[int]
+    feature_source: str | None, feature_id: str | None, comid: int | None
 ):
     if feature_source is not None and feature_id is None:
         raise ValueError("feature_id is required if feature_source is provided")

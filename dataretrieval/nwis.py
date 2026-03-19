@@ -4,10 +4,10 @@
 
 """
 
-import re
+from __future__ import annotations
+
 import warnings
 from io import StringIO
-from typing import List, Optional, Tuple, Union
 
 import pandas as pd
 import requests
@@ -35,9 +35,8 @@ WATERSERVICE_URL = "https://waterservices.usgs.gov/nwis/"
 PARAMCODES_URL = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?"
 ALLPARAMCODES_URL = "https://help.waterdata.usgs.gov/code/parameter_cd_query?"
 
-WATERSERVICES_SERVICES = ["dv", "iv", "site", "stat"]
+WATERSERVICES_SERVICES = ["dv", "iv", "site", "stat", "gwlevels"]
 WATERDATA_SERVICES = [
-    "gwlevels",
     "measurements",
     "peaks",
     "pmcodes",
@@ -49,7 +48,7 @@ _CRS = "EPSG:4269"
 
 
 def format_response(
-    df: pd.DataFrame, service: Optional[str] = None, **kwargs
+    df: pd.DataFrame, service: str | None = None, **kwargs
 ) -> pd.DataFrame:
     """Setup index for response from query.
 
@@ -79,10 +78,9 @@ def format_response(
     if service == "peaks":
         df = preformat_peaks_response(df)
 
-    if gpd is not None:
-        if "dec_lat_va" in list(df):
-            geoms = gpd.points_from_xy(df.dec_long_va.values, df.dec_lat_va.values)
-            df = gpd.GeoDataFrame(df, geometry=geoms, crs=_CRS)
+    if gpd is not None and "dec_lat_va" in list(df):
+        geoms = gpd.points_from_xy(df.dec_long_va.values, df.dec_lat_va.values)
+        df = gpd.GeoDataFrame(df, geometry=geoms, crs=_CRS)
 
     # check for multiple sites:
     if "datetime" not in df.columns:
@@ -125,15 +123,15 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_qwdata(
-    sites: Optional[Union[List[str], str]] = None,
-    start: Optional[str] = None,
-    end: Optional[str] = None,
+    sites: list[str] | str | None = None,
+    start: str | None = None,
+    end: str | None = None,
     multi_index: bool = True,
     wide_format: bool = True,
     datetime_index: bool = True,
     ssl_check: bool = True,
     **kwargs,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Get water sample data from qwdata service - deprecated, use `get_samples()`
     in the waterdata module.
@@ -145,12 +143,12 @@ def get_qwdata(
 
 
 def get_discharge_measurements(
-    sites: Optional[Union[List[str], str]] = None,
-    start: Optional[str] = None,
-    end: Optional[str] = None,
+    sites: list[str] | str | None = None,
+    start: str | None = None,
+    end: str | None = None,
     ssl_check: bool = True,
     **kwargs,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Get discharge measurements from the waterdata service.
 
@@ -203,13 +201,13 @@ def get_discharge_measurements(
 
 
 def get_discharge_peaks(
-    sites: Optional[Union[List[str], str]] = None,
-    start: Optional[str] = None,
-    end: Optional[str] = None,
+    sites: list[str] | str | None = None,
+    start: str | None = None,
+    end: str | None = None,
     multi_index: bool = True,
     ssl_check: bool = True,
     **kwargs,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Get discharge peaks from the waterdata service.
 
@@ -272,14 +270,14 @@ def get_discharge_peaks(
 
 
 def get_gwlevels(
-    sites: Optional[Union[List[str], str]] = None,
+    sites: list[str] | str | None = None,
     start: str = "1851-01-01",
-    end: Optional[str] = None,
+    end: str | None = None,
     multi_index: bool = True,
     datetime_index: bool = True,
     ssl_check: bool = True,
     **kwargs,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Queries the groundwater level service from waterservices
 
@@ -322,42 +320,51 @@ def get_gwlevels(
     """
     _check_sites_value_types(sites)
 
-    # Make kwargs backwards compatible with waterservices
-    # vocabulary
-    if "startDT" in kwargs:
-        kwargs["begin_date"] = kwargs.pop("startDT")
-    if "endDT" in kwargs:
-        kwargs["end_date"] = kwargs.pop("endDT")
-    if "sites" in kwargs:
-        kwargs["site_no"] = kwargs.pop("sites")
-    if "stateCd" in kwargs:
-        kwargs["state_cd"] = kwargs.pop("stateCd")
-
-    kwargs["begin_date"] = kwargs.pop("begin_date", start)
-    kwargs["end_date"] = kwargs.pop("end_date", end)
-    kwargs["site_no"] = kwargs.pop("site_no", sites)
+    kwargs["startDT"] = kwargs.pop("startDT", start)
+    kwargs["endDT"] = kwargs.pop("endDT", end)
+    kwargs["sites"] = kwargs.pop("sites", sites)
     kwargs["multi_index"] = multi_index
 
-    response = query_waterdata("gwlevels", format="rdb", ssl_check=ssl_check, **kwargs)
+    response = query_waterservices(
+        "gwlevels", format="rdb", ssl_check=ssl_check, **kwargs
+    )
 
     df = _read_rdb(response.text)
 
-    if datetime_index is True:
+    if datetime_index is True and "lev_tz_cd" in df.columns:
         df = format_datetime(df, "lev_dt", "lev_tm", "lev_tz_cd")
+    elif datetime_index is True and "lev_dt" in df.columns and "lev_tm" in df.columns:
+        # Fallback when lev_tz_cd is missing (e.g. some modern services)
+        if "tz_cd" in df.columns:
+            df = format_datetime(df, "lev_dt", "lev_tm", "tz_cd")
+        else:
+            df["datetime"] = pd.to_datetime(
+                df["lev_dt"] + " " + df["lev_tm"], format="mixed", utc=True
+            )
 
     # Filter by kwarg parameterCd because the service doesn't do it
     if "parameterCd" in kwargs:
         pcodes = kwargs["parameterCd"]
         if isinstance(pcodes, str):
             pcodes = [pcodes]
-        df = df[df["parameter_cd"].isin(pcodes)]
+        if "parameter_cd" in df.columns:
+            df = df[df["parameter_cd"].isin(pcodes)]
+        elif len(pcodes) == 1:
+            # If the column is missing (modern service) but we requested one pcode,
+            # we can safely add it to the dataframe for backward compatibility.
+            df["parameter_cd"] = pcodes[0]
+            # No need to filter since we just added it as the only value.
+        else:
+            # Multiple pcodes requested but only one returned (or none)
+            # Add the column but don't fill it if we can't be sure
+            df["parameter_cd"] = pd.NA
 
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
 
 def get_stats(
-    sites: Optional[Union[List[str], str]] = None, ssl_check: bool = True, **kwargs
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+    sites: list[str] | str | None = None, ssl_check: bool = True, **kwargs
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Queries water services statistics information.
 
@@ -525,13 +532,13 @@ def query_waterservices(
 
 
 def get_dv(
-    sites: Optional[Union[List[str], str]] = None,
-    start: Optional[str] = None,
-    end: Optional[str] = None,
+    sites: list[str] | str | None = None,
+    start: str | None = None,
+    end: str | None = None,
     multi_index: bool = True,
     ssl_check: bool = True,
     **kwargs,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Get daily values data from NWIS and return it as a ``pandas.DataFrame``.
 
@@ -595,7 +602,7 @@ def get_dv(
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
 
-def get_info(ssl_check: bool = True, **kwargs) -> Tuple[pd.DataFrame, BaseMetadata]:
+def get_info(ssl_check: bool = True, **kwargs) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Get site description information from NWIS.
 
@@ -711,13 +718,13 @@ def get_info(ssl_check: bool = True, **kwargs) -> Tuple[pd.DataFrame, BaseMetada
 
 
 def get_iv(
-    sites: Optional[Union[List[str], str]] = None,
-    start: Optional[str] = None,
-    end: Optional[str] = None,
+    sites: list[str] | str | None = None,
+    start: str | None = None,
+    end: str | None = None,
     multi_index: bool = True,
     ssl_check: bool = True,
     **kwargs,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get instantaneous values data from NWIS and return it as a DataFrame.
 
     .. note::
@@ -781,10 +788,10 @@ def get_iv(
 
 
 def get_pmcodes(
-    parameterCd: Union[str, List[str]] = "All",
+    parameterCd: str | list[str] = "All",
     partial: bool = True,
     ssl_check: bool = True,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Return a ``pandas.DataFrame`` containing all NWIS parameter codes.
 
@@ -860,12 +867,12 @@ def get_pmcodes(
 
 
 def get_water_use(
-    years: Union[str, List[str]] = "ALL",
-    state: Optional[str] = None,
-    counties: Union[str, List[str]] = "ALL",
-    categories: Union[str, List[str]] = "ALL",
+    years: str | list[str] = "ALL",
+    state: str | None = None,
+    counties: str | list[str] = "ALL",
+    categories: str | list[str] = "ALL",
     ssl_check: bool = True,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Water use data retrieval from USGS (NWIS).
 
@@ -910,17 +917,14 @@ def get_water_use(
         ... )
 
     """
-    if years:
-        if not isinstance(years, list) and not isinstance(years, str):
-            raise TypeError("years must be a string or a list of strings")
+    if years and not isinstance(years, list) and not isinstance(years, str):
+        raise TypeError("years must be a string or a list of strings")
 
-    if counties:
-        if not isinstance(counties, list) and not isinstance(counties, str):
-            raise TypeError("counties must be a string or a list of strings")
+    if counties and not isinstance(counties, list) and not isinstance(counties, str):
+        raise TypeError("counties must be a string or a list of strings")
 
-    if categories:
-        if not isinstance(categories, list) and not isinstance(categories, str):
-            raise TypeError("categories must be a string or a list of strings")
+    if categories and not isinstance(categories, (list, str)):
+        raise TypeError("categories must be a string or a list of strings")
 
     payload = {
         "rdb_compression": "value",
@@ -938,11 +942,11 @@ def get_water_use(
 
 
 def get_ratings(
-    site: Optional[str] = None,
+    site: str | None = None,
     file_type: str = "base",
     ssl_check: bool = True,
     **kwargs,
-) -> Tuple[pd.DataFrame, BaseMetadata]:
+) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Rating table for an active USGS streamgage retrieval.
 
@@ -994,7 +998,7 @@ def get_ratings(
     return _read_rdb(response.text), NWIS_Metadata(response, site_no=site)
 
 
-def what_sites(ssl_check: bool = True, **kwargs) -> Tuple[pd.DataFrame, BaseMetadata]:
+def what_sites(ssl_check: bool = True, **kwargs) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Search NWIS for sites within a region with specific data.
 
@@ -1035,13 +1039,13 @@ def what_sites(ssl_check: bool = True, **kwargs) -> Tuple[pd.DataFrame, BaseMeta
 
 
 def get_record(
-    sites: Optional[Union[List[str], str]] = None,
-    start: Optional[str] = None,
-    end: Optional[str] = None,
+    sites: list[str] | str | None = None,
+    start: str | None = None,
+    end: str | None = None,
     multi_index: bool = True,
     wide_format: bool = True,
     datetime_index: bool = True,
-    state: Optional[str] = None,
+    state: str | None = None,
     service: str = "iv",
     ssl_check: bool = True,
     **kwargs,
@@ -1342,6 +1346,12 @@ def _read_rdb(rdb):
         A formatted pandas data frame
 
     """
+    if "<html>" in rdb.lower() or "<!doctype html>" in rdb.lower():
+        raise ValueError(
+            "Received HTML response instead of RDB. This often indicates "
+            "that the service has been moved or is currently unavailable."
+        )
+
     count = 0
 
     for line in rdb.splitlines():
@@ -1352,8 +1362,8 @@ def _read_rdb(rdb):
         else:
             break
 
-    fields = re.split("[\t]", rdb.splitlines()[count])
-    fields = [field.replace(",", "") for field in fields]
+    fields = rdb.splitlines()[count].split("\t")
+    fields = [field.replace(",", "").strip() for field in fields if field.strip()]
     dtypes = {
         "site_no": str,
         "dec_long_va": float,
@@ -1376,9 +1386,8 @@ def _read_rdb(rdb):
 
 
 def _check_sites_value_types(sites):
-    if sites:
-        if not isinstance(sites, list) and not isinstance(sites, str):
-            raise TypeError("sites must be a string or a list of strings")
+    if sites and not isinstance(sites, list) and not isinstance(sites, str):
+        raise TypeError("sites must be a string or a list of strings")
 
 
 class NWIS_Metadata(BaseMetadata):
@@ -1432,7 +1441,7 @@ class NWIS_Metadata(BaseMetadata):
         self._parameters = parameters
 
     @property
-    def site_info(self) -> Optional[Tuple[pd.DataFrame, BaseMetadata]]:
+    def site_info(self) -> tuple[pd.DataFrame, BaseMetadata] | None:
         """
         Return
         ------
@@ -1463,7 +1472,7 @@ class NWIS_Metadata(BaseMetadata):
             return None  # don't set metadata site_info attribute
 
     @property
-    def variable_info(self) -> Optional[Tuple[pd.DataFrame, BaseMetadata]]:
+    def variable_info(self) -> tuple[pd.DataFrame, BaseMetadata] | None:
         # define variable_info metadata based on parameterCd if available
         if "parameterCd" in self._parameters:
             return get_pmcodes(parameterCd=self._parameters["parameterCd"])

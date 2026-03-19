@@ -127,22 +127,26 @@ def get_results(
     kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
-        if "dataProfile" in kwargs:
-            if kwargs["dataProfile"] not in result_profiles_legacy:
-                raise TypeError(
-                    f"dataProfile {kwargs['dataProfile']} is not a legacy profile.",
-                    f"Valid options are {result_profiles_legacy}.",
-                )
+        if (
+            "dataProfile" in kwargs
+            and kwargs["dataProfile"] not in result_profiles_legacy
+        ):
+            raise TypeError(
+                f"dataProfile {kwargs['dataProfile']} is not a legacy profile.",
+                f"Valid options are {result_profiles_legacy}.",
+            )
 
         url = wqp_url("Result")
 
     else:
-        if "dataProfile" in kwargs:
-            if kwargs["dataProfile"] not in result_profiles_wqx3:
-                raise TypeError(
-                    f"dataProfile {kwargs['dataProfile']} is not a valid WQX3.0"
-                    f"profile. Valid options are {result_profiles_wqx3}.",
-                )
+        if (
+            "dataProfile" in kwargs
+            and kwargs["dataProfile"] not in result_profiles_wqx3
+        ):
+            raise TypeError(
+                f"dataProfile {kwargs['dataProfile']} is not a valid WQX3.0"
+                f"profile. Valid options are {result_profiles_wqx3}.",
+            )
         else:
             kwargs["dataProfile"] = "fullPhysChem"
 
@@ -200,10 +204,7 @@ def what_sites(
 
     kwargs = _check_kwargs(kwargs)
 
-    if legacy is True:
-        url = wqp_url("Station")
-    else:
-        url = wqx3_url("Station")
+    url = wqp_url("Station") if legacy is True else wqx3_url("Station")
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
@@ -373,10 +374,7 @@ def what_activities(
 
     kwargs = _check_kwargs(kwargs)
 
-    if legacy is True:
-        url = wqp_url("Activity")
-    else:
-        url = wqx3_url("Activity")
+    url = wqp_url("Activity") if legacy is True else wqx3_url("Activity")
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
