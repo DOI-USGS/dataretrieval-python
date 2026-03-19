@@ -36,7 +36,6 @@ test = [
   "pytest-cov[all]",
   "coverage",
   "requests-mock",
-  "flake8",
 ]
 doc = [
   "docutils<0.22",
@@ -51,6 +50,23 @@ doc = [
 ]
 nldi = [
   'geopandas>=0.10'
+]
+dev = [
+  "pytest > 5.0.0",
+  "pytest-cov[all]",
+  "coverage",
+  "requests-mock",
+  "ruff",
+  "docutils<0.22",
+  "sphinx",
+  "sphinx-rtd-theme",
+  "nbsphinx",
+  "nbsphinx_link",
+  "ipython",
+  "ipykernel",
+  "matplotlib",
+  "folium>=0.12",
+  "geopandas>=0.10",
 ]
 
 [project.urls]

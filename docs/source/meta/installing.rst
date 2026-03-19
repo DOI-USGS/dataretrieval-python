@@ -4,12 +4,10 @@ Installation Guide
 Whether you are a user or developer we recommend installing ``dataretrieval``
 in a virtual environment. This can be done using something like ``virtualenv``
 or ``conda``. Package dependencies are listed in the `requirements.txt`_ file,
-a full list of dependencies necessary for development are listed in the
-`requirements-dev.txt`_ file.
+a full list of dependencies necessary for development are available from the
+``dev`` extra in ``pyproject.toml``.
 
 .. _requirements.txt: https://github.com/DOI-USGS/dataretrieval-python/blob/main/requirements.txt
-
-.. _requirements-dev.txt: https://github.com/DOI-USGS/dataretrieval-python/blob/main/requirements-dev.txt
 
 
 User Installation
@@ -59,8 +57,7 @@ the package for development:
 
 .. code-block:: bash
 
-    $ pip install -r requirements-dev.txt
-    $ pip install -e .
+    $ pip install -e ".[dev]"
 
 To check your installation you can run the tests with the following commands:
 
