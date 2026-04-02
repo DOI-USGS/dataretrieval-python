@@ -152,8 +152,8 @@ def get_discharge_measurements(
 
     """
     raise NameError(
-        "`nwis.get_discharge_measurements` has been replaced with "
-        "`waterdata.get_field_measurements`."
+        "`nwis.get_discharge_measurements` has been replaced "
+        "with `waterdata.get_field_measurements`."
     )
 
 
@@ -241,8 +241,8 @@ def get_gwlevels(
 
     """
     raise NameError(
-        "`nwis.get_gwlevels` has been replaced with "
-        "`waterdata.get_field_measurements()`."
+        "`nwis.get_gwlevels` has been replaced "
+        "with `waterdata.get_field_measurements()`."
     )
 
 
@@ -678,12 +678,12 @@ def get_pmcodes(
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     This function is defunct, use
-    `waterdata.get_reference_table(collection='parameter_code')`.
+    `get_reference_table(collection="parameter-codes")`.
 
     """
     raise NameError(
-        "`nwis.get_pmcodes` has been replaced with "
-        "`waterdata.get_reference_table(collection='parameter_code')`."
+        "`nwis.get_pmcodes` has been replaced "
+        "with `get_reference_table(collection='parameter-codes')`."
     )
 
 
@@ -695,10 +695,10 @@ def get_water_use(
     ssl_check: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
-    This function is defunct with no current replacement.
+    This function is defunct and currently has no replacement.
 
     """
-    raise NameError("`nwis.get_water_use` is defunct with no current replacement.")
+    raise NameError("`nwis.get_water_use` is defunct.")
 
 
 def get_ratings(
