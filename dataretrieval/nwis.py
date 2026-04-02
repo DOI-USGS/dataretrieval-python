@@ -12,7 +12,7 @@ from io import StringIO
 import pandas as pd
 import requests
 
-from dataretrieval.utils import BaseMetadata, format_datetime
+from dataretrieval.utils import BaseMetadata
 
 from .utils import query
 
@@ -35,12 +35,9 @@ WATERSERVICE_URL = "https://waterservices.usgs.gov/nwis/"
 PARAMCODES_URL = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?"
 ALLPARAMCODES_URL = "https://help.waterdata.usgs.gov/code/parameter_cd_query?"
 
-WATERSERVICES_SERVICES = ["dv", "iv", "site", "stat", "gwlevels"]
+WATERSERVICES_SERVICES = ["dv", "iv", "site", "stat"]
 WATERDATA_SERVICES = [
-    "measurements",
     "peaks",
-    "pmcodes",
-    "water_use",
     "ratings",
 ]
 # NAD83
@@ -133,7 +130,7 @@ def get_qwdata(
     **kwargs,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
-    Get water sample data from qwdata service - deprecated, use `get_samples()`
+    This function is defunct, use `get_samples()`
     in the waterdata module.
 
     """
@@ -150,54 +147,14 @@ def get_discharge_measurements(
     **kwargs,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
-    Get discharge measurements from the waterdata service.
-
-    Parameters
-    ----------
-    sites: string or list of strings, optional, default is None
-    start: string, optional, default is None
-        Supply date in the format: YYYY-MM-DD
-    end: string, optional, default is None
-        Supply date in the format: YYYY-MM-DD
-    ssl_check: bool, optional
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
-    **kwargs: optional
-        If supplied, will be used as query parameters
-
-    Returns
-    -------
-    df: ``pandas.DataFrame``
-        Times series data from the NWIS JSON
-    md: :obj:`dataretrieval.utils.Metadata`
-        A custom metadata object
-
-    Examples
-    --------
-    .. doctest::
-
-        >>> # Get discharge measurements for site 05114000
-        >>> df, md = dataretrieval.nwis.get_discharge_measurements(
-        ...     sites="05114000", start="2000-01-01", end="2000-01-30"
-        ... )
-
-        >>> # Get discharge measurements for sites in Alaska
-        >>> df, md = dataretrieval.nwis.get_discharge_measurements(
-        ...     start="2012-01-09", end="2012-01-10", stateCd="AK"
-        ... )
+    This function is defunct, use `get_field_measurements()`
+    in the waterdata module.
 
     """
-    _check_sites_value_types(sites)
-
-    kwargs["site_no"] = kwargs.pop("site_no", sites)
-    kwargs["begin_date"] = kwargs.pop("begin_date", start)
-    kwargs["end_date"] = kwargs.pop("end_date", end)
-
-    if "format" not in kwargs:
-        kwargs["format"] = "rdb"
-
-    response = query_waterdata("measurements", ssl_check=ssl_check, **kwargs)
-    return _read_rdb(response.text), NWIS_Metadata(response, **kwargs)
+    raise NameError(
+        "`nwis.get_discharge_measurements` has been replaced with "
+        "`waterdata.get_field_measurements`."
+    )
 
 
 def get_discharge_peaks(
@@ -279,87 +236,14 @@ def get_gwlevels(
     **kwargs,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
-    Queries the groundwater level service from waterservices
-
-    Parameters
-    ----------
-    sites: string or list of strings, optional, default is None
-        If the waterdata parameter site_no is supplied, it will overwrite the
-        sites parameter
-    start: string, optional, default is '1851-01-01'
-        If the waterdata parameter begin_date is supplied, it will overwrite
-        the start parameter
-    end: string, optional, default is None
-        If the waterdata parameter end_date is supplied, it will overwrite the
-        end parameter (YYYY-MM-DD)
-    multi_index: bool, optional
-        If False, a dataframe with a single-level index (datetime) is returned,
-        default is True
-    datetime_index : bool, optional
-        If True, create a datetime index, default is True
-    ssl_check: bool, optional
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
-    **kwargs: optional
-        If supplied, will be used as query parameters
-
-    Returns
-    -------
-    df: ``pandas.DataFrame``
-        Times series data from the NWIS JSON
-    md: :obj:`dataretrieval.utils.Metadata`
-        A custom metadata object
-
-    Examples
-    --------
-    .. doctest::
-
-        >>> # Get groundwater levels for site 434400121275801
-        >>> df, md = dataretrieval.nwis.get_gwlevels(sites="434400121275801")
+    This function is defunct, use `get_field_measurements()`
+    in the waterdata module.
 
     """
-    _check_sites_value_types(sites)
-
-    kwargs["startDT"] = kwargs.pop("startDT", start)
-    kwargs["endDT"] = kwargs.pop("endDT", end)
-    kwargs["sites"] = kwargs.pop("sites", sites)
-    kwargs["multi_index"] = multi_index
-
-    response = query_waterservices(
-        "gwlevels", format="rdb", ssl_check=ssl_check, **kwargs
+    raise NameError(
+        "`nwis.get_gwlevels` has been replaced with "
+        "`waterdata.get_field_measurements()`."
     )
-
-    df = _read_rdb(response.text)
-
-    if datetime_index is True and "lev_tz_cd" in df.columns:
-        df = format_datetime(df, "lev_dt", "lev_tm", "lev_tz_cd")
-    elif datetime_index is True and "lev_dt" in df.columns and "lev_tm" in df.columns:
-        # Fallback when lev_tz_cd is missing (e.g. some modern services)
-        if "tz_cd" in df.columns:
-            df = format_datetime(df, "lev_dt", "lev_tm", "tz_cd")
-        else:
-            df["datetime"] = pd.to_datetime(
-                df["lev_dt"] + " " + df["lev_tm"], format="mixed", utc=True
-            )
-
-    # Filter by kwarg parameterCd because the service doesn't do it
-    if "parameterCd" in kwargs:
-        pcodes = kwargs["parameterCd"]
-        if isinstance(pcodes, str):
-            pcodes = [pcodes]
-        if "parameter_cd" in df.columns:
-            df = df[df["parameter_cd"].isin(pcodes)]
-        elif len(pcodes) == 1:
-            # If the column is missing (modern service) but we requested one pcode,
-            # we can safely add it to the dataframe for backward compatibility.
-            df["parameter_cd"] = pcodes[0]
-            # No need to filter since we just added it as the only value.
-        else:
-            # Multiple pcodes requested but only one returned (or none)
-            # Add the column but don't fill it if we can't be sure
-            df["parameter_cd"] = pd.NA
-
-    return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
 
 def get_stats(
@@ -793,77 +677,14 @@ def get_pmcodes(
     ssl_check: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
-    Return a ``pandas.DataFrame`` containing all NWIS parameter codes.
-
-    Parameters
-    ----------
-    parameterCd: string or list of strings, default is 'All'
-        Accepts parameter codes or names
-    partial: bool, optional
-        Default is True (partial querying). If False, the function will query
-        only exact matches, default is True
-    ssl_check: bool, optional
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
-
-    Returns
-    -------
-    df: ``pandas.DataFrame``
-        Data retrieved from the NWIS web service.
-    md: :obj:`dataretrieval.utils.Metadata`
-        A custom metadata object
-
-    Examples
-    --------
-    .. doctest::
-
-        >>> # Get information about the '00060' pcode
-        >>> df, md = dataretrieval.nwis.get_pmcodes(
-        ...     parameterCd="00060", partial=False
-        ... )
-
-        >>> # Get information about all 'Discharge' pcodes
-        >>> df, md = dataretrieval.nwis.get_pmcodes(
-        ...     parameterCd="Discharge", partial=True
-        ... )
+    This function is defunct, use
+    `waterdata.get_reference_table(collection='parameter_code')`.
 
     """
-
-    payload = {"fmt": "rdb"}
-    url = PARAMCODES_URL
-
-    if isinstance(parameterCd, str):  # when a single code or name is given
-        if parameterCd.lower() == "all":
-            payload.update({"group_cd": "%"})
-            url = ALLPARAMCODES_URL
-            response = query(url, payload, ssl_check=ssl_check)
-            return _read_rdb(response.text), NWIS_Metadata(response)
-
-        else:
-            parameterCd = [parameterCd]
-
-    if not isinstance(parameterCd, list):
-        raise TypeError(
-            "Parameter information (code or name) must be type string or list"
-        )
-
-    # Querying with a list of parameters names, codes, or mixed
-    return_list = []
-    for param in parameterCd:
-        if isinstance(param, str):
-            if partial:
-                param = f"%{param}%"
-            payload.update({"parm_nm_cd": param})
-            response = query(url, payload, ssl_check=ssl_check)
-            if len(response.text.splitlines()) < 10:  # empty query
-                raise TypeError(
-                    "One of the parameter codes or names entered does not"
-                    "return any information, please try a different value"
-                )
-            return_list.append(_read_rdb(response.text))
-        else:
-            raise TypeError("Parameter information (code or name) must be type string")
-    return pd.concat(return_list), NWIS_Metadata(response)
+    raise NameError(
+        "`nwis.get_pmcodes` has been replaced with "
+        "`waterdata.get_reference_table(collection='parameter_code')`."
+    )
 
 
 def get_water_use(
@@ -874,71 +695,10 @@ def get_water_use(
     ssl_check: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
-    Water use data retrieval from USGS (NWIS).
-
-    Parameters
-    ----------
-    years: string or list of strings
-        List or comma delimited string of years.  Must be years ending in 0 or
-        5, or "ALL", which retrieves all available years, default is "ALL"
-    state: string, optional, default is None
-        full name, abbreviation or id
-    counties: string or list of strings
-        County IDs from county lookup or "ALL", default is "ALL"
-    categories: string or list of strings
-        List or comma delimited string of Two-letter category abbreviations,
-        default is "ALL"
-    ssl_check: bool, optional
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
-
-    Returns
-    -------
-    df: ``pandas.DataFrame``
-        Data from NWIS
-    md: :obj:`dataretrieval.utils.Metadata`
-        A custom metadata object
-
-    Examples
-    --------
-    .. doctest::
-
-        >>> # Get total population for RI from the NWIS water use service
-        >>> df, md = dataretrieval.nwis.get_water_use(
-        ...     years="2000", state="RI", categories="TP"
-        ... )
-
-        >>> # Get the national total water use for livestock in Bgal/day
-        >>> df, md = dataretrieval.nwis.get_water_use(years="2010", categories="L")
-
-        >>> # Get 2005 domestic water use for Apache County in Arizona
-        >>> df, md = dataretrieval.nwis.get_water_use(
-        ...     years="2005", state="Arizona", counties="001", categories="DO"
-        ... )
+    This function is defunct with no current replacement.
 
     """
-    if years and not isinstance(years, list) and not isinstance(years, str):
-        raise TypeError("years must be a string or a list of strings")
-
-    if counties and not isinstance(counties, list) and not isinstance(counties, str):
-        raise TypeError("counties must be a string or a list of strings")
-
-    if categories and not isinstance(categories, (list, str)):
-        raise TypeError("categories must be a string or a list of strings")
-
-    payload = {
-        "rdb_compression": "value",
-        "format": "rdb",
-        "wu_year": years,
-        "wu_category": categories,
-        "wu_county": counties,
-    }
-    url = WATERDATA_URL + "water_use"
-    if state is not None:
-        url = WATERDATA_BASE_URL + state + "/nwis/water_use"
-        payload.update({"wu_area": "county"})
-    response = query(url, payload, ssl_check=ssl_check)
-    return _read_rdb(response.text), NWIS_Metadata(response)
+    raise NameError("`nwis.get_water_use` is defunct with no current replacement.")
 
 
 def get_ratings(

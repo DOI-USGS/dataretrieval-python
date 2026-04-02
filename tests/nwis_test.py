@@ -7,7 +7,6 @@ import pytest
 
 from dataretrieval.nwis import (
     NWIS_Metadata,
-    get_gwlevels,
     get_info,
     get_iv,
     get_record,
@@ -20,28 +19,6 @@ END_DATE = "2018-01-25"
 
 DATETIME_COL = "datetime"
 SITENO_COL = "site_no"
-
-
-@pytest.mark.xfail(
-    reason="Legacy measurements RDB service is decommissioned and redirects to HTML UI."
-)
-def test_measurements_service():
-    """Test measurement service"""
-    start = "2018-01-24"
-    end = "2018-01-25"
-    service = "measurements"
-    site = "03339000"
-    df = get_record(site, start, end, service=service)
-    return df
-
-
-@pytest.mark.xfail(
-    reason="Legacy measurements RDB service is decommissioned and redirects to HTML UI."
-)
-def test_measurements_service_answer():
-    df = test_measurements_service()
-    # check parsing
-    assert df.iloc[0]["measurement_nu"] == 801
 
 
 def test_iv_service():
@@ -75,26 +52,7 @@ def test_preformat_peaks_response():
     assert df["datetime"].isna().sum() == 0
 
 
-@pytest.mark.xfail(
-    reason="Legacy measurements RDB service is decommissioned and redirects to HTML UI."
-)
-@pytest.mark.parametrize("site_input_type_list", [True, False])
-def test_get_record_site_value_types(site_input_type_list):
-    """Test that get_record method for valid input types for the 'sites' parameter."""
-    start = "2018-01-24"
-    end = "2018-01-25"
-    service = "measurements"
-    site = "03339000"
-    if site_input_type_list:
-        sites = [site]
-    else:
-        sites = site
-    df = get_record(sites=sites, start=start, end=end, service=service)
-    assert df.iloc[0]["measurement_nu"] == 801
-
-
 if __name__ == "__main__":
-    test_measurements_service_answer()
     test_iv_service_answer()
 
 
@@ -324,32 +282,3 @@ class TestMetaData:
         md = NWIS_Metadata(response, countyCd="01001")
         # assert that site_info is implemented
         assert md.site_info
-
-
-class Testgwlevels:
-    """Tests of get_gwlevels function
-
-    Notes
-    -----
-    - gwlevels moved to a new web service endpoint in 2024
-    - The new endpoint has quirks and doesn't recognize the
-        parameterCd kwarg advertisted by the service.
-    """
-
-    def test_gwlevels_one_parameterCd(self):
-        pcode = "72019"
-        df, _ = get_gwlevels(
-            sites="434400121275801", start="2010-01-01", parameterCd=pcode
-        )
-        if len(df) == 0:
-            pytest.skip("Site returned no data on modern service.")
-        assert set(df["parameter_cd"].unique().tolist()) == {pcode}
-
-    def test_gwlevels_two_parameterCds(self):
-        pcode = ["72019", "62610"]
-        df, _ = get_gwlevels(
-            sites="434400121275801", start="2010-01-01", parameterCd=pcode
-        )
-        if len(df) == 0:
-            pytest.skip("Site returned no data on modern service.")
-        assert set(df["parameter_cd"].unique().tolist()) == set(pcode)
