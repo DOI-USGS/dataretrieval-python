@@ -61,6 +61,8 @@ def test_iv_service_answer(requests_mock):
         DATETIME_COL,
     ], f"iv service returned incorrect index: {df.index.names}"
 
+
+def test_nwis_service_live():
     """Live sanity check of NWIS service, tolerant of transient NWIS outages."""
     site = "01491000"
     try:
