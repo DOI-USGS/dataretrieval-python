@@ -1,4 +1,5 @@
 import datetime
+import json
 from unittest import mock
 
 import numpy as np
@@ -26,6 +27,12 @@ DATETIME_COL = "datetime"
 SITENO_COL = "site_no"
 
 
+def _load_mock_json(file_name):
+    """Helper to load mock JSON from tests/data."""
+    with open(f"tests/data/{file_name}") as f:
+        return json.load(f)
+
+
 def _test_iv_service(requests_mock):
     """Mocked test of instantaneous value service"""
     start = START_DATE
@@ -39,50 +46,7 @@ def _test_iv_service(requests_mock):
         f"startDT={start}&endDT={end}&sites=03339000%2C05447500%2C03346500"
     )
     # We use a very simple JSON structure just to satisfy the parser
-    mock_json = {
-        "value": {
-            "timeSeries": [
-                {
-                    "sourceInfo": {"siteCode": [{"value": "03339000"}]},
-                    "variable": {
-                        "variableCode": [{"value": "00060"}],
-                        "options": {"option": [{"value": "mean"}]},
-                    },
-                    "values": [
-                        {
-                            "method": [{"methodDescription": "mean"}],
-                            "value": [
-                                {
-                                    "value": "1.0",
-                                    "dateTime": "2018-01-24T00:00:00Z",
-                                    "qualifiers": "A",
-                                }
-                            ],
-                        }
-                    ],
-                },
-                {
-                    "sourceInfo": {"siteCode": [{"value": "05447500"}]},
-                    "variable": {
-                        "variableCode": [{"value": "00060"}],
-                        "options": {"option": [{"value": "mean"}]},
-                    },
-                    "values": [
-                        {
-                            "method": [{"methodDescription": "mean"}],
-                            "value": [
-                                {
-                                    "value": "2.0",
-                                    "dateTime": "2018-01-24T00:00:00Z",
-                                    "qualifiers": "A",
-                                }
-                            ],
-                        }
-                    ],
-                },
-            ]
-        }
-    }
+    mock_json = _load_mock_json("nwis_iv_mock.json")
 
     requests_mock.get(mock_url, json=mock_json)
 
@@ -263,7 +227,7 @@ def test_empty_timeseries(requests_mock):
         f"https://waterservices.usgs.gov/nwis/iv?format=json&"
         f"startDT={start}&endDT={end}&sites={sites}"
     )
-    mock_json = {"value": {"timeSeries": []}}
+    mock_json = _load_mock_json("nwis_iv_empty_mock.json")
     requests_mock.get(mock_url, json=mock_json)
 
     df = get_record(sites=sites, service="iv", start=start, end=end)
