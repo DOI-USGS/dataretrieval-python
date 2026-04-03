@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package what_sites() Examples &mdash; dataretrieval 0.1.dev1+g2c775e4c4 documentation</title>
+  <title>USGS dataretrieval Python Package what_sites() Examples &mdash; dataretrieval 0.1.dev1+g5b3766aec documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=583b92f2"></script>
+      <script src="../_static/documentation_options.js?v=742616cd"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -126,16 +126,16 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (0.1.dev1+g2c775e4c4)
-Requirement already satisfied: requests in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (2.32.5)
-Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.1)
-Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.3)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (0.1.dev1+g5b3766aec)
+Requirement already satisfied: requests in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (2.33.1)
+Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.2)
+Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.4)
 Requirement already satisfied: python-dateutil&gt;=2.8.2 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.9.0.post0)
 Requirement already satisfied: six&gt;=1.5 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
-Requirement already satisfied: charset_normalizer&lt;4,&gt;=2 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (3.4.6)
+Requirement already satisfied: charset_normalizer&lt;4,&gt;=2 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (3.4.7)
 Requirement already satisfied: idna&lt;4,&gt;=2.5 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (3.11)
-Requirement already satisfied: urllib3&lt;3,&gt;=1.21.1 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2.6.3)
-Requirement already satisfied: certifi&gt;=2017.4.17 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2026.2.25)
+Requirement already satisfied: urllib3&lt;3,&gt;=1.26 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2.6.3)
+Requirement already satisfied: certifi&gt;=2023.5.7 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2026.2.25)
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
@@ -146,6 +146,7 @@ Requirement already satisfied: certifi&gt;=2017.4.17 in /opt/hostedtoolcache/Pyt
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">nwis</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval.waterdata</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">waterdata</span>
 </pre></div>
 </div>
 </div>
@@ -189,7 +190,7 @@ Requirement already satisfied: certifi&gt;=2017.4.17 in /opt/hostedtoolcache/Pyt
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteListPhos</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">stateCd</span><span class="o">=</span><span class="s2">&quot;OH&quot;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s2">&quot;00665&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteListPhos</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span><span class="n">state_code</span><span class="o">=</span><span class="s2">&quot;OH&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -230,201 +231,33 @@ Requirement already satisfied: certifi&gt;=2017.4.17 in /opt/hostedtoolcache/Pyt
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>station_nm</th>
-      <th>site_tp_cd</th>
-      <th>dec_lat_va</th>
-      <th>dec_long_va</th>
-      <th>coord_acy_cd</th>
-      <th>dec_coord_datum_cd</th>
-      <th>alt_va</th>
-      <th>alt_acy_va</th>
-      <th>alt_datum_cd</th>
-      <th>huc_cd</th>
       <th>geometry</th>
+      <th>monitoring_location_id</th>
+      <th>agency_code</th>
+      <th>agency_name</th>
+      <th>monitoring_location_number</th>
+      <th>monitoring_location_name</th>
+      <th>district_code</th>
+      <th>country_code</th>
+      <th>country_name</th>
+      <th>state_code</th>
+      <th>...</th>
+      <th>construction_date</th>
+      <th>aquifer_code</th>
+      <th>national_aquifer_code</th>
+      <th>aquifer_type_code</th>
+      <th>well_constructed_depth</th>
+      <th>hole_constructed_depth</th>
+      <th>depth_source_code</th>
+      <th>revision_note</th>
+      <th>revision_created</th>
+      <th>revision_modified</th>
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <th>0</th>
-      <td>USGS</td>
-      <td>03086500</td>
-      <td>Mahoning River at Alliance OH</td>
-      <td>ST</td>
-      <td>40.932836</td>
-      <td>-81.094541</td>
-      <td>S</td>
-      <td>NAD83</td>
-      <td>1034.79</td>
-      <td>0.10</td>
-      <td>NAVD88</td>
-      <td>5030103.0</td>
-      <td>POINT (-81.09454 40.93284)</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>USGS</td>
-      <td>03089500</td>
-      <td>Mill Creek near Berlin Center OH</td>
-      <td>ST</td>
-      <td>41.000336</td>
-      <td>-80.968424</td>
-      <td>S</td>
-      <td>NAD83</td>
-      <td>1032.90</td>
-      <td>0.01</td>
-      <td>NGVD29</td>
-      <td>5030103.0</td>
-      <td>POINT (-80.96842 41.00034)</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>USGS</td>
-      <td>03090500</td>
-      <td>Mahoning River bl Berlin Dam nr Berlin Center OH</td>
-      <td>ST</td>
-      <td>41.048391</td>
-      <td>-81.001203</td>
-      <td>S</td>
-      <td>NAD83</td>
-      <td>957.72</td>
-      <td>0.01</td>
-      <td>NAVD88</td>
-      <td>5030103.0</td>
-      <td>POINT (-81.0012 41.04839)</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>USGS</td>
-      <td>03091500</td>
-      <td>Mahoning River at Pricetown OH</td>
-      <td>ST</td>
-      <td>41.131446</td>
-      <td>-80.971202</td>
-      <td>S</td>
-      <td>NAD83</td>
-      <td>904.77</td>
-      <td>0.10</td>
-      <td>NAVD88</td>
-      <td>5030103.0</td>
-      <td>POINT (-80.9712 41.13145)</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>USGS</td>
-      <td>03092000</td>
-      <td>Kale Creek near Pricetown OH</td>
-      <td>ST</td>
-      <td>41.139779</td>
-      <td>-80.995092</td>
-      <td>S</td>
-      <td>NAD83</td>
-      <td>914.70</td>
-      <td>0.01</td>
-      <td>COE1912</td>
-      <td>5030103.0</td>
-      <td>POINT (-80.99509 41.13978)</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>1275</th>
-      <td>USGS</td>
-      <td>414144084242500</td>
-      <td>WM-103 OH</td>
-      <td>GW</td>
-      <td>41.686439</td>
-      <td>-84.406893</td>
-      <td>S</td>
-      <td>NAD83</td>
-      <td>850.00</td>
-      <td>10.00</td>
-      <td>NGVD29</td>
-      <td>4100006.0</td>
-      <td>POINT (-84.40689 41.68644)</td>
-    </tr>
-    <tr>
-      <th>1276</th>
-      <td>USGS</td>
-      <td>414150084331000</td>
-      <td>WM-87-S14 OH</td>
-      <td>GW</td>
-      <td>41.697272</td>
-      <td>-84.552728</td>
-      <td>S</td>
-      <td>NAD83</td>
-      <td>895.00</td>
-      <td>10.00</td>
-      <td>NGVD29</td>
-      <td>4100003.0</td>
-      <td>POINT (-84.55273 41.69727)</td>
-    </tr>
-    <tr>
-      <th>1277</th>
-      <td>USGS</td>
-      <td>414214083151000</td>
-      <td>Lake Erie at site WE12 near Toledo OH</td>
-      <td>LK</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>S</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4120200.0</td>
-      <td>POINT (NaN NaN)</td>
-    </tr>
-    <tr>
-      <th>1278</th>
-      <td>USGS</td>
-      <td>414233083595500</td>
-      <td>Little Bear Creek at HWY 120 nr Seward, OH</td>
-      <td>ST-DCH</td>
-      <td>41.709167</td>
-      <td>-83.998611</td>
-      <td>S</td>
-      <td>NAD83</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4100002.0</td>
-      <td>POINT (-83.99861 41.70917)</td>
-    </tr>
-    <tr>
-      <th>1279</th>
-      <td>USGS</td>
-      <td>414937083112500</td>
-      <td>Lake Erie at site WE4 near Toledo OH</td>
-      <td>LK</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>S</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4120200.0</td>
-      <td>POINT (NaN NaN)</td>
-    </tr>
   </tbody>
 </table>
-<p>1280 rows × 13 columns</p>
+<p>0 rows × 44 columns</p>
 </div></div>
 </div>
 <p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">what_sites()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.</p>
@@ -441,7 +274,7 @@ Requirement already satisfied: certifi&gt;=2017.4.17 in /opt/hostedtoolcache/Pyt
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-The query URL used to retrieve the data from NWIS was: https://waterservices.usgs.gov/nwis/site?stateCd=OH&amp;parameterCd=00665&amp;format=rdb
+The query URL used to retrieve the data from NWIS was: https://api.waterdata.usgs.gov/ogcapi/v0/collections/monitoring-locations/items?state_code=OH&amp;skipGeometry=False&amp;limit=50000
 </pre></div></div>
 </div>
 </section>
@@ -453,7 +286,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oneSite</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">&quot;05114000&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oneSite</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;05114000&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">oneSite</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -480,40 +313,33 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>station_nm</th>
-      <th>site_tp_cd</th>
-      <th>dec_lat_va</th>
-      <th>dec_long_va</th>
-      <th>coord_acy_cd</th>
-      <th>dec_coord_datum_cd</th>
-      <th>alt_va</th>
-      <th>alt_acy_va</th>
-      <th>alt_datum_cd</th>
-      <th>huc_cd</th>
       <th>geometry</th>
+      <th>monitoring_location_id</th>
+      <th>agency_code</th>
+      <th>agency_name</th>
+      <th>monitoring_location_number</th>
+      <th>monitoring_location_name</th>
+      <th>district_code</th>
+      <th>country_code</th>
+      <th>country_name</th>
+      <th>state_code</th>
+      <th>...</th>
+      <th>construction_date</th>
+      <th>aquifer_code</th>
+      <th>national_aquifer_code</th>
+      <th>aquifer_type_code</th>
+      <th>well_constructed_depth</th>
+      <th>hole_constructed_depth</th>
+      <th>depth_source_code</th>
+      <th>revision_note</th>
+      <th>revision_created</th>
+      <th>revision_modified</th>
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <th>0</th>
-      <td>USGS</td>
-      <td>05114000</td>
-      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
-      <td>ST</td>
-      <td>48.989957</td>
-      <td>-101.958335</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>1605.0</td>
-      <td>0.19</td>
-      <td>NAVD88</td>
-      <td>9010008</td>
-      <td>POINT (-101.95833 48.98996)</td>
-    </tr>
   </tbody>
 </table>
+<p>0 rows × 44 columns</p>
 </div></div>
 </div>
 </section>
@@ -523,7 +349,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oneSite</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">&quot;05114000&quot;</span><span class="p">,</span> <span class="n">siteOutput</span><span class="o">=</span><span class="s2">&quot;expanded&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oneSite</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;05114000&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">oneSite</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -550,57 +376,33 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>station_nm</th>
-      <th>site_tp_cd</th>
-      <th>lat_va</th>
-      <th>long_va</th>
-      <th>dec_lat_va</th>
-      <th>dec_long_va</th>
-      <th>coord_meth_cd</th>
-      <th>coord_acy_cd</th>
-      <th>...</th>
-      <th>reliability_cd</th>
-      <th>gw_file_cd</th>
-      <th>nat_aqfr_cd</th>
-      <th>aqfr_cd</th>
-      <th>aqfr_type_cd</th>
-      <th>well_depth_va</th>
-      <th>hole_depth_va</th>
-      <th>depth_src_cd</th>
-      <th>project_no</th>
       <th>geometry</th>
+      <th>monitoring_location_id</th>
+      <th>agency_code</th>
+      <th>agency_name</th>
+      <th>monitoring_location_number</th>
+      <th>monitoring_location_name</th>
+      <th>district_code</th>
+      <th>country_code</th>
+      <th>country_name</th>
+      <th>state_code</th>
+      <th>...</th>
+      <th>construction_date</th>
+      <th>aquifer_code</th>
+      <th>national_aquifer_code</th>
+      <th>aquifer_type_code</th>
+      <th>well_constructed_depth</th>
+      <th>hole_constructed_depth</th>
+      <th>depth_source_code</th>
+      <th>revision_note</th>
+      <th>revision_created</th>
+      <th>revision_modified</th>
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <th>0</th>
-      <td>USGS</td>
-      <td>05114000</td>
-      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
-      <td>ST</td>
-      <td>485924</td>
-      <td>1015728</td>
-      <td>48.989957</td>
-      <td>-101.958335</td>
-      <td>M</td>
-      <td>F</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NNNNNNNN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>POINT (-101.95833 48.98996)</td>
-    </tr>
   </tbody>
 </table>
-<p>1 rows × 43 columns</p>
+<p>0 rows × 44 columns</p>
 </div></div>
 </div>
 </section>
@@ -610,8 +412,8 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">UTsites</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span>
-    <span class="n">stateCd</span><span class="o">=</span><span class="s2">&quot;UT&quot;</span><span class="p">,</span> <span class="n">outputDataTypeCd</span><span class="o">=</span><span class="s2">&quot;dv&quot;</span><span class="p">,</span> <span class="n">startDT</span><span class="o">=</span><span class="s2">&quot;1971-07-01&quot;</span><span class="p">,</span> <span class="n">endDT</span><span class="o">=</span><span class="s2">&quot;2021-07-28&quot;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">UTsites</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
+    <span class="n">state_code</span><span class="o">=</span><span class="s2">&quot;UT&quot;</span>
 <span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">UTsites</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
@@ -639,297 +441,33 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>station_nm</th>
-      <th>site_tp_cd</th>
-      <th>dec_lat_va</th>
-      <th>dec_long_va</th>
-      <th>coord_acy_cd</th>
-      <th>dec_coord_datum_cd</th>
-      <th>alt_va</th>
-      <th>alt_acy_va</th>
-      <th>...</th>
-      <th>ts_id</th>
-      <th>loc_web_ds</th>
-      <th>medium_grp_cd</th>
-      <th>parm_grp_cd</th>
-      <th>srs_id</th>
-      <th>access_cd</th>
-      <th>begin_date</th>
-      <th>end_date</th>
-      <th>count_nu</th>
       <th>geometry</th>
+      <th>monitoring_location_id</th>
+      <th>agency_code</th>
+      <th>agency_name</th>
+      <th>monitoring_location_number</th>
+      <th>monitoring_location_name</th>
+      <th>district_code</th>
+      <th>country_code</th>
+      <th>country_name</th>
+      <th>state_code</th>
+      <th>...</th>
+      <th>construction_date</th>
+      <th>aquifer_code</th>
+      <th>national_aquifer_code</th>
+      <th>aquifer_type_code</th>
+      <th>well_constructed_depth</th>
+      <th>hole_constructed_depth</th>
+      <th>depth_source_code</th>
+      <th>revision_note</th>
+      <th>revision_created</th>
+      <th>revision_modified</th>
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <th>0</th>
-      <td>USGS</td>
-      <td>09163675</td>
-      <td>COTTONWOOD WASH AT I-70, NEAR CISCO, UTAH</td>
-      <td>ST</td>
-      <td>39.081652</td>
-      <td>-109.217615</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>142731</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1645423</td>
-      <td>0</td>
-      <td>1983-04-13</td>
-      <td>1986-09-30</td>
-      <td>1267</td>
-      <td>POINT (-109.21762 39.08165)</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>USGS</td>
-      <td>09180000</td>
-      <td>DOLORES RIVER NEAR CISCO, UT</td>
-      <td>ST</td>
-      <td>38.797208</td>
-      <td>-109.195114</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>4168.32</td>
-      <td>0.11</td>
-      <td>...</td>
-      <td>241055</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1645597</td>
-      <td>0</td>
-      <td>2006-07-18</td>
-      <td>2026-03-19</td>
-      <td>7113</td>
-      <td>POINT (-109.19511 38.79721)</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>USGS</td>
-      <td>09180000</td>
-      <td>DOLORES RIVER NEAR CISCO, UT</td>
-      <td>ST</td>
-      <td>38.797208</td>
-      <td>-109.195114</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>4168.32</td>
-      <td>0.11</td>
-      <td>...</td>
-      <td>241056</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1645597</td>
-      <td>0</td>
-      <td>2006-07-19</td>
-      <td>2026-03-19</td>
-      <td>7096</td>
-      <td>POINT (-109.19511 38.79721)</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>USGS</td>
-      <td>09180000</td>
-      <td>DOLORES RIVER NEAR CISCO, UT</td>
-      <td>ST</td>
-      <td>38.797208</td>
-      <td>-109.195114</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>4168.32</td>
-      <td>0.11</td>
-      <td>...</td>
-      <td>142732</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1645597</td>
-      <td>0</td>
-      <td>2006-07-19</td>
-      <td>2026-03-18</td>
-      <td>7089</td>
-      <td>POINT (-109.19511 38.79721)</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>USGS</td>
-      <td>09180000</td>
-      <td>DOLORES RIVER NEAR CISCO, UT</td>
-      <td>ST</td>
-      <td>38.797208</td>
-      <td>-109.195114</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>4168.32</td>
-      <td>0.11</td>
-      <td>...</td>
-      <td>142733</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1645597</td>
-      <td>0</td>
-      <td>1949-05-01</td>
-      <td>2004-08-17</td>
-      <td>13002</td>
-      <td>POINT (-109.19511 38.79721)</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>1237</th>
-      <td>USGS</td>
-      <td>414411112543701</td>
-      <td>(B-12- 9)30cda- 1</td>
-      <td>GW</td>
-      <td>41.736312</td>
-      <td>-112.911094</td>
-      <td>S</td>
-      <td>NAD83</td>
-      <td>4239.00</td>
-      <td>0.50</td>
-      <td>...</td>
-      <td>144019</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1642008</td>
-      <td>0</td>
-      <td>1975-10-05</td>
-      <td>2026-03-03</td>
-      <td>9623</td>
-      <td>POINT (-112.91109 41.73631)</td>
-    </tr>
-    <tr>
-      <th>1238</th>
-      <td>USGS</td>
-      <td>414500112000000</td>
-      <td>COM FLOW BEAR AREA GSL INFLOW GROUP 1</td>
-      <td>ST</td>
-      <td>41.749928</td>
-      <td>-112.000782</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>144020</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1645423</td>
-      <td>0</td>
-      <td>1960-10-01</td>
-      <td>1982-09-29</td>
-      <td>7303</td>
-      <td>POINT (-112.00078 41.74993)</td>
-    </tr>
-    <tr>
-      <th>1239</th>
-      <td>USGS</td>
-      <td>414500112000100</td>
-      <td>COM FLOW BEAR AREA GSL INFLOW GROUP 2</td>
-      <td>ST</td>
-      <td>41.749928</td>
-      <td>-112.001059</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>144021</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1645423</td>
-      <td>0</td>
-      <td>1960-10-01</td>
-      <td>1980-09-29</td>
-      <td>6207</td>
-      <td>POINT (-112.00106 41.74993)</td>
-    </tr>
-    <tr>
-      <th>1240</th>
-      <td>USGS</td>
-      <td>414500112000200</td>
-      <td>COM FLOW BEAR AREA GSL INFLOW GROUP 3</td>
-      <td>ST</td>
-      <td>41.749928</td>
-      <td>-112.001337</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>144022</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1645423</td>
-      <td>0</td>
-      <td>1960-10-01</td>
-      <td>1980-09-29</td>
-      <td>6573</td>
-      <td>POINT (-112.00134 41.74993)</td>
-    </tr>
-    <tr>
-      <th>1241</th>
-      <td>USGS</td>
-      <td>415703112514501</td>
-      <td>(B-14- 9) 9add- 1</td>
-      <td>GW</td>
-      <td>41.960106</td>
-      <td>-112.863444</td>
-      <td>1</td>
-      <td>NAD83</td>
-      <td>4387.88</td>
-      <td>0.10</td>
-      <td>...</td>
-      <td>144023</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1642008</td>
-      <td>0</td>
-      <td>1981-07-21</td>
-      <td>2026-03-03</td>
-      <td>15209</td>
-      <td>POINT (-112.86344 41.96011)</td>
-    </tr>
   </tbody>
 </table>
-<p>1242 rows × 25 columns</p>
+<p>0 rows × 44 columns</p>
 </div></div>
 </div>
 </section>
@@ -940,7 +478,7 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oneSite</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">&quot;05114000&quot;</span><span class="p">,</span> <span class="n">seriesCatalogOutput</span><span class="o">=</span><span class="s2">&quot;true&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oneSite</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_time_series_metadata</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;05114000&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">oneSite</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -967,297 +505,33 @@ The query URL used to retrieve the data from NWIS was: https://waterservices.usg
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>station_nm</th>
-      <th>site_tp_cd</th>
-      <th>dec_lat_va</th>
-      <th>dec_long_va</th>
-      <th>coord_acy_cd</th>
-      <th>dec_coord_datum_cd</th>
-      <th>alt_va</th>
-      <th>alt_acy_va</th>
-      <th>...</th>
-      <th>ts_id</th>
-      <th>loc_web_ds</th>
-      <th>medium_grp_cd</th>
-      <th>parm_grp_cd</th>
-      <th>srs_id</th>
-      <th>access_cd</th>
-      <th>begin_date</th>
-      <th>end_date</th>
-      <th>count_nu</th>
       <th>geometry</th>
+      <th>time_series_id</th>
+      <th>unit_of_measure</th>
+      <th>parameter_name</th>
+      <th>parameter_code</th>
+      <th>statistic_id</th>
+      <th>hydrologic_unit_code</th>
+      <th>state_name</th>
+      <th>last_modified</th>
+      <th>begin</th>
+      <th>...</th>
+      <th>end_utc</th>
+      <th>computation_period_identifier</th>
+      <th>computation_identifier</th>
+      <th>thresholds</th>
+      <th>sublocation_identifier</th>
+      <th>primary</th>
+      <th>monitoring_location_id</th>
+      <th>web_description</th>
+      <th>parameter_description</th>
+      <th>parent_time_series_id</th>
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <th>0</th>
-      <td>USGS</td>
-      <td>05114000</td>
-      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
-      <td>ST</td>
-      <td>48.989957</td>
-      <td>-101.958335</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>1605.0</td>
-      <td>0.19</td>
-      <td>...</td>
-      <td>0</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>0</td>
-      <td>0</td>
-      <td>2006</td>
-      <td>2025</td>
-      <td>20</td>
-      <td>POINT (-101.95833 48.98996)</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>USGS</td>
-      <td>05114000</td>
-      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
-      <td>ST</td>
-      <td>48.989957</td>
-      <td>-101.958335</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>1605.0</td>
-      <td>0.19</td>
-      <td>...</td>
-      <td>91355</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1645597</td>
-      <td>0</td>
-      <td>1983-08-11</td>
-      <td>2024-10-31</td>
-      <td>6094</td>
-      <td>POINT (-101.95833 48.98996)</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>USGS</td>
-      <td>05114000</td>
-      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
-      <td>ST</td>
-      <td>48.989957</td>
-      <td>-101.958335</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>1605.0</td>
-      <td>0.19</td>
-      <td>...</td>
-      <td>91356</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1645597</td>
-      <td>0</td>
-      <td>1983-08-11</td>
-      <td>2024-10-31</td>
-      <td>6094</td>
-      <td>POINT (-101.95833 48.98996)</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>USGS</td>
-      <td>05114000</td>
-      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
-      <td>ST</td>
-      <td>48.989957</td>
-      <td>-101.958335</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>1605.0</td>
-      <td>0.19</td>
-      <td>...</td>
-      <td>91357</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1645597</td>
-      <td>0</td>
-      <td>1983-08-11</td>
-      <td>2024-10-31</td>
-      <td>6094</td>
-      <td>POINT (-101.95833 48.98996)</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>USGS</td>
-      <td>05114000</td>
-      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
-      <td>ST</td>
-      <td>48.989957</td>
-      <td>-101.958335</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>1605.0</td>
-      <td>0.19</td>
-      <td>...</td>
-      <td>91358</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1645597</td>
-      <td>0</td>
-      <td>1974-10-17</td>
-      <td>1981-09-02</td>
-      <td>1937</td>
-      <td>POINT (-101.95833 48.98996)</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>402</th>
-      <td>USGS</td>
-      <td>05114000</td>
-      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
-      <td>ST</td>
-      <td>48.989957</td>
-      <td>-101.958335</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>1605.0</td>
-      <td>0.19</td>
-      <td>...</td>
-      <td>92591</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1645423</td>
-      <td>0</td>
-      <td>1994-10-01</td>
-      <td>2026-03-19</td>
-      <td>11492</td>
-      <td>POINT (-101.95833 48.98996)</td>
-    </tr>
-    <tr>
-      <th>403</th>
-      <td>USGS</td>
-      <td>05114000</td>
-      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
-      <td>ST</td>
-      <td>48.989957</td>
-      <td>-101.958335</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>1605.0</td>
-      <td>0.19</td>
-      <td>...</td>
-      <td>92592</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>17164583</td>
-      <td>0</td>
-      <td>2007-10-01</td>
-      <td>2026-03-19</td>
-      <td>6744</td>
-      <td>POINT (-101.95833 48.98996)</td>
-    </tr>
-    <tr>
-      <th>404</th>
-      <td>USGS</td>
-      <td>05114000</td>
-      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
-      <td>ST</td>
-      <td>48.989957</td>
-      <td>-101.958335</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>1605.0</td>
-      <td>0.19</td>
-      <td>...</td>
-      <td>249682</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1646694</td>
-      <td>0</td>
-      <td>2019-05-15</td>
-      <td>2023-10-10</td>
-      <td>1609</td>
-      <td>POINT (-101.95833 48.98996)</td>
-    </tr>
-    <tr>
-      <th>405</th>
-      <td>USGS</td>
-      <td>05114000</td>
-      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
-      <td>ST</td>
-      <td>48.989957</td>
-      <td>-101.958335</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>1605.0</td>
-      <td>0.19</td>
-      <td>...</td>
-      <td>249681</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1736457</td>
-      <td>0</td>
-      <td>2019-05-15</td>
-      <td>2023-10-10</td>
-      <td>1609</td>
-      <td>POINT (-101.95833 48.98996)</td>
-    </tr>
-    <tr>
-      <th>406</th>
-      <td>USGS</td>
-      <td>05114000</td>
-      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
-      <td>ST</td>
-      <td>48.989957</td>
-      <td>-101.958335</td>
-      <td>F</td>
-      <td>NAD83</td>
-      <td>1605.0</td>
-      <td>0.19</td>
-      <td>...</td>
-      <td>317832</td>
-      <td>NaN</td>
-      <td>wat</td>
-      <td>NaN</td>
-      <td>1642503</td>
-      <td>0</td>
-      <td>2025-01-01</td>
-      <td>2026-03-19</td>
-      <td>442</td>
-      <td>POINT (-101.95833 48.98996)</td>
-    </tr>
   </tbody>
 </table>
-<p>407 rows × 25 columns</p>
+<p>0 rows × 22 columns</p>
 </div></div>
 </div>
 </section>

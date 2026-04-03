@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>National trends in peak annual streamflow &mdash; dataretrieval 0.1.dev1+g2c775e4c4 documentation</title>
+  <title>National trends in peak annual streamflow &mdash; dataretrieval 0.1.dev1+g5b3766aec documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=583b92f2"></script>
+      <script src="../_static/documentation_options.js?v=742616cd"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -127,10 +127,11 @@
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
 <span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
 <span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[1]</span><span class="ansi-green-fg">, line 3</span>
-<span class="ansi-green-fg">      1</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">numpy</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">as</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">np</span>
-<span class="ansi-green-fg">      2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">pandas</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">as</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">pd</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">3</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">scipy</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">import</span> stats
-<span class="ansi-green-fg">      5</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">dataretrieval</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">import</span> nwis
+<span class="ansi-green-fg">      1</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> numpy <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> np
+<span class="ansi-green-fg">      2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> pandas <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> pd
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">3</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> scipy <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> stats
+<span class="ansi-green-fg">      4</span>
+<span class="ansi-green-fg">      5</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> dataretrieval <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> nwis
 
 <span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;scipy&#39;
 </pre></div></div>
@@ -161,10 +162,10 @@
 <span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
 <span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[2]</span><span class="ansi-green-fg">, line 2</span>
 <span class="ansi-green-fg">      1</span> <span style="color: rgb(95,135,135)"># download annual peaks from a single site</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> df = <span class="ansi-yellow-bg">nwis</span>.get_record(sites=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">03339000</span><span class="ansi-yellow-fg">&#34;</span>, service=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">peaks</span><span class="ansi-yellow-fg">&#34;</span>, start=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">1970-01-01</span><span class="ansi-yellow-fg">&#34;</span>)
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> df = nwis.get_record(sites=<span class="ansi-yellow-fg">&#34;03339000&#34;</span>, service=<span class="ansi-yellow-fg">&#34;peaks&#34;</span>, start=<span class="ansi-yellow-fg">&#34;1970-01-01&#34;</span>)
 <span class="ansi-green-fg">      3</span> df.head()
+<span class="ansi-green-fg">      4</span>
 <span class="ansi-green-fg">      5</span> <span style="color: rgb(95,135,135)"># alternatively information for the entire state of illiois can be downloaded using</span>
-<span class="ansi-green-fg">      6</span> <span style="color: rgb(95,135,135)"># df = nwis.get_record(state_cd=&#39;il&#39;, service=&#39;peaks&#39;, start=&#39;1970-01-01&#39;)</span>
 
 <span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
 </pre></div></div>

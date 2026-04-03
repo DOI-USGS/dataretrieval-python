@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_gwlevels() Examples &mdash; dataretrieval 0.1.dev1+g2c775e4c4 documentation</title>
+  <title>USGS dataretrieval Python Package get_gwlevels() Examples &mdash; dataretrieval 0.1.dev1+g5b3766aec documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=583b92f2"></script>
+      <script src="../_static/documentation_options.js?v=742616cd"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -126,16 +126,16 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (0.1.dev1+g2c775e4c4)
-Requirement already satisfied: requests in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (2.32.5)
-Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.1)
-Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.3)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (0.1.dev1+g5b3766aec)
+Requirement already satisfied: requests in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (2.33.1)
+Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.2)
+Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.4)
 Requirement already satisfied: python-dateutil&gt;=2.8.2 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.9.0.post0)
 Requirement already satisfied: six&gt;=1.5 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
-Requirement already satisfied: charset_normalizer&lt;4,&gt;=2 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (3.4.6)
+Requirement already satisfied: charset_normalizer&lt;4,&gt;=2 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (3.4.7)
 Requirement already satisfied: idna&lt;4,&gt;=2.5 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (3.11)
-Requirement already satisfied: urllib3&lt;3,&gt;=1.21.1 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2.6.3)
-Requirement already satisfied: certifi&gt;=2017.4.17 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2026.2.25)
+Requirement already satisfied: urllib3&lt;3,&gt;=1.26 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2.6.3)
+Requirement already satisfied: certifi&gt;=2023.5.7 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2026.2.25)
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
@@ -146,6 +146,7 @@ Requirement already satisfied: certifi&gt;=2017.4.17 in /opt/hostedtoolcache/Pyt
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">nwis</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval.waterdata</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">waterdata</span>
 </pre></div>
 </div>
 </div>
@@ -168,7 +169,7 @@ Requirement already satisfied: certifi&gt;=2017.4.17 in /opt/hostedtoolcache/Pyt
 <span class="n">site_id</span> <span class="o">=</span> <span class="s2">&quot;434400121275801&quot;</span>
 
 <span class="c1"># Retrieve the data</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_gwlevels</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site_id</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_field_measurements</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site_id</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -217,7 +218,23 @@ Retrieved 0 data values.
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;head&gt;&lt;title&gt;Error report&lt;/title&gt;&lt;style type="text/css"&gt;&lt;!--H1 {font-family:TahomaArialsans-serif;color:white;background-color:#525D76;font-size:22px;} H2 {font-family:TahomaArialsans-serif;color:white;background-color:#525D76;font-size:16px;} H3 {font-family:TahomaArialsans-serif;color:white;background-color:#525D76;font-size:14px;} BODY {font-family:TahomaArialsans-serif;color:black;background-color:white;} B {font-family:TahomaArialsans-serif;color:white;background-color:#525D76;} P {font-family:TahomaArialsans-serif;background:white;color:black;font-size:12px;}A {color : black;}HR {color : #525D76;}--&gt;&lt;/style&gt; &lt;/head&gt;&lt;body&gt;&lt;h1&gt;HTTP Status 503 - Service unavailable please try again later or contact gs-w_support_nwisweb@usgs.gov. server=[caas01]&lt;/h1&gt;&lt;hr/&gt;&lt;p&gt;&lt;b&gt;type&lt;/b&gt; Status report&lt;/p&gt;&lt;p&gt;&lt;b&gt;message&lt;/b&gt;Service unavailable please try again later or contact gs-w_support_nwisweb@usgs.gov. server=[caas01]&lt;/p&gt;&lt;p&gt;&lt;b&gt;description&lt;/b&gt;The requested service is not currently available.&lt;/p&gt;&lt;hr/&gt;&lt;h3&gt;Error Report&lt;/h3&gt;&lt;/body&gt;&lt;/html&gt;</th>
+      <th>geometry</th>
+      <th>field_visit_id</th>
+      <th>parameter_code</th>
+      <th>monitoring_location_id</th>
+      <th>observing_procedure_code</th>
+      <th>observing_procedure</th>
+      <th>value</th>
+      <th>unit_of_measure</th>
+      <th>time</th>
+      <th>qualifier</th>
+      <th>vertical_datum</th>
+      <th>approval_status</th>
+      <th>measuring_agency</th>
+      <th>last_modified</th>
+      <th>control_condition</th>
+      <th>measurement_rated</th>
+      <th>field_measurement_id</th>
     </tr>
   </thead>
   <tbody>
@@ -239,7 +256,23 @@ Retrieved 0 data values.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-&lt;!DOCTYPE html PUBLIC &#34;-//W3C//DTD XHTML 1.0 Strict//EN&#34; &#34;http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd&#34;&gt;&lt;html xmlns=&#34;http://www.w3.org/1999/xhtml&#34;&gt;&lt;head&gt;&lt;title&gt;Error report&lt;/title&gt;&lt;style type=&#34;text/css&#34;&gt;&lt;!--H1 {font-family:TahomaArialsans-serif;color:white;background-color:#525D76;font-size:22px;} H2 {font-family:TahomaArialsans-serif;color:white;background-color:#525D76;font-size:16px;} H3 {font-family:TahomaArialsans-serif;color:white;background-color:#525D76;font-size:14px;} BODY {font-family:TahomaArialsans-serif;color:black;background-color:white;} B {font-family:TahomaArialsans-serif;color:white;background-color:#525D76;} P {font-family:TahomaArialsans-serif;background:white;color:black;font-size:12px;}A {color : black;}HR {color : #525D76;}--&gt;&lt;/style&gt; &lt;/head&gt;&lt;body&gt;&lt;h1&gt;HTTP Status 503 - Service unavailable please try again later or contact gs-w_support_nwisweb@usgs.gov. server=[caas01]&lt;/h1&gt;&lt;hr/&gt;&lt;p&gt;&lt;b&gt;type&lt;/b&gt; Status report&lt;/p&gt;&lt;p&gt;&lt;b&gt;message&lt;/b&gt;Service unavailable please try again later or contact gs-w_support_nwisweb@usgs.gov. server=[caas01]&lt;/p&gt;&lt;p&gt;&lt;b&gt;description&lt;/b&gt;The requested service is not currently available.&lt;/p&gt;&lt;hr/&gt;&lt;h3&gt;Error Report&lt;/h3&gt;&lt;/body&gt;&lt;/html&gt;    object
+geometry                           object
+field_visit_id                     object
+parameter_code                     object
+monitoring_location_id             object
+observing_procedure_code           object
+observing_procedure                object
+value                               int64
+unit_of_measure                    object
+time                        datetime64[s]
+qualifier                          object
+vertical_datum                     object
+approval_status                    object
+measuring_agency                   object
+last_modified               datetime64[s]
+control_condition                  object
+measurement_rated                  object
+field_measurement_id               object
 dtype: object
 </pre></div></div>
 </div>
@@ -248,59 +281,25 @@ dtype: object
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;lev_va&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/pandas/core/indexes/base.py:3641</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   3640</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3641</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   3642</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:168</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:197</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7668</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7676</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-red-fg">KeyError</span>: &#39;lev_va&#39;
-
-The above exception was the direct cause of the following exception:
-
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span class="ansi-yellow-bg">data</span><span class="ansi-yellow-bg">[</span><span class="ansi-green-fg ansi-yellow-bg">0</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_va</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">]</span>.describe()
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/pandas/core/frame.py:4378</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   4376</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
-<span class="ansi-green-fg">   4377</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4378</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   4379</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
-<span class="ansi-green-fg">   4380</span>     indexer = [indexer]
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/pandas/core/indexes/base.py:3648</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   3643</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
-<span class="ansi-green-fg">   3644</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
-<span class="ansi-green-fg">   3645</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
-<span class="ansi-green-fg">   3646</span>     ):
-<span class="ansi-green-fg">   3647</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">err</span>
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3648</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">err</span>
-<span class="ansi-green-fg">   3649</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
-<span class="ansi-green-fg">   3650</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
-<span class="ansi-green-fg">   3651</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
-<span class="ansi-green-fg">   3652</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
-<span class="ansi-green-fg">   3653</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
-
-<span class="ansi-red-fg">KeyError</span>: &#39;lev_va&#39;
+count    0.0
+mean     NaN
+std      NaN
+min      NaN
+25%      NaN
+50%      NaN
+75%      NaN
+max      NaN
+Name: value, dtype: float64
 </pre></div></div>
 </div>
 <p>Make a quick time series plot.</p>
@@ -308,71 +307,27 @@ The above exception was the direct cause of the following exception:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s2">&quot;lev_dt&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;lev_va&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Date&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Water Level (feet below land surface)&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Text(0, 0.5, &#39;Water Level (feet below land surface)&#39;)
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/pandas/core/indexes/base.py:3641</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   3640</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3641</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">casted_key</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   3642</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> err:
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:168</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/index.pyx:197</span>, in <span class="ansi-cyan-fg">pandas._libs.index.IndexEngine.get_loc</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7668</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/hashtable_class_helper.pxi:7676</span>, in <span class="ansi-cyan-fg">pandas._libs.hashtable.PyObjectHashTable.get_item</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-red-fg">KeyError</span>: &#39;lev_dt&#39;
-
-The above exception was the direct cause of the following exception:
-
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> ax = <span class="ansi-yellow-bg">data</span><span class="ansi-yellow-bg">[</span><span class="ansi-green-fg ansi-yellow-bg">0</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">plot</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">x</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_dt</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">y</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-fg ansi-yellow-bg">lev_va</span><span class="ansi-yellow-fg ansi-yellow-bg">&#34;</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">      2</span> ax.set_xlabel(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Date</span><span class="ansi-yellow-fg">&#34;</span>)
-<span class="ansi-green-fg">      3</span> ax.set_ylabel(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Water Level (feet below land surface)</span><span class="ansi-yellow-fg">&#34;</span>)
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/pandas/plotting/_core.py:1149</span>, in <span class="ansi-cyan-fg">PlotAccessor.__call__</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
-<span class="ansi-green-fg">   1147</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(x) <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> holds_integer(data.columns):
-<span class="ansi-green-fg">   1148</span>     x = data_cols[x]
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1149</span> <span class="ansi-bold" style="color: rgb(0,135,0)">elif</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span style="color: rgb(0,135,0)">isinstance</span>(<span class="ansi-yellow-bg">data</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">x</span><span class="ansi-yellow-bg">]</span>, ABCSeries):
-<span class="ansi-green-fg">   1150</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">x must be a label or position</span><span class="ansi-yellow-fg">&#34;</span>)
-<span class="ansi-green-fg">   1151</span> data = data.set_index(x)
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/pandas/core/frame.py:4378</span>, in <span class="ansi-cyan-fg">DataFrame.__getitem__</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   4376</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.columns.nlevels &gt; <span class="ansi-green-fg">1</span>:
-<span class="ansi-green-fg">   4377</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>._getitem_multilevel(key)
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">4378</span> indexer = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">columns</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_loc</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">key</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   4379</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> is_integer(indexer):
-<span class="ansi-green-fg">   4380</span>     indexer = [indexer]
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages/pandas/core/indexes/base.py:3648</span>, in <span class="ansi-cyan-fg">Index.get_loc</span><span class="ansi-blue-fg">(self, key)</span>
-<span class="ansi-green-fg">   3643</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> (
-<span class="ansi-green-fg">   3644</span>         <span style="color: rgb(0,135,0)">isinstance</span>(casted_key, abc.Iterable)
-<span class="ansi-green-fg">   3645</span>         <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> <span style="color: rgb(0,135,0)">any</span>(<span style="color: rgb(0,135,0)">isinstance</span>(x, <span style="color: rgb(0,135,0)">slice</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> x <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> casted_key)
-<span class="ansi-green-fg">   3646</span>     ):
-<span class="ansi-green-fg">   3647</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> InvalidIndexError(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">err</span>
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3648</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">KeyError</span>(key) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">err</span>
-<span class="ansi-green-fg">   3649</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TypeError</span>:
-<span class="ansi-green-fg">   3650</span>     <span style="color: rgb(95,135,135)"># If we have a listlike key, _check_indexing_error will raise</span>
-<span class="ansi-green-fg">   3651</span>     <span style="color: rgb(95,135,135)">#  InvalidIndexError. Otherwise we fall through and re-raise</span>
-<span class="ansi-green-fg">   3652</span>     <span style="color: rgb(95,135,135)">#  the TypeError.</span>
-<span class="ansi-green-fg">   3653</span>     <span style="color: rgb(0,135,0)">self</span>._check_indexing_error(key)
-
-<span class="ansi-red-fg">KeyError</span>: &#39;lev_dt&#39;
-</pre></div></div>
+<img alt="../_images/examples_USGS_dataretrieval_GroundwaterLevels_Examples_16_1.png" src="../_images/examples_USGS_dataretrieval_GroundwaterLevels_Examples_16_1.png" />
+</div>
 </div>
 <p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_gwlevels()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.</p>
 <div class="nbinput docutils container">
@@ -388,7 +343,7 @@ The above exception was the direct cause of the following exception:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-The query URL used to retrieve the data from  NWIS was: https://waterservices.usgs.gov/nwis/gwlevels?format=rdb&amp;startDT=1851-01-01&amp;sites=434400121275801
+The query URL used to retrieve the data from  NWIS was: https://api.waterdata.usgs.gov/ogcapi/v0/collections/field-measurements/items?monitoring_location_id=434400121275801&amp;skipGeometry=False&amp;limit=50000
 </pre></div></div>
 </div>
 </section>
@@ -401,7 +356,7 @@ The query URL used to retrieve the data from  NWIS was: https://waterservices.us
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;434400121275801&quot;</span><span class="p">,</span> <span class="s2">&quot;375907091432201&quot;</span><span class="p">]</span>
-<span class="n">data2</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_gwlevels</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site_ids</span><span class="p">)</span>
+<span class="n">data2</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_field_measurements</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site_ids</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data2</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">data2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
@@ -437,7 +392,23 @@ Retrieved 0 data values.
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;head&gt;&lt;title&gt;Error report&lt;/title&gt;&lt;style type="text/css"&gt;&lt;!--H1 {font-family:TahomaArialsans-serif;color:white;background-color:#525D76;font-size:22px;} H2 {font-family:TahomaArialsans-serif;color:white;background-color:#525D76;font-size:16px;} H3 {font-family:TahomaArialsans-serif;color:white;background-color:#525D76;font-size:14px;} BODY {font-family:TahomaArialsans-serif;color:black;background-color:white;} B {font-family:TahomaArialsans-serif;color:white;background-color:#525D76;} P {font-family:TahomaArialsans-serif;background:white;color:black;font-size:12px;}A {color : black;}HR {color : #525D76;}--&gt;&lt;/style&gt; &lt;/head&gt;&lt;body&gt;&lt;h1&gt;HTTP Status 503 - Service unavailable please try again later or contact gs-w_support_nwisweb@usgs.gov. server=[caas01]&lt;/h1&gt;&lt;hr/&gt;&lt;p&gt;&lt;b&gt;type&lt;/b&gt; Status report&lt;/p&gt;&lt;p&gt;&lt;b&gt;message&lt;/b&gt;Service unavailable please try again later or contact gs-w_support_nwisweb@usgs.gov. server=[caas01]&lt;/p&gt;&lt;p&gt;&lt;b&gt;description&lt;/b&gt;The requested service is not currently available.&lt;/p&gt;&lt;hr/&gt;&lt;h3&gt;Error Report&lt;/h3&gt;&lt;/body&gt;&lt;/html&gt;</th>
+      <th>geometry</th>
+      <th>field_visit_id</th>
+      <th>parameter_code</th>
+      <th>monitoring_location_id</th>
+      <th>observing_procedure_code</th>
+      <th>observing_procedure</th>
+      <th>value</th>
+      <th>unit_of_measure</th>
+      <th>time</th>
+      <th>qualifier</th>
+      <th>vertical_datum</th>
+      <th>approval_status</th>
+      <th>measuring_agency</th>
+      <th>last_modified</th>
+      <th>control_condition</th>
+      <th>measurement_rated</th>
+      <th>field_measurement_id</th>
     </tr>
   </thead>
   <tbody>
@@ -451,7 +422,7 @@ Retrieved 0 data values.
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;434400121275801&quot;</span><span class="p">,</span> <span class="s2">&quot;375907091432201&quot;</span><span class="p">]</span>
-<span class="n">data2</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_gwlevels</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span> <span class="n">multi_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">data2</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_field_measurements</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span> <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data2</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">data2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
@@ -487,7 +458,23 @@ Retrieved 0 data values.
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;head&gt;&lt;title&gt;Error report&lt;/title&gt;&lt;style type="text/css"&gt;&lt;!--H1 {font-family:TahomaArialsans-serif;color:white;background-color:#525D76;font-size:22px;} H2 {font-family:TahomaArialsans-serif;color:white;background-color:#525D76;font-size:16px;} H3 {font-family:TahomaArialsans-serif;color:white;background-color:#525D76;font-size:14px;} BODY {font-family:TahomaArialsans-serif;color:black;background-color:white;} B {font-family:TahomaArialsans-serif;color:white;background-color:#525D76;} P {font-family:TahomaArialsans-serif;background:white;color:black;font-size:12px;}A {color : black;}HR {color : #525D76;}--&gt;&lt;/style&gt; &lt;/head&gt;&lt;body&gt;&lt;h1&gt;HTTP Status 503 - Service unavailable please try again later or contact gs-w_support_nwisweb@usgs.gov. server=[vaas01]&lt;/h1&gt;&lt;hr/&gt;&lt;p&gt;&lt;b&gt;type&lt;/b&gt; Status report&lt;/p&gt;&lt;p&gt;&lt;b&gt;message&lt;/b&gt;Service unavailable please try again later or contact gs-w_support_nwisweb@usgs.gov. server=[vaas01]&lt;/p&gt;&lt;p&gt;&lt;b&gt;description&lt;/b&gt;The requested service is not currently available.&lt;/p&gt;&lt;hr/&gt;&lt;h3&gt;Error Report&lt;/h3&gt;&lt;/body&gt;&lt;/html&gt;</th>
+      <th>geometry</th>
+      <th>field_visit_id</th>
+      <th>parameter_code</th>
+      <th>monitoring_location_id</th>
+      <th>observing_procedure_code</th>
+      <th>observing_procedure</th>
+      <th>value</th>
+      <th>unit_of_measure</th>
+      <th>time</th>
+      <th>qualifier</th>
+      <th>vertical_datum</th>
+      <th>approval_status</th>
+      <th>measuring_agency</th>
+      <th>last_modified</th>
+      <th>control_condition</th>
+      <th>measurement_rated</th>
+      <th>field_measurement_id</th>
     </tr>
   </thead>
   <tbody>
@@ -501,7 +488,7 @@ Retrieved 0 data values.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data3</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_gwlevels</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">&quot;425957088141001&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data3</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_field_measurements</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;425957088141001&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data3</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
 
 <span class="c1"># Print the date/time index values, which show up as NaT because</span>
@@ -534,7 +521,7 @@ RangeIndex(start=0, stop=0, step=1)
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-You can examine the data retrieved from NWIS at: https://waterservices.usgs.gov/nwis/gwlevels?format=rdb&amp;startDT=1851-01-01&amp;sites=425957088141001
+You can examine the data retrieved from NWIS at: https://api.waterdata.usgs.gov/ogcapi/v0/collections/field-measurements/items?monitoring_location_id=425957088141001&amp;skipGeometry=False&amp;limit=50000
 </pre></div></div>
 </div>
 <p>You can also retrieve data for a site within a specified time window by specifying a start date and an end date.</p>
@@ -543,7 +530,7 @@ You can examine the data retrieved from NWIS at: https://waterservices.usgs.gov/
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data4</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_gwlevels</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site_id</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;1980-01-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2000-12-31&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data4</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_field_measurements</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site_id</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">&quot;1980-01-01/2000-12-31&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data4</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
 </pre></div>
 </div>

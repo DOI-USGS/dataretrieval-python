@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_samples() Examples &mdash; dataretrieval 0.1.dev1+g2c775e4c4 documentation</title>
+  <title>USGS dataretrieval Python Package get_samples() Examples &mdash; dataretrieval 0.1.dev1+g5b3766aec documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=583b92f2"></script>
+      <script src="../_static/documentation_options.js?v=742616cd"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -126,16 +126,16 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (0.1.dev1+g2c775e4c4)
-Requirement already satisfied: requests in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (2.32.5)
-Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.1)
-Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.3)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (0.1.dev1+g5b3766aec)
+Requirement already satisfied: requests in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (2.33.1)
+Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.2)
+Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.4)
 Requirement already satisfied: python-dateutil&gt;=2.8.2 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.9.0.post0)
 Requirement already satisfied: six&gt;=1.5 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
-Requirement already satisfied: charset_normalizer&lt;4,&gt;=2 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (3.4.6)
+Requirement already satisfied: charset_normalizer&lt;4,&gt;=2 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (3.4.7)
 Requirement already satisfied: idna&lt;4,&gt;=2.5 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (3.11)
-Requirement already satisfied: urllib3&lt;3,&gt;=1.21.1 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2.6.3)
-Requirement already satisfied: certifi&gt;=2017.4.17 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2026.2.25)
+Requirement already satisfied: urllib3&lt;3,&gt;=1.26 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2.6.3)
+Requirement already satisfied: certifi&gt;=2023.5.7 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2026.2.25)
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
@@ -602,7 +602,7 @@ The query URL used to retrieve the data from USGS Samples was: https://api.water
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved data for 306 samples.
+Retrieved data for 307 samples.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -796,30 +796,6 @@ Retrieved data for 306 samples.
       <td>...</td>
     </tr>
     <tr>
-      <th>301</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","GLRITRI...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
-      <td>Federal/US Government</td>
-      <td>2026-01-28</td>
-      <td>65</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
       <th>302</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
@@ -887,7 +863,7 @@ Retrieved data for 306 samples.
       <td>NaN</td>
       <td>Physical</td>
       <td>Federal/US Government</td>
-      <td>2026-01-28</td>
+      <td>2026-04-02</td>
       <td>65</td>
       <td>NaN</td>
     </tr>
@@ -915,9 +891,33 @@ Retrieved data for 306 samples.
       <td>65</td>
       <td>NaN</td>
     </tr>
+    <tr>
+      <th>306</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","GLRITRI...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS</td>
+      <td>NaN</td>
+      <td>Physical</td>
+      <td>Federal/US Government</td>
+      <td>2026-03-31</td>
+      <td>65</td>
+      <td>NaN</td>
+    </tr>
   </tbody>
 </table>
-<p>306 rows × 181 columns</p>
+<p>307 rows × 181 columns</p>
 </div></div>
 </div>
 </section>
@@ -945,7 +945,7 @@ Retrieved data for 306 samples.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved data for 306 samples.
+Retrieved data for 307 samples.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -1301,7 +1301,7 @@ Retrieved data for 2383 sample results.
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_6998/1863275440.py:5: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+/tmp/ipykernel_7082/1863275440.py:5: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
   wq_data[&#34;characteristic_unit&#34;] = (
 </pre></div></div>
 </div>

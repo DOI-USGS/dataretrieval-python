@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g2c775e4c4 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g5b3766aec documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=583b92f2"></script>
+      <script src="../_static/documentation_options.js?v=742616cd"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -294,38 +294,8 @@ service returns a different format than the other services.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_discharge_measurements">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_discharge_measurements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_discharge_measurements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_discharge_measurements" title="Link to this definition"></a></dt>
-<dd><p>Get discharge measurements from the waterdata service.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>sites</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em><em>, </em><em>default is None</em>)</p></li>
-<li><p><strong>start</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default is None</em>) – Supply date in the format: YYYY-MM-DD</p></li>
-<li><p><strong>end</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default is None</em>) – Supply date in the format: YYYY-MM-DD</p></li>
-<li><p><strong>ssl_check</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, check SSL certificates, if False, do not check SSL,
-default is True</p></li>
-<li><p><strong>**kwargs</strong> (<em>optional</em>) – If supplied, will be used as query parameters</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge measurements for site 05114000</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_discharge_measurements</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s2">&quot;05114000&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2000-01-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2000-01-30&quot;</span>
-<span class="gp">... </span><span class="p">)</span>
-
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge measurements for sites in Alaska</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_discharge_measurements</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2012-01-09&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2012-01-10&quot;</span><span class="p">,</span> <span class="n">stateCd</span><span class="o">=</span><span class="s2">&quot;AK&quot;</span>
-<span class="gp">... </span><span class="p">)</span>
-</pre></div>
-</div>
+<dd><p>This function is defunct, use <cite>get_field_measurements()</cite>
+in the waterdata module.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -415,37 +385,8 @@ default is True</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_gwlevels">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_gwlevels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'1851-01-01'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datetime_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_gwlevels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_gwlevels" title="Link to this definition"></a></dt>
-<dd><p>Queries the groundwater level service from waterservices</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>sites</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em><em>, </em><em>default is None</em>) – If the waterdata parameter site_no is supplied, it will overwrite the
-sites parameter</p></li>
-<li><p><strong>start</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default is '1851-01-01'</em>) – If the waterdata parameter begin_date is supplied, it will overwrite
-the start parameter</p></li>
-<li><p><strong>end</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default is None</em>) – If the waterdata parameter end_date is supplied, it will overwrite the
-end parameter (YYYY-MM-DD)</p></li>
-<li><p><strong>multi_index</strong> (<em>bool</em><em>, </em><em>optional</em>) – If False, a dataframe with a single-level index (datetime) is returned,
-default is True</p></li>
-<li><p><strong>datetime_index</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, create a datetime index, default is True</p></li>
-<li><p><strong>ssl_check</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, check SSL certificates, if False, do not check SSL,
-default is True</p></li>
-<li><p><strong>**kwargs</strong> (<em>optional</em>) – If supplied, will be used as query parameters</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get groundwater levels for site 434400121275801</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_gwlevels</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">&quot;434400121275801&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
+<dd><p>This function is defunct, use <cite>get_field_measurements()</cite>
+in the waterdata module.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -574,43 +515,14 @@ default is True</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_pmcodes">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_pmcodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameterCd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'All'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partial</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_pmcodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_pmcodes" title="Link to this definition"></a></dt>
-<dd><p>Return a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> containing all NWIS parameter codes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>parameterCd</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>default is 'All'</em>) – Accepts parameter codes or names</p></li>
-<li><p><strong>partial</strong> (<em>bool</em><em>, </em><em>optional</em>) – Default is True (partial querying). If False, the function will query
-only exact matches, default is True</p></li>
-<li><p><strong>ssl_check</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, check SSL certificates, if False, do not check SSL,
-default is True</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Data retrieved from the NWIS web service.</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get information about the &#39;00060&#39; pcode</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_pmcodes</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">parameterCd</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="n">partial</span><span class="o">=</span><span class="kc">False</span>
-<span class="gp">... </span><span class="p">)</span>
-
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get information about all &#39;Discharge&#39; pcodes</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_pmcodes</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">parameterCd</span><span class="o">=</span><span class="s2">&quot;Discharge&quot;</span><span class="p">,</span> <span class="n">partial</span><span class="o">=</span><span class="kc">True</span>
-<span class="gp">... </span><span class="p">)</span>
-</pre></div>
-</div>
+<dd><p>This function is defunct, use
+<cite>get_reference_table(collection=”parameter-codes”)</cite>.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_qwdata">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_qwdata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wide_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datetime_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_qwdata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_qwdata" title="Link to this definition"></a></dt>
-<dd><p>Get water sample data from qwdata service - deprecated, use <cite>get_samples()</cite>
+<dd><p>This function is defunct, use <cite>get_samples()</cite>
 in the waterdata module.</p>
 </dd></dl>
 
@@ -784,43 +696,7 @@ default is True</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_water_use">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_water_use</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">years</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_water_use"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_water_use" title="Link to this definition"></a></dt>
-<dd><p>Water use data retrieval from USGS (NWIS).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>years</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em>) – List or comma delimited string of years.  Must be years ending in 0 or
-5, or “ALL”, which retrieves all available years, default is “ALL”</p></li>
-<li><p><strong>state</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default is None</em>) – full name, abbreviation or id</p></li>
-<li><p><strong>counties</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em>) – County IDs from county lookup or “ALL”, default is “ALL”</p></li>
-<li><p><strong>categories</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em>) – List or comma delimited string of Two-letter category abbreviations,
-default is “ALL”</p></li>
-<li><p><strong>ssl_check</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, check SSL certificates, if False, do not check SSL,
-default is True</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Data from NWIS</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get total population for RI from the NWIS water use service</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_water_use</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">years</span><span class="o">=</span><span class="s2">&quot;2000&quot;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s2">&quot;RI&quot;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s2">&quot;TP&quot;</span>
-<span class="gp">... </span><span class="p">)</span>
-
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get the national total water use for livestock in Bgal/day</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_water_use</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="s2">&quot;2010&quot;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s2">&quot;L&quot;</span><span class="p">)</span>
-
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get 2005 domestic water use for Apache County in Arizona</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_water_use</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">years</span><span class="o">=</span><span class="s2">&quot;2005&quot;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s2">&quot;Arizona&quot;</span><span class="p">,</span> <span class="n">counties</span><span class="o">=</span><span class="s2">&quot;001&quot;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s2">&quot;DO&quot;</span>
-<span class="gp">... </span><span class="p">)</span>
-</pre></div>
-</div>
+<dd><p>This function is defunct and currently has no replacement.</p>
 </dd></dl>
 
 <dl class="py function">
