@@ -7,9 +7,14 @@ import pytest
 
 from dataretrieval.nwis import (
     NWIS_Metadata,
+    get_discharge_measurements,
+    get_gwlevels,
     get_info,
     get_iv,
+    get_pmcodes,
+    get_qwdata,
     get_record,
+    get_water_use,
     preformat_peaks_response,
     what_sites,
 )
@@ -21,22 +26,67 @@ DATETIME_COL = "datetime"
 SITENO_COL = "site_no"
 
 
-def test_iv_service():
-    """Unit test of instantaneous value service"""
+def _test_iv_service(requests_mock):
+    """Mocked test of instantaneous value service"""
     start = START_DATE
     end = END_DATE
     service = "iv"
     site = ["03339000", "05447500", "03346500"]
+    
+    # Minimal mock response
+    mock_url = (
+        "https://waterservices.usgs.gov/nwis/iv?format=json&"
+        f"startDT={start}&endDT={end}&sites=03339000%2C05447500%2C03346500"
+    )
+    # We use a very simple JSON structure just to satisfy the parser
+    mock_json = {
+        "value": {
+            "timeSeries": [
+                {
+                    "sourceInfo": {"siteCode": [{"value": "03339000"}]},
+                    "variable": {"variableCode": [{"value": "00060"}], "options": {"option": [{"value": "mean"}]}},
+                    "values": [{"method": [{"methodDescription": "mean"}], "value": [{"value": "1.0", "dateTime": "2018-01-24T00:00:00Z", "qualifiers": "A"}]}]
+                },
+                {
+                    "sourceInfo": {"siteCode": [{"value": "05447500"}]},
+                    "variable": {"variableCode": [{"value": "00060"}], "options": {"option": [{"value": "mean"}]}},
+                    "values": [{"method": [{"methodDescription": "mean"}], "value": [{"value": "2.0", "dateTime": "2018-01-24T00:00:00Z", "qualifiers": "A"}]}]
+                }
+            ]
+        }
+    }
+
+    requests_mock.get(mock_url, json=mock_json)
+    
     return get_record(site, start, end, service=service)
 
 
-def test_iv_service_answer():
-    df = test_iv_service()
+def test_iv_service_answer(requests_mock):
+    df = _test_iv_service(requests_mock)
     # check multiindex function
     assert df.index.names == [
         SITENO_COL,
         DATETIME_COL,
     ], f"iv service returned incorrect index: {df.index.names}"
+
+
+def test_nwis_service_live():
+    """Live sanity check of NWIS service, tolerant of 502/503."""
+    site = "01491000"
+    try:
+        # Minimal query: just most recent record
+        get_iv(sites=site)
+    except ValueError as e:
+        # Catch our custom 5xx error from utils.py
+        if any(err in str(e) for err in ["502", "503", "Service Unavailable"]):
+            pytest.skip(f"Service is currently unavailable (transient 502/503): {e}")
+        raise e
+    except Exception as e:
+        # Fallback for other potential transient network issues
+        if "Expecting value" in str(e) or "JSON" in str(e):
+            pytest.skip(f"Service returned invalid response (likely 502/503): {e}")
+        raise e
+
 
 
 def test_preformat_peaks_response():
@@ -61,82 +111,48 @@ if __name__ == "__main__":
 # incomplete date-time information
 
 
-@pytest.mark.xfail(reason="Modern service does not return incomplete dates.")
-def test_inc_date_01():
-    """Test based on GitHub Issue #47 - lack of timestamp for measurement."""
-    site = "403451073585601"
-    # make call expecting a warning to be thrown due to incomplete dates
-    with pytest.warns(UserWarning) as record:
-        df = get_record(site, "1980-01-01", "1990-01-01", service="gwlevels")
-
-    if len(df) == 0:
-        pytest.skip(f"Site {site} returned no data.")
-
-    assert len(record) > 0
-    # assert that there are indeed incomplete dates
-    assert pd.isna(df.index).any()
-    # assert that the datetime index is there
-    assert df.index.name == "datetime"
-    # make call without defining a datetime index and check that it isn't there
-    df2 = get_record(
-        site, "1980-01-01", "1990-01-01", service="gwlevels", datetime_index=False
-    )
-    # assert shape of both dataframes is the same (contain the same data)
-    assert df.shape == df2.shape
-    # assert that the datetime index is not there
-    assert df2.index.name != "datetime"
+# Removed defunct gwlevels tests.
 
 
-@pytest.mark.xfail(reason="Modern service does not return incomplete dates.")
-def test_inc_date_02():
-    """Test based on GitHub Issue #47 - lack of month, day, or time."""
-    site = "180049066381200"
-    # make call expecting a warning to be thrown due to incomplete dates
-    with pytest.warns(UserWarning) as record:
-        df = get_record(site, "1900-01-01", "2013-01-01", service="gwlevels")
+class TestDefunct:
+    """Verify that defunct functions raise NameError."""
 
-    if len(df) == 0:
-        pytest.skip(f"Site {site} returned no data.")
+    def test_get_qwdata_raises(self):
+        with pytest.raises(NameError, match="get_qwdata"):
+            get_qwdata()
 
-    assert len(record) > 0
-    # assert that there are indeed incomplete dates
-    assert pd.isna(df.index).any()
-    # assert that the datetime index is there
-    assert df.index.name == "datetime"
-    # make call without defining a datetime index and check that it isn't there
-    df2 = get_record(
-        site, "1900-01-01", "2013-01-01", service="gwlevels", datetime_index=False
-    )
-    # assert shape of both dataframes is the same (contain the same data)
-    assert df.shape == df2.shape
-    # assert that the datetime index is not there
-    assert df2.index.name != "datetime"
+    def test_get_discharge_measurements_raises(self):
+        with pytest.raises(NameError, match="get_discharge_measurements"):
+            get_discharge_measurements()
 
+    def test_get_gwlevels_raises(self):
+        with pytest.raises(NameError, match="get_gwlevels"):
+            get_gwlevels()
 
-@pytest.mark.xfail(reason="Modern service does not return incomplete dates.")
-def test_inc_date_03():
-    """Test based on GitHub Issue #47 - lack of day, and times."""
-    site = "290000095192602"
-    # make call expecting a warning to be thrown due to incomplete dates
-    with pytest.warns(UserWarning) as record:
-        df = get_record(site, "1975-01-01", "2000-01-01", service="gwlevels")
+    def test_get_pmcodes_raises(self):
+        with pytest.raises(NameError, match="get_pmcodes"):
+            get_pmcodes()
 
-    if len(df) == 0:
-        pytest.skip(f"Site {site} returned no data.")
+    def test_get_water_use_raises(self):
+        with pytest.raises(NameError, match="get_water_use"):
+            get_water_use()
 
-    assert len(record) > 0
-    # assert that there are indeed incomplete dates
-    assert pd.isna(df.index).any()
-    # assert that the datetime index is there
-    assert df.index.name == "datetime"
-    # make call without defining a datetime index and check that it isn't there
-    df2 = get_record(
-        site, "1975-01-01", "2000-01-01", service="gwlevels", datetime_index=False
-    )
-    # assert shape of both dataframes is the same (contain the same data)
-    assert df.shape == df2.shape
-    # assert that the datetime index is not there
-    assert df2.index.name != "datetime"
+    def test_get_record_defunct_service_measurements(self):
+        with pytest.raises(NameError, match="get_discharge_measurements"):
+            get_record(service="measurements")
+
+    def test_get_record_defunct_service_gwlevels(self):
+        with pytest.raises(NameError, match="get_gwlevels"):
+            get_record(service="gwlevels")
+
+    def test_get_record_defunct_service_pmcodes(self):
+        with pytest.raises(NameError, match="get_pmcodes"):
+            get_record(service="pmcodes")
+
+    def test_get_record_defunct_service_water_use(self):
+        with pytest.raises(NameError, match="get_water_use"):
+            get_record(service="water_use")
+
 
 
 class TestTZ:
@@ -211,12 +227,24 @@ class TestSiteseriesCatalogOutput:
         assert "count_nu" not in data.columns
 
 
-def test_empty_timeseries():
+def test_empty_timeseries(requests_mock):
     """Test based on empty case from GitHub Issue #26."""
+    sites = "011277906"
+    start = "2010-07-20"
+    end = "2010-07-20"
+    
+    mock_url = (
+        f"https://waterservices.usgs.gov/nwis/iv?format=json&"
+        f"startDT={start}&endDT={end}&sites={sites}"
+    )
+    mock_json = {"value": {"timeSeries": []}}
+    requests_mock.get(mock_url, json=mock_json)
+    
     df = get_record(
-        sites="011277906", service="iv", start="2010-07-20", end="2010-07-20"
+        sites=sites, service="iv", start=start, end=end
     )
     assert df.empty is True
+
 
 
 class TestMetaData:

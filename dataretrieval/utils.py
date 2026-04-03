@@ -212,6 +212,12 @@ def query(url, payload, delimiter=",", ssl_check=True):
             + f"API response reason: {_reason}. Pseudo-code example of how to "
             + f"split your query: \n {_example}"
         )
+    elif response.status_code in [500, 502, 503]:
+        raise ValueError(
+            f"Service Unavailable: {response.status_code} {response.reason}. "
+            + f"The service at {response.url} may be down or experiencing issues."
+        )
+
 
     if response.text.startswith("No sites/data"):
         raise NoSitesError(response.url)
