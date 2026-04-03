@@ -32,7 +32,7 @@ def _test_iv_service(requests_mock):
     end = END_DATE
     service = "iv"
     site = ["03339000", "05447500", "03346500"]
-    
+
     # Minimal mock response
     mock_url = (
         "https://waterservices.usgs.gov/nwis/iv?format=json&"
@@ -44,20 +44,48 @@ def _test_iv_service(requests_mock):
             "timeSeries": [
                 {
                     "sourceInfo": {"siteCode": [{"value": "03339000"}]},
-                    "variable": {"variableCode": [{"value": "00060"}], "options": {"option": [{"value": "mean"}]}},
-                    "values": [{"method": [{"methodDescription": "mean"}], "value": [{"value": "1.0", "dateTime": "2018-01-24T00:00:00Z", "qualifiers": "A"}]}]
+                    "variable": {
+                        "variableCode": [{"value": "00060"}],
+                        "options": {"option": [{"value": "mean"}]},
+                    },
+                    "values": [
+                        {
+                            "method": [{"methodDescription": "mean"}],
+                            "value": [
+                                {
+                                    "value": "1.0",
+                                    "dateTime": "2018-01-24T00:00:00Z",
+                                    "qualifiers": "A",
+                                }
+                            ],
+                        }
+                    ],
                 },
                 {
                     "sourceInfo": {"siteCode": [{"value": "05447500"}]},
-                    "variable": {"variableCode": [{"value": "00060"}], "options": {"option": [{"value": "mean"}]}},
-                    "values": [{"method": [{"methodDescription": "mean"}], "value": [{"value": "2.0", "dateTime": "2018-01-24T00:00:00Z", "qualifiers": "A"}]}]
-                }
+                    "variable": {
+                        "variableCode": [{"value": "00060"}],
+                        "options": {"option": [{"value": "mean"}]},
+                    },
+                    "values": [
+                        {
+                            "method": [{"methodDescription": "mean"}],
+                            "value": [
+                                {
+                                    "value": "2.0",
+                                    "dateTime": "2018-01-24T00:00:00Z",
+                                    "qualifiers": "A",
+                                }
+                            ],
+                        }
+                    ],
+                },
             ]
         }
     }
 
     requests_mock.get(mock_url, json=mock_json)
-    
+
     return get_record(site, start, end, service=service)
 
 
@@ -86,7 +114,6 @@ def test_nwis_service_live():
         if "Expecting value" in str(e) or "JSON" in str(e):
             pytest.skip(f"Service returned invalid response (likely 502/503): {e}")
         raise e
-
 
 
 def test_preformat_peaks_response():
@@ -152,7 +179,6 @@ class TestDefunct:
     def test_get_record_defunct_service_water_use(self):
         with pytest.raises(NameError, match="get_water_use"):
             get_record(service="water_use")
-
 
 
 class TestTZ:
@@ -232,19 +258,16 @@ def test_empty_timeseries(requests_mock):
     sites = "011277906"
     start = "2010-07-20"
     end = "2010-07-20"
-    
+
     mock_url = (
         f"https://waterservices.usgs.gov/nwis/iv?format=json&"
         f"startDT={start}&endDT={end}&sites={sites}"
     )
     mock_json = {"value": {"timeSeries": []}}
     requests_mock.get(mock_url, json=mock_json)
-    
-    df = get_record(
-        sites=sites, service="iv", start=start, end=end
-    )
-    assert df.empty is True
 
+    df = get_record(sites=sites, service="iv", start=start, end=end)
+    assert df.empty is True
 
 
 class TestMetaData:

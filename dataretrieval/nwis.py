@@ -494,7 +494,6 @@ def get_dv(
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
 
-
 def get_info(ssl_check: bool = True, **kwargs) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Get site description information from NWIS.
@@ -686,7 +685,6 @@ def get_iv(
             ) from e
         raise e
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
-
 
 
 def get_pmcodes(

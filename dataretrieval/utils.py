@@ -218,7 +218,6 @@ def query(url, payload, delimiter=",", ssl_check=True):
             + f"The service at {response.url} may be down or experiencing issues."
         )
 
-
     if response.text.startswith("No sites/data"):
         raise NoSitesError(response.url)
 
