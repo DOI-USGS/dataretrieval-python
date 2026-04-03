@@ -484,12 +484,16 @@ def get_dv(
     try:
         df = _read_json(response.json())
     except Exception as e:
-        if "<html>" in response.text.lower():
+        if (
+            "<html>" in response.text.lower()
+            or "<!doctype" in response.text.lower()
+            or "text/html" in response.headers.get("Content-Type", "").lower()
+        ):
             raise ValueError(
                 "Received HTML response instead of JSON. This often indicates "
                 "that the service is currently unavailable."
             ) from e
-        raise e
+        raise
 
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
@@ -678,12 +682,16 @@ def get_iv(
     try:
         df = _read_json(response.json())
     except Exception as e:
-        if "<html>" in response.text.lower():
+        if (
+            "<html>" in response.text.lower()
+            or "<!doctype" in response.text.lower()
+            or "text/html" in response.headers.get("Content-Type", "").lower()
+        ):
             raise ValueError(
                 "Received HTML response instead of JSON. This often indicates "
                 "that the service is currently unavailable."
             ) from e
-        raise e
+        raise
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
 
@@ -860,7 +868,7 @@ def get_record(
         - 'peaks': discharge peaks
         - 'gwlevels': (defunct) use `waterdata.get_field_measurements`
         - 'pmcodes': (defunct) use `get_reference_table`
-        - 'water_use': (defunct) defunct
+        - 'water_use': (defunct) no replacement available
         - 'ratings': get rating table
         - 'stat': get statistics
     ssl_check: bool, optional
@@ -886,8 +894,6 @@ def get_record(
         >>> # Get site description for site 01585200
         >>> df = dataretrieval.nwis.get_record(sites="01585200", service="site")
 
-        >>> # Get site description for site 01585200
-        >>> df = dataretrieval.nwis.get_record(sites="01585200", service="site")
 
         >>> # Get discharge peaks for site 01585200
         >>> df = dataretrieval.nwis.get_record(sites="01585200", service="peaks")
@@ -1232,7 +1238,11 @@ class NWIS_Metadata(BaseMetadata):
             return None  # don't set metadata site_info attribute
 
     @property
-    def variable_info(self) -> tuple[pd.DataFrame, BaseMetadata] | None:
+    def variable_info(self) -> None:
+        """
+        Deprecated. Accessing variable_info via NWIS_Metadata is deprecated
+        as it relied on the defunct `get_pmcodes` function. Returns None.
+        """
         # define variable_info metadata based on parameterCd if available
         if "parameterCd" in self._parameters:
             warnings.warn(

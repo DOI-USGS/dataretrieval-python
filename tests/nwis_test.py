@@ -61,23 +61,35 @@ def test_iv_service_answer(requests_mock):
         DATETIME_COL,
     ], f"iv service returned incorrect index: {df.index.names}"
 
-
-def test_nwis_service_live():
-    """Live sanity check of NWIS service, tolerant of 502/503."""
+    """Live sanity check of NWIS service, tolerant of transient NWIS outages."""
     site = "01491000"
     try:
         # Minimal query: just most recent record
         get_iv(sites=site)
     except ValueError as e:
-        # Catch our custom 5xx error from utils.py
-        if any(err in str(e) for err in ["502", "503", "Service Unavailable"]):
-            pytest.skip(f"Service is currently unavailable (transient 502/503): {e}")
-        raise e
+        # Catch known transient service failures surfaced as ValueError
+        error_text = str(e)
+        if any(
+            err in error_text
+            for err in [
+                "500",
+                "502",
+                "503",
+                "Service Unavailable",
+                "Received HTML response instead of JSON",
+            ]
+        ):
+            pytest.skip(
+                f"Service is currently unavailable (transient NWIS outage): {e}"
+            )
+        raise
     except Exception as e:
         # Fallback for other potential transient network issues
         if "Expecting value" in str(e) or "JSON" in str(e):
-            pytest.skip(f"Service returned invalid response (likely 502/503): {e}")
-        raise e
+            pytest.skip(
+                f"Service returned invalid response (likely transient outage): {e}"
+            )
+        raise
 
 
 def test_preformat_peaks_response():
@@ -91,10 +103,6 @@ def test_preformat_peaks_response():
     # assertions
     assert "datetime" in df.columns
     assert df["datetime"].isna().sum() == 0
-
-
-if __name__ == "__main__":
-    test_iv_service_answer()
 
 
 # tests using real queries to USGS webservices
