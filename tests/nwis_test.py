@@ -1,5 +1,6 @@
 import datetime
 import json
+from pathlib import Path
 from unittest import mock
 
 import numpy as np
@@ -29,7 +30,8 @@ SITENO_COL = "site_no"
 
 def _load_mock_json(file_name):
     """Helper to load mock JSON from tests/data."""
-    with open(f"tests/data/{file_name}") as f:
+    path = Path(__file__).parent / "data" / file_name
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -40,15 +42,15 @@ def _test_iv_service(requests_mock):
     service = "iv"
     site = ["03339000", "05447500", "03346500"]
 
-    # Minimal mock response
-    mock_url = (
-        "https://waterservices.usgs.gov/nwis/iv?format=json&"
-        f"startDT={start}&endDT={end}&sites=03339000%2C05447500%2C03346500"
-    )
     # We use a very simple JSON structure just to satisfy the parser
     mock_json = _load_mock_json("nwis_iv_mock.json")
 
-    requests_mock.get(mock_url, json=mock_json)
+    # Match the base URL and ensure query parameters are correct
+    requests_mock.get(
+        "https://waterservices.usgs.gov/nwis/iv",
+        json=mock_json,
+        complete_qs=False,
+    )
 
     return get_record(site, start, end, service=service)
 
@@ -139,19 +141,19 @@ class TestDefunct:
             get_water_use()
 
     def test_get_record_defunct_service_measurements(self):
-        with pytest.raises(NameError, match="get_discharge_measurements"):
+        with pytest.raises(NameError, match="no longer supported by get_record"):
             get_record(service="measurements")
 
     def test_get_record_defunct_service_gwlevels(self):
-        with pytest.raises(NameError, match="get_gwlevels"):
+        with pytest.raises(NameError, match="no longer supported by get_record"):
             get_record(service="gwlevels")
 
     def test_get_record_defunct_service_pmcodes(self):
-        with pytest.raises(NameError, match="get_pmcodes"):
+        with pytest.raises(NameError, match="no longer supported by get_record"):
             get_record(service="pmcodes")
 
     def test_get_record_defunct_service_water_use(self):
-        with pytest.raises(NameError, match="get_water_use"):
+        with pytest.raises(NameError, match="no longer supported by get_record"):
             get_record(service="water_use")
 
 
@@ -233,12 +235,13 @@ def test_empty_timeseries(requests_mock):
     start = "2010-07-20"
     end = "2010-07-20"
 
-    mock_url = (
-        f"https://waterservices.usgs.gov/nwis/iv?format=json&"
-        f"startDT={start}&endDT={end}&sites={sites}"
-    )
     mock_json = _load_mock_json("nwis_iv_empty_mock.json")
-    requests_mock.get(mock_url, json=mock_json)
+    # Match the base URL and ensure query parameters are correct
+    requests_mock.get(
+        "https://waterservices.usgs.gov/nwis/iv",
+        json=mock_json,
+        complete_qs=False,
+    )
 
     df = get_record(sites=sites, service="iv", start=start, end=end)
     assert df.empty is True

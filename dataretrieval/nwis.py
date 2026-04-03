@@ -483,14 +483,15 @@ def get_dv(
     response = query_waterservices("dv", format="json", ssl_check=ssl_check, **kwargs)
     try:
         df = _read_json(response.json())
-    except Exception as e:
+    except (ValueError, requests.exceptions.JSONDecodeError) as e:
         if (
             "<html>" in response.text.lower()
             or "<!doctype" in response.text.lower()
             or "text/html" in response.headers.get("Content-Type", "").lower()
         ):
             raise ValueError(
-                "Received HTML response instead of JSON. This often indicates "
+                f"Received HTML response instead of JSON from {response.url} "
+                f"(Status: {response.status_code}). This often indicates "
                 "that the service is currently unavailable."
             ) from e
         raise
@@ -681,14 +682,15 @@ def get_iv(
 
     try:
         df = _read_json(response.json())
-    except Exception as e:
+    except (ValueError, requests.exceptions.JSONDecodeError) as e:
         if (
             "<html>" in response.text.lower()
             or "<!doctype" in response.text.lower()
             or "text/html" in response.headers.get("Content-Type", "").lower()
         ):
             raise ValueError(
-                "Received HTML response instead of JSON. This often indicates "
+                f"Received HTML response instead of JSON from {response.url} "
+                f"(Status: {response.status_code}). This often indicates "
                 "that the service is currently unavailable."
             ) from e
         raise
@@ -913,6 +915,11 @@ def get_record(
     _check_sites_value_types(sites)
 
     defunct_services = ["measurements", "gwlevels", "pmcodes", "water_use"]
+    if service in defunct_services:
+        raise NameError(
+            f"The NWIS service '{service}' is no longer supported by get_record."
+        )
+
     if service not in WATERSERVICES_SERVICES + WATERDATA_SERVICES + defunct_services:
         raise TypeError(f"Unrecognized service: {service}")
 
@@ -1240,15 +1247,13 @@ class NWIS_Metadata(BaseMetadata):
     @property
     def variable_info(self) -> None:
         """
-        Deprecated. Accessing variable_info via NWIS_Metadata is deprecated
-        as it relied on the defunct `get_pmcodes` function. Returns None.
+        Deprecated. Accessing variable_info via NWIS_Metadata is deprecated.
+        Returns None.
         """
-        # define variable_info metadata based on parameterCd if available
-        if "parameterCd" in self._parameters:
-            warnings.warn(
-                "Accessing variable_info via NWIS_Metadata is deprecated as "
-                "it relies on the defunct get_pmcodes function.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return None
+        warnings.warn(
+            "Accessing variable_info via NWIS_Metadata is deprecated as "
+            "it relies on the defunct get_pmcodes function.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return None
