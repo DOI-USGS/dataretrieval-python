@@ -588,7 +588,8 @@ def _walk_pages(
         headers = dict(req.headers)
         content = req.body if method == "POST" else None
 
-        dfs = _get_resp_data(resp, geopd=geopd)
+        # List to collect dataframes from each page
+        dfs = [_get_resp_data(resp, geopd=geopd)]
         curr_url = _next_req_url(resp)
         while curr_url:
             try:
@@ -598,8 +599,7 @@ def _walk_pages(
                     headers=headers,
                     data=content if method == "POST" else None,
                 )
-                df1 = _get_resp_data(resp, geopd=geopd)
-                dfs = pd.concat([dfs, df1], ignore_index=True)
+                dfs.append(_get_resp_data(resp, geopd=geopd))
                 curr_url = _next_req_url(resp)
             except Exception:  # noqa: BLE001
                 error_text = _error_body(resp)
@@ -608,7 +608,12 @@ def _walk_pages(
                     "Request failed for URL: %s. Data download interrupted.", curr_url
                 )
                 curr_url = None
-        return dfs, initial_response
+
+        # Concatenate all pages at once for efficiency
+        if not dfs:
+            return pd.DataFrame(), initial_response
+
+        return pd.concat(dfs, ignore_index=True), initial_response
     finally:
         if close_client:
             client.close()
@@ -1104,3 +1109,34 @@ def _check_profiles(
             f"Invalid profile: '{profile}' for service '{service}'. "
             f"Valid options are: {valid_profiles}."
         )
+
+
+def _get_args(
+    local_vars: dict[str, Any], exclude: set[str] | None = None
+) -> dict[str, Any]:
+    """
+    Standardize parameter filtering for WaterData API functions.
+
+    Filters out internal function arguments ('service', 'output_id')
+    and None values from the provided local variables dictionary.
+    Additional variables can be excluded via the 'exclude' parameter.
+
+    Parameters
+    ----------
+    local_vars : dict[str, Any]
+        Dictionary of local variables, typically from `locals()`.
+    exclude : set[str], optional
+        Additional keys to exclude from the resulting dictionary.
+
+    Returns
+    -------
+    dict[str, Any]
+        Filtered dictionary of arguments for API requests.
+    """
+    to_exclude = {"service", "output_id"}
+    if exclude:
+        to_exclude.update(exclude)
+
+    return {
+        k: v for k, v in local_vars.items() if k not in to_exclude and v is not None
+    }

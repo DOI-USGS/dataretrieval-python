@@ -3,6 +3,7 @@ Useful utilities for data munging.
 """
 
 import warnings
+from collections.abc import Iterable
 
 import pandas as pd
 import requests
@@ -39,14 +40,13 @@ def to_str(listlike, delimiter=","):
         '0+10+42'
 
     """
-    if isinstance(listlike, list):
-        return delimiter.join([str(x) for x in listlike])
-
-    elif isinstance(listlike, (pd.core.series.Series, pd.core.indexes.base.Index)):
-        return delimiter.join(listlike.tolist())
-
-    elif isinstance(listlike, str):
+    if isinstance(listlike, str):
         return listlike
+
+    if isinstance(listlike, Iterable):
+        return delimiter.join(map(str, listlike))
+
+    return None
 
 
 def format_datetime(df, date_field, time_field, tz_field):
