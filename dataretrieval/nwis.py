@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import warnings
 from io import StringIO
+from json import JSONDecodeError
 
 import pandas as pd
 import requests
@@ -483,7 +484,7 @@ def get_dv(
     response = query_waterservices("dv", format="json", ssl_check=ssl_check, **kwargs)
     try:
         df = _read_json(response.json())
-    except (ValueError, requests.exceptions.JSONDecodeError) as e:
+    except (ValueError, JSONDecodeError) as e:
         if (
             "<html>" in response.text.lower()
             or "<!doctype" in response.text.lower()
@@ -682,7 +683,7 @@ def get_iv(
 
     try:
         df = _read_json(response.json())
-    except (ValueError, requests.exceptions.JSONDecodeError) as e:
+    except (ValueError, JSONDecodeError) as e:
         if (
             "<html>" in response.text.lower()
             or "<!doctype" in response.text.lower()
@@ -949,43 +950,6 @@ def get_record(
         df, _ = get_info(sites=sites, ssl_check=ssl_check, **kwargs)
         return df
 
-    elif service == "measurements":
-        df, _ = get_discharge_measurements(
-            site_no=sites, begin_date=start, end_date=end, ssl_check=ssl_check, **kwargs
-        )
-        return df
-
-    elif service == "peaks":
-        df, _ = get_discharge_peaks(
-            site_no=sites,
-            begin_date=start,
-            end_date=end,
-            multi_index=multi_index,
-            ssl_check=ssl_check,
-            **kwargs,
-        )
-        return df
-
-    elif service == "gwlevels":
-        df, _ = get_gwlevels(
-            sites=sites,
-            startDT=start,
-            endDT=end,
-            multi_index=multi_index,
-            datetime_index=datetime_index,
-            ssl_check=ssl_check,
-            **kwargs,
-        )
-        return df
-
-    elif service == "pmcodes":
-        df, _ = get_pmcodes(ssl_check=ssl_check, **kwargs)
-        return df
-
-    elif service == "water_use":
-        df, _ = get_water_use(state=state, ssl_check=ssl_check, **kwargs)
-        return df
-
     elif service == "ratings":
         df, _ = get_ratings(site=sites, ssl_check=ssl_check, **kwargs)
         return df
@@ -1180,8 +1144,8 @@ class NWIS_Metadata(BaseMetadata):
         Site information if the query included `site_no`, `sites`, `stateCd`,
         `huc`, `countyCd` or `bBox`. `site_no` is preferred over `sites` if
         both are present.
-    variable_info: tuple[pd.DataFrame, NWIS_Metadata] | None
-        Variable information if the query included `parameterCd`.
+    variable_info: None
+        Deprecated. Accessing variable_info via NWIS_Metadata is deprecated.
 
     """
 

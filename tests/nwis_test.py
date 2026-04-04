@@ -310,3 +310,14 @@ class TestMetaData:
         md = NWIS_Metadata(response, countyCd="01001")
         # assert that site_info is implemented
         assert md.site_info
+
+    def test_variable_info_deprecated(self):
+        """Test that variable_info raises a DeprecationWarning and returns None."""
+        response = mock.MagicMock()
+        md = NWIS_Metadata(response)
+        with pytest.warns(
+            DeprecationWarning,
+            match="Accessing variable_info via NWIS_Metadata is deprecated",
+        ):
+            result = md.variable_info
+        assert result is None
