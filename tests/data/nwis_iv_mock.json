@@ -1,0 +1,84 @@
+{
+    "value": {
+        "timeSeries": [
+            {
+                "sourceInfo": {
+                    "siteCode": [
+                        {
+                            "value": "03339000"
+                        }
+                    ]
+                },
+                "variable": {
+                    "variableCode": [
+                        {
+                            "value": "00060"
+                        }
+                    ],
+                    "options": {
+                        "option": [
+                            {
+                                "value": "mean"
+                            }
+                        ]
+                    }
+                },
+                "values": [
+                    {
+                        "method": [
+                            {
+                                "methodDescription": "mean"
+                            }
+                        ],
+                        "value": [
+                            {
+                                "value": "1.0",
+                                "dateTime": "2018-01-24T00:00:00Z",
+                                "qualifiers": "A"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "sourceInfo": {
+                    "siteCode": [
+                        {
+                            "value": "05447500"
+                        }
+                    ]
+                },
+                "variable": {
+                    "variableCode": [
+                        {
+                            "value": "00060"
+                        }
+                    ],
+                    "options": {
+                        "option": [
+                            {
+                                "value": "mean"
+                            }
+                        ]
+                    }
+                },
+                "values": [
+                    {
+                        "method": [
+                            {
+                                "methodDescription": "mean"
+                            }
+                        ],
+                        "value": [
+                            {
+                                "value": "2.0",
+                                "dateTime": "2018-01-24T00:00:00Z",
+                                "qualifiers": "A"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import warnings
 from io import StringIO
+from json import JSONDecodeError
 
 import pandas as pd
 import requests
@@ -481,7 +482,20 @@ def get_dv(
     kwargs["multi_index"] = multi_index
 
     response = query_waterservices("dv", format="json", ssl_check=ssl_check, **kwargs)
-    df = _read_json(response.json())
+    try:
+        df = _read_json(response.json())
+    except (ValueError, JSONDecodeError) as e:
+        if (
+            "<html>" in response.text.lower()
+            or "<!doctype" in response.text.lower()
+            or "text/html" in response.headers.get("Content-Type", "").lower()
+        ):
+            raise ValueError(
+                f"Received HTML response instead of JSON from {response.url} "
+                f"(Status: {response.status_code}). This often indicates "
+                "that the service is currently unavailable."
+            ) from e
+        raise
 
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
@@ -667,7 +681,20 @@ def get_iv(
         service="iv", format="json", ssl_check=ssl_check, **kwargs
     )
 
-    df = _read_json(response.json())
+    try:
+        df = _read_json(response.json())
+    except (ValueError, JSONDecodeError) as e:
+        if (
+            "<html>" in response.text.lower()
+            or "<!doctype" in response.text.lower()
+            or "text/html" in response.headers.get("Content-Type", "").lower()
+        ):
+            raise ValueError(
+                f"Received HTML response instead of JSON from {response.url} "
+                f"(Status: {response.status_code}). This often indicates "
+                "that the service is currently unavailable."
+            ) from e
+        raise
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
 
@@ -840,11 +867,11 @@ def get_record(
         - 'iv' : instantaneous data
         - 'dv' : daily mean data
         - 'site' : site description
-        - 'measurements' : discharge measurements
+        - 'measurements' : (defunct) use `waterdata.get_field_measurements`
         - 'peaks': discharge peaks
-        - 'gwlevels': groundwater levels
-        - 'pmcodes': get parameter codes
-        - 'water_use': get water use data
+        - 'gwlevels': (defunct) use `waterdata.get_field_measurements`
+        - 'pmcodes': (defunct) use `get_reference_table`
+        - 'water_use': (defunct) no replacement available
         - 'ratings': get rating table
         - 'stat': get statistics
     ssl_check: bool, optional
@@ -870,28 +897,9 @@ def get_record(
         >>> # Get site description for site 01585200
         >>> df = dataretrieval.nwis.get_record(sites="01585200", service="site")
 
-        >>> # Get discharge measurements for site 01585200
-        >>> df = dataretrieval.nwis.get_record(
-        ...     sites="01585200", service="measurements"
-        ... )
 
         >>> # Get discharge peaks for site 01585200
         >>> df = dataretrieval.nwis.get_record(sites="01585200", service="peaks")
-
-        >>> # Get latest groundwater level for site 434400121275801
-        >>> df = dataretrieval.nwis.get_record(
-        ...     sites="434400121275801", service="gwlevels"
-        ... )
-
-        >>> # Get information about the discharge parameter code
-        >>> df = dataretrieval.nwis.get_record(
-        ...     service="pmcodes", parameterCd="00060"
-        ... )
-
-        >>> # Get water use data for livestock nationally in 2010
-        >>> df = dataretrieval.nwis.get_record(
-        ...     service="water_use", years="2010", categories="L"
-        ... )
 
         >>> # Get rating table for USGS streamgage 01585200
         >>> df = dataretrieval.nwis.get_record(sites="01585200", service="ratings")
@@ -907,7 +915,13 @@ def get_record(
     """
     _check_sites_value_types(sites)
 
-    if service not in WATERSERVICES_SERVICES + WATERDATA_SERVICES:
+    defunct_services = ["measurements", "gwlevels", "pmcodes", "water_use"]
+    if service in defunct_services:
+        raise NameError(
+            f"The NWIS service '{service}' is no longer supported by get_record."
+        )
+
+    if service not in WATERSERVICES_SERVICES + WATERDATA_SERVICES + defunct_services:
         raise TypeError(f"Unrecognized service: {service}")
 
     if service == "iv":
@@ -934,43 +948,6 @@ def get_record(
 
     elif service == "site":
         df, _ = get_info(sites=sites, ssl_check=ssl_check, **kwargs)
-        return df
-
-    elif service == "measurements":
-        df, _ = get_discharge_measurements(
-            site_no=sites, begin_date=start, end_date=end, ssl_check=ssl_check, **kwargs
-        )
-        return df
-
-    elif service == "peaks":
-        df, _ = get_discharge_peaks(
-            site_no=sites,
-            begin_date=start,
-            end_date=end,
-            multi_index=multi_index,
-            ssl_check=ssl_check,
-            **kwargs,
-        )
-        return df
-
-    elif service == "gwlevels":
-        df, _ = get_gwlevels(
-            sites=sites,
-            startDT=start,
-            endDT=end,
-            multi_index=multi_index,
-            datetime_index=datetime_index,
-            ssl_check=ssl_check,
-            **kwargs,
-        )
-        return df
-
-    elif service == "pmcodes":
-        df, _ = get_pmcodes(ssl_check=ssl_check, **kwargs)
-        return df
-
-    elif service == "water_use":
-        df, _ = get_water_use(state=state, ssl_check=ssl_check, **kwargs)
         return df
 
     elif service == "ratings":
@@ -1167,8 +1144,8 @@ class NWIS_Metadata(BaseMetadata):
         Site information if the query included `site_no`, `sites`, `stateCd`,
         `huc`, `countyCd` or `bBox`. `site_no` is preferred over `sites` if
         both are present.
-    variable_info: tuple[pd.DataFrame, NWIS_Metadata] | None
-        Variable information if the query included `parameterCd`.
+    variable_info: None
+        Deprecated. Accessing variable_info via NWIS_Metadata is deprecated.
 
     """
 
@@ -1232,7 +1209,15 @@ class NWIS_Metadata(BaseMetadata):
             return None  # don't set metadata site_info attribute
 
     @property
-    def variable_info(self) -> tuple[pd.DataFrame, BaseMetadata] | None:
-        # define variable_info metadata based on parameterCd if available
-        if "parameterCd" in self._parameters:
-            return get_pmcodes(parameterCd=self._parameters["parameterCd"])
+    def variable_info(self) -> None:
+        """
+        Deprecated. Accessing variable_info via NWIS_Metadata is deprecated.
+        Returns None.
+        """
+        warnings.warn(
+            "Accessing variable_info via NWIS_Metadata is deprecated as "
+            "it relies on the defunct get_pmcodes function.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return None

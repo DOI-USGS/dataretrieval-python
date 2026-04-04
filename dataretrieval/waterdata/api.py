@@ -26,6 +26,7 @@ from dataretrieval.waterdata.utils import (
     SAMPLES_URL,
     _check_profiles,
     _default_headers,
+    _get_args,
     get_ogc_data,
     get_stats_data,
 )
@@ -208,11 +209,7 @@ def get_daily(
     output_id = "daily_id"
 
     # Build argument dictionary, omitting None values
-    args = {
-        k: v
-        for k, v in locals().items()
-        if k not in {"service", "output_id"} and v is not None
-    }
+    args = _get_args(locals())
 
     return get_ogc_data(args, output_id, service)
 
@@ -378,11 +375,7 @@ def get_continuous(
     output_id = "continuous_id"
 
     # Build argument dictionary, omitting None values
-    args = {
-        k: v
-        for k, v in locals().items()
-        if k not in {"service", "output_id"} and v is not None
-    }
+    args = _get_args(locals())
 
     return get_ogc_data(args, output_id, service)
 
@@ -673,11 +666,7 @@ def get_monitoring_locations(
     output_id = "monitoring_location_id"
 
     # Build argument dictionary, omitting None values
-    args = {
-        k: v
-        for k, v in locals().items()
-        if k not in {"service", "output_id"} and v is not None
-    }
+    args = _get_args(locals())
 
     return get_ogc_data(args, output_id, service)
 
@@ -893,11 +882,7 @@ def get_time_series_metadata(
     output_id = "time_series_id"
 
     # Build argument dictionary, omitting None values
-    args = {
-        k: v
-        for k, v in locals().items()
-        if k not in {"service", "output_id"} and v is not None
-    }
+    args = _get_args(locals())
 
     return get_ogc_data(args, output_id, service)
 
@@ -1069,11 +1054,7 @@ def get_latest_continuous(
     output_id = "latest_continuous_id"
 
     # Build argument dictionary, omitting None values
-    args = {
-        k: v
-        for k, v in locals().items()
-        if k not in {"service", "output_id"} and v is not None
-    }
+    args = _get_args(locals())
 
     return get_ogc_data(args, output_id, service)
 
@@ -1247,11 +1228,7 @@ def get_latest_daily(
     output_id = "latest_daily_id"
 
     # Build argument dictionary, omitting None values
-    args = {
-        k: v
-        for k, v in locals().items()
-        if k not in {"service", "output_id"} and v is not None
-    }
+    args = _get_args(locals())
 
     return get_ogc_data(args, output_id, service)
 
@@ -1424,11 +1401,7 @@ def get_field_measurements(
     output_id = "field_measurement_id"
 
     # Build argument dictionary, omitting None values
-    args = {
-        k: v
-        for k, v in locals().items()
-        if k not in {"service", "output_id"} and v is not None
-    }
+    args = _get_args(locals())
 
     return get_ogc_data(args, output_id, service)
 
@@ -1735,11 +1708,8 @@ def get_samples(
 
     _check_profiles(service, profile)
 
-    params = {
-        k: v
-        for k, v in locals().items()
-        if k not in ["ssl_check", "service", "profile"] and v is not None
-    }
+    # Build argument dictionary, omitting None values
+    params = _get_args(locals(), exclude={"ssl_check", "profile"})
 
     params.update({"mimeType": "text/csv"})
 
@@ -1879,11 +1849,8 @@ def get_stats_por(
         ...     end_date="01-31",
         ... )
     """
-    params = {
-        k: v
-        for k, v in locals().items()
-        if k not in ["expand_percentiles"] and v is not None
-    }
+    # Build argument dictionary, omitting None values
+    params = _get_args(locals(), exclude={"expand_percentiles"})
 
     return get_stats_data(
         args=params, service="observationNormals", expand_percentiles=expand_percentiles
@@ -2011,11 +1978,8 @@ def get_stats_date_range(
         ...     computation_type=["minimum", "maximum"],
         ... )
     """
-    params = {
-        k: v
-        for k, v in locals().items()
-        if k not in ["expand_percentiles"] and v is not None
-    }
+    # Build argument dictionary, omitting None values
+    params = _get_args(locals(), exclude={"expand_percentiles"})
 
     return get_stats_data(
         args=params,

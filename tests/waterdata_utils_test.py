@@ -1,0 +1,79 @@
+from unittest import mock
+
+import requests
+
+from dataretrieval.waterdata.utils import _get_args, _walk_pages
+
+
+def test_get_args_basic():
+    local_vars = {
+        "monitoring_location_id": "123",
+        "service": "daily",
+        "output_id": "daily_id",
+        "none_val": None,
+        "other": "val",
+    }
+    result = _get_args(local_vars)
+    assert result == {"monitoring_location_id": "123", "other": "val"}
+
+
+def test_get_args_with_exclude():
+    local_vars = {
+        "monitoring_location_id": "123",
+        "service": "daily",
+        "output_id": "daily_id",
+        "to_exclude": "secret",
+        "other": "val",
+    }
+    result = _get_args(local_vars, exclude={"to_exclude"})
+    assert result == {"monitoring_location_id": "123", "other": "val"}
+
+
+def test_get_args_empty():
+    assert _get_args({}) == {}
+
+
+def test_walk_pages_multiple_mocked():
+    # Setup mock responses
+    resp1 = mock.MagicMock()
+    resp1.json.return_value = {
+        "numberReturned": 1,
+        "features": [{"id": "1", "properties": {"val": "a"}}],
+        "links": [{"rel": "next", "href": "https://example.com/page2"}],
+    }
+    # Mock headers and links
+    resp1.headers = {}
+    resp1.links = {"next": {"url": "https://example.com/page2"}}
+    resp1.status_code = 200
+
+    resp2 = mock.MagicMock()
+    resp2.json.return_value = {
+        "numberReturned": 1,
+        "features": [{"id": "2", "properties": {"val": "b"}}],
+        "links": [],
+    }
+    resp2.headers = {}
+    resp2.links = {}
+    resp2.status_code = 200
+
+    # Mock client (Session)
+    mock_client = mock.MagicMock(spec=requests.Session)
+    # First call to send() returns resp1, then call to request() in loop returns resp2
+    mock_client.send.return_value = resp1
+    mock_client.request.return_value = resp2
+
+    # Mock request (PreparedRequest)
+    mock_req = mock.MagicMock(spec=requests.PreparedRequest)
+    mock_req.method = "GET"
+    mock_req.headers = {}
+    mock_req.url = "https://example.com/page1"
+
+    # Call _walk_pages
+    df, final_resp = _walk_pages(geopd=False, req=mock_req, client=mock_client)
+
+    assert len(df) == 2
+    assert list(df["val"]) == ["a", "b"]
+    assert list(df["id"]) == ["1", "2"]
+    assert mock_client.send.called
+    assert mock_client.request.called
+    assert mock_client.request.call_args[0][1] == "https://example.com/page2"
