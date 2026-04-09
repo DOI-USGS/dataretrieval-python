@@ -296,9 +296,7 @@ def _check_ogc_requests(endpoint: str = "daily", req_type: str = "queryables"):
         If the HTTP request returns an unsuccessful status code.
     """
     if req_type not in ("queryables", "schema"):
-        raise ValueError(
-            f"req_type must be 'queryables' or 'schema', got {req_type!r}"
-        )
+        raise ValueError(f"req_type must be 'queryables' or 'schema', got {req_type!r}")
     url = f"{OGC_API_URL}/collections/{endpoint}/{req_type}"
     resp = requests.get(url, headers=_default_headers())
     resp.raise_for_status()

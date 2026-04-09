@@ -994,7 +994,6 @@ def _read_json(json):
     index_list.append(len(site_list))
 
     for start, end in zip(index_list[:-1], index_list[1:]):
-
         # grab a block containing timeseries 0:21,
         # which are all from the same site
         site_block = json["value"]["timeSeries"][start:end]
