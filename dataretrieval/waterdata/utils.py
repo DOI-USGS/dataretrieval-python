@@ -610,9 +610,6 @@ def _walk_pages(
                 curr_url = None
 
         # Concatenate all pages at once for efficiency
-        if not dfs:
-            return pd.DataFrame(), initial_response
-
         return pd.concat(dfs, ignore_index=True), initial_response
     finally:
         if close_client:

@@ -45,6 +45,26 @@ WATERDATA_SERVICES = [
 _CRS = "EPSG:4269"
 
 
+def _parse_json_or_raise(response: requests.Response) -> pd.DataFrame:
+    """Parse a JSON NWIS response, raising a helpful error on HTML responses."""
+    try:
+        return _read_json(response.json())
+    except (ValueError, JSONDecodeError) as e:
+        text_lower = response.text.lower()
+        content_type = response.headers.get("Content-Type", "").lower()
+        if (
+            "<html>" in text_lower
+            or "<!doctype" in text_lower
+            or "text/html" in content_type
+        ):
+            raise ValueError(
+                f"Received HTML response instead of JSON from {response.url} "
+                f"(Status: {response.status_code}). This often indicates "
+                "that the service is currently unavailable."
+            ) from e
+        raise
+
+
 def format_response(
     df: pd.DataFrame, service: str | None = None, **kwargs
 ) -> pd.DataFrame:
@@ -482,20 +502,7 @@ def get_dv(
     kwargs["multi_index"] = multi_index
 
     response = query_waterservices("dv", format="json", ssl_check=ssl_check, **kwargs)
-    try:
-        df = _read_json(response.json())
-    except (ValueError, JSONDecodeError) as e:
-        if (
-            "<html>" in response.text.lower()
-            or "<!doctype" in response.text.lower()
-            or "text/html" in response.headers.get("Content-Type", "").lower()
-        ):
-            raise ValueError(
-                f"Received HTML response instead of JSON from {response.url} "
-                f"(Status: {response.status_code}). This often indicates "
-                "that the service is currently unavailable."
-            ) from e
-        raise
+    df = _parse_json_or_raise(response)
 
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
@@ -681,20 +688,7 @@ def get_iv(
         service="iv", format="json", ssl_check=ssl_check, **kwargs
     )
 
-    try:
-        df = _read_json(response.json())
-    except (ValueError, JSONDecodeError) as e:
-        if (
-            "<html>" in response.text.lower()
-            or "<!doctype" in response.text.lower()
-            or "text/html" in response.headers.get("Content-Type", "").lower()
-        ):
-            raise ValueError(
-                f"Received HTML response instead of JSON from {response.url} "
-                f"(Status: {response.status_code}). This often indicates "
-                "that the service is currently unavailable."
-            ) from e
-        raise
+    df = _parse_json_or_raise(response)
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
 
@@ -915,13 +909,19 @@ def get_record(
     """
     _check_sites_value_types(sites)
 
-    defunct_services = ["measurements", "gwlevels", "pmcodes", "water_use"]
-    if service in defunct_services:
+    defunct_replacements = {
+        "measurements": "`waterdata.get_field_measurements`",
+        "gwlevels": "`waterdata.get_field_measurements`",
+        "pmcodes": "`waterdata.get_reference_table`",
+        "water_use": "no replacement available",
+    }
+    if service in defunct_replacements:
         raise NameError(
-            f"The NWIS service '{service}' is no longer supported by get_record."
+            f"The NWIS service '{service}' is no longer supported by "
+            f"get_record. Use {defunct_replacements[service]} instead."
         )
 
-    if service not in WATERSERVICES_SERVICES + WATERDATA_SERVICES + defunct_services:
+    if service not in WATERSERVICES_SERVICES + WATERDATA_SERVICES:
         raise TypeError(f"Unrecognized service: {service}")
 
     if service == "iv":
