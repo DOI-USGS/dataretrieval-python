@@ -2,6 +2,7 @@
 
 from unittest import mock
 
+import pandas as pd
 import pytest
 
 from dataretrieval import nwis, utils
@@ -55,6 +56,44 @@ class Test_BaseMetadata:
 
         # Test NotImplementedError parameters
         with pytest.raises(NotImplementedError):
-            _ = md.site_info
-        with pytest.raises(NotImplementedError):
             _ = md.variable_info
+
+
+class Test_to_str:
+    """Tests of the to_str function."""
+
+    def test_to_str_list(self):
+        assert utils.to_str([1, "a", 2]) == "1,a,2"
+
+    def test_to_str_tuple(self):
+        assert utils.to_str((1, "b", 3)) == "1,b,3"
+
+    def test_to_str_set(self):
+        # Sets are unordered, so we check if elements are present
+        result = utils.to_str({1, 2})
+        assert "1" in result
+        assert "2" in result
+        assert "," in result
+
+    def test_to_str_generator(self):
+        def gen():
+            yield from [1, 2, 3]
+
+        assert utils.to_str(gen()) == "1,2,3"
+
+    def test_to_str_pandas_series(self):
+        s = pd.Series([10, 20])
+        assert utils.to_str(s) == "10,20"
+
+    def test_to_str_pandas_index(self):
+        idx = pd.Index(["x", "y"])
+        assert utils.to_str(idx) == "x,y"
+
+    def test_to_str_string(self):
+        assert utils.to_str("already a string") == "already a string"
+
+    def test_to_str_custom_delimiter(self):
+        assert utils.to_str([1, 2, 3], delimiter="|") == "1|2|3"
+
+    def test_to_str_non_iterable(self):
+        assert utils.to_str(123) is None

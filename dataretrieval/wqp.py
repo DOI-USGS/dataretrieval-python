@@ -154,7 +154,7 @@ def get_results(
 
     response = query(url, kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",")
+    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
     return df, WQP_Metadata(response)
 
 
@@ -208,7 +208,7 @@ def what_sites(
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",")
+    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
     return df, WQP_Metadata(response)
 
@@ -263,7 +263,7 @@ def what_organizations(
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",")
+    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
     return df, WQP_Metadata(response)
 
@@ -314,7 +314,7 @@ def what_projects(ssl_check=True, legacy=True, **kwargs):
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",")
+    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
     return df, WQP_Metadata(response)
 
@@ -378,7 +378,7 @@ def what_activities(
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",")
+    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
     return df, WQP_Metadata(response)
 
@@ -440,7 +440,7 @@ def what_detection_limits(
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",")
+    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
     return df, WQP_Metadata(response)
 
@@ -495,7 +495,7 @@ def what_habitat_metrics(
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",")
+    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
     return df, WQP_Metadata(response)
 
@@ -551,7 +551,7 @@ def what_project_weights(ssl_check=True, legacy=True, **kwargs):
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",")
+    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
     return df, WQP_Metadata(response)
 
