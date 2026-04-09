@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g5b3766aec documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g1115167e0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=742616cd"></script>
+      <script src="../_static/documentation_options.js?v=eceeb231"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -62,8 +62,10 @@
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata.variable_info"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.variable_info</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata.__init__"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.__init__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.site_info</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.variable_info</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._parse_json_or_raise"><code class="docutils literal notranslate"><span class="pre">_parse_json_or_raise()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._read_json"><code class="docutils literal notranslate"><span class="pre">_read_json()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._read_rdb"><code class="docutils literal notranslate"><span class="pre">_read_rdb()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis.format_response"><code class="docutils literal notranslate"><span class="pre">format_response()</span></code></a></li>
@@ -185,10 +187,10 @@ both are present.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dataretrieval.nwis.NWIS_Metadata.variable_info">
 <span class="sig-name descname"><span class="pre">variable_info</span></span><a class="headerlink" href="#dataretrieval.nwis.NWIS_Metadata.variable_info" title="Link to this definition"></a></dt>
-<dd><p>Variable information if the query included <cite>parameterCd</cite>.</p>
+<dd><p>Deprecated. Accessing variable_info via NWIS_Metadata is deprecated.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple[pd.DataFrame, <a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata">NWIS_Metadata</a>] | None</p>
+<dd class="field-odd"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -228,6 +230,19 @@ metadata for NWIS data.</p>
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="id1">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">variable_info</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd><p>Deprecated. Accessing variable_info via NWIS_Metadata is deprecated.
+Returns None.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.nwis._parse_json_or_raise">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_parse_json_or_raise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">response</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Response</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_parse_json_or_raise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._parse_json_or_raise" title="Link to this definition"></a></dt>
+<dd><p>Parse a JSON NWIS response, raising a helpful error on HTML responses.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -584,11 +599,11 @@ one row per time, default is True</p></li>
 <li><p>‘iv’ : instantaneous data</p></li>
 <li><p>’dv’ : daily mean data</p></li>
 <li><p>’site’ : site description</p></li>
-<li><p>’measurements’ : discharge measurements</p></li>
+<li><p>’measurements’ : (defunct) use <cite>waterdata.get_field_measurements</cite></p></li>
 <li><p>’peaks’: discharge peaks</p></li>
-<li><p>’gwlevels’: groundwater levels</p></li>
-<li><p>’pmcodes’: get parameter codes</p></li>
-<li><p>’water_use’: get water use data</p></li>
+<li><p>’gwlevels’: (defunct) use <cite>waterdata.get_field_measurements</cite></p></li>
+<li><p>’pmcodes’: (defunct) use <cite>get_reference_table</cite></p></li>
+<li><p>’water_use’: (defunct) no replacement available</p></li>
 <li><p>’ratings’: get rating table</p></li>
 <li><p>’stat’: get statistics</p></li>
 </ul>
@@ -612,28 +627,8 @@ default is True</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get site description for site 01585200</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">&quot;01585200&quot;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;site&quot;</span><span class="p">)</span>
 
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge measurements for site 01585200</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s2">&quot;01585200&quot;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;measurements&quot;</span>
-<span class="gp">... </span><span class="p">)</span>
-
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge peaks for site 01585200</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">&quot;01585200&quot;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;peaks&quot;</span><span class="p">)</span>
-
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get latest groundwater level for site 434400121275801</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s2">&quot;434400121275801&quot;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;gwlevels&quot;</span>
-<span class="gp">... </span><span class="p">)</span>
-
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get information about the discharge parameter code</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">service</span><span class="o">=</span><span class="s2">&quot;pmcodes&quot;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span>
-<span class="gp">... </span><span class="p">)</span>
-
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get water use data for livestock nationally in 2010</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">service</span><span class="o">=</span><span class="s2">&quot;water_use&quot;</span><span class="p">,</span> <span class="n">years</span><span class="o">=</span><span class="s2">&quot;2010&quot;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s2">&quot;L&quot;</span>
-<span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get rating table for USGS streamgage 01585200</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">&quot;01585200&quot;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;ratings&quot;</span><span class="p">)</span>

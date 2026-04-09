@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g5b3766aec documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g1115167e0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=742616cd"></script>
+      <script src="../../_static/documentation_options.js?v=eceeb231"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -84,6 +84,7 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">StringIO</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">json</span><span class="w"> </span><span class="kn">import</span> <span class="n">JSONDecodeError</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
@@ -118,6 +119,29 @@
 <span class="p">]</span>
 <span class="c1"># NAD83</span>
 <span class="n">_CRS</span> <span class="o">=</span> <span class="s2">&quot;EPSG:4269&quot;</span>
+
+
+<div class="viewcode-block" id="_parse_json_or_raise">
+<a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._parse_json_or_raise">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_json_or_raise</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a JSON NWIS response, raising a helpful error on HTML responses.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_read_json</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">JSONDecodeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">text_lower</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">content_type</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="s2">&quot;&lt;html&gt;&quot;</span> <span class="ow">in</span> <span class="n">text_lower</span>
+            <span class="ow">or</span> <span class="s2">&quot;&lt;!doctype&quot;</span> <span class="ow">in</span> <span class="n">text_lower</span>
+            <span class="ow">or</span> <span class="s2">&quot;text/html&quot;</span> <span class="ow">in</span> <span class="n">content_type</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Received HTML response instead of JSON from </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(Status: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">). This often indicates &quot;</span>
+                <span class="s2">&quot;that the service is currently unavailable.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="k">raise</span></div>
+
 
 
 <div class="viewcode-block" id="format_response">
@@ -586,7 +610,7 @@
     <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;multi_index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">multi_index</span>
 
     <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s2">&quot;dv&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_json</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">_parse_json_or_raise</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">NWIS_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
@@ -778,7 +802,7 @@
         <span class="n">service</span><span class="o">=</span><span class="s2">&quot;iv&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span>
 
-    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_json</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">_parse_json_or_raise</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">NWIS_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
@@ -966,11 +990,11 @@
 <span class="sd">        - &#39;iv&#39; : instantaneous data</span>
 <span class="sd">        - &#39;dv&#39; : daily mean data</span>
 <span class="sd">        - &#39;site&#39; : site description</span>
-<span class="sd">        - &#39;measurements&#39; : discharge measurements</span>
+<span class="sd">        - &#39;measurements&#39; : (defunct) use `waterdata.get_field_measurements`</span>
 <span class="sd">        - &#39;peaks&#39;: discharge peaks</span>
-<span class="sd">        - &#39;gwlevels&#39;: groundwater levels</span>
-<span class="sd">        - &#39;pmcodes&#39;: get parameter codes</span>
-<span class="sd">        - &#39;water_use&#39;: get water use data</span>
+<span class="sd">        - &#39;gwlevels&#39;: (defunct) use `waterdata.get_field_measurements`</span>
+<span class="sd">        - &#39;pmcodes&#39;: (defunct) use `get_reference_table`</span>
+<span class="sd">        - &#39;water_use&#39;: (defunct) no replacement available</span>
 <span class="sd">        - &#39;ratings&#39;: get rating table</span>
 <span class="sd">        - &#39;stat&#39;: get statistics</span>
 <span class="sd">    ssl_check: bool, optional</span>
@@ -996,28 +1020,9 @@
 <span class="sd">        &gt;&gt;&gt; # Get site description for site 01585200</span>
 <span class="sd">        &gt;&gt;&gt; df = dataretrieval.nwis.get_record(sites=&quot;01585200&quot;, service=&quot;site&quot;)</span>
 
-<span class="sd">        &gt;&gt;&gt; # Get discharge measurements for site 01585200</span>
-<span class="sd">        &gt;&gt;&gt; df = dataretrieval.nwis.get_record(</span>
-<span class="sd">        ...     sites=&quot;01585200&quot;, service=&quot;measurements&quot;</span>
-<span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get discharge peaks for site 01585200</span>
 <span class="sd">        &gt;&gt;&gt; df = dataretrieval.nwis.get_record(sites=&quot;01585200&quot;, service=&quot;peaks&quot;)</span>
-
-<span class="sd">        &gt;&gt;&gt; # Get latest groundwater level for site 434400121275801</span>
-<span class="sd">        &gt;&gt;&gt; df = dataretrieval.nwis.get_record(</span>
-<span class="sd">        ...     sites=&quot;434400121275801&quot;, service=&quot;gwlevels&quot;</span>
-<span class="sd">        ... )</span>
-
-<span class="sd">        &gt;&gt;&gt; # Get information about the discharge parameter code</span>
-<span class="sd">        &gt;&gt;&gt; df = dataretrieval.nwis.get_record(</span>
-<span class="sd">        ...     service=&quot;pmcodes&quot;, parameterCd=&quot;00060&quot;</span>
-<span class="sd">        ... )</span>
-
-<span class="sd">        &gt;&gt;&gt; # Get water use data for livestock nationally in 2010</span>
-<span class="sd">        &gt;&gt;&gt; df = dataretrieval.nwis.get_record(</span>
-<span class="sd">        ...     service=&quot;water_use&quot;, years=&quot;2010&quot;, categories=&quot;L&quot;</span>
-<span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get rating table for USGS streamgage 01585200</span>
 <span class="sd">        &gt;&gt;&gt; df = dataretrieval.nwis.get_record(sites=&quot;01585200&quot;, service=&quot;ratings&quot;)</span>
@@ -1032,6 +1037,18 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_check_sites_value_types</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
+
+    <span class="n">defunct_replacements</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;measurements&quot;</span><span class="p">:</span> <span class="s2">&quot;`waterdata.get_field_measurements`&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;gwlevels&quot;</span><span class="p">:</span> <span class="s2">&quot;`waterdata.get_field_measurements`&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pmcodes&quot;</span><span class="p">:</span> <span class="s2">&quot;`waterdata.get_reference_table`&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;water_use&quot;</span><span class="p">:</span> <span class="s2">&quot;no replacement available&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">service</span> <span class="ow">in</span> <span class="n">defunct_replacements</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;The NWIS service &#39;</span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2">&#39; is no longer supported by &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;get_record. Use </span><span class="si">{</span><span class="n">defunct_replacements</span><span class="p">[</span><span class="n">service</span><span class="p">]</span><span class="si">}</span><span class="s2"> instead.&quot;</span>
+        <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">service</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">WATERSERVICES_SERVICES</span> <span class="o">+</span> <span class="n">WATERDATA_SERVICES</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unrecognized service: </span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1060,43 +1077,6 @@
 
     <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s2">&quot;site&quot;</span><span class="p">:</span>
         <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_info</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">df</span>
-
-    <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s2">&quot;measurements&quot;</span><span class="p">:</span>
-        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_discharge_measurements</span><span class="p">(</span>
-            <span class="n">site_no</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">begin_date</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">df</span>
-
-    <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s2">&quot;peaks&quot;</span><span class="p">:</span>
-        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_discharge_peaks</span><span class="p">(</span>
-            <span class="n">site_no</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span>
-            <span class="n">begin_date</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
-            <span class="n">end_date</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
-            <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span>
-            <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">df</span>
-
-    <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s2">&quot;gwlevels&quot;</span><span class="p">:</span>
-        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_gwlevels</span><span class="p">(</span>
-            <span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span>
-            <span class="n">startDT</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
-            <span class="n">endDT</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
-            <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span>
-            <span class="n">datetime_index</span><span class="o">=</span><span class="n">datetime_index</span><span class="p">,</span>
-            <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">df</span>
-
-    <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s2">&quot;pmcodes&quot;</span><span class="p">:</span>
-        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_pmcodes</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">df</span>
-
-    <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s2">&quot;water_use&quot;</span><span class="p">:</span>
-        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_water_use</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s2">&quot;ratings&quot;</span><span class="p">:</span>
@@ -1302,8 +1282,8 @@
 <span class="sd">        Site information if the query included `site_no`, `sites`, `stateCd`,</span>
 <span class="sd">        `huc`, `countyCd` or `bBox`. `site_no` is preferred over `sites` if</span>
 <span class="sd">        both are present.</span>
-<span class="sd">    variable_info: tuple[pd.DataFrame, NWIS_Metadata] | None</span>
-<span class="sd">        Variable information if the query included `parameterCd`.</span>
+<span class="sd">    variable_info: None</span>
+<span class="sd">        Deprecated. Accessing variable_info via NWIS_Metadata is deprecated.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -1370,10 +1350,18 @@
             <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># don&#39;t set metadata site_info attribute</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">variable_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># define variable_info metadata based on parameterCd if available</span>
-        <span class="k">if</span> <span class="s2">&quot;parameterCd&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">get_pmcodes</span><span class="p">(</span><span class="n">parameterCd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;parameterCd&quot;</span><span class="p">])</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">variable_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deprecated. Accessing variable_info via NWIS_Metadata is deprecated.</span>
+<span class="sd">        Returns None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;Accessing variable_info via NWIS_Metadata is deprecated as &quot;</span>
+            <span class="s2">&quot;it relies on the defunct get_pmcodes function.&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
 
 </pre></div>
 

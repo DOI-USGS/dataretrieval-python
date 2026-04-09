@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g5b3766aec documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g1115167e0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=742616cd"></script>
+      <script src="../../../_static/documentation_options.js?v=eceeb231"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -102,6 +102,7 @@
     <span class="n">SAMPLES_URL</span><span class="p">,</span>
     <span class="n">_check_profiles</span><span class="p">,</span>
     <span class="n">_default_headers</span><span class="p">,</span>
+    <span class="n">_get_args</span><span class="p">,</span>
     <span class="n">get_ogc_data</span><span class="p">,</span>
     <span class="n">get_stats_data</span><span class="p">,</span>
 <span class="p">)</span>
@@ -286,11 +287,7 @@
     <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;daily_id&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;service&quot;</span><span class="p">,</span> <span class="s2">&quot;output_id&quot;</span><span class="p">}</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-    <span class="p">}</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
@@ -459,11 +456,7 @@
     <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;continuous_id&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;service&quot;</span><span class="p">,</span> <span class="s2">&quot;output_id&quot;</span><span class="p">}</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-    <span class="p">}</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
@@ -757,11 +750,7 @@
     <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;monitoring_location_id&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;service&quot;</span><span class="p">,</span> <span class="s2">&quot;output_id&quot;</span><span class="p">}</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-    <span class="p">}</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
@@ -980,11 +969,7 @@
     <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;time_series_id&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;service&quot;</span><span class="p">,</span> <span class="s2">&quot;output_id&quot;</span><span class="p">}</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-    <span class="p">}</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
@@ -1159,11 +1144,7 @@
     <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;latest_continuous_id&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;service&quot;</span><span class="p">,</span> <span class="s2">&quot;output_id&quot;</span><span class="p">}</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-    <span class="p">}</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
@@ -1340,11 +1321,7 @@
     <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;latest_daily_id&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;service&quot;</span><span class="p">,</span> <span class="s2">&quot;output_id&quot;</span><span class="p">}</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-    <span class="p">}</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
@@ -1520,11 +1497,7 @@
     <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;field_measurement_id&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;service&quot;</span><span class="p">,</span> <span class="s2">&quot;output_id&quot;</span><span class="p">}</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-    <span class="p">}</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
@@ -1840,11 +1813,8 @@
 
     <span class="n">_check_profiles</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">profile</span><span class="p">)</span>
 
-    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;ssl_check&quot;</span><span class="p">,</span> <span class="s2">&quot;service&quot;</span><span class="p">,</span> <span class="s2">&quot;profile&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-    <span class="p">}</span>
+    <span class="c1"># Build argument dictionary, omitting None values</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;ssl_check&quot;</span><span class="p">,</span> <span class="s2">&quot;profile&quot;</span><span class="p">})</span>
 
     <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;mimeType&quot;</span><span class="p">:</span> <span class="s2">&quot;text/csv&quot;</span><span class="p">})</span>
 
@@ -1987,11 +1957,8 @@
 <span class="sd">        ...     end_date=&quot;01-31&quot;,</span>
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;expand_percentiles&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-    <span class="p">}</span>
+    <span class="c1"># Build argument dictionary, omitting None values</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;expand_percentiles&quot;</span><span class="p">})</span>
 
     <span class="k">return</span> <span class="n">get_stats_data</span><span class="p">(</span>
         <span class="n">args</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;observationNormals&quot;</span><span class="p">,</span> <span class="n">expand_percentiles</span><span class="o">=</span><span class="n">expand_percentiles</span>
@@ -2122,11 +2089,8 @@
 <span class="sd">        ...     computation_type=[&quot;minimum&quot;, &quot;maximum&quot;],</span>
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;expand_percentiles&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-    <span class="p">}</span>
+    <span class="c1"># Build argument dictionary, omitting None values</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;expand_percentiles&quot;</span><span class="p">})</span>
 
     <span class="k">return</span> <span class="n">get_stats_data</span><span class="p">(</span>
         <span class="n">args</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
