@@ -184,9 +184,8 @@ def _format_api_dates(
     if len(datetime_input) <= 2:
         # If the list is of length 1, first look for things like "P7D" or dates
         # already formatted in ISO08601. Otherwise, try to coerce to datetime
-        if (
-            len(datetime_input) == 1
-            and re.search(r"P", datetime_input[0], re.IGNORECASE)
+        if len(datetime_input) == 1 and (
+            re.search(r"P", datetime_input[0], re.IGNORECASE)
             or "/" in datetime_input[0]
         ):
             return datetime_input[0]
@@ -291,12 +290,15 @@ def _check_ogc_requests(endpoint: str = "daily", req_type: str = "queryables"):
 
     Raises
     ------
-    AssertionError
+    ValueError
         If req_type is not "queryables" or "schema".
     requests.HTTPError
         If the HTTP request returns an unsuccessful status code.
     """
-    assert req_type in ["queryables", "schema"]
+    if req_type not in ("queryables", "schema"):
+        raise ValueError(
+            f"req_type must be 'queryables' or 'schema', got {req_type!r}"
+        )
     url = f"{OGC_API_URL}/collections/{endpoint}/{req_type}"
     resp = requests.get(url, headers=_default_headers())
     resp.raise_for_status()

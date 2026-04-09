@@ -96,7 +96,7 @@ def format_response(
     if service == "peaks":
         df = preformat_peaks_response(df)
 
-    if gpd is not None and "dec_lat_va" in list(df):
+    if gpd is not None and "dec_lat_va" in df.columns:
         geoms = gpd.points_from_xy(df.dec_long_va.values, df.dec_lat_va.values)
         df = gpd.GeoDataFrame(df, geometry=geoms, crs=_CRS)
 
@@ -993,9 +993,7 @@ def _read_json(json):
     )
     index_list.append(len(site_list))
 
-    for i in range(len(index_list) - 1):
-        start = index_list[i]  # [0]
-        end = index_list[i + 1]  # [21]
+    for start, end in zip(index_list[:-1], index_list[1:]):
 
         # grab a block containing timeseries 0:21,
         # which are all from the same site
