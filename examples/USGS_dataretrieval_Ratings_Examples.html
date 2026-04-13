@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_ratings() Examples &mdash; dataretrieval 0.1.dev1+g0aec2c864 documentation</title>
+  <title>USGS dataretrieval Python Package get_ratings() Examples &mdash; dataretrieval 0.1.dev1+g8687bb5b5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=b2bcabb3"></script>
+      <script src="../_static/documentation_options.js?v=7c2f6ccd"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -125,7 +125,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (0.1.dev1+g0aec2c864)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (0.1.dev1+g8687bb5b5)
 Requirement already satisfied: requests in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (2.33.1)
 Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.2)
 Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.4)
@@ -138,28 +138,17 @@ Requirement already satisfied: certifi&gt;=2023.5.7 in /opt/hostedtoolcache/Pyth
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">nwisfrom</span> <span class="n">dataretrieval</span> <span class="kn">import</span><span class="w"> </span><span class="nn">waterdata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">nwis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval.waterdata</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">waterdata</span>
 <br/></pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-  <span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[2]</span><span class="ansi-green-fg">, line 3</span>
-<span class="ansi-red-fg">    </span><span class="ansi-red-fg">from dataretrieval import nwisfrom dataretrieval import waterdata</span>
-                                       ^
-<span class="ansi-red-fg">SyntaxError</span><span class="ansi-red-fg">:</span> invalid syntax
-
-</pre></div></div>
 </div>
 </section>
 <section id="Basic-Usage">
@@ -192,17 +181,7 @@ Requirement already satisfied: certifi&gt;=2023.5.7 in /opt/hostedtoolcache/Pyth
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 5</span>
-<span class="ansi-green-fg">      1</span> <span style="color: rgb(95,135,135)"># Specify the USGS site number/code</span>
-<span class="ansi-green-fg">      2</span> site_id = <span class="ansi-yellow-fg">&#34;10109000&#34;</span>
-<span class="ansi-green-fg">      3</span>
-<span class="ansi-green-fg">      4</span> <span style="color: rgb(95,135,135)"># Get the rating curve data</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">5</span> ratingData = nwis.get_ratings(site=site_id, file_type=<span class="ansi-yellow-fg">&#34;exsa&#34;</span>)
-<span class="ansi-green-fg">      6</span> print(<span class="ansi-yellow-fg">&#34;Retrieved &#34;</span> + str(len(ratingData[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#34; data values.&#34;</span>)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
+Retrieved 409 data values.
 </pre></div></div>
 </div>
 </section>
@@ -234,15 +213,113 @@ Requirement already satisfied: certifi&gt;=2023.5.7 in /opt/hostedtoolcache/Pyth
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[4]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> display(ratingData[<span class="ansi-green-fg">0</span>])
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="ansi-red-fg">NameError</span>: name &#39;ratingData&#39; is not defined
-</pre></div></div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>INDEP</th>
+      <th>SHIFT</th>
+      <th>DEP</th>
+      <th>STOR</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1.77</td>
+      <td>-0.07</td>
+      <td>7.46</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1.78</td>
+      <td>-0.07</td>
+      <td>7.87</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1.79</td>
+      <td>-0.07</td>
+      <td>8.29</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1.80</td>
+      <td>-0.07</td>
+      <td>8.73</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1.81</td>
+      <td>-0.07</td>
+      <td>9.18</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>404</th>
+      <td>5.81</td>
+      <td>0.00</td>
+      <td>2175.11</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>405</th>
+      <td>5.82</td>
+      <td>0.00</td>
+      <td>2186.34</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>406</th>
+      <td>5.83</td>
+      <td>0.00</td>
+      <td>2197.61</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>407</th>
+      <td>5.84</td>
+      <td>0.00</td>
+      <td>2208.91</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>408</th>
+      <td>5.85</td>
+      <td>0.00</td>
+      <td>2220.24</td>
+      <td>*</td>
+    </tr>
+  </tbody>
+</table>
+<p>409 rows × 4 columns</p>
+</div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame</p>
 <div class="nbinput docutils container">
@@ -258,12 +335,11 @@ Requirement already satisfied: certifi&gt;=2023.5.7 in /opt/hostedtoolcache/Pyth
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[5]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> print(ratingData[<span class="ansi-green-fg">0</span>].dtypes)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;ratingData&#39; is not defined
+INDEP    float64
+SHIFT    float64
+DEP      float64
+STOR         str
+dtype: object
 </pre></div></div>
 </div>
 <p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_ratings()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.</p>
@@ -280,12 +356,7 @@ Requirement already satisfied: certifi&gt;=2023.5.7 in /opt/hostedtoolcache/Pyth
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> print(<span class="ansi-yellow-fg">&#34;The query URL used to retrieve the data from NWIS was: &#34;</span> + ratingData[<span class="ansi-green-fg">1</span>].url)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;ratingData&#39; is not defined
+The query URL used to retrieve the data from NWIS was: https://nwis.waterdata.usgs.gov/nwisweb/get_ratings/?site_no=10109000&amp;file_type=exsa
 </pre></div></div>
 </div>
 <p>Example 2: Get rating data for a different NWIS site by changing the site_id</p>
@@ -304,14 +375,7 @@ Requirement already satisfied: certifi&gt;=2023.5.7 in /opt/hostedtoolcache/Pyth
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> site_id = <span class="ansi-yellow-fg">&#34;01594440&#34;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> data = nwis.get_ratings(site=site_id, file_type=<span class="ansi-yellow-fg">&#34;base&#34;</span>)
-<span class="ansi-green-fg">      3</span> print(<span class="ansi-yellow-fg">&#34;Retrieved &#34;</span> + str(len(data[<span class="ansi-green-fg">0</span>])) + <span class="ansi-yellow-fg">&#34; data values.&#34;</span>)
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nwis&#39; is not defined
+Retrieved 14 data values.
 </pre></div></div>
 </div>
 </section>

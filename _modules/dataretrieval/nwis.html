@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g0aec2c864 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g8687bb5b5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=b2bcabb3"></script>
+      <script src="../../_static/documentation_options.js?v=7c2f6ccd"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -227,21 +227,8 @@
 
 <div class="viewcode-block" id="get_qwdata">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_qwdata">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_qwdata</span><span class="p">(</span>
-    <span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">multi_index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">wide_format</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">datetime_index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This function is defunct, use `get_samples()`</span>
-<span class="sd">    in the waterdata module.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_qwdata</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defunct: use ``waterdata.get_samples()``.&quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
         <span class="s2">&quot;`nwis.get_qwdata` has been replaced with `waterdata.get_samples()`.&quot;</span>
     <span class="p">)</span></div>
@@ -250,18 +237,8 @@
 
 <div class="viewcode-block" id="get_discharge_measurements">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_discharge_measurements">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_discharge_measurements</span><span class="p">(</span>
-    <span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This function is defunct, use `get_field_measurements()`</span>
-<span class="sd">    in the waterdata module.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_discharge_measurements</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defunct: use ``waterdata.get_field_measurements()``.&quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
         <span class="s2">&quot;`nwis.get_discharge_measurements` has been replaced &quot;</span>
         <span class="s2">&quot;with `waterdata.get_field_measurements`.&quot;</span>
@@ -343,20 +320,8 @@
 
 <div class="viewcode-block" id="get_gwlevels">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_gwlevels">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_gwlevels</span><span class="p">(</span>
-    <span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1851-01-01&quot;</span><span class="p">,</span>
-    <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">multi_index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">datetime_index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This function is defunct, use `get_field_measurements()`</span>
-<span class="sd">    in the waterdata module.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_gwlevels</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defunct: use ``waterdata.get_field_measurements()``.&quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
         <span class="s2">&quot;`nwis.get_gwlevels` has been replaced &quot;</span>
         <span class="s2">&quot;with `waterdata.get_field_measurements()`.&quot;</span>
@@ -809,16 +774,8 @@
 
 <div class="viewcode-block" id="get_pmcodes">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_pmcodes">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_pmcodes</span><span class="p">(</span>
-    <span class="n">parameterCd</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;All&quot;</span><span class="p">,</span>
-    <span class="n">partial</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This function is defunct, use</span>
-<span class="sd">    `get_reference_table(collection=&quot;parameter-codes&quot;)`.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_pmcodes</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defunct: use ``get_reference_table(collection=&#39;parameter-codes&#39;)``.&quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
         <span class="s2">&quot;`nwis.get_pmcodes` has been replaced &quot;</span>
         <span class="s2">&quot;with `get_reference_table(collection=&#39;parameter-codes&#39;)`.&quot;</span>
@@ -828,17 +785,8 @@
 
 <div class="viewcode-block" id="get_water_use">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_water_use">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_water_use</span><span class="p">(</span>
-    <span class="n">years</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ALL&quot;</span><span class="p">,</span>
-    <span class="n">state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">counties</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ALL&quot;</span><span class="p">,</span>
-    <span class="n">categories</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ALL&quot;</span><span class="p">,</span>
-    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This function is defunct and currently has no replacement.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_water_use</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defunct: no current replacement.&quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s2">&quot;`nwis.get_water_use` is defunct.&quot;</span><span class="p">)</span></div>
 
 
@@ -1079,6 +1027,17 @@
         <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_info</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
+    <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s2">&quot;peaks&quot;</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_discharge_peaks</span><span class="p">(</span>
+            <span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+            <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
+            <span class="n">multi_index</span><span class="o">=</span><span class="n">multi_index</span><span class="p">,</span>
+            <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span>
+
     <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s2">&quot;ratings&quot;</span><span class="p">:</span>
         <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
@@ -1111,7 +1070,7 @@
 <span class="sd">        A custom metadata object</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">merged_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;site_no&quot;</span><span class="p">,</span> <span class="s2">&quot;datetime&quot;</span><span class="p">])</span>
+    <span class="n">all_site_dfs</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="n">site_list</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">ts</span><span class="p">[</span><span class="s2">&quot;sourceInfo&quot;</span><span class="p">][</span><span class="s2">&quot;siteCode&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">json</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">][</span><span class="s2">&quot;timeSeries&quot;</span><span class="p">]</span>
@@ -1140,14 +1099,11 @@
             <span class="c1"># check whether min, max, mean record XXX</span>
             <span class="n">option</span> <span class="o">=</span> <span class="n">timeseries</span><span class="p">[</span><span class="s2">&quot;variable&quot;</span><span class="p">][</span><span class="s2">&quot;options&quot;</span><span class="p">][</span><span class="s2">&quot;option&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">)</span>
 
-            <span class="c1"># loop through each parameter in timeseries, then concat to the merged_df</span>
             <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">timeseries</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]:</span>
                 <span class="n">col_name</span> <span class="o">=</span> <span class="n">param_cd</span>
                 <span class="n">method</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">[</span><span class="s2">&quot;method&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;methodDescription&quot;</span><span class="p">]</span>
 
-                <span class="c1"># if len(timeseries[&#39;values&#39;]) &gt; 1 and method:</span>
                 <span class="k">if</span> <span class="n">method</span><span class="p">:</span>
-                    <span class="c1"># get method, format it, and append to column name</span>
                     <span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;[]()&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
                     <span class="n">col_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span>
 
@@ -1157,22 +1113,15 @@
                 <span class="n">record_json</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
 
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">record_json</span><span class="p">:</span>
-                    <span class="c1"># no data in record</span>
                     <span class="k">continue</span>
-                <span class="c1"># should be able to avoid this by dumping</span>
-                <span class="n">record_json</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">record_json</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s1">&#39;&quot;&#39;</span><span class="p">)</span>
 
-                <span class="c1"># read json, converting all values to float64 and all qualifiers</span>
-                <span class="c1"># Lists can&#39;t be hashed, thus we cannot df.merge on a list column</span>
-                <span class="n">record_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span>
-                    <span class="n">StringIO</span><span class="p">(</span><span class="n">record_json</span><span class="p">),</span>
-                    <span class="n">orient</span><span class="o">=</span><span class="s2">&quot;records&quot;</span><span class="p">,</span>
-                    <span class="n">dtype</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;float64&quot;</span><span class="p">,</span> <span class="s2">&quot;qualifiers&quot;</span><span class="p">:</span> <span class="s2">&quot;unicode&quot;</span><span class="p">},</span>
-                    <span class="n">convert_dates</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="p">)</span>
-
+                <span class="n">record_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">record_json</span><span class="p">)</span>
+                <span class="n">record_df</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">record_df</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;coerce&quot;</span><span class="p">)</span>
                 <span class="n">record_df</span><span class="p">[</span><span class="s2">&quot;qualifiers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">record_df</span><span class="p">[</span><span class="s2">&quot;qualifiers&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;[]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="n">record_df</span><span class="p">[</span><span class="s2">&quot;qualifiers&quot;</span><span class="p">]</span>
+                    <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;[]&quot;</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
                 <span class="p">)</span>
 
                 <span class="n">record_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
@@ -1186,11 +1135,14 @@
 
                 <span class="n">site_df</span> <span class="o">=</span> <span class="n">site_df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">record_df</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;outer&quot;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;datetime&quot;</span><span class="p">)</span>
 
-        <span class="c1"># end of site loop</span>
         <span class="n">site_df</span><span class="p">[</span><span class="s2">&quot;site_no&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">site_no</span>
-        <span class="n">merged_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">merged_df</span><span class="p">,</span> <span class="n">site_df</span><span class="p">])</span>
+        <span class="n">all_site_dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">site_df</span><span class="p">)</span>
 
-    <span class="c1"># convert to datetime, normalizing the timezone to UTC when doing so</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">all_site_dfs</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;site_no&quot;</span><span class="p">,</span> <span class="s2">&quot;datetime&quot;</span><span class="p">])</span>
+
+    <span class="n">merged_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">all_site_dfs</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="s2">&quot;datetime&quot;</span> <span class="ow">in</span> <span class="n">merged_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
         <span class="n">merged_df</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">merged_df</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
