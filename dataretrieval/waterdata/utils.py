@@ -1168,6 +1168,57 @@ def _check_profiles(
         )
 
 
+_MONITORING_LOCATION_ID_RE = re.compile(r"^.+-.+$")
+
+
+def _check_monitoring_location_id(
+    monitoring_location_id: str | list[str] | None,
+) -> None:
+    """Validate the format of a monitoring_location_id value.
+
+    Parameters
+    ----------
+    monitoring_location_id : str, list of str, or None
+        One or more monitoring location identifiers.
+
+    Raises
+    ------
+    TypeError
+        If any identifier is not a string (e.g. an integer was passed).
+    ValueError
+        If any string identifier does not follow the required
+        ``'AGENCY-ID'`` format (e.g. ``'USGS-01646500'``).
+    """
+    if monitoring_location_id is None:
+        return
+
+    if not isinstance(monitoring_location_id, (str, list)):
+        raise TypeError(
+            f"monitoring_location_id must be a string or list of strings, "
+            f"not {type(monitoring_location_id).__name__}. "
+            f"Expected format: 'AGENCY-ID', e.g., 'USGS-{monitoring_location_id}'."
+        )
+
+    ids = (
+        [monitoring_location_id]
+        if isinstance(monitoring_location_id, str)
+        else monitoring_location_id
+    )
+
+    for id_ in ids:
+        if not isinstance(id_, str):
+            raise TypeError(
+                f"monitoring_location_id must be a string or list of strings, "
+                f"not {type(id_).__name__}. "
+                f"Expected format: 'AGENCY-ID', e.g., 'USGS-{id_}'."
+            )
+        if not _MONITORING_LOCATION_ID_RE.match(id_):
+            raise ValueError(
+                f"Invalid monitoring_location_id: {id_!r}. "
+                f"Expected 'AGENCY-ID' format, e.g., 'USGS-01646500'."
+            )
+
+
 def _get_args(
     local_vars: dict[str, Any], exclude: set[str] | None = None
 ) -> dict[str, Any]:

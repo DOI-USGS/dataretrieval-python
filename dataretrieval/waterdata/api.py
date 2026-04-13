@@ -26,6 +26,7 @@ from dataretrieval.waterdata.types import (
 )
 from dataretrieval.waterdata.utils import (
     SAMPLES_URL,
+    _check_monitoring_location_id,
     _check_profiles,
     _default_headers,
     _get_args,
@@ -230,6 +231,7 @@ def get_daily(
         ...     last_modified="P7D",
         ... )
     """
+    _check_monitoring_location_id(monitoring_location_id)
     service = "daily"
     output_id = "daily_id"
 
@@ -418,6 +420,7 @@ def get_continuous(
         ...     filter_lang="cql-text",
         ... )
     """
+    _check_monitoring_location_id(monitoring_location_id)
     service = "continuous"
     output_id = "continuous_id"
 
@@ -716,6 +719,7 @@ def get_monitoring_locations(
         ...     properties=["monitoring_location_id", "state_name", "country_name"],
         ... )
     """
+    _check_monitoring_location_id(monitoring_location_id)
     service = "monitoring-locations"
     output_id = "monitoring_location_id"
 
@@ -939,6 +943,7 @@ def get_time_series_metadata(
         ...     begin="1990-01-01/..",
         ... )
     """
+    _check_monitoring_location_id(monitoring_location_id)
     service = "time-series-metadata"
     output_id = "time_series_id"
 
@@ -1366,6 +1371,7 @@ def get_latest_continuous(
         ...     monitoring_location_id=["USGS-05114000", "USGS-09423350"]
         ... )
     """
+    _check_monitoring_location_id(monitoring_location_id)
     service = "latest-continuous"
     output_id = "latest_continuous_id"
 
@@ -1562,6 +1568,7 @@ def get_latest_daily(
         ...     monitoring_location_id=["USGS-05114000", "USGS-09423350"]
         ... )
     """
+    _check_monitoring_location_id(monitoring_location_id)
     service = "latest-daily"
     output_id = "latest_daily_id"
 
@@ -1752,6 +1759,7 @@ def get_field_measurements(
         ...     time="P20Y",
         ... )
     """
+    _check_monitoring_location_id(monitoring_location_id)
     service = "field-measurements"
     output_id = "field_measurement_id"
 
@@ -2524,6 +2532,7 @@ def get_stats_por(
         ... )
     """
     # Build argument dictionary, omitting None values
+    _check_monitoring_location_id(monitoring_location_id)
     params = _get_args(locals(), exclude={"expand_percentiles"})
 
     return get_stats_data(
@@ -2653,6 +2662,7 @@ def get_stats_date_range(
         ... )
     """
     # Build argument dictionary, omitting None values
+    _check_monitoring_location_id(monitoring_location_id)
     params = _get_args(locals(), exclude={"expand_percentiles"})
 
     return get_stats_data(
@@ -2825,6 +2835,7 @@ def get_channel(
         ...     monitoring_location_id="USGS-02238500",
         ... )
     """
+    _check_monitoring_location_id(monitoring_location_id)
     service = "channel-measurements"
     output_id = "channel_measurements_id"
 
