@@ -1041,7 +1041,7 @@ def get_stats_data(
         headers = dict(req.headers)
 
         body = resp.json()
-        dfs = _handle_stats_nesting(body, geopd=GEOPANDAS)
+        all_dfs = [_handle_stats_nesting(body, geopd=GEOPANDAS)]
 
         # Look for a next code in the response body
         next_token = body["next"]
@@ -1057,8 +1057,7 @@ def get_stats_data(
                     headers=headers,
                 )
                 body = resp.json()
-                df1 = _handle_stats_nesting(body, geopd=False)
-                dfs = pd.concat([dfs, df1], ignore_index=True)
+                all_dfs.append(_handle_stats_nesting(body, geopd=False))
                 next_token = body["next"]
             except Exception:  # noqa: BLE001
                 error_text = _error_body(resp)
@@ -1067,6 +1066,8 @@ def get_stats_data(
                     "Request failed for URL: %s. Data download interrupted.", resp.url
                 )
                 next_token = None
+
+        dfs = pd.concat(all_dfs, ignore_index=True) if len(all_dfs) > 1 else all_dfs[0]
 
         # . If expand percentiles is True, make each percentile
         # its own row in the returned dataset.

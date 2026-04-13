@@ -140,38 +140,15 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def get_qwdata(
-    sites: list[str] | str | None = None,
-    start: str | None = None,
-    end: str | None = None,
-    multi_index: bool = True,
-    wide_format: bool = True,
-    datetime_index: bool = True,
-    ssl_check: bool = True,
-    **kwargs,
-) -> tuple[pd.DataFrame, BaseMetadata]:
-    """
-    This function is defunct, use `get_samples()`
-    in the waterdata module.
-
-    """
+def get_qwdata(**kwargs):
+    """Defunct: use ``waterdata.get_samples()``."""
     raise NameError(
         "`nwis.get_qwdata` has been replaced with `waterdata.get_samples()`."
     )
 
 
-def get_discharge_measurements(
-    sites: list[str] | str | None = None,
-    start: str | None = None,
-    end: str | None = None,
-    ssl_check: bool = True,
-    **kwargs,
-) -> tuple[pd.DataFrame, BaseMetadata]:
-    """
-    This function is defunct, use `get_field_measurements()`
-    in the waterdata module.
-
-    """
+def get_discharge_measurements(**kwargs):
+    """Defunct: use ``waterdata.get_field_measurements()``."""
     raise NameError(
         "`nwis.get_discharge_measurements` has been replaced "
         "with `waterdata.get_field_measurements`."
@@ -247,20 +224,8 @@ def get_discharge_peaks(
     )
 
 
-def get_gwlevels(
-    sites: list[str] | str | None = None,
-    start: str = "1851-01-01",
-    end: str | None = None,
-    multi_index: bool = True,
-    datetime_index: bool = True,
-    ssl_check: bool = True,
-    **kwargs,
-) -> tuple[pd.DataFrame, BaseMetadata]:
-    """
-    This function is defunct, use `get_field_measurements()`
-    in the waterdata module.
-
-    """
+def get_gwlevels(**kwargs):
+    """Defunct: use ``waterdata.get_field_measurements()``."""
     raise NameError(
         "`nwis.get_gwlevels` has been replaced "
         "with `waterdata.get_field_measurements()`."
@@ -692,33 +657,16 @@ def get_iv(
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
 
-def get_pmcodes(
-    parameterCd: str | list[str] = "All",
-    partial: bool = True,
-    ssl_check: bool = True,
-) -> tuple[pd.DataFrame, BaseMetadata]:
-    """
-    This function is defunct, use
-    `get_reference_table(collection="parameter-codes")`.
-
-    """
+def get_pmcodes(**kwargs):
+    """Defunct: use ``get_reference_table(collection='parameter-codes')``."""
     raise NameError(
         "`nwis.get_pmcodes` has been replaced "
         "with `get_reference_table(collection='parameter-codes')`."
     )
 
 
-def get_water_use(
-    years: str | list[str] = "ALL",
-    state: str | None = None,
-    counties: str | list[str] = "ALL",
-    categories: str | list[str] = "ALL",
-    ssl_check: bool = True,
-) -> tuple[pd.DataFrame, BaseMetadata]:
-    """
-    This function is defunct and currently has no replacement.
-
-    """
+def get_water_use(**kwargs):
+    """Defunct: no current replacement."""
     raise NameError("`nwis.get_water_use` is defunct.")
 
 
@@ -950,6 +898,17 @@ def get_record(
         df, _ = get_info(sites=sites, ssl_check=ssl_check, **kwargs)
         return df
 
+    elif service == "peaks":
+        df, _ = get_discharge_peaks(
+            sites=sites,
+            start=start,
+            end=end,
+            multi_index=multi_index,
+            ssl_check=ssl_check,
+            **kwargs,
+        )
+        return df
+
     elif service == "ratings":
         df, _ = get_ratings(site=sites, ssl_check=ssl_check, **kwargs)
         return df
@@ -979,7 +938,7 @@ def _read_json(json):
         A custom metadata object
 
     """
-    merged_df = pd.DataFrame(columns=["site_no", "datetime"])
+    all_site_dfs = []
 
     site_list = [
         ts["sourceInfo"]["siteCode"][0]["value"] for ts in json["value"]["timeSeries"]
@@ -1008,14 +967,11 @@ def _read_json(json):
             # check whether min, max, mean record XXX
             option = timeseries["variable"]["options"]["option"][0].get("value")
 
-            # loop through each parameter in timeseries, then concat to the merged_df
             for parameter in timeseries["values"]:
                 col_name = param_cd
                 method = parameter["method"][0]["methodDescription"]
 
-                # if len(timeseries['values']) > 1 and method:
                 if method:
-                    # get method, format it, and append to column name
                     method = method.strip("[]()").lower()
                     col_name = f"{col_name}_{method}"
 
@@ -1025,22 +981,15 @@ def _read_json(json):
                 record_json = parameter["value"]
 
                 if not record_json:
-                    # no data in record
                     continue
-                # should be able to avoid this by dumping
-                record_json = str(record_json).replace("'", '"')
 
-                # read json, converting all values to float64 and all qualifiers
-                # Lists can't be hashed, thus we cannot df.merge on a list column
-                record_df = pd.read_json(
-                    StringIO(record_json),
-                    orient="records",
-                    dtype={"value": "float64", "qualifiers": "unicode"},
-                    convert_dates=False,
-                )
-
+                record_df = pd.DataFrame(record_json)
+                record_df["value"] = pd.to_numeric(record_df["value"], errors="coerce")
                 record_df["qualifiers"] = (
-                    record_df["qualifiers"].str.strip("[]").str.replace("'", "")
+                    record_df["qualifiers"]
+                    .astype(str)
+                    .str.strip("[]")
+                    .str.replace("'", "")
                 )
 
                 record_df.rename(
@@ -1054,11 +1003,14 @@ def _read_json(json):
 
                 site_df = site_df.merge(record_df, how="outer", on="datetime")
 
-        # end of site loop
         site_df["site_no"] = site_no
-        merged_df = pd.concat([merged_df, site_df])
+        all_site_dfs.append(site_df)
 
-    # convert to datetime, normalizing the timezone to UTC when doing so
+    if not all_site_dfs:
+        return pd.DataFrame(columns=["site_no", "datetime"])
+
+    merged_df = pd.concat(all_site_dfs, ignore_index=True)
+
     if "datetime" in merged_df.columns:
         merged_df["datetime"] = pd.to_datetime(merged_df["datetime"], utc=True)
 
