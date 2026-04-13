@@ -333,12 +333,7 @@ class TestReadRdb:
     """
 
     # Minimal valid RDB response with one data row
-    _VALID_RDB = (
-        "# comment\n"
-        "site_no\tvalue\n"
-        "5s\t10n\n"
-        "01491000\t42\n"
-    )
+    _VALID_RDB = "# comment\nsite_no\tvalue\n5s\t10n\n01491000\t42\n"
 
     # NWIS response when no sites match the query criteria
     _NO_SITES_RDB = (
@@ -353,13 +348,20 @@ class TestReadRdb:
         assert isinstance(df, pd.DataFrame)
         assert "site_no" in df.columns
 
-    def test_no_sites_raises_value_error(self):
-        """_read_rdb raises ValueError when NWIS returns no data rows (issue #171)."""
-        with pytest.raises(ValueError, match="No sites found"):
-            _read_rdb(self._NO_SITES_RDB)
+    def test_no_sites_returns_empty_dataframe(self):
+        """_read_rdb returns an empty DataFrame when NWIS finds no matching sites.
 
-    def test_empty_comments_raises_value_error(self):
-        """_read_rdb raises a generic ValueError when response has only comments."""
+        A "No sites found" response is a legitimate empty result, not an error,
+        so callers can check ``df.empty`` rather than catching an exception.
+        Regression test for issue #171 (previously raised IndexError).
+        """
+        df = _read_rdb(self._NO_SITES_RDB)
+        assert isinstance(df, pd.DataFrame)
+        assert df.empty
+
+    def test_all_comments_returns_empty_dataframe(self):
+        """_read_rdb returns an empty DataFrame when the response has only comments."""
         rdb = "# just a comment\n# another comment\n"
-        with pytest.raises(ValueError):
-            _read_rdb(rdb)
+        df = _read_rdb(rdb)
+        assert isinstance(df, pd.DataFrame)
+        assert df.empty

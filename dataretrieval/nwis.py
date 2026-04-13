@@ -1050,13 +1050,10 @@ def _read_rdb(rdb):
             break
 
     if count >= len(lines):
-        # All lines are comments — no data rows. Extract the NWIS message.
-        msg = "No data returned from the NWIS service."
-        for line in lines:
-            if "Response-Message:" in line:
-                msg = line.split("Response-Message:")[-1].strip()
-                break
-        raise ValueError(msg)
+        # All lines are comments — the service returned no data rows (e.g.
+        # "No sites found matching all criteria").  This is a legitimate empty
+        # result, so return an empty DataFrame rather than raising.
+        return pd.DataFrame()
 
     fields = lines[count].split("\t")
     fields = [field.replace(",", "").strip() for field in fields if field.strip()]
