@@ -1039,8 +1039,9 @@ def _read_rdb(rdb):
         )
 
     count = 0
+    lines = rdb.splitlines()
 
-    for line in rdb.splitlines():
+    for line in lines:
         # ignore comment lines
         if line.startswith("#"):
             count = count + 1
@@ -1048,7 +1049,13 @@ def _read_rdb(rdb):
         else:
             break
 
-    fields = rdb.splitlines()[count].split("\t")
+    if count >= len(lines):
+        # All lines are comments — the service returned no data rows (e.g.
+        # "No sites found matching all criteria").  This is a legitimate empty
+        # result, so return an empty DataFrame rather than raising.
+        return pd.DataFrame()
+
+    fields = lines[count].split("\t")
     fields = [field.replace(",", "").strip() for field in fields if field.strip()]
     dtypes = {
         "site_no": str,
