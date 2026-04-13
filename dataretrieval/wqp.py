@@ -154,7 +154,7 @@ def get_results(
 
     response = query(url, kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _read_wqp_response(response.text, kwargs)
     return df, WQP_Metadata(response)
 
 
@@ -208,7 +208,7 @@ def what_sites(
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _read_wqp_response(response.text, kwargs)
 
     return df, WQP_Metadata(response)
 
@@ -263,7 +263,7 @@ def what_organizations(
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _read_wqp_response(response.text, kwargs)
 
     return df, WQP_Metadata(response)
 
@@ -314,7 +314,7 @@ def what_projects(ssl_check=True, legacy=True, **kwargs):
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _read_wqp_response(response.text, kwargs)
 
     return df, WQP_Metadata(response)
 
@@ -378,7 +378,7 @@ def what_activities(
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _read_wqp_response(response.text, kwargs)
 
     return df, WQP_Metadata(response)
 
@@ -440,7 +440,7 @@ def what_detection_limits(
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _read_wqp_response(response.text, kwargs)
 
     return df, WQP_Metadata(response)
 
@@ -495,7 +495,7 @@ def what_habitat_metrics(
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _read_wqp_response(response.text, kwargs)
 
     return df, WQP_Metadata(response)
 
@@ -551,7 +551,7 @@ def what_project_weights(ssl_check=True, legacy=True, **kwargs):
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _read_wqp_response(response.text, kwargs)
 
     return df, WQP_Metadata(response)
 
@@ -607,7 +607,7 @@ def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",")
+    df = _read_wqp_response(response.text, kwargs)
 
     return df, WQP_Metadata(response)
 
@@ -697,12 +697,22 @@ def _check_kwargs(kwargs):
     mimetype = kwargs.get("mimeType")
     if mimetype == "geojson":
         raise NotImplementedError("GeoJSON not yet supported. Set 'mimeType=csv'.")
-    elif mimetype != "csv" and mimetype is not None:
-        raise ValueError("Invalid mimeType. Set 'mimeType=csv'.")
-    else:
+    elif mimetype == "xlsx":
+        raise NotImplementedError(
+            "Excel format not yet supported. Set 'mimeType=csv' or 'mimeType=tsv'."
+        )
+    elif mimetype not in ("csv", "tsv", None):
+        raise ValueError("Invalid mimeType. Supported options: 'csv', 'tsv'.")
+    elif mimetype is None:
         kwargs["mimeType"] = "csv"
 
     return kwargs
+
+
+def _read_wqp_response(text, kwargs):
+    """Parse a WQP response into a DataFrame, respecting the requested mimeType."""
+    delimiter = "\t" if kwargs.get("mimeType") == "tsv" else ","
+    return pd.read_csv(StringIO(text), delimiter=delimiter, low_memory=False)
 
 
 def _warn_wqx3_use():
