@@ -21,7 +21,7 @@ from dataretrieval.waterdata import (
     get_stats_por,
     get_time_series_metadata,
 )
-from dataretrieval.waterdata.utils import _check_profiles
+from dataretrieval.waterdata.utils import _check_monitoring_location_id, _check_profiles
 
 
 def mock_request(requests_mock, request_url, file_path):
@@ -380,3 +380,52 @@ def test_get_channel():
     assert df.shape[0] > 470
     assert df.shape[1] == 27  # if geopandas installed, 21 columns if not
     assert "channel_measurements_id" in df.columns
+
+
+class TestCheckMonitoringLocationId:
+    """Tests for _check_monitoring_location_id input validation.
+
+    Regression tests for GitHub issue #188.
+    """
+
+    def test_valid_string(self):
+        """A correctly formatted string passes without error."""
+        _check_monitoring_location_id("USGS-01646500")
+
+    def test_valid_list(self):
+        """A list of correctly formatted strings passes without error."""
+        _check_monitoring_location_id(["USGS-01646500", "USGS-02238500"])
+
+    def test_none_passes(self):
+        """None is allowed (optional parameter)."""
+        _check_monitoring_location_id(None)
+
+    def test_integer_raises_type_error(self):
+        """An integer ID raises TypeError with a helpful message."""
+        with pytest.raises(TypeError, match="not int"):
+            _check_monitoring_location_id(5129115)
+
+    def test_integer_in_list_raises_type_error(self):
+        """An integer inside a list raises TypeError."""
+        with pytest.raises(TypeError, match="not int"):
+            _check_monitoring_location_id(["USGS-01646500", 5129115])
+
+    def test_missing_agency_prefix_raises_value_error(self):
+        """A string without the AGENCY- prefix raises ValueError."""
+        with pytest.raises(ValueError, match="Invalid monitoring_location_id"):
+            _check_monitoring_location_id("dog")
+
+    def test_bare_site_number_raises_value_error(self):
+        """A bare site number string (no agency prefix) raises ValueError."""
+        with pytest.raises(ValueError, match="Invalid monitoring_location_id"):
+            _check_monitoring_location_id("01646500")
+
+    def test_get_daily_integer_id_raises(self):
+        """get_daily raises TypeError before making any network call."""
+        with pytest.raises(TypeError):
+            get_daily(monitoring_location_id=5129115, parameter_code="00060")
+
+    def test_get_daily_malformed_id_raises(self):
+        """get_daily raises ValueError for a malformed string ID."""
+        with pytest.raises(ValueError):
+            get_daily(monitoring_location_id="dog", parameter_code="00060")
