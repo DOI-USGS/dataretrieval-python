@@ -9,6 +9,7 @@ import pytest
 
 from dataretrieval.nwis import (
     NWIS_Metadata,
+    _read_rdb,
     get_discharge_measurements,
     get_gwlevels,
     get_info,
@@ -321,3 +322,44 @@ class TestMetaData:
         ):
             result = md.variable_info
         assert result is None
+
+
+class TestReadRdb:
+    """Tests for the _read_rdb helper.
+
+    Notes
+    -----
+    Related to GitHub Issue #171.
+    """
+
+    # Minimal valid RDB response with one data row
+    _VALID_RDB = (
+        "# comment\n"
+        "site_no\tvalue\n"
+        "5s\t10n\n"
+        "01491000\t42\n"
+    )
+
+    # NWIS response when no sites match the query criteria
+    _NO_SITES_RDB = (
+        "# //Output-Format: RDB\n"
+        "# //Response-Status: OK\n"
+        "# //Response-Message: No sites found matching all criteria\n"
+    )
+
+    def test_valid_rdb_returns_dataframe(self):
+        """_read_rdb returns a DataFrame for a well-formed RDB response."""
+        df = _read_rdb(self._VALID_RDB)
+        assert isinstance(df, pd.DataFrame)
+        assert "site_no" in df.columns
+
+    def test_no_sites_raises_value_error(self):
+        """_read_rdb raises ValueError when NWIS returns no data rows (issue #171)."""
+        with pytest.raises(ValueError, match="No sites found"):
+            _read_rdb(self._NO_SITES_RDB)
+
+    def test_empty_comments_raises_value_error(self):
+        """_read_rdb raises a generic ValueError when response has only comments."""
+        rdb = "# just a comment\n# another comment\n"
+        with pytest.raises(ValueError):
+            _read_rdb(rdb)

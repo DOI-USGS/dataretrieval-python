@@ -1039,8 +1039,9 @@ def _read_rdb(rdb):
         )
 
     count = 0
+    lines = rdb.splitlines()
 
-    for line in rdb.splitlines():
+    for line in lines:
         # ignore comment lines
         if line.startswith("#"):
             count = count + 1
@@ -1048,7 +1049,16 @@ def _read_rdb(rdb):
         else:
             break
 
-    fields = rdb.splitlines()[count].split("\t")
+    if count >= len(lines):
+        # All lines are comments — no data rows. Extract the NWIS message.
+        msg = "No data returned from the NWIS service."
+        for line in lines:
+            if "Response-Message:" in line:
+                msg = line.split("Response-Message:")[-1].strip()
+                break
+        raise ValueError(msg)
+
+    fields = lines[count].split("\t")
     fields = [field.replace(",", "").strip() for field in fields if field.strip()]
     dtypes = {
         "site_no": str,
