@@ -25,6 +25,7 @@ from .api import (
     get_stats_por,
     get_time_series_metadata,
 )
+from .enums import SiteTypeCode, StatisticCode
 from .types import (
     CODE_SERVICES,
     PROFILE_LOOKUP,
@@ -37,6 +38,8 @@ __all__ = [
     "PROFILES",
     "PROFILE_LOOKUP",
     "SERVICES",
+    "SiteTypeCode",
+    "StatisticCode",
     "get_channel",
     "get_codes",
     "get_continuous",
