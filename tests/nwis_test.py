@@ -9,6 +9,7 @@ import pytest
 
 from dataretrieval.nwis import (
     NWIS_Metadata,
+    _read_json,
     _read_rdb,
     get_discharge_measurements,
     get_gwlevels,
@@ -365,3 +366,64 @@ class TestReadRdb:
         df = _read_rdb(rdb)
         assert isinstance(df, pd.DataFrame)
         assert df.empty
+
+
+def _make_iv_json(site_no, param_cd, method_description, values):
+    """Build a minimal NWIS IV JSON structure for use in _read_json tests."""
+    return {
+        "value": {
+            "timeSeries": [
+                {
+                    "sourceInfo": {"siteCode": [{"value": site_no}]},
+                    "variable": {
+                        "variableCode": [{"value": param_cd}],
+                        "options": {"option": [{"value": None}]},
+                    },
+                    "values": [
+                        {
+                            "method": [{"methodDescription": method_description}],
+                            "value": [
+                                {
+                                    "value": str(v),
+                                    "dateTime": f"2023-01-0{i + 1}T00:00:00.000-05:00",
+                                    "qualifiers": ["A"],
+                                }
+                                for i, v in enumerate(values)
+                            ],
+                        }
+                    ],
+                }
+            ]
+        }
+    }
+
+
+class TestReadJsonColumnNames:
+    """Tests that _read_json produces clean column names.
+
+    Regression tests for GitHub Issue #177: column names were mangled when
+    NWIS methodDescription contained a sublocation qualifier such as
+    "STAGE - TAILWATER, [Tailwater]".
+    """
+
+    def test_simple_method_description(self):
+        """A plain methodDescription like 'HEADWATER' becomes a clean column name."""
+        data = _make_iv_json("03399800", "00065", "HEADWATER", [13.0, 13.1])
+        df = _read_json(data)
+        assert "00065_headwater" in df.columns
+        assert df.shape[0] == 2
+
+    def test_sublocation_bracket_stripped(self):
+        """Bracket qualifier in methodDescription is stripped from the column name."""
+        data = _make_iv_json(
+            "03399800", "00065", "STAGE - TAILWATER, [Tailwater]", [12.0, 12.1]
+        )
+        df = _read_json(data)
+        assert "00065_stage - tailwater" in df.columns
+        assert "00065_stage - tailwater, [tailwater" not in df.columns
+
+    def test_no_method_description(self):
+        """An empty methodDescription leaves the column name as just the param code."""
+        data = _make_iv_json("01491000", "00060", "", [100.0, 101.0])
+        df = _read_json(data)
+        assert "00060" in df.columns
