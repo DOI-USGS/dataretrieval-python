@@ -229,8 +229,8 @@ def get_gwlevels(**kwargs):
     or ``waterdata.get_field_measurements()``."""
     raise NameError(
         "`nwis.get_gwlevels` has been replaced. Use "
-        "`waterdata.get_continuous()` for transducer (15-minute) data, "
-        "`waterdata.get_daily()` for daily values, or "
+        "`waterdata.get_continuous()` for continuous (typically 15-minute) "
+        "values, `waterdata.get_daily()` for daily values, or "
         "`waterdata.get_field_measurements()` for discrete/manual readings."
     )
 
@@ -864,7 +864,7 @@ def get_record(
     defunct_replacements = {
         "measurements": "`waterdata.get_field_measurements`",
         "gwlevels": (
-            "`waterdata.get_continuous` (transducer), "
+            "`waterdata.get_continuous` (continuous), "
             "`waterdata.get_daily`, or `waterdata.get_field_measurements` "
             "(discrete)"
         ),
