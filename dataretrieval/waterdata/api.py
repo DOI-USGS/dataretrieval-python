@@ -399,6 +399,37 @@ def get_continuous(
         ...     parameter_code="00065",
         ...     time="2021-01-01T00:00:00Z/2022-01-01T00:00:00Z",
         ... )
+
+        >>> # The ``time`` parameter accepts a single instant or a single
+        >>> # interval. To pull several disjoint windows in one call, pass a
+        >>> # CQL-text ``filter`` expression instead:
+        >>> df, md = dataretrieval.waterdata.get_continuous(
+        ...     monitoring_location_id="USGS-02238500",
+        ...     parameter_code="00060",
+        ...     filter=(
+        ...         "(time >= '2023-06-01T12:00:00Z' "
+        ...         "AND time <= '2023-06-01T13:00:00Z') "
+        ...         "OR (time >= '2023-06-15T12:00:00Z' "
+        ...         "AND time <= '2023-06-15T13:00:00Z')"
+        ...     ),
+        ...     filter_lang="cql-text",
+        ... )
+
+        >>> # Long top-level ``OR`` chains (e.g. one window per discrete
+        >>> # measurement timestamp) are built up the same way. If the
+        >>> # resulting URL would exceed the server's length limit, the
+        >>> # client transparently splits it into multiple sub-requests and
+        >>> # returns the concatenated, deduplicated result.
+        >>> windows = [
+        ...     f"(time >= '2023-{m:02d}-15T00:00:00Z' "
+        ...     f"AND time <= '2023-{m:02d}-15T00:30:00Z')"
+        ...     for m in range(1, 13)
+        ... ]
+        >>> df, md = dataretrieval.waterdata.get_continuous(
+        ...     monitoring_location_id="USGS-02238500",
+        ...     parameter_code="00060",
+        ...     filter=" OR ".join(windows),
+        ... )
     """
     service = "continuous"
     output_id = "continuous_id"
