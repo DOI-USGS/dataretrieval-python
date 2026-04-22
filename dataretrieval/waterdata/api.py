@@ -184,10 +184,10 @@ def get_daily(
         ``filter`` query parameter. Commonly used to OR several time
         ranges into a single request. At the time of writing the server
         accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
-        ``cql2-json`` are not yet supported. Long filters can exceed the
-        server's URI length limit: a warning is emitted above 5000
-        characters, and the practical cap is ~75 OR-clauses before the
-        server returns HTTP 414.
+        ``cql2-json`` are not yet supported. A long expression made up
+        of a top-level ``OR`` chain is automatically split into
+        multiple requests that each fit under the server's URI length
+        limit; the results are concatenated.
     filter_lang : string, optional
         Language of the ``filter`` expression, for example ``cql-text``
         (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
@@ -369,10 +369,10 @@ def get_continuous(
         ``filter`` query parameter. Commonly used to OR several time
         ranges into a single request. At the time of writing the server
         accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
-        ``cql2-json`` are not yet supported. Long filters can exceed the
-        server's URI length limit: a warning is emitted above 5000
-        characters, and the practical cap is ~75 OR-clauses before the
-        server returns HTTP 414.
+        ``cql2-json`` are not yet supported. A long expression made up
+        of a top-level ``OR`` chain is automatically split into
+        multiple requests that each fit under the server's URI length
+        limit; the results are concatenated.
     filter_lang : string, optional
         Language of the ``filter`` expression, for example ``cql-text``
         (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
@@ -670,10 +670,10 @@ def get_monitoring_locations(
         ``filter`` query parameter. Commonly used to OR several time
         ranges into a single request. At the time of writing the server
         accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
-        ``cql2-json`` are not yet supported. Long filters can exceed the
-        server's URI length limit: a warning is emitted above 5000
-        characters, and the practical cap is ~75 OR-clauses before the
-        server returns HTTP 414.
+        ``cql2-json`` are not yet supported. A long expression made up
+        of a top-level ``OR`` chain is automatically split into
+        multiple requests that each fit under the server's URI length
+        limit; the results are concatenated.
     filter_lang : string, optional
         Language of the ``filter`` expression, for example ``cql-text``
         (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
@@ -900,10 +900,10 @@ def get_time_series_metadata(
         ``filter`` query parameter. Commonly used to OR several time
         ranges into a single request. At the time of writing the server
         accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
-        ``cql2-json`` are not yet supported. Long filters can exceed the
-        server's URI length limit: a warning is emitted above 5000
-        characters, and the practical cap is ~75 OR-clauses before the
-        server returns HTTP 414.
+        ``cql2-json`` are not yet supported. A long expression made up
+        of a top-level ``OR`` chain is automatically split into
+        multiple requests that each fit under the server's URI length
+        limit; the results are concatenated.
     filter_lang : string, optional
         Language of the ``filter`` expression, for example ``cql-text``
         (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
@@ -1089,10 +1089,10 @@ def get_latest_continuous(
         ``filter`` query parameter. Commonly used to OR several time
         ranges into a single request. At the time of writing the server
         accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
-        ``cql2-json`` are not yet supported. Long filters can exceed the
-        server's URI length limit: a warning is emitted above 5000
-        characters, and the practical cap is ~75 OR-clauses before the
-        server returns HTTP 414.
+        ``cql2-json`` are not yet supported. A long expression made up
+        of a top-level ``OR`` chain is automatically split into
+        multiple requests that each fit under the server's URI length
+        limit; the results are concatenated.
     filter_lang : string, optional
         Language of the ``filter`` expression, for example ``cql-text``
         (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
@@ -1277,10 +1277,10 @@ def get_latest_daily(
         ``filter`` query parameter. Commonly used to OR several time
         ranges into a single request. At the time of writing the server
         accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
-        ``cql2-json`` are not yet supported. Long filters can exceed the
-        server's URI length limit: a warning is emitted above 5000
-        characters, and the practical cap is ~75 OR-clauses before the
-        server returns HTTP 414.
+        ``cql2-json`` are not yet supported. A long expression made up
+        of a top-level ``OR`` chain is automatically split into
+        multiple requests that each fit under the server's URI length
+        limit; the results are concatenated.
     filter_lang : string, optional
         Language of the ``filter`` expression, for example ``cql-text``
         (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
@@ -1457,10 +1457,10 @@ def get_field_measurements(
         ``filter`` query parameter. Commonly used to OR several time
         ranges into a single request. At the time of writing the server
         accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
-        ``cql2-json`` are not yet supported. Long filters can exceed the
-        server's URI length limit: a warning is emitted above 5000
-        characters, and the practical cap is ~75 OR-clauses before the
-        server returns HTTP 414.
+        ``cql2-json`` are not yet supported. A long expression made up
+        of a top-level ``OR`` chain is automatically split into
+        multiple requests that each fit under the server's URI length
+        limit; the results are concatenated.
     filter_lang : string, optional
         Language of the ``filter`` expression, for example ``cql-text``
         (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
@@ -2228,10 +2228,10 @@ def get_channel(
         ``filter`` query parameter. Commonly used to OR several time
         ranges into a single request. At the time of writing the server
         accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
-        ``cql2-json`` are not yet supported. Long filters can exceed the
-        server's URI length limit: a warning is emitted above 5000
-        characters, and the practical cap is ~75 OR-clauses before the
-        server returns HTTP 414.
+        ``cql2-json`` are not yet supported. A long expression made up
+        of a top-level ``OR`` chain is automatically split into
+        multiple requests that each fit under the server's URI length
+        limit; the results are concatenated.
     filter_lang : string, optional
         Language of the ``filter`` expression, for example ``cql-text``
         (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.

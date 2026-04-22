@@ -4,7 +4,6 @@ import json
 import logging
 import os
 import re
-import warnings
 from datetime import datetime
 from typing import Any, get_args
 
@@ -225,6 +224,103 @@ def _format_api_dates(
         raise ValueError("datetime_input should only include 1-2 values")
 
 
+# Conservative budget (characters) for a single CQL `filter` query
+# parameter before the URL risks exceeding the server's URI length limit.
+# The continuous endpoint has been observed to return HTTP 414 around ~7 KB
+# of filter text; 5000 leaves headroom for URL encoding and the other
+# query parameters.
+_CQL_FILTER_CHUNK_LEN = 5000
+
+
+def _split_top_level_or(expr: str) -> list[str]:
+    """Split a CQL expression at each top-level ``OR`` separator.
+
+    Respects parentheses and single/double-quoted string literals so that
+    ``OR`` tokens inside ``(A OR B)`` or ``'word OR word'`` are left alone.
+    Matching is case-insensitive. Whitespace around each emitted part is
+    stripped; empty parts are dropped.
+    """
+    parts = []
+    depth = 0
+    in_quote = None
+    last = 0
+    i = 0
+    n = len(expr)
+    while i < n:
+        ch = expr[i]
+        if in_quote is not None:
+            if ch == in_quote:
+                in_quote = None
+            i += 1
+            continue
+        if ch in ("'", '"'):
+            in_quote = ch
+            i += 1
+            continue
+        if ch == "(":
+            depth += 1
+            i += 1
+            continue
+        if ch == ")":
+            depth -= 1
+            i += 1
+            continue
+        # Match whitespace + OR + whitespace at depth 0, case-insensitive.
+        # The preceding char (or start-of-string) must also be whitespace.
+        if depth == 0 and ch.isspace():
+            j = i + 1
+            while j < n and expr[j].isspace():
+                j += 1
+            if j + 2 <= n and expr[j : j + 2].lower() == "or":
+                k = j + 2
+                if k < n and expr[k].isspace():
+                    parts.append(expr[last:i].strip())
+                    # advance past the trailing whitespace too
+                    m = k + 1
+                    while m < n and expr[m].isspace():
+                        m += 1
+                    last = m
+                    i = m
+                    continue
+        i += 1
+    parts.append(expr[last:].strip())
+    return [p for p in parts if p]
+
+
+def _chunk_cql_or(expr: str, max_len: int = _CQL_FILTER_CHUNK_LEN) -> list[str]:
+    """Split a CQL expression into OR-chunks that each fit under ``max_len``.
+
+    The splitter only understands top-level ``OR`` chains, since that is
+    the only shape that can be recombined losslessly as a disjunction of
+    independent sub-queries. Returns ``[expr]`` unchanged when the whole
+    expression already fits, when it contains no top-level ``OR``, or when
+    any single clause is larger than ``max_len`` on its own (we would
+    rather send a too-long request and surface the server's 414 than
+    silently drop data).
+    """
+    if len(expr) <= max_len:
+        return [expr]
+    parts = _split_top_level_or(expr)
+    if len(parts) < 2 or any(len(p) > max_len for p in parts):
+        return [expr]
+
+    chunks = []
+    current = []
+    current_len = 0
+    for part in parts:
+        join_cost = len(" OR ") if current else 0
+        if current and current_len + join_cost + len(part) > max_len:
+            chunks.append(" OR ".join(current))
+            current = [part]
+            current_len = len(part)
+        else:
+            current.append(part)
+            current_len += join_cost + len(part)
+    if current:
+        chunks.append(" OR ".join(current))
+    return chunks
+
+
 def _cql2_param(args: dict[str, Any]) -> str:
     """
     Convert query parameters to CQL2 JSON format for POST requests.
@@ -425,18 +521,6 @@ def _construct_api_requests(
     # aren't valid in Python identifiers.
     if "filter_lang" in params:
         params["filter-lang"] = params.pop("filter_lang")
-    # Emit a warning when a long CQL filter is at risk of exceeding the
-    # server's URI length limit (HTTP 414). Empirically, the waterdata
-    # continuous endpoint begins returning 414 around ~7 KB of filter text
-    # (~75 OR-clauses of typical interval form). The threshold here is
-    # conservative.
-    if isinstance(params.get("filter"), str) and len(params["filter"]) > 5000:
-        warnings.warn(
-            "CQL `filter` is longer than 5000 characters; the server may "
-            "return HTTP 414 (URI Too Long). Consider splitting into batched "
-            "requests.",
-            stacklevel=2,
-        )
 
     headers = _default_headers()
 
@@ -848,10 +932,34 @@ def get_ogc_data(
     convert_type = args.pop("convert_type", False)
     # Create fresh dictionary of args without any None values
     args = {k: v for k, v in args.items() if v is not None}
-    # Build API request
-    req = _construct_api_requests(**args)
-    # Run API request and iterate through pages if needed
-    return_list, response = _walk_pages(geopd=GEOPANDAS, req=req)
+    # If a long CQL `filter` can be split along a top-level OR chain, fan
+    # the request out into chunks that each fit under the server's URI
+    # length limit. Disjoint OR-clauses combine losslessly on the client
+    # side; overlapping clauses are deduplicated by output_id below.
+    filter_expr = args.get("filter")
+    if isinstance(filter_expr, str):
+        filter_chunks = _chunk_cql_or(filter_expr)
+    else:
+        filter_chunks = [None]
+
+    frames = []
+    response = None
+    for chunk in filter_chunks:
+        chunk_args = dict(args)
+        if chunk is not None:
+            chunk_args["filter"] = chunk
+        req = _construct_api_requests(**chunk_args)
+        chunk_df, response = _walk_pages(geopd=GEOPANDAS, req=req)
+        frames.append(chunk_df)
+
+    if len(frames) > 1:
+        return_list = pd.concat(frames, ignore_index=True)
+        if output_id in return_list.columns:
+            return_list = return_list.drop_duplicates(
+                subset=output_id, ignore_index=True
+            )
+    else:
+        return_list = frames[0]
     # Manage some aspects of the returned dataset
     return_list = _deal_with_empty(return_list, properties, service)
 
