@@ -234,10 +234,7 @@ def test_long_filter_fans_out_into_multiple_requests(requests_mock):
                     "type": "Feature",
                     "id": f"chunk-{call_count['n']}",
                     "geometry": None,
-                    "properties": {
-                        "continuous_id": f"chunk-{call_count['n']}",
-                        "value": call_count["n"],
-                    },
+                    "properties": {"value": call_count["n"]},
                 }
             ],
             "links": [],
@@ -260,3 +257,55 @@ def test_long_filter_fans_out_into_multiple_requests(requests_mock):
     for req in requests_mock.request_history:
         filter_qs = parse_qs(urlsplit(req.url).query).get("filter", [""])[0]
         assert len(filter_qs) <= _CQL_FILTER_CHUNK_LEN
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 10),
+    reason="get_continuous requires py>=3.10 (see tests/waterdata_test.py)",
+)
+def test_long_filter_deduplicates_cross_chunk_overlap(requests_mock):
+    """Features returned by multiple chunks (same feature `id`) are
+    deduplicated in the concatenated result."""
+    from dataretrieval.waterdata import get_continuous
+
+    clause = (
+        "(time >= '2023-01-{day:02d}T00:00:00Z' "
+        "AND time <= '2023-01-{day:02d}T00:30:00Z')"
+    )
+    expr = " OR ".join(clause.format(day=(i % 28) + 1) for i in range(300))
+
+    call_count = {"n": 0}
+
+    def respond(request, context):
+        context.status_code = 200
+        call_count["n"] += 1
+        # Every chunk returns the same feature id so dedup should collapse
+        # the concatenated frame down to a single row.
+        return {
+            "type": "FeatureCollection",
+            "numberReturned": 1,
+            "features": [
+                {
+                    "type": "Feature",
+                    "id": "shared-feature",
+                    "geometry": None,
+                    "properties": {"value": 1},
+                }
+            ],
+            "links": [],
+        }
+
+    requests_mock.get(OGC_CONTINUOUS_URL, json=respond)
+
+    df, _ = get_continuous(
+        monitoring_location_id="USGS-07374525",
+        parameter_code="72255",
+        filter=expr,
+        filter_lang="cql-text",
+    )
+
+    expected_chunks = _chunk_cql_or(expr)
+    assert len(expected_chunks) > 1
+    assert call_count["n"] == len(expected_chunks)
+    # Even though each chunk returned a feature, dedup by id collapses them.
+    assert len(df) == 1

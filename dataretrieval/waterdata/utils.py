@@ -930,28 +930,35 @@ def get_ogc_data(
     convert_type = args.pop("convert_type", False)
     # Create fresh dictionary of args without any None values
     args = {k: v for k, v in args.items() if v is not None}
-    # Overlapping user OR-clauses are deduplicated by output_id further below.
+    # Overlapping user OR-clauses are deduplicated by feature id further below.
     filter_expr = args.get("filter")
     filter_chunks = (
         _chunk_cql_or(filter_expr) if isinstance(filter_expr, str) else [None]
     )
 
     frames = []
-    response = None
+    first_response = None
+    total_elapsed = None
     for chunk in filter_chunks:
         chunk_args = args if chunk is None else {**args, "filter": chunk}
         req = _construct_api_requests(**chunk_args)
-        chunk_df, response = _walk_pages(geopd=GEOPANDAS, req=req)
+        chunk_df, chunk_response = _walk_pages(geopd=GEOPANDAS, req=req)
         frames.append(chunk_df)
+        if first_response is None:
+            first_response = chunk_response
+            total_elapsed = chunk_response.elapsed
+        else:
+            total_elapsed = total_elapsed + chunk_response.elapsed
 
     if len(frames) == 1:
         return_list = frames[0]
     else:
         return_list = pd.concat(frames, ignore_index=True)
-        if output_id in return_list.columns:
-            return_list = return_list.drop_duplicates(
-                subset=output_id, ignore_index=True
-            )
+        # The top-level feature "id" is always present at this stage (the
+        # rename to output_id happens later in _arrange_cols), so dedup on
+        # it directly to catch overlapping OR-clauses across chunks.
+        if "id" in return_list.columns:
+            return_list = return_list.drop_duplicates(subset="id", ignore_index=True)
     # Manage some aspects of the returned dataset
     return_list = _deal_with_empty(return_list, properties, service)
 
@@ -961,8 +968,12 @@ def get_ogc_data(
     return_list = _arrange_cols(return_list, properties, output_id)
 
     return_list = _sort_rows(return_list)
-    # Create metadata object from response
-    metadata = BaseMetadata(response)
+    # Create metadata object from the first response. When the filter was
+    # chunked into multiple sub-requests, query_time reflects the total
+    # elapsed time across all chunks rather than just the first.
+    if len(frames) > 1:
+        first_response.elapsed = total_elapsed
+    metadata = BaseMetadata(first_response)
     return return_list, metadata
 
 
