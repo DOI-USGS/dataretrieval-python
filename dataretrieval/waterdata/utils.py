@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import re
+from collections.abc import Iterator
 from datetime import datetime
 from typing import Any, get_args
 
@@ -232,18 +233,16 @@ def _format_api_dates(
 _CQL_FILTER_CHUNK_LEN = 5000
 
 
-def _split_top_level_or(expr: str) -> list[str]:
-    """Split a CQL expression at each top-level ``OR`` separator.
+def _iter_or_boundaries(expr: str) -> Iterator[tuple[int, int]]:
+    """Yield ``(start, end)`` spans of each top-level ``OR`` separator.
 
-    Respects parentheses and single/double-quoted string literals so that
-    ``OR`` tokens inside ``(A OR B)`` or ``'word OR word'`` are left alone.
-    Matching is case-insensitive. Whitespace around each emitted part is
-    stripped; empty parts are dropped.
+    Tracks single/double-quoted string literals and parenthesized
+    sub-expressions so that ``OR`` tokens inside them are skipped.
+    Matching is case-insensitive and the yielded span covers the
+    surrounding whitespace on both sides.
     """
-    parts = []
     depth = 0
     in_quote = None
-    last = 0
     i = 0
     n = len(expr)
     while i < n:
@@ -265,7 +264,6 @@ def _split_top_level_or(expr: str) -> list[str]:
             depth -= 1
             i += 1
             continue
-        # Match whitespace + OR + whitespace at depth 0, case-insensitive.
         if depth == 0 and ch.isspace():
             j = i + 1
             while j < n and expr[j].isspace():
@@ -273,14 +271,28 @@ def _split_top_level_or(expr: str) -> list[str]:
             if j + 2 <= n and expr[j : j + 2].lower() == "or":
                 k = j + 2
                 if k < n and expr[k].isspace():
-                    parts.append(expr[last:i].strip())
                     m = k + 1
                     while m < n and expr[m].isspace():
                         m += 1
-                    last = m
+                    yield i, m
                     i = m
                     continue
         i += 1
+
+
+def _split_top_level_or(expr: str) -> list[str]:
+    """Split a CQL expression at each top-level ``OR`` separator.
+
+    Respects parentheses and single/double-quoted string literals so that
+    ``OR`` tokens inside ``(A OR B)`` or ``'word OR word'`` are left alone.
+    Matching is case-insensitive. Whitespace around each emitted part is
+    stripped; empty parts are dropped.
+    """
+    parts = []
+    last = 0
+    for start, end in _iter_or_boundaries(expr):
+        parts.append(expr[last:start].strip())
+        last = end
     parts.append(expr[last:].strip())
     return [p for p in parts if p]
 
