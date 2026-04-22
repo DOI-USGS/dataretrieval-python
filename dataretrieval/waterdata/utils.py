@@ -266,7 +266,6 @@ def _split_top_level_or(expr: str) -> list[str]:
             i += 1
             continue
         # Match whitespace + OR + whitespace at depth 0, case-insensitive.
-        # The preceding char (or start-of-string) must also be whitespace.
         if depth == 0 and ch.isspace():
             j = i + 1
             while j < n and expr[j].isspace():
@@ -275,7 +274,6 @@ def _split_top_level_or(expr: str) -> list[str]:
                 k = j + 2
                 if k < n and expr[k].isspace():
                     parts.append(expr[last:i].strip())
-                    # advance past the trailing whitespace too
                     m = k + 1
                     while m < n and expr[m].isspace():
                         m += 1
@@ -932,34 +930,28 @@ def get_ogc_data(
     convert_type = args.pop("convert_type", False)
     # Create fresh dictionary of args without any None values
     args = {k: v for k, v in args.items() if v is not None}
-    # If a long CQL `filter` can be split along a top-level OR chain, fan
-    # the request out into chunks that each fit under the server's URI
-    # length limit. Disjoint OR-clauses combine losslessly on the client
-    # side; overlapping clauses are deduplicated by output_id below.
+    # Overlapping user OR-clauses are deduplicated by output_id further below.
     filter_expr = args.get("filter")
-    if isinstance(filter_expr, str):
-        filter_chunks = _chunk_cql_or(filter_expr)
-    else:
-        filter_chunks = [None]
+    filter_chunks = (
+        _chunk_cql_or(filter_expr) if isinstance(filter_expr, str) else [None]
+    )
 
     frames = []
     response = None
     for chunk in filter_chunks:
-        chunk_args = dict(args)
-        if chunk is not None:
-            chunk_args["filter"] = chunk
+        chunk_args = args if chunk is None else {**args, "filter": chunk}
         req = _construct_api_requests(**chunk_args)
         chunk_df, response = _walk_pages(geopd=GEOPANDAS, req=req)
         frames.append(chunk_df)
 
-    if len(frames) > 1:
+    if len(frames) == 1:
+        return_list = frames[0]
+    else:
         return_list = pd.concat(frames, ignore_index=True)
         if output_id in return_list.columns:
             return_list = return_list.drop_duplicates(
                 subset=output_id, ignore_index=True
             )
-    else:
-        return_list = frames[0]
     # Manage some aspects of the returned dataset
     return_list = _deal_with_empty(return_list, properties, service)
 

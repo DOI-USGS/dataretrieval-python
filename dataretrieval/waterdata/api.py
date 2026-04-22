@@ -18,6 +18,7 @@ from requests.models import PreparedRequest
 from dataretrieval.utils import BaseMetadata, to_str
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,
+    FILTER_LANG,
     METADATA_COLLECTIONS,
     PROFILES,
     SERVICES,
@@ -52,7 +53,7 @@ def get_daily(
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
-    filter_lang: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data provide one data value to represent water conditions for the
@@ -243,7 +244,7 @@ def get_continuous(
     time: str | list[str] | None = None,
     limit: int | None = None,
     filter: str | None = None,
-    filter_lang: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
@@ -455,7 +456,7 @@ def get_monitoring_locations(
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
-    filter_lang: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Location information is basic information about the monitoring location
@@ -740,7 +741,7 @@ def get_time_series_metadata(
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
-    filter_lang: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data and continuous measurements are grouped into time series,
@@ -960,7 +961,7 @@ def get_latest_continuous(
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
-    filter_lang: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """This endpoint provides the most recent observation for each time series
@@ -1146,7 +1147,7 @@ def get_latest_daily(
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
-    filter_lang: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data provide one data value to represent water conditions for the
@@ -1336,7 +1337,7 @@ def get_field_measurements(
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
-    filter_lang: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Field measurements are physically measured values collected during a
@@ -2116,7 +2117,7 @@ def get_channel(
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
-    filter_lang: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
