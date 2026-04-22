@@ -1,7 +1,9 @@
-import sys
+from datetime import timedelta
+from types import SimpleNamespace
 from unittest import mock
 from urllib.parse import parse_qs, urlsplit
 
+import pandas as pd
 import pytest
 import requests
 
@@ -12,10 +14,6 @@ from dataretrieval.waterdata.utils import (
     _get_args,
     _split_top_level_or,
     _walk_pages,
-)
-
-OGC_CONTINUOUS_URL = (
-    "https://api.waterdata.usgs.gov/ogcapi/v0/collections/continuous/items"
 )
 
 
@@ -205,11 +203,7 @@ def test_construct_filter_on_all_ogc_services(service):
     assert qs["filter-lang"] == ["cql-text"]
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 10),
-    reason="get_continuous requires py>=3.10 (see tests/waterdata_test.py)",
-)
-def test_long_filter_fans_out_into_multiple_requests(requests_mock):
+def test_long_filter_fans_out_into_multiple_requests():
     """An oversized top-level OR filter triggers multiple HTTP requests
     whose results are concatenated."""
     from dataretrieval.waterdata import get_continuous
@@ -221,49 +215,45 @@ def test_long_filter_fans_out_into_multiple_requests(requests_mock):
     expr = " OR ".join(clause.format(day=(i % 28) + 1) for i in range(300))
     assert len(expr) > _CQL_FILTER_CHUNK_LEN
 
-    call_count = {"n": 0}
+    sent_filters = []
 
-    def respond(request, context):
-        context.status_code = 200
-        call_count["n"] += 1
-        return {
-            "type": "FeatureCollection",
-            "numberReturned": 1,
-            "features": [
-                {
-                    "type": "Feature",
-                    "id": f"chunk-{call_count['n']}",
-                    "geometry": None,
-                    "properties": {"value": call_count["n"]},
-                }
-            ],
-            "links": [],
-        }
+    def fake_construct_api_requests(**kwargs):
+        sent_filters.append(kwargs.get("filter"))
+        return SimpleNamespace(url="https://example.test", method="GET", headers={})
 
-    requests_mock.get(OGC_CONTINUOUS_URL, json=respond)
+    def fake_walk_pages(*_args, **_kwargs):
+        idx = len(sent_filters)
+        frame = pd.DataFrame({"id": [f"chunk-{idx}"], "value": [idx]})
+        resp = SimpleNamespace(
+            url="https://example.test",
+            elapsed=timedelta(milliseconds=1),
+            headers={},
+        )
+        return frame, resp
 
-    df, _ = get_continuous(
-        monitoring_location_id="USGS-07374525",
-        parameter_code="72255",
-        filter=expr,
-        filter_lang="cql-text",
-    )
+    with mock.patch(
+        "dataretrieval.waterdata.utils._construct_api_requests",
+        side_effect=fake_construct_api_requests,
+    ), mock.patch(
+        "dataretrieval.waterdata.utils._walk_pages", side_effect=fake_walk_pages
+    ):
+        df, _ = get_continuous(
+            monitoring_location_id="USGS-07374525",
+            parameter_code="72255",
+            filter=expr,
+            filter_lang="cql-text",
+        )
 
     # Mirror the library's splitter so the test doesn't hardcode a chunk count.
     expected_chunks = _chunk_cql_or(expr)
     assert len(expected_chunks) > 1
-    assert call_count["n"] == len(expected_chunks)
+    assert len(sent_filters) == len(expected_chunks)
+    assert sent_filters == expected_chunks
     assert len(df) == len(expected_chunks)
-    for req in requests_mock.request_history:
-        filter_qs = parse_qs(urlsplit(req.url).query).get("filter", [""])[0]
-        assert len(filter_qs) <= _CQL_FILTER_CHUNK_LEN
+    assert all(len(chunk) <= _CQL_FILTER_CHUNK_LEN for chunk in sent_filters)
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 10),
-    reason="get_continuous requires py>=3.10 (see tests/waterdata_test.py)",
-)
-def test_long_filter_deduplicates_cross_chunk_overlap(requests_mock):
+def test_long_filter_deduplicates_cross_chunk_overlap():
     """Features returned by multiple chunks (same feature `id`) are
     deduplicated in the concatenated result."""
     from dataretrieval.waterdata import get_continuous
@@ -276,36 +266,69 @@ def test_long_filter_deduplicates_cross_chunk_overlap(requests_mock):
 
     call_count = {"n": 0}
 
-    def respond(request, context):
-        context.status_code = 200
+    def fake_walk_pages(*_args, **_kwargs):
         call_count["n"] += 1
-        # Every chunk returns the same feature id so dedup should collapse
-        # the concatenated frame down to a single row.
-        return {
-            "type": "FeatureCollection",
-            "numberReturned": 1,
-            "features": [
-                {
-                    "type": "Feature",
-                    "id": "shared-feature",
-                    "geometry": None,
-                    "properties": {"value": 1},
-                }
-            ],
-            "links": [],
-        }
+        frame = pd.DataFrame({"id": ["shared-feature"], "value": [1]})
+        resp = SimpleNamespace(
+            url="https://example.test",
+            elapsed=timedelta(milliseconds=1),
+            headers={},
+        )
+        return frame, resp
 
-    requests_mock.get(OGC_CONTINUOUS_URL, json=respond)
-
-    df, _ = get_continuous(
-        monitoring_location_id="USGS-07374525",
-        parameter_code="72255",
-        filter=expr,
-        filter_lang="cql-text",
-    )
+    with mock.patch(
+        "dataretrieval.waterdata.utils._construct_api_requests",
+        return_value=SimpleNamespace(
+            url="https://example.test", method="GET", headers={}
+        ),
+    ), mock.patch(
+        "dataretrieval.waterdata.utils._walk_pages", side_effect=fake_walk_pages
+    ):
+        df, _ = get_continuous(
+            monitoring_location_id="USGS-07374525",
+            parameter_code="72255",
+            filter=expr,
+            filter_lang="cql-text",
+        )
 
     expected_chunks = _chunk_cql_or(expr)
     assert len(expected_chunks) > 1
     assert call_count["n"] == len(expected_chunks)
     # Even though each chunk returned a feature, dedup by id collapses them.
     assert len(df) == 1
+
+
+def test_cql_json_filter_is_not_chunked():
+    """Chunking applies only to cql-text; cql-json is passed through unchanged."""
+    from dataretrieval.waterdata import get_continuous
+
+    clause = "(time >= '2023-01-01T00:00:00Z' AND time <= '2023-01-01T00:30:00Z')"
+    expr = " OR ".join([clause] * 300)
+    sent_filters = []
+
+    def fake_construct_api_requests(**kwargs):
+        sent_filters.append(kwargs.get("filter"))
+        return SimpleNamespace(url="https://example.test", method="GET", headers={})
+
+    with mock.patch(
+        "dataretrieval.waterdata.utils._construct_api_requests",
+        side_effect=fake_construct_api_requests,
+    ), mock.patch(
+        "dataretrieval.waterdata.utils._walk_pages",
+        return_value=(
+            pd.DataFrame({"id": ["row-1"], "value": [1]}),
+            SimpleNamespace(
+                url="https://example.test",
+                elapsed=timedelta(milliseconds=1),
+                headers={},
+            ),
+        ),
+    ):
+        get_continuous(
+            monitoring_location_id="USGS-07374525",
+            parameter_code="72255",
+            filter=expr,
+            filter_lang="cql-json",
+        )
+
+    assert sent_filters == [expr]

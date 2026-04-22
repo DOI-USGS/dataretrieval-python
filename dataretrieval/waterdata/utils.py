@@ -930,11 +930,16 @@ def get_ogc_data(
     convert_type = args.pop("convert_type", False)
     # Create fresh dictionary of args without any None values
     args = {k: v for k, v in args.items() if v is not None}
+    # Only cql-text filters can be safely chunked by splitting top-level OR
+    # chains. For cql-json (or unknown languages), pass through unchanged.
     # Overlapping user OR-clauses are deduplicated by feature id further below.
     filter_expr = args.get("filter")
-    filter_chunks = (
-        _chunk_cql_or(filter_expr) if isinstance(filter_expr, str) else [None]
-    )
+    filter_lang = args.get("filter_lang")
+    should_chunk_filter = isinstance(filter_expr, str) and filter_lang in {
+        None,
+        "cql-text",
+    }
+    filter_chunks = _chunk_cql_or(filter_expr) if should_chunk_filter else [None]
 
     frames = []
     first_response = None
