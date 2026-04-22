@@ -1,4 +1,10 @@
-**04/22/2026:** The OGC `waterdata` getters (`get_continuous`, `get_daily`, `get_field_measurements`, and others) now accept `filter` and `filter_lang` kwargs that are passed through to the service's CQL filter parameter. This enables advanced server-side filtering that isn't expressible via the other kwargs — most commonly, OR'ing multiple time ranges into a single request. A long expression made up of a top-level `OR` chain is transparently split into multiple requests that each fit under the server's URI length limit, and the results are concatenated.
+**04/22/2026:** Highlights since the `v1.1.0` release (2025-11-26), which shipped the `waterdata` module:
+
+- Added `get_channel` for channel-measurement data (#218) and `get_stats_por` / `get_stats_date_range` for period-of-record and daily statistics (#207).
+- Added `get_reference_table` (and made it considerably simpler and faster in #209), then extended it to accept arbitrary collections-API query parameters (#214).
+- Removed the deprecated `waterwatch` module (#228) and several defunct NWIS stubs (#222, #225), and added `py.typed` so `dataretrieval` ships type information to downstream users (#186).
+- Now supports `pandas` 3.x (#221).
+- The OGC `waterdata` getters (`get_continuous`, `get_daily`, `get_field_measurements`, and the six others built on the same OGC collections) now accept `filter` and `filter_lang` kwargs that are passed through to the service's CQL filter parameter. This enables advanced server-side filtering that isn't expressible via the other kwargs — most commonly, OR'ing multiple time ranges into a single request. A long expression made up of a top-level `OR` chain is transparently split into multiple requests that each fit under the server's URI length limit, and the results are concatenated.
 
 **12/04/2025:** The `get_continuous()` function was added to the `waterdata` module, which provides access to measurements collected via automated sensors at a high frequency (often 15 minute intervals) at a monitoring location. This is an early version of the continuous endpoint and should be used with caution as the API team improves its performance. In the future, we anticipate the addition of an endpoint(s) specifically for handling large data requests, so it may make sense for power users to hold off on heavy development using the new continuous endpoint.
 
