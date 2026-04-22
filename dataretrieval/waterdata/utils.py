@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import re
+import warnings
 from datetime import datetime
 from typing import Any, get_args
 
@@ -418,6 +419,24 @@ def _construct_api_requests(
         params["bbox"] = ",".join(map(str, bbox))
     if properties:
         params["properties"] = ",".join(properties)
+
+    # Translate CQL filter Python names to the hyphenated URL parameter that
+    # the OGC API expects. The Python kwarg is `filter_lang` because hyphens
+    # aren't valid in Python identifiers.
+    if "filter_lang" in params:
+        params["filter-lang"] = params.pop("filter_lang")
+    # Emit a warning when a long CQL filter is at risk of exceeding the
+    # server's URI length limit (HTTP 414). Empirically, the waterdata
+    # continuous endpoint begins returning 414 around ~7 KB of filter text
+    # (~75 OR-clauses of typical interval form). The threshold here is
+    # conservative.
+    if isinstance(params.get("filter"), str) and len(params["filter"]) > 5000:
+        warnings.warn(
+            "CQL `filter` is longer than 5000 characters; the server may "
+            "return HTTP 414 (URI Too Long). Consider splitting into batched "
+            "requests.",
+            stacklevel=2,
+        )
 
     headers = _default_headers()
 
