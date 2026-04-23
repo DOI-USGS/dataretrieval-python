@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import logging
 from io import StringIO
-from typing import get_args
+from typing import Literal, get_args
 
 import pandas as pd
 import requests
@@ -438,6 +438,199 @@ def get_continuous(
     args = _get_args(locals())
 
     return get_ogc_data(args, output_id, service)
+
+
+def get_nearest_continuous(
+    targets,
+    monitoring_location_id: str | list[str] | None = None,
+    parameter_code: str | list[str] | None = None,
+    *,
+    window: str | pd.Timedelta = "7min30s",
+    on_tie: Literal["first", "last", "mean"] = "first",
+    **kwargs,
+) -> tuple[pd.DataFrame, BaseMetadata]:
+    """For each target timestamp, return the nearest continuous observation.
+
+    Builds one bracketed ``(time >= t-window AND time <= t+window)`` clause
+    per target, joins them as a top-level CQL ``OR`` filter, and lets
+    ``get_continuous`` (with its auto-chunking) fetch every observation
+    that falls in any window. Then, per ``(monitoring_location_id, target)``
+    pair, picks the single observation with the smallest ``|time - target|``.
+
+    The USGS continuous endpoint matches ``time`` parameters exactly rather
+    than fuzzily, and it does not implement ``sortby`` for arbitrary fields;
+    this function is the single-round-trip way to ask "what reading is
+    nearest this timestamp?" for many timestamps at once.
+
+    Parameters
+    ----------
+    targets : list-like of datetime-convertible
+        Target timestamps. Naive datetimes are treated as UTC. Accepts a
+        list, ``pandas.Series``, ``pandas.DatetimeIndex``, ``numpy.ndarray``,
+        or anything ``pandas.to_datetime`` consumes.
+    monitoring_location_id : string or list of strings, optional
+        Forwarded to ``get_continuous``.
+    parameter_code : string or list of strings, optional
+        Forwarded to ``get_continuous``.
+    window : string or ``pandas.Timedelta``, default ``"7min30s"``
+        Half-window around each target. Must be small enough that every
+        target's window captures roughly one observation at the service
+        cadence. The 7min30s default matches a 15-minute continuous gauge;
+        use a larger value (e.g. ``"15min"``) when the gauge cadence is
+        longer or you need more resilience to data gaps.
+    on_tie : {"first", "last", "mean"}, default ``"first"``
+        How to resolve ties when two observations are exactly equidistant
+        from a target (which happens when the target falls at the midpoint
+        between grid points — e.g. target ``10:22:30`` for a 15-minute
+        gauge).
+
+        - ``"first"``: keep the earlier observation.
+        - ``"last"``:  keep the later observation.
+        - ``"mean"``:  average numeric columns; set the ``time`` column to
+          the target, since no real observation exists at the midpoint.
+
+    **kwargs
+        Additional keyword arguments forwarded to ``get_continuous``
+        (e.g. ``statistic_id``, ``approval_status``, ``properties``).
+        Passing ``time``, ``filter``, or ``filter_lang`` raises
+        ``TypeError`` — this function builds those itself.
+
+    Returns
+    -------
+    df : ``pandas.DataFrame``
+        One row per ``(target, monitoring_location_id)`` combination that
+        had at least one observation in its window. Rows are augmented
+        with a ``target_time`` column indicating which target they
+        correspond to. Targets with no observations in their window are
+        silently dropped.
+    md : :class:`~dataretrieval.utils.BaseMetadata`
+        Metadata from the underlying ``get_continuous`` call.
+
+    Notes
+    -----
+    *Window sizing and ties.* When ``window`` is exactly half the service
+    cadence, most targets' windows contain a single observation and
+    ``on_tie`` is moot. Ties arise only when a target sits exactly at the
+    window edge — rare in practice but possible. Setting ``window`` to a
+    full cadence (or larger) guarantees at least one observation per
+    target in steady state at the cost of more bytes per response.
+
+    *Why windowed CQL rather than sort+limit.* The API's advertised
+    ``sortby`` parameter would make this a one-liner per target (``filter``
+    by ``time <= t`` and ``limit 1``), but it is per-query — you would need
+    one HTTP round-trip per target. The CQL ``OR``-chain approach folds
+    all N targets into one request (auto-chunked when the URL is long).
+
+    Examples
+    --------
+    .. code::
+
+        >>> import pandas as pd
+        >>> from dataretrieval import waterdata
+
+        >>> # Pair three off-grid timestamps with nearby observations
+        >>> targets = pd.to_datetime(
+        ...     [
+        ...         "2023-06-15T10:30:31Z",
+        ...         "2023-06-15T14:07:12Z",
+        ...         "2023-06-16T03:45:19Z",
+        ...     ]
+        ... )
+        >>> df, md = waterdata.get_nearest_continuous(
+        ...     targets,
+        ...     monitoring_location_id="USGS-02238500",
+        ...     parameter_code="00060",
+        ... )
+
+        >>> # Widen the window for an irregular-cadence gauge
+        >>> df, md = waterdata.get_nearest_continuous(
+        ...     targets,
+        ...     monitoring_location_id="USGS-02238500",
+        ...     parameter_code="00060",
+        ...     window="30min",
+        ...     on_tie="mean",
+        ... )
+    """
+    for forbidden in ("time", "filter", "filter_lang"):
+        if forbidden in kwargs:
+            raise TypeError(
+                f"get_nearest_continuous constructs its own {forbidden!r}; "
+                "do not pass it directly"
+            )
+    if on_tie not in ("first", "last", "mean"):
+        raise ValueError(f"on_tie must be 'first', 'last', or 'mean'; got {on_tie!r}")
+
+    targets = pd.to_datetime(list(targets), utc=True)
+    window_td = pd.Timedelta(window)
+
+    if len(targets) == 0:
+        # Nothing to ask about — return an empty frame shaped like a real
+        # ``get_continuous`` response (via a trivially-empty time range).
+        df, md = get_continuous(
+            monitoring_location_id=monitoring_location_id,
+            parameter_code=parameter_code,
+            time="1900-01-01T00:00:00Z/1900-01-01T00:00:00Z",
+            **kwargs,
+        )
+        return df.iloc[0:0], md
+
+    filter_expr = " OR ".join(
+        f"(time >= '{(t - window_td).strftime('%Y-%m-%dT%H:%M:%SZ')}' "
+        f"AND time <= '{(t + window_td).strftime('%Y-%m-%dT%H:%M:%SZ')}')"
+        for t in targets
+    )
+
+    df, md = get_continuous(
+        monitoring_location_id=monitoring_location_id,
+        parameter_code=parameter_code,
+        filter=filter_expr,
+        filter_lang="cql-text",
+        **kwargs,
+    )
+
+    if df.empty:
+        return df, md
+
+    df = df.copy()
+    df["time"] = pd.to_datetime(df["time"], utc=True)
+
+    if "monitoring_location_id" in df.columns:
+        site_groups = list(df.groupby("monitoring_location_id", sort=False))
+    else:
+        site_groups = [(None, df)]
+
+    selected = []
+    for _, site_df in site_groups:
+        for target in targets:
+            mask = (site_df["time"] >= target - window_td) & (
+                site_df["time"] <= target + window_td
+            )
+            window_df = site_df[mask]
+            if window_df.empty:
+                continue
+            deltas = (window_df["time"] - target).abs()
+            candidates = window_df[deltas == deltas.min()].sort_values("time")
+
+            if len(candidates) == 1 or on_tie == "first":
+                row = candidates.iloc[0].copy()
+            elif on_tie == "last":
+                row = candidates.iloc[-1].copy()
+            else:  # "mean"
+                row = candidates.iloc[0].copy()
+                for col in candidates.select_dtypes("number").columns:
+                    row[col] = candidates[col].mean()
+                row["time"] = target
+
+            row["target_time"] = target
+            selected.append(row)
+
+    if not selected:
+        empty = df.iloc[0:0].copy()
+        empty["target_time"] = pd.Series(dtype="datetime64[ns, UTC]")
+        return empty, md
+
+    result = pd.DataFrame(selected).reset_index(drop=True)
+    return result, md
 
 
 def get_monitoring_locations(
