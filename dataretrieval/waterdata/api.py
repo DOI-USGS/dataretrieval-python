@@ -18,6 +18,7 @@ from requests.models import PreparedRequest
 from dataretrieval.utils import BaseMetadata, to_str
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,
+    FILTER_LANG,
     METADATA_COLLECTIONS,
     PROFILES,
     SERVICES,
@@ -51,6 +52,8 @@ def get_daily(
     time: str | list[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
+    filter: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data provide one data value to represent water conditions for the
@@ -177,6 +180,18 @@ def get_daily(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (NA) will set the
         limit to the maximum allowable limit for the service.
+    filter : string, optional
+        A CQL text or JSON expression passed through to the OGC API
+        ``filter`` query parameter. Commonly used to OR several time
+        ranges into a single request. At the time of writing the server
+        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
+        ``cql2-json`` are not yet supported. A long expression made up
+        of a top-level ``OR`` chain is automatically split into
+        multiple requests that each fit under the server's URI length
+        limit; the results are concatenated.
+    filter_lang : string, optional
+        Language of the ``filter`` expression, for example ``cql-text``
+        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
 
@@ -228,6 +243,8 @@ def get_continuous(
     last_modified: str | None = None,
     time: str | list[str] | None = None,
     limit: int | None = None,
+    filter: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
@@ -348,6 +365,18 @@ def get_continuous(
         allowable limit is 10000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (NA) will set the
         limit to the maximum allowable limit for the service.
+    filter : string, optional
+        A CQL text or JSON expression passed through to the OGC API
+        ``filter`` query parameter. Commonly used to OR several time
+        ranges into a single request. At the time of writing the server
+        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
+        ``cql2-json`` are not yet supported. A long expression made up
+        of a top-level ``OR`` chain is automatically split into
+        multiple requests that each fit under the server's URI length
+        limit; the results are concatenated.
+    filter_lang : string, optional
+        Language of the ``filter`` expression, for example ``cql-text``
+        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
     convert_type : boolean, optional
         If True, the function will convert the data to dates and qualifier to
         string vector
@@ -369,6 +398,37 @@ def get_continuous(
         ...     monitoring_location_id="USGS-02238500",
         ...     parameter_code="00065",
         ...     time="2021-01-01T00:00:00Z/2022-01-01T00:00:00Z",
+        ... )
+
+        >>> # The ``time`` parameter accepts a single instant or a single
+        >>> # interval. To pull several disjoint windows in one call, pass a
+        >>> # CQL-text ``filter`` expression instead:
+        >>> df, md = dataretrieval.waterdata.get_continuous(
+        ...     monitoring_location_id="USGS-02238500",
+        ...     parameter_code="00060",
+        ...     filter=(
+        ...         "(time >= '2023-06-01T12:00:00Z' "
+        ...         "AND time <= '2023-06-01T13:00:00Z') "
+        ...         "OR (time >= '2023-06-15T12:00:00Z' "
+        ...         "AND time <= '2023-06-15T13:00:00Z')"
+        ...     ),
+        ...     filter_lang="cql-text",
+        ... )
+
+        >>> # Long top-level ``OR`` chains (e.g. one window per discrete
+        >>> # measurement timestamp) are built up the same way. If the
+        >>> # resulting URL would exceed the server's length limit, the
+        >>> # client transparently splits it into multiple sub-requests and
+        >>> # returns the concatenated, deduplicated result.
+        >>> windows = [
+        ...     f"(time >= '2023-{m:02d}-15T00:00:00Z' "
+        ...     f"AND time <= '2023-{m:02d}-15T00:30:00Z')"
+        ...     for m in range(1, 13)
+        ... ]
+        >>> df, md = dataretrieval.waterdata.get_continuous(
+        ...     monitoring_location_id="USGS-02238500",
+        ...     parameter_code="00060",
+        ...     filter=" OR ".join(windows),
         ... )
     """
     service = "continuous"
@@ -426,6 +486,8 @@ def get_monitoring_locations(
     time: str | list[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
+    filter: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Location information is basic information about the monitoring location
@@ -635,6 +697,18 @@ def get_monitoring_locations(
         The returning object will be a data frame with no spatial information.
         Note that the USGS Water Data APIs use camelCase "skipGeometry" in
         CQL2 queries.
+    filter : string, optional
+        A CQL text or JSON expression passed through to the OGC API
+        ``filter`` query parameter. Commonly used to OR several time
+        ranges into a single request. At the time of writing the server
+        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
+        ``cql2-json`` are not yet supported. A long expression made up
+        of a top-level ``OR`` chain is automatically split into
+        multiple requests that each fit under the server's URI length
+        limit; the results are concatenated.
+    filter_lang : string, optional
+        Language of the ``filter`` expression, for example ``cql-text``
+        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
 
@@ -697,6 +771,8 @@ def get_time_series_metadata(
     time: str | list[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
+    filter: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data and continuous measurements are grouped into time series,
@@ -851,6 +927,18 @@ def get_time_series_metadata(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
+    filter : string, optional
+        A CQL text or JSON expression passed through to the OGC API
+        ``filter`` query parameter. Commonly used to OR several time
+        ranges into a single request. At the time of writing the server
+        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
+        ``cql2-json`` are not yet supported. A long expression made up
+        of a top-level ``OR`` chain is automatically split into
+        multiple requests that each fit under the server's URI length
+        limit; the results are concatenated.
+    filter_lang : string, optional
+        Language of the ``filter`` expression, for example ``cql-text``
+        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
 
@@ -903,6 +991,8 @@ def get_latest_continuous(
     time: str | list[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
+    filter: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """This endpoint provides the most recent observation for each time series
@@ -1026,6 +1116,18 @@ def get_latest_continuous(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
+    filter : string, optional
+        A CQL text or JSON expression passed through to the OGC API
+        ``filter`` query parameter. Commonly used to OR several time
+        ranges into a single request. At the time of writing the server
+        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
+        ``cql2-json`` are not yet supported. A long expression made up
+        of a top-level ``OR`` chain is automatically split into
+        multiple requests that each fit under the server's URI length
+        limit; the results are concatenated.
+    filter_lang : string, optional
+        Language of the ``filter`` expression, for example ``cql-text``
+        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
 
@@ -1075,6 +1177,8 @@ def get_latest_daily(
     time: str | list[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
+    filter: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data provide one data value to represent water conditions for the
@@ -1200,6 +1304,18 @@ def get_latest_daily(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
+    filter : string, optional
+        A CQL text or JSON expression passed through to the OGC API
+        ``filter`` query parameter. Commonly used to OR several time
+        ranges into a single request. At the time of writing the server
+        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
+        ``cql2-json`` are not yet supported. A long expression made up
+        of a top-level ``OR`` chain is automatically split into
+        multiple requests that each fit under the server's URI length
+        limit; the results are concatenated.
+    filter_lang : string, optional
+        Language of the ``filter`` expression, for example ``cql-text``
+        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
 
@@ -1251,6 +1367,8 @@ def get_field_measurements(
     time: str | list[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
+    filter: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Field measurements are physically measured values collected during a
@@ -1366,6 +1484,18 @@ def get_field_measurements(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
+    filter : string, optional
+        A CQL text or JSON expression passed through to the OGC API
+        ``filter`` query parameter. Commonly used to OR several time
+        ranges into a single request. At the time of writing the server
+        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
+        ``cql2-json`` are not yet supported. A long expression made up
+        of a top-level ``OR`` chain is automatically split into
+        multiple requests that each fit under the server's URI length
+        limit; the results are concatenated.
+    filter_lang : string, optional
+        Language of the ``filter`` expression, for example ``cql-text``
+        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
 
@@ -2017,6 +2147,8 @@ def get_channel(
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
+    filter: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
@@ -2123,6 +2255,18 @@ def get_channel(
         vertical_velocity_description, longitudinal_velocity_description,
         measurement_type, last_modified, channel_measurement_type. The default (NA) will
         return all columns of the data.
+    filter : string, optional
+        A CQL text or JSON expression passed through to the OGC API
+        ``filter`` query parameter. Commonly used to OR several time
+        ranges into a single request. At the time of writing the server
+        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
+        ``cql2-json`` are not yet supported. A long expression made up
+        of a top-level ``OR`` chain is automatically split into
+        multiple requests that each fit under the server's URI length
+        limit; the results are concatenated.
+    filter_lang : string, optional
+        Language of the ``filter`` expression, for example ``cql-text``
+        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
     convert_type : boolean, optional
         If True, the function will convert the data to dates and qualifier to
         string vector
