@@ -7,6 +7,7 @@ import re
 from collections.abc import Iterator
 from datetime import datetime
 from typing import Any, get_args
+from urllib.parse import quote_plus
 
 import pandas as pd
 import requests
@@ -225,12 +226,19 @@ def _format_api_dates(
         raise ValueError("datetime_input should only include 1-2 values")
 
 
-# Conservative budget (characters) for a single CQL `filter` query
-# parameter before the URL risks exceeding the server's URI length limit.
-# The continuous endpoint has been observed to return HTTP 414 around ~7 KB
-# of filter text; 5000 leaves headroom for URL encoding and the other
-# query parameters.
+# Conservative fallback budget (characters) for a single CQL ``filter``
+# query parameter, used when the caller invokes ``_chunk_cql_or`` without
+# a ``max_len``. ``get_ogc_data`` computes a tighter per-request budget
+# from ``_WATERDATA_URL_BYTE_LIMIT`` below.
 _CQL_FILTER_CHUNK_LEN = 5000
+
+# Total URL byte limit the Water Data API will accept before replying
+# HTTP 414 (Request-URI Too Large). Empirically the cliff sits at
+# ~8,200 bytes of full URL, which lines up with nginx's default
+# ``large_client_header_buffers`` of 8 KB (8192). 8000 leaves ~200 bytes
+# of headroom for request-line framing ("GET ... HTTP/1.1\r\n") and any
+# intermediate proxy variance.
+_WATERDATA_URL_BYTE_LIMIT = 8000
 
 
 def _iter_or_boundaries(expr: str) -> Iterator[tuple[int, int]]:
@@ -329,6 +337,28 @@ def _chunk_cql_or(expr: str, max_len: int = _CQL_FILTER_CHUNK_LEN) -> list[str]:
     if current:
         chunks.append(" OR ".join(current))
     return chunks
+
+
+def _effective_filter_budget(args: dict[str, Any], filter_expr: str) -> int:
+    """Compute the raw CQL byte budget for ``filter_expr`` in this request.
+
+    The server limits total URL length (see ``_WATERDATA_URL_BYTE_LIMIT``),
+    not raw CQL length. To derive a raw-byte budget we can hand to
+    ``_chunk_cql_or``:
+
+    1. Probe the URL space consumed by the other query params by building
+       the request with a 1-byte placeholder filter.
+    2. Subtract from the URL limit to get the bytes available for the
+       encoded filter value.
+    3. Convert back to raw CQL bytes using the filter's own URL-encoding
+       ratio (e.g. uniform time-interval clauses inflate ~1.4x; heavy
+       special-char clauses can inflate more).
+    """
+    probe = _construct_api_requests(**{**args, "filter": "x"})
+    non_filter_url_bytes = len(probe.url) - 1
+    available_url_bytes = _WATERDATA_URL_BYTE_LIMIT - non_filter_url_bytes
+    encoding_ratio = len(quote_plus(filter_expr)) / len(filter_expr)
+    return max(100, int(available_url_bytes / encoding_ratio))
 
 
 def _cql2_param(args: dict[str, Any]) -> str:
@@ -947,11 +977,16 @@ def get_ogc_data(
     # Overlapping user OR-clauses are deduplicated by feature id further below.
     filter_expr = args.get("filter")
     filter_lang = args.get("filter_lang")
-    should_chunk_filter = isinstance(filter_expr, str) and filter_lang in {
-        None,
-        "cql-text",
-    }
-    filter_chunks = _chunk_cql_or(filter_expr) if should_chunk_filter else [None]
+    should_chunk_filter = (
+        isinstance(filter_expr, str)
+        and filter_expr
+        and filter_lang in {None, "cql-text"}
+    )
+    if should_chunk_filter:
+        raw_budget = _effective_filter_budget(args, filter_expr)
+        filter_chunks = _chunk_cql_or(filter_expr, max_len=raw_budget)
+    else:
+        filter_chunks = [None]
 
     frames = []
     first_response = None

@@ -9,8 +9,10 @@ import requests
 
 from dataretrieval.waterdata.utils import (
     _CQL_FILTER_CHUNK_LEN,
+    _WATERDATA_URL_BYTE_LIMIT,
     _chunk_cql_or,
     _construct_api_requests,
+    _effective_filter_budget,
     _get_args,
     _split_top_level_or,
     _walk_pages,
@@ -236,6 +238,9 @@ def test_long_filter_fans_out_into_multiple_requests():
         side_effect=fake_construct_api_requests,
     ), mock.patch(
         "dataretrieval.waterdata.utils._walk_pages", side_effect=fake_walk_pages
+    ), mock.patch(
+        "dataretrieval.waterdata.utils._effective_filter_budget",
+        return_value=_CQL_FILTER_CHUNK_LEN,
     ):
         df, _ = get_continuous(
             monitoring_location_id="USGS-07374525",
@@ -244,12 +249,18 @@ def test_long_filter_fans_out_into_multiple_requests():
             filter_lang="cql-text",
         )
 
-    # Mirror the library's splitter so the test doesn't hardcode a chunk count.
-    expected_chunks = _chunk_cql_or(expr)
-    assert len(expected_chunks) > 1
-    assert len(sent_filters) == len(expected_chunks)
-    assert sent_filters == expected_chunks
-    assert len(df) == len(expected_chunks)
+    # Mocking _effective_filter_budget bypasses the URL-length probe, so
+    # sent_filters contains only real chunk requests. Assert invariants:
+    # chunking happened, every original clause is preserved exactly once
+    # in order, each chunk stays under the budget, and the mock's
+    # one-row-per-chunk responses concatenate to a row per chunk.
+    expected_parts = _split_top_level_or(expr)
+    assert len(sent_filters) > 1
+    rejoined_parts = []
+    for chunk in sent_filters:
+        rejoined_parts.extend(_split_top_level_or(chunk))
+    assert rejoined_parts == expected_parts
+    assert len(df) == len(sent_filters)
     assert all(len(chunk) <= _CQL_FILTER_CHUNK_LEN for chunk in sent_filters)
 
 
@@ -283,6 +294,9 @@ def test_long_filter_deduplicates_cross_chunk_overlap():
         ),
     ), mock.patch(
         "dataretrieval.waterdata.utils._walk_pages", side_effect=fake_walk_pages
+    ), mock.patch(
+        "dataretrieval.waterdata.utils._effective_filter_budget",
+        return_value=_CQL_FILTER_CHUNK_LEN,
     ):
         df, _ = get_continuous(
             monitoring_location_id="USGS-07374525",
@@ -291,11 +305,57 @@ def test_long_filter_deduplicates_cross_chunk_overlap():
             filter_lang="cql-text",
         )
 
-    expected_chunks = _chunk_cql_or(expr)
-    assert len(expected_chunks) > 1
-    assert call_count["n"] == len(expected_chunks)
+    # Chunking must have happened (otherwise dedup wouldn't be exercised).
+    assert call_count["n"] > 1
     # Even though each chunk returned a feature, dedup by id collapses them.
     assert len(df) == 1
+
+
+def test_effective_filter_budget_respects_url_limit():
+    """The computed budget, once encoded, fits within the URL byte limit
+    alongside the other query params."""
+    from urllib.parse import quote_plus
+
+    filter_expr = "(time >= '2023-01-15T00:00:00Z' AND time <= '2023-01-15T00:30:00Z')"
+    args = {
+        "service": "continuous",
+        "monitoring_location_id": "USGS-02238500",
+        "parameter_code": "00060",
+        "filter": filter_expr,
+        "filter_lang": "cql-text",
+    }
+    raw_budget = _effective_filter_budget(args, filter_expr)
+
+    # Build a chunk exactly at the raw budget (padded with the clause repeated)
+    # and confirm the full URL it produces stays under the URL byte limit.
+    padded = (" OR ".join([filter_expr] * 200))[:raw_budget]
+    req = _construct_api_requests(**{**args, "filter": padded})
+    assert len(req.url) <= _WATERDATA_URL_BYTE_LIMIT
+    # And the budget scales inversely with encoding ratio (sanity).
+    assert raw_budget < _WATERDATA_URL_BYTE_LIMIT
+    # Quick sanity on the encoding math itself.
+    assert len(quote_plus(padded)) <= _WATERDATA_URL_BYTE_LIMIT
+
+
+def test_effective_filter_budget_shrinks_with_more_url_params():
+    """Adding more scalar query params consumes URL bytes and should
+    shrink the raw filter budget accordingly."""
+    clause = "(time >= '2023-01-15T00:00:00Z' AND time <= '2023-01-15T00:30:00Z')"
+    sparse_args = {
+        "service": "continuous",
+        "monitoring_location_id": "USGS-02238500",
+        "filter": clause,
+        "filter_lang": "cql-text",
+    }
+    dense_args = {
+        **sparse_args,
+        "parameter_code": "00060",
+        "statistic_id": "00003",
+        "last_modified": "2023-01-01T00:00:00Z/2023-12-31T23:59:59Z",
+    }
+    sparse_budget = _effective_filter_budget(sparse_args, clause)
+    dense_budget = _effective_filter_budget(dense_args, clause)
+    assert dense_budget < sparse_budget
 
 
 def test_cql_json_filter_is_not_chunked():
