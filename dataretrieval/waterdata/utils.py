@@ -984,79 +984,107 @@ def get_ogc_data(
     - Applies column cleanup and reordering based on service and properties.
     """
     args = args.copy()
-    # Add service as an argument
     args["service"] = service
-    # Switch the input id to "id" if needed
     args = _switch_arg_id(args, id_name=output_id, service=service)
+    # Capture `properties` before the id-switch so post-processing sees
+    # the user-facing names, not the wire-format ones.
     properties = args.get("properties")
-    # Switch properties id to "id" if needed
     args["properties"] = _switch_properties_id(
         properties, id_name=output_id, service=service
     )
     convert_type = args.pop("convert_type", False)
-    # Create fresh dictionary of args without any None values
     args = {k: v for k, v in args.items() if v is not None}
-    # Only cql-text filters can be safely chunked by splitting top-level OR
-    # chains. For cql-json (or unknown languages), pass through unchanged.
-    # Overlapping user OR-clauses are deduplicated by feature id further below.
+
+    chunks = _plan_filter_chunks(args)
+    frames, responses = _fetch_chunks(args, chunks)
+
+    return_list = _combine_chunk_frames(frames)
+    return_list = _deal_with_empty(return_list, properties, service)
+    if convert_type:
+        return_list = _type_cols(return_list)
+    return_list = _arrange_cols(return_list, properties, output_id)
+    return_list = _sort_rows(return_list)
+
+    return return_list, _aggregate_response_metadata(responses)
+
+
+def _plan_filter_chunks(args: dict[str, Any]) -> list[str | None]:
+    """Decide how to fan ``args["filter"]`` out across HTTP calls.
+
+    Returns one entry per request to send. A ``None`` entry means "send
+    ``args`` as-is" — either there is no filter, or the filter language
+    is not one we can safely split (only cql-text top-level ``OR``
+    chains are chunkable). Otherwise each string entry is a chunked
+    cql-text expression that replaces ``args["filter"]`` for its
+    sub-request. Overlapping user OR-clauses are deduplicated by feature
+    id later in ``_combine_chunk_frames``.
+    """
     filter_expr = args.get("filter")
     filter_lang = args.get("filter_lang")
-    should_chunk_filter = (
+    chunkable = (
         isinstance(filter_expr, str)
         and filter_expr
         and filter_lang in {None, "cql-text"}
     )
-    if should_chunk_filter:
-        raw_budget = _effective_filter_budget(args, filter_expr)
-        filter_chunks = _chunk_cql_or(filter_expr, max_len=raw_budget)
-    else:
-        filter_chunks = [None]
+    if not chunkable:
+        return [None]
+    raw_budget = _effective_filter_budget(args, filter_expr)
+    return _chunk_cql_or(filter_expr, max_len=raw_budget)
 
-    frames = []
-    responses = []
-    for chunk in filter_chunks:
+
+def _fetch_chunks(
+    args: dict[str, Any], chunks: list[str | None]
+) -> tuple[list[pd.DataFrame], list[requests.Response]]:
+    """Send one request per chunk; return the per-chunk frames and responses."""
+    frames: list[pd.DataFrame] = []
+    responses: list[requests.Response] = []
+    for chunk in chunks:
         chunk_args = args if chunk is None else {**args, "filter": chunk}
         req = _construct_api_requests(**chunk_args)
-        chunk_df, chunk_response = _walk_pages(geopd=GEOPANDAS, req=req)
-        frames.append(chunk_df)
-        responses.append(chunk_response)
+        frame, response = _walk_pages(geopd=GEOPANDAS, req=req)
+        frames.append(frame)
+        responses.append(response)
+    return frames, responses
 
-    # Drop empty frames before concat — `_get_resp_data` returns a plain
-    # ``pd.DataFrame()`` on empty responses, which can downgrade a concat
-    # of real GeoDataFrames back to a plain DataFrame (losing geometry/
-    # CRS). Empty frames contribute no rows, so discarding them is safe.
+
+def _combine_chunk_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
+    """Concatenate per-chunk frames, handling the edge cases.
+
+    Drops empty frames before concat — ``_get_resp_data`` returns a
+    plain ``pd.DataFrame()`` on empty responses, which would downgrade
+    a concat of real GeoDataFrames back to a plain DataFrame and strip
+    geometry/CRS. Also dedups on the pre-rename feature ``id`` so
+    overlapping user-supplied OR-clauses don't produce duplicate rows
+    across chunks.
+    """
     non_empty = [f for f in frames if not f.empty]
     if not non_empty:
-        return_list = pd.DataFrame()
-    elif len(non_empty) == 1:
-        return_list = non_empty[0]
-    else:
-        return_list = pd.concat(non_empty, ignore_index=True)
-        # The top-level feature "id" is always present at this stage (the
-        # rename to output_id happens later in _arrange_cols), so dedup on
-        # it directly to catch overlapping OR-clauses across chunks.
-        if "id" in return_list.columns:
-            return_list = return_list.drop_duplicates(subset="id", ignore_index=True)
-    # Manage some aspects of the returned dataset
-    return_list = _deal_with_empty(return_list, properties, service)
+        return pd.DataFrame()
+    if len(non_empty) == 1:
+        return non_empty[0]
+    combined = pd.concat(non_empty, ignore_index=True)
+    if "id" in combined.columns:
+        combined = combined.drop_duplicates(subset="id", ignore_index=True)
+    return combined
 
-    if convert_type:
-        return_list = _type_cols(return_list)
 
-    return_list = _arrange_cols(return_list, properties, output_id)
+def _aggregate_response_metadata(
+    responses: list[requests.Response],
+) -> BaseMetadata:
+    """Build metadata from the first response, summing elapsed across chunks.
 
-    return_list = _sort_rows(return_list)
-    # Use the first response for URL/headers; when the filter was chunked,
-    # aggregate elapsed time across all chunks so ``query_time`` reflects
-    # the full operation rather than just the first sub-request.
+    The first response's URL and headers are the representative ones to
+    return. When the filter was fanned across multiple chunks, replace
+    its elapsed with the sum so ``query_time`` reflects the full
+    operation rather than just the first sub-request.
+    """
     metadata_response = responses[0]
     if len(responses) > 1:
         metadata_response.elapsed = sum(
             (r.elapsed for r in responses[1:]),
             start=metadata_response.elapsed,
         )
-    metadata = BaseMetadata(metadata_response)
-    return return_list, metadata
+    return BaseMetadata(metadata_response)
 
 
 def _handle_stats_nesting(
