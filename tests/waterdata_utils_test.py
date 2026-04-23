@@ -23,6 +23,20 @@ def _query_params(prepared_request):
     return parse_qs(urlsplit(prepared_request.url).query)
 
 
+def _fake_prepared_request(url="https://example.test"):
+    """Stand-in for the object ``_construct_api_requests`` returns."""
+    return SimpleNamespace(url=url, method="GET", headers={})
+
+
+def _fake_response(url="https://example.test", elapsed_ms=1):
+    """Stand-in for the response object ``_walk_pages`` returns."""
+    return SimpleNamespace(
+        url=url,
+        elapsed=timedelta(milliseconds=elapsed_ms),
+        headers={},
+    )
+
+
 def test_get_args_basic():
     local_vars = {
         "monitoring_location_id": "123",
@@ -240,17 +254,12 @@ def test_long_filter_fans_out_into_multiple_requests():
 
     def fake_construct_api_requests(**kwargs):
         sent_filters.append(kwargs.get("filter"))
-        return SimpleNamespace(url="https://example.test", method="GET", headers={})
+        return _fake_prepared_request()
 
     def fake_walk_pages(*_args, **_kwargs):
         idx = len(sent_filters)
         frame = pd.DataFrame({"id": [f"chunk-{idx}"], "value": [idx]})
-        resp = SimpleNamespace(
-            url="https://example.test",
-            elapsed=timedelta(milliseconds=1),
-            headers={},
-        )
-        return frame, resp
+        return frame, _fake_response()
 
     with mock.patch(
         "dataretrieval.waterdata.utils._construct_api_requests",
@@ -299,18 +308,11 @@ def test_long_filter_deduplicates_cross_chunk_overlap():
     def fake_walk_pages(*_args, **_kwargs):
         call_count["n"] += 1
         frame = pd.DataFrame({"id": ["shared-feature"], "value": [1]})
-        resp = SimpleNamespace(
-            url="https://example.test",
-            elapsed=timedelta(milliseconds=1),
-            headers={},
-        )
-        return frame, resp
+        return frame, _fake_response()
 
     with mock.patch(
         "dataretrieval.waterdata.utils._construct_api_requests",
-        return_value=SimpleNamespace(
-            url="https://example.test", method="GET", headers={}
-        ),
+        return_value=_fake_prepared_request(),
     ), mock.patch(
         "dataretrieval.waterdata.utils._walk_pages", side_effect=fake_walk_pages
     ), mock.patch(
@@ -360,18 +362,11 @@ def test_empty_chunks_do_not_downgrade_geodataframe():
                 geometry=[Point(call_count["n"], call_count["n"])],
                 crs="EPSG:4326",
             )
-        resp = SimpleNamespace(
-            url="https://example.test",
-            elapsed=timedelta(milliseconds=1),
-            headers={},
-        )
-        return frame, resp
+        return frame, _fake_response()
 
     with mock.patch(
         "dataretrieval.waterdata.utils._construct_api_requests",
-        return_value=SimpleNamespace(
-            url="https://example.test", method="GET", headers={}
-        ),
+        return_value=_fake_prepared_request(),
     ), mock.patch(
         "dataretrieval.waterdata.utils._walk_pages", side_effect=fake_walk_pages
     ), mock.patch(
@@ -467,9 +462,7 @@ def test_effective_filter_budget_passes_through_when_no_url_space():
     )
     with mock.patch(
         "dataretrieval.waterdata.utils._construct_api_requests",
-        return_value=SimpleNamespace(
-            url="https://example.test/" + "A" * 9000, method="GET", headers={}
-        ),
+        return_value=_fake_prepared_request(url="https://example.test/" + "A" * 9000),
     ):
         budget = _effective_filter_budget({"filter": expr}, expr)
     # Budget is large enough that _chunk_cql_or returns the expression
@@ -480,12 +473,14 @@ def test_effective_filter_budget_passes_through_when_no_url_space():
 
 def test_effective_filter_budget_shrinks_with_more_url_params():
     """Adding more scalar query params consumes URL bytes and should
-    shrink the raw filter budget accordingly."""
+    shrink the raw filter budget accordingly. Use a filter large enough
+    to skip the short-circuit fast path so the probe actually runs."""
     clause = "(time >= '2023-01-15T00:00:00Z' AND time <= '2023-01-15T00:30:00Z')"
+    expr = " OR ".join([clause] * 100)
     sparse_args = {
         "service": "continuous",
         "monitoring_location_id": "USGS-02238500",
-        "filter": clause,
+        "filter": expr,
         "filter_lang": "cql-text",
     }
     dense_args = {
@@ -494,8 +489,8 @@ def test_effective_filter_budget_shrinks_with_more_url_params():
         "statistic_id": "00003",
         "last_modified": "2023-01-01T00:00:00Z/2023-12-31T23:59:59Z",
     }
-    sparse_budget = _effective_filter_budget(sparse_args, clause)
-    dense_budget = _effective_filter_budget(dense_args, clause)
+    sparse_budget = _effective_filter_budget(sparse_args, expr)
+    dense_budget = _effective_filter_budget(dense_args, expr)
     assert dense_budget < sparse_budget
 
 
@@ -509,7 +504,7 @@ def test_cql_json_filter_is_not_chunked():
 
     def fake_construct_api_requests(**kwargs):
         sent_filters.append(kwargs.get("filter"))
-        return SimpleNamespace(url="https://example.test", method="GET", headers={})
+        return _fake_prepared_request()
 
     with mock.patch(
         "dataretrieval.waterdata.utils._construct_api_requests",
@@ -518,11 +513,7 @@ def test_cql_json_filter_is_not_chunked():
         "dataretrieval.waterdata.utils._walk_pages",
         return_value=(
             pd.DataFrame({"id": ["row-1"], "value": [1]}),
-            SimpleNamespace(
-                url="https://example.test",
-                elapsed=timedelta(milliseconds=1),
-                headers={},
-            ),
+            _fake_response(),
         ),
     ):
         get_continuous(

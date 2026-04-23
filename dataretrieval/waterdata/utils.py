@@ -240,6 +240,12 @@ _CQL_FILTER_CHUNK_LEN = 5000
 # intermediate proxy variance.
 _WATERDATA_URL_BYTE_LIMIT = 8000
 
+# Conservative over-estimate of the URL bytes consumed by everything
+# *except* the filter value — the base URL, other query params, and the
+# ``&filter=`` / ``&filter-lang=...`` keys. Used only to decide whether a
+# filter is small enough that the expensive budget probe can be skipped.
+_NON_FILTER_URL_HEADROOM = 1000
+
 
 def _iter_or_boundaries(expr: str) -> Iterator[tuple[int, int]]:
     """Yield ``(start, end)`` spans of each top-level ``OR`` separator.
@@ -356,6 +362,15 @@ def _effective_filter_budget(args: dict[str, Any], filter_expr: str) -> int:
        clustered at one end of the filter), so budgeting against the
        average lets such a chunk overflow the URL limit by a few bytes.
     """
+    # Fast path: if the whole encoded filter already fits with room for
+    # any plausible non-filter URL overhead, skip the probe and the
+    # splitter entirely. Signals pass-through via a budget larger than
+    # the filter. Saves a PreparedRequest build + a full splitter scan
+    # on every short-filter call.
+    encoded_len = len(quote_plus(filter_expr))
+    if encoded_len + _NON_FILTER_URL_HEADROOM <= _WATERDATA_URL_BYTE_LIMIT:
+        return len(filter_expr) + 1
+
     probe = _construct_api_requests(**{**args, "filter": "x"})
     non_filter_url_bytes = len(probe.url) - 1
     available_url_bytes = _WATERDATA_URL_BYTE_LIMIT - non_filter_url_bytes
@@ -998,18 +1013,13 @@ def get_ogc_data(
         filter_chunks = [None]
 
     frames = []
-    first_response = None
-    total_elapsed = None
+    responses = []
     for chunk in filter_chunks:
         chunk_args = args if chunk is None else {**args, "filter": chunk}
         req = _construct_api_requests(**chunk_args)
         chunk_df, chunk_response = _walk_pages(geopd=GEOPANDAS, req=req)
         frames.append(chunk_df)
-        if first_response is None:
-            first_response = chunk_response
-            total_elapsed = chunk_response.elapsed
-        else:
-            total_elapsed = total_elapsed + chunk_response.elapsed
+        responses.append(chunk_response)
 
     # Drop empty frames before concat — `_get_resp_data` returns a plain
     # ``pd.DataFrame()`` on empty responses, which can downgrade a concat
@@ -1036,12 +1046,16 @@ def get_ogc_data(
     return_list = _arrange_cols(return_list, properties, output_id)
 
     return_list = _sort_rows(return_list)
-    # Create metadata object from the first response. When the filter was
-    # chunked into multiple sub-requests, query_time reflects the total
-    # elapsed time across all chunks rather than just the first.
-    if len(frames) > 1:
-        first_response.elapsed = total_elapsed
-    metadata = BaseMetadata(first_response)
+    # Use the first response for URL/headers; when the filter was chunked,
+    # aggregate elapsed time across all chunks so ``query_time`` reflects
+    # the full operation rather than just the first sub-request.
+    metadata_response = responses[0]
+    if len(responses) > 1:
+        metadata_response.elapsed = sum(
+            (r.elapsed for r in responses[1:]),
+            start=metadata_response.elapsed,
+        )
+    metadata = BaseMetadata(metadata_response)
     return return_list, metadata
 
 
