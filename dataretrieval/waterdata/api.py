@@ -445,7 +445,7 @@ def get_nearest_continuous(
     monitoring_location_id: str | list[str] | None = None,
     parameter_code: str | list[str] | None = None,
     *,
-    window: str | pd.Timedelta = "7min30s",
+    window: str | pd.Timedelta = "00:07:30",
     on_tie: Literal["first", "last", "mean"] = "first",
     **kwargs,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
@@ -472,12 +472,14 @@ def get_nearest_continuous(
         Forwarded to ``get_continuous``.
     parameter_code : string or list of strings, optional
         Forwarded to ``get_continuous``.
-    window : string or ``pandas.Timedelta``, default ``"7min30s"``
-        Half-window around each target. Must be small enough that every
-        target's window captures roughly one observation at the service
-        cadence. The 7min30s default matches a 15-minute continuous gauge;
-        use a larger value (e.g. ``"15min"``) when the gauge cadence is
-        longer or you need more resilience to data gaps.
+    window : string or ``pandas.Timedelta``, default ``"00:07:30"``
+        Half-window around each target, in ``HH:MM:SS`` form (or any
+        ``pandas.Timedelta``-parseable string: ``"7min30s"``,
+        ``"450s"``, etc.). Must be small enough that every target's
+        window captures roughly one observation at the service cadence.
+        The ``"00:07:30"`` default matches a 15-minute continuous gauge;
+        use a larger value (e.g. ``"00:15:00"``) when the gauge cadence
+        is longer or you need more resilience to data gaps.
     on_tie : {"first", "last", "mean"}, default ``"first"``
         How to resolve ties when two observations are exactly equidistant
         from a target (which happens when the target falls at the midpoint
@@ -547,7 +549,7 @@ def get_nearest_continuous(
         ...     targets,
         ...     monitoring_location_id="USGS-02238500",
         ...     parameter_code="00060",
-        ...     window="30min",
+        ...     window="00:30:00",
         ...     on_tie="mean",
         ... )
     """

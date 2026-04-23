@@ -58,7 +58,7 @@ def test_builds_one_or_clause_per_target(patch_get_continuous):
         targets,
         monitoring_location_id="USGS-02238500",
         parameter_code="00060",
-        window="7min30s",
+        window="00:07:30",
     )
     _, kwargs = patch_get_continuous.call_args
     filter_expr = kwargs["filter"]
@@ -89,7 +89,7 @@ def test_tie_first_keeps_earlier(patch_get_continuous):
         targets,
         monitoring_location_id="USGS-02238500",
         on_tie="first",
-        window="7min30s",
+        window="00:07:30",
     )
     assert len(result) == 1
     assert result.iloc[0]["value"] == 22.0
@@ -111,7 +111,7 @@ def test_tie_last_keeps_later(patch_get_continuous):
         targets,
         monitoring_location_id="USGS-02238500",
         on_tie="last",
-        window="7min30s",
+        window="00:07:30",
     )
     assert result.iloc[0]["value"] == 22.4
     assert result.iloc[0]["time"] == pd.Timestamp("2023-06-15T10:30:00Z")
@@ -132,7 +132,7 @@ def test_tie_mean_averages_numeric_and_uses_target_time(patch_get_continuous):
         targets,
         monitoring_location_id="USGS-02238500",
         on_tie="mean",
-        window="7min30s",
+        window="00:07:30",
     )
     assert result.iloc[0]["value"] == pytest.approx(22.2)
     # Time is set to the target since no real observation sits at the midpoint
@@ -230,6 +230,25 @@ def test_accepts_list_of_strings(patch_get_continuous):
         ["2023-06-15T10:30:31Z"], monitoring_location_id="USGS-02238500"
     )
     assert len(result) == 1
+
+
+def test_window_accepts_hhmmss_and_shorthand_equivalently(patch_get_continuous):
+    """``window="00:07:30"`` and ``window="7min30s"`` are the same duration
+    as far as ``pandas.Timedelta`` is concerned, so the two forms must
+    produce identical CQL filters."""
+    targets = pd.to_datetime(["2023-06-15T10:30:00Z"], utc=True)
+    patch_get_continuous.return_value = (_fake_df([]), mock.Mock())
+
+    get_nearest_continuous(targets, monitoring_location_id="USGS-1", window="00:07:30")
+    filter_hhmmss = patch_get_continuous.call_args.kwargs["filter"]
+
+    get_nearest_continuous(targets, monitoring_location_id="USGS-1", window="7min30s")
+    filter_shorthand = patch_get_continuous.call_args.kwargs["filter"]
+
+    assert filter_hhmmss == filter_shorthand
+    # And the bounds should be 7:30 away from the target
+    assert "'2023-06-15T10:22:30Z'" in filter_hhmmss
+    assert "'2023-06-15T10:37:30Z'" in filter_hhmmss
 
 
 def test_forwards_kwargs_to_get_continuous(patch_get_continuous):
