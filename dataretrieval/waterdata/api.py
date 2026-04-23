@@ -560,35 +560,23 @@ def get_nearest_continuous(
         ...     on_tie="mean",
         ... )
     """
-    for forbidden in ("time", "filter", "filter_lang"):
-        if forbidden in kwargs:
-            raise TypeError(
-                f"get_nearest_continuous constructs its own {forbidden!r}; "
-                "do not pass it directly"
-            )
-    if on_tie not in ("first", "last", "mean"):
-        raise ValueError(f"on_tie must be 'first', 'last', or 'mean'; got {on_tie!r}")
-
-    targets = pd.to_datetime(list(targets), utc=True)
+    _check_nearest_kwargs(kwargs, on_tie)
+    targets = pd.DatetimeIndex(pd.to_datetime(targets, utc=True))
     window_td = pd.Timedelta(window)
 
     if len(targets) == 0:
-        # Nothing to ask about — return an empty frame shaped like a real
-        # ``get_continuous`` response (via a trivially-empty time range).
+        # Issue a trivial-range request so the caller still receives a
+        # real ``BaseMetadata``; return an empty frame with the same
+        # shape a real response would have.
         df, md = get_continuous(
             monitoring_location_id=monitoring_location_id,
             parameter_code=parameter_code,
             time="1900-01-01T00:00:00Z/1900-01-01T00:00:00Z",
             **kwargs,
         )
-        return df.iloc[0:0], md
+        return _empty_nearest_result(df), md
 
-    filter_expr = " OR ".join(
-        f"(time >= '{(t - window_td).strftime('%Y-%m-%dT%H:%M:%SZ')}' "
-        f"AND time <= '{(t + window_td).strftime('%Y-%m-%dT%H:%M:%SZ')}')"
-        for t in targets
-    )
-
+    filter_expr = _build_window_or_filter(targets, window_td)
     df, md = get_continuous(
         monitoring_location_id=monitoring_location_id,
         parameter_code=parameter_code,
@@ -596,50 +584,102 @@ def get_nearest_continuous(
         filter_lang="cql-text",
         **kwargs,
     )
-
     if df.empty:
-        return df, md
+        return _empty_nearest_result(df), md
 
-    df = df.copy()
-    df["time"] = pd.to_datetime(df["time"], utc=True)
+    df = df.assign(time=pd.to_datetime(df["time"], utc=True))
+    site_groups = (
+        df.groupby("monitoring_location_id", sort=False)
+        if "monitoring_location_id" in df.columns
+        else [(None, df)]
+    )
 
-    if "monitoring_location_id" in df.columns:
-        site_groups = list(df.groupby("monitoring_location_id", sort=False))
-    else:
-        site_groups = [(None, df)]
-
-    selected = []
-    for _, site_df in site_groups:
-        for target in targets:
-            mask = (site_df["time"] >= target - window_td) & (
-                site_df["time"] <= target + window_td
-            )
-            window_df = site_df[mask]
-            if window_df.empty:
-                continue
-            deltas = (window_df["time"] - target).abs()
-            candidates = window_df[deltas == deltas.min()].sort_values("time")
-
-            if len(candidates) == 1 or on_tie == "first":
-                row = candidates.iloc[0].copy()
-            elif on_tie == "last":
-                row = candidates.iloc[-1].copy()
-            else:  # "mean"
-                row = candidates.iloc[0].copy()
-                for col in candidates.select_dtypes("number").columns:
-                    row[col] = candidates[col].mean()
-                row["time"] = target
-
-            row["target_time"] = target
-            selected.append(row)
-
+    selected = [
+        row
+        for _, site_df in site_groups
+        for target in targets
+        if (row := _pick_nearest_row(site_df, target, window_td, on_tie)) is not None
+    ]
     if not selected:
-        empty = df.iloc[0:0].copy()
-        empty["target_time"] = pd.Series(dtype="datetime64[ns, UTC]")
-        return empty, md
+        return _empty_nearest_result(df), md
+    return pd.DataFrame(selected).reset_index(drop=True), md
 
-    result = pd.DataFrame(selected).reset_index(drop=True)
-    return result, md
+
+_VALID_ON_TIE = ("first", "last", "mean")
+
+
+def _check_nearest_kwargs(kwargs: dict, on_tie: str) -> None:
+    """Reject kwargs the helper owns; validate ``on_tie``."""
+    for forbidden in ("time", "filter", "filter_lang"):
+        if forbidden in kwargs:
+            raise TypeError(
+                f"get_nearest_continuous constructs its own {forbidden!r}; "
+                "do not pass it directly"
+            )
+    if on_tie not in _VALID_ON_TIE:
+        raise ValueError(f"on_tie must be one of {_VALID_ON_TIE}; got {on_tie!r}")
+
+
+def _build_window_or_filter(targets: pd.DatetimeIndex, window_td: pd.Timedelta) -> str:
+    """Build the CQL OR-chain of ``time >= ... AND time <= ...`` windows.
+
+    ``get_continuous`` auto-chunks the result if the full URL would
+    exceed the server's length limit, so this is always safe to build
+    as one string even for many targets.
+    """
+    return " OR ".join(
+        f"(time >= '{(t - window_td).strftime('%Y-%m-%dT%H:%M:%SZ')}' "
+        f"AND time <= '{(t + window_td).strftime('%Y-%m-%dT%H:%M:%SZ')}')"
+        for t in targets
+    )
+
+
+def _pick_nearest_row(
+    site_df: pd.DataFrame,
+    target: pd.Timestamp,
+    window_td: pd.Timedelta,
+    on_tie: str,
+) -> pd.Series | None:
+    """Return the single row within ``window_td`` of ``target``, or ``None``.
+
+    Resolves ties (two rows equidistant from ``target``) per ``on_tie``.
+    The returned row carries a ``target_time`` column identifying which
+    target it was selected for.
+    """
+    in_window = site_df[
+        (site_df["time"] >= target - window_td)
+        & (site_df["time"] <= target + window_td)
+    ]
+    if in_window.empty:
+        return None
+    deltas = (in_window["time"] - target).abs()
+    candidates = in_window[deltas == deltas.min()].sort_values("time")
+
+    if len(candidates) == 1 or on_tie == "first":
+        row = candidates.iloc[0].copy()
+    elif on_tie == "last":
+        row = candidates.iloc[-1].copy()
+    else:  # "mean" — synthesize a row whose numeric cols are averaged and
+        # whose ``time`` is the target (no real observation sits at the midpoint).
+        row = candidates.iloc[0].copy()
+        for col in candidates.select_dtypes("number").columns:
+            row[col] = candidates[col].mean()
+        row["time"] = target
+
+    row["target_time"] = target
+    return row
+
+
+def _empty_nearest_result(template: pd.DataFrame | None = None) -> pd.DataFrame:
+    """Empty frame with a ``target_time`` column, for no-match cases.
+
+    When ``template`` is provided, preserve its columns/dtypes so the
+    returned frame matches the shape of a real ``get_continuous``
+    response.
+    """
+    base = pd.DataFrame() if template is None else template.iloc[0:0].copy()
+    base["target_time"] = pd.Series(dtype="datetime64[ns, UTC]")
+    return base
 
 
 def get_monitoring_locations(
