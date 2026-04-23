@@ -145,6 +145,25 @@ def test_split_top_level_or_respects_quotes():
     assert _split_top_level_or(expr) == ["name = 'foo OR bar'", "id = 1"]
 
 
+def test_split_top_level_or_handles_doubled_quote_escape():
+    """CQL text escapes a single quote inside a literal as ``''``. The
+    two quotes are adjacent, so the scanner's naive toggle-on-quote logic
+    happens to land back in the correct state with nothing between the
+    toggles to misclassify. Lock that behavior in so a future refactor
+    can't regress it."""
+    cases = [
+        ("name = 'O''Reilly OR Co' OR id = 1", ["name = 'O''Reilly OR Co'", "id = 1"]),
+        ("name = 'It''s' OR id = 1", ["name = 'It''s'", "id = 1"]),
+        (
+            "name = 'alpha ''or'' beta' OR id = 1",
+            ["name = 'alpha ''or'' beta'", "id = 1"],
+        ),
+        ("'x'' OR ''y' OR id = 1", ["'x'' OR ''y'", "id = 1"]),
+    ]
+    for expr, expected in cases:
+        assert _split_top_level_or(expr) == expected, expr
+
+
 def test_split_top_level_or_single_clause():
     assert _split_top_level_or("time >= '2023-01-01T00:00:00Z'") == [
         "time >= '2023-01-01T00:00:00Z'"
@@ -435,6 +454,28 @@ def test_effective_filter_budget_uses_max_clause_ratio():
     # Budget should be tight enough that a chunk of only-light clauses
     # (the heavier-encoding shape here) still fits.
     assert len(quote_plus(light)) * (budget // len(light)) < _WATERDATA_URL_BYTE_LIMIT
+
+
+def test_effective_filter_budget_passes_through_when_no_url_space():
+    """If the non-filter URL already exceeds the byte limit, chunking
+    cannot make the request succeed. The budget helper should signal
+    pass-through (return a budget larger than the filter) so
+    ``_chunk_cql_or`` emits one chunk — one 414 from the server is
+    clearer than a burst of N guaranteed-414 sub-requests."""
+    expr = " OR ".join(
+        ["(time >= '2023-01-15T00:00:00Z' AND time <= '2023-01-15T00:30:00Z')"] * 50
+    )
+    with mock.patch(
+        "dataretrieval.waterdata.utils._construct_api_requests",
+        return_value=SimpleNamespace(
+            url="https://example.test/" + "A" * 9000, method="GET", headers={}
+        ),
+    ):
+        budget = _effective_filter_budget({"filter": expr}, expr)
+    # Budget is large enough that _chunk_cql_or returns the expression
+    # unchanged (passthrough) rather than producing many small chunks.
+    assert budget > len(expr)
+    assert _chunk_cql_or(expr, max_len=budget) == [expr]
 
 
 def test_effective_filter_budget_shrinks_with_more_url_params():

@@ -359,6 +359,12 @@ def _effective_filter_budget(args: dict[str, Any], filter_expr: str) -> int:
     probe = _construct_api_requests(**{**args, "filter": "x"})
     non_filter_url_bytes = len(probe.url) - 1
     available_url_bytes = _WATERDATA_URL_BYTE_LIMIT - non_filter_url_bytes
+    if available_url_bytes <= 0:
+        # The non-filter URL already exceeds the byte limit, so no chunk
+        # we could produce would fit. Return a budget larger than the
+        # filter so _chunk_cql_or passes it through unchanged — one 414
+        # from the server is clearer than a burst of N failing sub-requests.
+        return len(filter_expr) + 1
     parts = _split_top_level_or(filter_expr) or [filter_expr]
     encoding_ratio = max(len(quote_plus(p)) / len(p) for p in parts if p)
     return max(100, int(available_url_bytes / encoding_ratio))
