@@ -40,6 +40,8 @@ SERVICES = Literal[
     "results",
 ]
 
+FILTER_LANG = Literal["cql-text", "cql-json"]
+
 PROFILES = Literal[
     "actgroup",
     "actmetric",
