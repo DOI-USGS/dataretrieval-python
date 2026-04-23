@@ -565,16 +565,7 @@ def get_nearest_continuous(
     window_td = pd.Timedelta(window)
 
     if len(targets) == 0:
-        # Issue a trivial-range request so the caller still receives a
-        # real ``BaseMetadata``; return an empty frame with the same
-        # shape a real response would have.
-        df, md = get_continuous(
-            monitoring_location_id=monitoring_location_id,
-            parameter_code=parameter_code,
-            time="1900-01-01T00:00:00Z/1900-01-01T00:00:00Z",
-            **kwargs,
-        )
-        return _empty_nearest_result(df), md
+        raise ValueError("targets must contain at least one timestamp")
 
     filter_expr = _build_window_or_filter(targets, window_td)
     df, md = get_continuous(

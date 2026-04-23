@@ -171,16 +171,13 @@ def test_multi_site_returns_row_per_target_per_site(patch_get_continuous):
     assert set(result["monitoring_location_id"]) == {"USGS-1", "USGS-2"}
 
 
-def test_empty_targets_returns_empty_frame_without_building_filter(
-    patch_get_continuous,
-):
-    patch_get_continuous.return_value = (_fake_df([]), mock.Mock())
-    result, _ = get_nearest_continuous([], monitoring_location_id="USGS-02238500")
-    assert result.empty
-    # The one call that happens uses a trivial time= window, not a filter.
-    _, kwargs = patch_get_continuous.call_args
-    assert "filter" not in kwargs
-    assert "time" in kwargs
+def test_empty_targets_raises(patch_get_continuous):
+    """An empty ``targets`` is a call with no useful work to do and
+    almost always a caller bug — raise rather than silently issuing a
+    no-op HTTP request."""
+    with pytest.raises(ValueError, match="targets"):
+        get_nearest_continuous([], monitoring_location_id="USGS-02238500")
+    patch_get_continuous.assert_not_called()
 
 
 def test_rejects_time_kwarg(patch_get_continuous):
