@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g04d94fdd5 documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g33e928d08 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=5459badb"></script>
+      <script src="../_static/documentation_options.js?v=ff74839b"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -64,6 +64,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_latest_continuous"><code class="docutils literal notranslate"><span class="pre">get_latest_continuous()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_latest_daily"><code class="docutils literal notranslate"><span class="pre">get_latest_daily()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_monitoring_locations"><code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_nearest_continuous"><code class="docutils literal notranslate"><span class="pre">get_nearest_continuous()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_reference_table"><code class="docutils literal notranslate"><span class="pre">get_reference_table()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_samples"><code class="docutils literal notranslate"><span class="pre">get_samples()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_stats_date_range"><code class="docutils literal notranslate"><span class="pre">get_stats_date_range()</span></code></a></li>
@@ -1280,6 +1281,111 @@ limit; the results are concatenated.</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-09423350&quot;</span><span class="p">],</span>
 <span class="gp">... </span>    <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">,</span> <span class="s2">&quot;state_name&quot;</span><span class="p">,</span> <span class="s2">&quot;country_name&quot;</span><span class="p">],</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.waterdata.get_nearest_continuous">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.waterdata.</span></span><span class="sig-name descname"><span class="pre">get_nearest_continuous</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitoring_location_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Timedelta</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'PT7M30S'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_tie</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'first'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'last'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'mean'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'first'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/waterdata/api.html#get_nearest_continuous"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.waterdata.get_nearest_continuous" title="Link to this definition"></a></dt>
+<dd><p>For each target timestamp, return the nearest continuous observation.</p>
+<p>Builds one bracketed <code class="docutils literal notranslate"><span class="pre">(time</span> <span class="pre">&gt;=</span> <span class="pre">t-window</span> <span class="pre">AND</span> <span class="pre">time</span> <span class="pre">&lt;=</span> <span class="pre">t+window)</span></code> clause
+per target, joins them as a top-level CQL <code class="docutils literal notranslate"><span class="pre">OR</span></code> filter, and lets
+<code class="docutils literal notranslate"><span class="pre">get_continuous</span></code> (with its auto-chunking) fetch every observation
+that falls in any window. Then, per <code class="docutils literal notranslate"><span class="pre">(monitoring_location_id,</span> <span class="pre">target)</span></code>
+pair, picks the single observation with the smallest <code class="docutils literal notranslate"><span class="pre">|time</span> <span class="pre">-</span> <span class="pre">target|</span></code>.</p>
+<p>The USGS continuous endpoint matches <code class="docutils literal notranslate"><span class="pre">time</span></code> parameters exactly rather
+than fuzzily, and it does not implement <code class="docutils literal notranslate"><span class="pre">sortby</span></code> for arbitrary fields;
+this function is the single-round-trip way to ask “what reading is
+nearest this timestamp?” for many timestamps at once.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>targets</strong> (<em>list-like</em><em> of </em><em>datetime-convertible</em>) – Target timestamps. Naive datetimes are treated as UTC. Accepts a
+list, <code class="docutils literal notranslate"><span class="pre">pandas.Series</span></code>, <code class="docutils literal notranslate"><span class="pre">pandas.DatetimeIndex</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code>,
+or anything <code class="docutils literal notranslate"><span class="pre">pandas.to_datetime</span></code> consumes.</p></li>
+<li><p><strong>monitoring_location_id</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Forwarded to <code class="docutils literal notranslate"><span class="pre">get_continuous</span></code>.</p></li>
+<li><p><strong>parameter_code</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Forwarded to <code class="docutils literal notranslate"><span class="pre">get_continuous</span></code>.</p></li>
+<li><p><strong>window</strong> (string or <code class="docutils literal notranslate"><span class="pre">pandas.Timedelta</span></code>, default <code class="docutils literal notranslate"><span class="pre">&quot;PT7M30S&quot;</span></code>) – <p>Half-window around each target, as an ISO 8601 duration
+(<code class="docutils literal notranslate"><span class="pre">&quot;PT7M30S&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;PT15M&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;PT1H&quot;</span></code>, etc.). Also accepts
+any other form <code class="docutils literal notranslate"><span class="pre">pandas.Timedelta</span></code> parses — <code class="docutils literal notranslate"><span class="pre">HH:MM:SS</span></code>
+(<code class="docutils literal notranslate"><span class="pre">&quot;00:07:30&quot;</span></code>), pandas shorthand (<code class="docutils literal notranslate"><span class="pre">&quot;7min30s&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;450s&quot;</span></code>), or a <code class="docutils literal notranslate"><span class="pre">pd.Timedelta</span></code> directly. See the
+<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Timedelta.html">pandas.Timedelta docs</a>
+for the full grammar.</p>
+<p>Must be small enough that every target’s window captures
+roughly one observation at the service cadence. The default
+matches a 15-minute continuous gauge; widen (e.g.
+<code class="docutils literal notranslate"><span class="pre">&quot;PT15M&quot;</span></code>) for irregular cadences or resilience to data
+gaps.</p>
+</p></li>
+<li><p><strong>on_tie</strong> ({“first”, “last”, “mean”}, default <code class="docutils literal notranslate"><span class="pre">&quot;first&quot;</span></code>) – <p>How to resolve ties when two observations are exactly equidistant
+from a target (which happens when the target falls at the midpoint
+between grid points — e.g. target <code class="docutils literal notranslate"><span class="pre">10:22:30</span></code> for a 15-minute
+gauge).</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;first&quot;</span></code>: keep the earlier observation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;last&quot;</span></code>:  keep the later observation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;mean&quot;</span></code>:  average numeric columns; set the <code class="docutils literal notranslate"><span class="pre">time</span></code> column to
+the target, since no real observation exists at the midpoint.</p></li>
+</ul>
+</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments forwarded to <code class="docutils literal notranslate"><span class="pre">get_continuous</span></code>
+(e.g. <code class="docutils literal notranslate"><span class="pre">statistic_id</span></code>, <code class="docutils literal notranslate"><span class="pre">approval_status</span></code>, <code class="docutils literal notranslate"><span class="pre">properties</span></code>).
+Passing <code class="docutils literal notranslate"><span class="pre">time</span></code>, <code class="docutils literal notranslate"><span class="pre">filter</span></code>, or <code class="docutils literal notranslate"><span class="pre">filter_lang</span></code> raises
+<code class="docutils literal notranslate"><span class="pre">TypeError</span></code> — this function builds those itself.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – One row per <code class="docutils literal notranslate"><span class="pre">(target,</span> <span class="pre">monitoring_location_id)</span></code> combination that
+had at least one observation in its window. Rows are augmented
+with a <code class="docutils literal notranslate"><span class="pre">target_time</span></code> column indicating which target they
+correspond to. Targets with no observations in their window are
+silently dropped.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMetadata</span></code></a>) – Metadata from the underlying <code class="docutils literal notranslate"><span class="pre">get_continuous</span></code> call.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p><em>Window sizing and ties.</em> When <code class="docutils literal notranslate"><span class="pre">window</span></code> is exactly half the service
+cadence, most targets’ windows contain a single observation and
+<code class="docutils literal notranslate"><span class="pre">on_tie</span></code> is moot. Ties arise only when a target sits exactly at the
+window edge — rare in practice but possible. Setting <code class="docutils literal notranslate"><span class="pre">window</span></code> to a
+full cadence (or larger) guarantees at least one observation per
+target in steady state at the cost of more bytes per response.</p>
+<p><em>Why windowed CQL rather than sort+limit.</em> The API’s advertised
+<code class="docutils literal notranslate"><span class="pre">sortby</span></code> parameter would make this a one-liner per target (<code class="docutils literal notranslate"><span class="pre">filter</span></code>
+by <code class="docutils literal notranslate"><span class="pre">time</span> <span class="pre">&lt;=</span> <span class="pre">t</span></code> and <code class="docutils literal notranslate"><span class="pre">limit</span> <span class="pre">1</span></code>), but it is per-query — you would need
+one HTTP round-trip per target. The CQL <code class="docutils literal notranslate"><span class="pre">OR</span></code>-chain approach folds
+all N targets into one request (auto-chunked when the URL is long).</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Pair three off-grid timestamps with nearby observations</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">targets</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">[</span>
+<span class="gp">... </span>        <span class="s2">&quot;2023-06-15T10:30:31Z&quot;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s2">&quot;2023-06-15T14:07:12Z&quot;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s2">&quot;2023-06-16T03:45:19Z&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="p">]</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_nearest_continuous</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">targets</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-02238500&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Widen the window for an irregular-cadence gauge</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_nearest_continuous</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">targets</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-02238500&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">window</span><span class="o">=</span><span class="s2">&quot;PT30M&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">on_tie</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>

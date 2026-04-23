@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g04d94fdd5 documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g33e928d08 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=5459badb"></script>
+      <script src="../../../_static/documentation_options.js?v=ff74839b"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -85,7 +85,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">StringIO</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_args</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">get_args</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
@@ -520,6 +520,242 @@
 
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
+
+
+<div class="viewcode-block" id="get_nearest_continuous">
+<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_nearest_continuous">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_nearest_continuous</span><span class="p">(</span>
+    <span class="n">targets</span><span class="p">,</span>
+    <span class="n">monitoring_location_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">window</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span> <span class="o">=</span> <span class="s2">&quot;PT7M30S&quot;</span><span class="p">,</span>
+    <span class="n">on_tie</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;first&quot;</span><span class="p">,</span> <span class="s2">&quot;last&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;first&quot;</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;For each target timestamp, return the nearest continuous observation.</span>
+
+<span class="sd">    Builds one bracketed ``(time &gt;= t-window AND time &lt;= t+window)`` clause</span>
+<span class="sd">    per target, joins them as a top-level CQL ``OR`` filter, and lets</span>
+<span class="sd">    ``get_continuous`` (with its auto-chunking) fetch every observation</span>
+<span class="sd">    that falls in any window. Then, per ``(monitoring_location_id, target)``</span>
+<span class="sd">    pair, picks the single observation with the smallest ``|time - target|``.</span>
+
+<span class="sd">    The USGS continuous endpoint matches ``time`` parameters exactly rather</span>
+<span class="sd">    than fuzzily, and it does not implement ``sortby`` for arbitrary fields;</span>
+<span class="sd">    this function is the single-round-trip way to ask &quot;what reading is</span>
+<span class="sd">    nearest this timestamp?&quot; for many timestamps at once.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    targets : list-like of datetime-convertible</span>
+<span class="sd">        Target timestamps. Naive datetimes are treated as UTC. Accepts a</span>
+<span class="sd">        list, ``pandas.Series``, ``pandas.DatetimeIndex``, ``numpy.ndarray``,</span>
+<span class="sd">        or anything ``pandas.to_datetime`` consumes.</span>
+<span class="sd">    monitoring_location_id : string or list of strings, optional</span>
+<span class="sd">        Forwarded to ``get_continuous``.</span>
+<span class="sd">    parameter_code : string or list of strings, optional</span>
+<span class="sd">        Forwarded to ``get_continuous``.</span>
+<span class="sd">    window : string or ``pandas.Timedelta``, default ``&quot;PT7M30S&quot;``</span>
+<span class="sd">        Half-window around each target, as an ISO 8601 duration</span>
+<span class="sd">        (``&quot;PT7M30S&quot;``, ``&quot;PT15M&quot;``, ``&quot;PT1H&quot;``, etc.). Also accepts</span>
+<span class="sd">        any other form ``pandas.Timedelta`` parses — ``HH:MM:SS``</span>
+<span class="sd">        (``&quot;00:07:30&quot;``), pandas shorthand (``&quot;7min30s&quot;``,</span>
+<span class="sd">        ``&quot;450s&quot;``), or a ``pd.Timedelta`` directly. See the</span>
+<span class="sd">        `pandas.Timedelta docs</span>
+<span class="sd">        &lt;https://pandas.pydata.org/docs/reference/api/pandas.Timedelta.html&gt;`_</span>
+<span class="sd">        for the full grammar.</span>
+
+<span class="sd">        Must be small enough that every target&#39;s window captures</span>
+<span class="sd">        roughly one observation at the service cadence. The default</span>
+<span class="sd">        matches a 15-minute continuous gauge; widen (e.g.</span>
+<span class="sd">        ``&quot;PT15M&quot;``) for irregular cadences or resilience to data</span>
+<span class="sd">        gaps.</span>
+<span class="sd">    on_tie : {&quot;first&quot;, &quot;last&quot;, &quot;mean&quot;}, default ``&quot;first&quot;``</span>
+<span class="sd">        How to resolve ties when two observations are exactly equidistant</span>
+<span class="sd">        from a target (which happens when the target falls at the midpoint</span>
+<span class="sd">        between grid points — e.g. target ``10:22:30`` for a 15-minute</span>
+<span class="sd">        gauge).</span>
+
+<span class="sd">        - ``&quot;first&quot;``: keep the earlier observation.</span>
+<span class="sd">        - ``&quot;last&quot;``:  keep the later observation.</span>
+<span class="sd">        - ``&quot;mean&quot;``:  average numeric columns; set the ``time`` column to</span>
+<span class="sd">          the target, since no real observation exists at the midpoint.</span>
+
+<span class="sd">    **kwargs</span>
+<span class="sd">        Additional keyword arguments forwarded to ``get_continuous``</span>
+<span class="sd">        (e.g. ``statistic_id``, ``approval_status``, ``properties``).</span>
+<span class="sd">        Passing ``time``, ``filter``, or ``filter_lang`` raises</span>
+<span class="sd">        ``TypeError`` — this function builds those itself.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame``</span>
+<span class="sd">        One row per ``(target, monitoring_location_id)`` combination that</span>
+<span class="sd">        had at least one observation in its window. Rows are augmented</span>
+<span class="sd">        with a ``target_time`` column indicating which target they</span>
+<span class="sd">        correspond to. Targets with no observations in their window are</span>
+<span class="sd">        silently dropped.</span>
+<span class="sd">    md : :class:`~dataretrieval.utils.BaseMetadata`</span>
+<span class="sd">        Metadata from the underlying ``get_continuous`` call.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    *Window sizing and ties.* When ``window`` is exactly half the service</span>
+<span class="sd">    cadence, most targets&#39; windows contain a single observation and</span>
+<span class="sd">    ``on_tie`` is moot. Ties arise only when a target sits exactly at the</span>
+<span class="sd">    window edge — rare in practice but possible. Setting ``window`` to a</span>
+<span class="sd">    full cadence (or larger) guarantees at least one observation per</span>
+<span class="sd">    target in steady state at the cost of more bytes per response.</span>
+
+<span class="sd">    *Why windowed CQL rather than sort+limit.* The API&#39;s advertised</span>
+<span class="sd">    ``sortby`` parameter would make this a one-liner per target (``filter``</span>
+<span class="sd">    by ``time &lt;= t`` and ``limit 1``), but it is per-query — you would need</span>
+<span class="sd">    one HTTP round-trip per target. The CQL ``OR``-chain approach folds</span>
+<span class="sd">    all N targets into one request (auto-chunked when the URL is long).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">        &gt;&gt;&gt; from dataretrieval import waterdata</span>
+
+<span class="sd">        &gt;&gt;&gt; # Pair three off-grid timestamps with nearby observations</span>
+<span class="sd">        &gt;&gt;&gt; targets = pd.to_datetime(</span>
+<span class="sd">        ...     [</span>
+<span class="sd">        ...         &quot;2023-06-15T10:30:31Z&quot;,</span>
+<span class="sd">        ...         &quot;2023-06-15T14:07:12Z&quot;,</span>
+<span class="sd">        ...         &quot;2023-06-16T03:45:19Z&quot;,</span>
+<span class="sd">        ...     ]</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; df, md = waterdata.get_nearest_continuous(</span>
+<span class="sd">        ...     targets,</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
+<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Widen the window for an irregular-cadence gauge</span>
+<span class="sd">        &gt;&gt;&gt; df, md = waterdata.get_nearest_continuous(</span>
+<span class="sd">        ...     targets,</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
+<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
+<span class="sd">        ...     window=&quot;PT30M&quot;,</span>
+<span class="sd">        ...     on_tie=&quot;mean&quot;,</span>
+<span class="sd">        ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_check_nearest_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">on_tie</span><span class="p">)</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="n">window_td</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;targets must contain at least one timestamp&quot;</span><span class="p">)</span>
+
+    <span class="n">filter_expr</span> <span class="o">=</span> <span class="n">_build_window_or_filter</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">window_td</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">get_continuous</span><span class="p">(</span>
+        <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">monitoring_location_id</span><span class="p">,</span>
+        <span class="n">parameter_code</span><span class="o">=</span><span class="n">parameter_code</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span>
+        <span class="n">filter_lang</span><span class="o">=</span><span class="s2">&quot;cql-text&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_empty_nearest_result</span><span class="p">(</span><span class="n">df</span><span class="p">),</span> <span class="n">md</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="n">site_groups</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;monitoring_location_id&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+        <span class="k">else</span> <span class="p">[(</span><span class="kc">None</span><span class="p">,</span> <span class="n">df</span><span class="p">)]</span>
+    <span class="p">)</span>
+
+    <span class="n">selected</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">row</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">site_df</span> <span class="ow">in</span> <span class="n">site_groups</span>
+        <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">targets</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">row</span> <span class="o">:=</span> <span class="n">_pick_nearest_row</span><span class="p">(</span><span class="n">site_df</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">window_td</span><span class="p">,</span> <span class="n">on_tie</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">selected</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_empty_nearest_result</span><span class="p">(</span><span class="n">df</span><span class="p">),</span> <span class="n">md</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">selected</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">md</span></div>
+
+
+
+<span class="n">_VALID_ON_TIE</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;first&quot;</span><span class="p">,</span> <span class="s2">&quot;last&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_nearest_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">on_tie</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reject kwargs the helper owns; validate ``on_tie``.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">forbidden</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;filter&quot;</span><span class="p">,</span> <span class="s2">&quot;filter_lang&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">forbidden</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;get_nearest_continuous constructs its own </span><span class="si">{</span><span class="n">forbidden</span><span class="si">!r}</span><span class="s2">; &quot;</span>
+                <span class="s2">&quot;do not pass it directly&quot;</span>
+            <span class="p">)</span>
+    <span class="k">if</span> <span class="n">on_tie</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_VALID_ON_TIE</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;on_tie must be one of </span><span class="si">{</span><span class="n">_VALID_ON_TIE</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="n">on_tie</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_window_or_filter</span><span class="p">(</span><span class="n">targets</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">,</span> <span class="n">window_td</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build the CQL OR-chain of ``time &gt;= ... AND time &lt;= ...`` windows.</span>
+
+<span class="sd">    ``get_continuous`` auto-chunks the result if the full URL would</span>
+<span class="sd">    exceed the server&#39;s length limit, so this is always safe to build</span>
+<span class="sd">    as one string even for many targets.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot; OR &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;(time &gt;= &#39;</span><span class="si">{</span><span class="p">(</span><span class="n">t</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">window_td</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">T%H:%M:%SZ&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;AND time &lt;= &#39;</span><span class="si">{</span><span class="p">(</span><span class="n">t</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">window_td</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">T%H:%M:%SZ&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39;)&quot;</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">targets</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_pick_nearest_row</span><span class="p">(</span>
+    <span class="n">site_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">target</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">,</span>
+    <span class="n">window_td</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">,</span>
+    <span class="n">on_tie</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the single row within ``window_td`` of ``target``, or ``None``.</span>
+
+<span class="sd">    Resolves ties (two rows equidistant from ``target``) per ``on_tie``.</span>
+<span class="sd">    The returned row carries a ``target_time`` column identifying which</span>
+<span class="sd">    target it was selected for.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">in_window</span> <span class="o">=</span> <span class="n">site_df</span><span class="p">[</span>
+        <span class="p">(</span><span class="n">site_df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">target</span> <span class="o">-</span> <span class="n">window_td</span><span class="p">)</span>
+        <span class="o">&amp;</span> <span class="p">(</span><span class="n">site_df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">target</span> <span class="o">+</span> <span class="n">window_td</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="k">if</span> <span class="n">in_window</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">deltas</span> <span class="o">=</span> <span class="p">(</span><span class="n">in_window</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+    <span class="n">candidates</span> <span class="o">=</span> <span class="n">in_window</span><span class="p">[</span><span class="n">deltas</span> <span class="o">==</span> <span class="n">deltas</span><span class="o">.</span><span class="n">min</span><span class="p">()]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">on_tie</span> <span class="o">==</span> <span class="s2">&quot;first&quot;</span><span class="p">:</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">candidates</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">on_tie</span> <span class="o">==</span> <span class="s2">&quot;last&quot;</span><span class="p">:</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">candidates</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># &quot;mean&quot; — synthesize a row whose numeric cols are averaged and</span>
+        <span class="c1"># whose ``time`` is the target (no real observation sits at the midpoint).</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">candidates</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">candidates</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="s2">&quot;number&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">candidates</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target</span>
+
+    <span class="n">row</span><span class="p">[</span><span class="s2">&quot;target_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target</span>
+    <span class="k">return</span> <span class="n">row</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_empty_nearest_result</span><span class="p">(</span><span class="n">template</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Empty frame with a ``target_time`` column, for no-match cases.</span>
+
+<span class="sd">    When ``template`` is provided, preserve its columns/dtypes so the</span>
+<span class="sd">    returned frame matches the shape of a real ``get_continuous``</span>
+<span class="sd">    response.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span> <span class="k">if</span> <span class="n">template</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">template</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">base</span><span class="p">[</span><span class="s2">&quot;target_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;datetime64[ns, UTC]&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">base</span>
 
 
 <div class="viewcode-block" id="get_monitoring_locations">
