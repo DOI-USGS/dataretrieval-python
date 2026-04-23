@@ -311,6 +311,67 @@ def test_long_filter_deduplicates_cross_chunk_overlap():
     assert len(df) == 1
 
 
+def test_empty_chunks_do_not_downgrade_geodataframe():
+    """A mix of empty and non-empty chunk responses must not downgrade a
+    GeoDataFrame-typed result to a plain DataFrame. ``_get_resp_data``
+    returns ``pd.DataFrame()`` on empty responses, which would otherwise
+    strip geometry/CRS from the concatenated output."""
+    pytest.importorskip("geopandas")
+    import geopandas as gpd
+    from shapely.geometry import Point
+
+    from dataretrieval.waterdata import get_continuous
+
+    clause = (
+        "(time >= '2023-01-{day:02d}T00:00:00Z' "
+        "AND time <= '2023-01-{day:02d}T00:30:00Z')"
+    )
+    expr = " OR ".join(clause.format(day=(i % 28) + 1) for i in range(300))
+
+    call_count = {"n": 0}
+
+    def fake_walk_pages(*_args, **_kwargs):
+        call_count["n"] += 1
+        # Chunk 2 returns empty; chunks 1 and 3 return GeoDataFrames.
+        if call_count["n"] == 2:
+            frame = pd.DataFrame()
+        else:
+            frame = gpd.GeoDataFrame(
+                {"id": [f"feat-{call_count['n']}"], "value": [call_count["n"]]},
+                geometry=[Point(call_count["n"], call_count["n"])],
+                crs="EPSG:4326",
+            )
+        resp = SimpleNamespace(
+            url="https://example.test",
+            elapsed=timedelta(milliseconds=1),
+            headers={},
+        )
+        return frame, resp
+
+    with mock.patch(
+        "dataretrieval.waterdata.utils._construct_api_requests",
+        return_value=SimpleNamespace(
+            url="https://example.test", method="GET", headers={}
+        ),
+    ), mock.patch(
+        "dataretrieval.waterdata.utils._walk_pages", side_effect=fake_walk_pages
+    ), mock.patch(
+        "dataretrieval.waterdata.utils._effective_filter_budget",
+        return_value=_CQL_FILTER_CHUNK_LEN,
+    ):
+        df, _ = get_continuous(
+            monitoring_location_id="USGS-07374525",
+            parameter_code="72255",
+            filter=expr,
+            filter_lang="cql-text",
+        )
+
+    # The empty chunk must not have stripped the GeoDataFrame type.
+    assert isinstance(df, gpd.GeoDataFrame)
+    assert "geometry" in df.columns
+    assert df.crs is not None
+
+
 def test_effective_filter_budget_respects_url_limit():
     """The computed budget, once encoded, fits within the URL byte limit
     alongside the other query params."""

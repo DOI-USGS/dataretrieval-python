@@ -1005,10 +1005,17 @@ def get_ogc_data(
         else:
             total_elapsed = total_elapsed + chunk_response.elapsed
 
-    if len(frames) == 1:
-        return_list = frames[0]
+    # Drop empty frames before concat — `_get_resp_data` returns a plain
+    # ``pd.DataFrame()`` on empty responses, which can downgrade a concat
+    # of real GeoDataFrames back to a plain DataFrame (losing geometry/
+    # CRS). Empty frames contribute no rows, so discarding them is safe.
+    non_empty = [f for f in frames if not f.empty]
+    if not non_empty:
+        return_list = pd.DataFrame()
+    elif len(non_empty) == 1:
+        return_list = non_empty[0]
     else:
-        return_list = pd.concat(frames, ignore_index=True)
+        return_list = pd.concat(non_empty, ignore_index=True)
         # The top-level feature "id" is always present at this stage (the
         # rename to output_id happens later in _arrange_cols), so dedup on
         # it directly to catch overlapping OR-clauses across chunks.
