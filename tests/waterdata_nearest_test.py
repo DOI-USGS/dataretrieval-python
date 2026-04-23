@@ -58,7 +58,7 @@ def test_builds_one_or_clause_per_target(patch_get_continuous):
         targets,
         monitoring_location_id="USGS-02238500",
         parameter_code="00060",
-        window="00:07:30",
+        window="PT7M30S",
     )
     _, kwargs = patch_get_continuous.call_args
     filter_expr = kwargs["filter"]
@@ -89,7 +89,7 @@ def test_tie_first_keeps_earlier(patch_get_continuous):
         targets,
         monitoring_location_id="USGS-02238500",
         on_tie="first",
-        window="00:07:30",
+        window="PT7M30S",
     )
     assert len(result) == 1
     assert result.iloc[0]["value"] == 22.0
@@ -111,7 +111,7 @@ def test_tie_last_keeps_later(patch_get_continuous):
         targets,
         monitoring_location_id="USGS-02238500",
         on_tie="last",
-        window="00:07:30",
+        window="PT7M30S",
     )
     assert result.iloc[0]["value"] == 22.4
     assert result.iloc[0]["time"] == pd.Timestamp("2023-06-15T10:30:00Z")
@@ -132,7 +132,7 @@ def test_tie_mean_averages_numeric_and_uses_target_time(patch_get_continuous):
         targets,
         monitoring_location_id="USGS-02238500",
         on_tie="mean",
-        window="00:07:30",
+        window="PT7M30S",
     )
     assert result.iloc[0]["value"] == pytest.approx(22.2)
     # Time is set to the target since no real observation sits at the midpoint
@@ -232,23 +232,28 @@ def test_accepts_list_of_strings(patch_get_continuous):
     assert len(result) == 1
 
 
-def test_window_accepts_hhmmss_and_shorthand_equivalently(patch_get_continuous):
-    """``window="00:07:30"`` and ``window="7min30s"`` are the same duration
-    as far as ``pandas.Timedelta`` is concerned, so the two forms must
-    produce identical CQL filters."""
+@pytest.mark.parametrize(
+    "window",
+    [
+        "00:07:30",  # HH:MM:SS
+        "7min30s",  # pandas shorthand
+        "450s",  # seconds shorthand
+        "PT7M30S",  # ISO 8601 duration
+        pd.Timedelta(minutes=7, seconds=30),  # Timedelta object
+    ],
+)
+def test_window_accepts_any_pandas_timedelta_form(patch_get_continuous, window):
+    """Every representation ``pandas.Timedelta`` parses must produce the
+    same CQL filter. Documents the public contract: ``window`` is
+    whatever ``pd.Timedelta(window)`` returns."""
     targets = pd.to_datetime(["2023-06-15T10:30:00Z"], utc=True)
     patch_get_continuous.return_value = (_fake_df([]), mock.Mock())
 
-    get_nearest_continuous(targets, monitoring_location_id="USGS-1", window="00:07:30")
-    filter_hhmmss = patch_get_continuous.call_args.kwargs["filter"]
-
-    get_nearest_continuous(targets, monitoring_location_id="USGS-1", window="7min30s")
-    filter_shorthand = patch_get_continuous.call_args.kwargs["filter"]
-
-    assert filter_hhmmss == filter_shorthand
-    # And the bounds should be 7:30 away from the target
-    assert "'2023-06-15T10:22:30Z'" in filter_hhmmss
-    assert "'2023-06-15T10:37:30Z'" in filter_hhmmss
+    get_nearest_continuous(targets, monitoring_location_id="USGS-1", window=window)
+    filter_expr = patch_get_continuous.call_args.kwargs["filter"]
+    # Bounds are 7:30 away from the target regardless of input spelling
+    assert "'2023-06-15T10:22:30Z'" in filter_expr
+    assert "'2023-06-15T10:37:30Z'" in filter_expr
 
 
 def test_forwards_kwargs_to_get_continuous(patch_get_continuous):

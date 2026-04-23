@@ -445,7 +445,7 @@ def get_nearest_continuous(
     monitoring_location_id: str | list[str] | None = None,
     parameter_code: str | list[str] | None = None,
     *,
-    window: str | pd.Timedelta = "00:07:30",
+    window: str | pd.Timedelta = "PT7M30S",
     on_tie: Literal["first", "last", "mean"] = "first",
     **kwargs,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
@@ -472,14 +472,21 @@ def get_nearest_continuous(
         Forwarded to ``get_continuous``.
     parameter_code : string or list of strings, optional
         Forwarded to ``get_continuous``.
-    window : string or ``pandas.Timedelta``, default ``"00:07:30"``
-        Half-window around each target, in ``HH:MM:SS`` form (or any
-        ``pandas.Timedelta``-parseable string: ``"7min30s"``,
-        ``"450s"``, etc.). Must be small enough that every target's
-        window captures roughly one observation at the service cadence.
-        The ``"00:07:30"`` default matches a 15-minute continuous gauge;
-        use a larger value (e.g. ``"00:15:00"``) when the gauge cadence
-        is longer or you need more resilience to data gaps.
+    window : string or ``pandas.Timedelta``, default ``"PT7M30S"``
+        Half-window around each target, as an ISO 8601 duration
+        (``"PT7M30S"``, ``"PT15M"``, ``"PT1H"``, etc.). Also accepts
+        any other form ``pandas.Timedelta`` parses — ``HH:MM:SS``
+        (``"00:07:30"``), pandas shorthand (``"7min30s"``,
+        ``"450s"``), or a ``pd.Timedelta`` directly. See the
+        `pandas.Timedelta docs
+        <https://pandas.pydata.org/docs/reference/api/pandas.Timedelta.html>`_
+        for the full grammar.
+
+        Must be small enough that every target's window captures
+        roughly one observation at the service cadence. The default
+        matches a 15-minute continuous gauge; widen (e.g.
+        ``"PT15M"``) for irregular cadences or resilience to data
+        gaps.
     on_tie : {"first", "last", "mean"}, default ``"first"``
         How to resolve ties when two observations are exactly equidistant
         from a target (which happens when the target falls at the midpoint
@@ -549,7 +556,7 @@ def get_nearest_continuous(
         ...     targets,
         ...     monitoring_location_id="USGS-02238500",
         ...     parameter_code="00060",
-        ...     window="00:30:00",
+        ...     window="PT30M",
         ...     on_tie="mean",
         ... )
     """
