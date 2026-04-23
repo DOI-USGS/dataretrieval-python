@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g224f4bc79 documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g04d94fdd5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=a3d8d437"></script>
+      <script src="../../../_static/documentation_options.js?v=5459badb"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -94,6 +94,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span><span class="p">,</span> <span class="n">to_str</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.types</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">CODE_SERVICES</span><span class="p">,</span>
+    <span class="n">FILTER_LANG</span><span class="p">,</span>
     <span class="n">METADATA_COLLECTIONS</span><span class="p">,</span>
     <span class="n">PROFILES</span><span class="p">,</span>
     <span class="n">SERVICES</span><span class="p">,</span>
@@ -129,6 +130,8 @@
     <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Daily data provide one data value to represent water conditions for the</span>
@@ -255,6 +258,18 @@
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
 <span class="sd">        if your internet connection is spotty. The default (NA) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">    filter : string, optional</span>
+<span class="sd">        A CQL text or JSON expression passed through to the OGC API</span>
+<span class="sd">        ``filter`` query parameter. Commonly used to OR several time</span>
+<span class="sd">        ranges into a single request. At the time of writing the server</span>
+<span class="sd">        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /</span>
+<span class="sd">        ``cql2-json`` are not yet supported. A long expression made up</span>
+<span class="sd">        of a top-level ``OR`` chain is automatically split into</span>
+<span class="sd">        multiple requests that each fit under the server&#39;s URI length</span>
+<span class="sd">        limit; the results are concatenated.</span>
+<span class="sd">    filter_lang : string, optional</span>
+<span class="sd">        Language of the ``filter`` expression, for example ``cql-text``</span>
+<span class="sd">        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
 
@@ -309,6 +324,8 @@
     <span class="n">last_modified</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -429,6 +446,18 @@
 <span class="sd">        allowable limit is 10000. It may be beneficial to set this number lower</span>
 <span class="sd">        if your internet connection is spotty. The default (NA) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">    filter : string, optional</span>
+<span class="sd">        A CQL text or JSON expression passed through to the OGC API</span>
+<span class="sd">        ``filter`` query parameter. Commonly used to OR several time</span>
+<span class="sd">        ranges into a single request. At the time of writing the server</span>
+<span class="sd">        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /</span>
+<span class="sd">        ``cql2-json`` are not yet supported. A long expression made up</span>
+<span class="sd">        of a top-level ``OR`` chain is automatically split into</span>
+<span class="sd">        multiple requests that each fit under the server&#39;s URI length</span>
+<span class="sd">        limit; the results are concatenated.</span>
+<span class="sd">    filter_lang : string, optional</span>
+<span class="sd">        Language of the ``filter`` expression, for example ``cql-text``</span>
+<span class="sd">        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, the function will convert the data to dates and qualifier to</span>
 <span class="sd">        string vector</span>
@@ -450,6 +479,37 @@
 <span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
 <span class="sd">        ...     parameter_code=&quot;00065&quot;,</span>
 <span class="sd">        ...     time=&quot;2021-01-01T00:00:00Z/2022-01-01T00:00:00Z&quot;,</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # The ``time`` parameter accepts a single instant or a single</span>
+<span class="sd">        &gt;&gt;&gt; # interval. To pull several disjoint windows in one call, pass a</span>
+<span class="sd">        &gt;&gt;&gt; # CQL-text ``filter`` expression instead:</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_continuous(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
+<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
+<span class="sd">        ...     filter=(</span>
+<span class="sd">        ...         &quot;(time &gt;= &#39;2023-06-01T12:00:00Z&#39; &quot;</span>
+<span class="sd">        ...         &quot;AND time &lt;= &#39;2023-06-01T13:00:00Z&#39;) &quot;</span>
+<span class="sd">        ...         &quot;OR (time &gt;= &#39;2023-06-15T12:00:00Z&#39; &quot;</span>
+<span class="sd">        ...         &quot;AND time &lt;= &#39;2023-06-15T13:00:00Z&#39;)&quot;</span>
+<span class="sd">        ...     ),</span>
+<span class="sd">        ...     filter_lang=&quot;cql-text&quot;,</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Long top-level ``OR`` chains (e.g. one window per discrete</span>
+<span class="sd">        &gt;&gt;&gt; # measurement timestamp) are built up the same way. If the</span>
+<span class="sd">        &gt;&gt;&gt; # resulting URL would exceed the server&#39;s length limit, the</span>
+<span class="sd">        &gt;&gt;&gt; # client transparently splits it into multiple sub-requests and</span>
+<span class="sd">        &gt;&gt;&gt; # returns the concatenated, deduplicated result.</span>
+<span class="sd">        &gt;&gt;&gt; windows = [</span>
+<span class="sd">        ...     f&quot;(time &gt;= &#39;2023-{m:02d}-15T00:00:00Z&#39; &quot;</span>
+<span class="sd">        ...     f&quot;AND time &lt;= &#39;2023-{m:02d}-15T00:30:00Z&#39;)&quot;</span>
+<span class="sd">        ...     for m in range(1, 13)</span>
+<span class="sd">        ... ]</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_continuous(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
+<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
+<span class="sd">        ...     filter=&quot; OR &quot;.join(windows),</span>
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;continuous&quot;</span>
@@ -510,6 +570,8 @@
     <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Location information is basic information about the monitoring location</span>
@@ -719,6 +781,18 @@
 <span class="sd">        The returning object will be a data frame with no spatial information.</span>
 <span class="sd">        Note that the USGS Water Data APIs use camelCase &quot;skipGeometry&quot; in</span>
 <span class="sd">        CQL2 queries.</span>
+<span class="sd">    filter : string, optional</span>
+<span class="sd">        A CQL text or JSON expression passed through to the OGC API</span>
+<span class="sd">        ``filter`` query parameter. Commonly used to OR several time</span>
+<span class="sd">        ranges into a single request. At the time of writing the server</span>
+<span class="sd">        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /</span>
+<span class="sd">        ``cql2-json`` are not yet supported. A long expression made up</span>
+<span class="sd">        of a top-level ``OR`` chain is automatically split into</span>
+<span class="sd">        multiple requests that each fit under the server&#39;s URI length</span>
+<span class="sd">        limit; the results are concatenated.</span>
+<span class="sd">    filter_lang : string, optional</span>
+<span class="sd">        Language of the ``filter`` expression, for example ``cql-text``</span>
+<span class="sd">        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
 
@@ -784,6 +858,8 @@
     <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Daily data and continuous measurements are grouped into time series,</span>
@@ -938,6 +1014,18 @@
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">    filter : string, optional</span>
+<span class="sd">        A CQL text or JSON expression passed through to the OGC API</span>
+<span class="sd">        ``filter`` query parameter. Commonly used to OR several time</span>
+<span class="sd">        ranges into a single request. At the time of writing the server</span>
+<span class="sd">        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /</span>
+<span class="sd">        ``cql2-json`` are not yet supported. A long expression made up</span>
+<span class="sd">        of a top-level ``OR`` chain is automatically split into</span>
+<span class="sd">        multiple requests that each fit under the server&#39;s URI length</span>
+<span class="sd">        limit; the results are concatenated.</span>
+<span class="sd">    filter_lang : string, optional</span>
+<span class="sd">        Language of the ``filter`` expression, for example ``cql-text``</span>
+<span class="sd">        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
 
@@ -993,6 +1081,8 @@
     <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;This endpoint provides the most recent observation for each time series</span>
@@ -1116,6 +1206,18 @@
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">    filter : string, optional</span>
+<span class="sd">        A CQL text or JSON expression passed through to the OGC API</span>
+<span class="sd">        ``filter`` query parameter. Commonly used to OR several time</span>
+<span class="sd">        ranges into a single request. At the time of writing the server</span>
+<span class="sd">        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /</span>
+<span class="sd">        ``cql2-json`` are not yet supported. A long expression made up</span>
+<span class="sd">        of a top-level ``OR`` chain is automatically split into</span>
+<span class="sd">        multiple requests that each fit under the server&#39;s URI length</span>
+<span class="sd">        limit; the results are concatenated.</span>
+<span class="sd">    filter_lang : string, optional</span>
+<span class="sd">        Language of the ``filter`` expression, for example ``cql-text``</span>
+<span class="sd">        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
 
@@ -1168,6 +1270,8 @@
     <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Daily data provide one data value to represent water conditions for the</span>
@@ -1293,6 +1397,18 @@
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">    filter : string, optional</span>
+<span class="sd">        A CQL text or JSON expression passed through to the OGC API</span>
+<span class="sd">        ``filter`` query parameter. Commonly used to OR several time</span>
+<span class="sd">        ranges into a single request. At the time of writing the server</span>
+<span class="sd">        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /</span>
+<span class="sd">        ``cql2-json`` are not yet supported. A long expression made up</span>
+<span class="sd">        of a top-level ``OR`` chain is automatically split into</span>
+<span class="sd">        multiple requests that each fit under the server&#39;s URI length</span>
+<span class="sd">        limit; the results are concatenated.</span>
+<span class="sd">    filter_lang : string, optional</span>
+<span class="sd">        Language of the ``filter`` expression, for example ``cql-text``</span>
+<span class="sd">        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
 
@@ -1347,6 +1463,8 @@
     <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Field measurements are physically measured values collected during a</span>
@@ -1462,6 +1580,18 @@
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">    filter : string, optional</span>
+<span class="sd">        A CQL text or JSON expression passed through to the OGC API</span>
+<span class="sd">        ``filter`` query parameter. Commonly used to OR several time</span>
+<span class="sd">        ranges into a single request. At the time of writing the server</span>
+<span class="sd">        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /</span>
+<span class="sd">        ``cql2-json`` are not yet supported. A long expression made up</span>
+<span class="sd">        of a top-level ``OR`` chain is automatically split into</span>
+<span class="sd">        multiple requests that each fit under the server&#39;s URI length</span>
+<span class="sd">        limit; the results are concatenated.</span>
+<span class="sd">    filter_lang : string, optional</span>
+<span class="sd">        Language of the ``filter`` expression, for example ``cql-text``</span>
+<span class="sd">        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
 
@@ -2131,6 +2261,8 @@
     <span class="n">skip_geometry</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2237,6 +2369,18 @@
 <span class="sd">        vertical_velocity_description, longitudinal_velocity_description,</span>
 <span class="sd">        measurement_type, last_modified, channel_measurement_type. The default (NA) will</span>
 <span class="sd">        return all columns of the data.</span>
+<span class="sd">    filter : string, optional</span>
+<span class="sd">        A CQL text or JSON expression passed through to the OGC API</span>
+<span class="sd">        ``filter`` query parameter. Commonly used to OR several time</span>
+<span class="sd">        ranges into a single request. At the time of writing the server</span>
+<span class="sd">        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /</span>
+<span class="sd">        ``cql2-json`` are not yet supported. A long expression made up</span>
+<span class="sd">        of a top-level ``OR`` chain is automatically split into</span>
+<span class="sd">        multiple requests that each fit under the server&#39;s URI length</span>
+<span class="sd">        limit; the results are concatenated.</span>
+<span class="sd">    filter_lang : string, optional</span>
+<span class="sd">        Language of the ``filter`` expression, for example ``cql-text``</span>
+<span class="sd">        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, the function will convert the data to dates and qualifier to</span>
 <span class="sd">        string vector</span>
