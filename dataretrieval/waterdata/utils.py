@@ -350,14 +350,17 @@ def _effective_filter_budget(args: dict[str, Any], filter_expr: str) -> int:
        the request with a 1-byte placeholder filter.
     2. Subtract from the URL limit to get the bytes available for the
        encoded filter value.
-    3. Convert back to raw CQL bytes using the filter's own URL-encoding
-       ratio (e.g. uniform time-interval clauses inflate ~1.4x; heavy
-       special-char clauses can inflate more).
+    3. Convert back to raw CQL bytes using the *maximum* per-clause
+       encoding ratio, not the whole-filter average. A chunk can end up
+       containing only the heavier-encoding clauses (e.g. heavy ones
+       clustered at one end of the filter), so budgeting against the
+       average lets such a chunk overflow the URL limit by a few bytes.
     """
     probe = _construct_api_requests(**{**args, "filter": "x"})
     non_filter_url_bytes = len(probe.url) - 1
     available_url_bytes = _WATERDATA_URL_BYTE_LIMIT - non_filter_url_bytes
-    encoding_ratio = len(quote_plus(filter_expr)) / len(filter_expr)
+    parts = _split_top_level_or(filter_expr) or [filter_expr]
+    encoding_ratio = max(len(quote_plus(p)) / len(p) for p in parts if p)
     return max(100, int(available_url_bytes / encoding_ratio))
 
 

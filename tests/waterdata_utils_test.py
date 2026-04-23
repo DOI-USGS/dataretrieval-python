@@ -337,6 +337,45 @@ def test_effective_filter_budget_respects_url_limit():
     assert len(quote_plus(padded)) <= _WATERDATA_URL_BYTE_LIMIT
 
 
+def test_effective_filter_budget_uses_max_clause_ratio():
+    """Heavy clauses clustered in one part of the filter must not be able
+    to push any chunk over the URL limit. The budget is computed against
+    the max per-clause encoding ratio, not the whole-filter average, so
+    a chunk of only-heaviest-clauses still fits."""
+    from urllib.parse import quote_plus
+
+    heavy = (
+        "(time >= '2023-01-15T00:00:00Z' AND time <= '2023-01-15T00:30:00Z' "
+        "AND approval_status IN ('Approved','Provisional','Revised'))"
+    )
+    light = "(time >= '2023-01-15T00:00:00Z' AND time <= '2023-01-15T00:30:00Z')"
+    # Heavy ratio < light ratio for these shapes; cluster them at opposite
+    # ends so the chunker must produce at least one light-only chunk.
+    clauses = [heavy] * 100 + [light] * 400
+    expr = " OR ".join(clauses)
+    args = {
+        "service": "continuous",
+        "monitoring_location_id": "USGS-02238500",
+        "filter": expr,
+        "filter_lang": "cql-text",
+    }
+    budget = _effective_filter_budget(args, expr)
+    chunks = _chunk_cql_or(expr, max_len=budget)
+    assert len(chunks) > 1
+
+    # Every chunk, once built into a full request, fits under the URL byte
+    # limit — even the all-light chunks that have a higher-than-average ratio.
+    for chunk in chunks:
+        req = _construct_api_requests(**{**args, "filter": chunk})
+        assert len(req.url) <= _WATERDATA_URL_BYTE_LIMIT, (
+            f"chunk url {len(req.url)} exceeds {_WATERDATA_URL_BYTE_LIMIT}"
+        )
+
+    # Budget should be tight enough that a chunk of only-light clauses
+    # (the heavier-encoding shape here) still fits.
+    assert len(quote_plus(light)) * (budget // len(light)) < _WATERDATA_URL_BYTE_LIMIT
+
+
 def test_effective_filter_budget_shrinks_with_more_url_params():
     """Adding more scalar query params consumes URL bytes and should
     shrink the raw filter budget accordingly."""
