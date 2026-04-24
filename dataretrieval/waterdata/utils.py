@@ -246,6 +246,33 @@ _WATERDATA_URL_BYTE_LIMIT = 8000
 # filter is small enough that the expensive budget probe can be skipped.
 _NON_FILTER_URL_HEADROOM = 1000
 
+# Properties that *look* numeric but are typed as strings server-side,
+# so any unquoted numeric comparison against them (e.g. ``value >= 1000``)
+# resolves lexicographically rather than numerically and silently
+# produces wrong results. The server queryables list ``value`` as
+# ``type: string`` on every data endpoint (continuous, daily,
+# field-measurements); see ``/collections/<svc>/queryables``.
+_LEXICOGRAPHIC_NUMERIC_FIELDS = frozenset({"value"})
+
+# Match ``<field> <op> <numeric literal>`` or the reverse. Captures any
+# of the footgun fields from ``_LEXICOGRAPHIC_NUMERIC_FIELDS`` alongside
+# an unquoted numeric literal; quoted literals (``value >= '1000'``) are
+# explicit string comparisons and are not flagged.
+_NUMERIC_COMPARE_RE = re.compile(
+    r"""
+    (?:
+        \b(?P<field1>{fields})\s*
+        (?P<op1>>=|<=|<>|!=|==|=|>|<)\s*
+        (?P<num1>-?\d+(?:\.\d+)?)\b
+    |
+        \b(?P<num2>-?\d+(?:\.\d+)?)\s*
+        (?P<op2>>=|<=|<>|!=|==|=|>|<)\s*
+        (?P<field2>{fields})\b
+    )
+    """.format(fields="|".join(_LEXICOGRAPHIC_NUMERIC_FIELDS)),
+    re.VERBOSE,
+)
+
 
 def _iter_or_boundaries(expr: str) -> Iterator[tuple[int, int]]:
     """Yield ``(start, end)`` spans of each top-level ``OR`` separator.
@@ -383,6 +410,42 @@ def _effective_filter_budget(args: dict[str, Any], filter_expr: str) -> int:
     parts = _split_top_level_or(filter_expr) or [filter_expr]
     encoding_ratio = max(len(quote_plus(p)) / len(p) for p in parts if p)
     return max(100, int(available_url_bytes / encoding_ratio))
+
+
+def _check_numeric_filter_pitfall(filter_expr: str) -> None:
+    """Raise if the filter compares a string-typed field to an unquoted
+    numeric literal.
+
+    The Water Data API types ``value`` as a string on every data
+    collection's ``/queryables`` schema, so ``value >= 1000`` is a
+    *lexicographic* comparison, not a numeric one. ``'12'`` sorts above
+    ``'1000'``, ``'9'`` sorts above ``'1000'``, and so on — the caller
+    almost always wants numeric semantics and would get a silently wrong
+    result set. Raising here turns that silent bug into a loud error.
+
+    Explicit string comparisons (``value >= '1000'``, with the literal
+    quoted) are not flagged — the caller has signalled they know the
+    column is textual and want sort-order semantics.
+    """
+    # Blank out single-quoted string literals so a filter containing
+    # ``name = 'value >= 1000'`` doesn't false-positive on its own text.
+    masked = re.sub(r"'[^']*'", "''", filter_expr)
+    match = _NUMERIC_COMPARE_RE.search(masked)
+    if not match:
+        return
+    field = match.group("field1") or match.group("field2")
+    op = match.group("op1") or match.group("op2")
+    num = match.group("num1") or match.group("num2")
+    raise ValueError(
+        f"Filter compares {field!r} to unquoted numeric {num}, but "
+        f"{field!r} is typed as a string on the Water Data API. "
+        f"``{field} {op} {num}`` would sort lexicographically — e.g. "
+        f"``value >= 1000`` includes ``value='12'`` because ``'12'`` "
+        f"sorts above ``'1000'``. If you really want a string "
+        f"comparison, quote the literal: ``{field} {op} '{num}'``. "
+        f"For a numeric filter, fetch a wider window and reduce in "
+        f"pandas after the call."
+    )
 
 
 def _cql2_param(args: dict[str, Any]) -> str:
@@ -1028,6 +1091,7 @@ def _plan_filter_chunks(args: dict[str, Any]) -> list[str | None]:
     )
     if not chunkable:
         return [None]
+    _check_numeric_filter_pitfall(filter_expr)
     raw_budget = _effective_filter_budget(args, filter_expr)
     return _chunk_cql_or(filter_expr, max_len=raw_budget)
 

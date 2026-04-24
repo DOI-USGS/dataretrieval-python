@@ -10,6 +10,7 @@ import requests
 from dataretrieval.waterdata.utils import (
     _CQL_FILTER_CHUNK_LEN,
     _WATERDATA_URL_BYTE_LIMIT,
+    _check_numeric_filter_pitfall,
     _chunk_cql_or,
     _construct_api_requests,
     _effective_filter_budget,
@@ -524,3 +525,69 @@ def test_cql_json_filter_is_not_chunked():
         )
 
     assert sent_filters == [expr]
+
+
+@pytest.mark.parametrize(
+    "expr",
+    [
+        "value >= 1000",
+        "value > 1000",
+        "value <= 1000",
+        "value < 1000",
+        "value = 1000",
+        "value != 1000",
+        "value >= 1000.5",
+        "value >= -50",
+        # With surrounding clauses
+        "time >= '2023-01-01T00:00:00Z' AND value >= 1000",
+        "value > 1000 OR value < 0",
+        # Reverse order
+        "1000 <= value",
+    ],
+)
+def test_check_numeric_filter_pitfall_raises(expr):
+    """Unquoted numeric comparisons against ``value`` resolve
+    lexicographically on the server, so reject them with a clear
+    message before the request is sent."""
+    with pytest.raises(ValueError, match="lexicographic"):
+        _check_numeric_filter_pitfall(expr)
+
+
+@pytest.mark.parametrize(
+    "expr",
+    [
+        # Quoted literal — caller has opted into the string comparison
+        "value >= '1000'",
+        "value = '42.5'",
+        # No value comparison at all
+        "time >= '2023-01-01T00:00:00Z' AND time <= '2023-01-02T00:00:00Z'",
+        "monitoring_location_id = 'USGS-02238500'",
+        # ``value`` appears only inside a string literal
+        "monitoring_location_id = 'USGS-value >= 1000'",
+        "name = 'why I care about value >= 1000'",
+        # Other string-typed fields aren't in the footgun list
+        "approval_status = 'Approved'",
+        "qualifier IN ('A', 'P')",
+    ],
+)
+def test_check_numeric_filter_pitfall_allows(expr):
+    """Quoted literals, unrelated comparisons, and ``value`` substrings
+    inside string literals must not trigger the check."""
+    _check_numeric_filter_pitfall(expr)  # must not raise
+
+
+def test_get_continuous_surfaces_pitfall_to_caller():
+    """End-to-end: the check runs at the ``get_continuous`` boundary,
+    not as a deep internal-only protection, so callers see the error
+    before any HTTP traffic."""
+    from dataretrieval.waterdata import get_continuous
+
+    with mock.patch("dataretrieval.waterdata.utils._construct_api_requests") as build:
+        with pytest.raises(ValueError, match="lexicographic"):
+            get_continuous(
+                monitoring_location_id="USGS-02238500",
+                parameter_code="00060",
+                filter="value >= 1000",
+                filter_lang="cql-text",
+            )
+        build.assert_not_called()
