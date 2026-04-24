@@ -26,9 +26,9 @@ from .api import (
     get_stats_por,
     get_time_series_metadata,
 )
+from .filters import FILTER_LANG
 from .types import (
     CODE_SERVICES,
-    FILTER_LANG,
     PROFILE_LOOKUP,
     PROFILES,
     SERVICES,
