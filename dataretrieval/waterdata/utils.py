@@ -262,19 +262,42 @@ _NON_FILTER_URL_HEADROOM = 1000
 # enforce client-side is the general one: any ``<identifier> <op>
 # <unquoted numeric>`` is a bug — quote the literal or drop the
 # comparison and filter in pandas.
+
+# Unquoted numeric literal: integer, decimal, or scientific notation.
+_NUM = r"-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?"
+_IDENT = r"[A-Za-z_]\w*"
+_OP = r">=|<=|<>|!=|==|=|>|<"
+
 _NUMERIC_COMPARE_RE = re.compile(
-    r"""
+    rf"""
     (?:
-        \b(?P<field1>[A-Za-z_]\w*)\s*
-        (?P<op1>>=|<=|<>|!=|==|=|>|<)\s*
-        (?P<num1>-?\d+(?:\.\d+)?)\b
+        \b(?P<field1>{_IDENT})\s*
+        (?P<op1>{_OP})\s*
+        (?P<num1>{_NUM})\b
     |
-        \b(?P<num2>-?\d+(?:\.\d+)?)\s*
-        (?P<op2>>=|<=|<>|!=|==|=|>|<)\s*
-        (?P<field2>[A-Za-z_]\w*)\b
+        \b(?P<num2>{_NUM})\s*
+        (?P<op2>{_OP})\s*
+        (?P<field2>{_IDENT})\b
     )
     """,
     re.VERBOSE,
+)
+
+# ``<field> IN (<numeric>, ...)`` — same footgun as simple comparison
+# but using the list form. Caught separately because ``IN`` isn't one
+# of the comparison operators in ``_OP``. We only need to see one
+# unquoted numeric inside the parentheses to know the user intends
+# numeric membership.
+_IN_NUMERIC_RE = re.compile(
+    rf"\b(?P<field>{_IDENT})\s+IN\s*\(\s*{_NUM}",
+    re.IGNORECASE,
+)
+
+# ``<field> BETWEEN <numeric> AND <numeric>`` — range form of the same
+# footgun.
+_BETWEEN_NUMERIC_RE = re.compile(
+    rf"\b(?P<field>{_IDENT})\s+BETWEEN\s+{_NUM}\s+AND\s+{_NUM}\b",
+    re.IGNORECASE,
 )
 
 
@@ -417,43 +440,58 @@ def _effective_filter_budget(args: dict[str, Any], filter_expr: str) -> int:
 
 
 def _check_numeric_filter_pitfall(filter_expr: str) -> None:
-    """Raise if the filter compares any field to an unquoted numeric literal.
+    """Raise if the filter pairs any field with an unquoted numeric literal.
 
     Every queryable property on this API is typed as a string on the
-    server, so an unquoted numeric comparison like ``value >= 1000``
-    or ``parameter_code = 60`` sorts **lexicographically** rather than
-    numerically. The failure modes are silent and nasty:
+    server, so any numeric-looking comparison — ``value >= 1000``,
+    ``parameter_code = 60``, ``parameter_code IN (60, 61)``,
+    ``value BETWEEN 5 AND 10`` — either gets rejected with HTTP 500
+    or silently produces lexicographic results. Zero-padded codes are
+    especially nasty (``parameter_code = '60'`` matches nothing because
+    the real codes are ``'00060'``-shaped).
 
-    - ``value >= 1000`` matches ``value='12'`` (``'12'`` > ``'1000'``).
-    - ``parameter_code = 60`` matches no rows, because the actual codes
-      are zero-padded strings like ``'00060'``.
-    - ``district_code = 1`` matches only the rare unpadded ``'1'``.
-
-    Raising here turns those silent bugs into a loud error. Explicit
-    string comparisons (``value >= '1000'``) are not flagged — the
-    quoted literal signals the caller knows the column is textual.
+    Explicit string comparisons with quoted literals
+    (``value >= '1000'``) are not flagged — the caller has signalled
+    they know the column is textual.
     """
     # Blank out single-quoted string literals so ``name = 'value > 5'``
-    # doesn't false-positive on its own text.
-    masked = re.sub(r"'[^']*'", "''", filter_expr)
-    match = _NUMERIC_COMPARE_RE.search(masked)
-    if not match:
-        return
-    field = match.group("field1") or match.group("field2")
-    op = match.group("op1") or match.group("op2")
-    num = match.group("num1") or match.group("num2")
+    # doesn't false-positive. The ``"'" in`` pre-check saves the
+    # allocation on the common auto-chunked case (many-target OR chains
+    # always contain quotes, but short ad-hoc filters often don't).
+    masked = (
+        re.sub(r"'[^']*'", "''", filter_expr) if "'" in filter_expr else filter_expr
+    )
+
+    compare = _NUMERIC_COMPARE_RE.search(masked)
+    if compare:
+        field = compare.group("field1") or compare.group("field2")
+        offense = (
+            f"{field} {compare.group('op1') or compare.group('op2')} "
+            f"{compare.group('num1') or compare.group('num2')}"
+        )
+        _raise_pitfall(field, offense)
+
+    membership = _IN_NUMERIC_RE.search(masked)
+    if membership:
+        field = membership.group("field")
+        _raise_pitfall(field, f"{field} IN (…)")
+
+    between = _BETWEEN_NUMERIC_RE.search(masked)
+    if between:
+        field = between.group("field")
+        _raise_pitfall(field, f"{field} BETWEEN …")
+
+
+def _raise_pitfall(field: str, offense: str) -> None:
     raise ValueError(
-        f"Filter compares {field!r} to unquoted numeric {num}. Every "
-        f"queryable on the Water Data API is typed as a string, so "
-        f"``{field} {op} {num}`` is not a valid numeric comparison — "
-        f"empirically the server rejects unquoted numeric literals "
-        f"with HTTP 500. Even if you quote the literal "
-        f"(``{field} {op} '{num}'``) the comparison is lexicographic, "
-        f"which silently misses zero-padded codes (e.g. "
-        f"``parameter_code = '60'`` matches nothing because the real "
-        f"codes are ``'00060'``-shaped) and sorts ``value='12'`` above "
-        f"``value='1000'``. For a numeric filter, fetch a wider result "
-        f"and reduce in pandas after the call."
+        f"Filter uses an unquoted numeric comparison against {field!r} "
+        f"(``{offense}``). Every queryable on the Water Data API is "
+        f"typed as a string, so the server rejects unquoted numeric "
+        f"literals with HTTP 500; even quoting the literal gives a "
+        f"lexicographic comparison (``value > '10'`` matches "
+        f"``value='34.52'``, ``parameter_code = '60'`` matches nothing "
+        f"because the real codes are ``'00060'``-shaped). For a true "
+        f"numeric filter, fetch a wider result and reduce in pandas."
     )
 
 

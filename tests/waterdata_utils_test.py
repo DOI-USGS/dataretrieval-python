@@ -549,6 +549,17 @@ def test_cql_json_filter_is_not_chunked():
         # Channel-measurements numeric-looking string fields
         "channel_flow > 500",
         "channel_velocity >= 1.5",
+        # Scientific notation — floats expressed as 1e5, 1.5e-3
+        "value > 1e5",
+        "value >= 2.5E+3",
+        "value < 1.5e-3",
+        # ``IN`` list form — same footgun, common pattern for codes
+        "parameter_code IN (60, 61)",
+        "value IN (10, 20, 30)",
+        "statistic_id in (11)",  # case-insensitive, single-element
+        # ``BETWEEN`` range form — same footgun
+        "value BETWEEN 5 AND 10",
+        "channel_flow between 100 and 500",
         # Composite expressions
         "time >= '2023-01-01T00:00:00Z' AND value >= 1000",
         "value > 1000 OR value < 0",
@@ -580,12 +591,17 @@ def test_check_numeric_filter_pitfall_raises(expr):
         "monitoring_location_id = 'USGS-02238500'",
         "approval_status = 'Approved'",
         "qualifier IN ('A', 'P')",
+        "parameter_code IN ('00060', '00065')",
+        "value BETWEEN '1' AND '9'",
         # Footgun identifiers appearing only inside string literals
         "monitoring_location_id = 'USGS-value >= 1000'",
         "name = 'why I care about parameter_code = 60'",
         "note = 'see district_code = 1 in docs'",
+        "note = 'quoted: value IN (10, 20) within literal'",
         # Multi-clause where every comparison is quoted
         "parameter_code = '00060' AND statistic_id = '00011'",
+        # CQL escape-quote (``O''Reilly``) within a quoted literal
+        "name = 'O''Reilly 1000'",
     ],
 )
 def test_check_numeric_filter_pitfall_allows(expr):
