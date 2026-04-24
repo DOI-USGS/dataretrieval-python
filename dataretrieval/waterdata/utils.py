@@ -246,30 +246,34 @@ _WATERDATA_URL_BYTE_LIMIT = 8000
 # filter is small enough that the expensive budget probe can be skipped.
 _NON_FILTER_URL_HEADROOM = 1000
 
-# Properties that *look* numeric but are typed as strings server-side,
-# so any unquoted numeric comparison against them (e.g. ``value >= 1000``)
-# resolves lexicographically rather than numerically and silently
-# produces wrong results. The server queryables list ``value`` as
-# ``type: string`` on every data endpoint (continuous, daily,
-# field-measurements); see ``/collections/<svc>/queryables``.
-_LEXICOGRAPHIC_NUMERIC_FIELDS = frozenset({"value"})
-
-# Match ``<field> <op> <numeric literal>`` or the reverse. Captures any
-# of the footgun fields from ``_LEXICOGRAPHIC_NUMERIC_FIELDS`` alongside
-# an unquoted numeric literal; quoted literals (``value >= '1000'``) are
-# explicit string comparisons and are not flagged.
+# Every queryable property on every OGC collection for the Water Data
+# API is ``type: string`` (confirmed across ``continuous``, ``daily``,
+# ``field-measurements``, ``monitoring-locations``,
+# ``time-series-metadata``, ``latest-continuous``, ``latest-daily``,
+# ``channel-measurements`` — see ``/collections/<svc>/queryables``).
+# That includes fields whose *values* look numeric — ``value``,
+# ``parameter_code`` (``'00060'``), ``statistic_id`` (``'00011'``),
+# ``district_code`` (``'01'``), ``hydrologic_unit_code``,
+# ``channel_flow``, and more. Comparing any of them to an *unquoted*
+# numeric literal (``value >= 1000``) triggers a lexicographic sort
+# on the server and silently produces wrong results — zero-padded
+# codes are especially nasty (``parameter_code = 60`` matches nothing
+# because the real values are all ``'00060'``-shaped). So the rule we
+# enforce client-side is the general one: any ``<identifier> <op>
+# <unquoted numeric>`` is a bug — quote the literal or drop the
+# comparison and filter in pandas.
 _NUMERIC_COMPARE_RE = re.compile(
     r"""
     (?:
-        \b(?P<field1>{fields})\s*
+        \b(?P<field1>[A-Za-z_]\w*)\s*
         (?P<op1>>=|<=|<>|!=|==|=|>|<)\s*
         (?P<num1>-?\d+(?:\.\d+)?)\b
     |
         \b(?P<num2>-?\d+(?:\.\d+)?)\s*
         (?P<op2>>=|<=|<>|!=|==|=|>|<)\s*
-        (?P<field2>{fields})\b
+        (?P<field2>[A-Za-z_]\w*)\b
     )
-    """.format(fields="|".join(_LEXICOGRAPHIC_NUMERIC_FIELDS)),
+    """,
     re.VERBOSE,
 )
 
@@ -413,22 +417,24 @@ def _effective_filter_budget(args: dict[str, Any], filter_expr: str) -> int:
 
 
 def _check_numeric_filter_pitfall(filter_expr: str) -> None:
-    """Raise if the filter compares a string-typed field to an unquoted
-    numeric literal.
+    """Raise if the filter compares any field to an unquoted numeric literal.
 
-    The Water Data API types ``value`` as a string on every data
-    collection's ``/queryables`` schema, so ``value >= 1000`` is a
-    *lexicographic* comparison, not a numeric one. ``'12'`` sorts above
-    ``'1000'``, ``'9'`` sorts above ``'1000'``, and so on — the caller
-    almost always wants numeric semantics and would get a silently wrong
-    result set. Raising here turns that silent bug into a loud error.
+    Every queryable property on this API is typed as a string on the
+    server, so an unquoted numeric comparison like ``value >= 1000``
+    or ``parameter_code = 60`` sorts **lexicographically** rather than
+    numerically. The failure modes are silent and nasty:
 
-    Explicit string comparisons (``value >= '1000'``, with the literal
-    quoted) are not flagged — the caller has signalled they know the
-    column is textual and want sort-order semantics.
+    - ``value >= 1000`` matches ``value='12'`` (``'12'`` > ``'1000'``).
+    - ``parameter_code = 60`` matches no rows, because the actual codes
+      are zero-padded strings like ``'00060'``.
+    - ``district_code = 1`` matches only the rare unpadded ``'1'``.
+
+    Raising here turns those silent bugs into a loud error. Explicit
+    string comparisons (``value >= '1000'``) are not flagged — the
+    quoted literal signals the caller knows the column is textual.
     """
-    # Blank out single-quoted string literals so a filter containing
-    # ``name = 'value >= 1000'`` doesn't false-positive on its own text.
+    # Blank out single-quoted string literals so ``name = 'value > 5'``
+    # doesn't false-positive on its own text.
     masked = re.sub(r"'[^']*'", "''", filter_expr)
     match = _NUMERIC_COMPARE_RE.search(masked)
     if not match:
@@ -437,14 +443,17 @@ def _check_numeric_filter_pitfall(filter_expr: str) -> None:
     op = match.group("op1") or match.group("op2")
     num = match.group("num1") or match.group("num2")
     raise ValueError(
-        f"Filter compares {field!r} to unquoted numeric {num}, but "
-        f"{field!r} is typed as a string on the Water Data API. "
-        f"``{field} {op} {num}`` would sort lexicographically — e.g. "
-        f"``value >= 1000`` includes ``value='12'`` because ``'12'`` "
-        f"sorts above ``'1000'``. If you really want a string "
-        f"comparison, quote the literal: ``{field} {op} '{num}'``. "
-        f"For a numeric filter, fetch a wider window and reduce in "
-        f"pandas after the call."
+        f"Filter compares {field!r} to unquoted numeric {num}. Every "
+        f"queryable on the Water Data API is typed as a string, so "
+        f"``{field} {op} {num}`` is not a valid numeric comparison — "
+        f"empirically the server rejects unquoted numeric literals "
+        f"with HTTP 500. Even if you quote the literal "
+        f"(``{field} {op} '{num}'``) the comparison is lexicographic, "
+        f"which silently misses zero-padded codes (e.g. "
+        f"``parameter_code = '60'`` matches nothing because the real "
+        f"codes are ``'00060'``-shaped) and sorts ``value='12'`` above "
+        f"``value='1000'``. For a numeric filter, fetch a wider result "
+        f"and reduce in pandas after the call."
     )
 
 

@@ -530,6 +530,7 @@ def test_cql_json_filter_is_not_chunked():
 @pytest.mark.parametrize(
     "expr",
     [
+        # The motivating case — numeric-valued string field
         "value >= 1000",
         "value > 1000",
         "value <= 1000",
@@ -538,17 +539,29 @@ def test_cql_json_filter_is_not_chunked():
         "value != 1000",
         "value >= 1000.5",
         "value >= -50",
-        # With surrounding clauses
+        # Zero-padded codes: `parameter_code = 60` matches nothing
+        # because the real values are all `'00060'`-shaped
+        "parameter_code = 60",
+        "statistic_id = 11",
+        "district_code = 1",
+        "county_code != 0",
+        "hydrologic_unit_code = 20301030401",
+        # Channel-measurements numeric-looking string fields
+        "channel_flow > 500",
+        "channel_velocity >= 1.5",
+        # Composite expressions
         "time >= '2023-01-01T00:00:00Z' AND value >= 1000",
         "value > 1000 OR value < 0",
-        # Reverse order
+        "parameter_code = 60 AND statistic_id = 11",
+        # Reverse (literal on the left)
         "1000 <= value",
+        "60 = parameter_code",
     ],
 )
 def test_check_numeric_filter_pitfall_raises(expr):
-    """Unquoted numeric comparisons against ``value`` resolve
-    lexicographically on the server, so reject them with a clear
-    message before the request is sent."""
+    """Unquoted numeric comparisons against any field resolve
+    lexicographically on this API — every queryable is string-typed —
+    so reject them with a clear message before the request is sent."""
     with pytest.raises(ValueError, match="lexicographic"):
         _check_numeric_filter_pitfall(expr)
 
@@ -556,23 +569,28 @@ def test_check_numeric_filter_pitfall_raises(expr):
 @pytest.mark.parametrize(
     "expr",
     [
-        # Quoted literal — caller has opted into the string comparison
+        # Quoted literals — caller has opted into string comparison
         "value >= '1000'",
         "value = '42.5'",
-        # No value comparison at all
+        "parameter_code = '00060'",
+        "district_code = '01'",
+        "hydrologic_unit_code = '020301030401'",
+        # Pure string comparisons
         "time >= '2023-01-01T00:00:00Z' AND time <= '2023-01-02T00:00:00Z'",
         "monitoring_location_id = 'USGS-02238500'",
-        # ``value`` appears only inside a string literal
-        "monitoring_location_id = 'USGS-value >= 1000'",
-        "name = 'why I care about value >= 1000'",
-        # Other string-typed fields aren't in the footgun list
         "approval_status = 'Approved'",
         "qualifier IN ('A', 'P')",
+        # Footgun identifiers appearing only inside string literals
+        "monitoring_location_id = 'USGS-value >= 1000'",
+        "name = 'why I care about parameter_code = 60'",
+        "note = 'see district_code = 1 in docs'",
+        # Multi-clause where every comparison is quoted
+        "parameter_code = '00060' AND statistic_id = '00011'",
     ],
 )
 def test_check_numeric_filter_pitfall_allows(expr):
-    """Quoted literals, unrelated comparisons, and ``value`` substrings
-    inside string literals must not trigger the check."""
+    """Quoted literals and comparisons that don't pair a field with an
+    unquoted numeric literal must not trigger the check."""
     _check_numeric_filter_pitfall(expr)  # must not raise
 
 
