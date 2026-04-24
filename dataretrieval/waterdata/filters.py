@@ -44,18 +44,28 @@ purposes:
 Isolation contract (rolling the feature back)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- ``dataretrieval/waterdata/filters.py`` and
-  ``tests/waterdata_filters_test.py`` can be deleted wholesale.
+The feature's footprint outside this module is deliberately small
+and mechanical:
+
+- Files to delete: ``filters.py``, ``nearest.py`` (which depends on
+  filters), ``tests/waterdata_filters_test.py``,
+  ``tests/waterdata_nearest_test.py``.
+- ``__init__.py``: drop two imports (``FILTER_LANG``,
+  ``get_nearest_continuous``) and two ``__all__`` entries.
 - ``utils.py``: drop the ``from . import filters`` import and the
   ``@filters.chunked(...)`` decorator on ``_fetch_once``. The two
-  function bodies themselves (``_fetch_once``, ``get_ogc_data``) are
-  already filter-unaware and need no changes. The two-line
-  ``filter_lang`` → ``filter-lang`` translation inside
-  ``_construct_api_requests`` becomes dead code but is harmless.
-- ``api.py``: drop the ``from .filters import FILTER_LANG`` import and
-  the eight ``filter`` / ``filter_lang`` kwarg pairs on the OGC
-  getters.
-- ``__init__.py``: drop the ``FILTER_LANG`` re-export.
+  function bodies (``_fetch_once``, ``get_ogc_data``) are
+  filter-unaware and need no changes.
+- ``api.py``: drop the ``from .filters import FILTER_LANG`` import,
+  the eight ``filter, filter_lang`` kwarg pairs on the OGC getters,
+  and their one-line docstring pointers (now
+  ``filter, filter_lang : optional — see dataretrieval.waterdata.filters``).
+  Also the one compact filter example inside ``get_continuous``'s
+  docstring.
+
+The two-line ``filter_lang`` → ``filter-lang`` URL-key translation
+inside ``_construct_api_requests`` becomes unreachable dead code (no
+caller sets it); removing it is optional.
 
 Only two names are imported by other modules — ``FILTER_LANG`` and
 ``chunked``. Everything else is package-private.
