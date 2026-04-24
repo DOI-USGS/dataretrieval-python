@@ -480,13 +480,23 @@ def test_cql_json_filter_is_not_chunked():
         "value > 1e5",
         "value >= 2.5E+3",
         "value < 1.5e-3",
+        # Leading-dot decimals (``.5`` is a fraction, not a typo)
+        "value > .5",
+        "value >= -.5",
+        "value < .5e-3",
         # ``IN`` list form — same footgun, common pattern for codes
         "parameter_code IN (60, 61)",
         "value IN (10, 20, 30)",
         "statistic_id in (11)",  # case-insensitive, single-element
+        # ``NOT IN`` with numbers — same footgun via negation
+        "value NOT IN (1, 2, 3)",
+        "parameter_code not in (60, 61)",
         # ``BETWEEN`` range form — same footgun
         "value BETWEEN 5 AND 10",
         "channel_flow between 100 and 500",
+        # ``NOT BETWEEN`` with numbers
+        "value NOT BETWEEN 0 AND 100",
+        "channel_flow not between 50 and 150",
         # Composite expressions
         "time >= '2023-01-01T00:00:00Z' AND value >= 1000",
         "value > 1000 OR value < 0",
@@ -529,12 +539,37 @@ def test_check_numeric_filter_pitfall_raises(expr):
         "parameter_code = '00060' AND statistic_id = '00011'",
         # CQL escape-quote (``O''Reilly``) within a quoted literal
         "name = 'O''Reilly 1000'",
+        # Identifiers that start with "NOT" (e.g. ``NOTES``) must not be
+        # mistakenly treated as the CQL negation keyword
+        "NOTES = 'hello'",
+        "NOTE_VAL LIKE 'anything%'",
     ],
 )
 def test_check_numeric_filter_pitfall_allows(expr):
     """Quoted literals and comparisons that don't pair a field with an
     unquoted numeric literal must not trigger the check."""
     _check_numeric_filter_pitfall(expr)  # must not raise
+
+
+@pytest.mark.parametrize(
+    "expr,field,op",
+    [
+        ("value NOT IN (1, 2)", "value", "NOT IN"),
+        ("parameter_code NOT IN (60, 61)", "parameter_code", "NOT IN"),
+        ("value IN (1, 2)", "value", "IN"),
+        ("value NOT BETWEEN 0 AND 10", "value", "NOT BETWEEN"),
+        ("channel_flow between 100 and 500", "channel_flow", "BETWEEN"),
+    ],
+)
+def test_pitfall_error_names_real_field_not_NOT_keyword(expr, field, op):
+    """The CQL keyword ``NOT`` must not be reported as the offending field
+    — the error should identify the actual column and include ``NOT`` as
+    part of the operator form so the caller knows what to quote."""
+    with pytest.raises(ValueError) as exc:
+        _check_numeric_filter_pitfall(expr)
+    msg = str(exc.value)
+    assert f"against {field!r}" in msg, msg
+    assert op.upper() in msg.upper(), msg
 
 
 def test_get_continuous_surfaces_pitfall_to_caller():

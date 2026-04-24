@@ -7,7 +7,42 @@ lexicographic-pitfall guard (see the module comment on
 ``_NUMERIC_COMPARE_RE`` for why), and the ``chunked`` decorator that
 ``utils.py`` applies to its single-request fetch function.
 
-Isolation contract (rolling the feature back):
+Scope — what this module parses vs. what passes through
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The CQL-text filter the caller supplies is **forwarded verbatim** to
+the server as a ``filter=`` query parameter. This module doesn't
+parse CQL semantics; it inspects the string for exactly two
+purposes:
+
+1. **Chunking** (``_chunk_cql_or``) splits the filter on top-level
+   ``OR`` boundaries so the full URL can stay under the server's
+   ~8 KB limit. Only ``OR`` splits cleanly into independent
+   sub-requests whose result sets can be union'd back together by
+   ``pd.concat`` + dedup. Everything else — ``AND`` chains,
+   ``NOT``, ``LIKE``, ``IS NULL``, spatial / temporal predicates,
+   function calls — is sent as a single request. If such a filter
+   is long enough to trip the URL limit the caller gets the
+   server's ``414``; we don't try to rewrite it, because no rewrite
+   preserves set semantics for those shapes.
+
+2. **Pitfall detection** (``_check_numeric_filter_pitfall``) scans
+   for three patterns where the user almost certainly means a
+   numeric comparison but the server would do a lexicographic one
+   (every queryable is string-typed):
+
+   - ``<field> <op> <unquoted_num>`` (and the reverse)
+   - ``<field> [NOT] IN (<unquoted_num>, ...)``
+   - ``<field> [NOT] BETWEEN <unquoted_num> AND <unquoted_num>``
+
+   ``LIKE``, ``IS NULL``, function-call RHS (``COUNT(x) > 5``),
+   ``CAST`` expressions, and arithmetic (``value > 1 + 1`` —
+   partially caught on ``value > 1``) are not flagged. The first
+   three the server doesn't support anyway; the last is a minor
+   offense-text imprecision rather than a correctness issue.
+
+Isolation contract (rolling the feature back)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - ``dataretrieval/waterdata/filters.py`` and
   ``tests/waterdata_filters_test.py`` can be deleted wholesale.
@@ -22,9 +57,11 @@ Isolation contract (rolling the feature back):
   getters.
 - ``__init__.py``: drop the ``FILTER_LANG`` re-export.
 
-Exports:
-  - ``FILTER_LANG`` — type alias used by ``api.py`` and re-exported.
-  - ``chunked`` — decorator used by ``utils.py`` on its fetch helper.
+Exports
+~~~~~~~
+
+- ``FILTER_LANG`` — type alias used by ``api.py`` and re-exported.
+- ``chunked`` — decorator used by ``utils.py`` on its fetch helper.
 
 Everything else in this module is private (leading underscore).
 """
@@ -93,8 +130,12 @@ _NON_FILTER_URL_HEADROOM = 1000
 # numeric>`` is a bug — quote the literal or drop the comparison and
 # filter in pandas.
 
-# Unquoted numeric literal: integer, decimal, or scientific notation.
-_NUM = r"-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?"
+# Unquoted numeric literal: integer, decimal (with or without leading
+# zero), or scientific notation. ``\d+(?:\.\d+)?`` covers ``1``,
+# ``1.5``; ``\.\d+`` covers the leading-dot form ``.5`` that users
+# sometimes write as a fraction. Trailing-dot ``5.`` is deliberately
+# not accepted (not a common numeric spelling and not required CQL).
+_NUM = r"-?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?"
 _IDENT = r"[A-Za-z_]\w*"
 _OP = r">=|<=|<>|!=|==|=|>|<"
 
@@ -113,20 +154,23 @@ _NUMERIC_COMPARE_RE = re.compile(
     re.VERBOSE,
 )
 
-# ``<field> IN (<numeric>, ...)`` — same footgun as simple comparison
-# but using the list form. Caught separately because ``IN`` isn't one
-# of the comparison operators in ``_OP``. We only need to see one
-# unquoted numeric inside the parentheses to know the user intends
-# numeric membership.
+# ``<field> [NOT] IN (<numeric>, ...)`` — same footgun as a simple
+# comparison but using the list form. Caught separately because ``IN``
+# isn't one of the comparison operators in ``_OP``. The ``(?!NOT\b)``
+# lookahead keeps the bare keyword ``NOT`` from being captured as the
+# field when the caller writes ``value NOT IN (…)``; the optional
+# ``(?:NOT\s+)?`` after the field captures the negation so the error
+# message can report the offending form accurately.
 _IN_NUMERIC_RE = re.compile(
-    rf"\b(?P<field>{_IDENT})\s+IN\s*\(\s*{_NUM}",
+    rf"\b(?!NOT\b)(?P<field>{_IDENT})\s+(?P<negated>NOT\s+)?IN\s*\(\s*{_NUM}",
     re.IGNORECASE,
 )
 
-# ``<field> BETWEEN <numeric> AND <numeric>`` — range form of the same
-# footgun.
+# ``<field> [NOT] BETWEEN <numeric> AND <numeric>`` — range form with
+# the same ``NOT`` handling as above.
 _BETWEEN_NUMERIC_RE = re.compile(
-    rf"\b(?P<field>{_IDENT})\s+BETWEEN\s+{_NUM}\s+AND\s+{_NUM}\b",
+    rf"\b(?!NOT\b)(?P<field>{_IDENT})\s+(?P<negated>NOT\s+)?"
+    rf"BETWEEN\s+{_NUM}\s+AND\s+{_NUM}\b",
     re.IGNORECASE,
 )
 
@@ -323,12 +367,14 @@ def _check_numeric_filter_pitfall(filter_expr: str) -> None:
     membership = _IN_NUMERIC_RE.search(masked)
     if membership:
         field = membership.group("field")
-        _raise_pitfall(field, f"{field} IN (…)")
+        op = "NOT IN" if membership.group("negated") else "IN"
+        _raise_pitfall(field, f"{field} {op} (…)")
 
     between = _BETWEEN_NUMERIC_RE.search(masked)
     if between:
         field = between.group("field")
-        _raise_pitfall(field, f"{field} BETWEEN …")
+        op = "NOT BETWEEN" if between.group("negated") else "BETWEEN"
+        _raise_pitfall(field, f"{field} {op} …")
 
 
 def _raise_pitfall(field: str, offense: str) -> None:
