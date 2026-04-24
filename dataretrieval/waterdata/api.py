@@ -16,9 +16,9 @@ import requests
 from requests.models import PreparedRequest
 
 from dataretrieval.utils import BaseMetadata, to_str
+from dataretrieval.waterdata.filters import FILTER_LANG
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,
-    FILTER_LANG,
     METADATA_COLLECTIONS,
     PROFILES,
     SERVICES,
