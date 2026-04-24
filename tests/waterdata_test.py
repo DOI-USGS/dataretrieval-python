@@ -21,7 +21,7 @@ from dataretrieval.waterdata import (
     get_stats_por,
     get_time_series_metadata,
 )
-from dataretrieval.waterdata.utils import _check_profiles
+from dataretrieval.waterdata.utils import _check_profiles, _construct_api_requests
 
 
 def mock_request(requests_mock, request_url, file_path):
@@ -63,6 +63,28 @@ def test_check_profiles():
         _check_profiles(service="foo", profile="bar")
     with pytest.raises(ValueError):
         _check_profiles(service="results", profile="foo")
+
+
+def test_construct_api_requests_multivalue_get():
+    """Multi-value params use GET with comma-separated values for daily service."""
+    req = _construct_api_requests(
+        "daily",
+        monitoring_location_id=["USGS-05427718", "USGS-05427719"],
+        parameter_code=["00060", "00065"],
+    )
+    assert req.method == "GET"
+    assert "monitoring_location_id=USGS-05427718%2CUSGS-05427719" in req.url
+    assert "parameter_code=00060%2C00065" in req.url
+
+
+def test_construct_api_requests_monitoring_locations_post():
+    """monitoring-locations uses POST+CQL2 for multi-value params (API limitation)."""
+    req = _construct_api_requests(
+        "monitoring-locations",
+        hydrologic_unit_code=["010802050102", "010802050103"],
+    )
+    assert req.method == "POST"
+    assert req.body is not None
 
 
 def test_samples_results():
