@@ -845,7 +845,7 @@ def get_ogc_data(
     return return_list, BaseMetadata(response)
 
 
-@filters.chunked(build_request=lambda **kw: _construct_api_requests(**kw))
+@filters.chunked(build_request=_construct_api_requests)
 def _fetch_once(
     args: dict[str, Any],
 ) -> tuple[pd.DataFrame, requests.Response]:

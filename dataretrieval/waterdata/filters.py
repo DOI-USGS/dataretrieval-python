@@ -57,13 +57,8 @@ Isolation contract (rolling the feature back)
   getters.
 - ``__init__.py``: drop the ``FILTER_LANG`` re-export.
 
-Exports
-~~~~~~~
-
-- ``FILTER_LANG`` — type alias used by ``api.py`` and re-exported.
-- ``chunked`` — decorator used by ``utils.py`` on its fetch helper.
-
-Everything else in this module is private (leading underscore).
+Only two names are imported by other modules — ``FILTER_LANG`` and
+``chunked``. Everything else is package-private.
 """
 
 from __future__ import annotations
@@ -71,7 +66,7 @@ from __future__ import annotations
 import functools
 import re
 from collections.abc import Callable, Iterator
-from typing import Any, Literal
+from typing import Any, Literal, TypeVar
 from urllib.parse import quote_plus
 
 import pandas as pd
@@ -139,6 +134,14 @@ _NUM = r"-?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?"
 _IDENT = r"[A-Za-z_]\w*"
 _OP = r">=|<=|<>|!=|==|=|>|<"
 
+# ``<field>`` in ``IN`` / ``BETWEEN`` contexts, with optional ``NOT``
+# keyword after the field. ``(?!NOT\b)`` keeps the bare keyword
+# ``NOT`` from being captured as the field when the caller writes
+# ``value NOT IN (…)``; the ``(?P<negated>NOT\s+)?`` after the field
+# captures the negation so the error message can report the offending
+# form accurately.
+_FIELD_NEGATED = rf"\b(?!NOT\b)(?P<field>{_IDENT})\s+(?P<negated>NOT\s+)?"
+
 _NUMERIC_COMPARE_RE = re.compile(
     rf"""
     (?:
@@ -155,22 +158,16 @@ _NUMERIC_COMPARE_RE = re.compile(
 )
 
 # ``<field> [NOT] IN (<numeric>, ...)`` — same footgun as a simple
-# comparison but using the list form. Caught separately because ``IN``
-# isn't one of the comparison operators in ``_OP``. The ``(?!NOT\b)``
-# lookahead keeps the bare keyword ``NOT`` from being captured as the
-# field when the caller writes ``value NOT IN (…)``; the optional
-# ``(?:NOT\s+)?`` after the field captures the negation so the error
-# message can report the offending form accurately.
+# comparison but using the list form. Caught separately because
+# ``IN`` isn't one of the comparison operators in ``_OP``.
 _IN_NUMERIC_RE = re.compile(
-    rf"\b(?!NOT\b)(?P<field>{_IDENT})\s+(?P<negated>NOT\s+)?IN\s*\(\s*{_NUM}",
+    rf"{_FIELD_NEGATED}IN\s*\(\s*{_NUM}",
     re.IGNORECASE,
 )
 
-# ``<field> [NOT] BETWEEN <numeric> AND <numeric>`` — range form with
-# the same ``NOT`` handling as above.
+# ``<field> [NOT] BETWEEN <numeric> AND <numeric>`` — range form.
 _BETWEEN_NUMERIC_RE = re.compile(
-    rf"\b(?!NOT\b)(?P<field>{_IDENT})\s+(?P<negated>NOT\s+)?"
-    rf"BETWEEN\s+{_NUM}\s+AND\s+{_NUM}\b",
+    rf"{_FIELD_NEGATED}BETWEEN\s+{_NUM}\s+AND\s+{_NUM}\b",
     re.IGNORECASE,
 )
 
@@ -322,8 +319,11 @@ def _effective_filter_budget(
         # filter so _chunk_cql_or passes it through unchanged — one 414
         # from the server is clearer than a burst of N failing sub-requests.
         return len(filter_expr) + 1
+    # ``_split_top_level_or`` already drops empty clauses, and
+    # ``filter_expr`` is non-empty here (guarded by ``_is_chunkable``),
+    # so every ``p`` below is non-empty.
     parts = _split_top_level_or(filter_expr) or [filter_expr]
-    encoding_ratio = max(len(quote_plus(p)) / len(p) for p in parts if p)
+    encoding_ratio = max(len(quote_plus(p)) / len(p) for p in parts)
     return max(100, int(available_url_bytes / encoding_ratio))
 
 
@@ -445,12 +445,13 @@ def _aggregate_chunk_responses(
     return metadata_response
 
 
-def chunked(
-    *, build_request: Callable[..., Any]
-) -> Callable[
-    [Callable[[dict[str, Any]], tuple[pd.DataFrame, requests.Response]]],
-    Callable[[dict[str, Any]], tuple[pd.DataFrame, requests.Response]],
-]:
+_FetchOnce = TypeVar(
+    "_FetchOnce",
+    bound=Callable[[dict[str, Any]], tuple[pd.DataFrame, requests.Response]],
+)
+
+
+def chunked(*, build_request: Callable[..., Any]) -> Callable[[_FetchOnce], _FetchOnce]:
     """Decorator that adds CQL-filter chunking to a single-request fetch.
 
     The wrapped function must have signature
@@ -480,9 +481,7 @@ def chunked(
     ``.url`` attribute.
     """
 
-    def decorator(
-        fetch_once: Callable[[dict[str, Any]], tuple[pd.DataFrame, requests.Response]],
-    ) -> Callable[[dict[str, Any]], tuple[pd.DataFrame, requests.Response]]:
+    def decorator(fetch_once: _FetchOnce) -> _FetchOnce:
         @functools.wraps(fetch_once)
         def wrapper(
             args: dict[str, Any],
@@ -504,6 +503,6 @@ def chunked(
 
             return _combine_chunk_frames(frames), _aggregate_chunk_responses(responses)
 
-        return wrapper
+        return wrapper  # type: ignore[return-value]
 
     return decorator
