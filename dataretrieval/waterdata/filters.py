@@ -4,19 +4,34 @@ Everything related to the ``filter`` / ``filter_lang`` kwargs lives in
 this module: the ``FILTER_LANG`` type alias, the top-level ``OR``
 splitter / chunker, the per-request URL-budget probe, the
 lexicographic-pitfall guard (see the module comment on
-``_NUMERIC_COMPARE_RE`` for why), and the fan-out orchestrator used
-by ``get_ogc_data``.
+``_NUMERIC_COMPARE_RE`` for why), and the ``chunked`` decorator that
+``utils.py`` applies to its single-request fetch function.
 
-The feature is intentionally isolated here so it can be rolled back
-cleanly: if the ``filter`` passthrough is ever dropped, deleting this
-file leaves only a handful of lines to trim in ``utils.py`` (the
-``fetch_combined`` call + import) and ``api.py`` (the eight
-``filter`` / ``filter_lang`` kwargs + ``FILTER_LANG`` import). No
-other module depends on this one.
+Isolation contract (rolling the feature back):
+
+- ``dataretrieval/waterdata/filters.py`` and
+  ``tests/waterdata_filters_test.py`` can be deleted wholesale.
+- ``utils.py``: drop the ``from . import filters`` import and the
+  ``@filters.chunked(...)`` decorator on ``_fetch_once``. The two
+  function bodies themselves (``_fetch_once``, ``get_ogc_data``) are
+  already filter-unaware and need no changes. The two-line
+  ``filter_lang`` → ``filter-lang`` translation inside
+  ``_construct_api_requests`` becomes dead code but is harmless.
+- ``api.py``: drop the ``from .filters import FILTER_LANG`` import and
+  the eight ``filter`` / ``filter_lang`` kwarg pairs on the OGC
+  getters.
+- ``__init__.py``: drop the ``FILTER_LANG`` re-export.
+
+Exports:
+  - ``FILTER_LANG`` — type alias used by ``api.py`` and re-exported.
+  - ``chunked`` — decorator used by ``utils.py`` on its fetch helper.
+
+Everything else in this module is private (leading underscore).
 """
 
 from __future__ import annotations
 
+import functools
 import re
 from collections.abc import Callable, Iterator
 from typing import Any, Literal
@@ -24,8 +39,6 @@ from urllib.parse import quote_plus
 
 import pandas as pd
 import requests
-
-from dataretrieval.utils import BaseMetadata
 
 # ---------------------------------------------------------------------
 # Public types
@@ -39,9 +52,9 @@ FILTER_LANG = Literal["cql-text", "cql-json"]
 # ---------------------------------------------------------------------
 
 # Conservative fallback budget (characters) for a single CQL ``filter``
-# query parameter, used when the caller invokes ``_chunk_cql_or`` without
-# a ``max_len``. ``fetch_combined`` computes a tighter per-request budget
-# from ``_WATERDATA_URL_BYTE_LIMIT`` below.
+# query parameter, used when ``_chunk_cql_or`` is called without a
+# ``max_len``. The ``chunked`` decorator computes a tighter
+# per-request budget from ``_WATERDATA_URL_BYTE_LIMIT`` below.
 _CQL_FILTER_CHUNK_LEN = 5000
 
 # Total URL byte limit the Water Data API will accept before replying
@@ -332,54 +345,17 @@ def _raise_pitfall(field: str, offense: str) -> None:
 
 
 # ---------------------------------------------------------------------
-# Plan + fetch + combine orchestration
+# Chunked fan-out (decorator)
 # ---------------------------------------------------------------------
 
 
-def _plan_filter_chunks(
-    args: dict[str, Any],
-    build_request: Callable[..., Any],
-) -> list[str | None]:
-    """Decide how to fan ``args["filter"]`` out across HTTP calls.
-
-    Returns one entry per request to send. A ``None`` entry means "send
-    ``args`` as-is" — either there is no filter, or the filter language
-    is not one we can safely split (only cql-text top-level ``OR``
-    chains are chunkable). Otherwise each string entry is a chunked
-    cql-text expression that replaces ``args["filter"]`` for its
-    sub-request. Overlapping user OR-clauses are deduplicated by feature
-    id later in ``_combine_chunk_frames``.
-    """
-    filter_expr = args.get("filter")
-    filter_lang = args.get("filter_lang")
-    chunkable = (
+def _is_chunkable(filter_expr: Any, filter_lang: Any) -> bool:
+    """Only non-empty cql-text filters can be safely split at top-level OR."""
+    return (
         isinstance(filter_expr, str)
-        and filter_expr
+        and bool(filter_expr)
         and filter_lang in {None, "cql-text"}
     )
-    if not chunkable:
-        return [None]
-    _check_numeric_filter_pitfall(filter_expr)
-    raw_budget = _effective_filter_budget(args, filter_expr, build_request)
-    return _chunk_cql_or(filter_expr, max_len=raw_budget)
-
-
-def _fetch_chunks(
-    args: dict[str, Any],
-    chunks: list[str | None],
-    build_request: Callable[..., Any],
-    walk_pages: Callable[[Any], tuple[pd.DataFrame, requests.Response]],
-) -> tuple[list[pd.DataFrame], list[requests.Response]]:
-    """Send one request per chunk; return the per-chunk frames and responses."""
-    frames: list[pd.DataFrame] = []
-    responses: list[requests.Response] = []
-    for chunk in chunks:
-        chunk_args = args if chunk is None else {**args, "filter": chunk}
-        req = build_request(**chunk_args)
-        frame, response = walk_pages(req)
-        frames.append(frame)
-        responses.append(response)
-    return frames, responses
 
 
 def _combine_chunk_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
@@ -403,15 +379,16 @@ def _combine_chunk_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
     return combined
 
 
-def _aggregate_response_metadata(
+def _aggregate_chunk_responses(
     responses: list[requests.Response],
-) -> BaseMetadata:
-    """Build metadata from the first response, summing elapsed across chunks.
+) -> requests.Response:
+    """Return a response whose URL/headers come from the first chunk and
+    whose ``elapsed`` is the sum across all chunks.
 
-    The first response's URL and headers are the representative ones to
-    return. When the filter was fanned across multiple chunks, replace
-    its elapsed with the sum so ``query_time`` reflects the full
-    operation rather than just the first sub-request.
+    Mutates the first response in place (adjusting only ``elapsed``) so
+    the caller can still wrap it in ``BaseMetadata`` as it would any
+    single-request response — the decorator's output shape matches the
+    undecorated function's output shape.
     """
     metadata_response = responses[0]
     if len(responses) > 1:
@@ -419,24 +396,68 @@ def _aggregate_response_metadata(
             (r.elapsed for r in responses[1:]),
             start=metadata_response.elapsed,
         )
-    return BaseMetadata(metadata_response)
+    return metadata_response
 
 
-def fetch_combined(
-    args: dict[str, Any],
-    *,
-    build_request: Callable[..., Any],
-    walk_pages: Callable[[Any], tuple[pd.DataFrame, requests.Response]],
-) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Plan chunks, fetch each, combine frames, aggregate metadata.
+def chunked(
+    *, build_request: Callable[..., Any]
+) -> Callable[
+    [Callable[[dict[str, Any]], tuple[pd.DataFrame, requests.Response]]],
+    Callable[[dict[str, Any]], tuple[pd.DataFrame, requests.Response]],
+]:
+    """Decorator that adds CQL-filter chunking to a single-request fetch.
 
-    One-call entry point used by ``utils.get_ogc_data``. When the
-    request has no ``filter`` (or a non-chunkable one), this falls
-    through to a single-request path with no concat / dedup / elapsed
-    aggregation overhead. That means deleting this module only
-    requires replacing the single call site with an inline
-    ``build_request(**args)`` + ``walk_pages(req)`` + ``BaseMetadata(response)``.
+    The wrapped function must have signature
+    ``(args: dict) -> (pd.DataFrame, requests.Response)`` and represent
+    one HTTP round-trip (build a request, walk its pages). The
+    decorator inspects ``args``:
+
+    - If no chunkable filter is present, it calls the wrapped function
+      once and returns the result unchanged.
+    - If a chunkable cql-text filter is present, it validates the
+      filter against the lexicographic-comparison pitfall, splits it
+      into URL-length-safe sub-expressions, calls the wrapped function
+      once per chunk with ``{**args, "filter": chunk}``, concatenates
+      the resulting frames (dropping empties, dedup'ing by feature
+      ``id``), and returns an aggregated response (first chunk's
+      URL/headers + summed ``elapsed``).
+
+    Either way the return type matches the wrapped function's — the
+    caller wraps the response in ``BaseMetadata`` the same way in
+    both paths. That's what lets the feature be removed by dropping
+    just the decorator line.
+
+    ``build_request`` is injected so the decorator can probe URL
+    length for budget computation without importing any specific HTTP
+    builder. It receives the same kwargs the wrapped function's
+    ``args`` would, and returns a prepared-request-like object with a
+    ``.url`` attribute.
     """
-    chunks = _plan_filter_chunks(args, build_request)
-    frames, responses = _fetch_chunks(args, chunks, build_request, walk_pages)
-    return _combine_chunk_frames(frames), _aggregate_response_metadata(responses)
+
+    def decorator(
+        fetch_once: Callable[[dict[str, Any]], tuple[pd.DataFrame, requests.Response]],
+    ) -> Callable[[dict[str, Any]], tuple[pd.DataFrame, requests.Response]]:
+        @functools.wraps(fetch_once)
+        def wrapper(
+            args: dict[str, Any],
+        ) -> tuple[pd.DataFrame, requests.Response]:
+            filter_expr = args.get("filter")
+            if not _is_chunkable(filter_expr, args.get("filter_lang")):
+                return fetch_once(args)
+
+            _check_numeric_filter_pitfall(filter_expr)
+            budget = _effective_filter_budget(args, filter_expr, build_request)
+            chunks = _chunk_cql_or(filter_expr, max_len=budget)
+
+            frames: list[pd.DataFrame] = []
+            responses: list[requests.Response] = []
+            for chunk in chunks:
+                frame, response = fetch_once({**args, "filter": chunk})
+                frames.append(frame)
+                responses.append(response)
+
+            return _combine_chunk_frames(frames), _aggregate_chunk_responses(responses)
+
+        return wrapper
+
+    return decorator

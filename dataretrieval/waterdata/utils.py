@@ -835,18 +835,30 @@ def get_ogc_data(
     convert_type = args.pop("convert_type", False)
     args = {k: v for k, v in args.items() if v is not None}
 
-    return_list, metadata = filters.fetch_combined(
-        args,
-        build_request=_construct_api_requests,
-        walk_pages=lambda req: _walk_pages(geopd=GEOPANDAS, req=req),
-    )
+    return_list, response = _fetch_once(args)
     return_list = _deal_with_empty(return_list, properties, service)
     if convert_type:
         return_list = _type_cols(return_list)
     return_list = _arrange_cols(return_list, properties, output_id)
     return_list = _sort_rows(return_list)
 
-    return return_list, metadata
+    return return_list, BaseMetadata(response)
+
+
+@filters.chunked(build_request=lambda **kw: _construct_api_requests(**kw))
+def _fetch_once(
+    args: dict[str, Any],
+) -> tuple[pd.DataFrame, requests.Response]:
+    """Send one prepared-args OGC request; return the frame + response.
+
+    Filter chunking is added orthogonally by the ``@filters.chunked``
+    decorator: with no filter (or an un-chunkable one) the decorator
+    passes ``args`` through to this body; with a chunkable filter it
+    fans out and calls this body once per sub-filter, then combines.
+    Either way the return shape is ``(frame, response)``.
+    """
+    req = _construct_api_requests(**args)
+    return _walk_pages(geopd=GEOPANDAS, req=req)
 
 
 def _handle_stats_nesting(
