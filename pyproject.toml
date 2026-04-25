@@ -26,7 +26,7 @@ dependencies = [
 dynamic = ["version"]
 
 [tool.setuptools]
-packages = ["dataretrieval", "dataretrieval.codes"]
+packages = ["dataretrieval", "dataretrieval.codes", "dataretrieval.duckdb_connectors"]
 
 [tool.setuptools.package-data]
 dataretrieval = ["py.typed"]
@@ -53,6 +53,18 @@ doc = [
 nldi = [
   'geopandas>=0.10'
 ]
+duckdb = [
+  "duckdb>=1.0.0"
+]
+# Compound extra: pulls in both ``nldi`` (geopandas) and ``duckdb``.
+# DuckDB's ``spatial`` extension itself isn't a pip package — it's a
+# runtime C++ extension that DuckDB downloads on first
+# ``INSTALL spatial; LOAD spatial;``. Pass ``spatial=True`` to a
+# connector's ``connect()`` to trigger that load.
+spatial = [
+  "dataretrieval[nldi]",
+  "dataretrieval[duckdb]"
+]
 
 [project.urls]
 homepage = "https://github.com/DOI-USGS/dataretrieval-python"
@@ -63,7 +75,7 @@ repository = "https://github.com/DOI-USGS/dataretrieval-python.git"
 write_to = "dataretrieval/_version.py"
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py310"
 extend-exclude = ["demos"]
 
 [tool.ruff.lint]
