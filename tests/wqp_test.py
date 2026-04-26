@@ -213,6 +213,36 @@ def test_check_kwargs():
     kwargs = {"mimeType": "geojson"}
     with pytest.raises(NotImplementedError):
         kwargs = _check_kwargs(kwargs)
+    kwargs = {"mimeType": "xlsx"}
+    with pytest.raises(NotImplementedError):
+        kwargs = _check_kwargs(kwargs)
     kwargs = {"mimeType": "foo"}
     with pytest.raises(ValueError):
         kwargs = _check_kwargs(kwargs)
+    # tsv and csv should both be accepted
+    kwargs = _check_kwargs({"mimeType": "tsv"})
+    assert kwargs["mimeType"] == "tsv"
+    kwargs = _check_kwargs({"mimeType": "csv"})
+    assert kwargs["mimeType"] == "csv"
+    # no mimeType defaults to csv
+    kwargs = _check_kwargs({})
+    assert kwargs["mimeType"] == "csv"
+
+
+def test_get_results_tsv(requests_mock):
+    """Tests that mimeType=tsv is accepted and parsed with a tab delimiter."""
+    request_url = (
+        "https://www.waterqualitydata.us/data/Result/Search?"
+        "siteid=WIDNR_WQX-10032762&mimeType=tsv"
+    )
+    tsv_text = "col_a\tcol_b\nvalue_1\tvalue_2\n"
+    requests_mock.get(request_url, text=tsv_text, headers={"mock_header": "value"})
+    df, md = get_results(
+        legacy=True,
+        siteid="WIDNR_WQX-10032762",
+        mimeType="tsv",
+    )
+    assert type(df) is DataFrame
+    assert list(df.columns) == ["col_a", "col_b"]
+    assert df.shape == (1, 2)
+    assert md.url == request_url
