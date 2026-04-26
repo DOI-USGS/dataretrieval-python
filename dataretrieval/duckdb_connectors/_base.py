@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import pandas as pd
 
@@ -34,9 +34,6 @@ try:
     GEOPANDAS = True
 except ImportError:
     GEOPANDAS = False
-
-if TYPE_CHECKING:
-    import duckdb as _duckdb  # noqa: F401  (resolved by type-checker only)
 
 logger = logging.getLogger(__name__)
 
@@ -96,8 +93,8 @@ def _flatten_geometry(df: pd.DataFrame) -> pd.DataFrame:
     try:
         out["longitude"] = geom.x
         out["latitude"] = geom.y
-    except Exception:
-        # Non-point geometries (lines, polygons): skip lon/lat shortcut.
+    except ValueError:
+        # geopandas raises ValueError on .x/.y for non-Point geometries.
         pass
 
     out[geom_name] = geom.to_wkt()

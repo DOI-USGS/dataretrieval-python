@@ -123,19 +123,21 @@ def test_join_results_to_sites(results_df, sites_df):
     ]
 
 
-def test_what_endpoints_invoke_correct_underlying(results_df):
+@pytest.mark.parametrize(
+    "helper",
+    [
+        "what_organizations",
+        "what_projects",
+        "what_activities",
+        "what_detection_limits",
+        "what_habitat_metrics",
+        "what_activity_metrics",
+    ],
+)
+def test_what_endpoint_invokes_correct_underlying(results_df, helper):
     """Each helper should invoke its corresponding wqp function."""
-    helper_to_target = {
-        "what_organizations": "what_organizations",
-        "what_projects": "what_projects",
-        "what_activities": "what_activities",
-        "what_detection_limits": "what_detection_limits",
-        "what_habitat_metrics": "what_habitat_metrics",
-        "what_activity_metrics": "what_activity_metrics",
-    }
-    for helper_name, target in helper_to_target.items():
-        with mock.patch(f"dataretrieval.wqp.{target}") as m:
-            m.return_value = (results_df, mock.Mock())
-            with wqp_connector.connect() as con:
-                getattr(con, helper_name)(statecode="US:17")
-            assert m.call_count == 1, helper_name
+    with mock.patch(f"dataretrieval.wqp.{helper}") as m:
+        m.return_value = (results_df, mock.Mock())
+        with wqp_connector.connect() as con:
+            getattr(con, helper)(statecode="US:17")
+        assert m.call_count == 1
