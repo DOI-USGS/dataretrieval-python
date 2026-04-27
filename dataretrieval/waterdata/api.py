@@ -9,16 +9,16 @@ from __future__ import annotations
 import json
 import logging
 from io import StringIO
-from typing import Literal, get_args
+from typing import get_args
 
 import pandas as pd
 import requests
 from requests.models import PreparedRequest
 
 from dataretrieval.utils import BaseMetadata, to_str
+from dataretrieval.waterdata.filters import FILTER_LANG
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,
-    FILTER_LANG,
     METADATA_COLLECTIONS,
     PROFILES,
     SERVICES,
@@ -180,18 +180,11 @@ def get_daily(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (NA) will set the
         limit to the maximum allowable limit for the service.
-    filter : string, optional
-        A CQL text or JSON expression passed through to the OGC API
-        ``filter`` query parameter. Commonly used to OR several time
-        ranges into a single request. At the time of writing the server
-        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
-        ``cql2-json`` are not yet supported. A long expression made up
-        of a top-level ``OR`` chain is automatically split into
-        multiple requests that each fit under the server's URI length
-        limit; the results are concatenated.
-    filter_lang : string, optional
-        Language of the ``filter`` expression, for example ``cql-text``
-        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
+    filter, filter_lang : optional
+        Server-side CQL filter passed through as the OGC ``filter`` /
+        ``filter-lang`` query parameters. See
+        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
 
@@ -365,18 +358,11 @@ def get_continuous(
         allowable limit is 10000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (NA) will set the
         limit to the maximum allowable limit for the service.
-    filter : string, optional
-        A CQL text or JSON expression passed through to the OGC API
-        ``filter`` query parameter. Commonly used to OR several time
-        ranges into a single request. At the time of writing the server
-        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
-        ``cql2-json`` are not yet supported. A long expression made up
-        of a top-level ``OR`` chain is automatically split into
-        multiple requests that each fit under the server's URI length
-        limit; the results are concatenated.
-    filter_lang : string, optional
-        Language of the ``filter`` expression, for example ``cql-text``
-        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
+    filter, filter_lang : optional
+        Server-side CQL filter passed through as the OGC ``filter`` /
+        ``filter-lang`` query parameters. See
+        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, the function will convert the data to dates and qualifier to
         string vector
@@ -400,9 +386,9 @@ def get_continuous(
         ...     time="2021-01-01T00:00:00Z/2022-01-01T00:00:00Z",
         ... )
 
-        >>> # The ``time`` parameter accepts a single instant or a single
-        >>> # interval. To pull several disjoint windows in one call, pass a
-        >>> # CQL-text ``filter`` expression instead:
+        >>> # Pull several disjoint time windows in one call via a CQL
+        >>> # ``filter``. See ``dataretrieval.waterdata.filters`` for the
+        >>> # full grammar, auto-chunking, and pitfalls.
         >>> df, md = dataretrieval.waterdata.get_continuous(
         ...     monitoring_location_id="USGS-02238500",
         ...     parameter_code="00060",
@@ -414,22 +400,6 @@ def get_continuous(
         ...     ),
         ...     filter_lang="cql-text",
         ... )
-
-        >>> # Long top-level ``OR`` chains (e.g. one window per discrete
-        >>> # measurement timestamp) are built up the same way. If the
-        >>> # resulting URL would exceed the server's length limit, the
-        >>> # client transparently splits it into multiple sub-requests and
-        >>> # returns the concatenated, deduplicated result.
-        >>> windows = [
-        ...     f"(time >= '2023-{m:02d}-15T00:00:00Z' "
-        ...     f"AND time <= '2023-{m:02d}-15T00:30:00Z')"
-        ...     for m in range(1, 13)
-        ... ]
-        >>> df, md = dataretrieval.waterdata.get_continuous(
-        ...     monitoring_location_id="USGS-02238500",
-        ...     parameter_code="00060",
-        ...     filter=" OR ".join(windows),
-        ... )
     """
     service = "continuous"
     output_id = "continuous_id"
@@ -438,239 +408,6 @@ def get_continuous(
     args = _get_args(locals())
 
     return get_ogc_data(args, output_id, service)
-
-
-def get_nearest_continuous(
-    targets,
-    monitoring_location_id: str | list[str] | None = None,
-    parameter_code: str | list[str] | None = None,
-    *,
-    window: str | pd.Timedelta = "PT7M30S",
-    on_tie: Literal["first", "last", "mean"] = "first",
-    **kwargs,
-) -> tuple[pd.DataFrame, BaseMetadata]:
-    """For each target timestamp, return the nearest continuous observation.
-
-    Builds one bracketed ``(time >= t-window AND time <= t+window)`` clause
-    per target, joins them as a top-level CQL ``OR`` filter, and lets
-    ``get_continuous`` (with its auto-chunking) fetch every observation
-    that falls in any window. Then, per ``(monitoring_location_id, target)``
-    pair, picks the single observation with the smallest ``|time - target|``.
-
-    The USGS continuous endpoint matches ``time`` parameters exactly rather
-    than fuzzily, and it does not implement ``sortby`` for arbitrary fields;
-    this function is the single-round-trip way to ask "what reading is
-    nearest this timestamp?" for many timestamps at once.
-
-    Parameters
-    ----------
-    targets : list-like of datetime-convertible
-        Target timestamps. Naive datetimes are treated as UTC. Accepts a
-        list, ``pandas.Series``, ``pandas.DatetimeIndex``, ``numpy.ndarray``,
-        or anything ``pandas.to_datetime`` consumes.
-    monitoring_location_id : string or list of strings, optional
-        Forwarded to ``get_continuous``.
-    parameter_code : string or list of strings, optional
-        Forwarded to ``get_continuous``.
-    window : string or ``pandas.Timedelta``, default ``"PT7M30S"``
-        Half-window around each target, as an ISO 8601 duration
-        (``"PT7M30S"``, ``"PT15M"``, ``"PT1H"``, etc.). Also accepts
-        any other form ``pandas.Timedelta`` parses — ``HH:MM:SS``
-        (``"00:07:30"``), pandas shorthand (``"7min30s"``,
-        ``"450s"``), or a ``pd.Timedelta`` directly. See the
-        `pandas.Timedelta docs
-        <https://pandas.pydata.org/docs/reference/api/pandas.Timedelta.html>`_
-        for the full grammar.
-
-        Must be small enough that every target's window captures
-        roughly one observation at the service cadence. The default
-        matches a 15-minute continuous gauge; widen (e.g.
-        ``"PT15M"``) for irregular cadences or resilience to data
-        gaps.
-    on_tie : {"first", "last", "mean"}, default ``"first"``
-        How to resolve ties when two observations are exactly equidistant
-        from a target (which happens when the target falls at the midpoint
-        between grid points — e.g. target ``10:22:30`` for a 15-minute
-        gauge).
-
-        - ``"first"``: keep the earlier observation.
-        - ``"last"``:  keep the later observation.
-        - ``"mean"``:  average numeric columns; set the ``time`` column to
-          the target, since no real observation exists at the midpoint.
-
-    **kwargs
-        Additional keyword arguments forwarded to ``get_continuous``
-        (e.g. ``statistic_id``, ``approval_status``, ``properties``).
-        Passing ``time``, ``filter``, or ``filter_lang`` raises
-        ``TypeError`` — this function builds those itself.
-
-    Returns
-    -------
-    df : ``pandas.DataFrame``
-        One row per ``(target, monitoring_location_id)`` combination that
-        had at least one observation in its window. Rows are augmented
-        with a ``target_time`` column indicating which target they
-        correspond to. Targets with no observations in their window are
-        silently dropped.
-    md : :class:`~dataretrieval.utils.BaseMetadata`
-        Metadata from the underlying ``get_continuous`` call.
-
-    Notes
-    -----
-    *Window sizing and ties.* When ``window`` is exactly half the service
-    cadence, most targets' windows contain a single observation and
-    ``on_tie`` is moot. Ties arise only when a target sits exactly at the
-    window edge — rare in practice but possible. Setting ``window`` to a
-    full cadence (or larger) guarantees at least one observation per
-    target in steady state at the cost of more bytes per response.
-
-    *Why windowed CQL rather than sort+limit.* The API's advertised
-    ``sortby`` parameter would make this a one-liner per target (``filter``
-    by ``time <= t`` and ``limit 1``), but it is per-query — you would need
-    one HTTP round-trip per target. The CQL ``OR``-chain approach folds
-    all N targets into one request (auto-chunked when the URL is long).
-
-    Examples
-    --------
-    .. code::
-
-        >>> import pandas as pd
-        >>> from dataretrieval import waterdata
-
-        >>> # Pair three off-grid timestamps with nearby observations
-        >>> targets = pd.to_datetime(
-        ...     [
-        ...         "2023-06-15T10:30:31Z",
-        ...         "2023-06-15T14:07:12Z",
-        ...         "2023-06-16T03:45:19Z",
-        ...     ]
-        ... )
-        >>> df, md = waterdata.get_nearest_continuous(
-        ...     targets,
-        ...     monitoring_location_id="USGS-02238500",
-        ...     parameter_code="00060",
-        ... )
-
-        >>> # Widen the window for an irregular-cadence gauge
-        >>> df, md = waterdata.get_nearest_continuous(
-        ...     targets,
-        ...     monitoring_location_id="USGS-02238500",
-        ...     parameter_code="00060",
-        ...     window="PT30M",
-        ...     on_tie="mean",
-        ... )
-    """
-    _check_nearest_kwargs(kwargs, on_tie)
-    targets = pd.DatetimeIndex(pd.to_datetime(targets, utc=True))
-    window_td = pd.Timedelta(window)
-
-    if len(targets) == 0:
-        raise ValueError("targets must contain at least one timestamp")
-
-    filter_expr = _build_window_or_filter(targets, window_td)
-    df, md = get_continuous(
-        monitoring_location_id=monitoring_location_id,
-        parameter_code=parameter_code,
-        filter=filter_expr,
-        filter_lang="cql-text",
-        **kwargs,
-    )
-    if df.empty:
-        return _empty_nearest_result(df), md
-
-    df = df.assign(time=pd.to_datetime(df["time"], utc=True))
-    site_groups = (
-        df.groupby("monitoring_location_id", sort=False)
-        if "monitoring_location_id" in df.columns
-        else [(None, df)]
-    )
-
-    selected = [
-        row
-        for _, site_df in site_groups
-        for target in targets
-        if (row := _pick_nearest_row(site_df, target, window_td, on_tie)) is not None
-    ]
-    if not selected:
-        return _empty_nearest_result(df), md
-    return pd.DataFrame(selected).reset_index(drop=True), md
-
-
-_VALID_ON_TIE = ("first", "last", "mean")
-
-
-def _check_nearest_kwargs(kwargs: dict, on_tie: str) -> None:
-    """Reject kwargs the helper owns; validate ``on_tie``."""
-    for forbidden in ("time", "filter", "filter_lang"):
-        if forbidden in kwargs:
-            raise TypeError(
-                f"get_nearest_continuous constructs its own {forbidden!r}; "
-                "do not pass it directly"
-            )
-    if on_tie not in _VALID_ON_TIE:
-        raise ValueError(f"on_tie must be one of {_VALID_ON_TIE}; got {on_tie!r}")
-
-
-def _build_window_or_filter(targets: pd.DatetimeIndex, window_td: pd.Timedelta) -> str:
-    """Build the CQL OR-chain of ``time >= ... AND time <= ...`` windows.
-
-    ``get_continuous`` auto-chunks the result if the full URL would
-    exceed the server's length limit, so this is always safe to build
-    as one string even for many targets.
-    """
-    return " OR ".join(
-        f"(time >= '{(t - window_td).strftime('%Y-%m-%dT%H:%M:%SZ')}' "
-        f"AND time <= '{(t + window_td).strftime('%Y-%m-%dT%H:%M:%SZ')}')"
-        for t in targets
-    )
-
-
-def _pick_nearest_row(
-    site_df: pd.DataFrame,
-    target: pd.Timestamp,
-    window_td: pd.Timedelta,
-    on_tie: str,
-) -> pd.Series | None:
-    """Return the single row within ``window_td`` of ``target``, or ``None``.
-
-    Resolves ties (two rows equidistant from ``target``) per ``on_tie``.
-    The returned row carries a ``target_time`` column identifying which
-    target it was selected for.
-    """
-    in_window = site_df[
-        (site_df["time"] >= target - window_td)
-        & (site_df["time"] <= target + window_td)
-    ]
-    if in_window.empty:
-        return None
-    deltas = (in_window["time"] - target).abs()
-    candidates = in_window[deltas == deltas.min()].sort_values("time")
-
-    if len(candidates) == 1 or on_tie == "first":
-        row = candidates.iloc[0].copy()
-    elif on_tie == "last":
-        row = candidates.iloc[-1].copy()
-    else:  # "mean" — synthesize a row whose numeric cols are averaged and
-        # whose ``time`` is the target (no real observation sits at the midpoint).
-        row = candidates.iloc[0].copy()
-        for col in candidates.select_dtypes("number").columns:
-            row[col] = candidates[col].mean()
-        row["time"] = target
-
-    row["target_time"] = target
-    return row
-
-
-def _empty_nearest_result(template: pd.DataFrame | None = None) -> pd.DataFrame:
-    """Empty frame with a ``target_time`` column, for no-match cases.
-
-    When ``template`` is provided, preserve its columns/dtypes so the
-    returned frame matches the shape of a real ``get_continuous``
-    response.
-    """
-    base = pd.DataFrame() if template is None else template.iloc[0:0].copy()
-    base["target_time"] = pd.Series(dtype="datetime64[ns, UTC]")
-    return base
 
 
 def get_monitoring_locations(
@@ -930,18 +667,11 @@ def get_monitoring_locations(
         The returning object will be a data frame with no spatial information.
         Note that the USGS Water Data APIs use camelCase "skipGeometry" in
         CQL2 queries.
-    filter : string, optional
-        A CQL text or JSON expression passed through to the OGC API
-        ``filter`` query parameter. Commonly used to OR several time
-        ranges into a single request. At the time of writing the server
-        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
-        ``cql2-json`` are not yet supported. A long expression made up
-        of a top-level ``OR`` chain is automatically split into
-        multiple requests that each fit under the server's URI length
-        limit; the results are concatenated.
-    filter_lang : string, optional
-        Language of the ``filter`` expression, for example ``cql-text``
-        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
+    filter, filter_lang : optional
+        Server-side CQL filter passed through as the OGC ``filter`` /
+        ``filter-lang`` query parameters. See
+        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
 
@@ -1160,18 +890,11 @@ def get_time_series_metadata(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
-    filter : string, optional
-        A CQL text or JSON expression passed through to the OGC API
-        ``filter`` query parameter. Commonly used to OR several time
-        ranges into a single request. At the time of writing the server
-        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
-        ``cql2-json`` are not yet supported. A long expression made up
-        of a top-level ``OR`` chain is automatically split into
-        multiple requests that each fit under the server's URI length
-        limit; the results are concatenated.
-    filter_lang : string, optional
-        Language of the ``filter`` expression, for example ``cql-text``
-        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
+    filter, filter_lang : optional
+        Server-side CQL filter passed through as the OGC ``filter`` /
+        ``filter-lang`` query parameters. See
+        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
 
@@ -1349,18 +1072,11 @@ def get_latest_continuous(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
-    filter : string, optional
-        A CQL text or JSON expression passed through to the OGC API
-        ``filter`` query parameter. Commonly used to OR several time
-        ranges into a single request. At the time of writing the server
-        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
-        ``cql2-json`` are not yet supported. A long expression made up
-        of a top-level ``OR`` chain is automatically split into
-        multiple requests that each fit under the server's URI length
-        limit; the results are concatenated.
-    filter_lang : string, optional
-        Language of the ``filter`` expression, for example ``cql-text``
-        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
+    filter, filter_lang : optional
+        Server-side CQL filter passed through as the OGC ``filter`` /
+        ``filter-lang`` query parameters. See
+        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
 
@@ -1537,18 +1253,11 @@ def get_latest_daily(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
-    filter : string, optional
-        A CQL text or JSON expression passed through to the OGC API
-        ``filter`` query parameter. Commonly used to OR several time
-        ranges into a single request. At the time of writing the server
-        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
-        ``cql2-json`` are not yet supported. A long expression made up
-        of a top-level ``OR`` chain is automatically split into
-        multiple requests that each fit under the server's URI length
-        limit; the results are concatenated.
-    filter_lang : string, optional
-        Language of the ``filter`` expression, for example ``cql-text``
-        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
+    filter, filter_lang : optional
+        Server-side CQL filter passed through as the OGC ``filter`` /
+        ``filter-lang`` query parameters. See
+        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
 
@@ -1717,18 +1426,11 @@ def get_field_measurements(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
-    filter : string, optional
-        A CQL text or JSON expression passed through to the OGC API
-        ``filter`` query parameter. Commonly used to OR several time
-        ranges into a single request. At the time of writing the server
-        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
-        ``cql2-json`` are not yet supported. A long expression made up
-        of a top-level ``OR`` chain is automatically split into
-        multiple requests that each fit under the server's URI length
-        limit; the results are concatenated.
-    filter_lang : string, optional
-        Language of the ``filter`` expression, for example ``cql-text``
-        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
+    filter, filter_lang : optional
+        Server-side CQL filter passed through as the OGC ``filter`` /
+        ``filter-lang`` query parameters. See
+        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
 
@@ -2488,18 +2190,11 @@ def get_channel(
         vertical_velocity_description, longitudinal_velocity_description,
         measurement_type, last_modified, channel_measurement_type. The default (NA) will
         return all columns of the data.
-    filter : string, optional
-        A CQL text or JSON expression passed through to the OGC API
-        ``filter`` query parameter. Commonly used to OR several time
-        ranges into a single request. At the time of writing the server
-        accepts ``cql-text`` (default) and ``cql-json``; ``cql2-text`` /
-        ``cql2-json`` are not yet supported. A long expression made up
-        of a top-level ``OR`` chain is automatically split into
-        multiple requests that each fit under the server's URI length
-        limit; the results are concatenated.
-    filter_lang : string, optional
-        Language of the ``filter`` expression, for example ``cql-text``
-        (default) or ``cql-json``. Sent as ``filter-lang`` in the URL.
+    filter, filter_lang : optional
+        Server-side CQL filter passed through as the OGC ``filter`` /
+        ``filter-lang`` query parameters. See
+        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, the function will convert the data to dates and qualifier to
         string vector
