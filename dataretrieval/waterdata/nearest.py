@@ -1,33 +1,19 @@
-"""Nearest-timestamp convenience on top of ``get_continuous``.
-
-This module exists purely for isolation: ``get_nearest_continuous``
-is built on top of the CQL ``filter`` passthrough (see
-``dataretrieval/waterdata/filters.py``) and has no meaning without
-it, so the two features live in two sibling modules that can be
-deleted together.
-
-Rolling back the filter feature:
-
-- Delete ``dataretrieval/waterdata/filters.py``,
-  ``dataretrieval/waterdata/nearest.py``, and their test files.
-- Drop the ``FILTER_LANG`` and ``get_nearest_continuous`` imports
-  from ``waterdata/__init__.py`` (two lines).
-- Drop the ``filter`` / ``filter_lang`` kwargs from the eight OGC
-  getters in ``api.py``.
-
-Only one name is imported from this module — ``get_nearest_continuous``
-— and that import sits in ``__init__.py``. Everything else is
-package-private.
+"""``get_nearest_continuous``: nearest-timestamp convenience on top of
+``get_continuous``. Built on the CQL ``filter`` passthrough; only
+``get_nearest_continuous`` is public — everything else is package-private.
 """
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Literal, get_args
 
 import pandas as pd
 
 from dataretrieval.utils import BaseMetadata
 from dataretrieval.waterdata.api import get_continuous
+
+OnTie = Literal["first", "last", "mean"]
+_VALID_ON_TIE: tuple[OnTie, ...] = get_args(OnTie)
 
 
 def get_nearest_continuous(
@@ -186,10 +172,6 @@ def get_nearest_continuous(
     return pd.DataFrame(selected).reset_index(drop=True), md
 
 
-OnTie = Literal["first", "last", "mean"]
-_VALID_ON_TIE: tuple[OnTie, ...] = ("first", "last", "mean")
-
-
 def _check_nearest_kwargs(kwargs: dict, on_tie: OnTie) -> None:
     """Reject kwargs the helper owns; validate ``on_tie``."""
     for forbidden in ("time", "filter", "filter_lang"):
@@ -252,13 +234,8 @@ def _pick_nearest_row(
     return row
 
 
-def _empty_nearest_result(template: pd.DataFrame | None = None) -> pd.DataFrame:
-    """Empty frame with a ``target_time`` column, for no-match cases.
-
-    When ``template`` is provided, preserve its columns/dtypes so the
-    returned frame matches the shape of a real ``get_continuous``
-    response.
-    """
-    base = pd.DataFrame() if template is None else template.iloc[0:0].copy()
+def _empty_nearest_result(template: pd.DataFrame) -> pd.DataFrame:
+    """Empty frame matching ``template``'s columns plus a ``target_time``."""
+    base = template.iloc[0:0].copy()
     base["target_time"] = pd.Series(dtype="datetime64[ns, UTC]")
     return base
