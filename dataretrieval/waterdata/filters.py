@@ -58,9 +58,12 @@ _NUMERIC_COMPARE_RE = re.compile(
     """,
     re.VERBOSE,
 )
-_IN_NUMERIC_RE = re.compile(rf"{_FIELD_NEGATED}IN\s*\(\s*{_NUM}", re.IGNORECASE)
+_IN_NUMERIC_RE = re.compile(
+    rf"{_FIELD_NEGATED}IN\s*\([^)]*\b{_NUM}\b[^)]*\)",
+    re.IGNORECASE,
+)
 _BETWEEN_NUMERIC_RE = re.compile(
-    rf"{_FIELD_NEGATED}BETWEEN\s+{_NUM}\s+AND\s+{_NUM}\b",
+    rf"{_FIELD_NEGATED}BETWEEN\s+(?:{_NUM}\b[^)]*?\bAND\b|[^)]*?\bAND\s+{_NUM}\b)",
     re.IGNORECASE,
 )
 _QUOTED_STR_RE = re.compile(r"'[^']*'")
