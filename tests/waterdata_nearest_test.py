@@ -9,7 +9,7 @@ from unittest import mock
 import pandas as pd
 import pytest
 
-from dataretrieval.waterdata.api import get_nearest_continuous
+from dataretrieval.waterdata.nearest import get_nearest_continuous
 
 
 def _fake_df(rows):
@@ -26,7 +26,7 @@ def _fake_df(rows):
 @pytest.fixture
 def patch_get_continuous():
     """Replace ``waterdata.api.get_continuous`` with a controllable stub."""
-    with mock.patch("dataretrieval.waterdata.api.get_continuous") as m:
+    with mock.patch("dataretrieval.waterdata.nearest.get_continuous") as m:
         yield m
 
 

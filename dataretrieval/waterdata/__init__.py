@@ -19,16 +19,16 @@ from .api import (
     get_latest_continuous,
     get_latest_daily,
     get_monitoring_locations,
-    get_nearest_continuous,
     get_reference_table,
     get_samples,
     get_stats_date_range,
     get_stats_por,
     get_time_series_metadata,
 )
+from .filters import FILTER_LANG
+from .nearest import get_nearest_continuous
 from .types import (
     CODE_SERVICES,
-    FILTER_LANG,
     PROFILE_LOOKUP,
     PROFILES,
     SERVICES,
