@@ -18,30 +18,7 @@ from dataretrieval.wqp import (
 
 
 def test_get_results(requests_mock):
-    """Tests water quality portal ratings query"""
-    request_url = (
-        "https://www.waterqualitydata.us/data/Result/Search?siteid=WIDNR_WQX-10032762"
-        "&characteristicName=Specific+conductance&startDateLo=05-01-2011&startDateHi=09-30-2011"
-        "&mimeType=csv"
-    )
-    response_file_path = "tests/data/wqp_results.txt"
-    mock_request(requests_mock, request_url, response_file_path)
-    df, md = get_results(
-        siteid="WIDNR_WQX-10032762",
-        characteristicName="Specific conductance",
-        startDateLo="05-01-2011",
-        startDateHi="09-30-2011",
-    )
-    assert type(df) is DataFrame
-    assert df.size == 315
-    assert md.url == request_url
-    assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header == {"mock_header": "value"}
-    assert md.comment is None
-
-
-def test_get_results_WQX3(requests_mock):
-    """Tests water quality portal results query with new WQX3.0 profile"""
+    """Tests water quality portal results query using the default WQX3.0 profile"""
     request_url = (
         "https://www.waterqualitydata.us/wqx3/Result/search?siteid=WIDNR_WQX-10032762"
         "&characteristicName=Specific+conductance&startDateLo=05-01-2011&startDateHi=09-30-2011"
@@ -51,7 +28,6 @@ def test_get_results_WQX3(requests_mock):
     response_file_path = "tests/data/wqp3_results.txt"
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_results(
-        legacy=False,
         siteid="WIDNR_WQX-10032762",
         characteristicName="Specific conductance",
         startDateLo="05-01-2011",
@@ -65,10 +41,32 @@ def test_get_results_WQX3(requests_mock):
     assert md.comment is None
 
 
-def test_what_sites(requests_mock):
-    """Tests Water quality portal sites query"""
+def test_get_results_legacy(requests_mock):
+    """Tests water quality portal results query with explicit legacy=True"""
     request_url = (
-        "https://www.waterqualitydata.us/data/Station/Search?statecode=US%3A34&characteristicName=Chloride"
+        "https://www.waterqualitydata.us/data/Result/Search?siteid=WIDNR_WQX-10032762"
+        "&characteristicName=Specific+conductance&startDateLo=05-01-2011&startDateHi=09-30-2011"
+        "&mimeType=csv"
+    )
+    response_file_path = "tests/data/wqp_results.txt"
+    mock_request(requests_mock, request_url, response_file_path)
+    with pytest.warns(DeprecationWarning, match="legacy=True"):
+        df, md = get_results(
+            legacy=True,
+            siteid="WIDNR_WQX-10032762",
+            characteristicName="Specific conductance",
+            startDateLo="05-01-2011",
+            startDateHi="09-30-2011",
+        )
+    assert type(df) is DataFrame
+    assert df.size == 315
+    assert md.url == request_url
+
+
+def test_what_sites(requests_mock):
+    """Tests Water quality portal sites query using the default WQX3.0 profile"""
+    request_url = (
+        "https://www.waterqualitydata.us/wqx3/Station/search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
     response_file_path = "tests/data/wqp_sites.txt"
@@ -117,9 +115,9 @@ def test_what_projects(requests_mock):
 
 
 def test_what_activities(requests_mock):
-    """Tests Water quality portal activities query"""
+    """Tests Water quality portal activities query using the default WQX3.0 profile"""
     request_url = (
-        "https://www.waterqualitydata.us/data/Activity/Search?statecode=US%3A34&characteristicName=Chloride"
+        "https://www.waterqualitydata.us/wqx3/Activity/search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
     response_file_path = "tests/data/wqp_activities.txt"
