@@ -216,3 +216,37 @@ def test_check_kwargs():
     kwargs = {"mimeType": "foo"}
     with pytest.raises(ValueError):
         kwargs = _check_kwargs(kwargs)
+
+
+def test_get_results_wqx3_preserves_user_dataProfile(requests_mock):
+    """A valid user-supplied WQX3.0 profile must not be overwritten.
+
+    Regression: previously the `else` branch of the `dataProfile` validation
+    triggered whenever the value was *not invalid*, including any valid
+    user-supplied profile, silently overwriting it with 'fullPhysChem'.
+    """
+    request_url = (
+        "https://www.waterqualitydata.us/wqx3/Result/search?"
+        "siteid=UTAHDWQ_WQX-4993795&mimeType=csv&dataProfile=narrow"
+    )
+    response_file_path = "tests/data/wqp3_results.txt"
+    mock_request(requests_mock, request_url, response_file_path)
+
+    df, _md = get_results(
+        legacy=False, siteid="UTAHDWQ_WQX-4993795", dataProfile="narrow"
+    )
+    assert isinstance(df, DataFrame)
+    sent = requests_mock.request_history[-1]
+    assert sent.qs.get("dataprofile") == ["narrow"]
+
+
+def test_get_results_wqx3_invalid_dataProfile_raises():
+    """Invalid WQX3.0 dataProfile raises ValueError, not TypeError."""
+    with pytest.raises(ValueError, match="WQX3.0 profile"):
+        get_results(legacy=False, dataProfile="not_a_real_profile")
+
+
+def test_get_results_legacy_invalid_dataProfile_raises():
+    """Invalid legacy dataProfile raises ValueError, not TypeError."""
+    with pytest.raises(ValueError, match="legacy profile"):
+        get_results(legacy=True, dataProfile="not_a_real_profile")
