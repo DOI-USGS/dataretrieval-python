@@ -163,7 +163,7 @@ def query(url, payload, delimiter=",", ssl_check=True):
     url: string
         URL to query
     payload: dict
-        query parameters passed to ``requests.get``
+        query parameters passed to ``requests.get``. Not mutated.
     delimiter: string
         delimiter to use with lists
     ssl_check: bool
@@ -175,17 +175,11 @@ def query(url, payload, delimiter=",", ssl_check=True):
     string: query response
         The response from the API query ``requests.get`` function call.
     """
+    params = {key: to_str(value, delimiter) for key, value in payload.items()}
 
-    for key, value in payload.items():
-        payload[key] = to_str(value, delimiter)
-    # for index in range(len(payload)):
-    #    key, value = payload[index]
-    #    payload[index] = (key, to_str(value))
-
-    # define the user agent for the query
     user_agent = {"user-agent": f"python-dataretrieval/{dataretrieval.__version__}"}
 
-    response = requests.get(url, params=payload, headers=user_agent, verify=ssl_check)
+    response = requests.get(url, params=params, headers=user_agent, verify=ssl_check)
 
     if response.status_code == 400:
         raise ValueError(
@@ -217,6 +211,10 @@ def query(url, payload, delimiter=",", ssl_check=True):
             f"Service Unavailable: {response.status_code} {response.reason}. "
             + f"The service at {response.url} may be down or experiencing issues."
         )
+
+    # Catch-all for any other 4xx/5xx (401, 403, 405, 408, 429, 501, 504, ...)
+    # so callers don't silently receive an HTML error page as if it were data.
+    response.raise_for_status()
 
     if response.text.startswith("No sites/data"):
         raise NoSitesError(response.url)
