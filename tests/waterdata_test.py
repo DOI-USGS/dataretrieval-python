@@ -322,6 +322,33 @@ def test_get_reference_table_wrong_name():
         get_reference_table("agency-cod")
 
 
+def test_get_reference_table_propagates_limit(requests_mock):
+    """The `limit` argument must reach the OGC `limit` query parameter."""
+    request_url = (
+        "https://api.waterdata.usgs.gov/ogcapi/v0/collections/agency-codes/items"
+    )
+    body = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "id": "USGS",
+                "properties": {"agency_code": "USGS"},
+                "geometry": None,
+            }
+        ],
+        "numberReturned": 1,
+        "links": [],
+    }
+    requests_mock.get(request_url, json=body, headers={"mock_header": "value"})
+
+    df, _md = get_reference_table("agency-codes", limit=42)
+
+    sent = requests_mock.request_history[-1]
+    assert sent.qs.get("limit") == ["42"]
+    assert "agency_code" in df.columns
+
+
 def test_get_stats_por():
     df, _ = get_stats_por(
         monitoring_location_id="USGS-12451000",
