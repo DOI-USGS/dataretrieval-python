@@ -79,19 +79,14 @@ def get_flowlines(
         ...     comid=13294314, navigation_mode="UM"
         ... )
     """
-    # validate the navigation mode
-    _validate_navigation_mode(navigation_mode)
-    # validate the feature source and comid
+    navigation_mode = _validate_navigation_mode(navigation_mode)
     _validate_feature_source_comid(feature_source, feature_id, comid)
     if feature_source:
-        # validate the feature source
         _validate_data_source(feature_source)
-
         url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}/navigation"
-        query_params = {"distance": str(distance), "trimStart": str(trim_start).lower()}
     else:
         url = f"{NLDI_API_BASE_URL}/comid/{comid}/navigation"
-        query_params = {"distance": str(distance)}
+    query_params = {"distance": str(distance), "trimStart": str(trim_start).lower()}
 
     url += f"/{navigation_mode}/flowlines"
     if stop_comid is not None:
@@ -232,67 +227,52 @@ def get_features(
         >>> gdf = dataretrieval.nldi.get_features(lat=43.073051, long=-89.401230)
     """
 
-    # check only one origin is provided
-    if (lat and long is None) or (long and lat is None):
+    if (lat is None) != (long is None):
         raise ValueError("Both lat and long are required")
 
-    if lat:
-        if comid:
+    have_latlong = lat is not None
+    if have_latlong:
+        if comid is not None:
             raise ValueError(
                 "Provide only one origin type - comid cannot be provided"
                 " with lat or long"
             )
-        if feature_source or feature_id:
+        if feature_source is not None or feature_id is not None:
             raise ValueError(
                 "Provide only one origin type - feature_source and feature_id cannot"
                 " be provided with lat or long"
             )
-
-    if not lat:
-        if (comid or data_source) and navigation_mode is None:
+    else:
+        if (comid is not None or data_source is not None) and navigation_mode is None:
             raise ValueError(
                 "navigation_mode is required if comid or data_source is provided"
             )
-        # validate the feature source and comid
         _validate_feature_source_comid(feature_source, feature_id, comid)
-        # validate the data source
         if data_source:
             _validate_data_source(data_source)
-        # validate feature source
-        _validate_data_source(feature_source)
-        # validate the navigation mode
+        if feature_source:
+            _validate_data_source(feature_source)
         if navigation_mode:
-            _validate_navigation_mode(navigation_mode)
+            navigation_mode = _validate_navigation_mode(navigation_mode)
 
-    if lat:
+    if have_latlong:
         url = f"{NLDI_API_BASE_URL}/comid/position"
         query_params = {"coords": f"POINT({long} {lat})"}
-    else:
-        if navigation_mode:
-            if feature_source:
-                url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}/navigation"
-            else:
-                url = f"{NLDI_API_BASE_URL}/comid/{comid}/navigation"
-            url += f"/{navigation_mode}/{data_source}"
-            query_params = {"distance": str(distance)}
-            if stop_comid is not None:
-                query_params["stopComid"] = str(stop_comid)
-        else:
-            url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}"
-            query_params = {}
-
-    if lat:
         err_msg = f"Error getting features for lat '{lat}' and long '{long}'"
-    elif feature_source:
-        err_msg = (
-            f"Error getting features for feature source '{feature_source}'"
-            f" and feature_id '{feature_id}, and data source '{data_source}'"
-        )
+    elif navigation_mode:
+        if feature_source:
+            url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}/navigation"
+        else:
+            url = f"{NLDI_API_BASE_URL}/comid/{comid}/navigation"
+        url += f"/{navigation_mode}/{data_source}"
+        query_params = {"distance": str(distance)}
+        if stop_comid is not None:
+            query_params["stopComid"] = str(stop_comid)
+        err_msg = _features_err_msg(feature_source, feature_id, comid, data_source)
     else:
-        err_msg = (
-            f"Error getting features for comid '{comid}'"
-            f" and data source '{data_source}'"
-        )
+        url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}"
+        query_params = {}
+        err_msg = _features_err_msg(feature_source, feature_id, comid, data_source)
 
     feature_collection = _query_nldi(url, query_params, err_msg)
     if as_json:
@@ -413,28 +393,26 @@ def search(
         ... )
 
     """
-    if (lat and long is None) or (long and lat is None):
+    if (lat is None) != (long is None):
         raise ValueError("Both lat and long are required")
 
-    # validate find
     find = find.lower()
     if find not in ("basin", "flowlines", "features"):
         raise ValueError(
             f"Invalid value for find: {find} - allowed values are:"
             f" 'basin', 'flowlines', or 'features'"
         )
-    if lat and find != "features":
+    if lat is not None and find != "features":
         raise ValueError(
             f"Invalid value for find: {find} - lat/long is to get features not {find}"
         )
-    if comid and find == "basin":
+    if comid is not None and find == "basin":
         raise ValueError(
             "Invalid value for find: basin - comid is to get features"
             " or flowlines not basin"
         )
 
-    if lat:
-        # get features by hydrologic location
+    if lat is not None:
         return get_features(lat=lat, long=long, as_json=True)
 
     if find == "basin":
@@ -443,6 +421,11 @@ def search(
         )
 
     if find == "flowlines":
+        if navigation_mode is None:
+            raise ValueError(
+                "navigation_mode is required for find='flowlines';"
+                f" allowed values are {_VALID_NAVIGATION_MODES}"
+            )
         return get_flowlines(
             navigation_mode=navigation_mode,
             distance=distance,
@@ -483,10 +466,30 @@ def _validate_data_source(data_source: str):
             raise ValueError(err_msg)
 
 
-def _validate_navigation_mode(navigation_mode: str):
-    navigation_mode = navigation_mode.upper()
-    if navigation_mode not in ("UM", "DM", "UT", "DD"):
-        raise TypeError(f"Invalid navigation mode '{navigation_mode}'")
+_VALID_NAVIGATION_MODES = ("UM", "DM", "UT", "DD")
+
+
+def _features_err_msg(feature_source, feature_id, comid, data_source) -> str:
+    if feature_source is not None:
+        return (
+            f"Error getting features for feature source '{feature_source}'"
+            f" and feature_id '{feature_id}', and data source '{data_source}'"
+        )
+    return f"Error getting features for comid '{comid}' and data source '{data_source}'"
+
+
+def _validate_navigation_mode(navigation_mode: str | None) -> str:
+    if navigation_mode is None:
+        raise ValueError(
+            f"navigation_mode is required; allowed values are {_VALID_NAVIGATION_MODES}"
+        )
+    normalized = navigation_mode.upper()
+    if normalized not in _VALID_NAVIGATION_MODES:
+        raise ValueError(
+            f"Invalid navigation mode '{navigation_mode}';"
+            f" allowed values are {_VALID_NAVIGATION_MODES}"
+        )
+    return normalized
 
 
 def _validate_feature_source_comid(
