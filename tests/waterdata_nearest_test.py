@@ -265,3 +265,54 @@ def test_forwards_kwargs_to_get_continuous(patch_get_continuous):
     _, kwargs = patch_get_continuous.call_args
     assert kwargs["statistic_id"] == "00011"
     assert kwargs["approval_status"] == "Approved"
+
+
+def test_accepts_single_string_target(patch_get_continuous):
+    """A bare scalar target must round-trip through pd.to_datetime.
+
+    Regression: previously `pd.DatetimeIndex(pd.to_datetime("...", utc=True))`
+    raised TypeError because pd.to_datetime returns a scalar Timestamp for a
+    single-string input.
+    """
+    patch_get_continuous.return_value = (
+        _fake_df([{"time": "2023-06-15T10:30:00Z", "value": 22.4}]),
+        mock.Mock(),
+    )
+    result, _ = get_nearest_continuous(
+        "2023-06-15T10:30:31Z", monitoring_location_id="USGS-02238500"
+    )
+    assert len(result) == 1
+    assert result["target_time"].iloc[0] == pd.Timestamp(
+        "2023-06-15T10:30:31Z", tz="UTC"
+    )
+
+
+def test_accepts_single_timestamp_target(patch_get_continuous):
+    """A single ``pd.Timestamp`` target also round-trips."""
+    patch_get_continuous.return_value = (
+        _fake_df([{"time": "2023-06-15T10:30:00Z", "value": 22.4}]),
+        mock.Mock(),
+    )
+    target = pd.Timestamp("2023-06-15T10:30:31Z", tz="UTC")
+    result, _ = get_nearest_continuous(target, monitoring_location_id="USGS-02238500")
+    assert len(result) == 1
+
+
+def test_missing_time_column_raises_helpful_error(patch_get_continuous):
+    """If the response has no 'time' column (e.g. user passed `properties`
+    that excluded it), raise ValueError instead of crashing with KeyError.
+    """
+    df_no_time = pd.DataFrame(
+        {
+            "value": [22.4],
+            "monitoring_location_id": ["USGS-02238500"],
+        }
+    )
+    patch_get_continuous.return_value = (df_no_time, mock.Mock())
+
+    with pytest.raises(ValueError, match="'time' column"):
+        get_nearest_continuous(
+            ["2023-06-15T10:30:31Z"],
+            monitoring_location_id="USGS-02238500",
+            properties=["value", "monitoring_location_id"],
+        )
