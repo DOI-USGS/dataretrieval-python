@@ -1,8 +1,10 @@
 from unittest import mock
 
+import pandas as pd
 import requests
 
 from dataretrieval.waterdata.utils import (
+    _arrange_cols,
     _get_args,
     _walk_pages,
 )
@@ -80,3 +82,47 @@ def test_walk_pages_multiple_mocked():
     assert mock_client.send.called
     assert mock_client.request.called
     assert mock_client.request.call_args[0][1] == "https://example.com/page2"
+
+
+# --- _arrange_cols ----------------------------------------------------------
+
+
+def test_arrange_cols_does_not_mutate_caller_properties():
+    """`_arrange_cols` must not mutate the caller's `properties` list.
+
+    Regression: previously the function did
+    ``properties.append("geometry")`` and
+    ``properties[properties.index("id")] = output_id`` in place, so the
+    caller's list grew and was rewritten across successive calls.
+    """
+    df = pd.DataFrame(
+        {
+            "id": ["a", "b"],
+            "value": [1.0, 2.0],
+            "geometry": ["p1", "p2"],
+        }
+    )
+    properties = ["id", "value"]
+    snapshot = list(properties)
+
+    _arrange_cols(df, properties, output_id="daily_id")
+    _arrange_cols(df, properties, output_id="daily_id")
+
+    assert properties == snapshot, (
+        f"caller's properties list was mutated: {properties!r} != {snapshot!r}"
+    )
+
+
+def test_arrange_cols_swaps_id_in_returned_columns():
+    """`'id'` in `properties` should still resolve to the output_id column."""
+    df = pd.DataFrame({"id": ["a"], "value": [1.0]})
+    result = _arrange_cols(df, ["id", "value"], output_id="daily_id")
+    assert "daily_id" in result.columns
+    assert "id" not in result.columns
+
+
+def test_arrange_cols_keeps_geometry_when_present():
+    """Geometry must come along even if the caller didn't list it."""
+    df = pd.DataFrame({"id": ["a"], "value": [1.0], "geometry": ["p1"]})
+    result = _arrange_cols(df, ["value"], output_id="daily_id")
+    assert "geometry" in result.columns
