@@ -606,6 +606,8 @@ def _walk_pages(
                     headers=headers,
                     data=content if method == "POST" else None,
                 )
+                if resp.status_code != 200:
+                    raise RuntimeError(_error_body(resp))
                 dfs.append(_get_resp_data(resp, geopd=geopd))
                 curr_url = _next_req_url(resp)
             except Exception:  # noqa: BLE001
@@ -1058,7 +1060,7 @@ def get_stats_data(
         all_dfs = [_handle_stats_nesting(body, geopd=GEOPANDAS)]
 
         # Look for a next code in the response body
-        next_token = body["next"]
+        next_token = body.get("next")
 
         while next_token:
             args["next_token"] = next_token
@@ -1070,9 +1072,11 @@ def get_stats_data(
                     params=args,
                     headers=headers,
                 )
+                if resp.status_code != 200:
+                    raise RuntimeError(_error_body(resp))
                 body = resp.json()
-                all_dfs.append(_handle_stats_nesting(body, geopd=False))
-                next_token = body["next"]
+                all_dfs.append(_handle_stats_nesting(body, geopd=GEOPANDAS))
+                next_token = body.get("next")
             except Exception:  # noqa: BLE001
                 error_text = _error_body(resp)
                 logger.error("Request incomplete. %s", error_text)
