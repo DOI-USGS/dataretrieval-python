@@ -259,7 +259,8 @@ def get_features(
         if data_source:
             _validate_data_source(data_source)
         # validate feature source
-        _validate_data_source(feature_source)
+        if feature_source:
+            _validate_data_source(feature_source)
         # validate the navigation mode
         if navigation_mode:
             _validate_navigation_mode(navigation_mode)
@@ -475,12 +476,13 @@ def _validate_data_source(data_source: str):
             url, {}, "Error getting available data sources"
         )
         _AVAILABLE_DATA_SOURCES = [ds["source"] for ds in available_data_sources]
-        if data_source not in _AVAILABLE_DATA_SOURCES:
-            err_msg = (
-                f"Invalid data source '{data_source}'."
-                f" Available data sources are: {_AVAILABLE_DATA_SOURCES}"
-            )
-            raise ValueError(err_msg)
+
+    if data_source not in _AVAILABLE_DATA_SOURCES:
+        err_msg = (
+            f"Invalid data source '{data_source}'."
+            f" Available data sources are: {_AVAILABLE_DATA_SOURCES}"
+        )
+        raise ValueError(err_msg)
 
 
 def _validate_navigation_mode(navigation_mode: str):

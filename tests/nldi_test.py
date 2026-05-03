@@ -1,5 +1,7 @@
+import pytest
 from geopandas import GeoDataFrame
 
+import dataretrieval.nldi as nldi
 from dataretrieval.nldi import (
     NLDI_API_BASE_URL,
     get_basin,
@@ -7,6 +9,14 @@ from dataretrieval.nldi import (
     get_flowlines,
     search,
 )
+
+
+@pytest.fixture(autouse=True)
+def _reset_data_source_cache():
+    """Reset the module-level cache between tests."""
+    nldi._AVAILABLE_DATA_SOURCES = None
+    yield
+    nldi._AVAILABLE_DATA_SOURCES = None
 
 
 def mock_request_data_sources(requests_mock):
@@ -280,3 +290,26 @@ def test_search_for_features_by_lat_long(requests_mock):
     assert search_results["features"][0]["type"] == "Feature"
     assert search_results["features"][0]["geometry"]["type"] == "LineString"
     assert len(search_results["features"][0]["geometry"]["coordinates"]) == 27
+
+
+def test_validate_data_source_rejects_invalid_after_cache_populated(requests_mock):
+    """Once the cache is warm, invalid data sources must still raise ValueError.
+
+    Regression: previously the validation check was nested inside the
+    cache-population branch, so all calls after the first silently passed.
+    """
+    mock_request_data_sources(requests_mock)
+
+    # First call: populates the cache with a valid source.
+    nldi._validate_data_source("WQP")
+
+    # Second call with an invalid source must raise.
+    with pytest.raises(ValueError, match="Invalid data source 'not_a_real_source'"):
+        nldi._validate_data_source("not_a_real_source")
+
+
+def test_validate_data_source_rejects_invalid_on_first_call(requests_mock):
+    """Cold-cache invalid sources must also raise."""
+    mock_request_data_sources(requests_mock)
+    with pytest.raises(ValueError, match="Invalid data source"):
+        nldi._validate_data_source("not_a_real_source")
