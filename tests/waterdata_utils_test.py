@@ -3,6 +3,7 @@ from unittest import mock
 import requests
 
 from dataretrieval.waterdata.utils import (
+    _format_api_dates,
     _get_args,
     _walk_pages,
 )
@@ -80,3 +81,55 @@ def test_walk_pages_multiple_mocked():
     assert mock_client.send.called
     assert mock_client.request.called
     assert mock_client.request.call_args[0][1] == "https://example.com/page2"
+
+
+# --- _format_api_dates -------------------------------------------------------
+
+
+def test_format_api_dates_iso8601_with_z():
+    """ISO 8601 datetimes with a 'Z' suffix must be parsed, not dropped to None."""
+    assert _format_api_dates("2018-02-12T23:20:50Z") == "2018-02-12T23:20:50Z"
+
+
+def test_format_api_dates_iso8601_with_fractional_seconds():
+    assert _format_api_dates("2018-02-12T23:20:50.123Z") == "2018-02-12T23:20:50Z"
+
+
+def test_format_api_dates_iso8601_with_offset():
+    """Numeric offsets must be converted to UTC."""
+    assert _format_api_dates("2018-02-12T19:20:50-04:00") == "2018-02-12T23:20:50Z"
+
+
+def test_format_api_dates_iso8601_pair():
+    """A list of two ISO 8601 datetimes must be parsed into a UTC interval."""
+    result = _format_api_dates(["2018-02-12T23:20:50Z", "2018-03-18T12:31:12Z"])
+    assert result == "2018-02-12T23:20:50Z/2018-03-18T12:31:12Z"
+
+
+def test_format_api_dates_passthrough_interval():
+    assert _format_api_dates("2018-02-12T00:00:00Z/..") == "2018-02-12T00:00:00Z/.."
+
+
+def test_format_api_dates_passthrough_duration():
+    assert _format_api_dates("P7D") == "P7D"
+
+
+def test_format_api_dates_word_with_p_is_not_a_duration():
+    """Strings containing the letter 'p' must not be misclassified as durations."""
+    assert _format_api_dates("Apr") is None
+
+
+def test_format_api_dates_date_only():
+    assert _format_api_dates("2024-01-01", date=True) == "2024-01-01"
+
+
+def test_format_api_dates_date_only_pair():
+    assert (
+        _format_api_dates(["2024-01-01", "2024-02-01"], date=True)
+        == "2024-01-01/2024-02-01"
+    )
+
+
+def test_format_api_dates_space_separated_still_works():
+    """The legacy space-separated format must still parse."""
+    assert _format_api_dates("2024-01-01 00:00:00", date=True) == "2024-01-01"

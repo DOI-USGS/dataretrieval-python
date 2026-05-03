@@ -128,6 +128,34 @@ def _switch_properties_id(properties: list[str] | None, id_name: str, service: s
     return [p for p in properties if p not in ["geometry", service_id]]
 
 
+_DATETIME_FORMATS = (
+    "%Y-%m-%dT%H:%M:%S.%f%z",
+    "%Y-%m-%dT%H:%M:%S%z",
+    "%Y-%m-%dT%H:%M:%S.%f",
+    "%Y-%m-%dT%H:%M:%S",
+    "%Y-%m-%d %H:%M:%S.%f",
+    "%Y-%m-%d %H:%M:%S",
+    "%Y-%m-%d",
+)
+
+
+def _parse_datetime(value: str) -> datetime | None:
+    """Parse a single datetime string against the supported formats.
+
+    Returns a ``datetime`` (tz-aware iff the input carried a UTC offset),
+    or ``None`` if no format matched.
+    """
+    # ``datetime.strptime`` accepts a numeric offset like ``+00:00`` but not
+    # the ``Z`` shorthand, so normalize trailing ``Z`` first.
+    candidate = value[:-1] + "+00:00" if value.endswith("Z") else value
+    for fmt in _DATETIME_FORMATS:
+        try:
+            return datetime.strptime(candidate, fmt)
+        except ValueError:
+            continue
+    return None
+
+
 def _format_api_dates(
     datetime_input: str | list[str], date: bool = False
 ) -> str | None:
@@ -141,8 +169,8 @@ def _format_api_dates(
     ----------
     datetime_input : Union[str, List[str]]
         A single date/datetime string or a list of one or two date/datetime
-        strings. Accepts formats like "%Y-%m-%d %H:%M:%S", ISO 8601, or relative
-        periods (e.g., "P7D").
+        strings. Accepts formats like "%Y-%m-%d %H:%M:%S", ISO 8601 (with or
+        without ``Z``/numeric offset), or relative periods (e.g., "P7D").
     date : bool, optional
         If True, uses only the date portion ("YYYY-MM-DD"). If False (default),
         returns full datetime in UTC ISO 8601 format ("YYYY-MM-DDTHH:MM:SSZ").
@@ -168,7 +196,9 @@ def _format_api_dates(
     - Supports relative period strings (e.g., "P7D") and passes them through
     unchanged.
     - Converts datetimes to UTC and formats as ISO 8601 with 'Z' suffix when
-    `date` is False.
+    `date` is False. Inputs with an explicit offset (``Z`` or ``+HH:MM``) are
+    converted from that offset to UTC; naive inputs are interpreted in the
+    local time zone for backwards compatibility.
     - For date ranges, replaces "nan" with ".." in the output.
     """
     # Get timezone
@@ -182,47 +212,33 @@ def _format_api_dates(
     if all(pd.isna(dt) or dt == "" or dt is None for dt in datetime_input):
         return None
 
-    if len(datetime_input) <= 2:
-        # If the list is of length 1, first look for things like "P7D" or dates
-        # already formatted in ISO08601. Otherwise, try to coerce to datetime
-        if len(datetime_input) == 1 and (
-            re.search(r"P", datetime_input[0], re.IGNORECASE)
-            or "/" in datetime_input[0]
-        ):
-            return datetime_input[0]
-        # Otherwise, use list comprehension to parse dates
-        else:
-            try:
-                # Parse to naive datetime
-                parsed_dates = [
-                    datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")  # noqa: DTZ007
-                    for dt in datetime_input
-                ]
-            except ValueError:
-                # Parse to date only
-                try:
-                    parsed_dates = [
-                        datetime.strptime(dt, "%Y-%m-%d")  # noqa: DTZ007
-                        for dt in datetime_input
-                    ]
-                except ValueError:
-                    return None
-                # If the service only accepts dates for this input, not
-                # datetimes (e.g. "daily"), return just the dates separated by a
-                # "/", otherwise, return the datetime in UTC format.
-            if date:
-                return "/".join(dt.strftime("%Y-%m-%d") for dt in parsed_dates)
-            else:
-                parsed_locals = [
-                    dt.replace(tzinfo=local_timezone) for dt in parsed_dates
-                ]
-                formatted = "/".join(
-                    dt.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
-                    for dt in parsed_locals
-                )
-                return formatted
-    else:
+    if len(datetime_input) > 2:
         raise ValueError("datetime_input should only include 1-2 values")
+
+    # Pass through duration ("P7D") and pre-formatted interval ("a/b") strings
+    # untouched. Anchor the duration check so the bare letter ``P`` / ``p``
+    # appearing inside a normal word doesn't accidentally bypass parsing.
+    if len(datetime_input) == 1:
+        single = datetime_input[0]
+        if re.match(r"^[Pp]\d", single) or "/" in single:
+            return single
+
+    parsed_dates = [_parse_datetime(dt) for dt in datetime_input]
+    if any(dt is None for dt in parsed_dates):
+        return None
+
+    if date:
+        return "/".join(dt.strftime("%Y-%m-%d") for dt in parsed_dates)
+
+    # Localize naive datetimes to the runner's local zone before converting
+    # to UTC; tz-aware datetimes are converted directly.
+    utc_dates = [
+        (dt if dt.tzinfo is not None else dt.replace(tzinfo=local_timezone)).astimezone(
+            ZoneInfo("UTC")
+        )
+        for dt in parsed_dates
+    ]
+    return "/".join(dt.strftime("%Y-%m-%dT%H:%M:%SZ") for dt in utc_dates)
 
 
 def _cql2_param(args: dict[str, Any]) -> str:
