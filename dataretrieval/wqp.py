@@ -126,29 +126,23 @@ def get_results(
 
     kwargs = _check_kwargs(kwargs)
 
-    if legacy is True:
-        if (
-            "dataProfile" in kwargs
-            and kwargs["dataProfile"] not in result_profiles_legacy
-        ):
-            raise ValueError(
-                f"dataProfile {kwargs['dataProfile']!r} is not a legacy profile. "
-                f"Valid options are {result_profiles_legacy}."
-            )
-
+    if legacy:
+        valid_profiles = result_profiles_legacy
+        kind = "legacy"
         url = wqp_url("Result")
-
     else:
-        if "dataProfile" in kwargs:
-            if kwargs["dataProfile"] not in result_profiles_wqx3:
-                raise ValueError(
-                    f"dataProfile {kwargs['dataProfile']!r} is not a valid "
-                    f"WQX3.0 profile. Valid options are {result_profiles_wqx3}."
-                )
-        else:
-            kwargs["dataProfile"] = "fullPhysChem"
-
+        valid_profiles = result_profiles_wqx3
+        kind = "WQX3.0"
         url = wqx3_url("Result")
+
+    profile = kwargs.get("dataProfile")
+    if profile is not None and profile not in valid_profiles:
+        raise ValueError(
+            f"dataProfile {profile!r} is not a valid {kind} profile. "
+            f"Valid options are {valid_profiles}."
+        )
+    if not legacy and profile is None:
+        kwargs["dataProfile"] = "fullPhysChem"
 
     response = query(url, kwargs, delimiter=";", ssl_check=ssl_check)
 
