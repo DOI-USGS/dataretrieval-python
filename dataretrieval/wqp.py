@@ -685,11 +685,9 @@ class WQP_Metadata(BaseMetadata):
 
     @property
     def site_info(self):
-        if "siteid" in self._parameters:
-            return what_sites(siteid=self._parameters["siteid"])
-        for legacy_key in ("sites", "site", "site_no"):
-            if legacy_key in self._parameters:
-                return what_sites(siteid=self._parameters[legacy_key])
+        for key in ("siteid", "sites", "site", "site_no"):
+            if key in self._parameters:
+                return what_sites(siteid=self._parameters[key])
         return None
 
 
