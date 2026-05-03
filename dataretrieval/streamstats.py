@@ -136,26 +136,47 @@ def get_watershed(
         # use Fiona to return a shape object
         pass
 
-    if format == "object":
-        # return a python object
-        pass
-
     data = json.loads(r.text)
+
+    if format == "object":
+        return data
+
     return Watershed.from_streamstats_json(data)
 
 
 class Watershed:
-    """Class to extract information from the streamstats JSON object."""
+    """Class to extract information from the streamstats JSON object.
+
+    Attributes
+    ----------
+    watershed_point : dict
+        GeoJSON feature for the watershed pour point.
+    watershed_polygon : dict
+        GeoJSON feature for the delineated watershed polygon.
+    parameters : list
+        Watershed parameters returned by StreamStats.
+    workspace_id : str
+        StreamStats workspace identifier for the watershed.
+    """
+
+    def __init__(self, rcode, xlocation, ylocation):
+        """Delineate a watershed and populate the instance from the response."""
+        data = get_watershed(rcode, xlocation, ylocation, format="object")
+        self._populate_from_json(data)
 
     @classmethod
     def from_streamstats_json(cls, streamstats_json):
-        """Method that creates a Watershed object from a streamstats JSON."""
-        cls.watershed_point = streamstats_json["featurecollection"][0]["feature"]
-        cls.watershed_polygon = streamstats_json["featurecollection"][1]["feature"]
-        cls.parameters = streamstats_json["parameters"]
-        cls._workspaceID = streamstats_json["workspaceID"]
-        return cls
+        """Construct a :obj:`Watershed` from a StreamStats JSON response."""
+        instance = cls.__new__(cls)
+        instance._populate_from_json(streamstats_json)
+        return instance
 
-    def __init__(self, rcode, xlocation, ylocation):
-        """Init method that calls the :obj:`from_streamstats_json` method."""
-        get_watershed(rcode, xlocation, ylocation)
+    def _populate_from_json(self, streamstats_json):
+        self.watershed_point = streamstats_json["featurecollection"][0]["feature"]
+        self.watershed_polygon = streamstats_json["featurecollection"][1]["feature"]
+        self.parameters = streamstats_json["parameters"]
+        self.workspace_id = streamstats_json["workspaceID"]
+
+    @property
+    def _workspaceID(self):
+        return self.workspace_id
