@@ -155,7 +155,7 @@ def get_results(
     response = query(url, kwargs, delimiter=";", ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def what_sites(
@@ -210,7 +210,7 @@ def what_sites(
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def what_organizations(
@@ -265,7 +265,7 @@ def what_organizations(
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def what_projects(ssl_check=True, legacy=True, **kwargs):
@@ -316,7 +316,7 @@ def what_projects(ssl_check=True, legacy=True, **kwargs):
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def what_activities(
@@ -380,7 +380,7 @@ def what_activities(
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def what_detection_limits(
@@ -442,7 +442,7 @@ def what_detection_limits(
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def what_habitat_metrics(
@@ -497,7 +497,7 @@ def what_habitat_metrics(
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def what_project_weights(ssl_check=True, legacy=True, **kwargs):
@@ -553,7 +553,7 @@ def what_project_weights(ssl_check=True, legacy=True, **kwargs):
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
@@ -609,7 +609,7 @@ def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
 
     df = pd.read_csv(StringIO(response.text), delimiter=",")
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def wqp_url(service):
@@ -649,14 +649,15 @@ class WQP_Metadata(BaseMetadata):
     ----------
     url : str
         Response url
-    query_time : datetme.timedelta
+    query_time : datetime.timedelta
         Response elapsed time
     header : requests.structures.CaseInsensitiveDict
         Response headers
-    comments : None
-        Metadata comments. WQP does not return comments.
-    site_info : tuple[pd.DataFrame, NWIS_Metadata] | None
-        Site information if the query included `sites`, `site` or `site_no`.
+    comment : None
+        Metadata comment. WQP does not return comments.
+    site_info : tuple[pd.DataFrame, WQP_Metadata] | None
+        Site information if the query included a site filter (`siteid`,
+        `sites`, `site`, or `site_no`).
     """
 
     def __init__(self, response, **parameters) -> None:
@@ -682,14 +683,14 @@ class WQP_Metadata(BaseMetadata):
 
         self._parameters = parameters
 
-        @property
-        def site_info(self):
-            if "sites" in self._parameters:
-                return what_sites(sites=parameters["sites"])
-            elif "site" in self._parameters:
-                return what_sites(sites=parameters["site"])
-            elif "site_no" in self._parameters:
-                return what_sites(sites=parameters["site_no"])
+    @property
+    def site_info(self):
+        if "siteid" in self._parameters:
+            return what_sites(siteid=self._parameters["siteid"])
+        for legacy_key in ("sites", "site", "site_no"):
+            if legacy_key in self._parameters:
+                return what_sites(siteid=self._parameters[legacy_key])
+        return None
 
 
 def _check_kwargs(kwargs):

@@ -216,3 +216,42 @@ def test_check_kwargs():
     kwargs = {"mimeType": "foo"}
     with pytest.raises(ValueError):
         kwargs = _check_kwargs(kwargs)
+
+
+def test_wqp_metadata_site_info_property_resolves(requests_mock):
+    """`site_info` must be a real property bound to the class.
+
+    Regression: previously `site_info` was defined as a closure inside
+    `__init__`, so `md.site_info` fell through to `BaseMetadata.site_info`
+    and raised `NotImplementedError`. Also verify the parameters are
+    threaded through from `get_results`.
+    """
+    results_url = (
+        "https://www.waterqualitydata.us/data/Result/Search?"
+        "siteid=WIDNR_WQX-10032762&mimeType=csv"
+    )
+    sites_url = (
+        "https://www.waterqualitydata.us/data/Station/Search?"
+        "siteid=WIDNR_WQX-10032762&mimeType=csv"
+    )
+    mock_request(requests_mock, results_url, "tests/data/wqp_results.txt")
+    mock_request(requests_mock, sites_url, "tests/data/wqp_sites.txt")
+
+    _df, md = get_results(siteid="WIDNR_WQX-10032762")
+
+    # site_info must be a bound property — accessing it should return the
+    # what_sites() tuple, not raise NotImplementedError.
+    site_df, site_md = md.site_info
+    assert isinstance(site_df, DataFrame)
+    assert site_md.url == sites_url
+
+
+def test_wqp_metadata_site_info_returns_none_without_site_filter(requests_mock):
+    """`site_info` returns None when no site filter was supplied."""
+    results_url = (
+        "https://www.waterqualitydata.us/data/Result/Search?"
+        "characteristicName=Chloride&mimeType=csv"
+    )
+    mock_request(requests_mock, results_url, "tests/data/wqp_results.txt")
+    _df, md = get_results(characteristicName="Chloride")
+    assert md.site_info is None
