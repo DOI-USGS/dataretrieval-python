@@ -339,6 +339,12 @@ def _error_body(resp: requests.Response):
     )
 
 
+def _raise_if_not_ok(resp: requests.Response) -> None:
+    """Raise ``RuntimeError(_error_body(resp))`` for any non-200 response."""
+    if resp.status_code != 200:
+        raise RuntimeError(_error_body(resp))
+
+
 def _construct_api_requests(
     service: str,
     properties: list[str] | None = None,
@@ -583,8 +589,7 @@ def _walk_pages(
     client = client or requests.Session()
     try:
         resp = client.send(req)
-        if resp.status_code != 200:
-            raise RuntimeError(_error_body(resp))
+        _raise_if_not_ok(resp)
 
         # Store the initial response for metadata
         initial_response = resp
@@ -606,8 +611,7 @@ def _walk_pages(
                     headers=headers,
                     data=content if method == "POST" else None,
                 )
-                if resp.status_code != 200:
-                    raise RuntimeError(_error_body(resp))
+                _raise_if_not_ok(resp)
                 dfs.append(_get_resp_data(resp, geopd=geopd))
                 curr_url = _next_req_url(resp)
             except Exception:  # noqa: BLE001
@@ -1045,8 +1049,7 @@ def get_stats_data(
 
     try:
         resp = client.send(req)
-        if resp.status_code != 200:
-            raise RuntimeError(_error_body(resp))
+        _raise_if_not_ok(resp)
 
         # Store the initial response for metadata
         initial_response = resp
@@ -1072,8 +1075,7 @@ def get_stats_data(
                     params=args,
                     headers=headers,
                 )
-                if resp.status_code != 200:
-                    raise RuntimeError(_error_body(resp))
+                _raise_if_not_ok(resp)
                 body = resp.json()
                 all_dfs.append(_handle_stats_nesting(body, geopd=GEOPANDAS))
                 next_token = body.get("next")
