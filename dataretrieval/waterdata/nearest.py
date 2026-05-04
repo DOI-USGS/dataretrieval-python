@@ -181,13 +181,15 @@ def _coerce_targets(targets) -> pd.DatetimeIndex:
     """Accept anything ``pandas.to_datetime`` consumes, including a single value.
 
     A bare scalar (string, ``Timestamp``, ``datetime``, …) becomes a
-    one-element ``DatetimeIndex``; an iterable round-trips through
-    ``pd.to_datetime`` directly.
+    one-element ``DatetimeIndex``; an iterable (list, ``Series``, ``ndarray``)
+    is wrapped directly so its elements are preserved.
     """
     parsed = pd.to_datetime(targets, utc=True)
     if isinstance(parsed, pd.DatetimeIndex):
         return parsed
-    return pd.DatetimeIndex([parsed])
+    if pd.api.types.is_scalar(parsed):
+        return pd.DatetimeIndex([parsed])
+    return pd.DatetimeIndex(parsed)
 
 
 def _check_nearest_kwargs(kwargs: dict, on_tie: OnTie) -> None:
