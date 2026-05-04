@@ -70,14 +70,13 @@ def get_watershed(
     simplify=True,
     format="geojson",
 ):
-    """Get watershed object based on location
+    """Delineate a watershed via the StreamStats API.
 
-    **Streamstats documentation:**
-    Returns a watershed object. The request configuration will determine the
-    overall request response. However all returns will return a watershed
-    object with at least the workspaceid. The workspace id is the id to the
-    service workspace where files are stored and can be used for further
-    processing such as for downloads and flow statistic computations.
+    Hits the StreamStats ``watershed.geojson`` endpoint and returns the
+    delineated watershed in one of three shapes selected by ``format``: the
+    raw ``requests.Response`` (default), the parsed JSON ``dict``, or a
+    :obj:`Watershed` instance. Every response carries a workspace identifier
+    that can be passed to :obj:`download_workspace` for further processing.
 
     See: https://streamstats.usgs.gov/streamstatsservices/#/ for more
     information.
