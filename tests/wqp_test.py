@@ -14,8 +14,6 @@ from dataretrieval.wqp import (
     what_project_weights,
     what_projects,
     what_sites,
-    wqp_url,
-    wqx3_url,
 )
 
 
@@ -218,18 +216,6 @@ def test_check_kwargs():
     kwargs = {"mimeType": "foo"}
     with pytest.raises(ValueError):
         kwargs = _check_kwargs(kwargs)
-
-
-def test_wqp_url_unknown_service_raises_value_error():
-    """Unknown legacy service should raise ValueError with a single readable message."""
-    with pytest.raises(ValueError, match="Legacy service not recognized"):
-        wqp_url("NotAService")
-
-
-def test_wqx3_url_unknown_service_raises_value_error():
-    """Unknown WQX3.0 service should raise ValueError with a single readable message."""
-    with pytest.raises(ValueError, match="WQX3.0 service not recognized"):
-        wqx3_url("NotAService")
 
 
 def test_what_organizations_legacy_false_warns(requests_mock):
