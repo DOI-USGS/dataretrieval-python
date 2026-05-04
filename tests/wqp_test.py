@@ -255,3 +255,27 @@ def test_wqp_metadata_site_info_returns_none_without_site_filter(requests_mock):
     mock_request(requests_mock, results_url, "tests/data/wqp_results.txt")
     _df, md = get_results(characteristicName="Chloride")
     assert md.site_info is None
+
+
+def test_wqp_metadata_site_info_uses_wqx3_when_originating_query_was_wqx3(
+    requests_mock,
+):
+    """`site_info` must use the same legacy/WQX3.0 profile as the originating query.
+
+    Regression: previously `site_info` always called `what_sites()` with default
+    `legacy=True`, so a WQX3.0 results query produced a legacy Station lookup.
+    """
+    results_url = (
+        "https://www.waterqualitydata.us/wqx3/Result/search?"
+        "siteid=UTAHDWQ_WQX-4993795&mimeType=csv&dataProfile=fullPhysChem"
+    )
+    sites_wqx3_url = (
+        "https://www.waterqualitydata.us/wqx3/Station/search?"
+        "siteid=UTAHDWQ_WQX-4993795&mimeType=csv"
+    )
+    mock_request(requests_mock, results_url, "tests/data/wqp3_results.txt")
+    mock_request(requests_mock, sites_wqx3_url, "tests/data/wqp_sites.txt")
+
+    _df, md = get_results(legacy=False, siteid="UTAHDWQ_WQX-4993795")
+    _site_df, site_md = md.site_info
+    assert site_md.url == sites_wqx3_url
