@@ -175,7 +175,7 @@ def _format_one(dt, *, date: bool, local_tz) -> str | None:
 
 
 def _format_api_dates(
-    datetime_input: str | list[str], date: bool = False
+    datetime_input: str | list[str | None] | None, date: bool = False
 ) -> str | None:
     """
     Formats date or datetime input(s) for use with an API.
@@ -185,10 +185,12 @@ def _format_api_dates(
 
     Parameters
     ----------
-    datetime_input : Union[str, List[str]]
+    datetime_input : Union[str, List[Optional[str]], None]
         A single date/datetime string or a list of one or two date/datetime
         strings. Accepts formats like "%Y-%m-%d %H:%M:%S", ISO 8601 (with or
-        without ``Z``/numeric offset), or relative periods (e.g., "P7D").
+        without ``Z``/numeric offset), or relative periods (e.g., "P7D" /
+        "PT36H"). Range endpoints may be ``None``/``NaN``/empty to denote a
+        half-bounded range.
     date : bool, optional
         If True, uses only the date portion ("YYYY-MM-DD"). If False (default),
         returns full datetime in UTC ISO 8601 format ("YYYY-MM-DDTHH:MM:SSZ").
@@ -210,14 +212,16 @@ def _format_api_dates(
 
     Notes
     -----
-    - Handles blank or NA values by returning None.
-    - Supports relative period strings (e.g., "P7D") and passes them through
-    unchanged.
+    - A single blank/NA value returns None. In a two-value range, a blank/NA
+    endpoint is rendered as ``".."`` to denote an open bound (e.g.
+    ``"2024-01-01/.."``); the range is only None when *every* element is
+    blank/NA or any non-NA element fails to parse.
+    - Supports ISO 8601 durations such as "P7D" and "PT36H" and pre-formatted
+    intervals containing ``"/"``; both are passed through unchanged.
     - Converts datetimes to UTC and formats as ISO 8601 with 'Z' suffix when
     `date` is False. Inputs with an explicit offset (``Z`` or ``+HH:MM``) are
     converted from that offset to UTC; naive inputs are interpreted in the
     local time zone for backwards compatibility.
-    - For date ranges, replaces "nan" with ".." in the output.
     """
     # Get timezone
     local_timezone = datetime.now().astimezone().tzinfo
