@@ -12,6 +12,7 @@ See https://waterqualitydata.us/webservices_documentation for API reference
 from __future__ import annotations
 
 import warnings
+from functools import cached_property
 from io import StringIO
 from typing import TYPE_CHECKING
 
@@ -687,8 +688,10 @@ class WQP_Metadata(BaseMetadata):
         self._legacy = legacy
         self._ssl_check = ssl_check
 
-    @property
+    @cached_property
     def site_info(self):
+        # Walk WQP-native key first, then legacy NWIS-style aliases. Whichever
+        # matched, pass the value as `siteid` -- that's what_sites' native arg.
         for key in ("siteid", "sites", "site", "site_no"):
             if key in self._parameters:
                 return what_sites(
