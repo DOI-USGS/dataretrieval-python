@@ -282,9 +282,7 @@ def test_accepts_single_string_target(patch_get_continuous):
         "2023-06-15T10:30:31Z", monitoring_location_id="USGS-02238500"
     )
     assert len(result) == 1
-    assert result["target_time"].iloc[0] == pd.Timestamp(
-        "2023-06-15T10:30:31Z", tz="UTC"
-    )
+    assert result["target_time"].iloc[0] == pd.Timestamp("2023-06-15T10:30:31Z")
 
 
 def test_accepts_single_timestamp_target(patch_get_continuous):
@@ -293,9 +291,25 @@ def test_accepts_single_timestamp_target(patch_get_continuous):
         _fake_df([{"time": "2023-06-15T10:30:00Z", "value": 22.4}]),
         mock.Mock(),
     )
-    target = pd.Timestamp("2023-06-15T10:30:31Z", tz="UTC")
+    target = pd.Timestamp("2023-06-15T10:30:31Z")
     result, _ = get_nearest_continuous(target, monitoring_location_id="USGS-02238500")
     assert len(result) == 1
+
+
+def test_accepts_pandas_series_targets(patch_get_continuous):
+    """A ``pd.Series`` of timestamps preserves all elements (not just the first)."""
+    patch_get_continuous.return_value = (
+        _fake_df(
+            [
+                {"time": "2023-06-15T10:30:00Z", "value": 22.4},
+                {"time": "2023-06-16T10:30:00Z", "value": 22.5},
+            ]
+        ),
+        mock.Mock(),
+    )
+    targets = pd.Series(["2023-06-15T10:30:31Z", "2023-06-16T10:30:31Z"])
+    result, _ = get_nearest_continuous(targets, monitoring_location_id="USGS-02238500")
+    assert len(result) == 2
 
 
 def test_missing_time_column_raises_helpful_error(patch_get_continuous):
