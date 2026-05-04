@@ -253,15 +253,11 @@ def get_features(
             raise ValueError(
                 "navigation_mode is required if comid or data_source is provided"
             )
-        # validate the feature source and comid
         _validate_feature_source_comid(feature_source, feature_id, comid)
-        # validate the data source
         if data_source is not None:
             _validate_data_source(data_source)
-        # validate feature source
         if feature_source is not None:
             _validate_data_source(feature_source)
-        # validate the navigation mode
         if navigation_mode:
             _validate_navigation_mode(navigation_mode)
 

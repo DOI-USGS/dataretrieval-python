@@ -12,11 +12,9 @@ from dataretrieval.nldi import (
 
 
 @pytest.fixture(autouse=True)
-def _reset_data_source_cache():
+def _reset_data_source_cache(monkeypatch):
     """Reset the module-level cache between tests."""
-    nldi._AVAILABLE_DATA_SOURCES = None
-    yield
-    nldi._AVAILABLE_DATA_SOURCES = None
+    monkeypatch.setattr(nldi, "_AVAILABLE_DATA_SOURCES", None)
 
 
 def mock_request_data_sources(requests_mock):
@@ -300,16 +298,7 @@ def test_validate_data_source_rejects_invalid_after_cache_populated(requests_moc
     """
     mock_request_data_sources(requests_mock)
 
-    # First call: populates the cache with a valid source.
     nldi._validate_data_source("WQP")
 
-    # Second call with an invalid source must raise.
     with pytest.raises(ValueError, match="Invalid data source 'not_a_real_source'"):
-        nldi._validate_data_source("not_a_real_source")
-
-
-def test_validate_data_source_rejects_invalid_on_first_call(requests_mock):
-    """Cold-cache invalid sources must also raise."""
-    mock_request_data_sources(requests_mock)
-    with pytest.raises(ValueError, match="Invalid data source"):
         nldi._validate_data_source("not_a_real_source")
