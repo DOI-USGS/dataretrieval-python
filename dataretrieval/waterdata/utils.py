@@ -215,30 +215,37 @@ def _format_api_dates(
     if len(datetime_input) > 2:
         raise ValueError("datetime_input should only include 1-2 values")
 
-    # Pass through duration ("P7D") and pre-formatted interval ("a/b") strings
-    # untouched. Anchor the duration check so the bare letter ``P`` / ``p``
-    # appearing inside a normal word doesn't accidentally bypass parsing.
-    if len(datetime_input) == 1:
+    # Pass through duration ("P7D", "PT36H") and pre-formatted interval ("a/b")
+    # strings untouched. Anchor the duration check so the bare letter ``P``
+    # appearing inside a normal word doesn't bypass parsing; allow the optional
+    # ``T`` so time-only durations like ``PT36H`` are recognized.
+    if len(datetime_input) == 1 and isinstance(datetime_input[0], str):
         single = datetime_input[0]
-        if re.match(r"^[Pp]\d", single) or "/" in single:
+        if re.match(r"^[Pp]T?\d", single) or "/" in single:
             return single
 
-    parsed_dates = [_parse_datetime(dt) for dt in datetime_input]
-    if any(dt is None for dt in parsed_dates):
+    # Per-element: NA endpoints become ".." in the output for half-bounded
+    # ranges; otherwise parse. If any non-NA element fails to parse, return
+    # None overall.
+    def _format_one(dt) -> str | None:
+        if pd.isna(dt) or dt == "" or dt is None:
+            return ".."
+        parsed = _parse_datetime(dt)
+        if parsed is None:
+            return None
+        if date:
+            return parsed.strftime("%Y-%m-%d")
+        utc = (
+            parsed
+            if parsed.tzinfo is not None
+            else parsed.replace(tzinfo=local_timezone)
+        ).astimezone(ZoneInfo("UTC"))
+        return utc.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    formatted = [_format_one(dt) for dt in datetime_input]
+    if any(f is None for f in formatted):
         return None
-
-    if date:
-        return "/".join(dt.strftime("%Y-%m-%d") for dt in parsed_dates)
-
-    # Localize naive datetimes to the runner's local zone before converting
-    # to UTC; tz-aware datetimes are converted directly.
-    utc_dates = [
-        (dt if dt.tzinfo is not None else dt.replace(tzinfo=local_timezone)).astimezone(
-            ZoneInfo("UTC")
-        )
-        for dt in parsed_dates
-    ]
-    return "/".join(dt.strftime("%Y-%m-%dT%H:%M:%SZ") for dt in utc_dates)
+    return "/".join(formatted)
 
 
 def _cql2_param(args: dict[str, Any]) -> str:

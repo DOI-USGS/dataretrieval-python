@@ -114,6 +114,11 @@ def test_format_api_dates_passthrough_duration():
     assert _format_api_dates("P7D") == "P7D"
 
 
+def test_format_api_dates_passthrough_time_only_duration():
+    """ISO 8601 time-only durations (PT...) are passed through unchanged."""
+    assert _format_api_dates("PT36H") == "PT36H"
+
+
 def test_format_api_dates_word_with_p_is_not_a_duration():
     """Strings containing the letter 'p' must not be misclassified as durations."""
     assert _format_api_dates("Apr") is None
@@ -133,3 +138,9 @@ def test_format_api_dates_date_only_pair():
 def test_format_api_dates_space_separated_still_works():
     """The legacy space-separated format must still parse."""
     assert _format_api_dates("2024-01-01 00:00:00", date=True) == "2024-01-01"
+
+
+def test_format_api_dates_open_ended_range_with_none():
+    """A None / NaN endpoint becomes '..' in the output range."""
+    assert _format_api_dates(["2024-01-01", None], date=True) == "2024-01-01/.."
+    assert _format_api_dates([None, "2024-01-01"], date=True) == "../2024-01-01"
