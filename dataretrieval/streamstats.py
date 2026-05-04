@@ -105,12 +105,17 @@ def get_watershed(
     simplify: bool, optional
         Boolean flag controlling whether or not to simplify the returned
         result.
+    format: string, optional
+        Selects the return shape. ``"geojson"`` (default) returns the raw
+        ``requests.Response``; ``"object"`` returns the parsed JSON ``dict``;
+        any other value returns a :obj:`Watershed` instance built from the
+        parsed JSON.
 
     Returns
     -------
-    Watershed: :obj:`dataretrieval.streamstats.Watershed`
-        Custom object that contains the watershed information as extracted
-        from the streamstats JSON object.
+    requests.Response, dict, or :obj:`dataretrieval.streamstats.Watershed`
+        Watershed information from StreamStats. The exact return type
+        depends on ``format`` (see above).
 
     """
     payload = {
