@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g5032b6c34 documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g01c7fc706 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bba4ae82"></script>
+      <script src="../_static/documentation_options.js?v=c20e88bd"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -66,6 +66,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp._check_kwargs"><code class="docutils literal notranslate"><span class="pre">_check_kwargs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp._legacy_only_url"><code class="docutils literal notranslate"><span class="pre">_legacy_only_url()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.get_results"><code class="docutils literal notranslate"><span class="pre">get_results()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.what_activities"><code class="docutils literal notranslate"><span class="pre">what_activities()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.what_activity_metrics"><code class="docutils literal notranslate"><span class="pre">what_activity_metrics()</span></code></a></li>
@@ -204,6 +205,17 @@ metadata for WQP data.</p>
 <dt class="sig sig-object py" id="dataretrieval.wqp._check_kwargs">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">_check_kwargs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#_check_kwargs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp._check_kwargs" title="Link to this definition"></a></dt>
 <dd><p>Private function to check kwargs for unsupported parameters.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.wqp._legacy_only_url">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">_legacy_only_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legacy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#_legacy_only_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp._legacy_only_url" title="Link to this definition"></a></dt>
+<dd><p>URL builder for WQP services that have no WQX3.0 equivalent.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">legacy=False</span></code> is passed to one of these helpers we emit a
+<code class="docutils literal notranslate"><span class="pre">UserWarning</span></code> explaining the fallback and <em>also</em> suppress the legacy
+<code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code> that <code class="docutils literal notranslate"><span class="pre">wqp_url</span></code> would otherwise raise — its
+message claims setting <code class="docutils literal notranslate"><span class="pre">legacy=False</span></code> removes the warning, which is
+a lie for endpoints that have no WQX3.0 alternative.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -482,7 +494,7 @@ or the Swagger documentation at:
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ssl_check</strong> (<em>bool</em>) – Check the SSL certificate. Default is True.</p></li>
-<li><p><strong>legacy</strong> (<em>bool</em>) – Retrun the legacy WQX data profile. Default is True.</p></li>
+<li><p><strong>legacy</strong> (<em>bool</em>) – Return the legacy WQX data profile. Default is True.</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – Accepts the same parameters as <a class="reference internal" href="#dataretrieval.wqp.get_results" title="dataretrieval.wqp.get_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.get_results</span></code></a></p></li>
 </ul>
 </dd>
