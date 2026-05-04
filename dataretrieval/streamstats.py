@@ -56,7 +56,7 @@ def get_sample_watershed():
         from the streamstats JSON object.
 
     """
-    return get_watershed("NY", -74.524, 43.939)
+    return get_watershed("NY", -74.524, 43.939, format="watershed")
 
 
 def get_watershed(
@@ -106,8 +106,8 @@ def get_watershed(
     format: string, optional
         Selects the return shape. ``"geojson"`` (default) returns the raw
         ``requests.Response``; ``"object"`` returns the parsed JSON ``dict``;
-        any other value returns a :obj:`Watershed` instance built from the
-        parsed JSON.
+        ``"watershed"`` returns a :obj:`Watershed` instance built from the
+        parsed JSON. Any other value raises ``ValueError``.
 
     Returns
     -------
@@ -140,7 +140,12 @@ def get_watershed(
     if format == "object":
         return data
 
-    return Watershed.from_streamstats_json(data)
+    if format == "watershed":
+        return Watershed.from_streamstats_json(data)
+
+    raise ValueError(
+        f"Invalid format {format!r}; expected 'geojson', 'object', or 'watershed'."
+    )
 
 
 class Watershed:
