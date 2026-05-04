@@ -4,6 +4,7 @@ from geopandas import GeoDataFrame
 import dataretrieval.nldi as nldi
 from dataretrieval.nldi import (
     NLDI_API_BASE_URL,
+    _validate_navigation_mode,
     get_basin,
     get_features,
     get_flowlines,
@@ -302,3 +303,23 @@ def test_validate_data_source_rejects_invalid_after_cache_populated(requests_moc
 
     with pytest.raises(ValueError, match="Invalid data source 'not_a_real_source'"):
         nldi._validate_data_source("not_a_real_source")
+
+
+# --- regression tests for nldi cleanup batch ---
+
+
+def test_search_flowlines_without_navigation_mode_raises_value_error():
+    """Regression: previously crashed with AttributeError on None.upper()."""
+    with pytest.raises(ValueError, match="navigation_mode is required"):
+        search(comid=13294314, find="flowlines")
+
+
+def test_validate_navigation_mode_raises_value_error_for_invalid():
+    """Regression: previously raised TypeError; should be ValueError."""
+    with pytest.raises(ValueError, match="Invalid navigation mode"):
+        _validate_navigation_mode("XX")
+
+
+def test_validate_navigation_mode_normalizes_lowercase():
+    """Regression: lowercase values used to validate but be sent unchanged."""
+    assert _validate_navigation_mode("um") == "UM"
