@@ -69,7 +69,7 @@ class Test_query:
         """
         url = "https://example.com/svc"
         requests_mock.get(url, status_code=status, text="<html>denied</html>")
-        with pytest.raises(Exception):  # noqa: B017 -- HTTPError or ValueError
+        with pytest.raises(ValueError, match=str(status)):
             utils.query(url, {"k": "v"})
 
 

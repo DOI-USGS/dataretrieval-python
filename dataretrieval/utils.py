@@ -172,8 +172,17 @@ def query(url, payload, delimiter=",", ssl_check=True):
 
     Returns
     -------
-    string: query response
-        The response from the API query ``requests.get`` function call.
+    response : ``requests.Response``
+        The response object from the underlying ``requests.get`` call.
+
+    Raises
+    ------
+    ValueError
+        For any non-success HTTP status (4xx/5xx). The message includes
+        the status code, reason, and URL. Specific guidance is included
+        for 400, 404, 414, and 500/502/503 statuses; any other 4xx/5xx
+        falls through to a generic ValueError so callers don't silently
+        receive an HTML error page as if it were data.
     """
     params = {key: to_str(value, delimiter) for key, value in payload.items()}
 
@@ -214,7 +223,12 @@ def query(url, payload, delimiter=",", ssl_check=True):
 
     # Catch-all for any other 4xx/5xx (401, 403, 405, 408, 429, 501, 504, ...)
     # so callers don't silently receive an HTML error page as if it were data.
-    response.raise_for_status()
+    # Re-raise as ValueError to keep the exception contract uniform with the
+    # explicit status branches above.
+    if not response.ok:
+        raise ValueError(
+            f"HTTP {response.status_code} {response.reason} for {response.url}"
+        )
 
     if response.text.startswith("No sites/data"):
         raise NoSitesError(response.url)
