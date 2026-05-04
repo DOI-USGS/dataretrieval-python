@@ -13,6 +13,7 @@ except ImportError as err:
 NLDI_API_BASE_URL = "https://api.water.usgs.gov/nldi/linked-data"
 _AVAILABLE_DATA_SOURCES = None
 _CRS = "EPSG:4326"
+_VALID_NAVIGATION_MODES = ("UM", "DM", "UT", "DD")
 
 
 def _query_nldi(url, query_params, error_message):
@@ -230,8 +231,7 @@ def get_features(
     if (lat is None) != (long is None):
         raise ValueError("Both lat and long are required")
 
-    have_latlong = lat is not None
-    if have_latlong:
+    if lat is not None:
         if comid is not None:
             raise ValueError(
                 "Provide only one origin type - comid cannot be provided"
@@ -242,6 +242,9 @@ def get_features(
                 "Provide only one origin type - feature_source and feature_id cannot"
                 " be provided with lat or long"
             )
+        url = f"{NLDI_API_BASE_URL}/comid/position"
+        query_params = {"coords": f"POINT({long} {lat})"}
+        err_msg = f"Error getting features for lat '{lat}' and long '{long}'"
     else:
         if (comid is not None or data_source is not None) and navigation_mode is None:
             raise ValueError(
@@ -254,24 +257,17 @@ def get_features(
             _validate_data_source(feature_source)
         if navigation_mode:
             navigation_mode = _validate_navigation_mode(navigation_mode)
-
-    if have_latlong:
-        url = f"{NLDI_API_BASE_URL}/comid/position"
-        query_params = {"coords": f"POINT({long} {lat})"}
-        err_msg = f"Error getting features for lat '{lat}' and long '{long}'"
-    elif navigation_mode:
-        if feature_source:
-            url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}/navigation"
+            if feature_source:
+                url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}/navigation"
+            else:
+                url = f"{NLDI_API_BASE_URL}/comid/{comid}/navigation"
+            url += f"/{navigation_mode}/{data_source}"
+            query_params = {"distance": str(distance)}
+            if stop_comid is not None:
+                query_params["stopComid"] = str(stop_comid)
         else:
-            url = f"{NLDI_API_BASE_URL}/comid/{comid}/navigation"
-        url += f"/{navigation_mode}/{data_source}"
-        query_params = {"distance": str(distance)}
-        if stop_comid is not None:
-            query_params["stopComid"] = str(stop_comid)
-        err_msg = _features_err_msg(feature_source, feature_id, comid, data_source)
-    else:
-        url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}"
-        query_params = {}
+            url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}"
+            query_params = {}
         err_msg = _features_err_msg(feature_source, feature_id, comid, data_source)
 
     feature_collection = _query_nldi(url, query_params, err_msg)
@@ -464,9 +460,6 @@ def _validate_data_source(data_source: str):
                 f" Available data sources are: {_AVAILABLE_DATA_SOURCES}"
             )
             raise ValueError(err_msg)
-
-
-_VALID_NAVIGATION_MODES = ("UM", "DM", "UT", "DD")
 
 
 def _features_err_msg(feature_source, feature_id, comid, data_source) -> str:

@@ -308,7 +308,6 @@ def test_get_flowlines_by_comid_includes_trim_start(requests_mock):
     """Regression: trim_start was previously dropped on the comid code path."""
     request_url = f"{NLDI_API_BASE_URL}/comid/13294314/navigation/UM/flowlines"
     response_file_path = "tests/data/nldi_get_flowlines_by_comid.json"
-    mock_request_data_sources(requests_mock)
     mock_request(requests_mock, request_url, response_file_path)
 
     get_flowlines(navigation_mode="UM", comid=13294314, trim_start=True)
