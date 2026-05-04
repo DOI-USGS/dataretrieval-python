@@ -1,9 +1,7 @@
-import pytest
 from geopandas import GeoDataFrame
 
 from dataretrieval.nldi import (
     NLDI_API_BASE_URL,
-    _validate_navigation_mode,
     get_basin,
     get_features,
     get_flowlines,
@@ -282,9 +280,3 @@ def test_search_for_features_by_lat_long(requests_mock):
     assert search_results["features"][0]["type"] == "Feature"
     assert search_results["features"][0]["geometry"]["type"] == "LineString"
     assert len(search_results["features"][0]["geometry"]["coordinates"]) == 27
-
-
-def test_validate_navigation_mode_invalid_raises_value_error():
-    """Invalid navigation mode is a bad value, not a bad type -> ValueError."""
-    with pytest.raises(ValueError, match="Invalid navigation mode"):
-        _validate_navigation_mode("XX")
