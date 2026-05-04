@@ -255,9 +255,7 @@ def what_organizations(
 
     kwargs = _check_kwargs(kwargs)
 
-    if not legacy:
-        _warn_wqx3_unavailable()
-    url = wqp_url("Organization")
+    url = _legacy_only_url("Organization", legacy=legacy)
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
@@ -304,9 +302,7 @@ def what_projects(ssl_check=True, legacy=True, **kwargs):
 
     kwargs = _check_kwargs(kwargs)
 
-    if not legacy:
-        _warn_wqx3_unavailable()
-    url = wqp_url("Project")
+    url = _legacy_only_url("Project", legacy=legacy)
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
@@ -428,9 +424,7 @@ def what_detection_limits(
 
     kwargs = _check_kwargs(kwargs)
 
-    if not legacy:
-        _warn_wqx3_unavailable()
-    url = wqp_url("ResultDetectionQuantitationLimit")
+    url = _legacy_only_url("ResultDetectionQuantitationLimit", legacy=legacy)
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
@@ -481,9 +475,7 @@ def what_habitat_metrics(
 
     kwargs = _check_kwargs(kwargs)
 
-    if not legacy:
-        _warn_wqx3_unavailable()
-    url = wqp_url("BiologicalMetric")
+    url = _legacy_only_url("BiologicalMetric", legacy=legacy)
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
@@ -535,9 +527,7 @@ def what_project_weights(ssl_check=True, legacy=True, **kwargs):
 
     kwargs = _check_kwargs(kwargs)
 
-    if not legacy:
-        _warn_wqx3_unavailable()
-    url = wqp_url("ProjectMonitoringLocationWeighting")
+    url = _legacy_only_url("ProjectMonitoringLocationWeighting", legacy=legacy)
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
@@ -589,9 +579,7 @@ def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
 
     kwargs = _check_kwargs(kwargs)
 
-    if not legacy:
-        _warn_wqx3_unavailable()
-    url = wqp_url("ActivityMetric")
+    url = _legacy_only_url("ActivityMetric", legacy=legacy)
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
@@ -716,3 +704,20 @@ def _warn_wqx3_unavailable():
         UserWarning,
         stacklevel=3,
     )
+
+
+def _legacy_only_url(service: str, legacy: bool) -> str:
+    """URL builder for WQP services that have no WQX3.0 equivalent.
+
+    When ``legacy=False`` is passed to one of these helpers we emit a
+    ``UserWarning`` explaining the fallback and *also* suppress the legacy
+    ``DeprecationWarning`` that ``wqp_url`` would otherwise raise — its
+    message claims setting ``legacy=False`` removes the warning, which is
+    a lie for endpoints that have no WQX3.0 alternative.
+    """
+    if not legacy:
+        _warn_wqx3_unavailable()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            return wqp_url(service)
+    return wqp_url(service)

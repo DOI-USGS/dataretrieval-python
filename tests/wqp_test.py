@@ -219,13 +219,28 @@ def test_check_kwargs():
 
 
 def test_what_organizations_legacy_false_warns(requests_mock):
-    """legacy=False on what_organizations should emit a warning, not print to stdout."""
+    """legacy=False on a legacy-only helper:
+    - emits the WQX3.0-unavailable UserWarning
+    - suppresses the redundant legacy DeprecationWarning, whose text would
+      misleadingly tell the user that setting legacy=False removes it.
+    """
+    import warnings
+
     request_url = (
         "https://www.waterqualitydata.us/data/Organization/Search?statecode=US%3A34"
         "&characteristicName=Chloride&mimeType=csv"
     )
     mock_request(requests_mock, request_url, "tests/data/wqp_organizations.txt")
-    with pytest.warns(UserWarning, match="WQX3.0 profile not available"):
+
+    with warnings.catch_warnings(record=True) as captured:
+        warnings.simplefilter("always")
         what_organizations(
             statecode="US:34", characteristicName="Chloride", legacy=False
         )
+
+    user_warnings = [w for w in captured if issubclass(w.category, UserWarning)]
+    deprecation_warnings = [
+        w for w in captured if issubclass(w.category, DeprecationWarning)
+    ]
+    assert any("WQX3.0 profile not available" in str(w.message) for w in user_warnings)
+    assert not any("legacy WQX format" in str(w.message) for w in deprecation_warnings)
