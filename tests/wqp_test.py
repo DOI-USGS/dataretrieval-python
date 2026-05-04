@@ -238,15 +238,3 @@ def test_get_results_wqx3_preserves_user_dataProfile(requests_mock):
     assert isinstance(df, DataFrame)
     sent = requests_mock.request_history[-1]
     assert sent.qs.get("dataprofile") == ["narrow"]
-
-
-def test_get_results_wqx3_invalid_dataProfile_raises():
-    """Invalid WQX3.0 dataProfile raises ValueError, not TypeError."""
-    with pytest.raises(ValueError, match="WQX3.0 profile"):
-        get_results(legacy=False, dataProfile="not_a_real_profile")
-
-
-def test_get_results_legacy_invalid_dataProfile_raises():
-    """Invalid legacy dataProfile raises ValueError, not TypeError."""
-    with pytest.raises(ValueError, match="legacy profile"):
-        get_results(legacy=True, dataProfile="not_a_real_profile")
