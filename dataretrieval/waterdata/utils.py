@@ -138,6 +138,11 @@ _DATETIME_FORMATS = (
     "%Y-%m-%d",
 )
 
+# Anchored to ``[Pp]\d`` so a normal word containing ``p`` (e.g. ``"Apr"``)
+# doesn't get mis-classified as an ISO 8601 duration; the optional ``T``
+# admits time-only forms like ``PT36H``.
+_DURATION_RE = re.compile(r"^[Pp]T?\d")
+
 
 def _parse_datetime(value: str) -> datetime | None:
     """Parse a single datetime string against the supported formats.
@@ -154,6 +159,19 @@ def _parse_datetime(value: str) -> datetime | None:
         except ValueError:
             continue
     return None
+
+
+def _format_one(dt, *, date: bool, local_tz) -> str | None:
+    """Format a single datetime element for inclusion in the API time arg."""
+    if pd.isna(dt) or dt == "" or dt is None:
+        return ".."
+    parsed = _parse_datetime(dt)
+    if parsed is None:
+        return None
+    if date:
+        return parsed.strftime("%Y-%m-%d")
+    aware = parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=local_tz)
+    return aware.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _format_api_dates(
@@ -216,33 +234,17 @@ def _format_api_dates(
         raise ValueError("datetime_input should only include 1-2 values")
 
     # Pass through duration ("P7D", "PT36H") and pre-formatted interval ("a/b")
-    # strings untouched. Anchor the duration check so the bare letter ``P``
-    # appearing inside a normal word doesn't bypass parsing; allow the optional
-    # ``T`` so time-only durations like ``PT36H`` are recognized.
+    # strings untouched.
     if len(datetime_input) == 1 and isinstance(datetime_input[0], str):
         single = datetime_input[0]
-        if re.match(r"^[Pp]T?\d", single) or "/" in single:
+        if _DURATION_RE.match(single) or "/" in single:
             return single
 
-    # Per-element: NA endpoints become ".." in the output for half-bounded
-    # ranges; otherwise parse. If any non-NA element fails to parse, return
-    # None overall.
-    def _format_one(dt) -> str | None:
-        if pd.isna(dt) or dt == "" or dt is None:
-            return ".."
-        parsed = _parse_datetime(dt)
-        if parsed is None:
-            return None
-        if date:
-            return parsed.strftime("%Y-%m-%d")
-        utc = (
-            parsed
-            if parsed.tzinfo is not None
-            else parsed.replace(tzinfo=local_timezone)
-        ).astimezone(ZoneInfo("UTC"))
-        return utc.strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    formatted = [_format_one(dt) for dt in datetime_input]
+    # Half-bounded ranges: NA endpoints render as ".."; any unparseable non-NA
+    # element invalidates the range.
+    formatted = [
+        _format_one(dt, date=date, local_tz=local_timezone) for dt in datetime_input
+    ]
     if any(f is None for f in formatted):
         return None
     return "/".join(formatted)
