@@ -5,8 +5,6 @@ This module is a wrapper for the streamstats API (`streamstats documentation`_).
 
 """
 
-import json
-
 import requests
 
 
@@ -137,11 +135,7 @@ def get_watershed(
     if format == "geojson":
         return r
 
-    if format == "shape":
-        # use Fiona to return a shape object
-        pass
-
-    data = json.loads(r.text)
+    data = r.json()
 
     if format == "object":
         return data
