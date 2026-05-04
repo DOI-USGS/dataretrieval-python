@@ -243,3 +243,15 @@ def test_what_organizations_legacy_false_warns(requests_mock):
         what_organizations(
             statecode="US:34", characteristicName="Chloride", legacy=False
         )
+
+
+def test_get_results_invalid_legacy_dataprofile_raises_value_error():
+    """Invalid legacy dataProfile -> ValueError with single readable message."""
+    with pytest.raises(ValueError, match="is not a legacy profile"):
+        get_results(dataProfile="not_a_real_profile")
+
+
+def test_get_results_invalid_wqx3_dataprofile_raises_value_error():
+    """Invalid WQX3.0 dataProfile -> ValueError with single readable message."""
+    with pytest.raises(ValueError, match="is not a valid WQX3.0 profile"):
+        get_results(legacy=False, dataProfile="not_a_real_profile")

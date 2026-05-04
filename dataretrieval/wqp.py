@@ -131,9 +131,9 @@ def get_results(
             "dataProfile" in kwargs
             and kwargs["dataProfile"] not in result_profiles_legacy
         ):
-            raise TypeError(
-                f"dataProfile {kwargs['dataProfile']} is not a legacy profile.",
-                f"Valid options are {result_profiles_legacy}.",
+            raise ValueError(
+                f"dataProfile {kwargs['dataProfile']} is not a legacy profile. "
+                f"Valid options are {result_profiles_legacy}."
             )
 
         url = wqp_url("Result")
@@ -143,9 +143,9 @@ def get_results(
             "dataProfile" in kwargs
             and kwargs["dataProfile"] not in result_profiles_wqx3
         ):
-            raise TypeError(
-                f"dataProfile {kwargs['dataProfile']} is not a valid WQX3.0"
-                f"profile. Valid options are {result_profiles_wqx3}.",
+            raise ValueError(
+                f"dataProfile {kwargs['dataProfile']} is not a valid WQX3.0 "
+                f"profile. Valid options are {result_profiles_wqx3}."
             )
         else:
             kwargs["dataProfile"] = "fullPhysChem"
@@ -255,15 +255,9 @@ def what_organizations(
 
     kwargs = _check_kwargs(kwargs)
 
-    if legacy is True:
-        url = wqp_url("Organization")
-    else:
-        warnings.warn(
-            "WQX3.0 profile not available, returning legacy profile.",
-            UserWarning,
-            stacklevel=2,
-        )
-        url = wqp_url("Organization")
+    if not legacy:
+        _warn_wqx3_unavailable()
+    url = wqp_url("Organization")
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
@@ -310,15 +304,9 @@ def what_projects(ssl_check=True, legacy=True, **kwargs):
 
     kwargs = _check_kwargs(kwargs)
 
-    if legacy is True:
-        url = wqp_url("Project")
-    else:
-        warnings.warn(
-            "WQX3.0 profile not available, returning legacy profile.",
-            UserWarning,
-            stacklevel=2,
-        )
-        url = wqp_url("Project")
+    if not legacy:
+        _warn_wqx3_unavailable()
+    url = wqp_url("Project")
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
@@ -440,15 +428,9 @@ def what_detection_limits(
 
     kwargs = _check_kwargs(kwargs)
 
-    if legacy is True:
-        url = wqp_url("ResultDetectionQuantitationLimit")
-    else:
-        warnings.warn(
-            "WQX3.0 profile not available, returning legacy profile.",
-            UserWarning,
-            stacklevel=2,
-        )
-        url = wqp_url("ResultDetectionQuantitationLimit")
+    if not legacy:
+        _warn_wqx3_unavailable()
+    url = wqp_url("ResultDetectionQuantitationLimit")
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
@@ -499,15 +481,9 @@ def what_habitat_metrics(
 
     kwargs = _check_kwargs(kwargs)
 
-    if legacy is True:
-        url = wqp_url("BiologicalMetric")
-    else:
-        warnings.warn(
-            "WQX3.0 profile not available, returning legacy profile.",
-            UserWarning,
-            stacklevel=2,
-        )
-        url = wqp_url("BiologicalMetric")
+    if not legacy:
+        _warn_wqx3_unavailable()
+    url = wqp_url("BiologicalMetric")
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
@@ -559,15 +535,9 @@ def what_project_weights(ssl_check=True, legacy=True, **kwargs):
 
     kwargs = _check_kwargs(kwargs)
 
-    if legacy is True:
-        url = wqp_url("ProjectMonitoringLocationWeighting")
-    else:
-        warnings.warn(
-            "WQX3.0 profile not available, returning legacy profile.",
-            UserWarning,
-            stacklevel=2,
-        )
-        url = wqp_url("ProjectMonitoringLocationWeighting")
+    if not legacy:
+        _warn_wqx3_unavailable()
+    url = wqp_url("ProjectMonitoringLocationWeighting")
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
@@ -619,15 +589,9 @@ def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
 
     kwargs = _check_kwargs(kwargs)
 
-    if legacy is True:
-        url = wqp_url("ActivityMetric")
-    else:
-        warnings.warn(
-            "WQX3.0 profile not available, returning legacy profile.",
-            UserWarning,
-            stacklevel=2,
-        )
-        url = wqp_url("ActivityMetric")
+    if not legacy:
+        _warn_wqx3_unavailable()
+    url = wqp_url("ActivityMetric")
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
@@ -744,3 +708,11 @@ def _warn_legacy_use():
         "will remove this warning."
     )
     warnings.warn(message, DeprecationWarning, stacklevel=2)
+
+
+def _warn_wqx3_unavailable():
+    warnings.warn(
+        "WQX3.0 profile not available, returning legacy profile.",
+        UserWarning,
+        stacklevel=3,
+    )
