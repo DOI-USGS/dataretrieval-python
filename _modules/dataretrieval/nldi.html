@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g51ac674de documentation</title>
+  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g4570192ce documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=11a62b05"></script>
+      <script src="../../_static/documentation_options.js?v=a78bec45"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -577,7 +577,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_validate_navigation_mode</span><span class="p">(</span><span class="n">navigation_mode</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
     <span class="n">navigation_mode</span> <span class="o">=</span> <span class="n">navigation_mode</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">navigation_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;UM&quot;</span><span class="p">,</span> <span class="s2">&quot;DM&quot;</span><span class="p">,</span> <span class="s2">&quot;UT&quot;</span><span class="p">,</span> <span class="s2">&quot;DD&quot;</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid navigation mode &#39;</span><span class="si">{</span><span class="n">navigation_mode</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid navigation mode &#39;</span><span class="si">{</span><span class="n">navigation_mode</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_validate_feature_source_comid</span><span class="p">(</span>
