@@ -1,4 +1,5 @@
 import datetime
+import warnings
 
 import pytest
 from pandas import DataFrame
@@ -219,13 +220,8 @@ def test_check_kwargs():
 
 
 def test_what_organizations_legacy_false_warns(requests_mock):
-    """legacy=False on a legacy-only helper:
-    - emits the WQX3.0-unavailable UserWarning
-    - suppresses the redundant legacy DeprecationWarning, whose text would
-      misleadingly tell the user that setting legacy=False removes it.
-    """
-    import warnings
-
+    """legacy=False on a legacy-only helper warns and suppresses the
+    misleading legacy DeprecationWarning."""
     request_url = (
         "https://www.waterqualitydata.us/data/Organization/Search?statecode=US%3A34"
         "&characteristicName=Chloride&mimeType=csv"

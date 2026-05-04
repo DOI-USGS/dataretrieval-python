@@ -691,6 +691,7 @@ def _warn_legacy_use():
 
 
 def _warn_wqx3_unavailable():
+    # stacklevel=3: warn -> _warn_wqx3_unavailable -> _legacy_only_url -> what_*
     warnings.warn(
         "WQX3.0 profile not available, returning legacy profile.",
         UserWarning,
@@ -707,9 +708,8 @@ def _legacy_only_url(service: str, legacy: bool) -> str:
     message claims setting ``legacy=False`` removes the warning, which is
     a lie for endpoints that have no WQX3.0 alternative.
     """
-    if not legacy:
-        _warn_wqx3_unavailable()
-        with warnings.catch_warnings():
+    with warnings.catch_warnings():
+        if not legacy:
+            _warn_wqx3_unavailable()
             warnings.simplefilter("ignore", DeprecationWarning)
-            return wqp_url(service)
-    return wqp_url(service)
+        return wqp_url(service)
