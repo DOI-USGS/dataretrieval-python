@@ -251,9 +251,9 @@ def get_features(
                 "navigation_mode is required if comid or data_source is provided"
             )
         _validate_feature_source_comid(feature_source, feature_id, comid)
-        if data_source:
+        if data_source is not None:
             _validate_data_source(data_source)
-        if feature_source:
+        if feature_source is not None:
             _validate_data_source(feature_source)
         if navigation_mode:
             navigation_mode = _validate_navigation_mode(navigation_mode)
@@ -454,12 +454,13 @@ def _validate_data_source(data_source: str):
             url, {}, "Error getting available data sources"
         )
         _AVAILABLE_DATA_SOURCES = [ds["source"] for ds in available_data_sources]
-        if data_source not in _AVAILABLE_DATA_SOURCES:
-            err_msg = (
-                f"Invalid data source '{data_source}'."
-                f" Available data sources are: {_AVAILABLE_DATA_SOURCES}"
-            )
-            raise ValueError(err_msg)
+
+    if data_source not in _AVAILABLE_DATA_SOURCES:
+        err_msg = (
+            f"Invalid data source '{data_source}'."
+            f" Available data sources are: {_AVAILABLE_DATA_SOURCES}"
+        )
+        raise ValueError(err_msg)
 
 
 def _features_err_msg(feature_source, feature_id, comid, data_source) -> str:

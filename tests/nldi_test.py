@@ -1,6 +1,7 @@
 import pytest
 from geopandas import GeoDataFrame
 
+import dataretrieval.nldi as nldi
 from dataretrieval.nldi import (
     NLDI_API_BASE_URL,
     _validate_navigation_mode,
@@ -9,6 +10,12 @@ from dataretrieval.nldi import (
     get_flowlines,
     search,
 )
+
+
+@pytest.fixture(autouse=True)
+def _reset_data_source_cache(monkeypatch):
+    """Reset the module-level cache between tests."""
+    monkeypatch.setattr(nldi, "_AVAILABLE_DATA_SOURCES", None)
 
 
 def mock_request_data_sources(requests_mock):
@@ -282,6 +289,20 @@ def test_search_for_features_by_lat_long(requests_mock):
     assert search_results["features"][0]["type"] == "Feature"
     assert search_results["features"][0]["geometry"]["type"] == "LineString"
     assert len(search_results["features"][0]["geometry"]["coordinates"]) == 27
+
+
+def test_validate_data_source_rejects_invalid_after_cache_populated(requests_mock):
+    """Once the cache is warm, invalid data sources must still raise ValueError.
+
+    Regression: previously the validation check was nested inside the
+    cache-population branch, so all calls after the first silently passed.
+    """
+    mock_request_data_sources(requests_mock)
+
+    nldi._validate_data_source("WQP")
+
+    with pytest.raises(ValueError, match="Invalid data source 'not_a_real_source'"):
+        nldi._validate_data_source("not_a_real_source")
 
 
 # --- regression tests for nldi cleanup batch ---
