@@ -126,7 +126,7 @@ def get_results(
 
     kwargs = _check_kwargs(kwargs)
 
-    if legacy:
+    if legacy is True:
         valid_profiles = result_profiles_legacy
         kind = "legacy"
         url = wqp_url("Result")
@@ -141,7 +141,7 @@ def get_results(
             f"dataProfile {profile!r} is not a valid {kind} profile. "
             f"Valid options are {valid_profiles}."
         )
-    if not legacy and profile is None:
+    if legacy is not True and profile is None:
         kwargs["dataProfile"] = "fullPhysChem"
 
     response = query(url, kwargs, delimiter=";", ssl_check=ssl_check)
