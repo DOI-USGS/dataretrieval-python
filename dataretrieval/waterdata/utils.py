@@ -892,11 +892,13 @@ def _handle_stats_nesting(
     # otherwise return a geodataframe
     if not geopd:
         df = pd.json_normalize(body["features"]).drop(
-            columns=["type", "properties.data"]
+            columns=["type", "properties.data"], errors="ignore"
         )
         df.columns = df.columns.str.split(".").str[-1]
     else:
-        df = gpd.GeoDataFrame.from_features(body["features"]).drop(columns=["data"])
+        df = gpd.GeoDataFrame.from_features(body["features"]).drop(
+            columns=["data"], errors="ignore"
+        )
 
     # Unnest json features, properties, data, and values while retaining necessary
     # metadata to merge with main dataframe.
