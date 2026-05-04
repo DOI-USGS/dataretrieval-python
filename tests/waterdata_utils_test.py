@@ -7,6 +7,7 @@ import requests
 from dataretrieval.waterdata.utils import (
     GEOPANDAS,
     _get_args,
+    _handle_stats_nesting,
     _walk_pages,
     get_stats_data,
 )
@@ -250,3 +251,33 @@ def test_get_stats_data_preserves_geometry_across_pages():
     assert isinstance(df, gpd.GeoDataFrame)
     assert len(df) == 2
     assert df.geometry.notna().all()
+
+
+def test_handle_stats_nesting_tolerates_missing_drop_columns():
+    """If the upstream stats response shape ever changes such that one of
+    the columns we try to drop ("type", "properties.data") is absent, the
+    function should still return a DataFrame instead of raising KeyError.
+    """
+    body = {
+        "next": None,
+        "features": [
+            {
+                "properties": {
+                    "monitoring_location_id": "USGS-12345",
+                    "data": [
+                        {
+                            "parameter_code": "00060",
+                            "unit_of_measure": "ft^3/s",
+                            "parent_time_series_id": "ts-1",
+                            "values": [{"statistic_id": "mean", "value": 10.0}],
+                        }
+                    ],
+                },
+            }
+        ],
+    }
+
+    df = _handle_stats_nesting(body, geopd=False)
+
+    assert len(df) == 1
+    assert df["monitoring_location_id"].iloc[0] == "USGS-12345"
