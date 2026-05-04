@@ -684,8 +684,8 @@ def _arrange_cols(
     # Rename id column to output_id
     df = df.rename(columns={"id": output_id})
 
-    # If properties are provided, filter to only those columns
-    # plus geometry if skip_geometry is False
+    # If properties are provided, filter to only those columns,
+    # appending the geometry column when present in the DataFrame.
     if properties and not all(pd.isna(properties)):
         # Don't alias the caller's list — we mutate below.
         local_properties = list(properties)
