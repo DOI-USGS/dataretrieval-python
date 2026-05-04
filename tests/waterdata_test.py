@@ -349,6 +349,36 @@ def test_get_reference_table_propagates_limit(requests_mock):
     assert "agency_code" in df.columns
 
 
+def test_get_reference_table_limit_with_query_does_not_mutate(requests_mock):
+    """`limit` is merged with a caller-supplied `query` dict without mutating it."""
+    request_url = (
+        "https://api.waterdata.usgs.gov/ogcapi/v0/collections/agency-codes/items"
+    )
+    body = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "id": "USGS",
+                "properties": {"agency_code": "USGS"},
+                "geometry": None,
+            }
+        ],
+        "numberReturned": 1,
+        "links": [],
+    }
+    requests_mock.get(request_url, json=body, headers={"mock_header": "value"})
+
+    user_query = {"id": "USGS"}
+    user_query_snapshot = dict(user_query)
+    get_reference_table("agency-codes", limit=42, query=user_query)
+
+    sent = requests_mock.request_history[-1]
+    assert sent.qs.get("limit") == ["42"]
+    assert sent.qs.get("id") == ["usgs"]
+    assert user_query == user_query_snapshot
+
+
 def test_get_stats_por():
     df, _ = get_stats_por(
         monitoring_location_id="USGS-12451000",
