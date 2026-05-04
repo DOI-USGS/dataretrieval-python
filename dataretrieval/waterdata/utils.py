@@ -332,7 +332,14 @@ def _error_body(resp: requests.Response):
             "403: Query request denied. Possible reasons include "
             "query exceeding server limits."
         )
-    j_txt = resp.json()
+    try:
+        j_txt = resp.json()
+    except (json.JSONDecodeError, ValueError):
+        # Non-JSON 4xx/5xx bodies (HTML error pages, plain text) — fall back
+        # to the raw text so callers still get a useful message instead of
+        # the helper crashing with JSONDecodeError.
+        snippet = (resp.text or "").strip()[:500]
+        return f"{status}: {resp.reason or 'Error'}. {snippet}"
     return (
         f"{status}: {j_txt.get('code', 'Unknown type')}. "
         f"{j_txt.get('description', 'No description provided')}."

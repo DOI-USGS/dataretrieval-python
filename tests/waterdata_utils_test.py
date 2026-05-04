@@ -1,13 +1,18 @@
 from unittest import mock
 
 import pandas as pd
+import pytest
 import requests
 
 from dataretrieval.waterdata.utils import (
+    GEOPANDAS,
     _get_args,
     _walk_pages,
     get_stats_data,
 )
+
+if GEOPANDAS:
+    import geopandas as gpd
 
 
 def test_get_args_basic():
@@ -84,13 +89,15 @@ def test_walk_pages_multiple_mocked():
     assert mock_client.request.call_args[0][1] == "https://example.com/page2"
 
 
-def test_walk_pages_raises_on_non_200_in_loop():
-    """`_walk_pages` must surface a non-200 mid-loop, not silently truncate.
+def test_walk_pages_truncates_on_non_200_continuation():
+    """`_walk_pages` must truncate (not silently extend) on a non-200 page.
 
     Regression: previously any non-200 page was appended (with whatever
     body it had) and pagination quietly stopped because `_get_resp_data`
-    or `_next_req_url` raised inside the bare except. The user got a
-    partial result with no warning.
+    or `_next_req_url` raised inside the bare except. Now the explicit
+    status check raises inside the loop, and the existing log-and-truncate
+    handler converts that to a clean partial result. Page 1 is still
+    returned; page 2 is dropped.
     """
     resp1 = mock.MagicMock()
     resp1.json.return_value = {
@@ -200,3 +207,46 @@ def test_get_stats_data_truncates_on_non_200_continuation():
     # Page 1 still surfaces; page 2 was caught by the in-loop status check.
     assert isinstance(df, pd.DataFrame)
     assert len(df) >= 1
+
+
+def _stats_feature_with_geometry(loc_id, lon, lat):
+    """Stats feature with a real point geometry."""
+    feat = _stats_feature()
+    feat["id"] = loc_id
+    feat["geometry"] = {"type": "Point", "coordinates": [lon, lat]}
+    feat["properties"]["monitoring_location_id"] = loc_id
+    return feat
+
+
+@pytest.mark.skipif(not GEOPANDAS, reason="geopandas not installed")
+def test_get_stats_data_preserves_geometry_across_pages():
+    """Pages 2..N must use ``geopd=GEOPANDAS`` so a multi-page response
+    stays a GeoDataFrame and doesn't lose geometry/CRS at the page-1 boundary.
+
+    Regression: previously pages 2..N hard-coded ``geopd=False``, producing
+    plain DataFrames. ``pd.concat`` then silently downgraded the result to
+    a plain DataFrame.
+    """
+    resp1 = mock.MagicMock()
+    resp1.status_code = 200
+    resp1.json.return_value = _stats_body(
+        [_stats_feature_with_geometry("USGS-1", -89.0, 43.0)],
+        next_token="abc",
+    )
+
+    resp2 = mock.MagicMock()
+    resp2.status_code = 200
+    resp2.json.return_value = _stats_body(
+        [_stats_feature_with_geometry("USGS-2", -90.0, 44.0)]
+    )
+
+    client = mock.MagicMock(spec=requests.Session)
+    client.send.return_value = resp1
+    client.request.return_value = resp2
+
+    df, _ = get_stats_data(
+        args={}, service="observationNormals", expand_percentiles=False, client=client
+    )
+    assert isinstance(df, gpd.GeoDataFrame)
+    assert len(df) == 2
+    assert df.geometry.notna().all()
