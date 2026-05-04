@@ -486,7 +486,7 @@ def _validate_data_source(data_source: str):
 def _validate_navigation_mode(navigation_mode: str):
     navigation_mode = navigation_mode.upper()
     if navigation_mode not in ("UM", "DM", "UT", "DD"):
-        raise TypeError(f"Invalid navigation mode '{navigation_mode}'")
+        raise ValueError(f"Invalid navigation mode '{navigation_mode}'")
 
 
 def _validate_feature_source_comid(
