@@ -31,9 +31,21 @@ the data as a GDAL memory-mapped file when no path is specified.
 
 import io
 import re
+import warnings
 import zipfile
 
 import requests
+
+_DEPRECATION_MESSAGE = (
+    "The `nadp` module is deprecated and will be removed from `dataretrieval` "
+    "on or after 2026-11-01. NADP is not a USGS data source; please retrieve "
+    "NADP data directly from https://nadp.slh.wisc.edu/."
+)
+
+
+def _warn_deprecated():
+    warnings.warn(_DEPRECATION_MESSAGE, DeprecationWarning, stacklevel=3)
+
 
 NADP_URL = "https://nadp.slh.wisc.edu"
 NADP_MAP_EXT = "filelib/maps"
@@ -107,6 +119,8 @@ def get_annual_MDN_map(measurement_type, year, path):
         ... )
 
     """
+    _warn_deprecated()
+
     url = f"{NADP_URL}/{NADP_MAP_EXT}/MDN/grids/"
 
     filename = f"Hg_{measurement_type}_{year}.zip"
@@ -160,6 +174,8 @@ def get_annual_NTN_map(measurement_type, measurement=None, year=None, path="."):
         ... )
 
     """
+    _warn_deprecated()
+
     url = f"{NADP_URL}/{NADP_MAP_EXT}/NTN/grids/{year}/"
 
     filename = f"{measurement_type}_{year}.zip"
@@ -195,6 +211,8 @@ def get_zip(url, filename):
         finish docstring
 
     """
+    _warn_deprecated()
+
     req = requests.get(url + filename)
     req.raise_for_status()
 

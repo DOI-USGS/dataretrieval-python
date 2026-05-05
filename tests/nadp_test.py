@@ -2,7 +2,14 @@
 
 import os
 
+import pytest
+
 from dataretrieval import nadp
+
+pytestmark = pytest.mark.skip(
+    reason="NADP module deprecated; removal scheduled 2026-11-01. "
+    "Tests hit live NADP services and were causing CI flakes."
+)
 
 
 class TestMDNmap:
