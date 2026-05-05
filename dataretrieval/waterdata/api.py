@@ -10,6 +10,7 @@ import json
 import logging
 from io import StringIO
 from typing import get_args
+from urllib.parse import quote
 
 import pandas as pd
 import requests
@@ -1784,6 +1785,77 @@ def get_samples(
         params["boundingBox"] = to_str(params["boundingBox"])
 
     url = f"{SAMPLES_URL}/{service}/{profile}"
+
+    req = PreparedRequest()
+    req.prepare_url(url, params=params)
+    logger.info("Request: %s", req.url)
+
+    response = requests.get(
+        url, params=params, verify=ssl_check, headers=_default_headers()
+    )
+
+    response.raise_for_status()
+
+    df = pd.read_csv(StringIO(response.text), delimiter=",")
+
+    return df, BaseMetadata(response)
+
+
+def get_samples_summary(
+    monitoringLocationIdentifier: str,
+    ssl_check: bool = True,
+) -> tuple[pd.DataFrame, BaseMetadata]:
+    """Get a summary of discrete water-quality samples at a single monitoring location.
+
+    Wraps the Samples database summary service described at
+    https://api.waterdata.usgs.gov/samples-data/docs. The service returns one
+    row per (characteristic group, characteristic, user-supplied characteristic)
+    combination with result and activity counts and the first / most recent
+    activity dates — useful for taking inventory of what discrete-sample data
+    exists at a site before pulling the underlying observations with
+    :func:`get_samples`.
+
+    The summary service is single-site only: it accepts exactly one monitoring
+    location per request.
+
+    Parameters
+    ----------
+    monitoringLocationIdentifier : string
+        A monitoring location identifier has two parts, separated by a dash
+        (``-``): the agency code and the location number. Examples:
+        ``"USGS-040851385"``, ``"AZ014-320821110580701"``,
+        ``"CAX01-15304600"``. Bare location numbers without an agency prefix
+        are accepted by the service but return an empty result, so a prefix
+        is effectively required.
+    ssl_check : bool, optional
+        Check the SSL certificate. Default is True.
+
+    Returns
+    -------
+    df : ``pandas.DataFrame``
+        Formatted data returned from the API query.
+    md : :obj:`dataretrieval.utils.Metadata`
+        Custom ``dataretrieval`` metadata object pertaining to the query.
+
+    Examples
+    --------
+    .. code::
+
+        >>> # What discrete-sample data is available at this site?
+        >>> df, md = dataretrieval.waterdata.get_samples_summary(
+        ...     monitoringLocationIdentifier="USGS-04074950"
+        ... )
+
+    """
+    if not isinstance(monitoringLocationIdentifier, str):
+        raise TypeError(
+            "monitoringLocationIdentifier must be a string; the Samples "
+            "summary service accepts exactly one monitoring location per "
+            f"request, got {type(monitoringLocationIdentifier).__name__}."
+        )
+
+    url = f"{SAMPLES_URL}/summary/{quote(monitoringLocationIdentifier, safe='')}"
+    params = {"mimeType": "text/csv"}
 
     req = PreparedRequest()
     req.prepare_url(url, params=params)
