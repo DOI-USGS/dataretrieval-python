@@ -1542,7 +1542,9 @@ def get_reference_table(
     else:
         output_id = f"{collection.replace('-', '_')}"
 
-    query_args = query or {}
+    query_args = dict(query) if query else {}
+    if limit is not None:
+        query_args["limit"] = limit
     return get_ogc_data(args=query_args, output_id=output_id, service=collection)
 
 
