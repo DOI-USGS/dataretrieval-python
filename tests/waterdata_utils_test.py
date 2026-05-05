@@ -1,8 +1,11 @@
 from unittest import mock
 
+import pandas as pd
 import requests
 
 from dataretrieval.waterdata.utils import (
+    _arrange_cols,
+    _format_api_dates,
     _get_args,
     _handle_stats_nesting,
     _walk_pages,
@@ -111,3 +114,110 @@ def test_handle_stats_nesting_tolerates_missing_drop_columns():
 
     assert len(df) == 1
     assert df["monitoring_location_id"].iloc[0] == "USGS-12345"
+
+
+# --- _arrange_cols ----------------------------------------------------------
+
+
+def test_arrange_cols_does_not_mutate_caller_properties():
+    """`_arrange_cols` must not mutate the caller's `properties` list.
+
+    Regression: previously the function did
+    ``properties.append("geometry")`` and
+    ``properties[properties.index("id")] = output_id`` in place, so the
+    caller's list grew and was rewritten across successive calls.
+    """
+    df = pd.DataFrame(
+        {
+            "id": ["a", "b"],
+            "value": [1.0, 2.0],
+            "geometry": ["p1", "p2"],
+        }
+    )
+    properties = ["id", "value"]
+    snapshot = list(properties)
+
+    _arrange_cols(df, properties, output_id="daily_id")
+    _arrange_cols(df, properties, output_id="daily_id")
+
+    assert properties == snapshot, (
+        f"caller's properties list was mutated: {properties!r} != {snapshot!r}"
+    )
+
+
+def test_arrange_cols_swaps_id_in_returned_columns():
+    """`'id'` in `properties` should still resolve to the output_id column."""
+    df = pd.DataFrame({"id": ["a"], "value": [1.0]})
+    result = _arrange_cols(df, ["id", "value"], output_id="daily_id")
+    assert "daily_id" in result.columns
+    assert "id" not in result.columns
+
+
+def test_arrange_cols_keeps_geometry_when_present():
+    """Geometry must come along even if the caller didn't list it."""
+    df = pd.DataFrame({"id": ["a"], "value": [1.0], "geometry": ["p1"]})
+    result = _arrange_cols(df, ["value"], output_id="daily_id")
+    assert "geometry" in result.columns
+
+
+# --- _format_api_dates -------------------------------------------------------
+
+
+def test_format_api_dates_iso8601_with_z():
+    """ISO 8601 datetimes with a 'Z' suffix must be parsed, not dropped to None."""
+    assert _format_api_dates("2018-02-12T23:20:50Z") == "2018-02-12T23:20:50Z"
+
+
+def test_format_api_dates_iso8601_with_fractional_seconds():
+    assert _format_api_dates("2018-02-12T23:20:50.123Z") == "2018-02-12T23:20:50Z"
+
+
+def test_format_api_dates_iso8601_with_offset():
+    """Numeric offsets must be converted to UTC."""
+    assert _format_api_dates("2018-02-12T19:20:50-04:00") == "2018-02-12T23:20:50Z"
+
+
+def test_format_api_dates_iso8601_pair():
+    """A list of two ISO 8601 datetimes must be parsed into a UTC interval."""
+    result = _format_api_dates(["2018-02-12T23:20:50Z", "2018-03-18T12:31:12Z"])
+    assert result == "2018-02-12T23:20:50Z/2018-03-18T12:31:12Z"
+
+
+def test_format_api_dates_passthrough_interval():
+    assert _format_api_dates("2018-02-12T00:00:00Z/..") == "2018-02-12T00:00:00Z/.."
+
+
+def test_format_api_dates_passthrough_duration():
+    assert _format_api_dates("P7D") == "P7D"
+
+
+def test_format_api_dates_passthrough_time_only_duration():
+    """ISO 8601 time-only durations (PT...) are passed through unchanged."""
+    assert _format_api_dates("PT36H") == "PT36H"
+
+
+def test_format_api_dates_word_with_p_is_not_a_duration():
+    """Strings containing the letter 'p' must not be misclassified as durations."""
+    assert _format_api_dates("Apr") is None
+
+
+def test_format_api_dates_date_only():
+    assert _format_api_dates("2024-01-01", date=True) == "2024-01-01"
+
+
+def test_format_api_dates_date_only_pair():
+    assert (
+        _format_api_dates(["2024-01-01", "2024-02-01"], date=True)
+        == "2024-01-01/2024-02-01"
+    )
+
+
+def test_format_api_dates_space_separated_still_works():
+    """The legacy space-separated format must still parse."""
+    assert _format_api_dates("2024-01-01 00:00:00", date=True) == "2024-01-01"
+
+
+def test_format_api_dates_open_ended_range_with_none():
+    """A None / NaN endpoint becomes '..' in the output range."""
+    assert _format_api_dates(["2024-01-01", None], date=True) == "2024-01-01/.."
+    assert _format_api_dates([None, "2024-01-01"], date=True) == "../2024-01-01"
