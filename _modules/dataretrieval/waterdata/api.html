@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+gdd70cfa85 documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g6df40f588 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=2628358d"></script>
+      <script src="../../../_static/documentation_options.js?v=1b61cc4b"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -86,6 +86,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">StringIO</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_args</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">quote</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
@@ -1889,6 +1890,80 @@
         <span class="n">params</span><span class="p">[</span><span class="s2">&quot;boundingBox&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_str</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;boundingBox&quot;</span><span class="p">])</span>
 
     <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">SAMPLES_URL</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">profile</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">req</span> <span class="o">=</span> <span class="n">PreparedRequest</span><span class="p">()</span>
+    <span class="n">req</span><span class="o">.</span><span class="n">prepare_url</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Request: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+        <span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">_default_headers</span><span class="p">()</span>
+    <span class="p">)</span>
+
+    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_samples_summary">
+<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_samples_summary">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_samples_summary</span><span class="p">(</span>
+    <span class="n">monitoringLocationIdentifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a summary of discrete water-quality samples at a single monitoring location.</span>
+
+<span class="sd">    Wraps the Samples database summary service described at</span>
+<span class="sd">    https://api.waterdata.usgs.gov/samples-data/docs. The service returns one</span>
+<span class="sd">    row per (characteristic group, characteristic, user-supplied characteristic)</span>
+<span class="sd">    combination with result and activity counts and the first / most recent</span>
+<span class="sd">    activity dates — useful for taking inventory of what discrete-sample data</span>
+<span class="sd">    exists at a site before pulling the underlying observations with</span>
+<span class="sd">    :func:`get_samples`.</span>
+
+<span class="sd">    The summary service is single-site only: it accepts exactly one monitoring</span>
+<span class="sd">    location per request.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    monitoringLocationIdentifier : string</span>
+<span class="sd">        A monitoring location identifier has two parts, separated by a dash</span>
+<span class="sd">        (``-``): the agency code and the location number. Examples:</span>
+<span class="sd">        ``&quot;USGS-040851385&quot;``, ``&quot;AZ014-320821110580701&quot;``,</span>
+<span class="sd">        ``&quot;CAX01-15304600&quot;``. Bare location numbers without an agency prefix</span>
+<span class="sd">        are accepted by the service but return an empty result, so a prefix</span>
+<span class="sd">        is effectively required.</span>
+<span class="sd">    ssl_check : bool, optional</span>
+<span class="sd">        Check the SSL certificate. Default is True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame``</span>
+<span class="sd">        Formatted data returned from the API query.</span>
+<span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">        Custom ``dataretrieval`` metadata object pertaining to the query.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; # What discrete-sample data is available at this site?</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_samples_summary(</span>
+<span class="sd">        ...     monitoringLocationIdentifier=&quot;USGS-04074950&quot;</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="s2">&quot;monitoringLocationIdentifier must be a string; the Samples &quot;</span>
+            <span class="s2">&quot;summary service accepts exactly one monitoring location per &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;request, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">SAMPLES_URL</span><span class="si">}</span><span class="s2">/summary/</span><span class="si">{</span><span class="n">quote</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="p">,</span><span class="w"> </span><span class="n">safe</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;mimeType&quot;</span><span class="p">:</span> <span class="s2">&quot;text/csv&quot;</span><span class="p">}</span>
 
     <span class="n">req</span> <span class="o">=</span> <span class="n">PreparedRequest</span><span class="p">()</span>
     <span class="n">req</span><span class="o">.</span><span class="n">prepare_url</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
