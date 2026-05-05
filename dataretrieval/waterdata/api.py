@@ -1042,7 +1042,8 @@ def get_combined_metadata(
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
     data_type : string or list of strings, optional
         The type of data the time series represents, e.g.
-        ``"Continuous"``, ``"Daily"``, ``"Field measurements"``.
+        ``"Continuous values"``, ``"Daily values"``,
+        ``"Field measurements"``.
     computation_identifier : string or list of strings, optional
         Indicates whether the data from this time series represent a
         specific statistical computation.
@@ -1106,9 +1107,20 @@ site_type_code : string or list of strings, optional
     --------
     .. code::
 
-        >>> # All time series and field measurements at a single site
+        >>> # All time series and field measurements at a single surface-water site
         >>> df, md = dataretrieval.waterdata.get_combined_metadata(
         ...     monitoring_location_id="USGS-05407000"
+        ... )
+
+        >>> # Same, for a groundwater well — water-level and aquifer columns
+        >>> # are populated where the surface-water example has nulls
+        >>> df, md = dataretrieval.waterdata.get_combined_metadata(
+        ...     monitoring_location_id="USGS-375907091432201"
+        ... )
+
+        >>> # Every series in a single county, useful for area-of-interest workflows
+        >>> df, md = dataretrieval.waterdata.get_combined_metadata(
+        ...     state_name="Wisconsin", county_name="Dane County"
         ... )
 
         >>> # Inventory across multiple HUCs, restricted to streams and springs
@@ -1127,6 +1139,20 @@ site_type_code : string or list of strings, optional
         ...     ],
         ...     end="P1M",
         ...     parameter_code="00060",
+        ... )
+
+        >>> # Two-step "what's available?" → "fetch it" workflow:
+        >>> # 1. inventory the sites in two HUCs
+        >>> hucs, _ = dataretrieval.waterdata.get_combined_metadata(
+        ...     hydrologic_unit_code=["11010008", "11010009"],
+        ...     site_type="Stream",
+        ... )
+        >>> # 2. pull continuous discharge at every distinct site found
+        >>> sites = hucs["monitoring_location_id"].unique().tolist()
+        >>> df, md = dataretrieval.waterdata.get_continuous(
+        ...     monitoring_location_id=sites,
+        ...     parameter_code="00060",
+        ...     time="P1D",
         ... )
 
     """
