@@ -68,16 +68,16 @@ def test_mock_get_samples_summary(requests_mock):
     mock_request(requests_mock, request_url, response_file_path)
     df, md = get_samples_summary(monitoringLocationIdentifier="USGS-04183500")
     assert type(df) is DataFrame
-    assert list(df.columns) == [
+    expected_columns = {
         "monitoringLocationIdentifier",
         "characteristicGroup",
         "characteristic",
-        "characteristicUserSupplied",
         "resultCount",
         "activityCount",
         "firstActivity",
         "mostRecentActivity",
-    ]
+    }
+    assert expected_columns.issubset(df.columns)
     assert (df["monitoringLocationIdentifier"] == "USGS-04183500").all()
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)

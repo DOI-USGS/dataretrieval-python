@@ -10,6 +10,7 @@ import json
 import logging
 from io import StringIO
 from typing import get_args
+from urllib.parse import quote
 
 import pandas as pd
 import requests
@@ -1844,8 +1845,12 @@ def get_samples_summary(
         ... )
 
     """
-    url = f"{SAMPLES_URL}/summary/{monitoringLocationIdentifier}"
+    url = f"{SAMPLES_URL}/summary/{quote(monitoringLocationIdentifier, safe='')}"
     params = {"mimeType": "text/csv"}
+
+    req = PreparedRequest()
+    req.prepare_url(url, params=params)
+    logger.info("Request: %s", req.url)
 
     response = requests.get(
         url, params=params, verify=ssl_check, headers=_default_headers()
