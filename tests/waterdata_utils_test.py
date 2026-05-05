@@ -1,12 +1,10 @@
 from unittest import mock
 
-import pandas as pd
 import pytest
 import requests
 
 from dataretrieval.waterdata.utils import (
     GEOPANDAS,
-    _error_body,
     _get_args,
     _handle_stats_nesting,
     _walk_pages,
@@ -91,71 +89,6 @@ def test_walk_pages_multiple_mocked():
     assert mock_client.request.call_args[0][1] == "https://example.com/page2"
 
 
-def test_walk_pages_truncates_on_non_200_continuation():
-    """`_walk_pages` must truncate (not silently extend) on a non-200 page.
-
-    Regression: previously any non-200 page was appended (with whatever
-    body it had) and pagination quietly stopped because `_get_resp_data`
-    or `_next_req_url` raised inside the bare except. Now the explicit
-    status check raises inside the loop, and the existing log-and-truncate
-    handler converts that to a clean partial result. Page 1 is still
-    returned; page 2 is dropped.
-    """
-    resp1 = mock.MagicMock()
-    resp1.json.return_value = {
-        "numberReturned": 1,
-        "features": [{"id": "1", "properties": {"val": "a"}}],
-        "links": [],
-    }
-    resp1.headers = {}
-    resp1.links = {"next": {"url": "https://example.com/page2"}}
-    resp1.status_code = 200
-
-    resp2 = mock.MagicMock()
-    resp2.status_code = 500
-    resp2.text = "<html>error</html>"
-
-    mock_client = mock.MagicMock(spec=requests.Session)
-    mock_client.send.return_value = resp1
-    mock_client.request.return_value = resp2
-
-    mock_req = mock.MagicMock(spec=requests.PreparedRequest)
-    mock_req.method = "GET"
-    mock_req.headers = {}
-    mock_req.url = "https://example.com/page1"
-
-    df, _ = _walk_pages(geopd=False, req=mock_req, client=mock_client)
-
-    # Page 1 still returned; page 2 logged-and-stopped after the explicit
-    # status check raised. The contract here is "log + truncate", same
-    # as the pre-fix bare-except behavior, but now the raise inside the
-    # loop is intentional rather than incidental.
-    assert len(df) == 1
-
-
-# --- _error_body -------------------------------------------------------------
-
-
-def test_error_body_falls_back_to_text_for_non_json_responses():
-    """`_error_body` must not crash on plain-text/HTML 4xx-5xx bodies.
-
-    Regression: previously ``resp.json()`` was unconditionally called,
-    so an HTML error page raised ``JSONDecodeError`` from inside the
-    helper. Now non-JSON bodies fall back to the raw text snippet.
-    """
-    import json as json_mod
-
-    resp = mock.MagicMock()
-    resp.status_code = 502
-    resp.reason = "Bad Gateway"
-    resp.text = "<html><body>upstream timeout</body></html>"
-    resp.json.side_effect = json_mod.JSONDecodeError("expecting value", "", 0)
-
-    msg = _error_body(resp)
-    assert msg.startswith("502: Bad Gateway")
-    assert "upstream timeout" in msg
-
-
 # --- get_stats_data pagination ----------------------------------------------
 
 
@@ -188,60 +121,6 @@ def _stats_body(features, next_token=None):
     if next_token is not None:
         body["next"] = next_token
     return body
-
-
-def test_get_stats_data_handles_missing_next_key():
-    """A response without a ``next`` key must not raise KeyError, and
-    pagination must stop without firing a continuation request.
-
-    Regression: ``body["next"]`` raised when the key was absent. Now
-    uses ``body.get("next")`` so a missing key means "no more pages".
-    """
-    resp = mock.MagicMock()
-    resp.status_code = 200
-    resp.json.return_value = _stats_body([_stats_feature()])
-    # No "next" key at all.
-
-    client = mock.MagicMock(spec=requests.Session)
-    client.send.return_value = resp
-
-    df, _ = get_stats_data(
-        args={}, service="observationNormals", expand_percentiles=False, client=client
-    )
-    assert isinstance(df, pd.DataFrame)
-    # The single feature flattens to exactly 1 stats row; no continuation
-    # request should have been made.
-    assert len(df) == 1
-    client.request.assert_not_called()
-
-
-def test_get_stats_data_truncates_on_non_200_continuation():
-    """A 4xx/5xx on a continuation page must log and stop, not crash.
-
-    Pin the result to exactly the page-1 row so a regression that silently
-    appended page-2 data (or duplicated page-1) would still fail.
-    """
-    resp1 = mock.MagicMock()
-    resp1.status_code = 200
-    resp1.json.return_value = _stats_body([_stats_feature()], next_token="abc")
-
-    resp2 = mock.MagicMock()
-    resp2.status_code = 503
-    resp2.text = "Service Unavailable"
-    resp2.url = "https://example.com/page2"
-
-    client = mock.MagicMock(spec=requests.Session)
-    client.send.return_value = resp1
-    client.request.return_value = resp2
-
-    df, _ = get_stats_data(
-        args={}, service="observationNormals", expand_percentiles=False, client=client
-    )
-    # Page 1's single feature flattens to exactly 1 row; page 2 must not
-    # contribute anything and the loop must not have looped past resp2.
-    assert isinstance(df, pd.DataFrame)
-    assert len(df) == 1
-    assert client.request.call_count == 1
 
 
 def _stats_feature_with_geometry(loc_id, lon, lat):

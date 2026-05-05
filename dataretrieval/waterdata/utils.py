@@ -316,13 +316,10 @@ def _error_body(resp: requests.Response):
     Returns
     -------
     str
-        The extracted error message. Status 429 returns a fixed
-        'too many requests' message; status 403 returns a fixed
-        'query exceeding server limits' message. For all other statuses,
-        the response body is parsed as JSON and the ``code`` /
-        ``description`` fields are formatted into a one-line message; if
-        the body is not JSON (HTML error page, plain text), the helper
-        falls back to ``"<status>: <reason>. <first 500 chars of body>"``.
+        The extracted error message. For status code 429, returns the 'message'
+        field from the JSON error object. For status code 403, returns a
+        predefined message indicating possible reasons for denial. For other
+        status codes, returns the raw response text.
     """
     status = resp.status_code
     if status == 429:
@@ -335,24 +332,11 @@ def _error_body(resp: requests.Response):
             "403: Query request denied. Possible reasons include "
             "query exceeding server limits."
         )
-    try:
-        j_txt = resp.json()
-    except (json.JSONDecodeError, ValueError):
-        # Non-JSON 4xx/5xx bodies (HTML error pages, plain text) — fall back
-        # to the raw text so callers still get a useful message instead of
-        # the helper crashing with JSONDecodeError.
-        snippet = (resp.text or "").strip()[:500]
-        return f"{status}: {resp.reason or 'Error'}. {snippet}"
+    j_txt = resp.json()
     return (
         f"{status}: {j_txt.get('code', 'Unknown type')}. "
         f"{j_txt.get('description', 'No description provided')}."
     )
-
-
-def _raise_if_not_ok(resp: requests.Response) -> None:
-    """Raise ``RuntimeError(_error_body(resp))`` for any non-200 response."""
-    if resp.status_code != 200:
-        raise RuntimeError(_error_body(resp))
 
 
 def _construct_api_requests(
@@ -599,7 +583,8 @@ def _walk_pages(
     client = client or requests.Session()
     try:
         resp = client.send(req)
-        _raise_if_not_ok(resp)
+        if resp.status_code != 200:
+            raise RuntimeError(_error_body(resp))
 
         # Store the initial response for metadata
         initial_response = resp
@@ -621,7 +606,6 @@ def _walk_pages(
                     headers=headers,
                     data=content if method == "POST" else None,
                 )
-                _raise_if_not_ok(resp)
                 dfs.append(_get_resp_data(resp, geopd=geopd))
                 curr_url = _next_req_url(resp)
             except Exception:  # noqa: BLE001
@@ -1061,7 +1045,8 @@ def get_stats_data(
 
     try:
         resp = client.send(req)
-        _raise_if_not_ok(resp)
+        if resp.status_code != 200:
+            raise RuntimeError(_error_body(resp))
 
         # Store the initial response for metadata
         initial_response = resp
@@ -1075,7 +1060,7 @@ def get_stats_data(
         all_dfs = [_handle_stats_nesting(body, geopd=GEOPANDAS)]
 
         # Look for a next code in the response body
-        next_token = body.get("next")
+        next_token = body["next"]
 
         while next_token:
             args["next_token"] = next_token
@@ -1087,10 +1072,9 @@ def get_stats_data(
                     params=args,
                     headers=headers,
                 )
-                _raise_if_not_ok(resp)
                 body = resp.json()
                 all_dfs.append(_handle_stats_nesting(body, geopd=GEOPANDAS))
-                next_token = body.get("next")
+                next_token = body["next"]
             except Exception:  # noqa: BLE001
                 error_text = _error_body(resp)
                 logger.error("Request incomplete. %s", error_text)
