@@ -1,0 +1,6 @@
+monitoringLocationIdentifier,characteristicGroup,characteristic,characteristicUserSupplied,resultCount,activityCount,firstActivity,mostRecentActivity
+USGS-04183500,Information,Bottle or bag sampler material (construction),Bottle or bag sampler material (construction),893,893,2017-01-02,2026-04-28
+USGS-04183500,Information,NWIS lot number,"NWIS lot number, sulfuric acid, 4.5 normal (1:7), 1 milliliter, National Field Supply Service (NFSS) stock number Q438FLD",893,893,2017-01-02,2026-04-28
+USGS-04183500,Information,NWIS lot number,"NWIS lot number, vacuum tube, 10.5 milliliters, FCCVT (filtered, chilled, vacuum tube)",877,877,2017-01-02,2026-04-28
+USGS-04183500,Information,Number of sampling points,Number of sampling points,136,136,2013-10-23,2026-04-28
+USGS-04183500,Information,Sampler nozzle diameter,Sampler nozzle diameter,97,97,2017-01-24,2026-04-28

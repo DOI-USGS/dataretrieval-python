@@ -1800,6 +1800,64 @@ def get_samples(
     return df, BaseMetadata(response)
 
 
+def get_samples_summary(
+    monitoringLocationIdentifier: str,
+    ssl_check: bool = True,
+) -> tuple[pd.DataFrame, BaseMetadata]:
+    """Get a summary of samples available at a single monitoring location.
+
+    Wraps the Samples database ``/summary/{monitoringLocationIdentifier}``
+    endpoint, which returns one row per (characteristic group, characteristic,
+    user-supplied characteristic) combination with result and activity counts
+    and the first / most recent activity dates. This is useful for taking an
+    inventory of what discrete-sample data exists at a site before pulling
+    the underlying observations with :func:`get_samples`.
+
+    The Samples summary endpoint only accepts a single monitoring location
+    per request.
+
+    See https://api.waterdata.usgs.gov/samples-data/docs#/summaries for the
+    full API reference.
+
+    Parameters
+    ----------
+    monitoringLocationIdentifier : string
+        A monitoring location identifier in ``AGENCY-ID`` format, e.g.
+        ``"USGS-04183500"``.
+    ssl_check : bool, optional
+        Check the SSL certificate. Default is True.
+
+    Returns
+    -------
+    df : ``pandas.DataFrame``
+        Formatted data returned from the API query.
+    md : :obj:`dataretrieval.utils.Metadata`
+        Custom ``dataretrieval`` metadata object pertaining to the query.
+
+    Examples
+    --------
+    .. code::
+
+        >>> # What discrete-sample data is available at this site?
+        >>> df, md = dataretrieval.waterdata.get_samples_summary(
+        ...     monitoringLocationIdentifier="USGS-04183500"
+        ... )
+
+    """
+    url = f"{SAMPLES_URL}/summary/{monitoringLocationIdentifier}"
+    params = {"mimeType": "text/csv"}
+
+    response = requests.get(
+        url, params=params, verify=ssl_check, headers=_default_headers()
+    )
+
+    response.raise_for_status()
+
+    df = pd.read_csv(StringIO(response.text), delimiter=",")
+
+    return df, BaseMetadata(response)
+
+
 def get_stats_por(
     approval_status: str | None = None,
     computation_type: str | list[str] | None = None,

@@ -17,6 +17,7 @@ from dataretrieval.waterdata import (
     get_monitoring_locations,
     get_reference_table,
     get_samples,
+    get_samples_summary,
     get_stats_date_range,
     get_stats_por,
     get_time_series_metadata,
@@ -51,6 +52,33 @@ def test_mock_get_samples(requests_mock):
     )
     assert type(df) is DataFrame
     assert df.size == 12127
+    assert md.url == request_url
+    assert isinstance(md.query_time, datetime.timedelta)
+    assert md.header == {"mock_header": "value"}
+    assert md.comment is None
+
+
+def test_mock_get_samples_summary(requests_mock):
+    """Tests USGS Samples summary query"""
+    request_url = (
+        "https://api.waterdata.usgs.gov/samples-data/summary/USGS-04183500"
+        "?mimeType=text%2Fcsv"
+    )
+    response_file_path = "tests/data/samples_summary.txt"
+    mock_request(requests_mock, request_url, response_file_path)
+    df, md = get_samples_summary(monitoringLocationIdentifier="USGS-04183500")
+    assert type(df) is DataFrame
+    assert list(df.columns) == [
+        "monitoringLocationIdentifier",
+        "characteristicGroup",
+        "characteristic",
+        "characteristicUserSupplied",
+        "resultCount",
+        "activityCount",
+        "firstActivity",
+        "mostRecentActivity",
+    ]
+    assert (df["monitoringLocationIdentifier"] == "USGS-04183500").all()
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
     assert md.header == {"mock_header": "value"}
