@@ -941,7 +941,7 @@ def get_combined_metadata(
     statistic_id: str | list[str] | None = None,
     data_type: str | list[str] | None = None,
     computation_identifier: str | list[str] | None = None,
-    thresholds: int | None = None,
+    thresholds: int | list[int] | None = None,
     sublocation_identifier: str | list[str] | None = None,
     primary: str | list[str] | None = None,
     parent_time_series_id: str | list[str] | None = None,
@@ -1013,6 +1013,11 @@ def get_combined_metadata(
     The R analogue is ``read_waterdata_combined_meta`` in
     https://github.com/DOI-USGS/dataRetrieval/.
 
+    All ~35 location-catalog kwargs are accepted (``agency_code``,
+    ``state_name``, ``drainage_area``, ``aquifer_code``, …) but only
+    the most-used ones are documented below; see
+    :func:`get_monitoring_locations` for per-field descriptions.
+
     Parameters
     ----------
     monitoring_location_id : string or list of strings, optional
@@ -1060,26 +1065,14 @@ def get_combined_metadata(
         interval (``"start/end"``, optionally half-bounded with ``..``),
         or an ISO 8601 duration (e.g. ``"P1M"``, ``"PT36H"``). See
         :func:`get_time_series_metadata` for the full grammar.
-    agency_code, agency_name, monitoring_location_number, \
-monitoring_location_name, district_code, country_code, country_name, \
-state_code, state_name, county_code, county_name, \
-minor_civil_division_code, site_type_code, site_type, \
-hydrologic_unit_code, basin_code : string or list of strings, optional
-        Location-catalog filters carried over from the
-        ``monitoring-locations`` collection.
-    altitude, altitude_accuracy, altitude_method_code, \
-altitude_method_name, vertical_datum, vertical_datum_name, \
-horizontal_positional_accuracy_code, horizontal_positional_accuracy, \
-horizontal_position_method_code, horizontal_position_method_name, \
-original_horizontal_datum, original_horizontal_datum_name, \
-drainage_area, contributing_drainage_area, time_zone_abbreviation, \
-uses_daylight_savings, construction_date : string or list of strings, optional
-        Spatial / datum / construction attributes carried over from the
-        ``monitoring-locations`` collection.
-    aquifer_code, national_aquifer_code, aquifer_type_code, \
-well_constructed_depth, hole_constructed_depth, depth_source_code : \
-string or list of strings, optional
-        Groundwater-well attributes (only populated for well sites).
+    state_name, county_name, hydrologic_unit_code, site_type, \
+site_type_code : string or list of strings, optional
+        Common location-catalog filters carried over from the
+        ``monitoring-locations`` collection. The function also accepts
+        the full list of location-catalog kwargs (agency, district,
+        altitude, vertical/horizontal datum, drainage area, aquifer,
+        well construction, …); see :func:`get_monitoring_locations` for
+        descriptions of each.
     properties : string or list of strings, optional
         Subset of columns to return. Defaults to every available
         property.

@@ -341,8 +341,6 @@ def test_get_combined_metadata():
         monitoring_location_id="USGS-05407000",
         skip_geometry=True,
     )
-    # Combined metadata returns one row per (parameter, statistic, data_type),
-    # carrying both location-catalog and time-series-catalog columns.
     assert "monitoring_location_id" in df.columns
     assert "parameter_code" in df.columns
     assert "data_type" in df.columns
