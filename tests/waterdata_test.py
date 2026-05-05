@@ -351,7 +351,7 @@ def test_get_combined_metadata():
 
 
 def test_get_combined_metadata_multi_site_post():
-    df, md = get_combined_metadata(
+    df, _ = get_combined_metadata(
         monitoring_location_id=[
             "USGS-07069000",
             "USGS-07064000",

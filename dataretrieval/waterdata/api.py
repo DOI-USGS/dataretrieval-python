@@ -941,7 +941,7 @@ def get_combined_metadata(
     statistic_id: str | list[str] | None = None,
     data_type: str | list[str] | None = None,
     computation_identifier: str | list[str] | None = None,
-    thresholds: int | list[int] | None = None,
+    thresholds: float | list[float] | None = None,
     sublocation_identifier: str | list[str] | None = None,
     primary: str | list[str] | None = None,
     parent_time_series_id: str | list[str] | None = None,
