@@ -1847,6 +1847,13 @@ def get_samples_summary(
         ... )
 
     """
+    if not isinstance(monitoringLocationIdentifier, str):
+        raise TypeError(
+            "monitoringLocationIdentifier must be a string; the Samples "
+            "summary service accepts exactly one monitoring location per "
+            f"request, got {type(monitoringLocationIdentifier).__name__}."
+        )
+
     url = f"{SAMPLES_URL}/summary/{quote(monitoringLocationIdentifier, safe='')}"
     params = {"mimeType": "text/csv"}
 

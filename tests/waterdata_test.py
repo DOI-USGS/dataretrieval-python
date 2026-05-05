@@ -72,6 +72,7 @@ def test_mock_get_samples_summary(requests_mock):
         "monitoringLocationIdentifier",
         "characteristicGroup",
         "characteristic",
+        "characteristicUserSupplied",
         "resultCount",
         "activityCount",
         "firstActivity",
@@ -83,6 +84,12 @@ def test_mock_get_samples_summary(requests_mock):
     assert isinstance(md.query_time, datetime.timedelta)
     assert md.header == {"mock_header": "value"}
     assert md.comment is None
+
+
+def test_get_samples_summary_rejects_list():
+    """The summary endpoint accepts only one site; a list must raise TypeError."""
+    with pytest.raises(TypeError, match="exactly one monitoring location"):
+        get_samples_summary(monitoringLocationIdentifier=["USGS-04183500"])
 
 
 def test_check_profiles():
