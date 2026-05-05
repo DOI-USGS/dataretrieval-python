@@ -1102,7 +1102,7 @@ def get_stats_data(
                     headers=headers,
                 )
                 body = resp.json()
-                all_dfs.append(_handle_stats_nesting(body, geopd=False))
+                all_dfs.append(_handle_stats_nesting(body, geopd=GEOPANDAS))
                 next_token = body["next"]
             except Exception:  # noqa: BLE001
                 error_text = _error_body(resp)
