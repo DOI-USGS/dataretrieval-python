@@ -6,6 +6,7 @@ import requests
 
 from dataretrieval.waterdata.utils import (
     GEOPANDAS,
+    _error_body,
     _get_args,
     _handle_stats_nesting,
     _walk_pages,
@@ -132,6 +133,29 @@ def test_walk_pages_truncates_on_non_200_continuation():
     assert len(df) == 1
 
 
+# --- _error_body -------------------------------------------------------------
+
+
+def test_error_body_falls_back_to_text_for_non_json_responses():
+    """`_error_body` must not crash on plain-text/HTML 4xx-5xx bodies.
+
+    Regression: previously ``resp.json()`` was unconditionally called,
+    so an HTML error page raised ``JSONDecodeError`` from inside the
+    helper. Now non-JSON bodies fall back to the raw text snippet.
+    """
+    import json as json_mod
+
+    resp = mock.MagicMock()
+    resp.status_code = 502
+    resp.reason = "Bad Gateway"
+    resp.text = "<html><body>upstream timeout</body></html>"
+    resp.json.side_effect = json_mod.JSONDecodeError("expecting value", "", 0)
+
+    msg = _error_body(resp)
+    assert msg.startswith("502: Bad Gateway")
+    assert "upstream timeout" in msg
+
+
 # --- get_stats_data pagination ----------------------------------------------
 
 
@@ -167,7 +191,8 @@ def _stats_body(features, next_token=None):
 
 
 def test_get_stats_data_handles_missing_next_key():
-    """A response without a ``next`` key must not raise KeyError.
+    """A response without a ``next`` key must not raise KeyError, and
+    pagination must stop without firing a continuation request.
 
     Regression: ``body["next"]`` raised when the key was absent. Now
     uses ``body.get("next")`` so a missing key means "no more pages".
@@ -184,11 +209,18 @@ def test_get_stats_data_handles_missing_next_key():
         args={}, service="observationNormals", expand_percentiles=False, client=client
     )
     assert isinstance(df, pd.DataFrame)
-    assert len(df) >= 1
+    # The single feature flattens to exactly 1 stats row; no continuation
+    # request should have been made.
+    assert len(df) == 1
+    client.request.assert_not_called()
 
 
 def test_get_stats_data_truncates_on_non_200_continuation():
-    """A 4xx/5xx on a continuation page must log and stop, not crash."""
+    """A 4xx/5xx on a continuation page must log and stop, not crash.
+
+    Pin the result to exactly the page-1 row so a regression that silently
+    appended page-2 data (or duplicated page-1) would still fail.
+    """
     resp1 = mock.MagicMock()
     resp1.status_code = 200
     resp1.json.return_value = _stats_body([_stats_feature()], next_token="abc")
@@ -205,9 +237,11 @@ def test_get_stats_data_truncates_on_non_200_continuation():
     df, _ = get_stats_data(
         args={}, service="observationNormals", expand_percentiles=False, client=client
     )
-    # Page 1 still surfaces; page 2 was caught by the in-loop status check.
+    # Page 1's single feature flattens to exactly 1 row; page 2 must not
+    # contribute anything and the loop must not have looped past resp2.
     assert isinstance(df, pd.DataFrame)
-    assert len(df) >= 1
+    assert len(df) == 1
+    assert client.request.call_count == 1
 
 
 def _stats_feature_with_geometry(loc_id, lon, lat):

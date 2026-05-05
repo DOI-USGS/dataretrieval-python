@@ -316,10 +316,13 @@ def _error_body(resp: requests.Response):
     Returns
     -------
     str
-        The extracted error message. For status code 429, returns the 'message'
-        field from the JSON error object. For status code 403, returns a
-        predefined message indicating possible reasons for denial. For other
-        status codes, returns the raw response text.
+        The extracted error message. Status 429 returns a fixed
+        'too many requests' message; status 403 returns a fixed
+        'query exceeding server limits' message. For all other statuses,
+        the response body is parsed as JSON and the ``code`` /
+        ``description`` fields are formatted into a one-line message; if
+        the body is not JSON (HTML error page, plain text), the helper
+        falls back to ``"<status>: <reason>. <first 500 chars of body>"``.
     """
     status = resp.status_code
     if status == 429:
