@@ -713,18 +713,16 @@ def _arrange_cols(
     # Rename id column to output_id
     df = df.rename(columns={"id": output_id})
 
-    # If properties are provided, filter to only those columns
-    # plus geometry if skip_geometry is False
     if properties and not all(pd.isna(properties)):
-        # Make sure geometry stays in the dataframe if skip_geometry is False
-        if "geometry" in df.columns and "geometry" not in properties:
-            properties.append("geometry")
-        # id is technically a valid column from the service, but these
-        # functions make the name more specific. So, if someone requests
-        # 'id', give them the output_id column
-        if "id" in properties:
-            properties[properties.index("id")] = output_id
-        df = df.loc[:, [col for col in properties if col in df.columns]]
+        # Don't alias the caller's list — we mutate below.
+        local_properties = list(properties)
+        if "geometry" in df.columns and "geometry" not in local_properties:
+            local_properties.append("geometry")
+        # 'id' is a valid service column, but expose it under the
+        # service-specific output_id name instead.
+        if "id" in local_properties:
+            local_properties[local_properties.index("id")] = output_id
+        df = df.loc[:, [col for col in local_properties if col in df.columns]]
 
     # Move meaningless-to-user, extra id columns to the end
     # of the dataframe, if they exist
