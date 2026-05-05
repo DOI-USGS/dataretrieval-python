@@ -13,6 +13,7 @@ from zoneinfo import ZoneInfo
 
 from dataretrieval import __version__
 from dataretrieval.utils import BaseMetadata
+from dataretrieval.waterdata import filters
 from dataretrieval.waterdata.types import (
     PROFILE_LOOKUP,
     PROFILES,
@@ -127,8 +128,54 @@ def _switch_properties_id(properties: list[str] | None, id_name: str, service: s
     return [p for p in properties if p not in ["geometry", service_id]]
 
 
+_DATETIME_FORMATS = (
+    "%Y-%m-%dT%H:%M:%S.%f%z",
+    "%Y-%m-%dT%H:%M:%S%z",
+    "%Y-%m-%dT%H:%M:%S.%f",
+    "%Y-%m-%dT%H:%M:%S",
+    "%Y-%m-%d %H:%M:%S.%f",
+    "%Y-%m-%d %H:%M:%S",
+    "%Y-%m-%d",
+)
+
+# Anchored to ``[Pp]\d`` so a normal word containing ``p`` (e.g. ``"Apr"``)
+# doesn't get mis-classified as an ISO 8601 duration; the optional ``T``
+# admits time-only forms like ``PT36H``.
+_DURATION_RE = re.compile(r"^[Pp]T?\d")
+
+
+def _parse_datetime(value: str) -> datetime | None:
+    """Parse a single datetime string against the supported formats.
+
+    Returns a ``datetime`` (tz-aware iff the input carried a UTC offset),
+    or ``None`` if no format matched.
+    """
+    # ``datetime.strptime`` accepts a numeric offset like ``+00:00`` but not
+    # the ``Z`` shorthand, so normalize trailing ``Z`` first.
+    candidate = value[:-1] + "+00:00" if value.endswith("Z") else value
+    for fmt in _DATETIME_FORMATS:
+        try:
+            return datetime.strptime(candidate, fmt)
+        except ValueError:
+            continue
+    return None
+
+
+def _format_one(dt, *, date: bool, local_tz) -> str | None:
+    """Format a single datetime element for inclusion in the API time arg."""
+    if pd.isna(dt) or dt == "" or dt is None:
+        return ".."
+    parsed = _parse_datetime(dt)
+    if parsed is None:
+        return None
+    if date:
+        return parsed.strftime("%Y-%m-%d")
+    aware = parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=local_tz)
+    return aware.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def _format_api_dates(
-    datetime_input: str | list[str], date: bool = False
+    datetime_input: str | list[str | None] | None, date: bool = False
 ) -> str | None:
     """
     Formats date or datetime input(s) for use with an API.
@@ -138,10 +185,12 @@ def _format_api_dates(
 
     Parameters
     ----------
-    datetime_input : Union[str, List[str]]
+    datetime_input : Union[str, List[Optional[str]], None]
         A single date/datetime string or a list of one or two date/datetime
-        strings. Accepts formats like "%Y-%m-%d %H:%M:%S", ISO 8601, or relative
-        periods (e.g., "P7D").
+        strings. Accepts formats like "%Y-%m-%d %H:%M:%S", ISO 8601 (with or
+        without ``Z``/numeric offset), or relative periods (e.g., "P7D" /
+        "PT36H"). Range endpoints may be ``None``/``NaN``/empty to denote a
+        half-bounded range.
     date : bool, optional
         If True, uses only the date portion ("YYYY-MM-DD"). If False (default),
         returns full datetime in UTC ISO 8601 format ("YYYY-MM-DDTHH:MM:SSZ").
@@ -163,12 +212,16 @@ def _format_api_dates(
 
     Notes
     -----
-    - Handles blank or NA values by returning None.
-    - Supports relative period strings (e.g., "P7D") and passes them through
-    unchanged.
+    - A single blank/NA value returns None. In a two-value range, a blank/NA
+    endpoint is rendered as ``".."`` to denote an open bound (e.g.
+    ``"2024-01-01/.."``); the range is only None when *every* element is
+    blank/NA or any non-NA element fails to parse.
+    - Supports ISO 8601 durations such as "P7D" and "PT36H" and pre-formatted
+    intervals containing ``"/"``; both are passed through unchanged.
     - Converts datetimes to UTC and formats as ISO 8601 with 'Z' suffix when
-    `date` is False.
-    - For date ranges, replaces "nan" with ".." in the output.
+    `date` is False. Inputs with an explicit offset (``Z`` or ``+HH:MM``) are
+    converted from that offset to UTC; naive inputs are interpreted in the
+    local time zone for backwards compatibility.
     """
     # Get timezone
     local_timezone = datetime.now().astimezone().tzinfo
@@ -181,47 +234,24 @@ def _format_api_dates(
     if all(pd.isna(dt) or dt == "" or dt is None for dt in datetime_input):
         return None
 
-    if len(datetime_input) <= 2:
-        # If the list is of length 1, first look for things like "P7D" or dates
-        # already formatted in ISO08601. Otherwise, try to coerce to datetime
-        if len(datetime_input) == 1 and (
-            re.search(r"P", datetime_input[0], re.IGNORECASE)
-            or "/" in datetime_input[0]
-        ):
-            return datetime_input[0]
-        # Otherwise, use list comprehension to parse dates
-        else:
-            try:
-                # Parse to naive datetime
-                parsed_dates = [
-                    datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")  # noqa: DTZ007
-                    for dt in datetime_input
-                ]
-            except ValueError:
-                # Parse to date only
-                try:
-                    parsed_dates = [
-                        datetime.strptime(dt, "%Y-%m-%d")  # noqa: DTZ007
-                        for dt in datetime_input
-                    ]
-                except ValueError:
-                    return None
-                # If the service only accepts dates for this input, not
-                # datetimes (e.g. "daily"), return just the dates separated by a
-                # "/", otherwise, return the datetime in UTC format.
-            if date:
-                return "/".join(dt.strftime("%Y-%m-%d") for dt in parsed_dates)
-            else:
-                parsed_locals = [
-                    dt.replace(tzinfo=local_timezone) for dt in parsed_dates
-                ]
-                formatted = "/".join(
-                    dt.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
-                    for dt in parsed_locals
-                )
-                return formatted
-    else:
+    if len(datetime_input) > 2:
         raise ValueError("datetime_input should only include 1-2 values")
+
+    # Pass through duration ("P7D", "PT36H") and pre-formatted interval ("a/b")
+    # strings untouched.
+    if len(datetime_input) == 1 and isinstance(datetime_input[0], str):
+        single = datetime_input[0]
+        if _DURATION_RE.match(single) or "/" in single:
+            return single
+
+    # Half-bounded ranges: NA endpoints render as ".."; any unparseable non-NA
+    # element invalidates the range.
+    formatted = [
+        _format_one(dt, date=date, local_tz=local_timezone) for dt in datetime_input
+    ]
+    if any(f is None for f in formatted):
+        return None
+    return "/".join(formatted)
 
 
 def _cql2_param(args: dict[str, Any]) -> str:
@@ -418,6 +448,12 @@ def _construct_api_requests(
         params["bbox"] = ",".join(map(str, bbox))
     if properties:
         params["properties"] = ",".join(properties)
+
+    # Translate CQL filter Python names to the hyphenated URL parameter that
+    # the OGC API expects. The Python kwarg is `filter_lang` because hyphens
+    # aren't valid in Python identifiers.
+    if "filter_lang" in params:
+        params["filter-lang"] = params.pop("filter_lang")
 
     headers = _default_headers()
 
@@ -677,18 +713,16 @@ def _arrange_cols(
     # Rename id column to output_id
     df = df.rename(columns={"id": output_id})
 
-    # If properties are provided, filter to only those columns
-    # plus geometry if skip_geometry is False
     if properties and not all(pd.isna(properties)):
-        # Make sure geometry stays in the dataframe if skip_geometry is False
-        if "geometry" in df.columns and "geometry" not in properties:
-            properties.append("geometry")
-        # id is technically a valid column from the service, but these
-        # functions make the name more specific. So, if someone requests
-        # 'id', give them the output_id column
-        if "id" in properties:
-            properties[properties.index("id")] = output_id
-        df = df.loc[:, [col for col in properties if col in df.columns]]
+        # Don't alias the caller's list — we mutate below.
+        local_properties = list(properties)
+        if "geometry" in df.columns and "geometry" not in local_properties:
+            local_properties.append("geometry")
+        # 'id' is a valid service column, but expose it under the
+        # service-specific output_id name instead.
+        if "id" in local_properties:
+            local_properties[local_properties.index("id")] = output_id
+        df = df.loc[:, [col for col in local_properties if col in df.columns]]
 
     # Move meaningless-to-user, extra id columns to the end
     # of the dataframe, if they exist
@@ -817,34 +851,41 @@ def get_ogc_data(
     - Applies column cleanup and reordering based on service and properties.
     """
     args = args.copy()
-    # Add service as an argument
     args["service"] = service
-    # Switch the input id to "id" if needed
     args = _switch_arg_id(args, id_name=output_id, service=service)
+    # Capture `properties` before the id-switch so post-processing sees
+    # the user-facing names, not the wire-format ones.
     properties = args.get("properties")
-    # Switch properties id to "id" if needed
     args["properties"] = _switch_properties_id(
         properties, id_name=output_id, service=service
     )
     convert_type = args.pop("convert_type", False)
-    # Create fresh dictionary of args without any None values
     args = {k: v for k, v in args.items() if v is not None}
-    # Build API request
-    req = _construct_api_requests(**args)
-    # Run API request and iterate through pages if needed
-    return_list, response = _walk_pages(geopd=GEOPANDAS, req=req)
-    # Manage some aspects of the returned dataset
-    return_list = _deal_with_empty(return_list, properties, service)
 
+    return_list, response = _fetch_once(args)
+    return_list = _deal_with_empty(return_list, properties, service)
     if convert_type:
         return_list = _type_cols(return_list)
-
     return_list = _arrange_cols(return_list, properties, output_id)
-
     return_list = _sort_rows(return_list)
-    # Create metadata object from response
-    metadata = BaseMetadata(response)
-    return return_list, metadata
+
+    return return_list, BaseMetadata(response)
+
+
+@filters.chunked(build_request=_construct_api_requests)
+def _fetch_once(
+    args: dict[str, Any],
+) -> tuple[pd.DataFrame, requests.Response]:
+    """Send one prepared-args OGC request; return the frame + response.
+
+    Filter chunking is added orthogonally by the ``@filters.chunked``
+    decorator: with no filter (or an un-chunkable one) the decorator
+    passes ``args`` through to this body; with a chunkable filter it
+    fans out and calls this body once per sub-filter, then combines.
+    Either way the return shape is ``(frame, response)``.
+    """
+    req = _construct_api_requests(**args)
+    return _walk_pages(geopd=GEOPANDAS, req=req)
 
 
 def _handle_stats_nesting(
@@ -878,11 +919,13 @@ def _handle_stats_nesting(
     # otherwise return a geodataframe
     if not geopd:
         df = pd.json_normalize(body["features"]).drop(
-            columns=["type", "properties.data"]
+            columns=["type", "properties.data"], errors="ignore"
         )
         df.columns = df.columns.str.split(".").str[-1]
     else:
-        df = gpd.GeoDataFrame.from_features(body["features"]).drop(columns=["data"])
+        df = gpd.GeoDataFrame.from_features(body["features"]).drop(
+            columns=["data"], errors="ignore"
+        )
 
     # Unnest json features, properties, data, and values while retaining necessary
     # metadata to merge with main dataframe.
@@ -1057,7 +1100,7 @@ def get_stats_data(
                     headers=headers,
                 )
                 body = resp.json()
-                all_dfs.append(_handle_stats_nesting(body, geopd=False))
+                all_dfs.append(_handle_stats_nesting(body, geopd=GEOPANDAS))
                 next_token = body["next"]
             except Exception:  # noqa: BLE001
                 error_text = _error_body(resp)
