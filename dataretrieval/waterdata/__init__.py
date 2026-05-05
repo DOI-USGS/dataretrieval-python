@@ -13,6 +13,7 @@ from __future__ import annotations
 from .api import (
     get_channel,
     get_codes,
+    get_combined_metadata,
     get_continuous,
     get_daily,
     get_field_measurements,
@@ -43,6 +44,7 @@ __all__ = [
     "SERVICES",
     "get_channel",
     "get_codes",
+    "get_combined_metadata",
     "get_continuous",
     "get_daily",
     "get_field_measurements",

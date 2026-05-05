@@ -9,6 +9,7 @@ if sys.version_info < (3, 10):
 
 from dataretrieval.waterdata import (
     get_channel,
+    get_combined_metadata,
     get_continuous,
     get_daily,
     get_field_measurements,
@@ -333,6 +334,40 @@ def test_get_time_series_metadata():
     }
     assert hasattr(md, "url")
     assert hasattr(md, "query_time")
+
+
+def test_get_combined_metadata():
+    df, md = get_combined_metadata(
+        monitoring_location_id="USGS-05407000",
+        skip_geometry=True,
+    )
+    # Combined metadata returns one row per (parameter, statistic, data_type),
+    # carrying both location-catalog and time-series-catalog columns.
+    assert "monitoring_location_id" in df.columns
+    assert "parameter_code" in df.columns
+    assert "data_type" in df.columns
+    assert "drainage_area" in df.columns
+    assert (df["monitoring_location_id"] == "USGS-05407000").all()
+    assert hasattr(md, "url")
+    assert hasattr(md, "query_time")
+
+
+def test_get_combined_metadata_multi_site_post():
+    df, md = get_combined_metadata(
+        monitoring_location_id=[
+            "USGS-07069000",
+            "USGS-07064000",
+            "USGS-07068000",
+        ],
+        parameter_code="00060",
+        skip_geometry=True,
+    )
+    assert set(df["monitoring_location_id"].unique()) == {
+        "USGS-07069000",
+        "USGS-07064000",
+        "USGS-07068000",
+    }
+    assert (df["parameter_code"] == "00060").all()
 
 
 def test_get_reference_table():
