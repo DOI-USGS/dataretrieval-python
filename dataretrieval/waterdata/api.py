@@ -1805,26 +1805,28 @@ def get_samples_summary(
     monitoringLocationIdentifier: str,
     ssl_check: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Get a summary of samples available at a single monitoring location.
+    """Get a summary of discrete water-quality samples at a single monitoring location.
 
-    Wraps the Samples database ``/summary/{monitoringLocationIdentifier}``
-    endpoint, which returns one row per (characteristic group, characteristic,
-    user-supplied characteristic) combination with result and activity counts
-    and the first / most recent activity dates. This is useful for taking an
-    inventory of what discrete-sample data exists at a site before pulling
-    the underlying observations with :func:`get_samples`.
+    Wraps the Samples database summary service described at
+    https://api.waterdata.usgs.gov/samples-data/docs. The service returns one
+    row per (characteristic group, characteristic, user-supplied characteristic)
+    combination with result and activity counts and the first / most recent
+    activity dates — useful for taking inventory of what discrete-sample data
+    exists at a site before pulling the underlying observations with
+    :func:`get_samples`.
 
-    The Samples summary endpoint only accepts a single monitoring location
-    per request.
-
-    See https://api.waterdata.usgs.gov/samples-data/docs#/summaries for the
-    full API reference.
+    The summary service is single-site only: it accepts exactly one monitoring
+    location per request.
 
     Parameters
     ----------
     monitoringLocationIdentifier : string
-        A monitoring location identifier in ``AGENCY-ID`` format, e.g.
-        ``"USGS-04183500"``.
+        A monitoring location identifier has two parts, separated by a dash
+        (``-``): the agency code and the location number. Examples:
+        ``"USGS-040851385"``, ``"AZ014-320821110580701"``,
+        ``"CAX01-15304600"``. Bare location numbers without an agency prefix
+        are accepted by the service but return an empty result, so a prefix
+        is effectively required.
     ssl_check : bool, optional
         Check the SSL certificate. Default is True.
 
@@ -1841,7 +1843,7 @@ def get_samples_summary(
 
         >>> # What discrete-sample data is available at this site?
         >>> df, md = dataretrieval.waterdata.get_samples_summary(
-        ...     monitoringLocationIdentifier="USGS-04183500"
+        ...     monitoringLocationIdentifier="USGS-04074950"
         ... )
 
     """
