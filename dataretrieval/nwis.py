@@ -53,6 +53,35 @@ _NWIS_RDB_DTYPES = {
 }
 
 
+# Per-function deprecation. The module-level warning above tells users that
+# `nwis` overall is being phased out; these replacements tell them which
+# `waterdata` function to migrate each call to. Scheduled removal: 2027-05-06.
+_NWIS_REMOVAL_DATE = "2027-05-06"
+_REPLACEMENTS = {
+    "get_dv": "`waterdata.get_daily()`",
+    "get_iv": "`waterdata.get_continuous()`",
+    "get_info": "`waterdata.get_monitoring_locations()`",
+    "what_sites": "`waterdata.get_monitoring_locations()`",
+    "get_stats": "`waterdata.get_stats_por()` or `waterdata.get_stats_date_range()`",
+    "get_discharge_peaks": "`waterdata.get_peaks()`",
+    "get_ratings": "`waterdata.get_ratings()`",
+    "get_record": "the appropriate `waterdata.get_*()` for the service you need",
+    "query_waterdata": "a high-level `waterdata.get_*()` helper",
+    "query_waterservices": "a high-level `waterdata.get_*()` helper",
+}
+
+
+def _warn_deprecated(func_name: str) -> None:
+    """Emit a per-function DeprecationWarning pointing at the waterdata replacement."""
+    warnings.warn(
+        f"`nwis.{func_name}` is deprecated and will be removed from "
+        f"`dataretrieval` on or after {_NWIS_REMOVAL_DATE}; "
+        f"use {_REPLACEMENTS[func_name]} instead.",
+        DeprecationWarning,
+        stacklevel=3,
+    )
+
+
 def _parse_json_or_raise(response: requests.Response) -> pd.DataFrame:
     """Parse a JSON NWIS response, raising a helpful error on HTML responses."""
     try:
@@ -216,6 +245,7 @@ def get_discharge_peaks(
         ... )
 
     """
+    _warn_deprecated("get_discharge_peaks")
     _check_sites_value_types(sites)
 
     kwargs["site_no"] = kwargs.pop("site_no", sites)
@@ -292,6 +322,7 @@ def get_stats(
         ... )
 
     """
+    _warn_deprecated("get_stats")
     _check_sites_value_types(sites)
 
     response = query_waterservices(
@@ -322,6 +353,7 @@ def query_waterdata(
     request: ``requests.models.Response``
         The response object from the API request to the web service
     """
+    _warn_deprecated("query_waterdata")
     major_params = ["site_no", "state_cd"]
     bbox_params = [
         "nw_longitude_va",
@@ -391,6 +423,7 @@ def query_waterservices(
         The response object from the API request to the web service
 
     """
+    _warn_deprecated("query_waterservices")
     if not any(
         key in kwargs for key in ["sites", "stateCd", "bBox", "huc", "countyCd"]
     ):
@@ -467,6 +500,7 @@ def get_dv(
         >>> df, md = dataretrieval.nwis.get_dv(sites="01646500")
 
     """
+    _warn_deprecated("get_dv")
     _check_sites_value_types(sites)
 
     kwargs["startDT"] = kwargs.pop("startDT", start)
@@ -572,6 +606,7 @@ def get_info(ssl_check: bool = True, **kwargs) -> tuple[pd.DataFrame, BaseMetada
         >>> df, md = dataretrieval.nwis.get_info(sites=["05114000", "09423350"])
 
     """
+    _warn_deprecated("get_info")
     seriesCatalogOutput = kwargs.pop("seriesCatalogOutput", None)
     if seriesCatalogOutput in ["True", "TRUE", "true", True]:
         warnings.warn(
@@ -650,6 +685,7 @@ def get_iv(
         ... )
 
     """
+    _warn_deprecated("get_iv")
     _check_sites_value_types(sites)
 
     kwargs["startDT"] = kwargs.pop("startDT", start)
@@ -719,6 +755,7 @@ def get_ratings(
         >>> df, md = dataretrieval.nwis.get_ratings(site="01594440")
 
     """
+    _warn_deprecated("get_ratings")
     site = kwargs.pop("site_no", site)
 
     payload = {}
@@ -767,6 +804,7 @@ def what_sites(ssl_check: bool = True, **kwargs) -> tuple[pd.DataFrame, BaseMeta
         ... )
 
     """
+    _warn_deprecated("what_sites")
 
     response = query_waterservices(service="site", ssl_check=ssl_check, **kwargs)
 
@@ -863,6 +901,7 @@ def get_record(
         ... )
 
     """
+    _warn_deprecated("get_record")
     _check_sites_value_types(sites)
 
     defunct_replacements = {

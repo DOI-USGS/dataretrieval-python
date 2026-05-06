@@ -118,6 +118,53 @@ def test_preformat_peaks_response():
 # Removed defunct gwlevels tests.
 
 
+class TestDeprecationWarnings:
+    """Verify per-function DeprecationWarning fires with the right replacement.
+
+    The module-level "use waterdata instead" warning fires on import; these
+    tests pin the function-specific replacements so users see actionable
+    migration guidance the first time they call each NWIS getter.
+    """
+
+    @pytest.mark.parametrize(
+        "func_name, replacement_substring",
+        [
+            ("get_dv", "waterdata.get_daily"),
+            ("get_iv", "waterdata.get_continuous"),
+            ("get_info", "waterdata.get_monitoring_locations"),
+            ("what_sites", "waterdata.get_monitoring_locations"),
+            ("get_stats", "waterdata.get_stats_por"),
+            ("get_discharge_peaks", "waterdata.get_peaks"),
+            ("get_ratings", "waterdata.get_ratings"),
+            ("get_record", "waterdata.get_*"),
+            ("query_waterdata", "waterdata.get_*"),
+            ("query_waterservices", "waterdata.get_*"),
+        ],
+    )
+    def test_warn_message_includes_replacement(
+        self, func_name, replacement_substring, requests_mock
+    ):
+        """Each deprecated function emits a warning naming the right replacement."""
+        from dataretrieval.nwis import _warn_deprecated
+
+        # Test the helper directly so we don't need to spin up a fake response
+        # for every function. The integration is checked once below.
+        with pytest.warns(DeprecationWarning, match=func_name) as record:
+            _warn_deprecated(func_name)
+        message = str(record[0].message)
+        assert replacement_substring in message
+        assert "2027-05-06" in message
+
+    def test_get_iv_fires_deprecation_on_call(self, requests_mock):
+        """End-to-end: a real call routes through _warn_deprecated."""
+        requests_mock.get(
+            "https://waterservices.usgs.gov/nwis/iv",
+            json={"value": {"timeSeries": []}},
+        )
+        with pytest.warns(DeprecationWarning, match="get_iv.*waterdata.get_continuous"):
+            get_iv(sites="01491000")
+
+
 class TestDefunct:
     """Verify that defunct functions raise NameError."""
 
