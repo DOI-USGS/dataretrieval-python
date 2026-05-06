@@ -100,6 +100,31 @@ def test_get_ratings_mocked_search_and_download(requests_mock, tmp_path):
     assert "monitoring_location_id IN ('USGS-01104475')" in qs["filter"][0]
 
 
+def test_get_ratings_attaches_rdb_comment_and_url(requests_mock, tmp_path):
+    """Each parsed frame should carry its RDB header + source URL in df.attrs."""
+    requests_mock.get(
+        "https://api.waterdata.usgs.gov/stac/v0/search",
+        json=_stub_search_response(),
+    )
+    asset_url = (
+        "https://api.waterdata.usgs.gov/stac-files/ratings/USGS.01104475.exsa.rdb"
+    )
+    requests_mock.get(asset_url, text=_SAMPLE_RDB)
+
+    out = get_ratings(
+        monitoring_location_id="USGS-01104475",
+        file_type="exsa",
+        file_path=str(tmp_path),
+    )
+    df = out["USGS-01104475.exsa.rdb"]
+    # The fixture has two `# ...` lines at the top; both should land in attrs.
+    assert df.attrs["comment"] == [
+        "# header line one",
+        "# header line two",
+    ]
+    assert df.attrs["url"] == asset_url
+
+
 def test_get_ratings_download_and_parse_false_returns_features(requests_mock):
     requests_mock.get(
         "https://api.waterdata.usgs.gov/stac/v0/search",

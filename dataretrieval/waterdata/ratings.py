@@ -24,6 +24,11 @@ from typing import Any
 import pandas as pd
 import requests
 
+# Rating files use the same USGS RDB shape as NWIS responses (comment
+# block prefixed with ``#``, header row, format-spec row, then tab-separated
+# data), so we reuse the parser already in ``nwis``. ``_read_rdb`` is private;
+# if it ever moves or its contract changes we want a loud failure here, hence
+# the explicit import rather than a copy.
 from dataretrieval.nwis import _read_rdb
 
 from .utils import BASE_URL, _default_headers, _format_api_dates
@@ -84,6 +89,18 @@ def _search(
     return response.json().get("features", [])
 
 
+def _extract_rdb_comment(rdb: str) -> list[str]:
+    """Return the RDB ``#``-prefixed comment block as a list of header lines.
+
+    The comment block carries useful per-rating metadata — rating id,
+    parameter description, expansion type, last-shifted timestamp, etc.
+    R's ``read_waterdata_ratings`` exposes this via ``comment(df)``; we
+    attach it to ``df.attrs["comment"]`` so callers can inspect or log
+    provenance without re-reading the on-disk RDB.
+    """
+    return [line for line in rdb.splitlines() if line.startswith("#")]
+
+
 def _download_and_parse(
     feature: dict[str, Any],
     file_path: str,
@@ -100,7 +117,10 @@ def _download_and_parse(
     with open(target, "w") as f:
         f.write(response.text)
 
-    return _read_rdb(response.text)
+    df = _read_rdb(response.text)
+    df.attrs["comment"] = _extract_rdb_comment(response.text)
+    df.attrs["url"] = url
+    return df
 
 
 def get_ratings(
@@ -168,8 +188,12 @@ def get_ratings(
     dict[str, pandas.DataFrame] or list[dict]
         When ``download_and_parse=True`` (the default), a dict keyed by
         feature ID (e.g. ``"USGS-01104475.exsa.rdb"``) mapping to a parsed
-        ``DataFrame``. When ``download_and_parse=False``, the raw list of
-        STAC feature dicts as returned by the search endpoint.
+        ``DataFrame``. Each frame carries provenance in
+        ``df.attrs["comment"]`` (the RDB ``#``-prefixed header lines, like
+        rating id, parameter, last-shifted timestamp) and
+        ``df.attrs["url"]`` (the asset URL it was fetched from). When
+        ``download_and_parse=False``, the raw list of STAC feature dicts
+        as returned by the search endpoint.
 
     Raises
     ------
