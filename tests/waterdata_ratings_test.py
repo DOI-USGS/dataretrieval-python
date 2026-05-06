@@ -146,8 +146,8 @@ def test_get_ratings_download_and_parse_false_returns_features(requests_mock):
     assert features[0]["id"] == "USGS-01104475.exsa.rdb"
 
 
-def test_get_ratings_multi_type_filters_urls_locally(requests_mock, tmp_path):
-    """File_type list: server filter omits it; URL filtering is local."""
+def test_get_ratings_multi_type_filters_via_property(requests_mock, tmp_path):
+    """File_type list: server filter omits it; local filter reads the property."""
     requests_mock.get(
         "https://api.waterdata.usgs.gov/stac/v0/search",
         json={

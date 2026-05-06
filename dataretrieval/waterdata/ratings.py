@@ -14,19 +14,17 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Any, Literal, get_args
+from typing import Any, Iterable, Literal, get_args
 
 import pandas as pd
 import requests
 
-# Rating files use the same USGS RDB shape as NWIS responses (comment
-# block prefixed with ``#``, header row, format-spec row, then tab-separated
-# data), so we reuse the parser already in ``nwis``. ``_read_rdb`` is private;
-# if it ever moves or its contract changes we want a loud failure here, hence
-# the explicit import rather than a copy.
+# Rating files use the same USGS RDB shape as NWIS responses, so we reuse
+# the parser already in ``nwis``. ``_read_rdb`` is private; if it ever
+# moves we want a loud failure here, hence the explicit import.
 from dataretrieval.nwis import _read_rdb
 
-from .utils import BASE_URL, _default_headers, _format_api_dates
+from .utils import _DURATION_RE, BASE_URL, _default_headers, _format_api_dates
 
 logger = logging.getLogger(__name__)
 
@@ -34,100 +32,6 @@ STAC_URL = f"{BASE_URL}/stac/v0"
 
 RATING_FILE_TYPE = Literal["exsa", "base", "corr"]
 _VALID_FILE_TYPES = get_args(RATING_FILE_TYPE)
-
-
-def _quote_cql_str(value: str) -> str:
-    """Escape a string for inclusion in a single-quoted CQL literal.
-
-    CQL escapes a single quote by doubling it. Most monitoring-location IDs
-    can never contain a quote, but the function accepts arbitrary strings,
-    so we defend against malformed filters / injection regardless.
-    """
-    return value.replace("'", "''")
-
-
-def _build_filter(
-    monitoring_location_id: str | list[str] | None,
-    file_type: str | None,
-) -> str | None:
-    """Compose the CQL filter sent to STAC ``/search``.
-
-    Mirrors R's logic: only pin ``file_type`` when a single value was given,
-    so a multi-type request returns every matching site and the file-type
-    filtering happens client-side from the per-feature properties.
-    """
-    parts: list[str] = []
-    if monitoring_location_id is not None:
-        ids = (
-            [monitoring_location_id]
-            if isinstance(monitoring_location_id, str)
-            else list(monitoring_location_id)
-        )
-        joined = "', '".join(_quote_cql_str(i) for i in ids)
-        parts.append(f"monitoring_location_id IN ('{joined}')")
-    if file_type is not None:
-        parts.append(f"file_type = '{_quote_cql_str(file_type)}'")
-    return " AND ".join(parts) if parts else None
-
-
-def _search(
-    filter_str: str | None,
-    time_str: str | None,
-    bbox: list[float] | None,
-    limit: int,
-    ssl_check: bool,
-) -> list[dict[str, Any]]:
-    """Run a single STAC ``/search`` request and return its features."""
-    params: dict[str, Any] = {"limit": limit}
-    if filter_str is not None:
-        params["filter"] = filter_str
-    if time_str is not None:
-        params["datetime"] = time_str
-    if bbox is not None:
-        params["bbox"] = ",".join(str(b) for b in bbox)
-
-    response = requests.get(
-        f"{STAC_URL}/search",
-        params=params,
-        headers=_default_headers(),
-        verify=ssl_check,
-    )
-    response.raise_for_status()
-    return response.json().get("features", [])
-
-
-def _extract_rdb_comment(rdb: str) -> list[str]:
-    """Return the RDB ``#``-prefixed comment block as a list of header lines.
-
-    The comment block carries useful per-rating metadata — rating id,
-    parameter description, expansion type, last-shifted timestamp, etc.
-    R's ``read_waterdata_ratings`` exposes this via ``comment(df)``; we
-    attach it to ``df.attrs["comment"]`` so callers can inspect or log
-    provenance without re-reading the on-disk RDB.
-    """
-    return [line for line in rdb.splitlines() if line.startswith("#")]
-
-
-def _download_and_parse(
-    feature: dict[str, Any],
-    file_path: str | None,
-    ssl_check: bool,
-) -> pd.DataFrame:
-    """Fetch the feature's data asset, parse RDB, optionally persist to disk."""
-    url = feature["assets"]["data"]["href"]
-    fid = feature["id"]
-
-    response = requests.get(url, headers=_default_headers(), verify=ssl_check)
-    response.raise_for_status()
-
-    if file_path is not None:
-        with open(os.path.join(file_path, fid), "w") as f:
-            f.write(response.text)
-
-    df = _read_rdb(response.text)
-    df.attrs["comment"] = _extract_rdb_comment(response.text)
-    df.attrs["url"] = url
-    return df
 
 
 def get_ratings(
@@ -240,29 +144,22 @@ def get_ratings(
         ... )
 
     """
-    file_types = [file_type] if isinstance(file_type, str) else list(file_type)
+    file_types = _as_list(file_type)
     invalid = [ft for ft in file_types if ft not in _VALID_FILE_TYPES]
     if invalid:
         raise ValueError(
-            f"Invalid file_type {invalid!r}. Valid options: {list(_VALID_FILE_TYPES)}."
+            f"Invalid file_type {invalid!r}; "
+            f"valid options are {list(_VALID_FILE_TYPES)}."
         )
 
-    if time is not None:
-        # The rating-curve STAC service rejects ISO 8601 durations; surface a
-        # clear error rather than letting the server return a confusing 4xx.
-        time_values = time if isinstance(time, list) else [time]
-        if any(v is not None and "P" in str(v).upper() for v in time_values):
-            raise ValueError(
-                "ISO 8601 durations (e.g. 'P7D') are not supported in "
-                "`time` for the rating-curve service. Provide a date or "
-                "interval instead."
-            )
-        time_str = _format_api_dates(time, date=False)
-    else:
-        time_str = None
+    if time is not None and any(_DURATION_RE.match(str(v)) for v in _as_list(time)):
+        raise ValueError(
+            "ISO 8601 durations (e.g. 'P7D') are not supported in `time` "
+            "for the rating-curve service. Provide a date or interval instead."
+        )
+    time_str = _format_api_dates(time) if time is not None else None
 
-    # Mirror R: only pin file_type in the server-side filter when one type
-    # is requested. With multiple types, fetch all and filter locally.
+    # Mirror R: pin file_type server-side only when one type is requested.
     server_file_type = file_types[0] if len(file_types) == 1 else None
     filter_str = _build_filter(monitoring_location_id, server_file_type)
 
@@ -271,18 +168,16 @@ def get_ratings(
     if not download_and_parse:
         return features
 
+    requested = set(file_types)
+    matching = [
+        f for f in features if f.get("properties", {}).get("file_type") in requested
+    ]
+
     if file_path is not None:
         os.makedirs(file_path, exist_ok=True)
 
     out: dict[str, pd.DataFrame] = {}
-    requested = set(file_types)
-    for feature in features:
-        # Multi-type requests skip the server-side file_type filter, so
-        # filter here on the per-feature property (more reliable than
-        # substring-matching the URL).
-        feat_type = feature.get("properties", {}).get("file_type")
-        if feat_type not in requested:
-            continue
+    for feature in matching:
         fid = feature["id"]
         try:
             out[fid] = _download_and_parse(feature, file_path, ssl_check)
@@ -290,3 +185,91 @@ def get_ratings(
             logger.warning("Failed to download / parse %s: %s", fid, e)
 
     return out
+
+
+def _as_list(x: str | Iterable[str]) -> list[str]:
+    """Normalize a string or iterable-of-strings to a list."""
+    return [x] if isinstance(x, str) else list(x)
+
+
+def _quote_cql_str(value: str) -> str:
+    """Escape a single-quoted CQL literal by doubling embedded quotes.
+
+    Defends against malformed filters / injection on arbitrary user input,
+    even though valid USGS monitoring-location IDs cannot contain a quote.
+    """
+    return value.replace("'", "''")
+
+
+def _build_filter(
+    monitoring_location_id: str | list[str] | None,
+    file_type: str | None,
+) -> str | None:
+    """Compose the CQL filter sent to STAC ``/search``.
+
+    Returns ``None`` when neither argument constrains the search.
+    """
+    parts: list[str] = []
+    if monitoring_location_id is not None:
+        ids = _as_list(monitoring_location_id)
+        joined = "', '".join(_quote_cql_str(i) for i in ids)
+        parts.append(f"monitoring_location_id IN ('{joined}')")
+    if file_type is not None:
+        parts.append(f"file_type = '{_quote_cql_str(file_type)}'")
+    return " AND ".join(parts) if parts else None
+
+
+def _search(
+    filter_str: str | None,
+    time_str: str | None,
+    bbox: list[float] | None,
+    limit: int,
+    ssl_check: bool,
+) -> list[dict[str, Any]]:
+    """Run a single STAC ``/search`` request and return its features."""
+    params: dict[str, Any] = {"limit": limit}
+    if filter_str is not None:
+        params["filter"] = filter_str
+    if time_str is not None:
+        params["datetime"] = time_str
+    if bbox is not None:
+        params["bbox"] = ",".join(map(str, bbox))
+
+    response = requests.get(
+        f"{STAC_URL}/search",
+        params=params,
+        headers=_default_headers(),
+        verify=ssl_check,
+    )
+    response.raise_for_status()
+    return response.json().get("features", [])
+
+
+def _extract_rdb_comment(rdb: str) -> list[str]:
+    """Return the RDB ``#``-prefixed comment block as a list of header lines.
+
+    Carries useful per-rating provenance — rating id, parameter description,
+    expansion type, last-shifted timestamp, etc. R's ``read_waterdata_ratings``
+    exposes the equivalent via ``comment(df)``.
+    """
+    return [line for line in rdb.splitlines() if line.startswith("#")]
+
+
+def _download_and_parse(
+    feature: dict[str, Any],
+    file_path: str | None,
+    ssl_check: bool,
+) -> pd.DataFrame:
+    """Fetch the feature's data asset, parse RDB, optionally persist to disk."""
+    url = feature["assets"]["data"]["href"]
+    response = requests.get(url, headers=_default_headers(), verify=ssl_check)
+    response.raise_for_status()
+
+    if file_path is not None:
+        with open(os.path.join(file_path, feature["id"]), "w") as f:
+            f.write(response.text)
+
+    df = _read_rdb(response.text)
+    df.attrs["comment"] = _extract_rdb_comment(response.text)
+    df.attrs["url"] = url
+    return df
