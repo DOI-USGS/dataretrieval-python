@@ -932,6 +932,238 @@ def get_time_series_metadata(
     return get_ogc_data(args, output_id, service)
 
 
+def get_combined_metadata(
+    monitoring_location_id: str | list[str] | None = None,
+    parameter_code: str | list[str] | None = None,
+    parameter_name: str | list[str] | None = None,
+    parameter_description: str | list[str] | None = None,
+    unit_of_measure: str | list[str] | None = None,
+    statistic_id: str | list[str] | None = None,
+    data_type: str | list[str] | None = None,
+    computation_identifier: str | list[str] | None = None,
+    thresholds: float | list[float] | None = None,
+    sublocation_identifier: str | list[str] | None = None,
+    primary: str | list[str] | None = None,
+    parent_time_series_id: str | list[str] | None = None,
+    web_description: str | list[str] | None = None,
+    last_modified: str | list[str] | None = None,
+    begin: str | list[str] | None = None,
+    end: str | list[str] | None = None,
+    agency_code: str | list[str] | None = None,
+    agency_name: str | list[str] | None = None,
+    monitoring_location_number: str | list[str] | None = None,
+    monitoring_location_name: str | list[str] | None = None,
+    district_code: str | list[str] | None = None,
+    country_code: str | list[str] | None = None,
+    country_name: str | list[str] | None = None,
+    state_code: str | list[str] | None = None,
+    state_name: str | list[str] | None = None,
+    county_code: str | list[str] | None = None,
+    county_name: str | list[str] | None = None,
+    minor_civil_division_code: str | list[str] | None = None,
+    site_type_code: str | list[str] | None = None,
+    site_type: str | list[str] | None = None,
+    hydrologic_unit_code: str | list[str] | None = None,
+    basin_code: str | list[str] | None = None,
+    altitude: str | list[str] | None = None,
+    altitude_accuracy: str | list[str] | None = None,
+    altitude_method_code: str | list[str] | None = None,
+    altitude_method_name: str | list[str] | None = None,
+    vertical_datum: str | list[str] | None = None,
+    vertical_datum_name: str | list[str] | None = None,
+    horizontal_positional_accuracy_code: str | list[str] | None = None,
+    horizontal_positional_accuracy: str | list[str] | None = None,
+    horizontal_position_method_code: str | list[str] | None = None,
+    horizontal_position_method_name: str | list[str] | None = None,
+    original_horizontal_datum: str | list[str] | None = None,
+    original_horizontal_datum_name: str | list[str] | None = None,
+    drainage_area: str | list[str] | None = None,
+    contributing_drainage_area: str | list[str] | None = None,
+    time_zone_abbreviation: str | list[str] | None = None,
+    uses_daylight_savings: str | list[str] | None = None,
+    construction_date: str | list[str] | None = None,
+    aquifer_code: str | list[str] | None = None,
+    national_aquifer_code: str | list[str] | None = None,
+    aquifer_type_code: str | list[str] | None = None,
+    well_constructed_depth: str | list[str] | None = None,
+    hole_constructed_depth: str | list[str] | None = None,
+    depth_source_code: str | list[str] | None = None,
+    properties: str | list[str] | None = None,
+    skip_geometry: bool | None = None,
+    bbox: list[float] | None = None,
+    limit: int | None = None,
+    filter: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
+    convert_type: bool = True,
+) -> tuple[pd.DataFrame, BaseMetadata]:
+    """Get combined monitoring-location and time-series metadata.
+
+    The ``combined-metadata`` collection joins the monitoring-locations
+    catalog with the time-series-metadata catalog so that one row is
+    returned per (location, parameter, statistic) inventory entry,
+    carrying every column from both source endpoints. This makes it the
+    most flexible "what data is available" endpoint in the Water Data
+    API: any monitoring-location attribute (state, HUC, site type,
+    drainage area, well-construction depth, …) can be combined with any
+    time-series attribute (parameter code, statistic, data type, period
+    of record, …) in a single query.
+
+    See the OpenAPI reference for the full list of supported fields:
+    https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/combined-metadata
+    The R analogue is ``read_waterdata_combined_meta`` in
+    https://github.com/DOI-USGS/dataRetrieval/.
+
+    All ~35 location-catalog kwargs are accepted (``agency_code``,
+    ``state_name``, ``drainage_area``, ``aquifer_code``, …) but only
+    the most-used ones are documented below; see
+    :func:`get_monitoring_locations` for per-field descriptions.
+
+    Parameters
+    ----------
+    monitoring_location_id : string or list of strings, optional
+        A unique identifier representing a single monitoring location.
+        Created by combining the agency code (e.g. ``USGS``) with the ID
+        number (e.g. ``02238500``), separated by a hyphen
+        (e.g. ``"USGS-02238500"``).
+    parameter_code : string or list of strings, optional
+        5-digit codes used to identify the constituent measured and the
+        units of measure. See
+        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+    parameter_name : string or list of strings, optional
+        A human-understandable name corresponding to ``parameter_code``.
+    parameter_description : string or list of strings, optional
+        A human-readable description of what is being measured.
+    unit_of_measure : string or list of strings, optional
+        A human-readable description of the units of measurement
+        associated with an observation.
+    statistic_id : string or list of strings, optional
+        A code corresponding to the statistic an observation represents
+        (e.g. ``00001`` max, ``00002`` min, ``00003`` mean). Full list at
+        https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
+    data_type : string or list of strings, optional
+        The type of data the time series represents, e.g.
+        ``"Continuous values"``, ``"Daily values"``,
+        ``"Field measurements"``.
+    computation_identifier : string or list of strings, optional
+        Indicates whether the data from this time series represent a
+        specific statistical computation.
+    thresholds : numeric or list of numbers, optional
+        Numeric limits known for a time series (e.g. historic maximum,
+        below-which-the-sensor-is-non-operative).
+    sublocation_identifier : string or list of strings, optional
+    primary : string or list of strings, optional
+        A flag identifying whether the time series is "primary". Primary
+        time series are standard observations that have undergone Bureau
+        review and approval. Non-primary (provisional) time series have a
+        missing ``primary`` value, are produced for timely best-science
+        use, and are retained by this system for only 120 days.
+    parent_time_series_id : string or list of strings, optional
+    web_description : string or list of strings, optional
+        A description of what this time series represents, as used by
+        WDFN and other USGS data dissemination products.
+    last_modified, begin, end : string, optional
+        Datetime fields that accept either an RFC 3339 datetime, an
+        interval (``"start/end"``, optionally half-bounded with ``..``),
+        or an ISO 8601 duration (e.g. ``"P1M"``, ``"PT36H"``). See
+        :func:`get_time_series_metadata` for the full grammar.
+    state_name, county_name, hydrologic_unit_code, site_type, \
+site_type_code : string or list of strings, optional
+        Common location-catalog filters carried over from the
+        ``monitoring-locations`` collection. The function also accepts
+        the full list of location-catalog kwargs (agency, district,
+        altitude, vertical/horizontal datum, drainage area, aquifer,
+        well construction, …); see :func:`get_monitoring_locations` for
+        descriptions of each.
+    properties : string or list of strings, optional
+        Subset of columns to return. Defaults to every available
+        property.
+    skip_geometry : boolean, optional
+        Skip per-feature geometries; the returned object will be a plain
+        ``DataFrame`` with no spatial information. The Water Data APIs
+        use camelCase ``skipGeometry`` in CQL2 queries.
+    bbox : list of numbers, optional
+        Only features whose geometry intersects the bounding box are
+        selected. Format: ``[xmin, ymin, xmax, ymax]`` in CRS 4326
+        (longitude/latitude, west-south-east-north).
+    limit : numeric, optional
+        Page size; the maximum allowable value is 50000. Default
+        (``None``) requests the maximum allowable limit.
+    filter, filter_lang : optional
+        Server-side CQL filter passed through as the OGC ``filter`` /
+        ``filter-lang`` query parameters. See
+        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        and the lexicographic-comparison pitfall.
+    convert_type : boolean, optional
+        If True, converts columns to appropriate types.
+
+    Returns
+    -------
+    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
+        Formatted data returned from the API query.
+    md : :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object pertaining to the query.
+
+    Examples
+    --------
+    .. code::
+
+        >>> # All time series and field measurements at a single surface-water site
+        >>> df, md = dataretrieval.waterdata.get_combined_metadata(
+        ...     monitoring_location_id="USGS-05407000"
+        ... )
+
+        >>> # Same, for a groundwater well — water-level and aquifer columns
+        >>> # are populated where the surface-water example has nulls
+        >>> df, md = dataretrieval.waterdata.get_combined_metadata(
+        ...     monitoring_location_id="USGS-375907091432201"
+        ... )
+
+        >>> # Every series in a single county, useful for area-of-interest workflows
+        >>> df, md = dataretrieval.waterdata.get_combined_metadata(
+        ...     state_name="Wisconsin", county_name="Dane County"
+        ... )
+
+        >>> # Inventory across multiple HUCs, restricted to streams and springs
+        >>> df, md = dataretrieval.waterdata.get_combined_metadata(
+        ...     hydrologic_unit_code=["11010008", "11010009"],
+        ...     site_type=["Stream", "Spring"],
+        ... )
+
+        >>> # Discharge time series at three sites with at least one
+        >>> # observation in the past month
+        >>> df, md = dataretrieval.waterdata.get_combined_metadata(
+        ...     monitoring_location_id=[
+        ...         "USGS-07069000",
+        ...         "USGS-07064000",
+        ...         "USGS-07068000",
+        ...     ],
+        ...     end="P1M",
+        ...     parameter_code="00060",
+        ... )
+
+        >>> # Two-step "what's available?" → "fetch it" workflow:
+        >>> # 1. inventory the sites in two HUCs
+        >>> hucs, _ = dataretrieval.waterdata.get_combined_metadata(
+        ...     hydrologic_unit_code=["11010008", "11010009"],
+        ...     site_type="Stream",
+        ... )
+        >>> # 2. pull continuous discharge at every distinct site found
+        >>> sites = hucs["monitoring_location_id"].unique().tolist()
+        >>> df, md = dataretrieval.waterdata.get_continuous(
+        ...     monitoring_location_id=sites,
+        ...     parameter_code="00060",
+        ...     time="P1D",
+        ... )
+
+    """
+    service = "combined-metadata"
+    output_id = "combined_meta_id"
+
+    args = _get_args(locals())
+
+    return get_ogc_data(args, output_id, service)
+
+
 def get_latest_continuous(
     monitoring_location_id: str | list[str] | None = None,
     parameter_code: str | list[str] | None = None,
