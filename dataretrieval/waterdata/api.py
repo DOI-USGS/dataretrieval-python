@@ -1512,10 +1512,12 @@ def get_field_measurements(
         >>> # Get field measurements from multiple sites and
         >>> # parameter codes from the last 20 years
         >>> df, md = dataretrieval.waterdata.get_field_measurements(
-        ...     monitoring_location_id = ["USGS-451605097071701",
-                                          "USGS-263819081585801"],
-        ...     parameter_code = ["62611", "72019"],
-        ...     time = "P20Y"
+        ...     monitoring_location_id=[
+        ...         "USGS-451605097071701",
+        ...         "USGS-263819081585801",
+        ...     ],
+        ...     parameter_code=["62611", "72019"],
+        ...     time="P20Y",
         ... )
     """
     service = "field-measurements"
