@@ -7,12 +7,12 @@
 from __future__ import annotations
 
 import warnings
-from io import StringIO
 from json import JSONDecodeError
 
 import pandas as pd
 import requests
 
+from dataretrieval.rdb import read_rdb as _read_rdb_text
 from dataretrieval.utils import BaseMetadata
 
 from .utils import query
@@ -1017,65 +1017,29 @@ def _read_json(json):
     return merged_df
 
 
+# NWIS-specific column dtype hints; pandas silently ignores unknown
+# names, so passing the dict to read_rdb is safe even on responses
+# whose columns don't include any of these.
+_NWIS_RDB_DTYPES = {
+    "site_no": str,
+    "dec_long_va": float,
+    "dec_lat_va": float,
+    "parm_cd": str,
+    "parameter_cd": str,
+}
+
+
 def _read_rdb(rdb):
+    """Parse an NWIS RDB response and apply NWIS-specific post-processing.
+
+    Thin wrapper around :func:`dataretrieval.rdb.read_rdb` that adds the
+    NWIS column-dtype hints and runs :func:`format_response` (datetime
+    index, multi-site MultiIndex, optional GeoDataFrame).
     """
-    Convert NWIS rdb table into a ``pandas.dataframe``.
-
-    Parameters
-    ----------
-    rdb: string
-        A string representation of an rdb table
-
-    Returns
-    -------
-    df: ``pandas.dataframe``
-        A formatted pandas data frame
-
-    """
-    if "<html>" in rdb.lower() or "<!doctype html>" in rdb.lower():
-        raise ValueError(
-            "Received HTML response instead of RDB. This often indicates "
-            "that the service has been moved or is currently unavailable."
-        )
-
-    count = 0
-    lines = rdb.splitlines()
-
-    for line in lines:
-        # ignore comment lines
-        if line.startswith("#"):
-            count = count + 1
-
-        else:
-            break
-
-    if count >= len(lines):
-        # All lines are comments — the service returned no data rows (e.g.
-        # "No sites found matching all criteria").  This is a legitimate empty
-        # result, so return an empty DataFrame rather than raising.
-        return pd.DataFrame()
-
-    fields = lines[count].split("\t")
-    fields = [field.replace(",", "").strip() for field in fields if field.strip()]
-    dtypes = {
-        "site_no": str,
-        "dec_long_va": float,
-        "dec_lat_va": float,
-        "parm_cd": str,
-        "parameter_cd": str,
-    }
-
-    df = pd.read_csv(
-        StringIO(rdb),
-        delimiter="\t",
-        skiprows=count + 2,
-        names=fields,
-        na_values="NaN",
-        dtype=dtypes,
-    )
-
-    df = format_response(df)
-    return df
+    df = _read_rdb_text(rdb, dtypes=_NWIS_RDB_DTYPES)
+    if df.empty:
+        return df
+    return format_response(df)
 
 
 def _check_sites_value_types(sites):

@@ -19,10 +19,7 @@ from typing import Any, Iterable, Literal, get_args
 import pandas as pd
 import requests
 
-# Rating files use the same USGS RDB shape as NWIS responses, so we reuse
-# the parser already in ``nwis``. ``_read_rdb`` is private; if it ever
-# moves we want a loud failure here, hence the explicit import.
-from dataretrieval.nwis import _read_rdb
+from dataretrieval.rdb import extract_rdb_comment, read_rdb
 
 from .utils import _DURATION_RE, BASE_URL, _default_headers, _format_api_dates
 
@@ -245,16 +242,6 @@ def _search(
     return response.json().get("features", [])
 
 
-def _extract_rdb_comment(rdb: str) -> list[str]:
-    """Return the RDB ``#``-prefixed comment block as a list of header lines.
-
-    Carries useful per-rating provenance — rating id, parameter description,
-    expansion type, last-shifted timestamp, etc. R's ``read_waterdata_ratings``
-    exposes the equivalent via ``comment(df)``.
-    """
-    return [line for line in rdb.splitlines() if line.startswith("#")]
-
-
 def _download_and_parse(
     feature: dict[str, Any],
     file_path: str | None,
@@ -269,7 +256,7 @@ def _download_and_parse(
         with open(os.path.join(file_path, feature["id"]), "w") as f:
             f.write(response.text)
 
-    df = _read_rdb(response.text)
-    df.attrs["comment"] = _extract_rdb_comment(response.text)
+    df = read_rdb(response.text)
+    df.attrs["comment"] = extract_rdb_comment(response.text)
     df.attrs["url"] = url
     return df
