@@ -12,7 +12,7 @@ from json import JSONDecodeError
 import pandas as pd
 import requests
 
-from dataretrieval.rdb import read_rdb as _read_rdb_text
+from dataretrieval.rdb import read_rdb
 from dataretrieval.utils import BaseMetadata
 
 from .utils import query
@@ -43,6 +43,14 @@ WATERDATA_SERVICES = [
 ]
 # NAD83
 _CRS = "EPSG:4269"
+
+_NWIS_RDB_DTYPES = {
+    "site_no": str,
+    "dec_long_va": float,
+    "dec_lat_va": float,
+    "parm_cd": str,
+    "parameter_cd": str,
+}
 
 
 def _parse_json_or_raise(response: requests.Response) -> pd.DataFrame:
@@ -1017,18 +1025,6 @@ def _read_json(json):
     return merged_df
 
 
-# NWIS-specific column dtype hints; pandas silently ignores unknown
-# names, so passing the dict to read_rdb is safe even on responses
-# whose columns don't include any of these.
-_NWIS_RDB_DTYPES = {
-    "site_no": str,
-    "dec_long_va": float,
-    "dec_lat_va": float,
-    "parm_cd": str,
-    "parameter_cd": str,
-}
-
-
 def _read_rdb(rdb):
     """Parse an NWIS RDB response and apply NWIS-specific post-processing.
 
@@ -1036,10 +1032,7 @@ def _read_rdb(rdb):
     NWIS column-dtype hints and runs :func:`format_response` (datetime
     index, multi-site MultiIndex, optional GeoDataFrame).
     """
-    df = _read_rdb_text(rdb, dtypes=_NWIS_RDB_DTYPES)
-    if df.empty:
-        return df
-    return format_response(df)
+    return format_response(read_rdb(rdb, dtypes=_NWIS_RDB_DTYPES))
 
 
 def _check_sites_value_types(sites):

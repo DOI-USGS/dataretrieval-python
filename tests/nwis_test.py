@@ -325,43 +325,24 @@ class TestMetaData:
 
 
 class TestReadRdb:
-    """Tests for the _read_rdb helper.
+    """Tests for the NWIS-specific _read_rdb wrapper.
 
-    Notes
-    -----
-    Related to GitHub Issue #171.
+    The format-agnostic parser is exercised in tests/rdb_test.py; this
+    class pins the wrapper-specific contract — that an empty parser
+    result flows through format_response without crashing (issue #171).
     """
 
-    # Minimal valid RDB response with one data row
-    _VALID_RDB = "# comment\nsite_no\tvalue\n5s\t10n\n01491000\t42\n"
-
-    # NWIS response when no sites match the query criteria
-    _NO_SITES_RDB = (
-        "# //Output-Format: RDB\n"
-        "# //Response-Status: OK\n"
-        "# //Response-Message: No sites found matching all criteria\n"
-    )
-
-    def test_valid_rdb_returns_dataframe(self):
-        """_read_rdb returns a DataFrame for a well-formed RDB response."""
-        df = _read_rdb(self._VALID_RDB)
-        assert isinstance(df, pd.DataFrame)
-        assert "site_no" in df.columns
-
-    def test_no_sites_returns_empty_dataframe(self):
-        """_read_rdb returns an empty DataFrame when NWIS finds no matching sites.
-
-        A "No sites found" response is a legitimate empty result, not an error,
-        so callers can check ``df.empty`` rather than catching an exception.
-        Regression test for issue #171 (previously raised IndexError).
+    def test_no_sites_flows_through_format_response(self):
+        """A "No sites found" response is a legitimate empty result, not an
+        error, so callers can check ``df.empty`` rather than catching an
+        exception. Regression for issue #171 (previously raised IndexError),
+        which now also covers the empty-frame path through ``format_response``.
         """
-        df = _read_rdb(self._NO_SITES_RDB)
-        assert isinstance(df, pd.DataFrame)
-        assert df.empty
-
-    def test_all_comments_returns_empty_dataframe(self):
-        """_read_rdb returns an empty DataFrame when the response has only comments."""
-        rdb = "# just a comment\n# another comment\n"
-        df = _read_rdb(rdb)
+        no_sites_rdb = (
+            "# //Output-Format: RDB\n"
+            "# //Response-Status: OK\n"
+            "# //Response-Message: No sites found matching all criteria\n"
+        )
+        df = _read_rdb(no_sites_rdb)
         assert isinstance(df, pd.DataFrame)
         assert df.empty

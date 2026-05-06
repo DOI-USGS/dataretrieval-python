@@ -1,8 +1,8 @@
-"""Format-agnostic parser for the USGS RDB tab-separated text format.
+"""Parser for the USGS RDB tab-separated text format.
 
-RDB (Relational DataBase) is a USGS-internal text format used by NWIS web
-services and by the Water Data STAC catalog's rating-curve assets. Every
-RDB file has the same shape:
+RDB (Relational DataBase) is the text format used by NWIS web services
+and by the Water Data STAC catalog's rating-curve assets. Every RDB
+file has the same shape:
 
 - One or more ``#``-prefixed comment lines carrying provenance metadata
   (data source, retrieval timestamp, station name, parameter codes, etc.).
@@ -24,12 +24,12 @@ from io import StringIO
 import pandas as pd
 
 
-def read_rdb(rdb: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
+def read_rdb(text: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
     """Parse an RDB text response into a ``pandas.DataFrame``.
 
     Parameters
     ----------
-    rdb : str
+    text : str
         The RDB text response from a USGS web service.
     dtypes : dict[str, type] or None, optional
         Optional column-name to dtype hints, forwarded to
@@ -50,26 +50,26 @@ def read_rdb(rdb: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
         If the response body looks like HTML, which usually means the
         service has been moved, is degraded, or returned an error page.
     """
-    if "<html>" in rdb.lower() or "<!doctype html>" in rdb.lower():
+    if "<html>" in text.lower() or "<!doctype html>" in text.lower():
         raise ValueError(
             "Received HTML response instead of RDB. This often indicates "
             "that the service has been moved or is currently unavailable."
         )
 
-    lines = rdb.splitlines()
+    lines = text.splitlines()
     header_idx = next(
         (i for i, line in enumerate(lines) if not line.startswith("#")),
         len(lines),
     )
-    if header_idx >= len(lines):
+    if header_idx == len(lines):
         # All lines are comments — a legitimate empty result.
         return pd.DataFrame()
 
-    fields = lines[header_idx].split("\t")
-    fields = [f.replace(",", "").strip() for f in fields if f.strip()]
+    fields = [f.replace(",", "").strip() for f in lines[header_idx].split("\t")]
+    fields = [f for f in fields if f]
 
     return pd.read_csv(
-        StringIO(rdb),
+        StringIO(text),
         delimiter="\t",
         skiprows=header_idx + 2,  # +1 for header, +1 for the format-spec row
         names=fields,
@@ -78,12 +78,13 @@ def read_rdb(rdb: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
     )
 
 
-def extract_rdb_comment(rdb: str) -> list[str]:
-    """Return the RDB ``#``-prefixed comment block as a list of header lines.
+def extract_rdb_comment(text: str) -> list[str]:
+    """Return the RDB ``#``-prefixed comment block, raw and in original order.
 
-    The comment block carries provenance metadata that is otherwise lost
-    during parsing — data source, retrieval timestamp, parameter codes,
-    rating id and last-shifted timestamp for ratings, etc. R's
-    ``dataRetrieval`` exposes the equivalent via ``comment(df)``.
+    Each entry includes its leading ``#`` and any whitespace, matching what
+    R's ``dataRetrieval`` returns from ``comment(df)``. The comment block
+    carries provenance metadata that is otherwise lost during parsing —
+    data source, retrieval timestamp, parameter codes, rating id and
+    last-shifted timestamp for ratings, etc.
     """
-    return [line for line in rdb.splitlines() if line.startswith("#")]
+    return [line for line in text.splitlines() if line.startswith("#")]
