@@ -13,6 +13,7 @@ from dataretrieval.waterdata import (
     get_continuous,
     get_daily,
     get_field_measurements,
+    get_field_measurements_metadata,
     get_latest_continuous,
     get_latest_daily,
     get_monitoring_locations,
@@ -366,6 +367,36 @@ def test_get_combined_metadata_multi_site_post():
         "USGS-07068000",
     }
     assert (df["parameter_code"] == "00060").all()
+
+
+def test_get_field_measurements_metadata():
+    df, md = get_field_measurements_metadata(
+        monitoring_location_id="USGS-02238500", skip_geometry=True
+    )
+    assert "field_series_id" in df.columns
+    assert "begin" in df.columns
+    assert "end" in df.columns
+    assert (df["monitoring_location_id"] == "USGS-02238500").all()
+    assert hasattr(md, "url")
+    assert hasattr(md, "query_time")
+
+
+def test_get_field_measurements_metadata_multi_site():
+    df, _ = get_field_measurements_metadata(
+        monitoring_location_id=[
+            "USGS-07069000",
+            "USGS-07064000",
+            "USGS-07068000",
+        ],
+        parameter_code="00060",
+        skip_geometry=True,
+    )
+    assert (df["parameter_code"] == "00060").all()
+    assert set(df["monitoring_location_id"].unique()) == {
+        "USGS-07069000",
+        "USGS-07064000",
+        "USGS-07068000",
+    }
 
 
 def test_get_reference_table():

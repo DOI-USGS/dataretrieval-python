@@ -1761,6 +1761,123 @@ def get_field_measurements(
     return get_ogc_data(args, output_id, service)
 
 
+def get_field_measurements_metadata(
+    monitoring_location_id: str | list[str] | None = None,
+    parameter_code: str | list[str] | None = None,
+    parameter_name: str | list[str] | None = None,
+    parameter_description: str | list[str] | None = None,
+    begin: str | list[str] | None = None,
+    end: str | list[str] | None = None,
+    last_modified: str | list[str] | None = None,
+    properties: str | list[str] | None = None,
+    skip_geometry: bool | None = None,
+    bbox: list[float] | None = None,
+    limit: int | None = None,
+    filter: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
+    convert_type: bool = True,
+) -> tuple[pd.DataFrame, BaseMetadata]:
+    """Get field-measurement metadata: one row per (location, parameter) series.
+
+    Each row describes a single field-measurement series — what parameter is
+    measured at the location, the period of record (``begin`` / ``end``), the
+    units, and so on — without returning the underlying observations
+    themselves. Use :func:`get_field_measurements` to fetch the values.
+
+    This is the discrete-measurement analogue to
+    :func:`get_time_series_metadata` (which describes daily and continuous
+    series). It's primarily useful for inventory queries: "what
+    field-measurement parameters does this site have, and over what date
+    range?"
+
+    See the OpenAPI reference for the full list of supported fields:
+    https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements-metadata
+    The R analogue is ``read_waterdata_field_meta`` in
+    https://github.com/DOI-USGS/dataRetrieval/.
+
+    Parameters
+    ----------
+    monitoring_location_id : string or list of strings, optional
+        A unique identifier representing a single monitoring location, in
+        ``AGENCY-ID`` form (e.g. ``"USGS-02238500"``).
+    parameter_code : string or list of strings, optional
+        5-digit parameter code. See
+        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+    parameter_name : string or list of strings, optional
+        A human-understandable name corresponding to ``parameter_code``.
+    parameter_description : string or list of strings, optional
+        A human-readable description of what is being measured.
+    begin, end, last_modified : string, optional
+        Datetime fields that accept either an RFC 3339 datetime, an
+        interval (``"start/end"``, optionally half-bounded with ``..``),
+        or an ISO 8601 duration (e.g. ``"P1M"``, ``"PT36H"``). See
+        :func:`get_time_series_metadata` for the full grammar.
+    properties : string or list of strings, optional
+        Subset of columns to return. Defaults to every available property.
+    skip_geometry : boolean, optional
+        Skip per-feature geometries; the returned object will be a plain
+        ``DataFrame`` with no spatial information.
+    bbox : list of numbers, optional
+        Only features whose geometry intersects the bounding box are
+        selected. Format: ``[xmin, ymin, xmax, ymax]`` in CRS 4326
+        (longitude / latitude, west-south-east-north).
+    limit : numeric, optional
+        Page size; the maximum allowable value is 50000. Default
+        (``None``) requests the maximum allowable limit.
+    filter, filter_lang : optional
+        Server-side CQL filter passed through as the OGC ``filter`` /
+        ``filter-lang`` query parameters. See
+        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        and the lexicographic-comparison pitfall.
+    convert_type : boolean, optional
+        If True, converts columns to appropriate types.
+
+    Returns
+    -------
+    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
+        Formatted data returned from the API query.
+    md : :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object pertaining to the query.
+
+    Examples
+    --------
+    .. code::
+
+        >>> # All field-measurement series at a surface-water site
+        >>> df, md = dataretrieval.waterdata.get_field_measurements_metadata(
+        ...     monitoring_location_id="USGS-02238500"
+        ... )
+
+        >>> # Same, for a groundwater well
+        >>> df, md = dataretrieval.waterdata.get_field_measurements_metadata(
+        ...     monitoring_location_id="USGS-375907091432201"
+        ... )
+
+        >>> # Multi-site, narrowed to two parameter codes
+        >>> df, md = dataretrieval.waterdata.get_field_measurements_metadata(
+        ...     monitoring_location_id=[
+        ...         "USGS-451605097071701",
+        ...         "USGS-263819081585801",
+        ...     ],
+        ...     parameter_code=["62611", "72019"],
+        ... )
+
+        >>> # Series modified in the last year — useful for incremental ETL
+        >>> df, md = dataretrieval.waterdata.get_field_measurements_metadata(
+        ...     monitoring_location_id="USGS-375907091432201",
+        ...     parameter_code="72019",
+        ...     last_modified="P1Y",
+        ... )
+
+    """
+    service = "field-measurements-metadata"
+    output_id = "field_series_id"
+
+    args = _get_args(locals())
+
+    return get_ogc_data(args, output_id, service)
+
+
 def get_reference_table(
     collection: str,
     limit: int | None = None,
