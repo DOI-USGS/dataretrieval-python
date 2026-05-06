@@ -6,10 +6,6 @@ files (``exsa``, ``base``, ``corr``) for active streamgages — see the
 service overview at https://api.waterdata.usgs.gov/docs/stac/ and the
 WDFN announcement at https://waterdata.usgs.gov/blog/wdfn-rating-curves/.
 
-This is the discrete analogue to the OGC waterdata getters; it lives in
-its own module because the transport layer (STAC search + RDB download)
-differs from the OGC collections used by the rest of the package.
-
 The R analogue is ``read_waterdata_ratings`` in
 https://github.com/DOI-USGS/dataRetrieval/.
 """
@@ -18,8 +14,7 @@ from __future__ import annotations
 
 import logging
 import os
-import tempfile
-from typing import Any
+from typing import Any, Literal, get_args
 
 import pandas as pd
 import requests
@@ -36,7 +31,19 @@ from .utils import BASE_URL, _default_headers, _format_api_dates
 logger = logging.getLogger(__name__)
 
 STAC_URL = f"{BASE_URL}/stac/v0"
-_VALID_FILE_TYPES: tuple[str, ...] = ("exsa", "base", "corr")
+
+RATING_FILE_TYPE = Literal["exsa", "base", "corr"]
+_VALID_FILE_TYPES = get_args(RATING_FILE_TYPE)
+
+
+def _quote_cql_str(value: str) -> str:
+    """Escape a string for inclusion in a single-quoted CQL literal.
+
+    CQL escapes a single quote by doubling it. Most monitoring-location IDs
+    can never contain a quote, but the function accepts arbitrary strings,
+    so we defend against malformed filters / injection regardless.
+    """
+    return value.replace("'", "''")
 
 
 def _build_filter(
@@ -47,7 +54,7 @@ def _build_filter(
 
     Mirrors R's logic: only pin ``file_type`` when a single value was given,
     so a multi-type request returns every matching site and the file-type
-    filtering happens client-side from the per-feature URLs.
+    filtering happens client-side from the per-feature properties.
     """
     parts: list[str] = []
     if monitoring_location_id is not None:
@@ -56,16 +63,16 @@ def _build_filter(
             if isinstance(monitoring_location_id, str)
             else list(monitoring_location_id)
         )
-        joined = "', '".join(ids)
+        joined = "', '".join(_quote_cql_str(i) for i in ids)
         parts.append(f"monitoring_location_id IN ('{joined}')")
     if file_type is not None:
-        parts.append(f"file_type = '{file_type}'")
+        parts.append(f"file_type = '{_quote_cql_str(file_type)}'")
     return " AND ".join(parts) if parts else None
 
 
 def _search(
     filter_str: str | None,
-    datetime_str: str | None,
+    time_str: str | None,
     bbox: list[float] | None,
     limit: int,
     ssl_check: bool,
@@ -74,8 +81,8 @@ def _search(
     params: dict[str, Any] = {"limit": limit}
     if filter_str is not None:
         params["filter"] = filter_str
-    if datetime_str is not None:
-        params["datetime"] = datetime_str
+    if time_str is not None:
+        params["datetime"] = time_str
     if bbox is not None:
         params["bbox"] = ",".join(str(b) for b in bbox)
 
@@ -103,19 +110,19 @@ def _extract_rdb_comment(rdb: str) -> list[str]:
 
 def _download_and_parse(
     feature: dict[str, Any],
-    file_path: str,
+    file_path: str | None,
     ssl_check: bool,
 ) -> pd.DataFrame:
-    """Fetch the feature's data asset, write it to ``file_path``, parse RDB."""
+    """Fetch the feature's data asset, parse RDB, optionally persist to disk."""
     url = feature["assets"]["data"]["href"]
     fid = feature["id"]
-    target = os.path.join(file_path, fid)
 
     response = requests.get(url, headers=_default_headers(), verify=ssl_check)
     response.raise_for_status()
 
-    with open(target, "w") as f:
-        f.write(response.text)
+    if file_path is not None:
+        with open(os.path.join(file_path, fid), "w") as f:
+            f.write(response.text)
 
     df = _read_rdb(response.text)
     df.attrs["comment"] = _extract_rdb_comment(response.text)
@@ -125,9 +132,9 @@ def _download_and_parse(
 
 def get_ratings(
     monitoring_location_id: str | list[str] | None = None,
-    file_type: str | list[str] = "exsa",
+    file_type: RATING_FILE_TYPE | list[RATING_FILE_TYPE] = "exsa",
     file_path: str | None = None,
-    datetime: str | list[str] | None = None,
+    time: str | list[str] | None = None,
     bbox: list[float] | None = None,
     limit: int = 10000,
     download_and_parse: bool = True,
@@ -157,18 +164,19 @@ def get_ratings(
         One or more identifiers in ``AGENCY-ID`` form (e.g.
         ``"USGS-01104475"``). If omitted, the spatial / temporal filters
         determine the result set.
-    file_type : string or list of strings, default ``"exsa"``
-        Which rating file(s) to request. One or more of ``"exsa"``,
-        ``"base"``, ``"corr"``.
+    file_type : ``"exsa"``, ``"base"``, ``"corr"``, or a list, default ``"exsa"``
+        Which rating file(s) to request.
     file_path : string, optional
-        Directory the downloaded RDB files are written to. Defaults to a
-        per-call temporary directory created via :func:`tempfile.mkdtemp`.
-    datetime : string or list of strings, optional
-        STAC ``datetime`` filter — a single date / datetime, or an
-        interval (``"start/end"``, optionally half-bounded with ``..``).
-        ISO 8601 *durations* (``"P1M"``, ``"PT36H"``, …) are **not**
-        supported by the rating-curve service; passing one raises
-        ``ValueError``.
+        Directory the downloaded RDB files are written to. If ``None``
+        (the default), the parsed ``DataFrame`` is returned without
+        persisting the bytes to disk; ``df.attrs["url"]`` still records
+        where each rating came from.
+    time : string or list of strings, optional
+        STAC ``datetime`` filter (passed through verbatim under that name)
+        — a single date / datetime, or an interval (``"start/end"``,
+        optionally half-bounded with ``..``). ISO 8601 *durations*
+        (``"P1M"``, ``"PT36H"``, …) are **not** supported by the
+        rating-curve service; passing one raises ``ValueError``.
     bbox : list of numbers, optional
         Only features whose geometry intersects the bounding box are
         selected. Format: ``[xmin, ymin, xmax, ymax]`` in CRS 4326
@@ -199,7 +207,7 @@ def get_ratings(
     ------
     ValueError
         For an unrecognized ``file_type`` value or an ISO 8601 duration in
-        ``datetime``.
+        ``time``.
 
     Examples
     --------
@@ -224,10 +232,10 @@ def get_ratings(
         ...     download_and_parse=False,
         ... )
 
-        >>> # Restrict to features modified since seven days ago (no durations)
+        >>> # Restrict to features in a date range (durations not supported)
         >>> features = dataretrieval.waterdata.get_ratings(
         ...     bbox=[-95.0, 40.0, -92.0, 42.0],
-        ...     datetime=["2026-04-29", ".."],
+        ...     time=["2026-04-29", ".."],
         ...     download_and_parse=False,
         ... )
 
@@ -239,46 +247,46 @@ def get_ratings(
             f"Invalid file_type {invalid!r}. Valid options: {list(_VALID_FILE_TYPES)}."
         )
 
-    if datetime is not None:
+    if time is not None:
         # The rating-curve STAC service rejects ISO 8601 durations; surface a
         # clear error rather than letting the server return a confusing 4xx.
-        dt_values = datetime if isinstance(datetime, list) else [datetime]
-        if any(v is not None and "P" in str(v).upper() for v in dt_values):
+        time_values = time if isinstance(time, list) else [time]
+        if any(v is not None and "P" in str(v).upper() for v in time_values):
             raise ValueError(
                 "ISO 8601 durations (e.g. 'P7D') are not supported in "
-                "`datetime` for the rating-curve service. Provide a date or "
+                "`time` for the rating-curve service. Provide a date or "
                 "interval instead."
             )
-        datetime_str = _format_api_dates(datetime, date=False)
+        time_str = _format_api_dates(time, date=False)
     else:
-        datetime_str = None
+        time_str = None
 
     # Mirror R: only pin file_type in the server-side filter when one type
-    # is requested. With multiple types, fetch all and filter URLs locally.
+    # is requested. With multiple types, fetch all and filter locally.
     server_file_type = file_types[0] if len(file_types) == 1 else None
     filter_str = _build_filter(monitoring_location_id, server_file_type)
 
-    features = _search(filter_str, datetime_str, bbox, limit, ssl_check)
+    features = _search(filter_str, time_str, bbox, limit, ssl_check)
 
     if not download_and_parse:
         return features
 
-    if file_path is None:
-        file_path = tempfile.mkdtemp(prefix="dataretrieval-ratings-")
-    os.makedirs(file_path, exist_ok=True)
+    if file_path is not None:
+        os.makedirs(file_path, exist_ok=True)
 
     out: dict[str, pd.DataFrame] = {}
+    requested = set(file_types)
     for feature in features:
-        url = feature.get("assets", {}).get("data", {}).get("href", "")
-        # Skip features whose file type wasn't requested (only relevant when
-        # `file_type` is a list — single-type requests are already filtered
-        # server-side).
-        if not any(ft in url for ft in file_types):
+        # Multi-type requests skip the server-side file_type filter, so
+        # filter here on the per-feature property (more reliable than
+        # substring-matching the URL).
+        feat_type = feature.get("properties", {}).get("file_type")
+        if feat_type not in requested:
             continue
         fid = feature["id"]
         try:
             out[fid] = _download_and_parse(feature, file_path, ssl_check)
-        except Exception as e:
+        except (requests.RequestException, ValueError, OSError) as e:
             logger.warning("Failed to download / parse %s: %s", fid, e)
 
     return out
