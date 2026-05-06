@@ -30,6 +30,7 @@ from .api import (
 )
 from .filters import FILTER_LANG
 from .nearest import get_nearest_continuous
+from .ratings import get_ratings
 from .types import (
     CODE_SERVICES,
     PROFILE_LOOKUP,
@@ -54,6 +55,7 @@ __all__ = [
     "get_latest_daily",
     "get_monitoring_locations",
     "get_nearest_continuous",
+    "get_ratings",
     "get_reference_table",
     "get_samples",
     "get_samples_summary",
