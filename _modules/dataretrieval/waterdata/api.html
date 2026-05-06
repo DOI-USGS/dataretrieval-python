@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g63b586e0e documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+gf10f08b77 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=39133080"></script>
+      <script src="../../../_static/documentation_options.js?v=27b0860f"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -286,11 +286,27 @@
 <span class="sd">        ...     time=&quot;2021-01-01T00:00:00Z/2022-01-01T00:00:00Z&quot;,</span>
 <span class="sd">        ... )</span>
 
+<span class="sd">        &gt;&gt;&gt; # Quick &quot;show me the last week&quot; idiom (ISO 8601 duration)</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_daily(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
+<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
+<span class="sd">        ...     time=&quot;P7D&quot;,</span>
+<span class="sd">        ... )</span>
+
 <span class="sd">        &gt;&gt;&gt; # Get approved daily flow data from multiple sites</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_daily(</span>
-<span class="sd">        ...     monitoring_location_id = [&quot;USGS-05114000&quot;, &quot;USGS-09423350&quot;],</span>
-<span class="sd">        ...     approval_status = &quot;Approved&quot;,</span>
-<span class="sd">        ...     time = &quot;2024-01-01/..&quot;</span>
+<span class="sd">        ...     monitoring_location_id=[&quot;USGS-05114000&quot;, &quot;USGS-09423350&quot;],</span>
+<span class="sd">        ...     approval_status=&quot;Approved&quot;,</span>
+<span class="sd">        ...     time=&quot;2024-01-01/..&quot;,</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Pull only rows whose underlying record was refreshed in the</span>
+<span class="sd">        &gt;&gt;&gt; # last 7 days — handy for incremental ETL polling</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_daily(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
+<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
+<span class="sd">        ...     last_modified=&quot;P7D&quot;,</span>
+<span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;daily&quot;</span>
     <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;daily_id&quot;</span>
@@ -1422,6 +1438,22 @@
 <span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;, parameter_code=&quot;00060&quot;</span>
 <span class="sd">        ... )</span>
 
+<span class="sd">        &gt;&gt;&gt; # Restrict to the last 7 days; sites with no observation in that</span>
+<span class="sd">        &gt;&gt;&gt; # window are dropped instead of returned with stale values</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_latest_continuous(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
+<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
+<span class="sd">        ...     time=&quot;P7D&quot;,</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Pull only rows whose underlying record was refreshed in the</span>
+<span class="sd">        &gt;&gt;&gt; # last 7 days, across multiple sites and parameters</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_latest_continuous(</span>
+<span class="sd">        ...     monitoring_location_id=[&quot;USGS-451605097071701&quot;, &quot;USGS-14181500&quot;],</span>
+<span class="sd">        ...     parameter_code=[&quot;00060&quot;, &quot;72019&quot;],</span>
+<span class="sd">        ...     last_modified=&quot;P7D&quot;,</span>
+<span class="sd">        ... )</span>
+
 <span class="sd">        &gt;&gt;&gt; # Get latest continuous measurements for multiple sites</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_latest_continuous(</span>
 <span class="sd">        ...     monitoring_location_id=[&quot;USGS-05114000&quot;, &quot;USGS-09423350&quot;]</span>
@@ -1606,6 +1638,21 @@
 <span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;, parameter_code=&quot;00060&quot;</span>
 <span class="sd">        ... )</span>
 
+<span class="sd">        &gt;&gt;&gt; # Restrict to rows whose underlying record was refreshed in the</span>
+<span class="sd">        &gt;&gt;&gt; # last 7 days</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_latest_daily(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
+<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
+<span class="sd">        ...     last_modified=&quot;P7D&quot;,</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Multi-site, multi-parameter — discharge and water temperature</span>
+<span class="sd">        &gt;&gt;&gt; # at two sites in a single round-trip</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_latest_daily(</span>
+<span class="sd">        ...     monitoring_location_id=[&quot;USGS-01491000&quot;, &quot;USGS-01645000&quot;],</span>
+<span class="sd">        ...     parameter_code=[&quot;00060&quot;, &quot;00010&quot;],</span>
+<span class="sd">        ... )</span>
+
 <span class="sd">        &gt;&gt;&gt; # Get most recent daily measurements for two sites</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_latest_daily(</span>
 <span class="sd">        ...     monitoring_location_id=[&quot;USGS-05114000&quot;, &quot;USGS-09423350&quot;]</span>
@@ -1785,13 +1832,23 @@
 <span class="sd">        ...     skip_geometry=True,</span>
 <span class="sd">        ... )</span>
 
+<span class="sd">        &gt;&gt;&gt; # Half-bounded time range: every measurement at this site since</span>
+<span class="sd">        &gt;&gt;&gt; # 1980 (open-ended end). Use ``&quot;../&lt;date&gt;&quot;`` for the inverse</span>
+<span class="sd">        &gt;&gt;&gt; # (everything up to a date).</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_field_measurements(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-425957088141001&quot;,</span>
+<span class="sd">        ...     time=&quot;1980-01-01/..&quot;,</span>
+<span class="sd">        ... )</span>
+
 <span class="sd">        &gt;&gt;&gt; # Get field measurements from multiple sites and</span>
 <span class="sd">        &gt;&gt;&gt; # parameter codes from the last 20 years</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_field_measurements(</span>
-<span class="sd">        ...     monitoring_location_id = [&quot;USGS-451605097071701&quot;,</span>
-<span class="sd">                                          &quot;USGS-263819081585801&quot;],</span>
-<span class="sd">        ...     parameter_code = [&quot;62611&quot;, &quot;72019&quot;],</span>
-<span class="sd">        ...     time = &quot;P20Y&quot;</span>
+<span class="sd">        ...     monitoring_location_id=[</span>
+<span class="sd">        ...         &quot;USGS-451605097071701&quot;,</span>
+<span class="sd">        ...         &quot;USGS-263819081585801&quot;,</span>
+<span class="sd">        ...     ],</span>
+<span class="sd">        ...     parameter_code=[&quot;62611&quot;, &quot;72019&quot;],</span>
+<span class="sd">        ...     time=&quot;P20Y&quot;,</span>
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;field-measurements&quot;</span>

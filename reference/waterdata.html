@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g63b586e0e documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+gf10f08b77 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=39133080"></script>
+      <script src="../_static/documentation_options.js?v=27b0860f"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -746,11 +746,27 @@ and the lexicographic-comparison pitfall.</p></li>
 <span class="gp">... </span>    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2021-01-01T00:00:00Z/2022-01-01T00:00:00Z&quot;</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Quick &quot;show me the last week&quot; idiom (ISO 8601 duration)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-02238500&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;P7D&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get approved daily flow data from multiple sites</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">monitoring_location_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-09423350&quot;</span><span class="p">],</span>
-<span class="gp">... </span>    <span class="n">approval_status</span> <span class="o">=</span> <span class="s2">&quot;Approved&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">time</span> <span class="o">=</span> <span class="s2">&quot;2024-01-01/..&quot;</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-09423350&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">approval_status</span><span class="o">=</span><span class="s2">&quot;Approved&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2024-01-01/..&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Pull only rows whose underlying record was refreshed in the</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># last 7 days — handy for incremental ETL polling</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-02238500&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">last_modified</span><span class="o">=</span><span class="s2">&quot;P7D&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -900,14 +916,24 @@ and the lexicographic-comparison pitfall.</p></li>
 <span class="gp">... </span>    <span class="n">skip_geometry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Half-bounded time range: every measurement at this site since</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 1980 (open-ended end). Use ``&quot;../&lt;date&gt;&quot;`` for the inverse</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># (everything up to a date).</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_field_measurements</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-425957088141001&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;1980-01-01/..&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get field measurements from multiple sites and</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># parameter codes from the last 20 years</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_field_measurements</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">monitoring_location_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;USGS-451605097071701&quot;</span><span class="p">,</span>
-<span class="go">                                  &quot;USGS-263819081585801&quot;],</span>
-<span class="go">...     parameter_code = [&quot;62611&quot;, &quot;72019&quot;],</span>
-<span class="go">...     time = &quot;P20Y&quot;</span>
-<span class="go">... )</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span>
+<span class="gp">... </span>        <span class="s2">&quot;USGS-451605097071701&quot;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s2">&quot;USGS-263819081585801&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="p">],</span>
+<span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;62611&quot;</span><span class="p">,</span> <span class="s2">&quot;72019&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;P20Y&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1062,6 +1088,22 @@ and the lexicographic-comparison pitfall.</p></li>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get latest flow data from a single site</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_latest_continuous</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-02238500&quot;</span><span class="p">,</span> <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Restrict to the last 7 days; sites with no observation in that</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># window are dropped instead of returned with stale values</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_latest_continuous</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-02238500&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;P7D&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Pull only rows whose underlying record was refreshed in the</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># last 7 days, across multiple sites and parameters</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_latest_continuous</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USGS-451605097071701&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-14181500&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="s2">&quot;72019&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">last_modified</span><span class="o">=</span><span class="s2">&quot;P7D&quot;</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get latest continuous measurements for multiple sites</span>
@@ -1223,6 +1265,21 @@ and the lexicographic-comparison pitfall.</p></li>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get most recent daily flow data from a single site</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_latest_daily</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-02238500&quot;</span><span class="p">,</span> <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Restrict to rows whose underlying record was refreshed in the</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># last 7 days</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_latest_daily</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-02238500&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">last_modified</span><span class="o">=</span><span class="s2">&quot;P7D&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Multi-site, multi-parameter — discharge and water temperature</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># at two sites in a single round-trip</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_latest_daily</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USGS-01491000&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-01645000&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="s2">&quot;00010&quot;</span><span class="p">],</span>
 <span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get most recent daily measurements for two sites</span>
