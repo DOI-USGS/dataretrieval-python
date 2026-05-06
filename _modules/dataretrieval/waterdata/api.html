@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+gf10f08b77 documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+gba11d6fea documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=27b0860f"></script>
+      <script src="../../../_static/documentation_options.js?v=b11accc6"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -1855,6 +1855,126 @@
     <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;field_measurement_id&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_field_measurements_metadata">
+<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_field_measurements_metadata">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_field_measurements_metadata</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">parameter_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">parameter_description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">begin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">last_modified</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">skip_geometry</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get field-measurement metadata: one row per (location, parameter) series.</span>
+
+<span class="sd">    Each row describes a single field-measurement series — what parameter is</span>
+<span class="sd">    measured at the location, the period of record (``begin`` / ``end``), the</span>
+<span class="sd">    units, and so on — without returning the underlying observations</span>
+<span class="sd">    themselves. Use :func:`get_field_measurements` to fetch the values.</span>
+
+<span class="sd">    This is the discrete-measurement analogue to</span>
+<span class="sd">    :func:`get_time_series_metadata` (which describes daily and continuous</span>
+<span class="sd">    series). It&#39;s primarily useful for inventory queries: &quot;what</span>
+<span class="sd">    field-measurement parameters does this site have, and over what date</span>
+<span class="sd">    range?&quot;</span>
+
+<span class="sd">    See the OpenAPI reference for the full list of supported fields:</span>
+<span class="sd">    https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements-metadata</span>
+<span class="sd">    The R analogue is ``read_waterdata_field_meta`` in</span>
+<span class="sd">    https://github.com/DOI-USGS/dataRetrieval/.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    monitoring_location_id : string or list of strings, optional</span>
+<span class="sd">        A unique identifier representing a single monitoring location, in</span>
+<span class="sd">        ``AGENCY-ID`` form (e.g. ``&quot;USGS-02238500&quot;``).</span>
+<span class="sd">    parameter_code : string or list of strings, optional</span>
+<span class="sd">        5-digit parameter code. See</span>
+<span class="sd">        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.</span>
+<span class="sd">    parameter_name : string or list of strings, optional</span>
+<span class="sd">        A human-understandable name corresponding to ``parameter_code``.</span>
+<span class="sd">    parameter_description : string or list of strings, optional</span>
+<span class="sd">        A human-readable description of what is being measured.</span>
+<span class="sd">    begin, end, last_modified : string, optional</span>
+<span class="sd">        Datetime fields that accept either an RFC 3339 datetime, an</span>
+<span class="sd">        interval (``&quot;start/end&quot;``, optionally half-bounded with ``..``),</span>
+<span class="sd">        or an ISO 8601 duration (e.g. ``&quot;P1M&quot;``, ``&quot;PT36H&quot;``). See</span>
+<span class="sd">        :func:`get_time_series_metadata` for the full grammar.</span>
+<span class="sd">    properties : string or list of strings, optional</span>
+<span class="sd">        Subset of columns to return. Defaults to every available property.</span>
+<span class="sd">    skip_geometry : boolean, optional</span>
+<span class="sd">        Skip per-feature geometries; the returned object will be a plain</span>
+<span class="sd">        ``DataFrame`` with no spatial information.</span>
+<span class="sd">    bbox : list of numbers, optional</span>
+<span class="sd">        Only features whose geometry intersects the bounding box are</span>
+<span class="sd">        selected. Format: ``[xmin, ymin, xmax, ymax]`` in CRS 4326</span>
+<span class="sd">        (longitude / latitude, west-south-east-north).</span>
+<span class="sd">    limit : numeric, optional</span>
+<span class="sd">        Page size; the maximum allowable value is 50000. Default</span>
+<span class="sd">        (``None``) requests the maximum allowable limit.</span>
+<span class="sd">    filter, filter_lang : optional</span>
+<span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
+<span class="sd">        ``filter-lang`` query parameters. See</span>
+<span class="sd">        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,</span>
+<span class="sd">        and the lexicographic-comparison pitfall.</span>
+<span class="sd">    convert_type : boolean, optional</span>
+<span class="sd">        If True, converts columns to appropriate types.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
+<span class="sd">        Formatted data returned from the API query.</span>
+<span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">        A custom metadata object pertaining to the query.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; # All field-measurement series at a surface-water site</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_field_measurements_metadata(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Same, for a groundwater well</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_field_measurements_metadata(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-375907091432201&quot;</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Multi-site, narrowed to two parameter codes</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_field_measurements_metadata(</span>
+<span class="sd">        ...     monitoring_location_id=[</span>
+<span class="sd">        ...         &quot;USGS-451605097071701&quot;,</span>
+<span class="sd">        ...         &quot;USGS-263819081585801&quot;,</span>
+<span class="sd">        ...     ],</span>
+<span class="sd">        ...     parameter_code=[&quot;62611&quot;, &quot;72019&quot;],</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Series modified in the last year — useful for incremental ETL</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_field_measurements_metadata(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-375907091432201&quot;,</span>
+<span class="sd">        ...     parameter_code=&quot;72019&quot;,</span>
+<span class="sd">        ...     last_modified=&quot;P1Y&quot;,</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;field-measurements-metadata&quot;</span>
+    <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;field_series_id&quot;</span>
+
     <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
