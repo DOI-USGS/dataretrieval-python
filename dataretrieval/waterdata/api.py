@@ -208,11 +208,27 @@ def get_daily(
         ...     time="2021-01-01T00:00:00Z/2022-01-01T00:00:00Z",
         ... )
 
+        >>> # Quick "show me the last week" idiom (ISO 8601 duration)
+        >>> df, md = dataretrieval.waterdata.get_daily(
+        ...     monitoring_location_id="USGS-02238500",
+        ...     parameter_code="00060",
+        ...     time="P7D",
+        ... )
+
         >>> # Get approved daily flow data from multiple sites
         >>> df, md = dataretrieval.waterdata.get_daily(
-        ...     monitoring_location_id = ["USGS-05114000", "USGS-09423350"],
-        ...     approval_status = "Approved",
-        ...     time = "2024-01-01/.."
+        ...     monitoring_location_id=["USGS-05114000", "USGS-09423350"],
+        ...     approval_status="Approved",
+        ...     time="2024-01-01/..",
+        ... )
+
+        >>> # Pull only rows whose underlying record was refreshed in the
+        >>> # last 7 days — handy for incremental ETL polling
+        >>> df, md = dataretrieval.waterdata.get_daily(
+        ...     monitoring_location_id="USGS-02238500",
+        ...     parameter_code="00060",
+        ...     last_modified="P7D",
+        ... )
     """
     service = "daily"
     output_id = "daily_id"
@@ -1329,6 +1345,22 @@ def get_latest_continuous(
         ...     monitoring_location_id="USGS-02238500", parameter_code="00060"
         ... )
 
+        >>> # Restrict to the last 7 days; sites with no observation in that
+        >>> # window are dropped instead of returned with stale values
+        >>> df, md = dataretrieval.waterdata.get_latest_continuous(
+        ...     monitoring_location_id="USGS-02238500",
+        ...     parameter_code="00060",
+        ...     time="P7D",
+        ... )
+
+        >>> # Pull only rows whose underlying record was refreshed in the
+        >>> # last 7 days, across multiple sites and parameters
+        >>> df, md = dataretrieval.waterdata.get_latest_continuous(
+        ...     monitoring_location_id=["USGS-451605097071701", "USGS-14181500"],
+        ...     parameter_code=["00060", "72019"],
+        ...     last_modified="P7D",
+        ... )
+
         >>> # Get latest continuous measurements for multiple sites
         >>> df, md = dataretrieval.waterdata.get_latest_continuous(
         ...     monitoring_location_id=["USGS-05114000", "USGS-09423350"]
@@ -1510,6 +1542,21 @@ def get_latest_daily(
         ...     monitoring_location_id="USGS-02238500", parameter_code="00060"
         ... )
 
+        >>> # Restrict to rows whose underlying record was refreshed in the
+        >>> # last 7 days
+        >>> df, md = dataretrieval.waterdata.get_latest_daily(
+        ...     monitoring_location_id="USGS-02238500",
+        ...     parameter_code="00060",
+        ...     last_modified="P7D",
+        ... )
+
+        >>> # Multi-site, multi-parameter — discharge and water temperature
+        >>> # at two sites in a single round-trip
+        >>> df, md = dataretrieval.waterdata.get_latest_daily(
+        ...     monitoring_location_id=["USGS-01491000", "USGS-01645000"],
+        ...     parameter_code=["00060", "00010"],
+        ... )
+
         >>> # Get most recent daily measurements for two sites
         >>> df, md = dataretrieval.waterdata.get_latest_daily(
         ...     monitoring_location_id=["USGS-05114000", "USGS-09423350"]
@@ -1686,13 +1733,23 @@ def get_field_measurements(
         ...     skip_geometry=True,
         ... )
 
+        >>> # Half-bounded time range: every measurement at this site since
+        >>> # 1980 (open-ended end). Use ``"../<date>"`` for the inverse
+        >>> # (everything up to a date).
+        >>> df, md = dataretrieval.waterdata.get_field_measurements(
+        ...     monitoring_location_id="USGS-425957088141001",
+        ...     time="1980-01-01/..",
+        ... )
+
         >>> # Get field measurements from multiple sites and
         >>> # parameter codes from the last 20 years
         >>> df, md = dataretrieval.waterdata.get_field_measurements(
-        ...     monitoring_location_id = ["USGS-451605097071701",
-                                          "USGS-263819081585801"],
-        ...     parameter_code = ["62611", "72019"],
-        ...     time = "P20Y"
+        ...     monitoring_location_id=[
+        ...         "USGS-451605097071701",
+        ...         "USGS-263819081585801",
+        ...     ],
+        ...     parameter_code=["62611", "72019"],
+        ...     time="P20Y",
         ... )
     """
     service = "field-measurements"
