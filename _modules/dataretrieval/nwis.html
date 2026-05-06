@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+gba11d6fea documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g0d079caff documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=b11accc6"></script>
+      <script src="../../_static/documentation_options.js?v=ee6e1908"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -83,12 +83,12 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">StringIO</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">json</span><span class="w"> </span><span class="kn">import</span> <span class="n">JSONDecodeError</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.rdb</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_rdb</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">query</span>
@@ -119,14 +119,6 @@
 <span class="p">]</span>
 <span class="c1"># NAD83</span>
 <span class="n">_CRS</span> <span class="o">=</span> <span class="s2">&quot;EPSG:4269&quot;</span>
-
-<span class="n">_NWIS_RDB_DTYPES</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;site_no&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="s2">&quot;dec_long_va&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="s2">&quot;dec_lat_va&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="s2">&quot;parm_cd&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="s2">&quot;parameter_cd&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<span class="p">}</span>
 
 
 <div class="viewcode-block" id="_parse_json_or_raise">
@@ -1161,13 +1153,64 @@
 <div class="viewcode-block" id="_read_rdb">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._read_rdb">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_read_rdb</span><span class="p">(</span><span class="n">rdb</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse an NWIS RDB response and apply NWIS-specific post-processing.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert NWIS rdb table into a ``pandas.dataframe``.</span>
 
-<span class="sd">    Thin wrapper around :func:`dataretrieval.rdb.read_rdb` that adds the</span>
-<span class="sd">    NWIS column-dtype hints and runs :func:`format_response` (datetime</span>
-<span class="sd">    index, multi-site MultiIndex, optional GeoDataFrame).</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rdb: string</span>
+<span class="sd">        A string representation of an rdb table</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df: ``pandas.dataframe``</span>
+<span class="sd">        A formatted pandas data frame</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">format_response</span><span class="p">(</span><span class="n">read_rdb</span><span class="p">(</span><span class="n">rdb</span><span class="p">,</span> <span class="n">dtypes</span><span class="o">=</span><span class="n">_NWIS_RDB_DTYPES</span><span class="p">))</span></div>
+    <span class="k">if</span> <span class="s2">&quot;&lt;html&gt;&quot;</span> <span class="ow">in</span> <span class="n">rdb</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">or</span> <span class="s2">&quot;&lt;!doctype html&gt;&quot;</span> <span class="ow">in</span> <span class="n">rdb</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Received HTML response instead of RDB. This often indicates &quot;</span>
+            <span class="s2">&quot;that the service has been moved or is currently unavailable.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">rdb</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="c1"># ignore comment lines</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+        <span class="c1"># All lines are comments — the service returned no data rows (e.g.</span>
+        <span class="c1"># &quot;No sites found matching all criteria&quot;).  This is a legitimate empty</span>
+        <span class="c1"># result, so return an empty DataFrame rather than raising.</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+    <span class="n">fields</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">count</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span> <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+    <span class="n">dtypes</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;site_no&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="s2">&quot;dec_long_va&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="s2">&quot;dec_lat_va&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="s2">&quot;parm_cd&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="s2">&quot;parameter_cd&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+        <span class="n">StringIO</span><span class="p">(</span><span class="n">rdb</span><span class="p">),</span>
+        <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">skiprows</span><span class="o">=</span><span class="n">count</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">names</span><span class="o">=</span><span class="n">fields</span><span class="p">,</span>
+        <span class="n">na_values</span><span class="o">=</span><span class="s2">&quot;NaN&quot;</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">dtypes</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
 
 
 
