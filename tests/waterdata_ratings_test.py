@@ -37,7 +37,7 @@ def test_get_ratings_rejects_invalid_file_type():
 
 def test_get_ratings_rejects_iso_8601_duration_in_time():
     """STAC ratings doesn't accept ISO 8601 durations; surface a clear error."""
-    with pytest.raises(ValueError, match="durations.*not supported"):
+    with pytest.raises(ValueError, match=r"durations.*not supported"):
         get_ratings(
             monitoring_location_id="USGS-01104475",
             time="P7D",
@@ -46,8 +46,6 @@ def test_get_ratings_rejects_iso_8601_duration_in_time():
 
 def test_build_filter_escapes_quotes():
     """Defends against malformed CQL or injection if an ID contains a quote."""
-    from dataretrieval.waterdata.ratings import _build_filter
-
     f = _build_filter("USGS-x'-y", None)
     assert f == "monitoring_location_id IN ('USGS-x''-y')"
 
