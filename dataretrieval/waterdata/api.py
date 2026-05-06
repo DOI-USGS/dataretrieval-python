@@ -1878,6 +1878,126 @@ def get_field_measurements_metadata(
     return get_ogc_data(args, output_id, service)
 
 
+def get_peaks(
+    monitoring_location_id: str | list[str] | None = None,
+    parameter_code: str | list[str] | None = None,
+    time_series_id: str | list[str] | None = None,
+    unit_of_measure: str | list[str] | None = None,
+    time: str | list[str] | None = None,
+    last_modified: str | list[str] | None = None,
+    water_year: int | list[int] | None = None,
+    year: int | list[int] | None = None,
+    month: int | list[int] | None = None,
+    day: int | list[int] | None = None,
+    peak_since: int | list[int] | None = None,
+    properties: str | list[str] | None = None,
+    skip_geometry: bool | None = None,
+    bbox: list[float] | None = None,
+    limit: int | None = None,
+    filter: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
+    convert_type: bool = True,
+) -> tuple[pd.DataFrame, BaseMetadata]:
+    """Get the annual peak streamflow / stage record for a monitoring location.
+
+    Peaks are the largest values observed at a site each water year and are
+    the standard input to flood-frequency analysis (e.g. log-Pearson Type III
+    fits). The endpoint returns one row per (monitoring location, parameter,
+    water year), with the peak ``value`` and the ``time`` it occurred.
+
+    The collection covers both stage (parameter ``"00065"``, ``ft``) and
+    discharge (parameter ``"00060"``, ``ft^3/s``); a typical streamgage has a
+    series for each. Reference docs:
+    https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/peaks
+
+    Parameters
+    ----------
+    monitoring_location_id : string or list of strings, optional
+        A unique identifier representing a single monitoring location, in
+        ``AGENCY-ID`` form (e.g. ``"USGS-02238500"``).
+    parameter_code : string or list of strings, optional
+        5-digit parameter code. Most peaks records are ``"00060"`` (discharge)
+        or ``"00065"`` (stage / gage height). Full list at
+        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+    time_series_id : string or list of strings, optional
+        ID of the time series the peak belongs to.
+    unit_of_measure : string or list of strings, optional
+        Human-readable units (e.g. ``"ft^3/s"``, ``"ft"``).
+    time : string, optional
+        Datetime, interval, or duration filter on the peak's date.
+        See :func:`get_time_series_metadata` for the full grammar.
+    last_modified : string, optional
+        Same datetime grammar as ``time``; filters on the database
+        last-modified timestamp (useful for incremental ETL polling).
+    water_year, year, month, day : int or list of ints, optional
+        Calendar / water-year filters on the peak event. The water year ends
+        September 30 (e.g. WY2024 = Oct 1, 2023 – Sep 30, 2024).
+    peak_since : int or list of ints, optional
+        Filter on the year since which the peak value has stood as the
+        record (the API serves this field as an integer; many rows are
+        ``null``).
+    properties : string or list of strings, optional
+        Subset of columns to return. Defaults to every available property.
+    skip_geometry : boolean, optional
+        Skip per-feature geometries; the returned object will be a plain
+        ``DataFrame`` with no spatial information.
+    bbox : list of numbers, optional
+        Only features whose geometry intersects the bounding box are
+        selected. Format: ``[xmin, ymin, xmax, ymax]`` in CRS 4326
+        (longitude / latitude, west-south-east-north).
+    limit : numeric, optional
+        Page size; the maximum allowable value is 50000. Default
+        (``None``) requests the maximum allowable limit.
+    filter, filter_lang : optional
+        Server-side CQL filter passed through as the OGC ``filter`` /
+        ``filter-lang`` query parameters. See
+        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        and the lexicographic-comparison pitfall.
+    convert_type : boolean, optional
+        If True, converts columns to appropriate types.
+
+    Returns
+    -------
+    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
+        Formatted data returned from the API query.
+    md : :obj:`dataretrieval.utils.Metadata`
+        A custom metadata object pertaining to the query.
+
+    Examples
+    --------
+    .. code::
+
+        >>> # Full annual peak record at one site (both stage and discharge)
+        >>> df, md = dataretrieval.waterdata.get_peaks(
+        ...     monitoring_location_id="USGS-02238500"
+        ... )
+
+        >>> # Discharge peaks only
+        >>> df, md = dataretrieval.waterdata.get_peaks(
+        ...     monitoring_location_id="USGS-02238500",
+        ...     parameter_code="00060",
+        ... )
+
+        >>> # Multi-site peaks for a parameter, narrowed to a water-year range
+        >>> df, md = dataretrieval.waterdata.get_peaks(
+        ...     monitoring_location_id=[
+        ...         "USGS-07069000",
+        ...         "USGS-07064000",
+        ...         "USGS-07068000",
+        ...     ],
+        ...     parameter_code="00060",
+        ...     water_year=[2020, 2021, 2022, 2023],
+        ... )
+
+    """
+    service = "peaks"
+    output_id = "peak_id"
+
+    args = _get_args(locals())
+
+    return get_ogc_data(args, output_id, service)
+
+
 def get_reference_table(
     collection: str,
     limit: int | None = None,
