@@ -1,5 +1,6 @@
 import datetime
 import json
+import warnings
 from pathlib import Path
 from unittest import mock
 
@@ -145,7 +146,7 @@ class TestDeprecationWarnings:
         self, func_name, replacement_substring, requests_mock
     ):
         """Each deprecated function emits a warning naming the right replacement."""
-        from dataretrieval.nwis import _warn_deprecated
+        from dataretrieval.nwis import _NWIS_REMOVAL_DATE, _warn_deprecated
 
         # Test the helper directly so we don't need to spin up a fake response
         # for every function. The integration is checked once below.
@@ -153,7 +154,7 @@ class TestDeprecationWarnings:
             _warn_deprecated(func_name)
         message = str(record[0].message)
         assert replacement_substring in message
-        assert "2027-05-06" in message
+        assert _NWIS_REMOVAL_DATE in message
 
     def test_get_iv_fires_deprecation_on_call(self, requests_mock):
         """End-to-end: a real call routes through _warn_deprecated."""
@@ -163,6 +164,23 @@ class TestDeprecationWarnings:
         )
         with pytest.warns(DeprecationWarning, match="get_iv.*waterdata.get_continuous"):
             get_iv(sites="01491000")
+
+    def test_nested_calls_emit_one_warning(self, requests_mock):
+        """get_record(service='iv') wraps get_iv -> query_waterservices.
+
+        Without re-entrancy suppression the user would see 3 near-identical
+        deprecation warnings for one call; pin the outermost-only contract.
+        """
+        requests_mock.get(
+            "https://waterservices.usgs.gov/nwis/iv",
+            json={"value": {"timeSeries": []}},
+        )
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", DeprecationWarning)
+            get_record(sites="01491000", service="iv")
+        deprecations = [w for w in caught if issubclass(w.category, DeprecationWarning)]
+        assert len(deprecations) == 1
+        assert "get_record" in str(deprecations[0].message)
 
 
 class TestDefunct:

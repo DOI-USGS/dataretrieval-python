@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import sys
 import warnings
 from json import JSONDecodeError
 
@@ -72,7 +73,19 @@ _REPLACEMENTS = {
 
 
 def _warn_deprecated(func_name: str) -> None:
-    """Emit a per-function DeprecationWarning pointing at the waterdata replacement."""
+    """Emit a per-function DeprecationWarning pointing at the waterdata replacement.
+
+    Suppresses the warning when invoked from another deprecated nwis function so
+    that wrappers like ``get_record`` -> ``get_iv`` -> ``query_waterservices``
+    surface only the outermost call (otherwise one user call produces three
+    near-identical messages).
+    """
+    module_globals = globals()
+    frame = sys._getframe(2) if hasattr(sys, "_getframe") else None
+    while frame is not None:
+        if frame.f_globals is module_globals and frame.f_code.co_name in _REPLACEMENTS:
+            return
+        frame = frame.f_back
     warnings.warn(
         f"`nwis.{func_name}` is deprecated and will be removed from "
         f"`dataretrieval` on or after {_NWIS_REMOVAL_DATE}; "
