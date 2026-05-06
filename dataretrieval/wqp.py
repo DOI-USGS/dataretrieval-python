@@ -147,7 +147,7 @@ def get_results(
     response = query(url, kwargs, delimiter=";", ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, legacy=legacy, ssl_check=ssl_check, **kwargs)
 
 
 def what_sites(
@@ -202,7 +202,7 @@ def what_sites(
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, legacy=legacy, ssl_check=ssl_check, **kwargs)
 
 
 def what_organizations(
@@ -253,7 +253,7 @@ def what_organizations(
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, legacy=legacy, ssl_check=ssl_check, **kwargs)
 
 
 def what_projects(ssl_check=True, legacy=True, **kwargs):
@@ -300,7 +300,7 @@ def what_projects(ssl_check=True, legacy=True, **kwargs):
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, legacy=legacy, ssl_check=ssl_check, **kwargs)
 
 
 def what_activities(
@@ -364,7 +364,7 @@ def what_activities(
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, legacy=legacy, ssl_check=ssl_check, **kwargs)
 
 
 def what_detection_limits(
@@ -422,7 +422,7 @@ def what_detection_limits(
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, legacy=legacy, ssl_check=ssl_check, **kwargs)
 
 
 def what_habitat_metrics(
@@ -473,7 +473,7 @@ def what_habitat_metrics(
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, legacy=legacy, ssl_check=ssl_check, **kwargs)
 
 
 def what_project_weights(ssl_check=True, legacy=True, **kwargs):
@@ -525,7 +525,7 @@ def what_project_weights(ssl_check=True, legacy=True, **kwargs):
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, legacy=legacy, ssl_check=ssl_check, **kwargs)
 
 
 def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
@@ -577,7 +577,7 @@ def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, legacy=legacy, ssl_check=ssl_check, **kwargs)
 
 
 def wqp_url(service):
@@ -615,17 +615,20 @@ class WQP_Metadata(BaseMetadata):
     ----------
     url : str
         Response url
-    query_time : datetme.timedelta
+    query_time : datetime.timedelta
         Response elapsed time
     header : requests.structures.CaseInsensitiveDict
         Response headers
-    comments : None
-        Metadata comments. WQP does not return comments.
-    site_info : tuple[pd.DataFrame, NWIS_Metadata] | None
-        Site information if the query included `sites`, `site` or `site_no`.
+    comment : None
+        Metadata comment. WQP does not return comments.
+    site_info : tuple[pd.DataFrame, WQP_Metadata] | None
+        Site information if the query included a site filter (`siteid`,
+        `sites`, `site`, or `site_no`).
     """
 
-    def __init__(self, response, **parameters) -> None:
+    def __init__(
+        self, response, legacy: bool = True, ssl_check: bool = True, **parameters
+    ) -> None:
         """Generates a standard set of metadata informed by the response with specific
         metadata for WQP data.
 
@@ -633,9 +636,17 @@ class WQP_Metadata(BaseMetadata):
         ----------
         response : Response
             Response object from requests module
-
+        legacy : bool
+            Whether the originating request used the legacy WQX endpoint.
+            Forwarded to ``what_sites`` when ``site_info`` is accessed so the
+            resolved station metadata uses the same profile as the original
+            query.
+        ssl_check : bool
+            Whether the originating request verified SSL. Forwarded to
+            ``what_sites`` for consistency.
         parameters : dict
-            Unpacked dictionary of the parameters supplied in the request
+            Unpacked dictionary of the remaining parameters supplied in the
+            request.
 
         Returns
         -------
@@ -647,15 +658,21 @@ class WQP_Metadata(BaseMetadata):
         super().__init__(response)
 
         self._parameters = parameters
+        self._legacy = legacy
+        self._ssl_check = ssl_check
 
-        @property
-        def site_info(self):
-            if "sites" in self._parameters:
-                return what_sites(sites=parameters["sites"])
-            elif "site" in self._parameters:
-                return what_sites(sites=parameters["site"])
-            elif "site_no" in self._parameters:
-                return what_sites(sites=parameters["site_no"])
+    @property
+    def site_info(self):
+        # Walk WQP-native key first, then legacy NWIS-style aliases. Whichever
+        # matched, pass the value as `siteid` -- that's what_sites' native arg.
+        for key in ("siteid", "sites", "site", "site_no"):
+            if key in self._parameters:
+                return what_sites(
+                    siteid=self._parameters[key],
+                    legacy=self._legacy,
+                    ssl_check=self._ssl_check,
+                )
+        return None
 
 
 def _check_kwargs(kwargs):
