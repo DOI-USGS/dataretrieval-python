@@ -137,7 +137,7 @@ def get_nearest_continuous(
         ... )
     """
     _check_nearest_kwargs(kwargs, on_tie)
-    targets = pd.DatetimeIndex(pd.to_datetime(targets, utc=True))
+    targets = _coerce_targets(targets)
     window_td = pd.Timedelta(window)
 
     if len(targets) == 0:
@@ -151,6 +151,11 @@ def get_nearest_continuous(
         filter_lang="cql-text",
         **kwargs,
     )
+    if "time" not in df.columns:
+        raise ValueError(
+            "get_nearest_continuous requires a 'time' column in the response; "
+            "if a `properties` kwarg was passed, include 'time' in it"
+        )
     if df.empty:
         return _empty_nearest_result(df), md
 
@@ -170,6 +175,21 @@ def get_nearest_continuous(
     if not selected:
         return _empty_nearest_result(df), md
     return pd.DataFrame(selected).reset_index(drop=True), md
+
+
+def _coerce_targets(targets) -> pd.DatetimeIndex:
+    """Accept anything ``pandas.to_datetime`` consumes, including a single value.
+
+    A bare scalar (string, ``Timestamp``, ``datetime``, …) becomes a
+    one-element ``DatetimeIndex``; an iterable (list, ``Series``, ``ndarray``)
+    is wrapped directly so its elements are preserved.
+    """
+    parsed = pd.to_datetime(targets, utc=True)
+    if isinstance(parsed, pd.DatetimeIndex):
+        return parsed
+    if pd.api.types.is_scalar(parsed):
+        return pd.DatetimeIndex([parsed])
+    return pd.DatetimeIndex(parsed)
 
 
 def _check_nearest_kwargs(kwargs: dict, on_tie: OnTie) -> None:
