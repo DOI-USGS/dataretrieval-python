@@ -94,6 +94,98 @@ def format_datetime(df, date_field, time_field, tz_field):
     return df
 
 
+# Triplet patterns we recognize in WQP and Samples CSV responses. Each entry
+# defines how to derive the time/timezone column names from a date column, and
+# the suffix to strip when forming the new <prefix>DateTime column name.
+_DATETIME_TRIPLET_PATTERNS = (
+    # WQX3 / Samples: Activity_StartDate, Activity_StartTime, Activity_StartTimeZone
+    {
+        "date_suffix": "Date",
+        "time_from_date": lambda d: d[: -len("Date")] + "Time",
+        "tz_from_date": lambda d: d[: -len("Date")] + "TimeZone",
+    },
+    # Legacy WQP: <X>Date, <X>Time/Time, <X>Time/TimeZoneCode
+    {
+        "date_suffix": "Date",
+        "time_from_date": lambda d: d[: -len("Date")] + "Time/Time",
+        "tz_from_date": lambda d: d[: -len("Date")] + "Time/TimeZoneCode",
+    },
+)
+
+
+def _build_utc_datetime(date_series, time_series, tz_series):
+    """Combine date + time + tz-abbreviation columns into a UTC pandas Series.
+
+    Unknown timezone codes (and rows missing any of the three values) yield
+    ``NaT``. The input columns are not mutated.
+    """
+    offsets = tz_series.map(tz)
+    combined = (
+        date_series.astype("string")
+        + " "
+        + time_series.astype("string")
+        + " "
+        + offsets.astype("string")
+    )
+    # Rows where any input is missing produce a string containing "<NA>"; mark
+    # those so pd.to_datetime returns NaT rather than guessing.
+    invalid = (
+        date_series.isna() | time_series.isna() | tz_series.isna() | offsets.isna()
+    )
+    combined = combined.mask(invalid)
+    return pd.to_datetime(combined, format="mixed", utc=True, errors="coerce")
+
+
+def attach_datetime_columns(df):
+    """Add ``<prefix>DateTime`` UTC columns for any Date/Time/TimeZone triplets.
+
+    Detects two naming patterns that appear in USGS Samples and Water Quality
+    Portal CSV responses:
+
+    * **WQX3** — ``<prefix>Date``, ``<prefix>Time``, ``<prefix>TimeZone``
+    * **Legacy WQP** — ``<prefix>Date``, ``<prefix>Time/Time``,
+      ``<prefix>Time/TimeZoneCode``
+
+    For every triplet present, a new ``<prefix>DateTime`` column is appended
+    holding a UTC ``Timestamp`` (offsets resolved via
+    :data:`dataretrieval.codes.tz`). The original Date/Time/TimeZone columns
+    are left intact, and an existing ``<prefix>DateTime`` column is never
+    overwritten.
+
+    Parameters
+    ----------
+    df : ``pandas.DataFrame``
+        DataFrame returned from a Samples or WQP CSV endpoint.
+
+    Returns
+    -------
+    df : ``pandas.DataFrame``
+        A DataFrame with any derivable ``<prefix>DateTime`` columns appended.
+        Callers should use the returned value (the helper may concatenate
+        rather than mutate in place).
+    """
+    columns = set(df.columns)
+    new_columns = {}
+    for col in df.columns:
+        if not col.endswith("Date"):
+            continue
+        for pattern in _DATETIME_TRIPLET_PATTERNS:
+            time_col = pattern["time_from_date"](col)
+            tz_col = pattern["tz_from_date"](col)
+            if time_col not in columns or tz_col not in columns:
+                continue
+            target = col[: -len("Date")] + "DateTime"
+            if target in columns or target in new_columns:
+                break
+            new_columns[target] = _build_utc_datetime(df[col], df[time_col], df[tz_col])
+            break
+    if not new_columns:
+        return df
+    # Concat in one shot — appending columns one-by-one to a wide CSV-derived
+    # frame triggers pandas' fragmentation PerformanceWarning.
+    return pd.concat([df, pd.DataFrame(new_columns, index=df.index)], axis=1)
+
+
 class BaseMetadata:
     """Base class for metadata.
 
