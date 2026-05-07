@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g0d079caff documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+gfca3d6c87 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ee6e1908"></script>
+      <script src="../../../_static/documentation_options.js?v=0df8bf8c"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -1974,6 +1974,129 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;field-measurements-metadata&quot;</span>
     <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;field_series_id&quot;</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_peaks">
+<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_peaks">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_peaks</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">time_series_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">unit_of_measure</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">last_modified</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">water_year</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">year</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">month</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">day</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">peak_since</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">skip_geometry</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the annual peak streamflow / stage record for a monitoring location.</span>
+
+<span class="sd">    Peaks are the largest values observed at a site each water year and are</span>
+<span class="sd">    the standard input to flood-frequency analysis (e.g. log-Pearson Type III</span>
+<span class="sd">    fits). The endpoint returns one row per (monitoring location, parameter,</span>
+<span class="sd">    water year), with the peak ``value`` and the ``time`` it occurred.</span>
+
+<span class="sd">    The collection covers both stage (parameter ``&quot;00065&quot;``, ``ft``) and</span>
+<span class="sd">    discharge (parameter ``&quot;00060&quot;``, ``ft^3/s``); a typical streamgage has a</span>
+<span class="sd">    series for each. Reference docs:</span>
+<span class="sd">    https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/peaks</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    monitoring_location_id : string or list of strings, optional</span>
+<span class="sd">        A unique identifier representing a single monitoring location, in</span>
+<span class="sd">        ``AGENCY-ID`` form (e.g. ``&quot;USGS-02238500&quot;``).</span>
+<span class="sd">    parameter_code : string or list of strings, optional</span>
+<span class="sd">        5-digit parameter code. Most peaks records are ``&quot;00060&quot;`` (discharge)</span>
+<span class="sd">        or ``&quot;00065&quot;`` (stage / gage height). Full list at</span>
+<span class="sd">        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.</span>
+<span class="sd">    time_series_id : string or list of strings, optional</span>
+<span class="sd">        ID of the time series the peak belongs to.</span>
+<span class="sd">    unit_of_measure : string or list of strings, optional</span>
+<span class="sd">        Human-readable units (e.g. ``&quot;ft^3/s&quot;``, ``&quot;ft&quot;``).</span>
+<span class="sd">    time : string, optional</span>
+<span class="sd">        Datetime, interval, or duration filter on the peak&#39;s date.</span>
+<span class="sd">        See :func:`get_time_series_metadata` for the full grammar.</span>
+<span class="sd">    last_modified : string, optional</span>
+<span class="sd">        Same datetime grammar as ``time``; filters on the database</span>
+<span class="sd">        last-modified timestamp (useful for incremental ETL polling).</span>
+<span class="sd">    water_year, year, month, day : int or list of ints, optional</span>
+<span class="sd">        Calendar / water-year filters on the peak event. The water year ends</span>
+<span class="sd">        September 30 (e.g. WY2024 = Oct 1, 2023 – Sep 30, 2024).</span>
+<span class="sd">    peak_since : int or list of ints, optional</span>
+<span class="sd">        Filter on the year since which the peak value has stood as the</span>
+<span class="sd">        record (the API serves this field as an integer; many rows are</span>
+<span class="sd">        ``null``).</span>
+<span class="sd">    properties : string or list of strings, optional</span>
+<span class="sd">        Subset of columns to return. Defaults to every available property.</span>
+<span class="sd">    skip_geometry : boolean, optional</span>
+<span class="sd">        Skip per-feature geometries; the returned object will be a plain</span>
+<span class="sd">        ``DataFrame`` with no spatial information.</span>
+<span class="sd">    bbox : list of numbers, optional</span>
+<span class="sd">        Only features whose geometry intersects the bounding box are</span>
+<span class="sd">        selected. Format: ``[xmin, ymin, xmax, ymax]`` in CRS 4326</span>
+<span class="sd">        (longitude / latitude, west-south-east-north).</span>
+<span class="sd">    limit : numeric, optional</span>
+<span class="sd">        Page size; the maximum allowable value is 50000. Default</span>
+<span class="sd">        (``None``) requests the maximum allowable limit.</span>
+<span class="sd">    filter, filter_lang : optional</span>
+<span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
+<span class="sd">        ``filter-lang`` query parameters. See</span>
+<span class="sd">        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,</span>
+<span class="sd">        and the lexicographic-comparison pitfall.</span>
+<span class="sd">    convert_type : boolean, optional</span>
+<span class="sd">        If True, converts columns to appropriate types.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
+<span class="sd">        Formatted data returned from the API query.</span>
+<span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">        A custom metadata object pertaining to the query.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; # Full annual peak record at one site (both stage and discharge)</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_peaks(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Discharge peaks only</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_peaks(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
+<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Multi-site peaks for a parameter, narrowed to a water-year range</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_peaks(</span>
+<span class="sd">        ...     monitoring_location_id=[</span>
+<span class="sd">        ...         &quot;USGS-07069000&quot;,</span>
+<span class="sd">        ...         &quot;USGS-07064000&quot;,</span>
+<span class="sd">        ...         &quot;USGS-07068000&quot;,</span>
+<span class="sd">        ...     ],</span>
+<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
+<span class="sd">        ...     water_year=[2020, 2021, 2022, 2023],</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;peaks&quot;</span>
+    <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;peak_id&quot;</span>
 
     <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
