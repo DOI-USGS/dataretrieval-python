@@ -178,6 +178,33 @@ class TestDeprecationWarnings:
         assert len(deprecations) == 1
         assert "get_record" in str(deprecations[0].message)
 
+    @pytest.mark.parametrize(
+        "name",
+        [
+            "get_daily",
+            "get_continuous",
+            "get_monitoring_locations",
+            "get_stats_por",
+            "get_stats_date_range",
+            "get_peaks",
+            "get_ratings",
+        ],
+    )
+    def test_named_replacement_exists_in_waterdata(self, name):
+        """Tripwire: every concrete `waterdata.*` named in a deprecation message
+        must actually exist, so a user following the migration guidance doesn't
+        hit AttributeError.
+
+        Fails loudly if this PR ever lands before its referenced replacement
+        does (e.g. before `get_peaks` from #267).
+        """
+        import dataretrieval.waterdata as wd
+
+        assert callable(getattr(wd, name, None)), (
+            f"`waterdata.{name}` is missing — fix `_REPLACEMENTS` in nwis.py "
+            "or add the replacement before merging."
+        )
+
 
 class TestDefunct:
     """Verify that defunct functions raise NameError."""
