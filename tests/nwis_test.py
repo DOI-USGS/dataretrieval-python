@@ -142,14 +142,10 @@ class TestDeprecationWarnings:
             ("query_waterservices", "waterdata.get_*"),
         ],
     )
-    def test_warn_message_includes_replacement(
-        self, func_name, replacement_substring, requests_mock
-    ):
+    def test_warn_message_includes_replacement(self, func_name, replacement_substring):
         """Each deprecated function emits a warning naming the right replacement."""
         from dataretrieval.nwis import _NWIS_REMOVAL_DATE, _warn_deprecated
 
-        # Test the helper directly so we don't need to spin up a fake response
-        # for every function. The integration is checked once below.
         with pytest.warns(DeprecationWarning, match=func_name) as record:
             _warn_deprecated(func_name)
         message = str(record[0].message)
