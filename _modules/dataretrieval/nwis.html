@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+gfca3d6c87 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g18f831f1d documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=0df8bf8c"></script>
+      <script src="../../_static/documentation_options.js?v=de132bfb"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -82,6 +82,8 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">json</span><span class="w"> </span><span class="kn">import</span> <span class="n">JSONDecodeError</span>
 
@@ -127,6 +129,67 @@
     <span class="s2">&quot;parm_cd&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="s2">&quot;parameter_cd&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">}</span>
+
+
+<span class="n">_NWIS_REMOVAL_DATE</span> <span class="o">=</span> <span class="s2">&quot;2027-05-06&quot;</span>
+<span class="n">_REPLACEMENTS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;get_dv&quot;</span><span class="p">:</span> <span class="s2">&quot;`waterdata.get_daily()`&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_iv&quot;</span><span class="p">:</span> <span class="s2">&quot;`waterdata.get_continuous()`&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_info&quot;</span><span class="p">:</span> <span class="s2">&quot;`waterdata.get_monitoring_locations()`&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;what_sites&quot;</span><span class="p">:</span> <span class="s2">&quot;`waterdata.get_monitoring_locations()`&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_stats&quot;</span><span class="p">:</span> <span class="s2">&quot;`waterdata.get_stats_por()` or `waterdata.get_stats_date_range()`&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_discharge_peaks&quot;</span><span class="p">:</span> <span class="s2">&quot;`waterdata.get_peaks()`&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_ratings&quot;</span><span class="p">:</span> <span class="s2">&quot;`waterdata.get_ratings()`&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_record&quot;</span><span class="p">:</span> <span class="s2">&quot;the appropriate `waterdata.get_*()` for the service you need&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;query_waterdata&quot;</span><span class="p">:</span> <span class="s2">&quot;a high-level `waterdata.get_*()` helper&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;query_waterservices&quot;</span><span class="p">:</span> <span class="s2">&quot;a high-level `waterdata.get_*()` helper&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">_deprecation_state</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">local</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="_warn_deprecated">
+<a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._warn_deprecated">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_warn_deprecated</span><span class="p">(</span><span class="n">func_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Emit a per-function DeprecationWarning pointing at the waterdata replacement.&quot;&quot;&quot;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;`nwis.</span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s2">` is deprecated and will be removed from &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;`dataretrieval` on or after </span><span class="si">{</span><span class="n">_NWIS_REMOVAL_DATE</span><span class="si">}</span><span class="s2">; &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;use </span><span class="si">{</span><span class="n">_REPLACEMENTS</span><span class="p">[</span><span class="n">func_name</span><span class="p">]</span><span class="si">}</span><span class="s2"> instead.&quot;</span><span class="p">,</span>
+        <span class="ne">DeprecationWarning</span><span class="p">,</span>
+        <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_deprecated">
+<a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._deprecated">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_deprecated</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mark an nwis function as deprecated.</span>
+
+<span class="sd">    Wrappers like ``get_record`` -&gt; ``get_iv`` -&gt; ``query_waterservices`` would</span>
+<span class="sd">    otherwise emit one warning per layer; the thread-local sentinel ensures the</span>
+<span class="sd">    user sees only the outermost call&#39;s warning.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_REPLACEMENTS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;_REPLACEMENTS missing entry for </span><span class="si">{</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2">; &quot;</span>
+            <span class="s2">&quot;add a `waterdata` replacement before applying @_deprecated.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_deprecation_state</span><span class="p">,</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">_deprecation_state</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_warn_deprecated</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">_deprecation_state</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
 
 
 <div class="viewcode-block" id="_parse_json_or_raise">
@@ -256,6 +319,7 @@
 
 <div class="viewcode-block" id="get_discharge_peaks">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_discharge_peaks">[docs]</a>
+<span class="nd">@_deprecated</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_discharge_peaks</span><span class="p">(</span>
     <span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -339,6 +403,7 @@
 
 <div class="viewcode-block" id="get_stats">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_stats">[docs]</a>
+<span class="nd">@_deprecated</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_stats</span><span class="p">(</span>
     <span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
@@ -403,6 +468,7 @@
 
 <div class="viewcode-block" id="query_waterdata">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.query_waterdata">[docs]</a>
+<span class="nd">@_deprecated</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">query_waterdata</span><span class="p">(</span>
     <span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">requests</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
@@ -451,6 +517,7 @@
 
 <div class="viewcode-block" id="query_waterservices">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.query_waterservices">[docs]</a>
+<span class="nd">@_deprecated</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">query_waterservices</span><span class="p">(</span>
     <span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">requests</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
@@ -517,6 +584,7 @@
 
 <div class="viewcode-block" id="get_dv">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_dv">[docs]</a>
+<span class="nd">@_deprecated</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_dv</span><span class="p">(</span>
     <span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -591,6 +659,7 @@
 
 <div class="viewcode-block" id="get_info">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_info">[docs]</a>
+<span class="nd">@_deprecated</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_info</span><span class="p">(</span><span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get site description information from NWIS.</span>
@@ -709,6 +778,7 @@
 
 <div class="viewcode-block" id="get_iv">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_iv">[docs]</a>
+<span class="nd">@_deprecated</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_iv</span><span class="p">(</span>
     <span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -801,6 +871,7 @@
 
 <div class="viewcode-block" id="get_ratings">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_ratings">[docs]</a>
+<span class="nd">@_deprecated</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_ratings</span><span class="p">(</span>
     <span class="n">site</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">file_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;base&quot;</span><span class="p">,</span>
@@ -861,6 +932,7 @@
 
 <div class="viewcode-block" id="what_sites">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.what_sites">[docs]</a>
+<span class="nd">@_deprecated</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">what_sites</span><span class="p">(</span><span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Search NWIS for sites within a region with specific data.</span>
@@ -893,7 +965,6 @@
 <span class="sd">        ... )</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
@@ -904,6 +975,7 @@
 
 <div class="viewcode-block" id="get_record">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_record">[docs]</a>
+<span class="nd">@_deprecated</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_record</span><span class="p">(</span>
     <span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
