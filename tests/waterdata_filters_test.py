@@ -446,17 +446,14 @@ def test_cql_json_filter_is_not_chunked():
         sent_filters.append(kwargs.get("filter"))
         return _fake_prepared_request()
 
-    with (
-        mock.patch(
-            "dataretrieval.waterdata.utils._construct_api_requests",
-            side_effect=fake_construct_api_requests,
-        ),
-        mock.patch(
-            "dataretrieval.waterdata.utils._walk_pages",
-            return_value=(
-                pd.DataFrame({"id": ["row-1"], "value": [1]}),
-                _fake_response(),
-            ),
+    with mock.patch(
+        "dataretrieval.waterdata.utils._construct_api_requests",
+        side_effect=fake_construct_api_requests,
+    ), mock.patch(
+        "dataretrieval.waterdata.utils._walk_pages",
+        return_value=(
+            pd.DataFrame({"id": ["row-1"], "value": [1]}),
+            _fake_response(),
         ),
     ):
         get_continuous(
