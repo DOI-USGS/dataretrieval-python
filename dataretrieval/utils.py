@@ -150,7 +150,7 @@ def attach_datetime_columns(df):
     for col in df.columns:
         if not col.endswith("Date"):
             continue
-        prefix = col.removesuffix("Date")
+        prefix = col[: -len("Date")]
         target = prefix + "DateTime"
         if target in columns or target in new_columns:
             continue
