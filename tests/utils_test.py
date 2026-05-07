@@ -100,7 +100,7 @@ class Test_to_str:
 
 
 class Test_attach_datetime_columns:
-    """Tests of attach_datetime_columns, which derives <prefix>DateTime UTC
+    """Tests of _attach_datetime_columns, which derives <prefix>DateTime UTC
     columns from Date/Time/TimeZone triplets in Samples and WQP CSVs."""
 
     def test_wqx3_triplet_resolves_to_utc(self):
@@ -111,7 +111,7 @@ class Test_attach_datetime_columns:
                 "Activity_StartTimeZone": ["PST", "EST"],
             }
         )
-        df = utils.attach_datetime_columns(df)
+        df = utils._attach_datetime_columns(df)
         assert df["Activity_StartDateTime"][0] == pd.Timestamp(
             "2024-01-09 18:00:00", tz="UTC"
         )
@@ -128,7 +128,7 @@ class Test_attach_datetime_columns:
                 "ActivityStartTime/TimeZoneCode": ["PST"],
             }
         )
-        df = utils.attach_datetime_columns(df)
+        df = utils._attach_datetime_columns(df)
         assert df["ActivityStartDateTime"][0] == pd.Timestamp(
             "2024-01-09 18:00:00", tz="UTC"
         )
@@ -141,7 +141,7 @@ class Test_attach_datetime_columns:
                 "Activity_StartTimeZone": ["BOGUS"],
             }
         )
-        df = utils.attach_datetime_columns(df)
+        df = utils._attach_datetime_columns(df)
         assert df["Activity_StartDateTime"].isna().all()
 
     def test_missing_time_or_tz_is_NaT(self):
@@ -152,7 +152,7 @@ class Test_attach_datetime_columns:
                 "Activity_StartTimeZone": ["PST", "EST"],
             }
         )
-        df = utils.attach_datetime_columns(df)
+        df = utils._attach_datetime_columns(df)
         assert df["Activity_StartDateTime"][0] == pd.Timestamp(
             "2024-01-09 18:00:00", tz="UTC"
         )
@@ -167,7 +167,7 @@ class Test_attach_datetime_columns:
                 "Activity_StartDateTime": ["preexisting"],
             }
         )
-        df = utils.attach_datetime_columns(df)
+        df = utils._attach_datetime_columns(df)
         assert df["Activity_StartDateTime"].tolist() == ["preexisting"]
 
     def test_multiple_triplets_handled(self):
@@ -181,11 +181,11 @@ class Test_attach_datetime_columns:
                 "LabInfo_AnalysisStartTimeZone": ["EST"],
             }
         )
-        df = utils.attach_datetime_columns(df)
+        df = utils._attach_datetime_columns(df)
         assert "Activity_StartDateTime" in df.columns
         assert "LabInfo_AnalysisStartDateTime" in df.columns
 
     def test_lone_date_column_left_alone(self):
         df = pd.DataFrame({"LastChangeDate": ["2024-01-09"]})
-        df = utils.attach_datetime_columns(df)
+        df = utils._attach_datetime_columns(df)
         assert list(df.columns) == ["LastChangeDate"]

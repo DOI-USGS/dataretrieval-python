@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 
 import pandas as pd
 
-from .utils import BaseMetadata, attach_datetime_columns, query
+from .utils import BaseMetadata, _attach_datetime_columns, query
 
 if TYPE_CHECKING:
     from pandas import DataFrame
@@ -152,7 +152,7 @@ def get_results(
     response = query(url, kwargs, delimiter=";", ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
-    df = attach_datetime_columns(df)
+    df = _attach_datetime_columns(df)
     return df, WQP_Metadata(response)
 
 

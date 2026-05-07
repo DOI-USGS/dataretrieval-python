@@ -99,7 +99,9 @@ def format_datetime(df, date_field, time_field, tz_field):
 _TIME_TZ_SUFFIXES = (("Time", "TimeZone"), ("Time/Time", "Time/TimeZoneCode"))
 
 
-def _build_utc_datetime(date_series, time_series, tz_series):
+def _build_utc_datetime(
+    date_series: pd.Series, time_series: pd.Series, tz_series: pd.Series
+) -> pd.Series:
     """Combine date + time + tz-abbreviation columns into a UTC pandas Series.
 
     Unknown timezone codes (and rows missing any of the three values) yield
@@ -118,7 +120,7 @@ def _build_utc_datetime(date_series, time_series, tz_series):
     )
 
 
-def attach_datetime_columns(df):
+def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Add ``<prefix>DateTime`` UTC columns for any Date/Time/TimeZone triplets.
 
     Detects two naming patterns that appear in USGS Samples and Water Quality
