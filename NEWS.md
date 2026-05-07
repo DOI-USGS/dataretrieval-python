@@ -1,3 +1,5 @@
+**05/06/2026:** Each remaining active function in `dataretrieval.nwis` now emits a per-function `DeprecationWarning` naming the `waterdata` replacement to migrate to (visible the first time users call each getter). The `nwis` module is scheduled for removal on or after **2027-05-06**.
+
 **05/06/2026:** Added `waterdata.get_ratings(...)` — wraps the new Water Data STAC catalog (`api.waterdata.usgs.gov/stac/v0/search`) for USGS stage-discharge rating curves. Returns parsed `exsa` / `base` / `corr` rating tables as a dict of DataFrames keyed by feature ID, or just the list of available STAC features when `download_and_parse=False`. Mirrors R's `read_waterdata_ratings`.
 
 **05/06/2026:** Added `waterdata.get_field_measurements_metadata(...)` — wraps the OGC `field-measurements-metadata` collection. Returns one row per (location, parameter) field-measurement series describing its period of record, units, etc., without the underlying observations. Discrete-measurement analogue to `get_time_series_metadata`. Mirrors R's `read_waterdata_field_meta`.

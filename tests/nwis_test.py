@@ -1,5 +1,6 @@
 import datetime
 import json
+import warnings
 from pathlib import Path
 from unittest import mock
 
@@ -116,6 +117,93 @@ def test_preformat_peaks_response():
 
 
 # Removed defunct gwlevels tests.
+
+
+class TestDeprecationWarnings:
+    """Verify per-function DeprecationWarning fires with the right replacement.
+
+    The module-level "use waterdata instead" warning fires on import; these
+    tests pin the function-specific replacements so users see actionable
+    migration guidance the first time they call each NWIS getter.
+    """
+
+    @pytest.mark.parametrize(
+        "func_name, replacement_substring",
+        [
+            ("get_dv", "waterdata.get_daily"),
+            ("get_iv", "waterdata.get_continuous"),
+            ("get_info", "waterdata.get_monitoring_locations"),
+            ("what_sites", "waterdata.get_monitoring_locations"),
+            ("get_stats", "waterdata.get_stats_por"),
+            ("get_discharge_peaks", "waterdata.get_peaks"),
+            ("get_ratings", "waterdata.get_ratings"),
+            ("get_record", "waterdata.get_*"),
+            ("query_waterdata", "waterdata.get_*"),
+            ("query_waterservices", "waterdata.get_*"),
+        ],
+    )
+    def test_warn_message_includes_replacement(self, func_name, replacement_substring):
+        """Each deprecated function emits a warning naming the right replacement."""
+        from dataretrieval.nwis import _NWIS_REMOVAL_DATE, _warn_deprecated
+
+        with pytest.warns(DeprecationWarning, match=func_name) as record:
+            _warn_deprecated(func_name)
+        message = str(record[0].message)
+        assert replacement_substring in message
+        assert _NWIS_REMOVAL_DATE in message
+
+    def test_get_iv_fires_deprecation_on_call(self, requests_mock):
+        """End-to-end: a real call routes through _warn_deprecated."""
+        requests_mock.get(
+            "https://waterservices.usgs.gov/nwis/iv",
+            json={"value": {"timeSeries": []}},
+        )
+        with pytest.warns(DeprecationWarning, match="get_iv.*waterdata.get_continuous"):
+            get_iv(sites="01491000")
+
+    def test_nested_calls_emit_one_warning(self, requests_mock):
+        """get_record(service='iv') wraps get_iv -> query_waterservices.
+
+        Without re-entrancy suppression the user would see 3 near-identical
+        deprecation warnings for one call; pin the outermost-only contract.
+        """
+        requests_mock.get(
+            "https://waterservices.usgs.gov/nwis/iv",
+            json={"value": {"timeSeries": []}},
+        )
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", DeprecationWarning)
+            get_record(sites="01491000", service="iv")
+        deprecations = [w for w in caught if issubclass(w.category, DeprecationWarning)]
+        assert len(deprecations) == 1
+        assert "get_record" in str(deprecations[0].message)
+
+    @pytest.mark.parametrize(
+        "name",
+        [
+            "get_daily",
+            "get_continuous",
+            "get_monitoring_locations",
+            "get_stats_por",
+            "get_stats_date_range",
+            "get_peaks",
+            "get_ratings",
+        ],
+    )
+    def test_named_replacement_exists_in_waterdata(self, name):
+        """Tripwire: every concrete `waterdata.*` named in a deprecation message
+        must actually exist, so a user following the migration guidance doesn't
+        hit AttributeError.
+
+        Fails loudly if this PR ever lands before its referenced replacement
+        does (e.g. before `get_peaks` from #267).
+        """
+        import dataretrieval.waterdata as wd
+
+        assert callable(getattr(wd, name, None)), (
+            f"`waterdata.{name}` is missing — fix `_REPLACEMENTS` in nwis.py "
+            "or add the replacement before merging."
+        )
 
 
 class TestDefunct:

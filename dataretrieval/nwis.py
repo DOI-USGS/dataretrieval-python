@@ -6,6 +6,8 @@
 
 from __future__ import annotations
 
+import functools
+import threading
 import warnings
 from json import JSONDecodeError
 
@@ -51,6 +53,61 @@ _NWIS_RDB_DTYPES = {
     "parm_cd": str,
     "parameter_cd": str,
 }
+
+
+_NWIS_REMOVAL_DATE = "2027-05-06"
+_REPLACEMENTS = {
+    "get_dv": "`waterdata.get_daily()`",
+    "get_iv": "`waterdata.get_continuous()`",
+    "get_info": "`waterdata.get_monitoring_locations()`",
+    "what_sites": "`waterdata.get_monitoring_locations()`",
+    "get_stats": "`waterdata.get_stats_por()` or `waterdata.get_stats_date_range()`",
+    "get_discharge_peaks": "`waterdata.get_peaks()`",
+    "get_ratings": "`waterdata.get_ratings()`",
+    "get_record": "the appropriate `waterdata.get_*()` for the service you need",
+    "query_waterdata": "a high-level `waterdata.get_*()` helper",
+    "query_waterservices": "a high-level `waterdata.get_*()` helper",
+}
+
+_deprecation_state = threading.local()
+
+
+def _warn_deprecated(func_name: str) -> None:
+    """Emit a per-function DeprecationWarning pointing at the waterdata replacement."""
+    warnings.warn(
+        f"`nwis.{func_name}` is deprecated and will be removed from "
+        f"`dataretrieval` on or after {_NWIS_REMOVAL_DATE}; "
+        f"use {_REPLACEMENTS[func_name]} instead.",
+        DeprecationWarning,
+        stacklevel=3,
+    )
+
+
+def _deprecated(func):
+    """Mark an nwis function as deprecated.
+
+    Wrappers like ``get_record`` -> ``get_iv`` -> ``query_waterservices`` would
+    otherwise emit one warning per layer; the thread-local sentinel ensures the
+    user sees only the outermost call's warning.
+    """
+    if func.__name__ not in _REPLACEMENTS:
+        raise RuntimeError(
+            f"_REPLACEMENTS missing entry for {func.__name__!r}; "
+            "add a `waterdata` replacement before applying @_deprecated."
+        )
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if getattr(_deprecation_state, "active", False):
+            return func(*args, **kwargs)
+        _deprecation_state.active = True
+        try:
+            _warn_deprecated(func.__name__)
+            return func(*args, **kwargs)
+        finally:
+            _deprecation_state.active = False
+
+    return wrapper
 
 
 def _parse_json_or_raise(response: requests.Response) -> pd.DataFrame:
@@ -163,6 +220,7 @@ def get_discharge_measurements(**kwargs):
     )
 
 
+@_deprecated
 def get_discharge_peaks(
     sites: list[str] | str | None = None,
     start: str | None = None,
@@ -240,6 +298,7 @@ def get_gwlevels(**kwargs):
     )
 
 
+@_deprecated
 def get_stats(
     sites: list[str] | str | None = None, ssl_check: bool = True, **kwargs
 ) -> tuple[pd.DataFrame, BaseMetadata]:
@@ -301,6 +360,7 @@ def get_stats(
     return _read_rdb(response.text), NWIS_Metadata(response, **kwargs)
 
 
+@_deprecated
 def query_waterdata(
     service: str, ssl_check: bool = True, **kwargs
 ) -> requests.models.Response:
@@ -346,6 +406,7 @@ def query_waterdata(
     return query(url, payload=kwargs, ssl_check=ssl_check)
 
 
+@_deprecated
 def query_waterservices(
     service: str, ssl_check: bool = True, **kwargs
 ) -> requests.models.Response:
@@ -409,6 +470,7 @@ def query_waterservices(
     return query(url, payload=kwargs, ssl_check=ssl_check)
 
 
+@_deprecated
 def get_dv(
     sites: list[str] | str | None = None,
     start: str | None = None,
@@ -480,6 +542,7 @@ def get_dv(
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
 
+@_deprecated
 def get_info(ssl_check: bool = True, **kwargs) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Get site description information from NWIS.
@@ -595,6 +658,7 @@ def get_info(ssl_check: bool = True, **kwargs) -> tuple[pd.DataFrame, BaseMetada
     return _read_rdb(response.text), NWIS_Metadata(response, **kwargs)
 
 
+@_deprecated
 def get_iv(
     sites: list[str] | str | None = None,
     start: str | None = None,
@@ -678,6 +742,7 @@ def get_water_use(**kwargs):
     raise NameError("`nwis.get_water_use` is defunct.")
 
 
+@_deprecated
 def get_ratings(
     site: str | None = None,
     file_type: str = "base",
@@ -735,6 +800,7 @@ def get_ratings(
     return _read_rdb(response.text), NWIS_Metadata(response, site_no=site)
 
 
+@_deprecated
 def what_sites(ssl_check: bool = True, **kwargs) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Search NWIS for sites within a region with specific data.
@@ -767,7 +833,6 @@ def what_sites(ssl_check: bool = True, **kwargs) -> tuple[pd.DataFrame, BaseMeta
         ... )
 
     """
-
     response = query_waterservices(service="site", ssl_check=ssl_check, **kwargs)
 
     df = _read_rdb(response.text)
@@ -775,6 +840,7 @@ def what_sites(ssl_check: bool = True, **kwargs) -> tuple[pd.DataFrame, BaseMeta
     return df, NWIS_Metadata(response, **kwargs)
 
 
+@_deprecated
 def get_record(
     sites: list[str] | str | None = None,
     start: str | None = None,
