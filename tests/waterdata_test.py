@@ -55,19 +55,15 @@ def test_mock_get_samples(requests_mock):
         monitoringLocationIdentifier="USGS-05406500",
     )
     assert type(df) is DataFrame
-    # 67 rows × 181 source columns + 6 derived <prefix>DateTime columns
     assert df.shape == (67, 187)
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
     assert md.header == {"mock_header": "value"}
     assert md.comment is None
-    # The Activity start triplet is parsed into a UTC Timestamp column.
-    assert "Activity_StartDateTime" in df.columns
-    # Row 0 is "2023-08-22 08:50:00 CDT" → 13:50 UTC.
+    # Row 0 of the fixture is "2023-08-22 08:50:00 CDT" → 13:50 UTC.
     assert df["Activity_StartDateTime"].iloc[0] == pd.Timestamp(
         "2023-08-22 13:50:00", tz="UTC"
     )
-    # Original triplet columns are preserved.
     assert df["Activity_StartTimeZone"].iloc[0] == "CDT"
 
 
@@ -137,7 +133,6 @@ def test_samples_activity():
         monitoringLocationIdentifier="USGS-06719505",
     )
     assert len(df) > 0
-    # 95 columns from the API plus 2 derived <prefix>DateTime columns.
     assert len(df.columns) == 97
     assert "Location_HUCTwelveDigitCode" in df.columns
 

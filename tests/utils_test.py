@@ -104,8 +104,6 @@ class Test_attach_datetime_columns:
     columns from Date/Time/TimeZone triplets in Samples and WQP CSVs."""
 
     def test_wqx3_triplet_resolves_to_utc(self):
-        """The Samples / WQX3 pattern (Activity_Start*) is detected and the
-        resulting DateTime is converted to UTC."""
         df = pd.DataFrame(
             {
                 "Activity_StartDate": ["2024-01-09", "2024-02-15"],
@@ -114,21 +112,15 @@ class Test_attach_datetime_columns:
             }
         )
         df = utils.attach_datetime_columns(df)
-        assert "Activity_StartDateTime" in df.columns
-        # PST is UTC-8 → 10:00 PST is 18:00 UTC
         assert df["Activity_StartDateTime"][0] == pd.Timestamp(
             "2024-01-09 18:00:00", tz="UTC"
         )
-        # EST is UTC-5 → 14:30 EST is 19:30 UTC
         assert df["Activity_StartDateTime"][1] == pd.Timestamp(
             "2024-02-15 19:30:00", tz="UTC"
         )
-        # Original columns are preserved
         assert df["Activity_StartTimeZone"].tolist() == ["PST", "EST"]
 
     def test_legacy_wqp_triplet_resolves_to_utc(self):
-        """The legacy WQP pattern (slash-separated time/tz columns) is also
-        detected."""
         df = pd.DataFrame(
             {
                 "ActivityStartDate": ["2024-01-09"],
@@ -137,13 +129,11 @@ class Test_attach_datetime_columns:
             }
         )
         df = utils.attach_datetime_columns(df)
-        assert "ActivityStartDateTime" in df.columns
         assert df["ActivityStartDateTime"][0] == pd.Timestamp(
             "2024-01-09 18:00:00", tz="UTC"
         )
 
     def test_unknown_timezone_is_NaT(self):
-        """Unknown timezone codes resolve to NaT rather than raising."""
         df = pd.DataFrame(
             {
                 "Activity_StartDate": ["2024-01-09"],
@@ -155,7 +145,6 @@ class Test_attach_datetime_columns:
         assert df["Activity_StartDateTime"].isna().all()
 
     def test_missing_time_or_tz_is_NaT(self):
-        """Rows with a missing time or tz produce NaT but don't poison others."""
         df = pd.DataFrame(
             {
                 "Activity_StartDate": ["2024-01-09", "2024-02-15"],
@@ -170,7 +159,6 @@ class Test_attach_datetime_columns:
         assert pd.isna(df["Activity_StartDateTime"][1])
 
     def test_existing_datetime_column_not_overwritten(self):
-        """An existing <prefix>DateTime column is left alone."""
         df = pd.DataFrame(
             {
                 "Activity_StartDate": ["2024-01-09"],
@@ -183,7 +171,6 @@ class Test_attach_datetime_columns:
         assert df["Activity_StartDateTime"].tolist() == ["preexisting"]
 
     def test_multiple_triplets_handled(self):
-        """All Date/Time/TimeZone triplets in the frame get DateTime columns."""
         df = pd.DataFrame(
             {
                 "Activity_StartDate": ["2024-01-09"],
@@ -199,8 +186,6 @@ class Test_attach_datetime_columns:
         assert "LabInfo_AnalysisStartDateTime" in df.columns
 
     def test_lone_date_column_left_alone(self):
-        """A Date column without matching Time/TimeZone columns is ignored."""
         df = pd.DataFrame({"LastChangeDate": ["2024-01-09"]})
         df = utils.attach_datetime_columns(df)
-        assert "LastChangeDateTime" not in df.columns
         assert list(df.columns) == ["LastChangeDate"]

@@ -94,23 +94,9 @@ def format_datetime(df, date_field, time_field, tz_field):
     return df
 
 
-# Triplet patterns we recognize in WQP and Samples CSV responses. Each entry
-# defines how to derive the time/timezone column names from a date column, and
-# the suffix to strip when forming the new <prefix>DateTime column name.
-_DATETIME_TRIPLET_PATTERNS = (
-    # WQX3 / Samples: Activity_StartDate, Activity_StartTime, Activity_StartTimeZone
-    {
-        "date_suffix": "Date",
-        "time_from_date": lambda d: d[: -len("Date")] + "Time",
-        "tz_from_date": lambda d: d[: -len("Date")] + "TimeZone",
-    },
-    # Legacy WQP: <X>Date, <X>Time/Time, <X>Time/TimeZoneCode
-    {
-        "date_suffix": "Date",
-        "time_from_date": lambda d: d[: -len("Date")] + "Time/Time",
-        "tz_from_date": lambda d: d[: -len("Date")] + "Time/TimeZoneCode",
-    },
-)
+# (time-suffix, tz-suffix) pairs that follow a "<prefix>Date" column.
+# First entry is WQX3 / Samples, second is legacy WQP (slash-separated).
+_TIME_TZ_SUFFIXES = (("Time", "TimeZone"), ("Time/Time", "Time/TimeZoneCode"))
 
 
 def _build_utc_datetime(date_series, time_series, tz_series):
@@ -127,13 +113,9 @@ def _build_utc_datetime(date_series, time_series, tz_series):
         + " "
         + offsets.astype("string")
     )
-    # Rows where any input is missing produce a string containing "<NA>"; mark
-    # those so pd.to_datetime returns NaT rather than guessing.
-    invalid = (
-        date_series.isna() | time_series.isna() | tz_series.isna() | offsets.isna()
+    return pd.to_datetime(
+        combined, format="%Y-%m-%d %H:%M:%S %z", utc=True, errors="coerce"
     )
-    combined = combined.mask(invalid)
-    return pd.to_datetime(combined, format="mixed", utc=True, errors="coerce")
 
 
 def attach_datetime_columns(df):
@@ -160,29 +142,30 @@ def attach_datetime_columns(df):
     Returns
     -------
     df : ``pandas.DataFrame``
-        A DataFrame with any derivable ``<prefix>DateTime`` columns appended.
-        Callers should use the returned value (the helper may concatenate
-        rather than mutate in place).
+        A new DataFrame with any derivable ``<prefix>DateTime`` columns
+        appended (or the original frame if no triplets were found).
     """
     columns = set(df.columns)
     new_columns = {}
     for col in df.columns:
         if not col.endswith("Date"):
             continue
-        for pattern in _DATETIME_TRIPLET_PATTERNS:
-            time_col = pattern["time_from_date"](col)
-            tz_col = pattern["tz_from_date"](col)
-            if time_col not in columns or tz_col not in columns:
-                continue
-            target = col[: -len("Date")] + "DateTime"
-            if target in columns or target in new_columns:
+        prefix = col.removesuffix("Date")
+        target = prefix + "DateTime"
+        if target in columns or target in new_columns:
+            continue
+        for time_suffix, tz_suffix in _TIME_TZ_SUFFIXES:
+            time_col = prefix + time_suffix
+            tz_col = prefix + tz_suffix
+            if time_col in columns and tz_col in columns:
+                new_columns[target] = _build_utc_datetime(
+                    df[col], df[time_col], df[tz_col]
+                )
                 break
-            new_columns[target] = _build_utc_datetime(df[col], df[time_col], df[tz_col])
-            break
     if not new_columns:
         return df
-    # Concat in one shot — appending columns one-by-one to a wide CSV-derived
-    # frame triggers pandas' fragmentation PerformanceWarning.
+    # Concat in one shot — per-column assignment on a wide CSV-derived frame
+    # triggers pandas' fragmentation PerformanceWarning.
     return pd.concat([df, pd.DataFrame(new_columns, index=df.index)], axis=1)
 
 

@@ -33,14 +33,11 @@ def test_get_results(requests_mock):
         startDateHi="09-30-2011",
     )
     assert type(df) is DataFrame
-    # 5 rows × 63 source columns + 2 derived <prefix>DateTime columns
     assert df.shape == (5, 65)
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
     assert md.header == {"mock_header": "value"}
     assert md.comment is None
-    # Legacy WQP triplets (slash-separated) are parsed into UTC.
-    assert "ActivityStartDateTime" in df.columns
     assert df["ActivityStartDateTime"].notna().all()
 
 
@@ -62,14 +59,11 @@ def test_get_results_WQX3(requests_mock):
         startDateHi="09-30-2011",
     )
     assert type(df) is DataFrame
-    # 5 rows × 180 source columns + 6 derived <prefix>DateTime columns
     assert df.shape == (5, 186)
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
     assert md.header == {"mock_header": "value"}
     assert md.comment is None
-    # WQX3 WQP triplets are parsed into UTC.
-    assert "Activity_StartDateTime" in df.columns
     assert df["Activity_StartDateTime"].notna().all()
 
 
