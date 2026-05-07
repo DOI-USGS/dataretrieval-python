@@ -17,6 +17,7 @@ from dataretrieval.waterdata import (
     get_latest_continuous,
     get_latest_daily,
     get_monitoring_locations,
+    get_peaks,
     get_reference_table,
     get_samples,
     get_samples_summary,
@@ -397,6 +398,28 @@ def test_get_field_measurements_metadata_multi_site():
         "USGS-07064000",
         "USGS-07068000",
     }
+
+
+def test_get_peaks():
+    df, md = get_peaks(monitoring_location_id="USGS-02238500", skip_geometry=True)
+    assert "peak_id" in df.columns
+    assert "value" in df.columns
+    assert "water_year" in df.columns
+    assert (df["monitoring_location_id"] == "USGS-02238500").all()
+    assert set(df["parameter_code"].unique()).issubset({"00060", "00065"})
+    assert hasattr(md, "url")
+    assert hasattr(md, "query_time")
+
+
+def test_get_peaks_water_year_filter():
+    df, _ = get_peaks(
+        monitoring_location_id="USGS-02238500",
+        parameter_code="00060",
+        water_year=[2020, 2021, 2022],
+        skip_geometry=True,
+    )
+    assert (df["parameter_code"] == "00060").all()
+    assert set(df["water_year"].unique()).issubset({2020, 2021, 2022})
 
 
 def test_get_reference_table():

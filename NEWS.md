@@ -2,6 +2,8 @@
 
 **05/06/2026:** Added `waterdata.get_field_measurements_metadata(...)` — wraps the OGC `field-measurements-metadata` collection. Returns one row per (location, parameter) field-measurement series describing its period of record, units, etc., without the underlying observations. Discrete-measurement analogue to `get_time_series_metadata`. Mirrors R's `read_waterdata_field_meta`.
 
+**05/06/2026:** Added `waterdata.get_peaks(...)` — wraps the new OGC `peaks` collection, returning the annual peak streamflow / stage record for a monitoring location (one row per water year, per parameter). Standard input to flood-frequency analysis. Supports calendar/water-year filters and the usual location/parameter/CQL knobs shared with the other OGC getters.
+
 **05/05/2026:** Added `waterdata.get_combined_metadata(...)` — wraps the Water Data API's `combined-metadata` collection, which joins the monitoring-locations catalog with the time-series-metadata catalog and returns one row per (location, parameter, statistic) inventory entry. This is the most flexible "what data is available" endpoint in the API: any location attribute (state, HUC, site type, drainage area, well-construction depth, …) can be combined with any time-series attribute (parameter code, statistic, data type, period of record, …) in a single query. Mirrors R's `read_waterdata_combined_meta`.
 
 **05/05/2026:** Added `waterdata.get_samples_summary(monitoringLocationIdentifier=...)` — wraps the Samples database `/summary/{id}` endpoint, returning per-characteristic result and activity counts plus first / most recent activity dates for a single monitoring location. Useful for taking inventory of available discrete-sample data before pulling observations with `get_samples`.
