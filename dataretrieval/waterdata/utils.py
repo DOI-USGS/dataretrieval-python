@@ -6,10 +6,10 @@ import os
 import re
 from datetime import datetime
 from typing import Any, get_args
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import requests
-from zoneinfo import ZoneInfo
 
 from dataretrieval import __version__
 from dataretrieval.utils import BaseMetadata
