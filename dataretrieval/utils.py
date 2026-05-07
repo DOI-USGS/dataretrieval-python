@@ -95,8 +95,14 @@ def format_datetime(df, date_field, time_field, tz_field):
 
 
 # (time-suffix, tz-suffix) pairs that follow a "<prefix>Date" column.
-# First entry is WQX3 / Samples, second is legacy WQP (slash-separated).
-_TIME_TZ_SUFFIXES = (("Time", "TimeZone"), ("Time/Time", "Time/TimeZoneCode"))
+_TIME_TZ_SUFFIXES = (
+    # WQX3 / Samples, e.g.
+    #   Activity_StartDate / Activity_StartTime / Activity_StartTimeZone
+    ("Time", "TimeZone"),
+    # Legacy WQP (slash-separated), e.g.
+    #   ActivityStartDate / ActivityStartTime/Time / ActivityStartTime/TimeZoneCode
+    ("Time/Time", "Time/TimeZoneCode"),
+)
 
 
 def _build_utc_datetime(
