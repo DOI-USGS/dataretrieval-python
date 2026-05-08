@@ -16,7 +16,7 @@ import pandas as pd
 import requests
 from requests.models import PreparedRequest
 
-from dataretrieval.utils import BaseMetadata, to_str
+from dataretrieval.utils import BaseMetadata, _attach_datetime_columns, to_str
 from dataretrieval.waterdata.filters import FILTER_LANG
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,
@@ -2266,7 +2266,15 @@ def get_samples(
     Returns
     -------
     df : ``pandas.DataFrame``
-        Formatted data returned from the API query.
+        Formatted data returned from the API query. For each
+        ``<prefix>Date`` / ``<prefix>Time`` / ``<prefix>TimeZone`` triplet in
+        the response (e.g. ``Activity_StartDate``, ``Activity_StartTime``,
+        ``Activity_StartTimeZone``), an additional ``<prefix>DateTime`` column
+        is appended holding a UTC ``Timestamp`` derived from the three. The
+        original Date/Time/TimeZone columns are left intact; rows whose
+        timezone abbreviation is not recognized resolve to ``NaT``. Rows are
+        sorted by ``Activity_StartDateTime`` when present (the API's default
+        order is unstable).
     md : :obj:`dataretrieval.utils.Metadata`
         Custom ``dataretrieval`` metadata object pertaining to the query.
 
@@ -2323,6 +2331,7 @@ def get_samples(
     response.raise_for_status()
 
     df = pd.read_csv(StringIO(response.text), delimiter=",")
+    df = _attach_datetime_columns(df)
 
     return df, BaseMetadata(response)
 

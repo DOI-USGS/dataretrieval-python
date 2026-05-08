@@ -54,11 +54,13 @@ def test_mock_get_samples(requests_mock):
         monitoringLocationIdentifier="USGS-05406500",
     )
     assert type(df) is DataFrame
-    assert df.size == 12127
+    # 181 source columns + 6 derived <prefix>DateTime columns
+    assert df.shape == (67, 187)
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
     assert md.header == {"mock_header": "value"}
     assert md.comment is None
+    assert df["Activity_StartDateTime"].notna().any()
 
 
 def test_mock_get_samples_summary(requests_mock):
@@ -127,7 +129,7 @@ def test_samples_activity():
         monitoringLocationIdentifier="USGS-06719505",
     )
     assert len(df) > 0
-    assert len(df.columns) == 95
+    assert len(df.columns) == 97
     assert "Location_HUCTwelveDigitCode" in df.columns
 
 

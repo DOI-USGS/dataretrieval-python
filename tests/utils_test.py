@@ -97,3 +97,61 @@ class Test_to_str:
 
     def test_to_str_non_iterable(self):
         assert utils.to_str(123) is None
+
+
+class Test_attach_datetime_columns:
+    """Tests of _attach_datetime_columns, which derives <prefix>DateTime UTC
+    columns from Date/Time/TimeZone triplets in Samples and WQP CSVs."""
+
+    def test_wqx3_triplet_resolves_to_utc(self):
+        df = pd.DataFrame(
+            {
+                "Activity_StartDate": ["2024-01-09", "2024-02-15"],
+                "Activity_StartTime": ["10:00:00", "14:30:00"],
+                "Activity_StartTimeZone": ["PST", "EST"],
+            }
+        )
+        df = utils._attach_datetime_columns(df)
+        assert df["Activity_StartDateTime"][0] == pd.Timestamp(
+            "2024-01-09 18:00:00", tz="UTC"
+        )
+        assert df["Activity_StartDateTime"][1] == pd.Timestamp(
+            "2024-02-15 19:30:00", tz="UTC"
+        )
+        assert df["Activity_StartTimeZone"].tolist() == ["PST", "EST"]
+
+    def test_legacy_wqp_triplet_resolves_to_utc(self):
+        df = pd.DataFrame(
+            {
+                "ActivityStartDate": ["2024-01-09"],
+                "ActivityStartTime/Time": ["10:00:00"],
+                "ActivityStartTime/TimeZoneCode": ["PST"],
+            }
+        )
+        df = utils._attach_datetime_columns(df)
+        assert df["ActivityStartDateTime"][0] == pd.Timestamp(
+            "2024-01-09 18:00:00", tz="UTC"
+        )
+
+    def test_unknown_timezone_is_NaT(self):
+        df = pd.DataFrame(
+            {
+                "Activity_StartDate": ["2024-01-09"],
+                "Activity_StartTime": ["10:00:00"],
+                "Activity_StartTimeZone": ["BOGUS"],
+            }
+        )
+        df = utils._attach_datetime_columns(df)
+        assert df["Activity_StartDateTime"].isna().all()
+
+    def test_existing_datetime_column_not_overwritten(self):
+        df = pd.DataFrame(
+            {
+                "Activity_StartDate": ["2024-01-09"],
+                "Activity_StartTime": ["10:00:00"],
+                "Activity_StartTimeZone": ["PST"],
+                "Activity_StartDateTime": ["preexisting"],
+            }
+        )
+        df = utils._attach_datetime_columns(df)
+        assert df["Activity_StartDateTime"].tolist() == ["preexisting"]

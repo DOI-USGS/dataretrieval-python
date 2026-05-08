@@ -14,7 +14,8 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Any, Iterable, Literal, get_args
+from collections.abc import Iterable
+from typing import Any, Literal, get_args
 
 import pandas as pd
 import requests
