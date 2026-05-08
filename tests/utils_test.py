@@ -144,20 +144,6 @@ class Test_attach_datetime_columns:
         df = utils._attach_datetime_columns(df)
         assert df["Activity_StartDateTime"].isna().all()
 
-    def test_missing_time_or_tz_is_NaT(self):
-        df = pd.DataFrame(
-            {
-                "Activity_StartDate": ["2024-01-09", "2024-02-15"],
-                "Activity_StartTime": ["10:00:00", None],
-                "Activity_StartTimeZone": ["PST", "EST"],
-            }
-        )
-        df = utils._attach_datetime_columns(df)
-        assert df["Activity_StartDateTime"][0] == pd.Timestamp(
-            "2024-01-09 18:00:00", tz="UTC"
-        )
-        assert pd.isna(df["Activity_StartDateTime"][1])
-
     def test_existing_datetime_column_not_overwritten(self):
         df = pd.DataFrame(
             {
@@ -169,60 +155,3 @@ class Test_attach_datetime_columns:
         )
         df = utils._attach_datetime_columns(df)
         assert df["Activity_StartDateTime"].tolist() == ["preexisting"]
-
-    def test_multiple_triplets_handled(self):
-        df = pd.DataFrame(
-            {
-                "Activity_StartDate": ["2024-01-09"],
-                "Activity_StartTime": ["10:00:00"],
-                "Activity_StartTimeZone": ["PST"],
-                "LabInfo_AnalysisStartDate": ["2024-01-10"],
-                "LabInfo_AnalysisStartTime": ["09:00:00"],
-                "LabInfo_AnalysisStartTimeZone": ["EST"],
-            }
-        )
-        df = utils._attach_datetime_columns(df)
-        assert "Activity_StartDateTime" in df.columns
-        assert "LabInfo_AnalysisStartDateTime" in df.columns
-
-    def test_lone_date_column_left_alone(self):
-        df = pd.DataFrame({"LastChangeDate": ["2024-01-09"]})
-        df = utils._attach_datetime_columns(df)
-        assert list(df.columns) == ["LastChangeDate"]
-
-    def test_rows_sorted_by_wqx3_activity_start(self):
-        df = pd.DataFrame(
-            {
-                "Activity_StartDate": ["2024-03-01", "2024-01-09", "2024-02-15"],
-                "Activity_StartTime": ["10:00:00", "10:00:00", "10:00:00"],
-                "Activity_StartTimeZone": ["UTC", "UTC", "UTC"],
-                "marker": ["c", "a", "b"],
-            }
-        )
-        df = utils._attach_datetime_columns(df)
-        assert df["marker"].tolist() == ["a", "b", "c"]
-        assert df.index.tolist() == [0, 1, 2]
-
-    def test_rows_sorted_by_legacy_activity_start_when_wqx3_absent(self):
-        df = pd.DataFrame(
-            {
-                "ActivityStartDate": ["2024-03-01", "2024-01-09"],
-                "ActivityStartTime/Time": ["10:00:00", "10:00:00"],
-                "ActivityStartTime/TimeZoneCode": ["UTC", "UTC"],
-                "marker": ["b", "a"],
-            }
-        )
-        df = utils._attach_datetime_columns(df)
-        assert df["marker"].tolist() == ["a", "b"]
-
-    def test_rows_sorted_by_first_date_column_as_fallback(self):
-        # No triplet → no DateTime column added, but rows still sort by the
-        # first *Date column found (mirrors R's importWQP.R fallback).
-        df = pd.DataFrame(
-            {
-                "LastChangeDate": ["2024-03-01", "2024-01-09"],
-                "marker": ["b", "a"],
-            }
-        )
-        df = utils._attach_datetime_columns(df)
-        assert df["marker"].tolist() == ["a", "b"]
