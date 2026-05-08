@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g18f831f1d documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g0f90912bc documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=de132bfb"></script>
+      <script src="../_static/documentation_options.js?v=bc18b2be"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -2043,7 +2043,15 @@ for the “results” service.</p></li>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query. For each
+<code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;Date</span></code> / <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;Time</span></code> / <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;TimeZone</span></code> triplet in
+the response (e.g. <code class="docutils literal notranslate"><span class="pre">Activity_StartDate</span></code>, <code class="docutils literal notranslate"><span class="pre">Activity_StartTime</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Activity_StartTimeZone</span></code>), an additional <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;DateTime</span></code> column
+is appended holding a UTC <code class="docutils literal notranslate"><span class="pre">Timestamp</span></code> derived from the three. The
+original Date/Time/TimeZone columns are left intact; rows whose
+timezone abbreviation is not recognized resolve to <code class="docutils literal notranslate"><span class="pre">NaT</span></code>. Rows are
+sorted by <code class="docutils literal notranslate"><span class="pre">Activity_StartDateTime</span></code> when present (the API’s default
+order is unstable).</p></li>
 <li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – Custom <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> metadata object pertaining to the query.</p></li>
 </ul>
 </p>

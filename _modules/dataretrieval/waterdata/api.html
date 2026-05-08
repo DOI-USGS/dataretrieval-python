@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g18f831f1d documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g0f90912bc documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=de132bfb"></script>
+      <script src="../../../_static/documentation_options.js?v=bc18b2be"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">requests.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">PreparedRequest</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span><span class="p">,</span> <span class="n">to_str</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span><span class="p">,</span> <span class="n">_attach_datetime_columns</span><span class="p">,</span> <span class="n">to_str</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.filters</span><span class="w"> </span><span class="kn">import</span> <span class="n">FILTER_LANG</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.types</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">CODE_SERVICES</span><span class="p">,</span>
@@ -2380,7 +2380,15 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame``</span>
-<span class="sd">        Formatted data returned from the API query.</span>
+<span class="sd">        Formatted data returned from the API query. For each</span>
+<span class="sd">        ``&lt;prefix&gt;Date`` / ``&lt;prefix&gt;Time`` / ``&lt;prefix&gt;TimeZone`` triplet in</span>
+<span class="sd">        the response (e.g. ``Activity_StartDate``, ``Activity_StartTime``,</span>
+<span class="sd">        ``Activity_StartTimeZone``), an additional ``&lt;prefix&gt;DateTime`` column</span>
+<span class="sd">        is appended holding a UTC ``Timestamp`` derived from the three. The</span>
+<span class="sd">        original Date/Time/TimeZone columns are left intact; rows whose</span>
+<span class="sd">        timezone abbreviation is not recognized resolve to ``NaT``. Rows are</span>
+<span class="sd">        sorted by ``Activity_StartDateTime`` when present (the API&#39;s default</span>
+<span class="sd">        order is unstable).</span>
 <span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
 <span class="sd">        Custom ``dataretrieval`` metadata object pertaining to the query.</span>
 
@@ -2437,6 +2445,7 @@
     <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">_attach_datetime_columns</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
 

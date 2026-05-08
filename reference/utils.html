@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g18f831f1d documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g0f90912bc documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=de132bfb"></script>
+      <script src="../_static/documentation_options.js?v=bc18b2be"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -70,6 +70,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.utils.NoSitesError.__weakref__"><code class="docutils literal notranslate"><span class="pre">NoSitesError.__weakref__</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils._attach_datetime_columns"><code class="docutils literal notranslate"><span class="pre">_attach_datetime_columns()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils._build_utc_datetime"><code class="docutils literal notranslate"><span class="pre">_build_utc_datetime()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils.format_datetime"><code class="docutils literal notranslate"><span class="pre">format_datetime()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils.query"><code class="docutils literal notranslate"><span class="pre">query()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils.to_str"><code class="docutils literal notranslate"><span class="pre">to_str()</span></code></a></li>
@@ -198,6 +200,51 @@
 <dd><p>list of weak references to the object</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.utils._attach_datetime_columns">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">_attach_datetime_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/dataretrieval/utils.html#_attach_datetime_columns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils._attach_datetime_columns" title="Link to this definition"></a></dt>
+<dd><p>Add <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;DateTime</span></code> UTC columns for any Date/Time/TimeZone triplets
+and sort the frame by the activity-start datetime.</p>
+<p>Detects two naming patterns that appear in USGS Samples and Water Quality
+Portal CSV responses:</p>
+<ul class="simple">
+<li><p><strong>WQX3</strong> — <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;Date</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;Time</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;TimeZone</span></code></p></li>
+<li><p><strong>Legacy WQP</strong> — <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;Date</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;Time/Time</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;Time/TimeZoneCode</span></code></p></li>
+</ul>
+<p>For every triplet present, a new <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;DateTime</span></code> column is appended
+holding a UTC <code class="docutils literal notranslate"><span class="pre">Timestamp</span></code> (offsets resolved via
+<code class="xref py py-data docutils literal notranslate"><span class="pre">dataretrieval.codes.tz</span></code>). The original Date/Time/TimeZone columns
+are left intact, and an existing <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;DateTime</span></code> column is never
+overwritten.</p>
+<p>Rows are sorted (and the index reset) by the canonical activity-start
+datetime when present — <code class="docutils literal notranslate"><span class="pre">Activity_StartDateTime</span></code> (WQX3) or
+<code class="docutils literal notranslate"><span class="pre">ActivityStartDateTime</span></code> (legacy WQP) — falling back to the first
+detected <code class="docutils literal notranslate"><span class="pre">*Date</span></code> column. Mirrors R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code>’s
+end-of-pipeline sort in <code class="docutils literal notranslate"><span class="pre">importWQP.R</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – DataFrame returned from a Samples or WQP CSV endpoint.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>df</strong> – A new DataFrame with derivable <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;DateTime</span></code> columns appended
+and rows sorted by the activity-start datetime (if any date column
+was detected).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.utils._build_utc_datetime">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">_build_utc_datetime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tz_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Series</span></span></span><a class="reference internal" href="../_modules/dataretrieval/utils.html#_build_utc_datetime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils._build_utc_datetime" title="Link to this definition"></a></dt>
+<dd><p>Combine date + time + tz-abbreviation columns into a UTC pandas Series.</p>
+<p>Unknown timezone codes (and rows missing any of the three values) yield
+<code class="docutils literal notranslate"><span class="pre">NaT</span></code>. The input columns are not mutated.</p>
 </dd></dl>
 
 <dl class="py function">

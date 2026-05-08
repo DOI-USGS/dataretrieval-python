@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g18f831f1d documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g0f90912bc documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=de132bfb"></script>
+      <script src="../../_static/documentation_options.js?v=bc18b2be"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -172,6 +172,114 @@
             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>
 
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+
+<span class="c1"># (time-suffix, tz-suffix) pairs that follow a &quot;&lt;prefix&gt;Date&quot; column.</span>
+<span class="n">_TIME_TZ_SUFFIXES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="c1"># WQX3 / Samples, e.g.</span>
+    <span class="c1">#   Activity_StartDate / Activity_StartTime / Activity_StartTimeZone</span>
+    <span class="p">(</span><span class="s2">&quot;Time&quot;</span><span class="p">,</span> <span class="s2">&quot;TimeZone&quot;</span><span class="p">),</span>
+    <span class="c1"># Legacy WQP (slash-separated), e.g.</span>
+    <span class="c1">#   ActivityStartDate / ActivityStartTime/Time / ActivityStartTime/TimeZoneCode</span>
+    <span class="p">(</span><span class="s2">&quot;Time/Time&quot;</span><span class="p">,</span> <span class="s2">&quot;Time/TimeZoneCode&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="_build_utc_datetime">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils._build_utc_datetime">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_utc_datetime</span><span class="p">(</span>
+    <span class="n">date_series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">time_series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">tz_series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Combine date + time + tz-abbreviation columns into a UTC pandas Series.</span>
+
+<span class="sd">    Unknown timezone codes (and rows missing any of the three values) yield</span>
+<span class="sd">    ``NaT``. The input columns are not mutated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">offsets</span> <span class="o">=</span> <span class="n">tz_series</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">tz</span><span class="p">)</span>
+    <span class="n">combined</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">date_series</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;string&quot;</span><span class="p">)</span>
+        <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+        <span class="o">+</span> <span class="n">time_series</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;string&quot;</span><span class="p">)</span>
+        <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+        <span class="o">+</span> <span class="n">offsets</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;string&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span>
+        <span class="n">combined</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S %z&quot;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;coerce&quot;</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_attach_datetime_columns">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils._attach_datetime_columns">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_attach_datetime_columns</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add ``&lt;prefix&gt;DateTime`` UTC columns for any Date/Time/TimeZone triplets</span>
+<span class="sd">    and sort the frame by the activity-start datetime.</span>
+
+<span class="sd">    Detects two naming patterns that appear in USGS Samples and Water Quality</span>
+<span class="sd">    Portal CSV responses:</span>
+
+<span class="sd">    * **WQX3** — ``&lt;prefix&gt;Date``, ``&lt;prefix&gt;Time``, ``&lt;prefix&gt;TimeZone``</span>
+<span class="sd">    * **Legacy WQP** — ``&lt;prefix&gt;Date``, ``&lt;prefix&gt;Time/Time``,</span>
+<span class="sd">      ``&lt;prefix&gt;Time/TimeZoneCode``</span>
+
+<span class="sd">    For every triplet present, a new ``&lt;prefix&gt;DateTime`` column is appended</span>
+<span class="sd">    holding a UTC ``Timestamp`` (offsets resolved via</span>
+<span class="sd">    :data:`dataretrieval.codes.tz`). The original Date/Time/TimeZone columns</span>
+<span class="sd">    are left intact, and an existing ``&lt;prefix&gt;DateTime`` column is never</span>
+<span class="sd">    overwritten.</span>
+
+<span class="sd">    Rows are sorted (and the index reset) by the canonical activity-start</span>
+<span class="sd">    datetime when present — ``Activity_StartDateTime`` (WQX3) or</span>
+<span class="sd">    ``ActivityStartDateTime`` (legacy WQP) — falling back to the first</span>
+<span class="sd">    detected ``*Date`` column. Mirrors R ``dataRetrieval``&#39;s</span>
+<span class="sd">    end-of-pipeline sort in ``importWQP.R``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : ``pandas.DataFrame``</span>
+<span class="sd">        DataFrame returned from a Samples or WQP CSV endpoint.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame``</span>
+<span class="sd">        A new DataFrame with derivable ``&lt;prefix&gt;DateTime`` columns appended</span>
+<span class="sd">        and rows sorted by the activity-start datetime (if any date column</span>
+<span class="sd">        was detected).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="n">new_columns</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">first_date_col</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">col</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;Date&quot;</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">first_date_col</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">first_date_col</span> <span class="o">=</span> <span class="n">col</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="n">col</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s2">&quot;Date&quot;</span><span class="p">)</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;DateTime&quot;</span>
+        <span class="k">if</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">columns</span> <span class="ow">or</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">new_columns</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">time_suffix</span><span class="p">,</span> <span class="n">tz_suffix</span> <span class="ow">in</span> <span class="n">_TIME_TZ_SUFFIXES</span><span class="p">:</span>
+            <span class="n">time_col</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">time_suffix</span>
+            <span class="n">tz_col</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">tz_suffix</span>
+            <span class="k">if</span> <span class="n">time_col</span> <span class="ow">in</span> <span class="n">columns</span> <span class="ow">and</span> <span class="n">tz_col</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+                <span class="n">new_columns</span><span class="p">[</span><span class="n">target</span><span class="p">]</span> <span class="o">=</span> <span class="n">_build_utc_datetime</span><span class="p">(</span>
+                    <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="n">time_col</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="n">tz_col</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="k">break</span>
+    <span class="k">if</span> <span class="n">new_columns</span><span class="p">:</span>
+        <span class="c1"># Concat in one shot — per-column assignment on a wide CSV-derived</span>
+        <span class="c1"># frame triggers pandas&#39; fragmentation PerformanceWarning.</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">new_columns</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;Activity_StartDateTime&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">sort_key</span> <span class="o">=</span> <span class="s2">&quot;Activity_StartDateTime&quot;</span>
+    <span class="k">elif</span> <span class="s2">&quot;ActivityStartDateTime&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">sort_key</span> <span class="o">=</span> <span class="s2">&quot;ActivityStartDateTime&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sort_key</span> <span class="o">=</span> <span class="n">first_date_col</span>
+    <span class="k">if</span> <span class="n">sort_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="n">sort_key</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">df</span></div>
 
 

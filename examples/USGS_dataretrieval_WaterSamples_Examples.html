@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_samples() Examples &mdash; dataretrieval 0.1.dev1+g18f831f1d documentation</title>
+  <title>USGS dataretrieval Python Package get_samples() Examples &mdash; dataretrieval 0.1.dev1+g0f90912bc documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=de132bfb"></script>
+      <script src="../_static/documentation_options.js?v=bc18b2be"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -126,7 +126,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g18f831f1d)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g0f90912bc)
 Requirement already satisfied: requests in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (2.33.1)
 Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.2)
 Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.4)
@@ -134,7 +134,7 @@ Requirement already satisfied: python-dateutil&gt;=2.8.2 in /opt/hostedtoolcache
 Requirement already satisfied: six&gt;=1.5 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
 Requirement already satisfied: charset_normalizer&lt;4,&gt;=2 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (3.4.7)
 Requirement already satisfied: idna&lt;4,&gt;=2.5 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (3.13)
-Requirement already satisfied: urllib3&lt;3,&gt;=1.26 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2.6.3)
+Requirement already satisfied: urllib3&lt;3,&gt;=1.26 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2.7.0)
 Requirement already satisfied: certifi&gt;=2023.5.7 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from requests-&gt;dataretrieval) (2026.4.22)
 </pre></div></div>
 </div>
@@ -249,16 +249,16 @@ Retrieved data for 2384 samples.
       <th>Location_Identifier</th>
       <th>Location_Name</th>
       <th>...</th>
-      <th>ResultAttachment_FileName</th>
-      <th>ResultAttachment_FileType</th>
-      <th>ResultAttachment_FileDownload</th>
-      <th>ProviderName</th>
-      <th>Result_CharacteristicComparable</th>
-      <th>Result_CharacteristicGroup</th>
       <th>Org_Type</th>
       <th>LastChangeDate</th>
       <th>USGSpcode</th>
       <th>USGSSampleAquifer</th>
+      <th>Activity_StartDateTime</th>
+      <th>Activity_EndDateTime</th>
+      <th>LabInfo_AnalysisStartDateTime</th>
+      <th>LabInfo_AnalysisEndDateTime</th>
+      <th>LabSamplePrepMethod_StartDateTime</th>
+      <th>LabSamplePrepMethod_EndDateTime</th>
     </tr>
   </thead>
   <tbody>
@@ -275,16 +275,16 @@ Retrieved data for 2384 samples.
       <td>USGS-10109000</td>
       <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
       <td>Federal/US Government</td>
       <td>2026-04-27</td>
-      <td>20</td>
+      <td>71851</td>
       <td>NaN</td>
+      <td>1967-09-13 13:35:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>1</th>
@@ -299,16 +299,16 @@ Retrieved data for 2384 samples.
       <td>USGS-10109000</td>
       <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
       <td>Federal/US Government</td>
       <td>2026-04-27</td>
-      <td>61</td>
+      <td>925</td>
       <td>NaN</td>
+      <td>1967-09-13 13:35:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>2</th>
@@ -323,22 +323,22 @@ Retrieved data for 2384 samples.
       <td>USGS-10109000</td>
       <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
       <td>Federal/US Government</td>
       <td>2026-04-27</td>
-      <td>95</td>
+      <td>70300</td>
       <td>NaN</td>
+      <td>1967-09-13 13:35:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>3</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["USGS","UT2110000"]</td>
+      <td>["USGS"]</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -347,22 +347,22 @@ Retrieved data for 2384 samples.
       <td>USGS-10109000</td>
       <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Information</td>
       <td>Federal/US Government</td>
-      <td>2026-04-27</td>
-      <td>9</td>
+      <td>2026-04-28</td>
+      <td>900</td>
       <td>NaN</td>
+      <td>1967-09-13 13:35:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>4</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["USGS","UT1710001"]</td>
+      <td>["USGS"]</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -371,16 +371,16 @@ Retrieved data for 2384 samples.
       <td>USGS-10109000</td>
       <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Information</td>
       <td>Federal/US Government</td>
       <td>2026-04-28</td>
-      <td>9</td>
+      <td>30208</td>
       <td>NaN</td>
+      <td>1967-09-13 13:35:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>...</th>
@@ -410,7 +410,7 @@ Retrieved data for 2384 samples.
       <th>2379</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["USGS","UT26SLC"]</td>
+      <td>["USGS"]</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -419,22 +419,22 @@ Retrieved data for 2384 samples.
       <td>USGS-10109000</td>
       <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
       <td>Federal/US Government</td>
-      <td>2026-04-29</td>
-      <td>65</td>
+      <td>2026-04-28</td>
+      <td>30209</td>
       <td>NaN</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>2380</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["USGS","UT26SLC"]</td>
+      <td>["USGS"]</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -443,22 +443,22 @@ Retrieved data for 2384 samples.
       <td>USGS-10109000</td>
       <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Information</td>
       <td>Federal/US Government</td>
-      <td>2026-04-29</td>
-      <td>9</td>
+      <td>2026-04-28</td>
+      <td>20</td>
       <td>NaN</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>2381</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["USGS","UT26SLC"]</td>
+      <td>["USGS"]</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -467,22 +467,22 @@ Retrieved data for 2384 samples.
       <td>USGS-10109000</td>
       <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
       <td>Federal/US Government</td>
-      <td>2026-04-29</td>
-      <td>61</td>
+      <td>2026-04-27</td>
+      <td>28</td>
       <td>NaN</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>2382</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["USGS","UT26SLC"]</td>
+      <td>["USGS"]</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -491,22 +491,22 @@ Retrieved data for 2384 samples.
       <td>USGS-10109000</td>
       <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
       <td>Federal/US Government</td>
-      <td>2026-04-29</td>
-      <td>30209</td>
+      <td>2026-04-27</td>
+      <td>10</td>
       <td>NaN</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>2383</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["USGS","UT26SLC"]</td>
+      <td>["USGS"]</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -515,20 +515,20 @@ Retrieved data for 2384 samples.
       <td>USGS-10109000</td>
       <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
       <td>Federal/US Government</td>
-      <td>2026-04-29</td>
-      <td>30207</td>
+      <td>2026-04-27</td>
+      <td>30209</td>
       <td>NaN</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
   </tbody>
 </table>
-<p>2384 rows × 181 columns</p>
+<p>2384 rows × 187 columns</p>
 </div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
@@ -545,18 +545,18 @@ Retrieved data for 2384 samples.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Org_Identifier                    str
-Org_FormalName                    str
-Project_Identifier                str
-Project_Name                  float64
-Project_QAPPApproved          float64
-                               ...
-Result_CharacteristicGroup        str
-Org_Type                          str
-LastChangeDate                    str
-USGSpcode                       int64
-USGSSampleAquifer             float64
-Length: 181, dtype: object
+Org_Identifier                                      str
+Org_FormalName                                      str
+Project_Identifier                                  str
+Project_Name                                    float64
+Project_QAPPApproved                            float64
+                                            ...
+Activity_EndDateTime                 datetime64[s, UTC]
+LabInfo_AnalysisStartDateTime        datetime64[s, UTC]
+LabInfo_AnalysisEndDateTime          datetime64[s, UTC]
+LabSamplePrepMethod_StartDateTime    datetime64[s, UTC]
+LabSamplePrepMethod_EndDateTime      datetime64[s, UTC]
+Length: 187, dtype: object
 </pre></div></div>
 </div>
 <p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS web service. The USGS web service responses contain a descriptive header that defines and can be helpful in interpreting the contents of the response.</p>
@@ -638,16 +638,16 @@ Retrieved data for 309 samples.
       <th>Location_Identifier</th>
       <th>Location_Name</th>
       <th>...</th>
-      <th>ResultAttachment_FileName</th>
-      <th>ResultAttachment_FileType</th>
-      <th>ResultAttachment_FileDownload</th>
-      <th>ProviderName</th>
-      <th>Result_CharacteristicComparable</th>
-      <th>Result_CharacteristicGroup</th>
       <th>Org_Type</th>
       <th>LastChangeDate</th>
       <th>USGSpcode</th>
       <th>USGSSampleAquifer</th>
+      <th>Activity_StartDateTime</th>
+      <th>Activity_EndDateTime</th>
+      <th>LabInfo_AnalysisStartDateTime</th>
+      <th>LabInfo_AnalysisEndDateTime</th>
+      <th>LabSamplePrepMethod_StartDateTime</th>
+      <th>LabSamplePrepMethod_EndDateTime</th>
     </tr>
   </thead>
   <tbody>
@@ -655,121 +655,121 @@ Retrieved data for 309 samples.
       <th>0</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","GR13NK0...</td>
+      <td>["USGS"]</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>USGS-04024430</td>
+      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
       <td>Federal/US Government</td>
-      <td>2026-04-27</td>
+      <td>2026-04-28</td>
       <td>65</td>
       <td>NaN</td>
+      <td>1982-11-02 20:10:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>1</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","MN-00300"]</td>
+      <td>["USGS"]</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>USGS-04024430</td>
+      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
       <td>Federal/US Government</td>
-      <td>2026-04-27</td>
+      <td>2026-04-28</td>
       <td>65</td>
       <td>NaN</td>
+      <td>1983-01-18 18:30:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>2</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
+      <td>["USGS"]</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>USGS-04024430</td>
+      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
       <td>Federal/US Government</td>
       <td>2026-04-27</td>
       <td>65</td>
       <td>NaN</td>
+      <td>1983-04-19 16:00:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>3</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","00GQ436...</td>
+      <td>["USGS"]</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>USGS-04024430</td>
+      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
       <td>Federal/US Government</td>
-      <td>2026-04-27</td>
+      <td>2026-04-28</td>
       <td>65</td>
       <td>NaN</td>
+      <td>1983-05-24 21:10:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>4</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","MN-00300"]</td>
+      <td>["USGS"]</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>USGS-04024430</td>
+      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
       <td>Federal/US Government</td>
       <td>2026-04-27</td>
       <td>65</td>
       <td>NaN</td>
+      <td>1983-07-06 17:00:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>...</th>
@@ -808,16 +808,16 @@ Retrieved data for 309 samples.
       <td>USGS-04024000</td>
       <td>ST. LOUIS RIVER AT SCANLON, MN</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
       <td>Federal/US Government</td>
       <td>2026-04-27</td>
       <td>65</td>
       <td>NaN</td>
+      <td>2025-12-02 17:00:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>305</th>
@@ -832,16 +832,16 @@ Retrieved data for 309 samples.
       <td>USGS-04024000</td>
       <td>ST. LOUIS RIVER AT SCANLON, MN</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
       <td>Federal/US Government</td>
       <td>2026-04-28</td>
       <td>65</td>
       <td>NaN</td>
+      <td>2026-01-12 16:35:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>306</th>
@@ -856,16 +856,16 @@ Retrieved data for 309 samples.
       <td>USGS-04024000</td>
       <td>ST. LOUIS RIVER AT SCANLON, MN</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
       <td>Federal/US Government</td>
       <td>2026-04-29</td>
       <td>65</td>
       <td>NaN</td>
+      <td>2026-03-26 16:00:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>307</th>
@@ -880,16 +880,16 @@ Retrieved data for 309 samples.
       <td>USGS-04024000</td>
       <td>ST. LOUIS RIVER AT SCANLON, MN</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
       <td>Federal/US Government</td>
       <td>2026-04-27</td>
       <td>65</td>
       <td>NaN</td>
+      <td>2026-04-20 15:50:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>308</th>
@@ -904,20 +904,20 @@ Retrieved data for 309 samples.
       <td>USGS-04024000</td>
       <td>ST. LOUIS RIVER AT SCANLON, MN</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Physical</td>
       <td>Federal/US Government</td>
       <td>2026-04-30</td>
       <td>65</td>
       <td>NaN</td>
+      <td>2026-04-28 18:45:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
   </tbody>
 </table>
-<p>309 rows × 181 columns</p>
+<p>309 rows × 187 columns</p>
 </div></div>
 </div>
 </section>
@@ -981,16 +981,16 @@ Retrieved data for 309 samples.
       <th>Location_Identifier</th>
       <th>Location_Name</th>
       <th>...</th>
-      <th>ResultAttachment_FileName</th>
-      <th>ResultAttachment_FileType</th>
-      <th>ResultAttachment_FileDownload</th>
-      <th>ProviderName</th>
-      <th>Result_CharacteristicComparable</th>
-      <th>Result_CharacteristicGroup</th>
       <th>Org_Type</th>
       <th>LastChangeDate</th>
       <th>USGSpcode</th>
       <th>USGSSampleAquifer</th>
+      <th>Activity_StartDateTime</th>
+      <th>Activity_EndDateTime</th>
+      <th>LabInfo_AnalysisStartDateTime</th>
+      <th>LabInfo_AnalysisEndDateTime</th>
+      <th>LabSamplePrepMethod_StartDateTime</th>
+      <th>LabSamplePrepMethod_EndDateTime</th>
     </tr>
   </thead>
   <tbody>
@@ -998,31 +998,7 @@ Retrieved data for 309 samples.
       <th>0</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["USGS","F6X7H"]</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024430</td>
-      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
-      <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Other</td>
-      <td>Federal/US Government</td>
-      <td>2026-04-27</td>
-      <td>32104</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","00GQ414...</td>
+      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -1031,40 +1007,64 @@ Retrieved data for 309 samples.
       <td>USGS-04024000</td>
       <td>ST. LOUIS RIVER AT SCANLON, MN</td>
       <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-28</td>
+      <td>32104</td>
       <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
+      <td>2012-01-25 14:40:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>1</th>
       <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
       <td>NaN</td>
-      <td>Organics, Other</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
       <td>Federal/US Government</td>
       <td>2026-04-27</td>
-      <td>34247</td>
+      <td>30234</td>
       <td>NaN</td>
+      <td>2012-01-25 14:40:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>2</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["USGS","GLRI TOX"]</td>
+      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>USGS-04024430</td>
-      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Other</td>
       <td>Federal/US Government</td>
       <td>2026-04-27</td>
-      <td>32104</td>
+      <td>34247</td>
       <td>NaN</td>
+      <td>2012-01-25 14:40:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>3</th>
@@ -1079,22 +1079,22 @@ Retrieved data for 309 samples.
       <td>USGS-04024000</td>
       <td>ST. LOUIS RIVER AT SCANLON, MN</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Pesticide</td>
       <td>Federal/US Government</td>
       <td>2026-04-27</td>
-      <td>30234</td>
+      <td>34220</td>
       <td>NaN</td>
+      <td>2012-01-25 14:40:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>4</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","MN-00300"]</td>
+      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -1103,16 +1103,16 @@ Retrieved data for 309 samples.
       <td>USGS-04024000</td>
       <td>ST. LOUIS RIVER AT SCANLON, MN</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Other</td>
       <td>Federal/US Government</td>
       <td>2026-04-27</td>
       <td>32104</td>
       <td>NaN</td>
+      <td>2012-02-22 14:45:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>...</th>
@@ -1142,7 +1142,7 @@ Retrieved data for 309 samples.
       <th>147</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","MN-00300"]</td>
+      <td>["Great Lakes Restoration Initiative","00GQ414...</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -1151,22 +1151,22 @@ Retrieved data for 309 samples.
       <td>USGS-04024000</td>
       <td>ST. LOUIS RIVER AT SCANLON, MN</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Pesticide</td>
       <td>Federal/US Government</td>
       <td>2026-04-28</td>
-      <td>30234</td>
+      <td>34220</td>
       <td>NaN</td>
+      <td>2018-05-01 16:05:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>148</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","GR14NK0...</td>
+      <td>["Great Lakes Restoration Initiative","00GQ414...</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -1175,46 +1175,46 @@ Retrieved data for 309 samples.
       <td>USGS-04024000</td>
       <td>ST. LOUIS RIVER AT SCANLON, MN</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Other</td>
       <td>Federal/US Government</td>
-      <td>2026-04-28</td>
+      <td>2026-04-27</td>
       <td>34220</td>
       <td>NaN</td>
+      <td>2018-07-09 16:25:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>149</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["USGS","GLRI TOX"]</td>
+      <td>["Great Lakes Restoration Initiative","00GQ414...</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>USGS-04024430</td>
-      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Other</td>
       <td>Federal/US Government</td>
       <td>2026-04-28</td>
-      <td>34220</td>
+      <td>32104</td>
       <td>NaN</td>
+      <td>2018-07-09 16:25:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>150</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
+      <td>["Great Lakes Restoration Initiative","00GQ414...</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -1223,22 +1223,22 @@ Retrieved data for 309 samples.
       <td>USGS-04024000</td>
       <td>ST. LOUIS RIVER AT SCANLON, MN</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Other</td>
       <td>Federal/US Government</td>
-      <td>2026-04-28</td>
-      <td>32104</td>
+      <td>2026-04-27</td>
+      <td>30234</td>
       <td>NaN</td>
+      <td>2018-07-09 16:25:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
     <tr>
       <th>151</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
+      <td>["Great Lakes Restoration Initiative","00GQ414...</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -1247,20 +1247,20 @@ Retrieved data for 309 samples.
       <td>USGS-04024000</td>
       <td>ST. LOUIS RIVER AT SCANLON, MN</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS</td>
-      <td>NaN</td>
-      <td>Organics, Other</td>
       <td>Federal/US Government</td>
       <td>2026-04-27</td>
       <td>34247</td>
       <td>NaN</td>
+      <td>2018-07-09 16:25:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
     </tr>
   </tbody>
 </table>
-<p>152 rows × 181 columns</p>
+<p>152 rows × 187 columns</p>
 </div></div>
 </div>
 </section>
@@ -1301,7 +1301,7 @@ Retrieved data for 2384 sample results.
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_7220/1863275440.py:5: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+/tmp/ipykernel_7012/1863275440.py:5: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
   wq_data[&#34;characteristic_unit&#34;] = (
 </pre></div></div>
 </div>
