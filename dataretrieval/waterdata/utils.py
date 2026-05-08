@@ -635,11 +635,18 @@ def _walk_pages(
                     headers=headers,
                     data=content if method == "POST" else None,
                 )
+                # Mirror the initial-request check; otherwise a 5xx body
+                # without "numberReturned" silently yields an empty frame
+                # and the loop quietly stops.
+                if resp.status_code != 200:
+                    raise RuntimeError(_error_body(resp))
                 dfs.append(_get_resp_data(resp, geopd=geopd))
                 curr_url = _next_req_url(resp)
-            except Exception:  # noqa: BLE001
-                error_text = _error_body(resp)
-                logger.error("Request incomplete. %s", error_text)
+            except Exception as e:  # noqa: BLE001
+                # Report the *actual* failure — not _error_body(resp) on a
+                # stale prior-page response (which would describe the wrong
+                # request and can itself raise on non-JSON bodies).
+                logger.error("Request incomplete: %s", e)
                 logger.warning(
                     "Request failed for URL: %s. Data download interrupted.", curr_url
                 )
@@ -1099,14 +1106,15 @@ def get_stats_data(
                     params=args,
                     headers=headers,
                 )
+                if resp.status_code != 200:
+                    raise RuntimeError(_error_body(resp))
                 body = resp.json()
                 all_dfs.append(_handle_stats_nesting(body, geopd=GEOPANDAS))
                 next_token = body["next"]
-            except Exception:  # noqa: BLE001
-                error_text = _error_body(resp)
-                logger.error("Request incomplete. %s", error_text)
+            except Exception as e:  # noqa: BLE001
+                logger.error("Request incomplete: %s", e)
                 logger.warning(
-                    "Request failed for URL: %s. Data download interrupted.", resp.url
+                    "Request failed for URL: %s. Data download interrupted.", url
                 )
                 next_token = None
 

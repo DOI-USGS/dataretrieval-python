@@ -86,6 +86,93 @@ def test_walk_pages_multiple_mocked():
     assert mock_client.request.call_args[0][1] == "https://example.com/page2"
 
 
+def _resp_ok(features):
+    """Build a 200-OK mock response carrying the given features list."""
+    resp = mock.MagicMock()
+    resp.json.return_value = {
+        "numberReturned": len(features),
+        "features": features,
+        "links": [{"rel": "next", "href": "https://example.com/page2"}]
+        if features
+        else [],
+    }
+    resp.headers = {}
+    resp.links = {"next": {"url": "https://example.com/page2"}} if features else {}
+    resp.status_code = 200
+    resp.url = "https://example.com/page1"
+    return resp
+
+
+def _walk_pages_with_failure(failure_resp_or_exc):
+    """Run _walk_pages where page 1 succeeds and page 2 fails as given."""
+    resp1 = _resp_ok([{"id": "1", "properties": {"val": "a"}}])
+
+    mock_client = mock.MagicMock(spec=requests.Session)
+    mock_client.send.return_value = resp1
+    if isinstance(failure_resp_or_exc, BaseException):
+        mock_client.request.side_effect = failure_resp_or_exc
+    else:
+        mock_client.request.return_value = failure_resp_or_exc
+
+    mock_req = mock.MagicMock(spec=requests.PreparedRequest)
+    mock_req.method = "GET"
+    mock_req.headers = {}
+    mock_req.url = "https://example.com/page1"
+
+    return _walk_pages(geopd=False, req=mock_req, client=mock_client)
+
+
+def test_walk_pages_logs_actual_exception_when_request_raises(caplog):
+    """When client.request() itself raises (e.g. a connection error), the
+    logged failure must reflect that exception — not _error_body() on the
+    stale prior-page response, which described the wrong request and could
+    itself crash on non-JSON bodies."""
+    import logging
+
+    caplog.set_level(logging.ERROR, logger="dataretrieval.waterdata.utils")
+
+    df, _ = _walk_pages_with_failure(requests.ConnectionError("boom"))
+
+    # First page's data is preserved (best-effort behavior).
+    assert list(df["val"]) == ["a"]
+    # Logged error mentions the actual ConnectionError, not a stale page body.
+    error_messages = [
+        r.getMessage() for r in caplog.records if r.levelno >= logging.ERROR
+    ]
+    assert any("boom" in m for m in error_messages), error_messages
+
+
+def test_walk_pages_surfaces_5xx_mid_pagination(caplog):
+    """A non-200 response on a paginated page must be detected; previously
+    the loop happily called _get_resp_data() on the 5xx body, which —
+    lacking 'numberReturned' — silently produced an empty DataFrame and
+    the loop quietly stopped with no error logged."""
+    import logging
+
+    caplog.set_level(logging.ERROR, logger="dataretrieval.waterdata.utils")
+
+    page2_500 = mock.MagicMock()
+    page2_500.status_code = 503
+    page2_500.json.return_value = {
+        "code": "ServiceUnavailable",
+        "description": "upstream timeout",
+    }
+    page2_500.url = "https://example.com/page2"
+
+    df, _ = _walk_pages_with_failure(page2_500)
+
+    assert list(df["val"]) == ["a"]
+    error_messages = [
+        r.getMessage() for r in caplog.records if r.levelno >= logging.ERROR
+    ]
+    # The 5xx is now visible in the error log (it would previously have
+    # been silently swallowed because _get_resp_data returned an empty
+    # frame and the loop stopped quietly).
+    assert any("503" in m or "ServiceUnavailable" in m for m in error_messages), (
+        error_messages
+    )
+
+
 def test_handle_stats_nesting_tolerates_missing_drop_columns():
     """If the upstream stats response shape ever changes such that one of
     the columns we try to drop ("type", "properties.data") is absent, the
