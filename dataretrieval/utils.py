@@ -127,7 +127,8 @@ def _build_utc_datetime(
 
 
 def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Add ``<prefix>DateTime`` UTC columns for any Date/Time/TimeZone triplets.
+    """Add ``<prefix>DateTime`` UTC columns for any Date/Time/TimeZone triplets
+    and sort the frame by the activity-start datetime.
 
     Detects two naming patterns that appear in USGS Samples and Water Quality
     Portal CSV responses:
@@ -142,6 +143,12 @@ def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
     are left intact, and an existing ``<prefix>DateTime`` column is never
     overwritten.
 
+    Rows are sorted (and the index reset) by the canonical activity-start
+    datetime when present — ``Activity_StartDateTime`` (WQX3) or
+    ``ActivityStartDateTime`` (legacy WQP) — falling back to the first
+    detected ``*Date`` column. Mirrors R ``dataRetrieval``'s
+    end-of-pipeline sort in ``importWQP.R``.
+
     Parameters
     ----------
     df : ``pandas.DataFrame``
@@ -150,14 +157,18 @@ def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
     Returns
     -------
     df : ``pandas.DataFrame``
-        A new DataFrame with any derivable ``<prefix>DateTime`` columns
-        appended (or the original frame if no triplets were found).
+        A new DataFrame with derivable ``<prefix>DateTime`` columns appended
+        and rows sorted by the activity-start datetime (if any date column
+        was detected).
     """
     columns = set(df.columns)
     new_columns = {}
+    first_date_col = None
     for col in df.columns:
         if not col.endswith("Date"):
             continue
+        if first_date_col is None:
+            first_date_col = col
         prefix = col.removesuffix("Date")
         target = prefix + "DateTime"
         if target in columns or target in new_columns:
@@ -170,11 +181,19 @@ def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
                     df[col], df[time_col], df[tz_col]
                 )
                 break
-    if not new_columns:
-        return df
-    # Concat in one shot — per-column assignment on a wide CSV-derived frame
-    # triggers pandas' fragmentation PerformanceWarning.
-    return pd.concat([df, pd.DataFrame(new_columns, index=df.index)], axis=1)
+    if new_columns:
+        # Concat in one shot — per-column assignment on a wide CSV-derived
+        # frame triggers pandas' fragmentation PerformanceWarning.
+        df = pd.concat([df, pd.DataFrame(new_columns, index=df.index)], axis=1)
+    if "Activity_StartDateTime" in df.columns:
+        sort_key = "Activity_StartDateTime"
+    elif "ActivityStartDateTime" in df.columns:
+        sort_key = "ActivityStartDateTime"
+    else:
+        sort_key = first_date_col
+    if sort_key is not None:
+        df = df.sort_values(by=sort_key, ignore_index=True)
+    return df
 
 
 class BaseMetadata:

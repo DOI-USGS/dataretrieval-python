@@ -2272,7 +2272,9 @@ def get_samples(
         ``Activity_StartTimeZone``), an additional ``<prefix>DateTime`` column
         is appended holding a UTC ``Timestamp`` derived from the three. The
         original Date/Time/TimeZone columns are left intact; rows whose
-        timezone abbreviation is not recognized resolve to ``NaT``.
+        timezone abbreviation is not recognized resolve to ``NaT``. Rows are
+        sorted by ``Activity_StartDateTime`` when present (the API's default
+        order is unstable).
     md : :obj:`dataretrieval.utils.Metadata`
         Custom ``dataretrieval`` metadata object pertaining to the query.
 

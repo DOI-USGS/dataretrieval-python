@@ -107,6 +107,8 @@ def get_results(
         ``<prefix>Time/TimeZoneCode``), an additional ``<prefix>DateTime``
         column is appended holding a UTC ``Timestamp``. Original triplet
         columns are preserved; unrecognized timezone codes yield ``NaT``.
+        Rows are sorted by ``ActivityStartDateTime`` (or ``Activity_StartDateTime``
+        for WQX3 responses) when present.
     md : :obj:`dataretrieval.utils.Metadata`
         Custom ``dataretrieval`` metadata object pertaining to the query.
 
