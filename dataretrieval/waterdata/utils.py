@@ -335,7 +335,7 @@ def _check_ogc_requests(endpoint: str = "daily", req_type: str = "queryables"):
 
 def _error_body(resp: requests.Response):
     """
-    Provide more informative error messages based on the response status.
+    Build an informative error message from an HTTP response.
 
     Parameters
     ----------
@@ -345,10 +345,19 @@ def _error_body(resp: requests.Response):
     Returns
     -------
     str
-        The extracted error message. For status code 429, returns the 'message'
-        field from the JSON error object. For status code 403, returns a
-        predefined message indicating possible reasons for denial. For other
-        status codes, returns the raw response text.
+        An error message string assembled per status code:
+
+        * **429** — predefined message describing the rate-limit and pointing
+          at the API-token path; the response body is not consulted.
+        * **403** — predefined message describing the most common cause
+          (query exceeding server limits); the response body is not
+          consulted.
+        * **other statuses** — attempts ``resp.json()`` and renders
+          ``"<status>: <code>. <description>."`` from the JSON error
+          envelope. If the body is not JSON (e.g. an HTML 502 from a
+          gateway), falls back to ``"<status>: <reason>. <snippet>"`` with
+          the first 200 characters of ``resp.text``; an empty body
+          degrades to ``"<status>: <reason>."``.
     """
     status = resp.status_code
     if status == 429:
@@ -361,7 +370,14 @@ def _error_body(resp: requests.Response):
             "403: Query request denied. Possible reasons include "
             "query exceeding server limits."
         )
-    j_txt = resp.json()
+    try:
+        j_txt = resp.json()
+    except ValueError:
+        snippet = (resp.text or "").strip()[:200]
+        reason = resp.reason or "Error"
+        if snippet:
+            return f"{status}: {reason}. {snippet}"
+        return f"{status}: {reason}."
     return (
         f"{status}: {j_txt.get('code', 'Unknown type')}. "
         f"{j_txt.get('description', 'No description provided')}."
