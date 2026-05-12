@@ -255,11 +255,11 @@ def test_error_body_handles_empty_response_body():
 
 def test_error_body_truncates_long_non_json_body():
     """Non-JSON bodies are truncated to 200 chars to keep the message readable."""
-    body = "x" * 500
+    body = ("x" * 200) + "Y" + ("z" * 299)
     resp = _make_response(502, body, reason="Bad Gateway")
     msg = _error_body(resp)
-    assert len(msg) <= 64 + 200  # status/reason prefix + 200-char snippet
     assert "x" * 200 in msg
+    assert (("x" * 200) + "Y") not in msg
 
 
 def test_error_body_still_parses_well_formed_json():
