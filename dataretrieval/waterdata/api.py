@@ -42,7 +42,7 @@ def get_daily(
     monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
     statistic_id: str | Iterable[str] | None = None,
-    properties: str | list[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     time_series_id: str | Iterable[str] | None = None,
     daily_id: str | Iterable[str] | None = None,
     approval_status: str | Iterable[str] | None = None,
@@ -90,7 +90,7 @@ def get_daily(
         Example codes include 00001 (max), 00002 (min), and 00003 (mean).
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         A vector of requested columns to be returned from the query.
         Available options are: geometry, id, time_series_id,
         monitoring_location_id, parameter_code, statistic_id, time, value,
@@ -244,7 +244,7 @@ def get_continuous(
     monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
     statistic_id: str | Iterable[str] | None = None,
-    properties: str | list[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     time_series_id: str | Iterable[str] | None = None,
     continuous_id: str | Iterable[str] | None = None,
     approval_status: str | Iterable[str] | None = None,
@@ -297,7 +297,7 @@ def get_continuous(
         typically return no results. A complete list of codes and their
         descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         A vector of requested columns to be returned from the query.
         Available options are: geometry, id, time_series_id,
         monitoring_location_id, parameter_code, statistic_id, time, value,
@@ -469,7 +469,7 @@ def get_monitoring_locations(
     well_constructed_depth: str | Iterable[str] | None = None,
     hole_constructed_depth: str | Iterable[str] | None = None,
     depth_source_code: str | Iterable[str] | None = None,
-    properties: str | list[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
@@ -650,7 +650,7 @@ def get_monitoring_locations(
         A code indicating the source of water-level data. A `list of
         codes <https://help.waterdata.usgs.gov/code/water_level_src_cd_query?fmt=html>`_
         is available.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         A vector of requested columns to be returned from the query. Available
         options are: geometry, id, agency_code, agency_name,
         monitoring_location_number, monitoring_location_name, district_code,
@@ -730,7 +730,7 @@ def get_time_series_metadata(
     monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
     parameter_name: str | Iterable[str] | None = None,
-    properties: str | list[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     statistic_id: str | Iterable[str] | None = None,
     hydrologic_unit_code: str | Iterable[str] | None = None,
     state_name: str | Iterable[str] | None = None,
@@ -779,7 +779,7 @@ def get_time_series_metadata(
         https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
     parameter_name : string or iterable of strings, optional
         A human-understandable name corresponding to parameter_code.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         A vector of requested columns to be returned from the query.
         Available options are: geometry, id, time_series_id,
         monitoring_location_id, parameter_code, statistic_id, time, value,
@@ -1005,7 +1005,7 @@ def get_combined_metadata(
     well_constructed_depth: str | Iterable[str] | None = None,
     hole_constructed_depth: str | Iterable[str] | None = None,
     depth_source_code: str | Iterable[str] | None = None,
-    properties: str | list[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
@@ -1091,7 +1091,7 @@ site_type_code : string or iterable of strings, optional
         altitude, vertical/horizontal datum, drainage area, aquifer,
         well construction, …); see :func:`get_monitoring_locations` for
         descriptions of each.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         Subset of columns to return. Defaults to every available
         property.
     skip_geometry : boolean, optional
@@ -1185,7 +1185,7 @@ def get_latest_continuous(
     monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
     statistic_id: str | Iterable[str] | None = None,
-    properties: str | list[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     time_series_id: str | Iterable[str] | None = None,
     latest_continuous_id: str | Iterable[str] | None = None,
     approval_status: str | Iterable[str] | None = None,
@@ -1231,7 +1231,7 @@ def get_latest_continuous(
         Example codes include 00001 (max), 00002 (min), and 00003 (mean).
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         A vector of requested columns to be returned from the query.  Available
         options are: geometry, id, time_series_id, monitoring_location_id,
         parameter_code, statistic_id, time, value, unit_of_measure,
@@ -1380,7 +1380,7 @@ def get_latest_daily(
     monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
     statistic_id: str | Iterable[str] | None = None,
-    properties: str | list[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     time_series_id: str | Iterable[str] | None = None,
     latest_daily_id: str | Iterable[str] | None = None,
     approval_status: str | Iterable[str] | None = None,
@@ -1428,7 +1428,7 @@ def get_latest_daily(
         Example codes include 00001 (max), 00002 (min), and 00003 (mean).
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         A vector of requested columns to be returned from the query.  Available
         options are: geometry, id, time_series_id, monitoring_location_id,
         parameter_code, statistic_id, time, value, unit_of_measure,
@@ -1576,7 +1576,7 @@ def get_field_measurements(
     monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
     observing_procedure_code: str | Iterable[str] | None = None,
-    properties: str | list[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     field_visit_id: str | Iterable[str] | None = None,
     approval_status: str | Iterable[str] | None = None,
     unit_of_measure: str | Iterable[str] | None = None,
@@ -1618,7 +1618,7 @@ def get_field_measurements(
     observing_procedure_code : string or iterable of strings, optional
         A short code corresponding to the observing procedure for the field
         measurement.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         A vector of requested columns to be returned from the query.  Available
         options are: geometry, id, time_series_id, monitoring_location_id,
         parameter_code, statistic_id, time, value, unit_of_measure,
@@ -1770,7 +1770,7 @@ def get_field_measurements_metadata(
     begin: str | Iterable[str] | None = None,
     end: str | Iterable[str] | None = None,
     last_modified: str | Iterable[str] | None = None,
-    properties: str | list[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
@@ -1813,7 +1813,7 @@ def get_field_measurements_metadata(
         interval (``"start/end"``, optionally half-bounded with ``..``),
         or an ISO 8601 duration (e.g. ``"P1M"``, ``"PT36H"``). See
         :func:`get_time_series_metadata` for the full grammar.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         Subset of columns to return. Defaults to every available property.
     skip_geometry : boolean, optional
         Skip per-feature geometries; the returned object will be a plain
@@ -1891,7 +1891,7 @@ def get_peaks(
     month: int | list[int] | None = None,
     day: int | list[int] | None = None,
     peak_since: int | list[int] | None = None,
-    properties: str | list[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
@@ -1937,7 +1937,7 @@ def get_peaks(
         Filter on the year since which the peak value has stood as the
         record (the API serves this field as an integer; many rows are
         ``null``).
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         Subset of columns to return. Defaults to every available property.
     skip_geometry : boolean, optional
         Skip per-feature geometries; the returned object will be a plain
@@ -2688,7 +2688,7 @@ def get_channel(
     measurement_type: str | Iterable[str] | None = None,
     last_modified: str | Iterable[str] | None = None,
     channel_measurement_type: str | Iterable[str] | None = None,
-    properties: str | list[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
@@ -2789,7 +2789,7 @@ def get_channel(
         CQL2 queries.
     channel_measurement_type : string or iterable of strings, optional
         The channel measurement type.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         A vector of requested columns to be returned from the query. Available
         options are: geometry, channel_measurements_id, monitoring_location_id,
         field_visit_id, measurement_number, time, channel_name, channel_flow,
