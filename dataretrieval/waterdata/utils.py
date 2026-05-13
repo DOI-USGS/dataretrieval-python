@@ -149,7 +149,9 @@ _DURATION_RE = re.compile(r"^[Pp]T?\d")
 # string list. Used by ``_construct_api_requests`` to keep them out of the
 # POST/CQL2 multi-value path and to route them through ``_format_api_dates``,
 # and by ``_NO_NORMALIZE_PARAMS`` to bypass string-iterable normalization.
-_DATE_RANGE_PARAMS = frozenset({"datetime", "last_modified", "begin", "end", "time"})
+_DATE_RANGE_PARAMS = frozenset(
+    {"datetime", "last_modified", "begin", "begin_utc", "end", "end_utc", "time"}
+)
 
 
 def _parse_datetime(value: str) -> datetime | None:
@@ -468,11 +470,7 @@ def _construct_api_requests(
             dates = service == "daily" and i != "last_modified"
             params[i] = _format_api_dates(params[i], date=dates)
 
-    # Join bbox/properties into the comma-separated form the OGC API expects.
-    # For ``bbox`` use ``len() > 0`` so ``numpy.ndarray`` inputs don't trip
-    # the ambiguous truth-value error; for ``properties`` the truthy check is
-    # right because ``_get_args`` always materializes it to a list (and
-    # ``_switch_properties_id`` further upstream returns ``[]`` for None).
+    # `len()` instead of truthiness: a numpy ndarray would raise on `if bbox:`.
     if bbox is not None and len(bbox) > 0:
         params["bbox"] = ",".join(map(str, bbox))
     if properties:
@@ -1203,12 +1201,6 @@ _NO_NORMALIZE_PARAMS = _DATE_RANGE_PARAMS | {
     "thresholds",
 }
 
-# Param names that must be a list of strings (never a single string).
-# A single string passed in would iterate as characters in
-# ``_construct_api_requests``'s ``",".join(...)`` step, producing a
-# malformed URL. ``_get_args`` wraps single-string input into a list.
-_LIST_ONLY_STR_PARAMS = frozenset({"properties"})
-
 
 def _normalize_str_iterable(
     value: str | Iterable[str] | None,
@@ -1344,9 +1336,10 @@ def _get_args(
     for k, v in local_vars.items():
         if k in to_exclude or v is None:
             continue
-        if k in _LIST_ONLY_STR_PARAMS:
-            # Wrap a single string so the downstream `",".join(...)` doesn't
-            # iterate it as characters.
+        if k == "monitoring_location_id":
+            args[k] = _check_monitoring_location_id(v)
+        elif k == "properties":
+            # `",".join(properties)` would iterate a bare string as characters.
             args[k] = [v] if isinstance(v, str) else _normalize_str_iterable(v, k)
         elif (
             k in _NO_NORMALIZE_PARAMS
