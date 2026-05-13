@@ -2050,8 +2050,8 @@ def get_reference_table(
 
         >>> # Get table of selected USGS parameter codes
         >>> ref, md = dataretrieval.waterdata.get_reference_table(
-        ...     collection="parameter-codes"
-        ...     query={'id': '00001,00002'}
+        ...     collection="parameter-codes",
+        ...     query={"id": "00001,00002"},
         ... )
     """
     valid_code_services = get_args(METADATA_COLLECTIONS)
