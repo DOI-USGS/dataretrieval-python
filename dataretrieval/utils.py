@@ -265,7 +265,7 @@ def query(url, payload, delimiter=",", ssl_check=True):
     url: string
         URL to query
     payload: dict
-        query parameters passed to ``requests.get``
+        query parameters passed to ``requests.get``. Not mutated.
     delimiter: string
         delimiter to use with lists
     ssl_check: bool
@@ -274,20 +274,20 @@ def query(url, payload, delimiter=",", ssl_check=True):
 
     Returns
     -------
-    string: query response
-        The response from the API query ``requests.get`` function call.
+    response : ``requests.Response``
+        The response object from the underlying ``requests.get`` call.
+
+    Raises
+    ------
+    ValueError
+        For any non-success HTTP status (4xx/5xx); the message includes
+        the status code, reason, and URL.
     """
+    params = {key: to_str(value, delimiter) for key, value in payload.items()}
 
-    for key, value in payload.items():
-        payload[key] = to_str(value, delimiter)
-    # for index in range(len(payload)):
-    #    key, value = payload[index]
-    #    payload[index] = (key, to_str(value))
-
-    # define the user agent for the query
     user_agent = {"user-agent": f"python-dataretrieval/{dataretrieval.__version__}"}
 
-    response = requests.get(url, params=payload, headers=user_agent, verify=ssl_check)
+    response = requests.get(url, params=params, headers=user_agent, verify=ssl_check)
 
     if response.status_code == 400:
         raise ValueError(
@@ -318,6 +318,11 @@ def query(url, payload, delimiter=",", ssl_check=True):
         raise ValueError(
             f"Service Unavailable: {response.status_code} {response.reason}. "
             + f"The service at {response.url} may be down or experiencing issues."
+        )
+
+    if not response.ok:
+        raise ValueError(
+            f"HTTP {response.status_code} {response.reason} for {response.url}"
         )
 
     if response.text.startswith("No sites/data"):

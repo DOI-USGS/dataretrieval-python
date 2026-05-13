@@ -41,6 +41,37 @@ class Test_query:
         assert response.status_code == 200  # GET was successful
         assert "user-agent" in response.request.headers
 
+    def test_does_not_mutate_caller_payload(self, requests_mock):
+        """`query` must not mutate the caller's payload dict.
+
+        Regression: previously the function did
+        ``payload[key] = to_str(value, delimiter)`` in place, so list
+        values were overwritten with their stringified joins after the
+        call returned.
+        """
+        url = "https://example.com/svc"
+        requests_mock.get(url, text="ok")
+        payload = {"sites": ["A", "B"], "stateCd": "MD"}
+        original = dict(payload)
+
+        utils.query(url, payload)
+
+        assert payload == original
+        assert payload["sites"] is original["sites"]
+
+    @pytest.mark.parametrize("status", [401, 403, 405, 408, 429, 501, 504])
+    def test_unhandled_4xx_5xx_raises(self, requests_mock, status):
+        """`query` must surface every 4xx/5xx, not just the few it formats.
+
+        Regression: codes outside {400, 404, 414, 500, 502, 503} used to
+        pass through silently — callers received the error body as if
+        it were data.
+        """
+        url = "https://example.com/svc"
+        requests_mock.get(url, status_code=status, text="<html>denied</html>")
+        with pytest.raises(ValueError, match=rf"HTTP {status}\b"):
+            utils.query(url, {"k": "v"})
+
 
 class Test_BaseMetadata:
     """Tests of BaseMetadata"""
