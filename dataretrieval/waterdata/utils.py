@@ -1169,7 +1169,30 @@ def _check_profiles(
         )
 
 
-_MONITORING_LOCATION_ID_RE = re.compile(r".+-.+")
+_MONITORING_LOCATION_ID_RE = re.compile(r"[^-\s]+-[^-\s]+")
+
+
+# Parameter names skipped by ``_get_args``'s string-iterable normalization.
+# Scalar non-string knobs (``limit``, ``ssl_check``, …) and ``list[float]``
+# params (``bbox``, ``boundingBox``) are detected by *runtime type* and pass
+# through automatically. The names below need explicit listing because their
+# values *are* string-iterables but have separate handling downstream:
+#
+#   * ``monitoring_location_id`` — validated by
+#     ``_check_monitoring_location_id`` at the public-function entry.
+#   * Date-range params (``time``, ``last_modified``, ``begin``, ``end``,
+#     ``datetime``) — support ``pd.NaT``/``None`` half-bounded endpoints and
+#     interval/duration strings; parsing happens in ``_format_api_dates``.
+_NO_NORMALIZE_PARAMS = frozenset(
+    {
+        "monitoring_location_id",
+        "time",
+        "last_modified",
+        "begin",
+        "end",
+        "datetime",
+    }
+)
 
 
 def _normalize_str_iterable(
@@ -1178,19 +1201,21 @@ def _normalize_str_iterable(
 ) -> str | list[str] | None:
     """Validate and normalize a parameter that accepts a string or iterable of strings.
 
-    Used by every public waterdata getter for multi-value string parameters
-    (``parameter_code``, ``statistic_id``, ``state_name``, ...) so any
-    sequence-like input — ``list``, ``tuple``, ``pandas.Series``,
-    ``pandas.Index``, ``numpy.ndarray``, generators — works at the public
-    boundary. The downstream ``_construct_api_requests`` branches on
-    ``isinstance(v, (list, tuple))``, so iterables are materialized to a
-    ``list`` here. ``Mapping`` types are rejected because iterating a
-    mapping yields keys, which would be a footgun.
+    Called from ``_get_args`` for every multi-value string parameter on
+    every waterdata getter that uses ``_get_args`` (every OGC/Samples
+    function in ``dataretrieval/waterdata/api.py``). Accepts ``list``,
+    ``tuple``, ``pandas.Series``, ``pandas.Index``, ``numpy.ndarray``,
+    generators — anything iterable whose elements are strings. The
+    downstream ``_construct_api_requests`` branches on ``isinstance(v,
+    (list, tuple))``, so iterables are materialized to a ``list`` here.
+    ``Mapping`` types are rejected because iterating a mapping yields
+    keys, which would be a footgun.
 
     Date-range params (``time``, ``last_modified``, ``begin``, ``end``,
-    ``datetime``) deliberately bypass this helper; their single-string-or-
-    two-element-range semantics are handled by ``_format_api_dates`` inside
-    ``_construct_api_requests``.
+    ``datetime``, ...) deliberately bypass this helper via
+    ``_NO_NORMALIZE_PARAMS``; their single-string-or-two-element-range
+    semantics (including ``pd.NaT``/``None`` half-bounded endpoints) are
+    handled by ``_format_api_dates`` inside ``_construct_api_requests``.
 
     Parameters
     ----------
@@ -1313,6 +1338,21 @@ def _get_args(
     if exclude:
         to_exclude.update(exclude)
 
-    return {
-        k: v for k, v in local_vars.items() if k not in to_exclude and v is not None
-    }
+    args: dict[str, Any] = {}
+    for k, v in local_vars.items():
+        if k in to_exclude or v is None:
+            continue
+        if k in _NO_NORMALIZE_PARAMS or isinstance(v, str):
+            args[k] = v
+            continue
+        if not isinstance(v, Iterable):
+            # Scalar non-string knob (bool / int / float) — pass through.
+            args[k] = v
+            continue
+        if isinstance(v, (list, tuple)) and v and not isinstance(v[0], str):
+            # list[float] / list[int] (e.g. bbox) — pass through.
+            args[k] = v
+            continue
+        # String-iterable: validate elements and materialize to list.
+        args[k] = _normalize_str_iterable(v, k)
+    return args

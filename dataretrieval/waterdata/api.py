@@ -31,7 +31,6 @@ from dataretrieval.waterdata.utils import (
     _check_profiles,
     _default_headers,
     _get_args,
-    _normalize_str_iterable,
     get_ogc_data,
     get_stats_data,
 )
@@ -234,15 +233,6 @@ def get_daily(
         ... )
     """
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
-    parameter_code = _normalize_str_iterable(parameter_code, "parameter_code")
-    statistic_id = _normalize_str_iterable(statistic_id, "statistic_id")
-    properties = _normalize_str_iterable(properties, "properties")
-    time_series_id = _normalize_str_iterable(time_series_id, "time_series_id")
-    daily_id = _normalize_str_iterable(daily_id, "daily_id")
-    approval_status = _normalize_str_iterable(approval_status, "approval_status")
-    unit_of_measure = _normalize_str_iterable(unit_of_measure, "unit_of_measure")
-    qualifier = _normalize_str_iterable(qualifier, "qualifier")
-    value = _normalize_str_iterable(value, "value")
     service = "daily"
     output_id = "daily_id"
 
@@ -432,15 +422,6 @@ def get_continuous(
         ... )
     """
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
-    parameter_code = _normalize_str_iterable(parameter_code, "parameter_code")
-    statistic_id = _normalize_str_iterable(statistic_id, "statistic_id")
-    properties = _normalize_str_iterable(properties, "properties")
-    time_series_id = _normalize_str_iterable(time_series_id, "time_series_id")
-    continuous_id = _normalize_str_iterable(continuous_id, "continuous_id")
-    approval_status = _normalize_str_iterable(approval_status, "approval_status")
-    unit_of_measure = _normalize_str_iterable(unit_of_measure, "unit_of_measure")
-    qualifier = _normalize_str_iterable(qualifier, "qualifier")
-    value = _normalize_str_iterable(value, "value")
     service = "continuous"
     output_id = "continuous_id"
 
@@ -740,84 +721,6 @@ def get_monitoring_locations(
         ... )
     """
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
-    agency_code = _normalize_str_iterable(agency_code, "agency_code")
-    agency_name = _normalize_str_iterable(agency_name, "agency_name")
-    monitoring_location_number = _normalize_str_iterable(
-        monitoring_location_number, "monitoring_location_number"
-    )
-    monitoring_location_name = _normalize_str_iterable(
-        monitoring_location_name, "monitoring_location_name"
-    )
-    district_code = _normalize_str_iterable(district_code, "district_code")
-    country_code = _normalize_str_iterable(country_code, "country_code")
-    country_name = _normalize_str_iterable(country_name, "country_name")
-    state_code = _normalize_str_iterable(state_code, "state_code")
-    state_name = _normalize_str_iterable(state_name, "state_name")
-    county_code = _normalize_str_iterable(county_code, "county_code")
-    county_name = _normalize_str_iterable(county_name, "county_name")
-    minor_civil_division_code = _normalize_str_iterable(
-        minor_civil_division_code, "minor_civil_division_code"
-    )
-    site_type_code = _normalize_str_iterable(site_type_code, "site_type_code")
-    site_type = _normalize_str_iterable(site_type, "site_type")
-    hydrologic_unit_code = _normalize_str_iterable(
-        hydrologic_unit_code, "hydrologic_unit_code"
-    )
-    basin_code = _normalize_str_iterable(basin_code, "basin_code")
-    altitude = _normalize_str_iterable(altitude, "altitude")
-    altitude_accuracy = _normalize_str_iterable(altitude_accuracy, "altitude_accuracy")
-    altitude_method_code = _normalize_str_iterable(
-        altitude_method_code, "altitude_method_code"
-    )
-    altitude_method_name = _normalize_str_iterable(
-        altitude_method_name, "altitude_method_name"
-    )
-    vertical_datum = _normalize_str_iterable(vertical_datum, "vertical_datum")
-    vertical_datum_name = _normalize_str_iterable(
-        vertical_datum_name, "vertical_datum_name"
-    )
-    horizontal_positional_accuracy_code = _normalize_str_iterable(
-        horizontal_positional_accuracy_code, "horizontal_positional_accuracy_code"
-    )
-    horizontal_positional_accuracy = _normalize_str_iterable(
-        horizontal_positional_accuracy, "horizontal_positional_accuracy"
-    )
-    horizontal_position_method_code = _normalize_str_iterable(
-        horizontal_position_method_code, "horizontal_position_method_code"
-    )
-    horizontal_position_method_name = _normalize_str_iterable(
-        horizontal_position_method_name, "horizontal_position_method_name"
-    )
-    original_horizontal_datum = _normalize_str_iterable(
-        original_horizontal_datum, "original_horizontal_datum"
-    )
-    original_horizontal_datum_name = _normalize_str_iterable(
-        original_horizontal_datum_name, "original_horizontal_datum_name"
-    )
-    drainage_area = _normalize_str_iterable(drainage_area, "drainage_area")
-    contributing_drainage_area = _normalize_str_iterable(
-        contributing_drainage_area, "contributing_drainage_area"
-    )
-    time_zone_abbreviation = _normalize_str_iterable(
-        time_zone_abbreviation, "time_zone_abbreviation"
-    )
-    uses_daylight_savings = _normalize_str_iterable(
-        uses_daylight_savings, "uses_daylight_savings"
-    )
-    construction_date = _normalize_str_iterable(construction_date, "construction_date")
-    aquifer_code = _normalize_str_iterable(aquifer_code, "aquifer_code")
-    national_aquifer_code = _normalize_str_iterable(
-        national_aquifer_code, "national_aquifer_code"
-    )
-    aquifer_type_code = _normalize_str_iterable(aquifer_type_code, "aquifer_type_code")
-    well_constructed_depth = _normalize_str_iterable(
-        well_constructed_depth, "well_constructed_depth"
-    )
-    hole_constructed_depth = _normalize_str_iterable(
-        hole_constructed_depth, "hole_constructed_depth"
-    )
-    depth_source_code = _normalize_str_iterable(depth_source_code, "depth_source_code")
-    properties = _normalize_str_iterable(properties, "properties")
     service = "monitoring-locations"
     output_id = "monitoring_location_id"
 
@@ -1042,30 +945,6 @@ def get_time_series_metadata(
         ... )
     """
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
-    parameter_code = _normalize_str_iterable(parameter_code, "parameter_code")
-    parameter_name = _normalize_str_iterable(parameter_name, "parameter_name")
-    properties = _normalize_str_iterable(properties, "properties")
-    statistic_id = _normalize_str_iterable(statistic_id, "statistic_id")
-    hydrologic_unit_code = _normalize_str_iterable(
-        hydrologic_unit_code, "hydrologic_unit_code"
-    )
-    state_name = _normalize_str_iterable(state_name, "state_name")
-    unit_of_measure = _normalize_str_iterable(unit_of_measure, "unit_of_measure")
-    computation_period_identifier = _normalize_str_iterable(
-        computation_period_identifier, "computation_period_identifier"
-    )
-    computation_identifier = _normalize_str_iterable(
-        computation_identifier, "computation_identifier"
-    )
-    sublocation_identifier = _normalize_str_iterable(
-        sublocation_identifier, "sublocation_identifier"
-    )
-    primary = _normalize_str_iterable(primary, "primary")
-    parent_time_series_id = _normalize_str_iterable(
-        parent_time_series_id, "parent_time_series_id"
-    )
-    time_series_id = _normalize_str_iterable(time_series_id, "time_series_id")
-    web_description = _normalize_str_iterable(web_description, "web_description")
     service = "time-series-metadata"
     output_id = "time_series_id"
 
@@ -1494,16 +1373,6 @@ def get_latest_continuous(
         ... )
     """
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
-    parameter_code = _normalize_str_iterable(parameter_code, "parameter_code")
-    statistic_id = _normalize_str_iterable(statistic_id, "statistic_id")
-    properties = _normalize_str_iterable(properties, "properties")
-    time_series_id = _normalize_str_iterable(time_series_id, "time_series_id")
-    latest_continuous_id = _normalize_str_iterable(
-        latest_continuous_id, "latest_continuous_id"
-    )
-    approval_status = _normalize_str_iterable(approval_status, "approval_status")
-    unit_of_measure = _normalize_str_iterable(unit_of_measure, "unit_of_measure")
-    qualifier = _normalize_str_iterable(qualifier, "qualifier")
     service = "latest-continuous"
     output_id = "latest_continuous_id"
 
@@ -1701,14 +1570,6 @@ def get_latest_daily(
         ... )
     """
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
-    parameter_code = _normalize_str_iterable(parameter_code, "parameter_code")
-    statistic_id = _normalize_str_iterable(statistic_id, "statistic_id")
-    properties = _normalize_str_iterable(properties, "properties")
-    time_series_id = _normalize_str_iterable(time_series_id, "time_series_id")
-    latest_daily_id = _normalize_str_iterable(latest_daily_id, "latest_daily_id")
-    approval_status = _normalize_str_iterable(approval_status, "approval_status")
-    unit_of_measure = _normalize_str_iterable(unit_of_measure, "unit_of_measure")
-    qualifier = _normalize_str_iterable(qualifier, "qualifier")
     service = "latest-daily"
     output_id = "latest_daily_id"
 
@@ -1900,21 +1761,6 @@ def get_field_measurements(
         ... )
     """
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
-    parameter_code = _normalize_str_iterable(parameter_code, "parameter_code")
-    observing_procedure_code = _normalize_str_iterable(
-        observing_procedure_code, "observing_procedure_code"
-    )
-    properties = _normalize_str_iterable(properties, "properties")
-    field_visit_id = _normalize_str_iterable(field_visit_id, "field_visit_id")
-    approval_status = _normalize_str_iterable(approval_status, "approval_status")
-    unit_of_measure = _normalize_str_iterable(unit_of_measure, "unit_of_measure")
-    qualifier = _normalize_str_iterable(qualifier, "qualifier")
-    value = _normalize_str_iterable(value, "value")
-    observing_procedure = _normalize_str_iterable(
-        observing_procedure, "observing_procedure"
-    )
-    vertical_datum = _normalize_str_iterable(vertical_datum, "vertical_datum")
-    measuring_agency = _normalize_str_iterable(measuring_agency, "measuring_agency")
     service = "field-measurements"
     output_id = "field_measurement_id"
 
@@ -2470,32 +2316,6 @@ def get_samples(
         ... )
 
     """
-    activityMediaName = _normalize_str_iterable(activityMediaName, "activityMediaName")
-    activityTypeCode = _normalize_str_iterable(activityTypeCode, "activityTypeCode")
-    characteristicGroup = _normalize_str_iterable(
-        characteristicGroup, "characteristicGroup"
-    )
-    characteristic = _normalize_str_iterable(characteristic, "characteristic")
-    characteristicUserSupplied = _normalize_str_iterable(
-        characteristicUserSupplied, "characteristicUserSupplied"
-    )
-    countryFips = _normalize_str_iterable(countryFips, "countryFips")
-    stateFips = _normalize_str_iterable(stateFips, "stateFips")
-    countyFips = _normalize_str_iterable(countyFips, "countyFips")
-    siteTypeCode = _normalize_str_iterable(siteTypeCode, "siteTypeCode")
-    siteTypeName = _normalize_str_iterable(siteTypeName, "siteTypeName")
-    usgsPCode = _normalize_str_iterable(usgsPCode, "usgsPCode")
-    hydrologicUnit = _normalize_str_iterable(hydrologicUnit, "hydrologicUnit")
-    monitoringLocationIdentifier = _normalize_str_iterable(
-        monitoringLocationIdentifier, "monitoringLocationIdentifier"
-    )
-    organizationIdentifier = _normalize_str_iterable(
-        organizationIdentifier, "organizationIdentifier"
-    )
-    projectIdentifier = _normalize_str_iterable(projectIdentifier, "projectIdentifier")
-    recordIdentifierUserSupplied = _normalize_str_iterable(
-        recordIdentifierUserSupplied, "recordIdentifierUserSupplied"
-    )
 
     _check_profiles(service, profile)
 
@@ -2712,16 +2532,6 @@ def get_stats_por(
         ...     end_date="01-31",
         ... )
     """
-    computation_type = _normalize_str_iterable(computation_type, "computation_type")
-    country_code = _normalize_str_iterable(country_code, "country_code")
-    state_code = _normalize_str_iterable(state_code, "state_code")
-    county_code = _normalize_str_iterable(county_code, "county_code")
-    parent_time_series_id = _normalize_str_iterable(
-        parent_time_series_id, "parent_time_series_id"
-    )
-    site_type_code = _normalize_str_iterable(site_type_code, "site_type_code")
-    site_type_name = _normalize_str_iterable(site_type_name, "site_type_name")
-    parameter_code = _normalize_str_iterable(parameter_code, "parameter_code")
     # Build argument dictionary, omitting None values
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
     params = _get_args(locals(), exclude={"expand_percentiles"})
@@ -2852,16 +2662,6 @@ def get_stats_date_range(
         ...     computation_type=["minimum", "maximum"],
         ... )
     """
-    computation_type = _normalize_str_iterable(computation_type, "computation_type")
-    country_code = _normalize_str_iterable(country_code, "country_code")
-    state_code = _normalize_str_iterable(state_code, "state_code")
-    county_code = _normalize_str_iterable(county_code, "county_code")
-    parent_time_series_id = _normalize_str_iterable(
-        parent_time_series_id, "parent_time_series_id"
-    )
-    site_type_code = _normalize_str_iterable(site_type_code, "site_type_code")
-    site_type_name = _normalize_str_iterable(site_type_name, "site_type_name")
-    parameter_code = _normalize_str_iterable(parameter_code, "parameter_code")
     # Build argument dictionary, omitting None values
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
     params = _get_args(locals(), exclude={"expand_percentiles"})
@@ -3037,46 +2837,6 @@ def get_channel(
         ... )
     """
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
-    field_visit_id = _normalize_str_iterable(field_visit_id, "field_visit_id")
-    measurement_number = _normalize_str_iterable(
-        measurement_number, "measurement_number"
-    )
-    channel_name = _normalize_str_iterable(channel_name, "channel_name")
-    channel_flow = _normalize_str_iterable(channel_flow, "channel_flow")
-    channel_flow_unit = _normalize_str_iterable(channel_flow_unit, "channel_flow_unit")
-    channel_width = _normalize_str_iterable(channel_width, "channel_width")
-    channel_width_unit = _normalize_str_iterable(
-        channel_width_unit, "channel_width_unit"
-    )
-    channel_area = _normalize_str_iterable(channel_area, "channel_area")
-    channel_area_unit = _normalize_str_iterable(channel_area_unit, "channel_area_unit")
-    channel_velocity = _normalize_str_iterable(channel_velocity, "channel_velocity")
-    channel_velocity_unit = _normalize_str_iterable(
-        channel_velocity_unit, "channel_velocity_unit"
-    )
-    channel_location_distance = _normalize_str_iterable(
-        channel_location_distance, "channel_location_distance"
-    )
-    channel_location_distance_unit = _normalize_str_iterable(
-        channel_location_distance_unit, "channel_location_distance_unit"
-    )
-    channel_stability = _normalize_str_iterable(channel_stability, "channel_stability")
-    channel_material = _normalize_str_iterable(channel_material, "channel_material")
-    channel_evenness = _normalize_str_iterable(channel_evenness, "channel_evenness")
-    horizontal_velocity_description = _normalize_str_iterable(
-        horizontal_velocity_description, "horizontal_velocity_description"
-    )
-    vertical_velocity_description = _normalize_str_iterable(
-        vertical_velocity_description, "vertical_velocity_description"
-    )
-    longitudinal_velocity_description = _normalize_str_iterable(
-        longitudinal_velocity_description, "longitudinal_velocity_description"
-    )
-    measurement_type = _normalize_str_iterable(measurement_type, "measurement_type")
-    channel_measurement_type = _normalize_str_iterable(
-        channel_measurement_type, "channel_measurement_type"
-    )
-    properties = _normalize_str_iterable(properties, "properties")
     service = "channel-measurements"
     output_id = "channel_measurements_id"
 
