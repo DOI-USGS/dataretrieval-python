@@ -26,7 +26,11 @@ from dataretrieval.waterdata import (
     get_stats_por,
     get_time_series_metadata,
 )
-from dataretrieval.waterdata.utils import _check_monitoring_location_id, _check_profiles
+from dataretrieval.waterdata.utils import (
+    _check_monitoring_location_id,
+    _check_profiles,
+    _normalize_str_iterable,
+)
 
 
 def mock_request(requests_mock, request_url, file_path):
@@ -601,3 +605,76 @@ class TestCheckMonitoringLocationId:
         """get_daily raises ValueError for a malformed string ID."""
         with pytest.raises(ValueError):
             get_daily(monitoring_location_id="dog", parameter_code="00060")
+
+
+class TestNormalizeStrIterable:
+    """Tests for the generic _normalize_str_iterable helper.
+
+    Mirrors TestCheckMonitoringLocationId for the type/iterable contract;
+    the AGENCY-ID format check is monitoring_location_id-specific and lives
+    only in the _check_monitoring_location_id wrapper.
+    """
+
+    def test_none_passes(self):
+        assert _normalize_str_iterable(None, "p") is None
+
+    def test_string_returned_unchanged(self):
+        assert _normalize_str_iterable("00060", "parameter_code") == "00060"
+        # Note: no hyphen requirement here — that's monitoring_location_id-specific.
+        assert _normalize_str_iterable("dog", "parameter_code") == "dog"
+
+    def test_list_returned_unchanged(self):
+        assert _normalize_str_iterable(["00060", "00010"], "p") == ["00060", "00010"]
+
+    def test_tuple_normalizes_to_list(self):
+        result = _normalize_str_iterable(("00060", "00010"), "p")
+        assert result == ["00060", "00010"]
+        assert isinstance(result, list)
+
+    def test_pandas_series_normalizes_to_list(self):
+        result = _normalize_str_iterable(pd.Series(["00060", "00010"]), "p")
+        assert result == ["00060", "00010"]
+        assert isinstance(result, list)
+
+    def test_numpy_array_normalizes_to_list(self):
+        import numpy as np
+
+        result = _normalize_str_iterable(np.array(["00060", "00010"]), "p")
+        assert result == ["00060", "00010"]
+        assert isinstance(result, list)
+
+    def test_int_raises_type_error(self):
+        with pytest.raises(TypeError, match="parameter_code must be a string"):
+            _normalize_str_iterable(5129115, "parameter_code")
+
+    def test_int_in_iterable_raises_type_error(self):
+        with pytest.raises(TypeError, match="parameter_code elements must be strings"):
+            _normalize_str_iterable(["00060", 5129115], "parameter_code")
+
+    def test_dict_raises_type_error(self):
+        with pytest.raises(TypeError, match="not dict"):
+            _normalize_str_iterable({"00060": "discharge"}, "parameter_code")
+
+    def test_get_daily_parameter_code_as_series(self):
+        """Wiring check: pd.Series for ``parameter_code`` arrives at the inner
+        call as a list.
+
+        Regression for the gap PR #229 originally left on every multi-value
+        parameter other than ``monitoring_location_id``. Pre-fix, the Series
+        was passed through to ``requests`` which str-serialized it into the
+        URL (or POST body). Post-fix, ``_normalize_str_iterable`` materializes
+        it to ``list`` at the function boundary.
+        """
+        from unittest import mock as _mock
+
+        with _mock.patch("dataretrieval.waterdata.api.get_ogc_data") as fake:
+            fake.return_value = (pd.DataFrame(), _mock.MagicMock(spec=[]))
+            get_daily(
+                monitoring_location_id="USGS-05427718",
+                parameter_code=pd.Series(["00060", "00010"]),
+            )
+        # _get_args(locals()) packs kwargs and passes them as `args` to
+        # get_ogc_data; the first positional argument is the args dict.
+        args_dict = fake.call_args[0][0]
+        assert args_dict["parameter_code"] == ["00060", "00010"]
+        assert isinstance(args_dict["parameter_code"], list)

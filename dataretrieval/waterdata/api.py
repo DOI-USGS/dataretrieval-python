@@ -31,6 +31,7 @@ from dataretrieval.waterdata.utils import (
     _check_profiles,
     _default_headers,
     _get_args,
+    _normalize_str_iterable,
     get_ogc_data,
     get_stats_data,
 )
@@ -41,18 +42,18 @@ logger = logging.getLogger(__name__)
 
 def get_daily(
     monitoring_location_id: str | Iterable[str] | None = None,
-    parameter_code: str | list[str] | None = None,
-    statistic_id: str | list[str] | None = None,
-    properties: list[str] | None = None,
-    time_series_id: str | list[str] | None = None,
-    daily_id: str | list[str] | None = None,
-    approval_status: str | list[str] | None = None,
-    unit_of_measure: str | list[str] | None = None,
-    qualifier: str | list[str] | None = None,
-    value: str | list[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
+    statistic_id: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
+    time_series_id: str | Iterable[str] | None = None,
+    daily_id: str | Iterable[str] | None = None,
+    approval_status: str | Iterable[str] | None = None,
+    unit_of_measure: str | Iterable[str] | None = None,
+    qualifier: str | Iterable[str] | None = None,
+    value: str | Iterable[str] | None = None,
     last_modified: str | None = None,
     skip_geometry: bool | None = None,
-    time: str | list[str] | None = None,
+    time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -233,6 +234,15 @@ def get_daily(
         ... )
     """
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
+    parameter_code = _normalize_str_iterable(parameter_code, "parameter_code")
+    statistic_id = _normalize_str_iterable(statistic_id, "statistic_id")
+    properties = _normalize_str_iterable(properties, "properties")
+    time_series_id = _normalize_str_iterable(time_series_id, "time_series_id")
+    daily_id = _normalize_str_iterable(daily_id, "daily_id")
+    approval_status = _normalize_str_iterable(approval_status, "approval_status")
+    unit_of_measure = _normalize_str_iterable(unit_of_measure, "unit_of_measure")
+    qualifier = _normalize_str_iterable(qualifier, "qualifier")
+    value = _normalize_str_iterable(value, "value")
     service = "daily"
     output_id = "daily_id"
 
@@ -244,17 +254,17 @@ def get_daily(
 
 def get_continuous(
     monitoring_location_id: str | Iterable[str] | None = None,
-    parameter_code: str | list[str] | None = None,
-    statistic_id: str | list[str] | None = None,
-    properties: list[str] | None = None,
-    time_series_id: str | list[str] | None = None,
-    continuous_id: str | list[str] | None = None,
-    approval_status: str | list[str] | None = None,
-    unit_of_measure: str | list[str] | None = None,
-    qualifier: str | list[str] | None = None,
-    value: str | list[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
+    statistic_id: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
+    time_series_id: str | Iterable[str] | None = None,
+    continuous_id: str | Iterable[str] | None = None,
+    approval_status: str | Iterable[str] | None = None,
+    unit_of_measure: str | Iterable[str] | None = None,
+    qualifier: str | Iterable[str] | None = None,
+    value: str | Iterable[str] | None = None,
     last_modified: str | None = None,
-    time: str | list[str] | None = None,
+    time: str | Iterable[str] | None = None,
     limit: int | None = None,
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
@@ -422,6 +432,15 @@ def get_continuous(
         ... )
     """
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
+    parameter_code = _normalize_str_iterable(parameter_code, "parameter_code")
+    statistic_id = _normalize_str_iterable(statistic_id, "statistic_id")
+    properties = _normalize_str_iterable(properties, "properties")
+    time_series_id = _normalize_str_iterable(time_series_id, "time_series_id")
+    continuous_id = _normalize_str_iterable(continuous_id, "continuous_id")
+    approval_status = _normalize_str_iterable(approval_status, "approval_status")
+    unit_of_measure = _normalize_str_iterable(unit_of_measure, "unit_of_measure")
+    qualifier = _normalize_str_iterable(qualifier, "qualifier")
+    value = _normalize_str_iterable(value, "value")
     service = "continuous"
     output_id = "continuous_id"
 
@@ -433,48 +452,48 @@ def get_continuous(
 
 def get_monitoring_locations(
     monitoring_location_id: str | Iterable[str] | None = None,
-    agency_code: list[str] | None = None,
-    agency_name: list[str] | None = None,
-    monitoring_location_number: list[str] | None = None,
-    monitoring_location_name: list[str] | None = None,
-    district_code: list[str] | None = None,
-    country_code: list[str] | None = None,
-    country_name: list[str] | None = None,
-    state_code: list[str] | None = None,
-    state_name: list[str] | None = None,
-    county_code: list[str] | None = None,
-    county_name: list[str] | None = None,
-    minor_civil_division_code: list[str] | None = None,
-    site_type_code: list[str] | None = None,
-    site_type: list[str] | None = None,
-    hydrologic_unit_code: list[str] | None = None,
-    basin_code: list[str] | None = None,
-    altitude: list[str] | None = None,
-    altitude_accuracy: list[str] | None = None,
-    altitude_method_code: list[str] | None = None,
-    altitude_method_name: list[str] | None = None,
-    vertical_datum: list[str] | None = None,
-    vertical_datum_name: list[str] | None = None,
-    horizontal_positional_accuracy_code: list[str] | None = None,
-    horizontal_positional_accuracy: list[str] | None = None,
-    horizontal_position_method_code: list[str] | None = None,
-    horizontal_position_method_name: list[str] | None = None,
-    original_horizontal_datum: list[str] | None = None,
-    original_horizontal_datum_name: list[str] | None = None,
-    drainage_area: list[str] | None = None,
-    contributing_drainage_area: list[str] | None = None,
-    time_zone_abbreviation: list[str] | None = None,
-    uses_daylight_savings: list[str] | None = None,
-    construction_date: list[str] | None = None,
-    aquifer_code: list[str] | None = None,
-    national_aquifer_code: list[str] | None = None,
-    aquifer_type_code: list[str] | None = None,
-    well_constructed_depth: list[str] | None = None,
-    hole_constructed_depth: list[str] | None = None,
-    depth_source_code: list[str] | None = None,
-    properties: list[str] | None = None,
+    agency_code: str | Iterable[str] | None = None,
+    agency_name: str | Iterable[str] | None = None,
+    monitoring_location_number: str | Iterable[str] | None = None,
+    monitoring_location_name: str | Iterable[str] | None = None,
+    district_code: str | Iterable[str] | None = None,
+    country_code: str | Iterable[str] | None = None,
+    country_name: str | Iterable[str] | None = None,
+    state_code: str | Iterable[str] | None = None,
+    state_name: str | Iterable[str] | None = None,
+    county_code: str | Iterable[str] | None = None,
+    county_name: str | Iterable[str] | None = None,
+    minor_civil_division_code: str | Iterable[str] | None = None,
+    site_type_code: str | Iterable[str] | None = None,
+    site_type: str | Iterable[str] | None = None,
+    hydrologic_unit_code: str | Iterable[str] | None = None,
+    basin_code: str | Iterable[str] | None = None,
+    altitude: str | Iterable[str] | None = None,
+    altitude_accuracy: str | Iterable[str] | None = None,
+    altitude_method_code: str | Iterable[str] | None = None,
+    altitude_method_name: str | Iterable[str] | None = None,
+    vertical_datum: str | Iterable[str] | None = None,
+    vertical_datum_name: str | Iterable[str] | None = None,
+    horizontal_positional_accuracy_code: str | Iterable[str] | None = None,
+    horizontal_positional_accuracy: str | Iterable[str] | None = None,
+    horizontal_position_method_code: str | Iterable[str] | None = None,
+    horizontal_position_method_name: str | Iterable[str] | None = None,
+    original_horizontal_datum: str | Iterable[str] | None = None,
+    original_horizontal_datum_name: str | Iterable[str] | None = None,
+    drainage_area: str | Iterable[str] | None = None,
+    contributing_drainage_area: str | Iterable[str] | None = None,
+    time_zone_abbreviation: str | Iterable[str] | None = None,
+    uses_daylight_savings: str | Iterable[str] | None = None,
+    construction_date: str | Iterable[str] | None = None,
+    aquifer_code: str | Iterable[str] | None = None,
+    national_aquifer_code: str | Iterable[str] | None = None,
+    aquifer_type_code: str | Iterable[str] | None = None,
+    well_constructed_depth: str | Iterable[str] | None = None,
+    hole_constructed_depth: str | Iterable[str] | None = None,
+    depth_source_code: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
-    time: str | list[str] | None = None,
+    time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -721,6 +740,84 @@ def get_monitoring_locations(
         ... )
     """
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
+    agency_code = _normalize_str_iterable(agency_code, "agency_code")
+    agency_name = _normalize_str_iterable(agency_name, "agency_name")
+    monitoring_location_number = _normalize_str_iterable(
+        monitoring_location_number, "monitoring_location_number"
+    )
+    monitoring_location_name = _normalize_str_iterable(
+        monitoring_location_name, "monitoring_location_name"
+    )
+    district_code = _normalize_str_iterable(district_code, "district_code")
+    country_code = _normalize_str_iterable(country_code, "country_code")
+    country_name = _normalize_str_iterable(country_name, "country_name")
+    state_code = _normalize_str_iterable(state_code, "state_code")
+    state_name = _normalize_str_iterable(state_name, "state_name")
+    county_code = _normalize_str_iterable(county_code, "county_code")
+    county_name = _normalize_str_iterable(county_name, "county_name")
+    minor_civil_division_code = _normalize_str_iterable(
+        minor_civil_division_code, "minor_civil_division_code"
+    )
+    site_type_code = _normalize_str_iterable(site_type_code, "site_type_code")
+    site_type = _normalize_str_iterable(site_type, "site_type")
+    hydrologic_unit_code = _normalize_str_iterable(
+        hydrologic_unit_code, "hydrologic_unit_code"
+    )
+    basin_code = _normalize_str_iterable(basin_code, "basin_code")
+    altitude = _normalize_str_iterable(altitude, "altitude")
+    altitude_accuracy = _normalize_str_iterable(altitude_accuracy, "altitude_accuracy")
+    altitude_method_code = _normalize_str_iterable(
+        altitude_method_code, "altitude_method_code"
+    )
+    altitude_method_name = _normalize_str_iterable(
+        altitude_method_name, "altitude_method_name"
+    )
+    vertical_datum = _normalize_str_iterable(vertical_datum, "vertical_datum")
+    vertical_datum_name = _normalize_str_iterable(
+        vertical_datum_name, "vertical_datum_name"
+    )
+    horizontal_positional_accuracy_code = _normalize_str_iterable(
+        horizontal_positional_accuracy_code, "horizontal_positional_accuracy_code"
+    )
+    horizontal_positional_accuracy = _normalize_str_iterable(
+        horizontal_positional_accuracy, "horizontal_positional_accuracy"
+    )
+    horizontal_position_method_code = _normalize_str_iterable(
+        horizontal_position_method_code, "horizontal_position_method_code"
+    )
+    horizontal_position_method_name = _normalize_str_iterable(
+        horizontal_position_method_name, "horizontal_position_method_name"
+    )
+    original_horizontal_datum = _normalize_str_iterable(
+        original_horizontal_datum, "original_horizontal_datum"
+    )
+    original_horizontal_datum_name = _normalize_str_iterable(
+        original_horizontal_datum_name, "original_horizontal_datum_name"
+    )
+    drainage_area = _normalize_str_iterable(drainage_area, "drainage_area")
+    contributing_drainage_area = _normalize_str_iterable(
+        contributing_drainage_area, "contributing_drainage_area"
+    )
+    time_zone_abbreviation = _normalize_str_iterable(
+        time_zone_abbreviation, "time_zone_abbreviation"
+    )
+    uses_daylight_savings = _normalize_str_iterable(
+        uses_daylight_savings, "uses_daylight_savings"
+    )
+    construction_date = _normalize_str_iterable(construction_date, "construction_date")
+    aquifer_code = _normalize_str_iterable(aquifer_code, "aquifer_code")
+    national_aquifer_code = _normalize_str_iterable(
+        national_aquifer_code, "national_aquifer_code"
+    )
+    aquifer_type_code = _normalize_str_iterable(aquifer_type_code, "aquifer_type_code")
+    well_constructed_depth = _normalize_str_iterable(
+        well_constructed_depth, "well_constructed_depth"
+    )
+    hole_constructed_depth = _normalize_str_iterable(
+        hole_constructed_depth, "hole_constructed_depth"
+    )
+    depth_source_code = _normalize_str_iterable(depth_source_code, "depth_source_code")
+    properties = _normalize_str_iterable(properties, "properties")
     service = "monitoring-locations"
     output_id = "monitoring_location_id"
 
@@ -732,28 +829,28 @@ def get_monitoring_locations(
 
 def get_time_series_metadata(
     monitoring_location_id: str | Iterable[str] | None = None,
-    parameter_code: str | list[str] | None = None,
-    parameter_name: str | list[str] | None = None,
-    properties: str | list[str] | None = None,
-    statistic_id: str | list[str] | None = None,
-    hydrologic_unit_code: str | list[str] | None = None,
-    state_name: str | list[str] | None = None,
-    last_modified: str | list[str] | None = None,
-    begin: str | list[str] | None = None,
-    end: str | list[str] | None = None,
-    begin_utc: str | list[str] | None = None,
-    end_utc: str | list[str] | None = None,
-    unit_of_measure: str | list[str] | None = None,
-    computation_period_identifier: str | list[str] | None = None,
-    computation_identifier: str | list[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
+    parameter_name: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
+    statistic_id: str | Iterable[str] | None = None,
+    hydrologic_unit_code: str | Iterable[str] | None = None,
+    state_name: str | Iterable[str] | None = None,
+    last_modified: str | Iterable[str] | None = None,
+    begin: str | Iterable[str] | None = None,
+    end: str | Iterable[str] | None = None,
+    begin_utc: str | Iterable[str] | None = None,
+    end_utc: str | Iterable[str] | None = None,
+    unit_of_measure: str | Iterable[str] | None = None,
+    computation_period_identifier: str | Iterable[str] | None = None,
+    computation_identifier: str | Iterable[str] | None = None,
     thresholds: int | None = None,
-    sublocation_identifier: str | list[str] | None = None,
-    primary: str | list[str] | None = None,
-    parent_time_series_id: str | list[str] | None = None,
-    time_series_id: str | list[str] | None = None,
-    web_description: str | list[str] | None = None,
+    sublocation_identifier: str | Iterable[str] | None = None,
+    primary: str | Iterable[str] | None = None,
+    parent_time_series_id: str | Iterable[str] | None = None,
+    time_series_id: str | Iterable[str] | None = None,
+    web_description: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
-    time: str | list[str] | None = None,
+    time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -945,6 +1042,30 @@ def get_time_series_metadata(
         ... )
     """
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
+    parameter_code = _normalize_str_iterable(parameter_code, "parameter_code")
+    parameter_name = _normalize_str_iterable(parameter_name, "parameter_name")
+    properties = _normalize_str_iterable(properties, "properties")
+    statistic_id = _normalize_str_iterable(statistic_id, "statistic_id")
+    hydrologic_unit_code = _normalize_str_iterable(
+        hydrologic_unit_code, "hydrologic_unit_code"
+    )
+    state_name = _normalize_str_iterable(state_name, "state_name")
+    unit_of_measure = _normalize_str_iterable(unit_of_measure, "unit_of_measure")
+    computation_period_identifier = _normalize_str_iterable(
+        computation_period_identifier, "computation_period_identifier"
+    )
+    computation_identifier = _normalize_str_iterable(
+        computation_identifier, "computation_identifier"
+    )
+    sublocation_identifier = _normalize_str_iterable(
+        sublocation_identifier, "sublocation_identifier"
+    )
+    primary = _normalize_str_iterable(primary, "primary")
+    parent_time_series_id = _normalize_str_iterable(
+        parent_time_series_id, "parent_time_series_id"
+    )
+    time_series_id = _normalize_str_iterable(time_series_id, "time_series_id")
+    web_description = _normalize_str_iterable(web_description, "web_description")
     service = "time-series-metadata"
     output_id = "time_series_id"
 
@@ -1188,18 +1309,18 @@ site_type_code : string or list of strings, optional
 
 def get_latest_continuous(
     monitoring_location_id: str | Iterable[str] | None = None,
-    parameter_code: str | list[str] | None = None,
-    statistic_id: str | list[str] | None = None,
-    properties: str | list[str] | None = None,
-    time_series_id: str | list[str] | None = None,
-    latest_continuous_id: str | list[str] | None = None,
-    approval_status: str | list[str] | None = None,
-    unit_of_measure: str | list[str] | None = None,
-    qualifier: str | list[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
+    statistic_id: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
+    time_series_id: str | Iterable[str] | None = None,
+    latest_continuous_id: str | Iterable[str] | None = None,
+    approval_status: str | Iterable[str] | None = None,
+    unit_of_measure: str | Iterable[str] | None = None,
+    qualifier: str | Iterable[str] | None = None,
     value: int | None = None,
-    last_modified: str | list[str] | None = None,
+    last_modified: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
-    time: str | list[str] | None = None,
+    time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -1373,6 +1494,16 @@ def get_latest_continuous(
         ... )
     """
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
+    parameter_code = _normalize_str_iterable(parameter_code, "parameter_code")
+    statistic_id = _normalize_str_iterable(statistic_id, "statistic_id")
+    properties = _normalize_str_iterable(properties, "properties")
+    time_series_id = _normalize_str_iterable(time_series_id, "time_series_id")
+    latest_continuous_id = _normalize_str_iterable(
+        latest_continuous_id, "latest_continuous_id"
+    )
+    approval_status = _normalize_str_iterable(approval_status, "approval_status")
+    unit_of_measure = _normalize_str_iterable(unit_of_measure, "unit_of_measure")
+    qualifier = _normalize_str_iterable(qualifier, "qualifier")
     service = "latest-continuous"
     output_id = "latest_continuous_id"
 
@@ -1384,18 +1515,18 @@ def get_latest_continuous(
 
 def get_latest_daily(
     monitoring_location_id: str | Iterable[str] | None = None,
-    parameter_code: str | list[str] | None = None,
-    statistic_id: str | list[str] | None = None,
-    properties: str | list[str] | None = None,
-    time_series_id: str | list[str] | None = None,
-    latest_daily_id: str | list[str] | None = None,
-    approval_status: str | list[str] | None = None,
-    unit_of_measure: str | list[str] | None = None,
-    qualifier: str | list[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
+    statistic_id: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
+    time_series_id: str | Iterable[str] | None = None,
+    latest_daily_id: str | Iterable[str] | None = None,
+    approval_status: str | Iterable[str] | None = None,
+    unit_of_measure: str | Iterable[str] | None = None,
+    qualifier: str | Iterable[str] | None = None,
     value: int | None = None,
-    last_modified: str | list[str] | None = None,
+    last_modified: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
-    time: str | list[str] | None = None,
+    time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -1570,6 +1701,14 @@ def get_latest_daily(
         ... )
     """
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
+    parameter_code = _normalize_str_iterable(parameter_code, "parameter_code")
+    statistic_id = _normalize_str_iterable(statistic_id, "statistic_id")
+    properties = _normalize_str_iterable(properties, "properties")
+    time_series_id = _normalize_str_iterable(time_series_id, "time_series_id")
+    latest_daily_id = _normalize_str_iterable(latest_daily_id, "latest_daily_id")
+    approval_status = _normalize_str_iterable(approval_status, "approval_status")
+    unit_of_measure = _normalize_str_iterable(unit_of_measure, "unit_of_measure")
+    qualifier = _normalize_str_iterable(qualifier, "qualifier")
     service = "latest-daily"
     output_id = "latest_daily_id"
 
@@ -1581,20 +1720,20 @@ def get_latest_daily(
 
 def get_field_measurements(
     monitoring_location_id: str | Iterable[str] | None = None,
-    parameter_code: str | list[str] | None = None,
-    observing_procedure_code: str | list[str] | None = None,
-    properties: list[str] | None = None,
-    field_visit_id: str | list[str] | None = None,
-    approval_status: str | list[str] | None = None,
-    unit_of_measure: str | list[str] | None = None,
-    qualifier: str | list[str] | None = None,
-    value: str | list[str] | None = None,
-    last_modified: str | list[str] | None = None,
-    observing_procedure: str | list[str] | None = None,
-    vertical_datum: str | list[str] | None = None,
-    measuring_agency: str | list[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
+    observing_procedure_code: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
+    field_visit_id: str | Iterable[str] | None = None,
+    approval_status: str | Iterable[str] | None = None,
+    unit_of_measure: str | Iterable[str] | None = None,
+    qualifier: str | Iterable[str] | None = None,
+    value: str | Iterable[str] | None = None,
+    last_modified: str | Iterable[str] | None = None,
+    observing_procedure: str | Iterable[str] | None = None,
+    vertical_datum: str | Iterable[str] | None = None,
+    measuring_agency: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
-    time: str | list[str] | None = None,
+    time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -1761,6 +1900,21 @@ def get_field_measurements(
         ... )
     """
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
+    parameter_code = _normalize_str_iterable(parameter_code, "parameter_code")
+    observing_procedure_code = _normalize_str_iterable(
+        observing_procedure_code, "observing_procedure_code"
+    )
+    properties = _normalize_str_iterable(properties, "properties")
+    field_visit_id = _normalize_str_iterable(field_visit_id, "field_visit_id")
+    approval_status = _normalize_str_iterable(approval_status, "approval_status")
+    unit_of_measure = _normalize_str_iterable(unit_of_measure, "unit_of_measure")
+    qualifier = _normalize_str_iterable(qualifier, "qualifier")
+    value = _normalize_str_iterable(value, "value")
+    observing_procedure = _normalize_str_iterable(
+        observing_procedure, "observing_procedure"
+    )
+    vertical_datum = _normalize_str_iterable(vertical_datum, "vertical_datum")
+    measuring_agency = _normalize_str_iterable(measuring_agency, "measuring_agency")
     service = "field-measurements"
     output_id = "field_measurement_id"
 
@@ -2119,28 +2273,28 @@ def get_samples(
     ssl_check: bool = True,
     service: SERVICES = "results",
     profile: PROFILES = "fullphyschem",
-    activityMediaName: str | list[str] | None = None,
+    activityMediaName: str | Iterable[str] | None = None,
     activityStartDateLower: str | None = None,
     activityStartDateUpper: str | None = None,
-    activityTypeCode: str | list[str] | None = None,
-    characteristicGroup: str | list[str] | None = None,
-    characteristic: str | list[str] | None = None,
-    characteristicUserSupplied: str | list[str] | None = None,
+    activityTypeCode: str | Iterable[str] | None = None,
+    characteristicGroup: str | Iterable[str] | None = None,
+    characteristic: str | Iterable[str] | None = None,
+    characteristicUserSupplied: str | Iterable[str] | None = None,
     boundingBox: list[float] | None = None,
-    countryFips: str | list[str] | None = None,
-    stateFips: str | list[str] | None = None,
-    countyFips: str | list[str] | None = None,
-    siteTypeCode: str | list[str] | None = None,
-    siteTypeName: str | list[str] | None = None,
-    usgsPCode: str | list[str] | None = None,
-    hydrologicUnit: str | list[str] | None = None,
-    monitoringLocationIdentifier: str | list[str] | None = None,
-    organizationIdentifier: str | list[str] | None = None,
+    countryFips: str | Iterable[str] | None = None,
+    stateFips: str | Iterable[str] | None = None,
+    countyFips: str | Iterable[str] | None = None,
+    siteTypeCode: str | Iterable[str] | None = None,
+    siteTypeName: str | Iterable[str] | None = None,
+    usgsPCode: str | Iterable[str] | None = None,
+    hydrologicUnit: str | Iterable[str] | None = None,
+    monitoringLocationIdentifier: str | Iterable[str] | None = None,
+    organizationIdentifier: str | Iterable[str] | None = None,
     pointLocationLatitude: float | None = None,
     pointLocationLongitude: float | None = None,
     pointLocationWithinMiles: float | None = None,
-    projectIdentifier: str | list[str] | None = None,
-    recordIdentifierUserSupplied: str | list[str] | None = None,
+    projectIdentifier: str | Iterable[str] | None = None,
+    recordIdentifierUserSupplied: str | Iterable[str] | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Search Samples database for USGS water quality data.
     This is a wrapper function for the Samples database API. All potential
@@ -2316,6 +2470,32 @@ def get_samples(
         ... )
 
     """
+    activityMediaName = _normalize_str_iterable(activityMediaName, "activityMediaName")
+    activityTypeCode = _normalize_str_iterable(activityTypeCode, "activityTypeCode")
+    characteristicGroup = _normalize_str_iterable(
+        characteristicGroup, "characteristicGroup"
+    )
+    characteristic = _normalize_str_iterable(characteristic, "characteristic")
+    characteristicUserSupplied = _normalize_str_iterable(
+        characteristicUserSupplied, "characteristicUserSupplied"
+    )
+    countryFips = _normalize_str_iterable(countryFips, "countryFips")
+    stateFips = _normalize_str_iterable(stateFips, "stateFips")
+    countyFips = _normalize_str_iterable(countyFips, "countyFips")
+    siteTypeCode = _normalize_str_iterable(siteTypeCode, "siteTypeCode")
+    siteTypeName = _normalize_str_iterable(siteTypeName, "siteTypeName")
+    usgsPCode = _normalize_str_iterable(usgsPCode, "usgsPCode")
+    hydrologicUnit = _normalize_str_iterable(hydrologicUnit, "hydrologicUnit")
+    monitoringLocationIdentifier = _normalize_str_iterable(
+        monitoringLocationIdentifier, "monitoringLocationIdentifier"
+    )
+    organizationIdentifier = _normalize_str_iterable(
+        organizationIdentifier, "organizationIdentifier"
+    )
+    projectIdentifier = _normalize_str_iterable(projectIdentifier, "projectIdentifier")
+    recordIdentifierUserSupplied = _normalize_str_iterable(
+        recordIdentifierUserSupplied, "recordIdentifierUserSupplied"
+    )
 
     _check_profiles(service, profile)
 
@@ -2418,18 +2598,18 @@ def get_samples_summary(
 
 def get_stats_por(
     approval_status: str | None = None,
-    computation_type: str | list[str] | None = None,
-    country_code: str | list[str] | None = None,
-    state_code: str | list[str] | None = None,
-    county_code: str | list[str] | None = None,
+    computation_type: str | Iterable[str] | None = None,
+    country_code: str | Iterable[str] | None = None,
+    state_code: str | Iterable[str] | None = None,
+    county_code: str | Iterable[str] | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
     monitoring_location_id: str | Iterable[str] | None = None,
     page_size: int = 1000,
-    parent_time_series_id: str | list[str] | None = None,
-    site_type_code: str | list[str] | None = None,
-    site_type_name: str | list[str] | None = None,
-    parameter_code: str | list[str] | None = None,
+    parent_time_series_id: str | Iterable[str] | None = None,
+    site_type_code: str | Iterable[str] | None = None,
+    site_type_name: str | Iterable[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
     expand_percentiles: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get day-of-year and month-of-year water data statistics from the
@@ -2532,6 +2712,16 @@ def get_stats_por(
         ...     end_date="01-31",
         ... )
     """
+    computation_type = _normalize_str_iterable(computation_type, "computation_type")
+    country_code = _normalize_str_iterable(country_code, "country_code")
+    state_code = _normalize_str_iterable(state_code, "state_code")
+    county_code = _normalize_str_iterable(county_code, "county_code")
+    parent_time_series_id = _normalize_str_iterable(
+        parent_time_series_id, "parent_time_series_id"
+    )
+    site_type_code = _normalize_str_iterable(site_type_code, "site_type_code")
+    site_type_name = _normalize_str_iterable(site_type_name, "site_type_name")
+    parameter_code = _normalize_str_iterable(parameter_code, "parameter_code")
     # Build argument dictionary, omitting None values
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
     params = _get_args(locals(), exclude={"expand_percentiles"})
@@ -2543,18 +2733,18 @@ def get_stats_por(
 
 def get_stats_date_range(
     approval_status: str | None = None,
-    computation_type: str | list[str] | None = None,
-    country_code: str | list[str] | None = None,
-    state_code: str | list[str] | None = None,
-    county_code: str | list[str] | None = None,
+    computation_type: str | Iterable[str] | None = None,
+    country_code: str | Iterable[str] | None = None,
+    state_code: str | Iterable[str] | None = None,
+    county_code: str | Iterable[str] | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
     monitoring_location_id: str | Iterable[str] | None = None,
     page_size: int = 1000,
-    parent_time_series_id: str | list[str] | None = None,
-    site_type_code: str | list[str] | None = None,
-    site_type_name: str | list[str] | None = None,
-    parameter_code: str | list[str] | None = None,
+    parent_time_series_id: str | Iterable[str] | None = None,
+    site_type_code: str | Iterable[str] | None = None,
+    site_type_name: str | Iterable[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
     expand_percentiles: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get monthly and annual water data statistics from the USGS Water Data API.
@@ -2662,6 +2852,16 @@ def get_stats_date_range(
         ...     computation_type=["minimum", "maximum"],
         ... )
     """
+    computation_type = _normalize_str_iterable(computation_type, "computation_type")
+    country_code = _normalize_str_iterable(country_code, "country_code")
+    state_code = _normalize_str_iterable(state_code, "state_code")
+    county_code = _normalize_str_iterable(county_code, "county_code")
+    parent_time_series_id = _normalize_str_iterable(
+        parent_time_series_id, "parent_time_series_id"
+    )
+    site_type_code = _normalize_str_iterable(site_type_code, "site_type_code")
+    site_type_name = _normalize_str_iterable(site_type_name, "site_type_name")
+    parameter_code = _normalize_str_iterable(parameter_code, "parameter_code")
     # Build argument dictionary, omitting None values
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
     params = _get_args(locals(), exclude={"expand_percentiles"})
@@ -2675,30 +2875,30 @@ def get_stats_date_range(
 
 def get_channel(
     monitoring_location_id: str | Iterable[str] | None = None,
-    field_visit_id: str | list[str] | None = None,
-    measurement_number: str | list[str] | None = None,
-    time: str | list[str] | None = None,
-    channel_name: str | list[str] | None = None,
-    channel_flow: str | list[str] | None = None,
-    channel_flow_unit: str | list[str] | None = None,
-    channel_width: str | list[str] | None = None,
-    channel_width_unit: str | list[str] | None = None,
-    channel_area: str | list[str] | None = None,
-    channel_area_unit: str | list[str] | None = None,
-    channel_velocity: str | list[str] | None = None,
-    channel_velocity_unit: str | list[str] | None = None,
-    channel_location_distance: str | list[str] | None = None,
-    channel_location_distance_unit: str | list[str] | None = None,
-    channel_stability: str | list[str] | None = None,
-    channel_material: str | list[str] | None = None,
-    channel_evenness: str | list[str] | None = None,
-    horizontal_velocity_description: str | list[str] | None = None,
-    vertical_velocity_description: str | list[str] | None = None,
-    longitudinal_velocity_description: str | list[str] | None = None,
-    measurement_type: str | list[str] | None = None,
-    last_modified: str | list[str] | None = None,
-    channel_measurement_type: str | list[str] | None = None,
-    properties: list[str] | None = None,
+    field_visit_id: str | Iterable[str] | None = None,
+    measurement_number: str | Iterable[str] | None = None,
+    time: str | Iterable[str] | None = None,
+    channel_name: str | Iterable[str] | None = None,
+    channel_flow: str | Iterable[str] | None = None,
+    channel_flow_unit: str | Iterable[str] | None = None,
+    channel_width: str | Iterable[str] | None = None,
+    channel_width_unit: str | Iterable[str] | None = None,
+    channel_area: str | Iterable[str] | None = None,
+    channel_area_unit: str | Iterable[str] | None = None,
+    channel_velocity: str | Iterable[str] | None = None,
+    channel_velocity_unit: str | Iterable[str] | None = None,
+    channel_location_distance: str | Iterable[str] | None = None,
+    channel_location_distance_unit: str | Iterable[str] | None = None,
+    channel_stability: str | Iterable[str] | None = None,
+    channel_material: str | Iterable[str] | None = None,
+    channel_evenness: str | Iterable[str] | None = None,
+    horizontal_velocity_description: str | Iterable[str] | None = None,
+    vertical_velocity_description: str | Iterable[str] | None = None,
+    longitudinal_velocity_description: str | Iterable[str] | None = None,
+    measurement_type: str | Iterable[str] | None = None,
+    last_modified: str | Iterable[str] | None = None,
+    channel_measurement_type: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
@@ -2837,6 +3037,46 @@ def get_channel(
         ... )
     """
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
+    field_visit_id = _normalize_str_iterable(field_visit_id, "field_visit_id")
+    measurement_number = _normalize_str_iterable(
+        measurement_number, "measurement_number"
+    )
+    channel_name = _normalize_str_iterable(channel_name, "channel_name")
+    channel_flow = _normalize_str_iterable(channel_flow, "channel_flow")
+    channel_flow_unit = _normalize_str_iterable(channel_flow_unit, "channel_flow_unit")
+    channel_width = _normalize_str_iterable(channel_width, "channel_width")
+    channel_width_unit = _normalize_str_iterable(
+        channel_width_unit, "channel_width_unit"
+    )
+    channel_area = _normalize_str_iterable(channel_area, "channel_area")
+    channel_area_unit = _normalize_str_iterable(channel_area_unit, "channel_area_unit")
+    channel_velocity = _normalize_str_iterable(channel_velocity, "channel_velocity")
+    channel_velocity_unit = _normalize_str_iterable(
+        channel_velocity_unit, "channel_velocity_unit"
+    )
+    channel_location_distance = _normalize_str_iterable(
+        channel_location_distance, "channel_location_distance"
+    )
+    channel_location_distance_unit = _normalize_str_iterable(
+        channel_location_distance_unit, "channel_location_distance_unit"
+    )
+    channel_stability = _normalize_str_iterable(channel_stability, "channel_stability")
+    channel_material = _normalize_str_iterable(channel_material, "channel_material")
+    channel_evenness = _normalize_str_iterable(channel_evenness, "channel_evenness")
+    horizontal_velocity_description = _normalize_str_iterable(
+        horizontal_velocity_description, "horizontal_velocity_description"
+    )
+    vertical_velocity_description = _normalize_str_iterable(
+        vertical_velocity_description, "vertical_velocity_description"
+    )
+    longitudinal_velocity_description = _normalize_str_iterable(
+        longitudinal_velocity_description, "longitudinal_velocity_description"
+    )
+    measurement_type = _normalize_str_iterable(measurement_type, "measurement_type")
+    channel_measurement_type = _normalize_str_iterable(
+        channel_measurement_type, "channel_measurement_type"
+    )
+    properties = _normalize_str_iterable(properties, "properties")
     service = "channel-measurements"
     output_id = "channel_measurements_id"
 
