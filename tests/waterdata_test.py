@@ -1,6 +1,8 @@
 import datetime
 import sys
+from unittest import mock
 
+import pandas as pd
 import pytest
 from pandas import DataFrame
 
@@ -25,7 +27,11 @@ from dataretrieval.waterdata import (
     get_stats_por,
     get_time_series_metadata,
 )
-from dataretrieval.waterdata.utils import _check_profiles
+from dataretrieval.waterdata.utils import (
+    _check_monitoring_location_id,
+    _check_profiles,
+    _normalize_str_iterable,
+)
 
 
 def mock_request(requests_mock, request_url, file_path):
@@ -504,3 +510,187 @@ def test_get_channel():
     assert df.shape[0] > 470
     assert df.shape[1] == 27  # if geopandas installed, 21 columns if not
     assert "channel_measurements_id" in df.columns
+
+
+class TestCheckMonitoringLocationId:
+    """Tests for _check_monitoring_location_id input validation.
+
+    Regression tests for GitHub issue #188.
+    """
+
+    def test_valid_string(self):
+        """A correctly formatted string passes and is returned unchanged."""
+        assert _check_monitoring_location_id("USGS-01646500") == "USGS-01646500"
+
+    def test_valid_list(self):
+        """A list of correctly formatted strings passes without error."""
+        ids = ["USGS-01646500", "USGS-02238500"]
+        assert _check_monitoring_location_id(ids) == ids
+
+    def test_none_passes(self):
+        """None is allowed (optional parameter)."""
+        assert _check_monitoring_location_id(None) is None
+
+    def test_integer_raises_type_error(self):
+        """An integer ID raises TypeError with a helpful AGENCY-ID hint."""
+        with pytest.raises(TypeError, match="not int") as exc_info:
+            _check_monitoring_location_id(5129115)
+        # The wrapper appends the AGENCY-ID format hint that the generic
+        # helper alone doesn't carry.
+        assert "USGS-01646500" in str(exc_info.value)
+
+    def test_integer_in_list_raises_type_error(self):
+        """An integer inside a list raises TypeError."""
+        with pytest.raises(TypeError, match="not int"):
+            _check_monitoring_location_id(["USGS-01646500", 5129115])
+
+    def test_missing_agency_prefix_raises_value_error(self):
+        """A string without the AGENCY- prefix raises ValueError."""
+        with pytest.raises(ValueError, match="Invalid monitoring_location_id"):
+            _check_monitoring_location_id("dog")
+
+    def test_bare_site_number_raises_value_error(self):
+        """A bare site number string (no agency prefix) raises ValueError."""
+        with pytest.raises(ValueError, match="Invalid monitoring_location_id"):
+            _check_monitoring_location_id("01646500")
+
+    def test_get_daily_integer_id_raises(self):
+        """get_daily raises TypeError before making any network call."""
+        with pytest.raises(TypeError):
+            get_daily(monitoring_location_id=5129115, parameter_code="00060")
+
+    def test_tuple_normalizes_to_list(self):
+        """A tuple of valid strings is accepted and normalized to list."""
+        result = _check_monitoring_location_id(("USGS-01646500", "USGS-02238500"))
+        assert result == ["USGS-01646500", "USGS-02238500"]
+        assert isinstance(result, list)
+
+    def test_pandas_series_normalizes_to_list(self):
+        """A pandas.Series of valid strings is accepted and normalized to list."""
+        s = pd.Series(["USGS-01646500", "USGS-02238500"])
+        result = _check_monitoring_location_id(s)
+        assert result == ["USGS-01646500", "USGS-02238500"]
+        assert isinstance(result, list)
+
+    def test_pandas_index_normalizes_to_list(self):
+        """A pandas.Index of valid strings is accepted and normalized to list."""
+        idx = pd.Index(["USGS-01646500", "USGS-02238500"])
+        result = _check_monitoring_location_id(idx)
+        assert result == ["USGS-01646500", "USGS-02238500"]
+        assert isinstance(result, list)
+
+    def test_numpy_array_normalizes_to_list(self):
+        """A numpy.ndarray of valid strings is accepted and normalized to list."""
+        import numpy as np
+
+        arr = np.array(["USGS-01646500", "USGS-02238500"])
+        result = _check_monitoring_location_id(arr)
+        assert result == ["USGS-01646500", "USGS-02238500"]
+        assert isinstance(result, list)
+
+    def test_numpy_int_array_raises_type_error(self):
+        """An iterable whose elements aren't strings (numpy int array) raises."""
+        import numpy as np
+
+        with pytest.raises(TypeError, match="elements must be strings"):
+            _check_monitoring_location_id(np.array([1, 2, 3]))
+
+    def test_pandas_series_of_ints_raises_type_error(self):
+        """An iterable whose elements aren't strings (Series of ints) raises."""
+        with pytest.raises(TypeError, match="elements must be strings"):
+            _check_monitoring_location_id(pd.Series([1, 2, 3]))
+
+    def test_dict_raises_type_error(self):
+        """Mappings are rejected — iterating a dict yields keys, which is a footgun."""
+        with pytest.raises(TypeError, match="not dict"):
+            _check_monitoring_location_id({"USGS-01646500": "site"})
+
+    def test_get_daily_malformed_id_raises(self):
+        """get_daily raises ValueError for a malformed string ID."""
+        with pytest.raises(ValueError):
+            get_daily(monitoring_location_id="dog", parameter_code="00060")
+
+
+class TestNormalizeStrIterable:
+    """Tests for the generic _normalize_str_iterable helper.
+
+    Mirrors TestCheckMonitoringLocationId for the type/iterable contract;
+    the AGENCY-ID format check is monitoring_location_id-specific and lives
+    only in the _check_monitoring_location_id wrapper.
+    """
+
+    def test_none_passes(self):
+        assert _normalize_str_iterable(None, "p") is None
+
+    def test_string_returned_unchanged(self):
+        assert _normalize_str_iterable("00060", "parameter_code") == "00060"
+        # Note: no hyphen requirement here — that's monitoring_location_id-specific.
+        assert _normalize_str_iterable("dog", "parameter_code") == "dog"
+
+    def test_list_returned_unchanged(self):
+        assert _normalize_str_iterable(["00060", "00010"], "p") == ["00060", "00010"]
+
+    def test_tuple_normalizes_to_list(self):
+        result = _normalize_str_iterable(("00060", "00010"), "p")
+        assert result == ["00060", "00010"]
+        assert isinstance(result, list)
+
+    def test_pandas_series_normalizes_to_list(self):
+        result = _normalize_str_iterable(pd.Series(["00060", "00010"]), "p")
+        assert result == ["00060", "00010"]
+        assert isinstance(result, list)
+
+    def test_numpy_array_normalizes_to_list(self):
+        import numpy as np
+
+        result = _normalize_str_iterable(np.array(["00060", "00010"]), "p")
+        assert result == ["00060", "00010"]
+        assert isinstance(result, list)
+
+    def test_int_raises_type_error(self):
+        with pytest.raises(TypeError, match="parameter_code must be a string"):
+            _normalize_str_iterable(5129115, "parameter_code")
+
+    def test_int_in_iterable_raises_type_error(self):
+        with pytest.raises(TypeError, match="parameter_code elements must be strings"):
+            _normalize_str_iterable(["00060", 5129115], "parameter_code")
+
+    def test_dict_raises_type_error(self):
+        with pytest.raises(TypeError, match="not dict"):
+            _normalize_str_iterable({"00060": "discharge"}, "parameter_code")
+
+    def test_get_daily_parameter_code_as_series(self):
+        """Wiring check: pd.Series for ``parameter_code`` arrives at the inner
+        call as a list.
+
+        Regression for the gap PR #229 originally left on every multi-value
+        parameter other than ``monitoring_location_id``. Pre-fix, the Series
+        was passed through to ``requests`` which str-serialized it into the
+        URL (or POST body). Post-fix, ``_normalize_str_iterable`` materializes
+        it to ``list`` at the function boundary.
+        """
+        with mock.patch("dataretrieval.waterdata.api.get_ogc_data") as fake:
+            fake.return_value = (pd.DataFrame(), mock.MagicMock(spec=[]))
+            get_daily(
+                monitoring_location_id="USGS-05427718",
+                parameter_code=pd.Series(["00060", "00010"]),
+            )
+        # _get_args(locals()) packs kwargs and passes them as `args` to
+        # get_ogc_data; the first positional argument is the args dict.
+        args_dict = fake.call_args[0][0]
+        assert args_dict["parameter_code"] == ["00060", "00010"]
+        assert isinstance(args_dict["parameter_code"], list)
+
+    def test_list_of_ints_rejected_at_boundary(self):
+        """List-of-non-strings must be caught client-side, not silently sent.
+
+        Regression: an earlier pass through ``_get_args`` had a
+        ``list-of-non-str`` fast-path that bypassed normalization, so
+        ``parameter_code=[60, 65]`` would reach the OGC API and surface as
+        a confusing JSONDecodeError on the malformed response.
+        """
+        with pytest.raises(TypeError, match="parameter_code elements must be strings"):
+            get_daily(
+                monitoring_location_id="USGS-05427718",
+                parameter_code=[60, 65],
+            )

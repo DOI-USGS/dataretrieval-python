@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import Literal, get_args
 
 import pandas as pd
@@ -18,8 +19,8 @@ _VALID_ON_TIE: tuple[OnTie, ...] = get_args(OnTie)
 
 def get_nearest_continuous(
     targets,
-    monitoring_location_id: str | list[str] | None = None,
-    parameter_code: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
     *,
     window: str | pd.Timedelta = "PT7M30S",
     on_tie: OnTie = "first",
@@ -44,9 +45,9 @@ def get_nearest_continuous(
         Target timestamps. Naive datetimes are treated as UTC. Accepts a
         list, ``pandas.Series``, ``pandas.DatetimeIndex``, ``numpy.ndarray``,
         or anything ``pandas.to_datetime`` consumes.
-    monitoring_location_id : string or list of strings, optional
+    monitoring_location_id : string or iterable of strings, optional
         Forwarded to ``get_continuous``.
-    parameter_code : string or list of strings, optional
+    parameter_code : string or iterable of strings, optional
         Forwarded to ``get_continuous``.
     window : string or ``pandas.Timedelta``, default ``"PT7M30S"``
         Half-window around each target, as an ISO 8601 duration

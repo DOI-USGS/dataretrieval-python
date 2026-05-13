@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Iterable
 from io import StringIO
 from typing import get_args
 from urllib.parse import quote
@@ -38,19 +39,19 @@ logger = logging.getLogger(__name__)
 
 
 def get_daily(
-    monitoring_location_id: str | list[str] | None = None,
-    parameter_code: str | list[str] | None = None,
-    statistic_id: str | list[str] | None = None,
-    properties: list[str] | None = None,
-    time_series_id: str | list[str] | None = None,
-    daily_id: str | list[str] | None = None,
-    approval_status: str | list[str] | None = None,
-    unit_of_measure: str | list[str] | None = None,
-    qualifier: str | list[str] | None = None,
-    value: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
+    statistic_id: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
+    time_series_id: str | Iterable[str] | None = None,
+    daily_id: str | Iterable[str] | None = None,
+    approval_status: str | Iterable[str] | None = None,
+    unit_of_measure: str | Iterable[str] | None = None,
+    qualifier: str | Iterable[str] | None = None,
+    value: str | Iterable[str] | None = None,
     last_modified: str | None = None,
     skip_geometry: bool | None = None,
-    time: str | list[str] | None = None,
+    time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -72,32 +73,32 @@ def get_daily(
 
     Parameters
     ----------
-    monitoring_location_id : string or list of strings, optional
+    monitoring_location_id : string or iterable of strings, optional
         A unique identifier representing a single monitoring location. This
         corresponds to the id field in the monitoring-locations endpoint.
         Monitoring location IDs are created by combining the agency code of
         the agency responsible for the monitoring location (e.g. USGS) with
         the ID number of the monitoring location (e.g. 02238500), separated
         by a hyphen (e.g. USGS-02238500).
-    parameter_code : string or list of strings, optional
+    parameter_code : string or iterable of strings, optional
         Parameter codes are 5-digit codes used to identify the constituent
         measured and the units of measure. A complete list of parameter
         codes and associated groupings can be found at
         https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
-    statistic_id : string or list of strings, optional
+    statistic_id : string or iterable of strings, optional
         A code corresponding to the statistic an observation represents.
         Example codes include 00001 (max), 00002 (min), and 00003 (mean).
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         A vector of requested columns to be returned from the query.
         Available options are: geometry, id, time_series_id,
         monitoring_location_id, parameter_code, statistic_id, time, value,
         unit_of_measure, approval_status, qualifier, last_modified
-    time_series_id : string or list of strings, optional
+    time_series_id : string or iterable of strings, optional
         A unique identifier representing a single time series. This
         corresponds to the id field in the time-series-metadata endpoint.
-    daily_id : string or list of strings, optional
+    daily_id : string or iterable of strings, optional
         A universally unique identifier (UUID) representing a single version of
         a record. It is not stable over time. Every time the record is refreshed
         in our database (which may happen as part of normal operations and does
@@ -105,7 +106,7 @@ def get_daily(
         uniquely identify a single observation over time, compare the time and
         time_series_id fields; each time series will only have a single
         observation at a given time.
-    approval_status : string or list of strings, optional
+    approval_status : string or iterable of strings, optional
         Some of the data that you have obtained from this U.S. Geological Survey
         database may not have received Director's approval. Any such data values
         are qualified as provisional and are subject to revision. Provisional
@@ -116,14 +117,14 @@ def get_daily(
         approved for publication, or "Provisional" and subject to revision. For
         more information about provisional data, go to:
         https://waterdata.usgs.gov/provisional-data-statement/.
-    unit_of_measure : string or list of strings, optional
+    unit_of_measure : string or iterable of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
-    qualifier : string or list of strings, optional
+    qualifier : string or iterable of strings, optional
         This field indicates any qualifiers associated with an observation, for
         instance if a sensor may have been impacted by ice or if values were
         estimated.
-    value : string or list of strings, optional
+    value : string or iterable of strings, optional
         The value of the observation. Values are transmitted as strings in
         the JSON response format in order to preserve precision.
     last_modified : string, optional
@@ -240,18 +241,18 @@ def get_daily(
 
 
 def get_continuous(
-    monitoring_location_id: str | list[str] | None = None,
-    parameter_code: str | list[str] | None = None,
-    statistic_id: str | list[str] | None = None,
-    properties: list[str] | None = None,
-    time_series_id: str | list[str] | None = None,
-    continuous_id: str | list[str] | None = None,
-    approval_status: str | list[str] | None = None,
-    unit_of_measure: str | list[str] | None = None,
-    qualifier: str | list[str] | None = None,
-    value: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
+    statistic_id: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
+    time_series_id: str | Iterable[str] | None = None,
+    continuous_id: str | Iterable[str] | None = None,
+    approval_status: str | Iterable[str] | None = None,
+    unit_of_measure: str | Iterable[str] | None = None,
+    qualifier: str | Iterable[str] | None = None,
+    value: str | Iterable[str] | None = None,
     last_modified: str | None = None,
-    time: str | list[str] | None = None,
+    time: str | Iterable[str] | None = None,
     limit: int | None = None,
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
@@ -277,34 +278,34 @@ def get_continuous(
 
     Parameters
     ----------
-    monitoring_location_id : string or list of strings, optional
+    monitoring_location_id : string or iterable of strings, optional
         A unique identifier representing a single monitoring location. This
         corresponds to the id field in the monitoring-locations endpoint.
         Monitoring location IDs are created by combining the agency code of
         the agency responsible for the monitoring location (e.g. USGS) with
         the ID number of the monitoring location (e.g. 02238500), separated
         by a hyphen (e.g. USGS-02238500).
-    parameter_code : string or list of strings, optional
+    parameter_code : string or iterable of strings, optional
         Parameter codes are 5-digit codes used to identify the constituent
         measured and the units of measure. A complete list of parameter
         codes and associated groupings can be found at
         https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
-    statistic_id : string or list of strings, optional
+    statistic_id : string or iterable of strings, optional
         A code corresponding to the statistic an observation represents.
         Continuous data are nearly always associated with statistic id
         00011. Using a different code (such as 00003 for mean) will
         typically return no results. A complete list of codes and their
         descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         A vector of requested columns to be returned from the query.
         Available options are: geometry, id, time_series_id,
         monitoring_location_id, parameter_code, statistic_id, time, value,
         unit_of_measure, approval_status, qualifier, last_modified
-    time_series_id : string or list of strings, optional
+    time_series_id : string or iterable of strings, optional
         A unique identifier representing a single time series. This
         corresponds to the id field in the time-series-metadata endpoint.
-    continuous_id : string or list of strings, optional
+    continuous_id : string or iterable of strings, optional
         A universally unique identifier (UUID) representing a single version of
         a record. It is not stable over time. Every time the record is refreshed
         in our database (which may happen as part of normal operations and does
@@ -312,7 +313,7 @@ def get_continuous(
         uniquely identify a single observation over time, compare the time and
         time_series_id fields; each time series will only have a single
         observation at a given time.
-    approval_status : string or list of strings, optional
+    approval_status : string or iterable of strings, optional
         Some of the data that you have obtained from this U.S. Geological Survey
         database may not have received Director's approval. Any such data values
         are qualified as provisional and are subject to revision. Provisional
@@ -323,14 +324,14 @@ def get_continuous(
         approved for publication, or "Provisional" and subject to revision. For
         more information about provisional data, go to:
         https://waterdata.usgs.gov/provisional-data-statement/.
-    unit_of_measure : string or list of strings, optional
+    unit_of_measure : string or iterable of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
-    qualifier : string or list of strings, optional
+    qualifier : string or iterable of strings, optional
         This field indicates any qualifiers associated with an observation, for
         instance if a sensor may have been impacted by ice or if values were
         estimated.
-    value : string or list of strings, optional
+    value : string or iterable of strings, optional
         The value of the observation. Values are transmitted as strings in
         the JSON response format in order to preserve precision.
     last_modified : string, optional
@@ -428,49 +429,49 @@ def get_continuous(
 
 
 def get_monitoring_locations(
-    monitoring_location_id: list[str] | None = None,
-    agency_code: list[str] | None = None,
-    agency_name: list[str] | None = None,
-    monitoring_location_number: list[str] | None = None,
-    monitoring_location_name: list[str] | None = None,
-    district_code: list[str] | None = None,
-    country_code: list[str] | None = None,
-    country_name: list[str] | None = None,
-    state_code: list[str] | None = None,
-    state_name: list[str] | None = None,
-    county_code: list[str] | None = None,
-    county_name: list[str] | None = None,
-    minor_civil_division_code: list[str] | None = None,
-    site_type_code: list[str] | None = None,
-    site_type: list[str] | None = None,
-    hydrologic_unit_code: list[str] | None = None,
-    basin_code: list[str] | None = None,
-    altitude: list[str] | None = None,
-    altitude_accuracy: list[str] | None = None,
-    altitude_method_code: list[str] | None = None,
-    altitude_method_name: list[str] | None = None,
-    vertical_datum: list[str] | None = None,
-    vertical_datum_name: list[str] | None = None,
-    horizontal_positional_accuracy_code: list[str] | None = None,
-    horizontal_positional_accuracy: list[str] | None = None,
-    horizontal_position_method_code: list[str] | None = None,
-    horizontal_position_method_name: list[str] | None = None,
-    original_horizontal_datum: list[str] | None = None,
-    original_horizontal_datum_name: list[str] | None = None,
-    drainage_area: list[str] | None = None,
-    contributing_drainage_area: list[str] | None = None,
-    time_zone_abbreviation: list[str] | None = None,
-    uses_daylight_savings: list[str] | None = None,
-    construction_date: list[str] | None = None,
-    aquifer_code: list[str] | None = None,
-    national_aquifer_code: list[str] | None = None,
-    aquifer_type_code: list[str] | None = None,
-    well_constructed_depth: list[str] | None = None,
-    hole_constructed_depth: list[str] | None = None,
-    depth_source_code: list[str] | None = None,
-    properties: list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
+    agency_code: str | Iterable[str] | None = None,
+    agency_name: str | Iterable[str] | None = None,
+    monitoring_location_number: str | Iterable[str] | None = None,
+    monitoring_location_name: str | Iterable[str] | None = None,
+    district_code: str | Iterable[str] | None = None,
+    country_code: str | Iterable[str] | None = None,
+    country_name: str | Iterable[str] | None = None,
+    state_code: str | Iterable[str] | None = None,
+    state_name: str | Iterable[str] | None = None,
+    county_code: str | Iterable[str] | None = None,
+    county_name: str | Iterable[str] | None = None,
+    minor_civil_division_code: str | Iterable[str] | None = None,
+    site_type_code: str | Iterable[str] | None = None,
+    site_type: str | Iterable[str] | None = None,
+    hydrologic_unit_code: str | Iterable[str] | None = None,
+    basin_code: str | Iterable[str] | None = None,
+    altitude: str | Iterable[str] | None = None,
+    altitude_accuracy: str | Iterable[str] | None = None,
+    altitude_method_code: str | Iterable[str] | None = None,
+    altitude_method_name: str | Iterable[str] | None = None,
+    vertical_datum: str | Iterable[str] | None = None,
+    vertical_datum_name: str | Iterable[str] | None = None,
+    horizontal_positional_accuracy_code: str | Iterable[str] | None = None,
+    horizontal_positional_accuracy: str | Iterable[str] | None = None,
+    horizontal_position_method_code: str | Iterable[str] | None = None,
+    horizontal_position_method_name: str | Iterable[str] | None = None,
+    original_horizontal_datum: str | Iterable[str] | None = None,
+    original_horizontal_datum_name: str | Iterable[str] | None = None,
+    drainage_area: str | Iterable[str] | None = None,
+    contributing_drainage_area: str | Iterable[str] | None = None,
+    time_zone_abbreviation: str | Iterable[str] | None = None,
+    uses_daylight_savings: str | Iterable[str] | None = None,
+    construction_date: str | Iterable[str] | None = None,
+    aquifer_code: str | Iterable[str] | None = None,
+    national_aquifer_code: str | Iterable[str] | None = None,
+    aquifer_type_code: str | Iterable[str] | None = None,
+    well_constructed_depth: str | Iterable[str] | None = None,
+    hole_constructed_depth: str | Iterable[str] | None = None,
+    depth_source_code: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
-    time: str | list[str] | None = None,
+    time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -486,27 +487,27 @@ def get_monitoring_locations(
 
     Parameters
     ----------
-    monitoring_location_id : string or list of strings, optional
+    monitoring_location_id : string or iterable of strings, optional
         A unique identifier representing a single monitoring location. This
         corresponds to the id field in the monitoring-locations endpoint.
         Monitoring location IDs are created by combining the agency code of
         the agency responsible for the monitoring location (e.g. USGS) with
         the ID number of the monitoring location (e.g. 02238500), separated
         by a hyphen (e.g. USGS-02238500).
-    agency_code : string or list of strings, optional
+    agency_code : string or iterable of strings, optional
         The agency that is reporting the data. Agency codes are fixed values
         assigned by the National Water Information System (NWIS).
-    agency_name : string or list of strings, optional
+    agency_name : string or iterable of strings, optional
         The name of the agency that is reporting the data.
-    monitoring_location_number : string or list of strings, optional
+    monitoring_location_number : string or iterable of strings, optional
         Each monitoring location in the USGS data base has a unique 8- to
         15-digit identification number. Monitoring location numbers are
         assigned based on this logic:
         https://help.waterdata.usgs.gov/faq/sites/do-station-numbers-have-any-particular-meaning.
-    monitoring_location_name : string or list of strings, optional
+    monitoring_location_name : string or iterable of strings, optional
         This is the official name of the monitoring location in the database.
         For well information this can be a district-assigned local number.
-    district_code : string or list of strings, optional
+    district_code : string or iterable of strings, optional
         The Water Science Centers (WSCs) across the United States use the FIPS
         state code as the district code. In some case, monitoring locations and
         samples may be managed by a water science center that is adjacent to the
@@ -514,11 +515,11 @@ def get_monitoring_locations(
         monitoring location may have a district code of 30 which translates to
         Montana, but the state code could be 56 for Wyoming because that is where
         the monitoring location actually is located.
-    country_code : string or list of strings, optional
+    country_code : string or iterable of strings, optional
         The code for the country in which the monitoring location is located.
-    country_name : string or list of strings, optional
+    country_name : string or iterable of strings, optional
         The name of the country in which the monitoring location is located.
-    state_code : string or list of strings, optional
+    state_code : string or iterable of strings, optional
         State code. A two-digit ANSI code (formerly FIPS code) as defined by
         the American National Standards Institute, to define States and
         equivalents. A three-digit ANSI code is used to define counties and
@@ -528,26 +529,26 @@ def get_monitoring_locations(
         political subdivisions other than the US are Mexico and Canada. The Mexican
         states have US state codes ranging from 81-86 and Canadian provinces have
         state codes ranging from 90-98.
-    state_name : string or list of strings, optional
+    state_name : string or iterable of strings, optional
         The name of the state or state equivalent in which the monitoring location
         is located.
-    county_code : string or list of strings, optional
+    county_code : string or iterable of strings, optional
         The code for the county or county equivalent (parish, borough, etc.) in which
         the monitoring location is located. A `list of codes
         <https://help.waterdata.usgs.gov/code/county_query?fmt=html>`_ is available.
-    county_name : string or list of strings, optional
+    county_name : string or iterable of strings, optional
         The name of the county or county equivalent (parish, borough, etc.) in which
         the monitoring location is located. A `list of codes
         <https://help.waterdata.usgs.gov/code/county_query?fmt=html>`_ is available.
-    minor_civil_division_code : string or list of strings, optional
+    minor_civil_division_code : string or iterable of strings, optional
         Codes for primary governmental or administrative divisions of the county or
         county equivalent in which the monitoring location is located.
-    site_type_code : string or list of strings, optional
+    site_type_code : string or iterable of strings, optional
         A code describing the hydrologic setting of the monitoring location.
         Example: "US:15:001" (United States: Hawaii, Hawaii County)
-    site_type : string or list of strings, optional
+    site_type : string or iterable of strings, optional
         A description of the hydrologic setting of the monitoring location.
-    hydrologic_unit_code : string or list of strings, optional
+    hydrologic_unit_code : string or iterable of strings, optional
         The United States is divided and sub-divided into successively smaller
         hydrologic units which are classified into four levels: regions,
         sub-regions, accounting units, and cataloging units. The hydrologic
@@ -556,20 +557,20 @@ def get_monitoring_locations(
         unique hydrologic unit code (HUC) consisting of two to eight digits
         based on the four levels of classification in the hydrologic unit
         system.
-    basin_code : string or list of strings, optional
+    basin_code : string or iterable of strings, optional
         The Basin Code or "drainage basin code" is a two-digit code that further
         subdivides the 8-digit hydrologic-unit code. The drainage basin code is
         defined by the USGS State Office where the monitoring location is
         located.
-    altitude : string or list of strings, optional
+    altitude : string or iterable of strings, optional
         Altitude of the monitoring location referenced to the specified Vertical
         Datum.
-    altitude_accuracy : string or list of strings, optional
+    altitude_accuracy : string or iterable of strings, optional
         Accuracy of the altitude, in feet. An accuracy of +/- 0.1 foot would be
         entered as “.1”. Many altitudes are interpolated from the contours on
         topographic maps; accuracies determined in this way are generally
         entered as one-half of the contour interval.
-    altitude_method_code : string or list of strings, optional
+    altitude_method_code : string or iterable of strings, optional
         Codes representing the method used to measure altitude.
     altitude_method_name : float, optional
         The name of the the method used to measure altitude.
@@ -579,27 +580,27 @@ def get_monitoring_locations(
     vertical_datum_name : float, optional
         The datum used to determine altitude and vertical position at the
         monitoring location.
-    horizontal_positional_accuracy_code : string or list of strings, optional
+    horizontal_positional_accuracy_code : string or iterable of strings, optional
         Indicates the accuracy of the latitude longitude values.
-    horizontal_positional_accuracy : string or list of strings, optional
+    horizontal_positional_accuracy : string or iterable of strings, optional
         Indicates the accuracy of the latitude longitude values.
-    horizontal_position_method_code : string or list of strings, optional
+    horizontal_position_method_code : string or iterable of strings, optional
         Indicates the method used to determine latitude longitude values.
-    horizontal_position_method_name : string or list of strings, optional
+    horizontal_position_method_name : string or iterable of strings, optional
         Indicates the method used to determine latitude longitude values.
-    original_horizontal_datum : string or list of strings, optional
+    original_horizontal_datum : string or iterable of strings, optional
         Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System
         1984. This field indicates the original datum used to determine
         coordinates before they were converted.
-    original_horizontal_datum_name : string or list of strings, optional
+    original_horizontal_datum_name : string or iterable of strings, optional
         Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System
         1984. This field indicates the original datum used to determine coordinates
         before they were converted.
-    drainage_area : string or list of strings, optional
+    drainage_area : string or iterable of strings, optional
         The area enclosed by a topographic divide from which direct surface runoff
         from precipitation normally drains by gravity into the stream above that
         point.
-    contributing_drainage_area : string or list of strings, optional
+    contributing_drainage_area : string or iterable of strings, optional
         The contributing drainage area of a lake, stream, wetland, or estuary
         monitoring location, in square miles. This item should be present only
         if the contributing area is different from the total drainage area. This
@@ -608,19 +609,19 @@ def get_monitoring_locations(
         groundwater or traps the water in ponds so that rainfall does not
         contribute to runoff.  A transbasin diversion can also affect the total
         drainage area.
-    time_zone_abbreviation : string or list of strings, optional
+    time_zone_abbreviation : string or iterable of strings, optional
         A short code describing the time zone used by a monitoring location.
-    uses_daylight_savings : string or list of strings, optional
+    uses_daylight_savings : string or iterable of strings, optional
         A flag indicating whether or not a monitoring location uses daylight savings.
-    construction_date : string or list of strings, optional
+    construction_date : string or iterable of strings, optional
         Date the well was completed.
-    aquifer_code : string or list of strings, optional
+    aquifer_code : string or iterable of strings, optional
         Local aquifers in the USGS water resources data base are identified by a
         geohydrologic unit code (a three-digit number related to the age of the
         formation, followed by a 4 or 5 character abbreviation for the geologic
         unit or aquifer name). Additional information is available
         `at this link <https://help.waterdata.usgs.gov/faq/groundwater/local-aquifer-description>`_.
-    national_aquifer_code : string or list of strings, optional
+    national_aquifer_code : string or iterable of strings, optional
         National aquifers are the principal aquifers or aquifer systems in the United
         States, defined as regionally extensive aquifers or aquifer systems that have
         the potential to be used as a source of potable water. Not all groundwater
@@ -628,7 +629,7 @@ def get_monitoring_locations(
         monitoring locations will not be retrieved using this search criteria. A `list
         of National aquifer codes and names <https://help.waterdata.usgs.gov/code/nat_aqfr_query?fmt=html>`_
         is available.
-    aquifer_type_code : string or list of strings, optional
+    aquifer_type_code : string or iterable of strings, optional
         Groundwater occurs in aquifers under two different conditions. Where water
         only partly fills an aquifer, the upper surface is free to rise and decline.
         These aquifers are referred to as unconfined (or water-table) aquifers. Where
@@ -637,19 +638,19 @@ def get_monitoring_locations(
         aquifer is penetrated by a well, the water level in the well will rise above
         the top of the aquifer (but not necessarily above land surface). Additional
         information is available `at this link <https://help.waterdata.usgs.gov/faq/groundwater/local-aquifer-description>`_.
-    well_constructed_depth : string or list of strings, optional
+    well_constructed_depth : string or iterable of strings, optional
         The depth of the finished well, in feet below land surface datum. Note: Not
         all groundwater monitoring locations have information on Well Depth. Such
         monitoring locations will not be retrieved using this search criteria.
-    hole_constructed_depth : string or list of strings, optional
+    hole_constructed_depth : string or iterable of strings, optional
         The total depth to which the hole is drilled, in feet below land surface datum.
         Note: Not all groundwater monitoring locations have information on Hole Depth.
         Such monitoring locations will not be retrieved using this search criteria.
-    depth_source_code : string or list of strings, optional
+    depth_source_code : string or iterable of strings, optional
         A code indicating the source of water-level data. A `list of
         codes <https://help.waterdata.usgs.gov/code/water_level_src_cd_query?fmt=html>`_
         is available.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         A vector of requested columns to be returned from the query. Available
         options are: geometry, id, agency_code, agency_name,
         monitoring_location_number, monitoring_location_name, district_code,
@@ -726,29 +727,29 @@ def get_monitoring_locations(
 
 
 def get_time_series_metadata(
-    monitoring_location_id: str | list[str] | None = None,
-    parameter_code: str | list[str] | None = None,
-    parameter_name: str | list[str] | None = None,
-    properties: str | list[str] | None = None,
-    statistic_id: str | list[str] | None = None,
-    hydrologic_unit_code: str | list[str] | None = None,
-    state_name: str | list[str] | None = None,
-    last_modified: str | list[str] | None = None,
-    begin: str | list[str] | None = None,
-    end: str | list[str] | None = None,
-    begin_utc: str | list[str] | None = None,
-    end_utc: str | list[str] | None = None,
-    unit_of_measure: str | list[str] | None = None,
-    computation_period_identifier: str | list[str] | None = None,
-    computation_identifier: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
+    parameter_name: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
+    statistic_id: str | Iterable[str] | None = None,
+    hydrologic_unit_code: str | Iterable[str] | None = None,
+    state_name: str | Iterable[str] | None = None,
+    last_modified: str | Iterable[str] | None = None,
+    begin: str | Iterable[str] | None = None,
+    end: str | Iterable[str] | None = None,
+    begin_utc: str | Iterable[str] | None = None,
+    end_utc: str | Iterable[str] | None = None,
+    unit_of_measure: str | Iterable[str] | None = None,
+    computation_period_identifier: str | Iterable[str] | None = None,
+    computation_identifier: str | Iterable[str] | None = None,
     thresholds: int | None = None,
-    sublocation_identifier: str | list[str] | None = None,
-    primary: str | list[str] | None = None,
-    parent_time_series_id: str | list[str] | None = None,
-    time_series_id: str | list[str] | None = None,
-    web_description: str | list[str] | None = None,
+    sublocation_identifier: str | Iterable[str] | None = None,
+    primary: str | Iterable[str] | None = None,
+    parent_time_series_id: str | Iterable[str] | None = None,
+    time_series_id: str | Iterable[str] | None = None,
+    web_description: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
-    time: str | list[str] | None = None,
+    time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -764,31 +765,31 @@ def get_time_series_metadata(
 
     Parameters
     ----------
-    monitoring_location_id : string or list of strings, optional
+    monitoring_location_id : string or iterable of strings, optional
         A unique identifier representing a single monitoring location. This
         corresponds to the id field in the monitoring-locations endpoint.
         Monitoring location IDs are created by combining the agency code of
         the agency responsible for the monitoring location (e.g. USGS) with
         the ID number of the monitoring location (e.g. 02238500), separated
         by a hyphen (e.g. USGS-02238500).
-    parameter_code : string or list of strings, optional
+    parameter_code : string or iterable of strings, optional
         Parameter codes are 5-digit codes used to identify the constituent
         measured and the units of measure. A complete list of parameter
         codes and associated groupings can be found at
         https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
-    parameter_name : string or list of strings, optional
+    parameter_name : string or iterable of strings, optional
         A human-understandable name corresponding to parameter_code.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         A vector of requested columns to be returned from the query.
         Available options are: geometry, id, time_series_id,
         monitoring_location_id, parameter_code, statistic_id, time, value,
         unit_of_measure, approval_status, qualifier, last_modified
-    statistic_id : string or list of strings, optional
+    statistic_id : string or iterable of strings, optional
         A code corresponding to the statistic an observation represents.
         Example codes include 00001 (max), 00002 (min), and 00003 (mean).
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
-    hydrologic_unit_code : string or list of strings, optional
+    hydrologic_unit_code : string or iterable of strings, optional
         The United States is divided and sub-divided into successively smaller
         hydrologic units which are classified into four levels: regions,
         sub-regions, accounting units, and cataloging units. The hydrologic
@@ -796,7 +797,7 @@ def get_time_series_metadata(
         to the largest (regions). Each hydrologic unit is identified by a unique
         hydrologic unit code (HUC) consisting of two to eight digits based on the
         four levels of classification in the hydrologic unit system.
-    state_name : string or list of strings, optional
+    state_name : string or iterable of strings, optional
         The name of the state or state equivalent in which the monitoring location
         is located.
     last_modified : string, optional
@@ -816,15 +817,15 @@ def get_time_series_metadata(
             * Duration objects: "P1M" for data from the past month or "PT36H"
                 for the last 36 hours
 
-    begin : string or list of strings, optional
+    begin : string or iterable of strings, optional
         This field contains the same information as "begin_utc", but in the
         local time of the monitoring location. It is retained for backwards
         compatibility, but will be removed in V1 of these APIs.
-    end : string or list of strings, optional
+    end : string or iterable of strings, optional
         This field contains the same information as "end_utc", but in the
         local time of the monitoring location. It is retained for backwards
         compatibility, but will be removed in V1 of these APIs.
-    begin_utc : string or list of strings, optional
+    begin_utc : string or iterable of strings, optional
         The datetime of the earliest observation in the time series. Together
         with end, this field represents the period of record of a time series.
         Note that some time series may have large gaps in their collection
@@ -843,7 +844,7 @@ def get_time_series_metadata(
             * Duration objects: "P1M" for data from the past month or
                 "PT36H" for the last 36 hours
 
-    end_utc : string or list of strings, optional
+    end_utc : string or iterable of strings, optional
         The datetime of the most recent observation in the time series. Data returned by
         this endpoint updates at most once per day, and potentially less frequently than
         that, and as such there may be more recent observations within a time series
@@ -865,12 +866,12 @@ def get_time_series_metadata(
             * Duration objects: "P1M" for data from the past month or
                 "PT36H" for the last 36 hours
 
-    unit_of_measure : string or list of strings, optional
+    unit_of_measure : string or iterable of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
-    computation_period_identifier : string or list of strings, optional
+    computation_period_identifier : string or iterable of strings, optional
         Indicates the period of data used for any statistical computations.
-    computation_identifier : string or list of strings, optional
+    computation_identifier : string or iterable of strings, optional
         Indicates whether the data from this time series represent a specific
         statistical computation.
     thresholds : numeric or list of numbers, optional
@@ -879,13 +880,13 @@ def get_time_series_metadata(
         sensor is non-operative. These thresholds are sometimes used to
         automatically determine if an observation is erroneous due to sensor
         error, and therefore shouldn't be included in the time series.
-    sublocation_identifier : string or list of strings, optional
-    primary : string or list of strings, optional
-    parent_time_series_id : string or list of strings, optional
-    time_series_id : string or list of strings, optional
+    sublocation_identifier : string or iterable of strings, optional
+    primary : string or iterable of strings, optional
+    parent_time_series_id : string or iterable of strings, optional
+    time_series_id : string or iterable of strings, optional
         A unique identifier representing a single time series. This
         corresponds to the id field in the time-series-metadata endpoint.
-    web_description : string or list of strings, optional
+    web_description : string or iterable of strings, optional
         A description of what this time series represents, as used by WDFN and
         other USGS data dissemination products.
     skip_geometry : boolean, optional
@@ -949,62 +950,62 @@ def get_time_series_metadata(
 
 
 def get_combined_metadata(
-    monitoring_location_id: str | list[str] | None = None,
-    parameter_code: str | list[str] | None = None,
-    parameter_name: str | list[str] | None = None,
-    parameter_description: str | list[str] | None = None,
-    unit_of_measure: str | list[str] | None = None,
-    statistic_id: str | list[str] | None = None,
-    data_type: str | list[str] | None = None,
-    computation_identifier: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
+    parameter_name: str | Iterable[str] | None = None,
+    parameter_description: str | Iterable[str] | None = None,
+    unit_of_measure: str | Iterable[str] | None = None,
+    statistic_id: str | Iterable[str] | None = None,
+    data_type: str | Iterable[str] | None = None,
+    computation_identifier: str | Iterable[str] | None = None,
     thresholds: float | list[float] | None = None,
-    sublocation_identifier: str | list[str] | None = None,
-    primary: str | list[str] | None = None,
-    parent_time_series_id: str | list[str] | None = None,
-    web_description: str | list[str] | None = None,
-    last_modified: str | list[str] | None = None,
-    begin: str | list[str] | None = None,
-    end: str | list[str] | None = None,
-    agency_code: str | list[str] | None = None,
-    agency_name: str | list[str] | None = None,
-    monitoring_location_number: str | list[str] | None = None,
-    monitoring_location_name: str | list[str] | None = None,
-    district_code: str | list[str] | None = None,
-    country_code: str | list[str] | None = None,
-    country_name: str | list[str] | None = None,
-    state_code: str | list[str] | None = None,
-    state_name: str | list[str] | None = None,
-    county_code: str | list[str] | None = None,
-    county_name: str | list[str] | None = None,
-    minor_civil_division_code: str | list[str] | None = None,
-    site_type_code: str | list[str] | None = None,
-    site_type: str | list[str] | None = None,
-    hydrologic_unit_code: str | list[str] | None = None,
-    basin_code: str | list[str] | None = None,
-    altitude: str | list[str] | None = None,
-    altitude_accuracy: str | list[str] | None = None,
-    altitude_method_code: str | list[str] | None = None,
-    altitude_method_name: str | list[str] | None = None,
-    vertical_datum: str | list[str] | None = None,
-    vertical_datum_name: str | list[str] | None = None,
-    horizontal_positional_accuracy_code: str | list[str] | None = None,
-    horizontal_positional_accuracy: str | list[str] | None = None,
-    horizontal_position_method_code: str | list[str] | None = None,
-    horizontal_position_method_name: str | list[str] | None = None,
-    original_horizontal_datum: str | list[str] | None = None,
-    original_horizontal_datum_name: str | list[str] | None = None,
-    drainage_area: str | list[str] | None = None,
-    contributing_drainage_area: str | list[str] | None = None,
-    time_zone_abbreviation: str | list[str] | None = None,
-    uses_daylight_savings: str | list[str] | None = None,
-    construction_date: str | list[str] | None = None,
-    aquifer_code: str | list[str] | None = None,
-    national_aquifer_code: str | list[str] | None = None,
-    aquifer_type_code: str | list[str] | None = None,
-    well_constructed_depth: str | list[str] | None = None,
-    hole_constructed_depth: str | list[str] | None = None,
-    depth_source_code: str | list[str] | None = None,
-    properties: str | list[str] | None = None,
+    sublocation_identifier: str | Iterable[str] | None = None,
+    primary: str | Iterable[str] | None = None,
+    parent_time_series_id: str | Iterable[str] | None = None,
+    web_description: str | Iterable[str] | None = None,
+    last_modified: str | Iterable[str] | None = None,
+    begin: str | Iterable[str] | None = None,
+    end: str | Iterable[str] | None = None,
+    agency_code: str | Iterable[str] | None = None,
+    agency_name: str | Iterable[str] | None = None,
+    monitoring_location_number: str | Iterable[str] | None = None,
+    monitoring_location_name: str | Iterable[str] | None = None,
+    district_code: str | Iterable[str] | None = None,
+    country_code: str | Iterable[str] | None = None,
+    country_name: str | Iterable[str] | None = None,
+    state_code: str | Iterable[str] | None = None,
+    state_name: str | Iterable[str] | None = None,
+    county_code: str | Iterable[str] | None = None,
+    county_name: str | Iterable[str] | None = None,
+    minor_civil_division_code: str | Iterable[str] | None = None,
+    site_type_code: str | Iterable[str] | None = None,
+    site_type: str | Iterable[str] | None = None,
+    hydrologic_unit_code: str | Iterable[str] | None = None,
+    basin_code: str | Iterable[str] | None = None,
+    altitude: str | Iterable[str] | None = None,
+    altitude_accuracy: str | Iterable[str] | None = None,
+    altitude_method_code: str | Iterable[str] | None = None,
+    altitude_method_name: str | Iterable[str] | None = None,
+    vertical_datum: str | Iterable[str] | None = None,
+    vertical_datum_name: str | Iterable[str] | None = None,
+    horizontal_positional_accuracy_code: str | Iterable[str] | None = None,
+    horizontal_positional_accuracy: str | Iterable[str] | None = None,
+    horizontal_position_method_code: str | Iterable[str] | None = None,
+    horizontal_position_method_name: str | Iterable[str] | None = None,
+    original_horizontal_datum: str | Iterable[str] | None = None,
+    original_horizontal_datum_name: str | Iterable[str] | None = None,
+    drainage_area: str | Iterable[str] | None = None,
+    contributing_drainage_area: str | Iterable[str] | None = None,
+    time_zone_abbreviation: str | Iterable[str] | None = None,
+    uses_daylight_savings: str | Iterable[str] | None = None,
+    construction_date: str | Iterable[str] | None = None,
+    aquifer_code: str | Iterable[str] | None = None,
+    national_aquifer_code: str | Iterable[str] | None = None,
+    aquifer_type_code: str | Iterable[str] | None = None,
+    well_constructed_depth: str | Iterable[str] | None = None,
+    hole_constructed_depth: str | Iterable[str] | None = None,
+    depth_source_code: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
@@ -1036,45 +1037,45 @@ def get_combined_metadata(
 
     Parameters
     ----------
-    monitoring_location_id : string or list of strings, optional
+    monitoring_location_id : string or iterable of strings, optional
         A unique identifier representing a single monitoring location.
         Created by combining the agency code (e.g. ``USGS``) with the ID
         number (e.g. ``02238500``), separated by a hyphen
         (e.g. ``"USGS-02238500"``).
-    parameter_code : string or list of strings, optional
+    parameter_code : string or iterable of strings, optional
         5-digit codes used to identify the constituent measured and the
         units of measure. See
         https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
-    parameter_name : string or list of strings, optional
+    parameter_name : string or iterable of strings, optional
         A human-understandable name corresponding to ``parameter_code``.
-    parameter_description : string or list of strings, optional
+    parameter_description : string or iterable of strings, optional
         A human-readable description of what is being measured.
-    unit_of_measure : string or list of strings, optional
+    unit_of_measure : string or iterable of strings, optional
         A human-readable description of the units of measurement
         associated with an observation.
-    statistic_id : string or list of strings, optional
+    statistic_id : string or iterable of strings, optional
         A code corresponding to the statistic an observation represents
         (e.g. ``00001`` max, ``00002`` min, ``00003`` mean). Full list at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
-    data_type : string or list of strings, optional
+    data_type : string or iterable of strings, optional
         The type of data the time series represents, e.g.
         ``"Continuous values"``, ``"Daily values"``,
         ``"Field measurements"``.
-    computation_identifier : string or list of strings, optional
+    computation_identifier : string or iterable of strings, optional
         Indicates whether the data from this time series represent a
         specific statistical computation.
     thresholds : numeric or list of numbers, optional
         Numeric limits known for a time series (e.g. historic maximum,
         below-which-the-sensor-is-non-operative).
-    sublocation_identifier : string or list of strings, optional
-    primary : string or list of strings, optional
+    sublocation_identifier : string or iterable of strings, optional
+    primary : string or iterable of strings, optional
         A flag identifying whether the time series is "primary". Primary
         time series are standard observations that have undergone Bureau
         review and approval. Non-primary (provisional) time series have a
         missing ``primary`` value, are produced for timely best-science
         use, and are retained by this system for only 120 days.
-    parent_time_series_id : string or list of strings, optional
-    web_description : string or list of strings, optional
+    parent_time_series_id : string or iterable of strings, optional
+    web_description : string or iterable of strings, optional
         A description of what this time series represents, as used by
         WDFN and other USGS data dissemination products.
     last_modified, begin, end : string, optional
@@ -1083,14 +1084,14 @@ def get_combined_metadata(
         or an ISO 8601 duration (e.g. ``"P1M"``, ``"PT36H"``). See
         :func:`get_time_series_metadata` for the full grammar.
     state_name, county_name, hydrologic_unit_code, site_type, \
-site_type_code : string or list of strings, optional
+site_type_code : string or iterable of strings, optional
         Common location-catalog filters carried over from the
         ``monitoring-locations`` collection. The function also accepts
         the full list of location-catalog kwargs (agency, district,
         altitude, vertical/horizontal datum, drainage area, aquifer,
         well construction, …); see :func:`get_monitoring_locations` for
         descriptions of each.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         Subset of columns to return. Defaults to every available
         property.
     skip_geometry : boolean, optional
@@ -1181,19 +1182,19 @@ site_type_code : string or list of strings, optional
 
 
 def get_latest_continuous(
-    monitoring_location_id: str | list[str] | None = None,
-    parameter_code: str | list[str] | None = None,
-    statistic_id: str | list[str] | None = None,
-    properties: str | list[str] | None = None,
-    time_series_id: str | list[str] | None = None,
-    latest_continuous_id: str | list[str] | None = None,
-    approval_status: str | list[str] | None = None,
-    unit_of_measure: str | list[str] | None = None,
-    qualifier: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
+    statistic_id: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
+    time_series_id: str | Iterable[str] | None = None,
+    latest_continuous_id: str | Iterable[str] | None = None,
+    approval_status: str | Iterable[str] | None = None,
+    unit_of_measure: str | Iterable[str] | None = None,
+    qualifier: str | Iterable[str] | None = None,
     value: int | None = None,
-    last_modified: str | list[str] | None = None,
+    last_modified: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
-    time: str | list[str] | None = None,
+    time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -1213,32 +1214,32 @@ def get_latest_continuous(
 
     Parameters
     ----------
-    monitoring_location_id : string or list of strings, optional
+    monitoring_location_id : string or iterable of strings, optional
         A unique identifier representing a single monitoring location. This
         corresponds to the id field in the monitoring-locations endpoint.
         Monitoring location IDs are created by combining the agency code of the
         agency responsible for the monitoring location (e.g. USGS) with the ID
         number of the monitoring location (e.g. 02238500), separated by a hyphen
         (e.g. USGS-02238500).
-    parameter_code : string or list of strings, optional
+    parameter_code : string or iterable of strings, optional
         Parameter codes are 5-digit codes used to identify the constituent
         measured and the units of measure. A complete list of parameter codes
         and associated groupings can be found at
         https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
-    statistic_id : string or list of strings, optional
+    statistic_id : string or iterable of strings, optional
         A code corresponding to the statistic an observation represents.
         Example codes include 00001 (max), 00002 (min), and 00003 (mean).
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         A vector of requested columns to be returned from the query.  Available
         options are: geometry, id, time_series_id, monitoring_location_id,
         parameter_code, statistic_id, time, value, unit_of_measure,
         approval_status, qualifier, last_modified
-    time_series_id : string or list of strings, optional
+    time_series_id : string or iterable of strings, optional
         A unique identifier representing a single time series. This
         corresponds to the id field in the time-series-metadata endpoint.
-    latest_continuous_id : string or list of strings, optional
+    latest_continuous_id : string or iterable of strings, optional
         A universally unique identifier (UUID) representing a single version of
         a record. It is not stable over time. Every time the record is refreshed
         in our database (which may happen as part of normal operations and does
@@ -1246,7 +1247,7 @@ def get_latest_continuous(
         uniquely identify a single observation over time, compare the time and
         time_series_id fields; each time series will only have a single
         observation at a given time.
-    approval_status : string or list of strings, optional
+    approval_status : string or iterable of strings, optional
         Some of the data that you have obtained from this U.S. Geological Survey
         database may not have received Director's approval. Any such data values
         are qualified as provisional and are subject to revision. Provisional
@@ -1257,14 +1258,14 @@ def get_latest_continuous(
         approved for publication, or "Provisional" and subject to revision. For
         more information about provisional data, go to:
         https://waterdata.usgs.gov/provisional-data-statement/.
-    unit_of_measure : string or list of strings, optional
+    unit_of_measure : string or iterable of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
-    qualifier : string or list of strings, optional
+    qualifier : string or iterable of strings, optional
         This field indicates any qualifiers associated with an observation, for
         instance if a sensor may have been impacted by ice or if values were
         estimated.
-    value : string or list of strings, optional
+    value : string or iterable of strings, optional
         The value of the observation. Values are transmitted as strings in
         the JSON response format in order to preserve precision.
     last_modified : string, optional
@@ -1376,19 +1377,19 @@ def get_latest_continuous(
 
 
 def get_latest_daily(
-    monitoring_location_id: str | list[str] | None = None,
-    parameter_code: str | list[str] | None = None,
-    statistic_id: str | list[str] | None = None,
-    properties: str | list[str] | None = None,
-    time_series_id: str | list[str] | None = None,
-    latest_daily_id: str | list[str] | None = None,
-    approval_status: str | list[str] | None = None,
-    unit_of_measure: str | list[str] | None = None,
-    qualifier: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
+    statistic_id: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
+    time_series_id: str | Iterable[str] | None = None,
+    latest_daily_id: str | Iterable[str] | None = None,
+    approval_status: str | Iterable[str] | None = None,
+    unit_of_measure: str | Iterable[str] | None = None,
+    qualifier: str | Iterable[str] | None = None,
     value: int | None = None,
-    last_modified: str | list[str] | None = None,
+    last_modified: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
-    time: str | list[str] | None = None,
+    time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -1410,32 +1411,32 @@ def get_latest_daily(
 
     Parameters
     ----------
-    monitoring_location_id : string or list of strings, optional
+    monitoring_location_id : string or iterable of strings, optional
         A unique identifier representing a single monitoring location. This
         corresponds to the id field in the monitoring-locations endpoint.
         Monitoring location IDs are created by combining the agency code of the
         agency responsible for the monitoring location (e.g. USGS) with the ID
         number of the monitoring location (e.g. 02238500), separated by a hyphen
         (e.g. USGS-02238500).
-    parameter_code : string or list of strings, optional
+    parameter_code : string or iterable of strings, optional
         Parameter codes are 5-digit codes used to identify the constituent
         measured and the units of measure. A complete list of parameter codes
         and associated groupings can be found at
         https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
-    statistic_id : string or list of strings, optional
+    statistic_id : string or iterable of strings, optional
         A code corresponding to the statistic an observation represents.
         Example codes include 00001 (max), 00002 (min), and 00003 (mean).
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         A vector of requested columns to be returned from the query.  Available
         options are: geometry, id, time_series_id, monitoring_location_id,
         parameter_code, statistic_id, time, value, unit_of_measure,
         approval_status, qualifier, last_modified
-    time_series_id : string or list of strings, optional
+    time_series_id : string or iterable of strings, optional
         A unique identifier representing a single time series. This
         corresponds to the id field in the time-series-metadata endpoint.
-    latest_daily_id : string or list of strings, optional
+    latest_daily_id : string or iterable of strings, optional
         A universally unique identifier (UUID) representing a single version of
         a record. It is not stable over time. Every time the record is refreshed
         in our database (which may happen as part of normal operations and does
@@ -1443,7 +1444,7 @@ def get_latest_daily(
         uniquely identify a single observation over time, compare the time and
         time_series_id fields; each time series will only have a single
         observation at a given time.
-    approval_status : string or list of strings, optional
+    approval_status : string or iterable of strings, optional
         Some of the data that you have obtained from this U.S. Geological Survey
         database may not have received Director's approval. Any such data values
         are qualified as provisional and are subject to revision. Provisional
@@ -1454,14 +1455,14 @@ def get_latest_daily(
         approved for publication, or "Provisional" and subject to revision. For
         more information about provisional data, go to:
         https://waterdata.usgs.gov/provisional-data-statement/.
-    unit_of_measure : string or list of strings, optional
+    unit_of_measure : string or iterable of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
-    qualifier : string or list of strings, optional
+    qualifier : string or iterable of strings, optional
         This field indicates any qualifiers associated with an observation, for
         instance if a sensor may have been impacted by ice or if values were
         estimated.
-    value : string or list of strings, optional
+    value : string or iterable of strings, optional
         The value of the observation. Values are transmitted as strings in
         the JSON response format in order to preserve precision.
     last_modified : string, optional
@@ -1572,21 +1573,21 @@ def get_latest_daily(
 
 
 def get_field_measurements(
-    monitoring_location_id: str | list[str] | None = None,
-    parameter_code: str | list[str] | None = None,
-    observing_procedure_code: str | list[str] | None = None,
-    properties: list[str] | None = None,
-    field_visit_id: str | list[str] | None = None,
-    approval_status: str | list[str] | None = None,
-    unit_of_measure: str | list[str] | None = None,
-    qualifier: str | list[str] | None = None,
-    value: str | list[str] | None = None,
-    last_modified: str | list[str] | None = None,
-    observing_procedure: str | list[str] | None = None,
-    vertical_datum: str | list[str] | None = None,
-    measuring_agency: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
+    observing_procedure_code: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
+    field_visit_id: str | Iterable[str] | None = None,
+    approval_status: str | Iterable[str] | None = None,
+    unit_of_measure: str | Iterable[str] | None = None,
+    qualifier: str | Iterable[str] | None = None,
+    value: str | Iterable[str] | None = None,
+    last_modified: str | Iterable[str] | None = None,
+    observing_procedure: str | Iterable[str] | None = None,
+    vertical_datum: str | Iterable[str] | None = None,
+    measuring_agency: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
-    time: str | list[str] | None = None,
+    time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -1602,30 +1603,30 @@ def get_field_measurements(
 
     Parameters
     ----------
-    monitoring_location_id : string or list of strings, optional
+    monitoring_location_id : string or iterable of strings, optional
         A unique identifier representing a single monitoring location. This
         corresponds to the id field in the monitoring-locations endpoint.
         Monitoring location IDs are created by combining the agency code of the
         agency responsible for the monitoring location (e.g. USGS) with the ID
         number of the monitoring location (e.g. 02238500), separated by a hyphen
         (e.g. USGS-02238500).
-    parameter_code : string or list of strings, optional
+    parameter_code : string or iterable of strings, optional
         Parameter codes are 5-digit codes used to identify the constituent
         measured and the units of measure. A complete list of parameter codes
         and associated groupings can be found at
         https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
-    observing_procedure_code : string or list of strings, optional
+    observing_procedure_code : string or iterable of strings, optional
         A short code corresponding to the observing procedure for the field
         measurement.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         A vector of requested columns to be returned from the query.  Available
         options are: geometry, id, time_series_id, monitoring_location_id,
         parameter_code, statistic_id, time, value, unit_of_measure,
         approval_status, qualifier, last_modified
-    field_visit_id : string or list of strings, optional
+    field_visit_id : string or iterable of strings, optional
         A universally unique identifier (UUID) for the field visit.
         Multiple measurements may be made during a single field visit.
-    approval_status : string or list of strings, optional
+    approval_status : string or iterable of strings, optional
         Some of the data that you have obtained from this U.S. Geological Survey
         database may not have received Director's approval. Any such data values
         are qualified as provisional and are subject to revision. Provisional
@@ -1636,14 +1637,14 @@ def get_field_measurements(
         approved for publication, or "Provisional" and subject to revision. For
         more information about provisional data, go to:
         https://waterdata.usgs.gov/provisional-data-statement/.
-    unit_of_measure : string or list of strings, optional
+    unit_of_measure : string or iterable of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
-    qualifier : string or list of strings, optional
+    qualifier : string or iterable of strings, optional
         This field indicates any qualifiers associated with an observation, for
         instance if a sensor may have been impacted by ice or if values were
         estimated.
-    value : string or list of strings, optional
+    value : string or iterable of strings, optional
         The value of the observation. Values are transmitted as strings in
         the JSON response format in order to preserve precision.
     last_modified : string, optional
@@ -1663,12 +1664,12 @@ def get_field_measurements(
             * Duration objects: "P1M" for data from the past month or
                 "PT36H" for the last 36 hours
 
-    observing_procedure : string or list of strings, optional
+    observing_procedure : string or iterable of strings, optional
         Water measurement or water-quality observing procedure descriptions.
-    vertical_datum : string or list of strings, optional
+    vertical_datum : string or iterable of strings, optional
         The datum used to determine altitude and vertical position at the
         monitoring location.
-    measuring_agency : string or list of strings, optional
+    measuring_agency : string or iterable of strings, optional
         The agency performing the measurement.
     skip_geometry : boolean, optional
         This option can be used to skip response geometries for each feature.
@@ -1762,14 +1763,14 @@ def get_field_measurements(
 
 
 def get_field_measurements_metadata(
-    monitoring_location_id: str | list[str] | None = None,
-    parameter_code: str | list[str] | None = None,
-    parameter_name: str | list[str] | None = None,
-    parameter_description: str | list[str] | None = None,
-    begin: str | list[str] | None = None,
-    end: str | list[str] | None = None,
-    last_modified: str | list[str] | None = None,
-    properties: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
+    parameter_name: str | Iterable[str] | None = None,
+    parameter_description: str | Iterable[str] | None = None,
+    begin: str | Iterable[str] | None = None,
+    end: str | Iterable[str] | None = None,
+    last_modified: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
@@ -1797,22 +1798,22 @@ def get_field_measurements_metadata(
 
     Parameters
     ----------
-    monitoring_location_id : string or list of strings, optional
+    monitoring_location_id : string or iterable of strings, optional
         A unique identifier representing a single monitoring location, in
         ``AGENCY-ID`` form (e.g. ``"USGS-02238500"``).
-    parameter_code : string or list of strings, optional
+    parameter_code : string or iterable of strings, optional
         5-digit parameter code. See
         https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
-    parameter_name : string or list of strings, optional
+    parameter_name : string or iterable of strings, optional
         A human-understandable name corresponding to ``parameter_code``.
-    parameter_description : string or list of strings, optional
+    parameter_description : string or iterable of strings, optional
         A human-readable description of what is being measured.
     begin, end, last_modified : string, optional
         Datetime fields that accept either an RFC 3339 datetime, an
         interval (``"start/end"``, optionally half-bounded with ``..``),
         or an ISO 8601 duration (e.g. ``"P1M"``, ``"PT36H"``). See
         :func:`get_time_series_metadata` for the full grammar.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         Subset of columns to return. Defaults to every available property.
     skip_geometry : boolean, optional
         Skip per-feature geometries; the returned object will be a plain
@@ -1879,18 +1880,18 @@ def get_field_measurements_metadata(
 
 
 def get_peaks(
-    monitoring_location_id: str | list[str] | None = None,
-    parameter_code: str | list[str] | None = None,
-    time_series_id: str | list[str] | None = None,
-    unit_of_measure: str | list[str] | None = None,
-    time: str | list[str] | None = None,
-    last_modified: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
+    time_series_id: str | Iterable[str] | None = None,
+    unit_of_measure: str | Iterable[str] | None = None,
+    time: str | Iterable[str] | None = None,
+    last_modified: str | Iterable[str] | None = None,
     water_year: int | list[int] | None = None,
     year: int | list[int] | None = None,
     month: int | list[int] | None = None,
     day: int | list[int] | None = None,
     peak_since: int | list[int] | None = None,
-    properties: str | list[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
@@ -1912,16 +1913,16 @@ def get_peaks(
 
     Parameters
     ----------
-    monitoring_location_id : string or list of strings, optional
+    monitoring_location_id : string or iterable of strings, optional
         A unique identifier representing a single monitoring location, in
         ``AGENCY-ID`` form (e.g. ``"USGS-02238500"``).
-    parameter_code : string or list of strings, optional
+    parameter_code : string or iterable of strings, optional
         5-digit parameter code. Most peaks records are ``"00060"`` (discharge)
         or ``"00065"`` (stage / gage height). Full list at
         https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
-    time_series_id : string or list of strings, optional
+    time_series_id : string or iterable of strings, optional
         ID of the time series the peak belongs to.
-    unit_of_measure : string or list of strings, optional
+    unit_of_measure : string or iterable of strings, optional
         Human-readable units (e.g. ``"ft^3/s"``, ``"ft"``).
     time : string, optional
         Datetime, interval, or duration filter on the peak's date.
@@ -1936,7 +1937,7 @@ def get_peaks(
         Filter on the year since which the peak value has stood as the
         record (the API serves this field as an integer; many rows are
         ``null``).
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         Subset of columns to return. Defaults to every available property.
     skip_geometry : boolean, optional
         Skip per-feature geometries; the returned object will be a plain
@@ -2110,28 +2111,28 @@ def get_samples(
     ssl_check: bool = True,
     service: SERVICES = "results",
     profile: PROFILES = "fullphyschem",
-    activityMediaName: str | list[str] | None = None,
+    activityMediaName: str | Iterable[str] | None = None,
     activityStartDateLower: str | None = None,
     activityStartDateUpper: str | None = None,
-    activityTypeCode: str | list[str] | None = None,
-    characteristicGroup: str | list[str] | None = None,
-    characteristic: str | list[str] | None = None,
-    characteristicUserSupplied: str | list[str] | None = None,
+    activityTypeCode: str | Iterable[str] | None = None,
+    characteristicGroup: str | Iterable[str] | None = None,
+    characteristic: str | Iterable[str] | None = None,
+    characteristicUserSupplied: str | Iterable[str] | None = None,
     boundingBox: list[float] | None = None,
-    countryFips: str | list[str] | None = None,
-    stateFips: str | list[str] | None = None,
-    countyFips: str | list[str] | None = None,
-    siteTypeCode: str | list[str] | None = None,
-    siteTypeName: str | list[str] | None = None,
-    usgsPCode: str | list[str] | None = None,
-    hydrologicUnit: str | list[str] | None = None,
-    monitoringLocationIdentifier: str | list[str] | None = None,
-    organizationIdentifier: str | list[str] | None = None,
+    countryFips: str | Iterable[str] | None = None,
+    stateFips: str | Iterable[str] | None = None,
+    countyFips: str | Iterable[str] | None = None,
+    siteTypeCode: str | Iterable[str] | None = None,
+    siteTypeName: str | Iterable[str] | None = None,
+    usgsPCode: str | Iterable[str] | None = None,
+    hydrologicUnit: str | Iterable[str] | None = None,
+    monitoringLocationIdentifier: str | Iterable[str] | None = None,
+    organizationIdentifier: str | Iterable[str] | None = None,
     pointLocationLatitude: float | None = None,
     pointLocationLongitude: float | None = None,
     pointLocationWithinMiles: float | None = None,
-    projectIdentifier: str | list[str] | None = None,
-    recordIdentifierUserSupplied: str | list[str] | None = None,
+    projectIdentifier: str | Iterable[str] | None = None,
+    recordIdentifierUserSupplied: str | Iterable[str] | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Search Samples database for USGS water quality data.
     This is a wrapper function for the Samples database API. All potential
@@ -2167,7 +2168,7 @@ def get_samples(
         "actgroup", "count"
         projects - "project", "projectmonitoringlocationweight"
         organizations - "organization", "count"
-    activityMediaName : string or list of strings, optional
+    activityMediaName : string or iterable of strings, optional
         Name or code indicating environmental medium in which sample was taken.
         Check the `activityMediaName_lookup()` function in this module for all
         possible inputs.
@@ -2182,20 +2183,20 @@ def get_samples(
         The logic is inclusive, i.e. it will also return results that
         match the date. If left as None, will pull all data after
         activityStartDateLower up to the most recent available results.
-    activityTypeCode : string or list of strings, optional
+    activityTypeCode : string or iterable of strings, optional
         Text code that describes type of field activity performed.
         Example: "Sample-Routine, regular".
-    characteristicGroup : string or list of strings, optional
+    characteristicGroup : string or iterable of strings, optional
         Characteristic group is a broad category of characteristics
         describing one or more results. Check the `characteristicGroup_lookup()`
         function in this module for all possible inputs.
         Example: "Organics, PFAS"
-    characteristic : string or list of strings, optional
+    characteristic : string or iterable of strings, optional
         Characteristic is a specific category describing one or more results.
         Check the `characteristic_lookup()` function in this module for all
         possible inputs.
         Example: "Suspended Sediment Discharge"
-    characteristicUserSupplied : string or list of strings, optional
+    characteristicUserSupplied : string or iterable of strings, optional
         A user supplied characteristic name describing one or more results.
     boundingBox: list of four floats, optional
         Filters on the the associated monitoring location's point location
@@ -2211,39 +2212,39 @@ def get_samples(
             * Northern-most longitude
 
         Example: [-92.8,44.2,-88.9,46.0]
-    countryFips : string or list of strings, optional
+    countryFips : string or iterable of strings, optional
         Example: "US" (United States)
-    stateFips : string or list of strings, optional
+    stateFips : string or iterable of strings, optional
         Check the `stateFips_lookup()` function in this module for all
         possible inputs.
         Example: "US:15" (United States: Hawaii)
-    countyFips : string or list of strings, optional
+    countyFips : string or iterable of strings, optional
         Check the `countyFips_lookup()` function in this module for all
         possible inputs.
         Example: "US:15:001" (United States: Hawaii, Hawaii County)
-    siteTypeCode : string or list of strings, optional
+    siteTypeCode : string or iterable of strings, optional
         An abbreviation for a certain site type. Check the `siteType_lookup()`
         function in this module for all possible inputs.
         Example: "GW" (Groundwater site)
-    siteTypeName : string or list of strings, optional
+    siteTypeName : string or iterable of strings, optional
         A full name for a certain site type. Check the `siteType_lookup()`
         function in this module for all possible inputs.
         Example: "Well"
-    usgsPCode : string or list of strings, optional
+    usgsPCode : string or iterable of strings, optional
         5-digit number used in the US Geological Survey computerized
         data system, National Water Information System (NWIS), to
         uniquely identify a specific constituent. Check the
         `characteristic_lookup()` function in this module for all possible
         inputs.
         Example: "00060" (Discharge, cubic feet per second)
-    hydrologicUnit : string or list of strings, optional
+    hydrologicUnit : string or iterable of strings, optional
         Max 12-digit number used to describe a hydrologic unit.
         Example: "070900020502"
-    monitoringLocationIdentifier : string or list of strings, optional
+    monitoringLocationIdentifier : string or iterable of strings, optional
         A monitoring location identifier has two parts: the agency code
         and the location number, separated by a dash (-).
         Example: "USGS-040851385"
-    organizationIdentifier : string or list of strings, optional
+    organizationIdentifier : string or iterable of strings, optional
         Designator used to uniquely identify a specific organization.
         Currently only accepting the organization "USGS".
     pointLocationLatitude : float, optional
@@ -2255,11 +2256,11 @@ def get_samples(
     pointLocationWithinMiles : float, optional
         Radius for a point/radius query. Must be used with
         pointLocationLatitude and pointLocationLongitude
-    projectIdentifier : string or list of strings, optional
+    projectIdentifier : string or iterable of strings, optional
         Designator used to uniquely identify a data collection project. Project
         identifiers are specific to an organization (e.g. USGS).
         Example: "ZH003QW03"
-    recordIdentifierUserSupplied : string or list of strings, optional
+    recordIdentifierUserSupplied : string or iterable of strings, optional
         Internal AQS record identifier that returns 1 entry. Only available
         for the "results" service.
 
@@ -2409,18 +2410,18 @@ def get_samples_summary(
 
 def get_stats_por(
     approval_status: str | None = None,
-    computation_type: str | list[str] | None = None,
-    country_code: str | list[str] | None = None,
-    state_code: str | list[str] | None = None,
-    county_code: str | list[str] | None = None,
+    computation_type: str | Iterable[str] | None = None,
+    country_code: str | Iterable[str] | None = None,
+    state_code: str | Iterable[str] | None = None,
+    county_code: str | Iterable[str] | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
-    monitoring_location_id: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
     page_size: int = 1000,
-    parent_time_series_id: str | list[str] | None = None,
-    site_type_code: str | list[str] | None = None,
-    site_type_name: str | list[str] | None = None,
-    parameter_code: str | list[str] | None = None,
+    parent_time_series_id: str | Iterable[str] | None = None,
+    site_type_code: str | Iterable[str] | None = None,
+    site_type_name: str | Iterable[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
     expand_percentiles: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get day-of-year and month-of-year water data statistics from the
@@ -2457,7 +2458,7 @@ def get_stats_por(
         Start day for the query in the month-day format (MM-DD).
     end_date: string or datetime, optional
         End day for the query in the month-day format (MM-DD).
-    monitoring_location_id : string or list of strings, optional
+    monitoring_location_id : string or iterable of strings, optional
         A unique identifier representing a single monitoring location. This
         corresponds to the id field in the monitoring-locations endpoint.
         Monitoring location IDs are created by combining the agency code of the
@@ -2477,7 +2478,7 @@ def get_stats_por(
         Example: "GW" (Groundwater site)
     site_type_name: string, optional
         Site type name query parameter.
-    parameter_code : string or list of strings, optional
+    parameter_code : string or iterable of strings, optional
         Parameter codes are 5-digit codes used to identify the constituent
         measured and the units of measure. A complete list of parameter codes
         and associated groupings can be found at
@@ -2533,18 +2534,18 @@ def get_stats_por(
 
 def get_stats_date_range(
     approval_status: str | None = None,
-    computation_type: str | list[str] | None = None,
-    country_code: str | list[str] | None = None,
-    state_code: str | list[str] | None = None,
-    county_code: str | list[str] | None = None,
+    computation_type: str | Iterable[str] | None = None,
+    country_code: str | Iterable[str] | None = None,
+    state_code: str | Iterable[str] | None = None,
+    county_code: str | Iterable[str] | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
-    monitoring_location_id: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
     page_size: int = 1000,
-    parent_time_series_id: str | list[str] | None = None,
-    site_type_code: str | list[str] | None = None,
-    site_type_name: str | list[str] | None = None,
-    parameter_code: str | list[str] | None = None,
+    parent_time_series_id: str | Iterable[str] | None = None,
+    site_type_code: str | Iterable[str] | None = None,
+    site_type_name: str | Iterable[str] | None = None,
+    parameter_code: str | Iterable[str] | None = None,
     expand_percentiles: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get monthly and annual water data statistics from the USGS Water Data API.
@@ -2582,7 +2583,7 @@ def get_stats_date_range(
     end_date: string or datetime, optional
         End date for the query in the year-month-day format
         (YYYY-MM-DD).
-    monitoring_location_id : string or list of strings, optional
+    monitoring_location_id : string or iterable of strings, optional
         A unique identifier representing a single monitoring location. This
         corresponds to the id field in the monitoring-locations endpoint.
         Monitoring location IDs are created by combining the agency code of the
@@ -2605,7 +2606,7 @@ def get_stats_date_range(
         You can see a list of valid site type names here:
         https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
         Example: "Well"
-    parameter_code : string or list of strings, optional
+    parameter_code : string or iterable of strings, optional
         Parameter codes are 5-digit codes used to identify the constituent
         measured and the units of measure. A complete list of parameter codes
         and associated groupings can be found at
@@ -2663,31 +2664,31 @@ def get_stats_date_range(
 
 
 def get_channel(
-    monitoring_location_id: str | list[str] | None = None,
-    field_visit_id: str | list[str] | None = None,
-    measurement_number: str | list[str] | None = None,
-    time: str | list[str] | None = None,
-    channel_name: str | list[str] | None = None,
-    channel_flow: str | list[str] | None = None,
-    channel_flow_unit: str | list[str] | None = None,
-    channel_width: str | list[str] | None = None,
-    channel_width_unit: str | list[str] | None = None,
-    channel_area: str | list[str] | None = None,
-    channel_area_unit: str | list[str] | None = None,
-    channel_velocity: str | list[str] | None = None,
-    channel_velocity_unit: str | list[str] | None = None,
-    channel_location_distance: str | list[str] | None = None,
-    channel_location_distance_unit: str | list[str] | None = None,
-    channel_stability: str | list[str] | None = None,
-    channel_material: str | list[str] | None = None,
-    channel_evenness: str | list[str] | None = None,
-    horizontal_velocity_description: str | list[str] | None = None,
-    vertical_velocity_description: str | list[str] | None = None,
-    longitudinal_velocity_description: str | list[str] | None = None,
-    measurement_type: str | list[str] | None = None,
-    last_modified: str | list[str] | None = None,
-    channel_measurement_type: str | list[str] | None = None,
-    properties: list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
+    field_visit_id: str | Iterable[str] | None = None,
+    measurement_number: str | Iterable[str] | None = None,
+    time: str | Iterable[str] | None = None,
+    channel_name: str | Iterable[str] | None = None,
+    channel_flow: str | Iterable[str] | None = None,
+    channel_flow_unit: str | Iterable[str] | None = None,
+    channel_width: str | Iterable[str] | None = None,
+    channel_width_unit: str | Iterable[str] | None = None,
+    channel_area: str | Iterable[str] | None = None,
+    channel_area_unit: str | Iterable[str] | None = None,
+    channel_velocity: str | Iterable[str] | None = None,
+    channel_velocity_unit: str | Iterable[str] | None = None,
+    channel_location_distance: str | Iterable[str] | None = None,
+    channel_location_distance_unit: str | Iterable[str] | None = None,
+    channel_stability: str | Iterable[str] | None = None,
+    channel_material: str | Iterable[str] | None = None,
+    channel_evenness: str | Iterable[str] | None = None,
+    horizontal_velocity_description: str | Iterable[str] | None = None,
+    vertical_velocity_description: str | Iterable[str] | None = None,
+    longitudinal_velocity_description: str | Iterable[str] | None = None,
+    measurement_type: str | Iterable[str] | None = None,
+    last_modified: str | Iterable[str] | None = None,
+    channel_measurement_type: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
@@ -2700,20 +2701,20 @@ def get_channel(
 
     Parameters
     ----------
-    monitoring_location_id : string or list of strings, optional
+    monitoring_location_id : string or iterable of strings, optional
         A unique identifier representing a single monitoring location. This
         corresponds to the id field in the monitoring-locations endpoint.
         Monitoring location IDs are created by combining the agency code of
         the agency responsible for the monitoring location (e.g. USGS) with
         the ID number of the monitoring location (e.g. 02238500), separated
         by a hyphen (e.g. USGS-02238500).
-    field_visit_id : string or list of strings, optional
+    field_visit_id : string or iterable of strings, optional
         A universally unique identifier (UUID) for the field visit.
         Multiple measurements
         may be made during a single field visit.
-    measurement_number : string or list of strings, optional
+    measurement_number : string or iterable of strings, optional
         Measurement number.
-    time : string or list of strings, optional
+    time : string or iterable of strings, optional
         The date an observation represents. You can query this field using
         date-times or intervals, adhering to RFC 3339, or using ISO 8601
         duration objects. Intervals may be bounded or half-bounded (double-dots
@@ -2730,39 +2731,39 @@ def get_channel(
             "../2018-03-18T12:31:12Z"
             * Duration objects: "P1M" for data from the past month or "PT36H" for
             the last 36 hours
-    channel_name : string or list of strings, optional
+    channel_name : string or iterable of strings, optional
         The channel name.
-    channel_flow : string or list of strings, optional
+    channel_flow : string or iterable of strings, optional
         The units for channel discharge.
-    channel_width : string or list of strings, optional
+    channel_width : string or iterable of strings, optional
         The channel width.
-    channel_width_unit : string or list of strings, optional
+    channel_width_unit : string or iterable of strings, optional
         The units for channel width.
-    channel_area : string or list of strings, optional
+    channel_area : string or iterable of strings, optional
         The channel area.
-    channel_area_unit : string or list of strings, optional
+    channel_area_unit : string or iterable of strings, optional
         The units for channel area.
-    channel_velocity :  string or list of strings, optional
+    channel_velocity :  string or iterable of strings, optional
         The mean channel velocity.
-    channel_velocity_unit : string or list of strings, optional
+    channel_velocity_unit : string or iterable of strings, optional
         The units for channel velocity.
-    channel_location_distance : string or list of strings, optional
+    channel_location_distance : string or iterable of strings, optional
         The channel location distance.
-    channel_location_distance_unit : string or list of strings, optional
+    channel_location_distance_unit : string or iterable of strings, optional
         The units for channel location distance.
-    channel_stability : string or list of strings, optional
+    channel_stability : string or iterable of strings, optional
         The stability of the channel material.
-    channel_material : string or list of strings, optional
+    channel_material : string or iterable of strings, optional
         The channel material.
-    channel_evenness : string or list of strings, optional
+    channel_evenness : string or iterable of strings, optional
         The channel evenness from bank to bank.
-    horizontal_velocity_description : string or list of strings, optional
+    horizontal_velocity_description : string or iterable of strings, optional
         The horizontal velocity description.
-    vertical_velocity_description : string or list of strings, optional
+    vertical_velocity_description : string or iterable of strings, optional
         The vertical velocity description.
-    longitudinal_velocity_description : string or list of strings, optional
+    longitudinal_velocity_description : string or iterable of strings, optional
         The longitudinal velocity description.
-    measurement_type : string or list of strings, optional
+    measurement_type : string or iterable of strings, optional
         The measurement type.
         The last time a record was refreshed in our database. This may happen
         due to regular operational processes and does not necessarily indicate
@@ -2786,9 +2787,9 @@ def get_channel(
         The returning object will be a data frame with no spatial information.
         Note that the USGS Water Data APIs use camelCase "skipGeometry" in
         CQL2 queries.
-    channel_measurement_type : string or list of strings, optional
+    channel_measurement_type : string or iterable of strings, optional
         The channel measurement type.
-    properties : string or list of strings, optional
+    properties : string or iterable of strings, optional
         A vector of requested columns to be returned from the query. Available
         options are: geometry, channel_measurements_id, monitoring_location_id,
         field_visit_id, measurement_number, time, channel_name, channel_flow,
@@ -2828,11 +2829,6 @@ def get_channel(
     service = "channel-measurements"
     output_id = "channel_measurements_id"
 
-    # Build argument dictionary, omitting None values
-    args = {
-        k: v
-        for k, v in locals().items()
-        if k not in {"service", "output_id"} and v is not None
-    }
+    args = _get_args(locals())
 
     return get_ogc_data(args, output_id, service)
