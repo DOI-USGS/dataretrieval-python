@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import re
+from collections.abc import Iterable, Mapping
 from datetime import datetime
 from typing import Any, get_args
 from zoneinfo import ZoneInfo
@@ -1171,44 +1172,53 @@ def _check_profiles(
 _MONITORING_LOCATION_ID_RE = re.compile(r"^.+-.+$")
 
 
-def _check_monitoring_location_id(
-    monitoring_location_id: str | list[str] | None,
-) -> None:
-    """Validate the format of a monitoring_location_id value.
+def _check_monitoring_location_id(monitoring_location_id):
+    """Validate and normalize a ``monitoring_location_id`` value.
 
     Parameters
     ----------
-    monitoring_location_id : str, list of str, or None
-        One or more monitoring location identifiers.
+    monitoring_location_id : None, str, or iterable of str
+        Accepts ``None``, a single string, or any non-string iterable of
+        strings (``list``, ``tuple``, ``pandas.Series``, ``pandas.Index``,
+        ``numpy.ndarray``, ...). Iterables are materialized to a ``list``
+        so downstream code that branches on ``isinstance(v, list)`` keeps
+        working.
+
+    Returns
+    -------
+    None, str, or list of str
+        ``None`` and ``str`` inputs are returned unchanged; non-string
+        iterables are returned as a ``list``.
 
     Raises
     ------
     TypeError
-        If any identifier is not a string (e.g. an integer was passed).
+        If the input is not ``None``, a string, or an iterable, or if any
+        iterable element is not a string.
     ValueError
-        If any string identifier does not follow the required
-        ``'AGENCY-ID'`` format (e.g. ``'USGS-01646500'``).
+        If any identifier doesn't contain a hyphen separator
+        (per the OGC API spec: AGENCY-ID format, e.g. ``USGS-01646500``).
     """
     if monitoring_location_id is None:
-        return
+        return None
 
-    if not isinstance(monitoring_location_id, (str, list)):
+    if isinstance(monitoring_location_id, str):
+        ids = [monitoring_location_id]
+    elif isinstance(monitoring_location_id, Iterable) and not isinstance(
+        monitoring_location_id, Mapping
+    ):
+        ids = list(monitoring_location_id)
+    else:
         raise TypeError(
-            f"monitoring_location_id must be a string or list of strings, "
+            f"monitoring_location_id must be a string or iterable of strings, "
             f"not {type(monitoring_location_id).__name__}. "
             f"Expected format: 'AGENCY-ID', e.g., 'USGS-{monitoring_location_id}'."
         )
 
-    ids = (
-        [monitoring_location_id]
-        if isinstance(monitoring_location_id, str)
-        else monitoring_location_id
-    )
-
     for id_ in ids:
         if not isinstance(id_, str):
             raise TypeError(
-                f"monitoring_location_id must be a string or list of strings, "
+                f"monitoring_location_id elements must be strings, "
                 f"not {type(id_).__name__}. "
                 f"Expected format: 'AGENCY-ID', e.g., 'USGS-{id_}'."
             )
@@ -1217,6 +1227,8 @@ def _check_monitoring_location_id(
                 f"Invalid monitoring_location_id: {id_!r}. "
                 f"Expected 'AGENCY-ID' format, e.g., 'USGS-01646500'."
             )
+
+    return monitoring_location_id if isinstance(monitoring_location_id, str) else ids
 
 
 def _get_args(

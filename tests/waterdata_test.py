@@ -1,6 +1,7 @@
 import datetime
 import sys
 
+import pandas as pd
 import pytest
 from pandas import DataFrame
 
@@ -513,16 +514,17 @@ class TestCheckMonitoringLocationId:
     """
 
     def test_valid_string(self):
-        """A correctly formatted string passes without error."""
-        _check_monitoring_location_id("USGS-01646500")
+        """A correctly formatted string passes and is returned unchanged."""
+        assert _check_monitoring_location_id("USGS-01646500") == "USGS-01646500"
 
     def test_valid_list(self):
         """A list of correctly formatted strings passes without error."""
-        _check_monitoring_location_id(["USGS-01646500", "USGS-02238500"])
+        ids = ["USGS-01646500", "USGS-02238500"]
+        assert _check_monitoring_location_id(ids) == ids
 
     def test_none_passes(self):
         """None is allowed (optional parameter)."""
-        _check_monitoring_location_id(None)
+        assert _check_monitoring_location_id(None) is None
 
     def test_integer_raises_type_error(self):
         """An integer ID raises TypeError with a helpful message."""
@@ -548,6 +550,52 @@ class TestCheckMonitoringLocationId:
         """get_daily raises TypeError before making any network call."""
         with pytest.raises(TypeError):
             get_daily(monitoring_location_id=5129115, parameter_code="00060")
+
+    def test_tuple_normalizes_to_list(self):
+        """A tuple of valid strings is accepted and normalized to list."""
+        result = _check_monitoring_location_id(("USGS-01646500", "USGS-02238500"))
+        assert result == ["USGS-01646500", "USGS-02238500"]
+        assert isinstance(result, list)
+
+    def test_pandas_series_normalizes_to_list(self):
+        """A pandas.Series of valid strings is accepted and normalized to list."""
+        s = pd.Series(["USGS-01646500", "USGS-02238500"])
+        result = _check_monitoring_location_id(s)
+        assert result == ["USGS-01646500", "USGS-02238500"]
+        assert isinstance(result, list)
+
+    def test_pandas_index_normalizes_to_list(self):
+        """A pandas.Index of valid strings is accepted and normalized to list."""
+        idx = pd.Index(["USGS-01646500", "USGS-02238500"])
+        result = _check_monitoring_location_id(idx)
+        assert result == ["USGS-01646500", "USGS-02238500"]
+        assert isinstance(result, list)
+
+    def test_numpy_array_normalizes_to_list(self):
+        """A numpy.ndarray of valid strings is accepted and normalized to list."""
+        import numpy as np
+
+        arr = np.array(["USGS-01646500", "USGS-02238500"])
+        result = _check_monitoring_location_id(arr)
+        assert result == ["USGS-01646500", "USGS-02238500"]
+        assert isinstance(result, list)
+
+    def test_numpy_int_array_raises_type_error(self):
+        """An iterable whose elements aren't strings (numpy int array) raises."""
+        import numpy as np
+
+        with pytest.raises(TypeError, match="elements must be strings"):
+            _check_monitoring_location_id(np.array([1, 2, 3]))
+
+    def test_pandas_series_of_ints_raises_type_error(self):
+        """An iterable whose elements aren't strings (Series of ints) raises."""
+        with pytest.raises(TypeError, match="elements must be strings"):
+            _check_monitoring_location_id(pd.Series([1, 2, 3]))
+
+    def test_dict_raises_type_error(self):
+        """Mappings are rejected — iterating a dict yields keys, which is a footgun."""
+        with pytest.raises(TypeError, match="not dict"):
+            _check_monitoring_location_id({"USGS-01646500": "site"})
 
     def test_get_daily_malformed_id_raises(self):
         """get_daily raises ValueError for a malformed string ID."""
