@@ -1185,15 +1185,21 @@ _MONITORING_LOCATION_ID_RE = re.compile(r"[^-\s]+-[^-\s]+")
 
 
 # Param names that ``_get_args`` must NOT push through ``_normalize_str_iterable``.
-# Scalar non-string knobs and ``list[float]`` params are detected by runtime
-# type; only string-iterable-shaped params with special handling need to be
-# named here: ``monitoring_location_id`` (validated separately), date-range
-# params (which may contain ``pd.NaT``/None or interval strings), and bbox
-# inputs (``list[float]``, sometimes a ``numpy.ndarray``).
+# Scalar non-string knobs are detected by runtime type; only iterable-shaped
+# params with special handling need to be named here:
+#   - ``monitoring_location_id`` is validated separately (AGENCY-ID format)
+#   - date-range params may contain ``pd.NaT``/None or interval strings
+#   - ``bbox``/``boundingBox`` are ``list[float]``, sometimes ``numpy.ndarray``
+#   - ``get_peaks``'s int-valued filters (``water_year`` etc.) are ``list[int]``
 _NO_NORMALIZE_PARAMS = _DATE_RANGE_PARAMS | {
     "monitoring_location_id",
     "bbox",
     "boundingBox",
+    "water_year",
+    "year",
+    "month",
+    "day",
+    "peak_since",
 }
 
 # Param names that must be a list of strings (never a single string).
