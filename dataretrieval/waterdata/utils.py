@@ -230,6 +230,10 @@ def _format_api_dates(
     # Convert single string to list for uniform processing
     if isinstance(datetime_input, str):
         datetime_input = [datetime_input]
+    elif not isinstance(datetime_input, (list, tuple)):
+        # Materialize any other iterable (pandas.Series, numpy.ndarray,
+        # generator, ...) so the len()/subscript operations below work.
+        datetime_input = list(datetime_input)
 
     # Check for null or all NA and return None
     if all(pd.isna(dt) or dt == "" or dt is None for dt in datetime_input):
