@@ -5,6 +5,8 @@ This module is a wrapper for the streamstats API (`streamstats documentation`_).
 
 """
 
+import warnings
+
 import requests
 
 
@@ -182,4 +184,10 @@ class Watershed:
 
     @property
     def _workspaceID(self):
+        """Deprecated alias for ``workspace_id``."""
+        warnings.warn(
+            "Watershed._workspaceID is deprecated; use workspace_id instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.workspace_id
