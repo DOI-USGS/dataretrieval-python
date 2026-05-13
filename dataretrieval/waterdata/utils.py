@@ -368,6 +368,17 @@ def _error_body(resp: requests.Response):
     )
 
 
+def _raise_for_non_200(resp: requests.Response) -> None:
+    """Raise ``RuntimeError(_error_body(resp))`` if ``resp`` is not 200.
+
+    Used by both the initial-request gate and the pagination loops; without
+    the loop-side check, a 5xx body lacking ``numberReturned`` would be
+    silently treated as an empty page and pagination would stop quietly.
+    """
+    if resp.status_code != 200:
+        raise RuntimeError(_error_body(resp))
+
+
 def _construct_api_requests(
     service: str,
     properties: list[str] | None = None,
@@ -612,8 +623,7 @@ def _walk_pages(
     client = client or requests.Session()
     try:
         resp = client.send(req)
-        if resp.status_code != 200:
-            raise RuntimeError(_error_body(resp))
+        _raise_for_non_200(resp)
 
         # Store the initial response for metadata
         initial_response = resp
@@ -635,17 +645,11 @@ def _walk_pages(
                     headers=headers,
                     data=content if method == "POST" else None,
                 )
-                # Mirror the initial-request check; otherwise a 5xx body
-                # without "numberReturned" silently yields an empty frame
-                # and the loop quietly stops.
-                if resp.status_code != 200:
-                    raise RuntimeError(_error_body(resp))
+                _raise_for_non_200(resp)
                 dfs.append(_get_resp_data(resp, geopd=geopd))
                 curr_url = _next_req_url(resp)
             except Exception as e:  # noqa: BLE001
-                # Report the *actual* failure — not _error_body(resp) on a
-                # stale prior-page response (which would describe the wrong
-                # request and can itself raise on non-JSON bodies).
+                # `resp` may be stale (prior page) if client.request() raised.
                 logger.error("Request incomplete: %s", e)
                 logger.warning(
                     "Request failed for URL: %s. Data download interrupted.", curr_url
@@ -1079,8 +1083,7 @@ def get_stats_data(
 
     try:
         resp = client.send(req)
-        if resp.status_code != 200:
-            raise RuntimeError(_error_body(resp))
+        _raise_for_non_200(resp)
 
         # Store the initial response for metadata
         initial_response = resp
@@ -1106,8 +1109,7 @@ def get_stats_data(
                     params=args,
                     headers=headers,
                 )
-                if resp.status_code != 200:
-                    raise RuntimeError(_error_body(resp))
+                _raise_for_non_200(resp)
                 body = resp.json()
                 all_dfs.append(_handle_stats_nesting(body, geopd=GEOPANDAS))
                 next_token = body["next"]

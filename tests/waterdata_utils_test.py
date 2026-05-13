@@ -1,3 +1,4 @@
+import logging
 from unittest import mock
 
 import pandas as pd
@@ -123,12 +124,7 @@ def _walk_pages_with_failure(failure_resp_or_exc):
 
 
 def test_walk_pages_logs_actual_exception_when_request_raises(caplog):
-    """When client.request() itself raises (e.g. a connection error), the
-    logged failure must reflect that exception — not _error_body() on the
-    stale prior-page response, which described the wrong request and could
-    itself crash on non-JSON bodies."""
-    import logging
-
+    """Exception from client.request() must be logged with its actual message."""
     caplog.set_level(logging.ERROR, logger="dataretrieval.waterdata.utils")
 
     df, _ = _walk_pages_with_failure(requests.ConnectionError("boom"))
@@ -143,12 +139,7 @@ def test_walk_pages_logs_actual_exception_when_request_raises(caplog):
 
 
 def test_walk_pages_surfaces_5xx_mid_pagination(caplog):
-    """A non-200 response on a paginated page must be detected; previously
-    the loop happily called _get_resp_data() on the 5xx body, which —
-    lacking 'numberReturned' — silently produced an empty DataFrame and
-    the loop quietly stopped with no error logged."""
-    import logging
-
+    """A non-200 mid-pagination response must be logged, not silently swallowed."""
     caplog.set_level(logging.ERROR, logger="dataretrieval.waterdata.utils")
 
     page2_500 = mock.MagicMock()
