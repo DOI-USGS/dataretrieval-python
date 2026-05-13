@@ -231,6 +231,8 @@ def _format_api_dates(
     converted from that offset to UTC; naive inputs are interpreted in the
     local time zone for backwards compatibility.
     """
+    if datetime_input is None:
+        return None
     # Get timezone
     local_timezone = datetime.now().astimezone().tzinfo
 
@@ -466,9 +468,12 @@ def _construct_api_requests(
             dates = service == "daily" and i != "last_modified"
             params[i] = _format_api_dates(params[i], date=dates)
 
-    # String together bbox elements from a list to a comma-separated string,
-    # and string together properties if provided
-    if bbox:
+    # Join bbox/properties into the comma-separated form the OGC API expects.
+    # For ``bbox`` use ``len() > 0`` so ``numpy.ndarray`` inputs don't trip
+    # the ambiguous truth-value error; for ``properties`` the truthy check is
+    # right because ``_get_args`` always materializes it to a list (and
+    # ``_switch_properties_id`` further upstream returns ``[]`` for None).
+    if bbox is not None and len(bbox) > 0:
         params["bbox"] = ",".join(map(str, bbox))
     if properties:
         params["properties"] = ",".join(properties)
@@ -1182,9 +1187,20 @@ _MONITORING_LOCATION_ID_RE = re.compile(r"[^-\s]+-[^-\s]+")
 # Param names that ``_get_args`` must NOT push through ``_normalize_str_iterable``.
 # Scalar non-string knobs and ``list[float]`` params are detected by runtime
 # type; only string-iterable-shaped params with special handling need to be
-# named here: ``monitoring_location_id`` (validated separately) and the date-
-# range params (which may contain ``pd.NaT``/None or interval strings).
-_NO_NORMALIZE_PARAMS = _DATE_RANGE_PARAMS | {"monitoring_location_id"}
+# named here: ``monitoring_location_id`` (validated separately), date-range
+# params (which may contain ``pd.NaT``/None or interval strings), and bbox
+# inputs (``list[float]``, sometimes a ``numpy.ndarray``).
+_NO_NORMALIZE_PARAMS = _DATE_RANGE_PARAMS | {
+    "monitoring_location_id",
+    "bbox",
+    "boundingBox",
+}
+
+# Param names that must be a list of strings (never a single string).
+# A single string passed in would iterate as characters in
+# ``_construct_api_requests``'s ``",".join(...)`` step, producing a
+# malformed URL. ``_get_args`` wraps single-string input into a list.
+_LIST_ONLY_STR_PARAMS = frozenset({"properties"})
 
 
 def _normalize_str_iterable(
@@ -1321,7 +1337,11 @@ def _get_args(
     for k, v in local_vars.items():
         if k in to_exclude or v is None:
             continue
-        if (
+        if k in _LIST_ONLY_STR_PARAMS:
+            # Wrap a single string so the downstream `",".join(...)` doesn't
+            # iterate it as characters.
+            args[k] = [v] if isinstance(v, str) else _normalize_str_iterable(v, k)
+        elif (
             k in _NO_NORMALIZE_PARAMS
             or isinstance(v, str)
             or not isinstance(v, Iterable)
