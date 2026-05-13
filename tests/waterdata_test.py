@@ -1,5 +1,6 @@
 import datetime
 import sys
+from unittest import mock
 
 import pandas as pd
 import pytest
@@ -531,9 +532,12 @@ class TestCheckMonitoringLocationId:
         assert _check_monitoring_location_id(None) is None
 
     def test_integer_raises_type_error(self):
-        """An integer ID raises TypeError with a helpful message."""
-        with pytest.raises(TypeError, match="not int"):
+        """An integer ID raises TypeError with a helpful AGENCY-ID hint."""
+        with pytest.raises(TypeError, match="not int") as exc_info:
             _check_monitoring_location_id(5129115)
+        # The wrapper appends the AGENCY-ID format hint that the generic
+        # helper alone doesn't carry.
+        assert "USGS-01646500" in str(exc_info.value)
 
     def test_integer_in_list_raises_type_error(self):
         """An integer inside a list raises TypeError."""
@@ -665,10 +669,8 @@ class TestNormalizeStrIterable:
         URL (or POST body). Post-fix, ``_normalize_str_iterable`` materializes
         it to ``list`` at the function boundary.
         """
-        from unittest import mock as _mock
-
-        with _mock.patch("dataretrieval.waterdata.api.get_ogc_data") as fake:
-            fake.return_value = (pd.DataFrame(), _mock.MagicMock(spec=[]))
+        with mock.patch("dataretrieval.waterdata.api.get_ogc_data") as fake:
+            fake.return_value = (pd.DataFrame(), mock.MagicMock(spec=[]))
             get_daily(
                 monitoring_location_id="USGS-05427718",
                 parameter_code=pd.Series(["00060", "00010"]),

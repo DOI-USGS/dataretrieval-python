@@ -1181,11 +1181,16 @@ def _normalize_str_iterable(
     Used by every public waterdata getter for multi-value string parameters
     (``parameter_code``, ``statistic_id``, ``state_name``, ...) so any
     sequence-like input — ``list``, ``tuple``, ``pandas.Series``,
-    ``pandas.Index``, ``numpy.ndarray``, generators, sets — works at the
-    public boundary. The downstream ``_construct_api_requests`` branches
-    on ``isinstance(v, (list, tuple))``, so iterables are materialized to
-    a ``list`` here. ``Mapping`` types are rejected because iterating a
+    ``pandas.Index``, ``numpy.ndarray``, generators — works at the public
+    boundary. The downstream ``_construct_api_requests`` branches on
+    ``isinstance(v, (list, tuple))``, so iterables are materialized to a
+    ``list`` here. ``Mapping`` types are rejected because iterating a
     mapping yields keys, which would be a footgun.
+
+    Date-range params (``time``, ``last_modified``, ``begin``, ``end``,
+    ``datetime``) deliberately bypass this helper; their single-string-or-
+    two-element-range semantics are handled by ``_format_api_dates`` inside
+    ``_construct_api_requests``.
 
     Parameters
     ----------
@@ -1215,13 +1220,14 @@ def _normalize_str_iterable(
             f"{param_name} must be a string or iterable of strings, "
             f"not {type(value).__name__} (got {value!r})."
         )
-    values = list(value)
-    for v in values:
+    values: list[str] = []
+    for v in value:
         if not isinstance(v, str):
             raise TypeError(
                 f"{param_name} elements must be strings, "
                 f"not {type(v).__name__} (got {v!r})."
             )
+        values.append(v)
     return values
 
 
@@ -1253,7 +1259,15 @@ def _check_monitoring_location_id(
         If any identifier doesn't contain a hyphen separator
         (per the OGC API spec: AGENCY-ID format, e.g. ``USGS-01646500``).
     """
-    value = _normalize_str_iterable(monitoring_location_id, "monitoring_location_id")
+    try:
+        value = _normalize_str_iterable(
+            monitoring_location_id, "monitoring_location_id"
+        )
+    except TypeError as exc:
+        # Re-raise with the AGENCY-ID hint the generic helper doesn't carry.
+        raise TypeError(
+            f"{exc} Expected 'AGENCY-ID' format, e.g., 'USGS-01646500'."
+        ) from None
     if value is None:
         return None
     if isinstance(value, str):
