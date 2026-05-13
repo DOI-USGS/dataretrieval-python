@@ -241,6 +241,12 @@ def _format_api_dates(
     # Convert single string to list for uniform processing
     if isinstance(datetime_input, str):
         datetime_input = [datetime_input]
+    elif isinstance(datetime_input, Mapping):
+        # `list(mapping)` returns keys, which silently accepts the wrong shape.
+        raise TypeError(
+            f"date input must be a string or sequence of strings, "
+            f"not {type(datetime_input).__name__}."
+        )
     elif not isinstance(datetime_input, (list, tuple)):
         # Materialize any other iterable (pandas.Series, numpy.ndarray,
         # generator, ...) so the len()/subscript operations below work.

@@ -15,26 +15,26 @@ from dataretrieval.waterdata.utils import (
 
 def test_get_args_basic():
     local_vars = {
-        "monitoring_location_id": "123",
+        "monitoring_location_id": "USGS-123",
         "service": "daily",
         "output_id": "daily_id",
         "none_val": None,
         "other": "val",
     }
     result = _get_args(local_vars)
-    assert result == {"monitoring_location_id": "123", "other": "val"}
+    assert result == {"monitoring_location_id": "USGS-123", "other": "val"}
 
 
 def test_get_args_with_exclude():
     local_vars = {
-        "monitoring_location_id": "123",
+        "monitoring_location_id": "USGS-123",
         "service": "daily",
         "output_id": "daily_id",
         "to_exclude": "secret",
         "other": "val",
     }
     result = _get_args(local_vars, exclude={"to_exclude"})
-    assert result == {"monitoring_location_id": "123", "other": "val"}
+    assert result == {"monitoring_location_id": "USGS-123", "other": "val"}
 
 
 def test_get_args_empty():
@@ -222,6 +222,16 @@ def test_format_api_dates_open_ended_range_with_none():
     """A None / NaN endpoint becomes '..' in the output range."""
     assert _format_api_dates(["2024-01-01", None], date=True) == "2024-01-01/.."
     assert _format_api_dates([None, "2024-01-01"], date=True) == "../2024-01-01"
+
+
+def test_format_api_dates_rejects_mapping():
+    """`time={"2024-01-01": "x"}` would silently materialize as the keys list,
+    accepting input the user clearly didn't intend.
+    """
+    import pytest
+
+    with pytest.raises(TypeError, match="date input must be a string or sequence"):
+        _format_api_dates({"2024-01-01": "ignored"})
 
 
 def _make_response(status, body, reason=None, content_type="text/html"):
