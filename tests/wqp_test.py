@@ -1,9 +1,11 @@
 import datetime
+from unittest import mock
 
 import pytest
 from pandas import DataFrame
 
 from dataretrieval.wqp import (
+    WQP_Metadata,
     _check_kwargs,
     get_results,
     what_activities,
@@ -219,13 +221,7 @@ def test_check_kwargs():
 
 
 def test_wqp_metadata_site_info_property_resolves(requests_mock):
-    """`site_info` must be a real property bound to the class.
-
-    Regression: previously `site_info` was defined as a closure inside
-    `__init__`, so `md.site_info` fell through to `BaseMetadata.site_info`
-    and raised `NotImplementedError`. Also verify the parameters are
-    threaded through from `get_results`.
-    """
+    """`site_info` returns the `(DataFrame, WQP_Metadata)` tuple from `what_sites`."""
     results_url = (
         "https://www.waterqualitydata.us/data/Result/Search?"
         "siteid=WIDNR_WQX-10032762&mimeType=csv"
@@ -239,8 +235,6 @@ def test_wqp_metadata_site_info_property_resolves(requests_mock):
 
     _df, md = get_results(siteid="WIDNR_WQX-10032762")
 
-    # site_info must be a bound property — accessing it should return the
-    # what_sites() tuple, not raise NotImplementedError.
     site_df, site_md = md.site_info
     assert isinstance(site_df, DataFrame)
     assert site_md.url == sites_url
@@ -260,11 +254,7 @@ def test_wqp_metadata_site_info_returns_none_without_site_filter(requests_mock):
 def test_wqp_metadata_site_info_uses_wqx3_when_originating_query_was_wqx3(
     requests_mock,
 ):
-    """`site_info` must use the same legacy/WQX3.0 profile as the originating query.
-
-    Regression: previously `site_info` always called `what_sites()` with default
-    `legacy=True`, so a WQX3.0 results query produced a legacy Station lookup.
-    """
+    """`site_info` reuses the originating legacy/WQX3.0 profile."""
     results_url = (
         "https://www.waterqualitydata.us/wqx3/Result/search?"
         "siteid=UTAHDWQ_WQX-4993795&mimeType=csv&dataProfile=fullPhysChem"
@@ -279,6 +269,18 @@ def test_wqp_metadata_site_info_uses_wqx3_when_originating_query_was_wqx3(
     _df, md = get_results(legacy=False, siteid="UTAHDWQ_WQX-4993795")
     _site_df, site_md = md.site_info
     assert site_md.url == sites_wqx3_url
+
+
+@pytest.mark.parametrize("key", ["siteid", "sites", "site", "site_no"])
+def test_wqp_metadata_site_info_forwards_each_alias_as_siteid(key):
+    """Every alias key resolves to `what_sites(siteid=value, ...)`."""
+    with mock.patch("dataretrieval.wqp.what_sites") as fake_what_sites:
+        fake_what_sites.return_value = (DataFrame(), mock.Mock())
+        md = WQP_Metadata(mock.Mock(), legacy=False, ssl_check=True, **{key: "USGS-X"})
+        _ = md.site_info
+        fake_what_sites.assert_called_once_with(
+            siteid="USGS-X", legacy=False, ssl_check=True
+        )
 
 
 def test_get_results_wqx3_preserves_user_dataProfile(requests_mock):

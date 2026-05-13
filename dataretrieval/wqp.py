@@ -12,6 +12,7 @@ See https://waterqualitydata.us/webservices_documentation for API reference
 from __future__ import annotations
 
 import warnings
+from functools import cached_property
 from io import StringIO
 from typing import TYPE_CHECKING
 
@@ -21,6 +22,10 @@ from .utils import BaseMetadata, query
 
 if TYPE_CHECKING:
     from pandas import DataFrame
+
+# WQP-native site key first, then legacy NWIS-style aliases. WQP_Metadata.site_info
+# walks these in order and forwards whichever matched as what_sites' `siteid`.
+_SITE_KEYS = ("siteid", "sites", "site", "site_no")
 
 
 result_profiles_wqx3 = ["basicPhysChem", "fullPhysChem", "narrow"]
@@ -661,11 +666,9 @@ class WQP_Metadata(BaseMetadata):
         self._legacy = legacy
         self._ssl_check = ssl_check
 
-    @property
+    @cached_property
     def site_info(self):
-        # Walk WQP-native key first, then legacy NWIS-style aliases. Whichever
-        # matched, pass the value as `siteid` -- that's what_sites' native arg.
-        for key in ("siteid", "sites", "site", "site_no"):
+        for key in _SITE_KEYS:
             if key in self._parameters:
                 return what_sites(
                     siteid=self._parameters[key],
