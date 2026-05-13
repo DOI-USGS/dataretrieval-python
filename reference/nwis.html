@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g355037422 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g31ff4ba54 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=82a84d32"></script>
+      <script src="../_static/documentation_options.js?v=3f993d0d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -408,7 +408,8 @@ default is True</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_gwlevels">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_gwlevels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_gwlevels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_gwlevels" title="Link to this definition"></a></dt>
-<dd><p>Defunct: use <code class="docutils literal notranslate"><span class="pre">waterdata.get_field_measurements()</span></code>.</p>
+<dd><p>Defunct: use <code class="docutils literal notranslate"><span class="pre">waterdata.get_continuous()</span></code>, <code class="docutils literal notranslate"><span class="pre">waterdata.get_daily()</span></code>,
+or <code class="docutils literal notranslate"><span class="pre">waterdata.get_field_measurements()</span></code>.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -606,7 +607,8 @@ one row per time, default is True</p></li>
 <li><p>’site’ : site description</p></li>
 <li><p>’measurements’ : (defunct) use <cite>waterdata.get_field_measurements</cite></p></li>
 <li><p>’peaks’: discharge peaks</p></li>
-<li><p>’gwlevels’: (defunct) use <cite>waterdata.get_field_measurements</cite></p></li>
+<li><p>’gwlevels’: (defunct) use <cite>waterdata.get_continuous</cite>,
+<cite>waterdata.get_daily</cite>, or <cite>waterdata.get_field_measurements</cite></p></li>
 <li><p>’pmcodes’: (defunct) use <cite>get_reference_table</cite></p></li>
 <li><p>’water_use’: (defunct) no replacement available</p></li>
 <li><p>’ratings’: get rating table</p></li>
