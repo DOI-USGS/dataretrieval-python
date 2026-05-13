@@ -1169,7 +1169,7 @@ def _check_profiles(
         )
 
 
-_MONITORING_LOCATION_ID_RE = re.compile(r"^.+-.+$")
+_MONITORING_LOCATION_ID_RE = re.compile(r".+-.+")
 
 
 def _check_monitoring_location_id(
@@ -1214,8 +1214,9 @@ def _check_monitoring_location_id(
     ):
         raise TypeError(
             f"monitoring_location_id must be a string or iterable of strings, "
-            f"not {type(monitoring_location_id).__name__}. "
-            f"Expected format: 'AGENCY-ID', e.g., 'USGS-{monitoring_location_id}'."
+            f"not {type(monitoring_location_id).__name__} "
+            f"(got {monitoring_location_id!r}). "
+            f"Expected 'AGENCY-ID' format, e.g., 'USGS-01646500'."
         )
 
     ids = list(monitoring_location_id)
@@ -1223,8 +1224,8 @@ def _check_monitoring_location_id(
         if not isinstance(id_, str):
             raise TypeError(
                 f"monitoring_location_id elements must be strings, "
-                f"not {type(id_).__name__}. "
-                f"Expected format: 'AGENCY-ID', e.g., 'USGS-{id_}'."
+                f"not {type(id_).__name__} (got {id_!r}). "
+                f"Expected 'AGENCY-ID' format, e.g., 'USGS-01646500'."
             )
         _check_id_format(id_)
     return ids
@@ -1232,7 +1233,7 @@ def _check_monitoring_location_id(
 
 def _check_id_format(value: str) -> None:
     """Raise ``ValueError`` if ``value`` is not in ``AGENCY-ID`` format."""
-    if not _MONITORING_LOCATION_ID_RE.match(value):
+    if not _MONITORING_LOCATION_ID_RE.fullmatch(value):
         raise ValueError(
             f"Invalid monitoring_location_id: {value!r}. "
             f"Expected 'AGENCY-ID' format, e.g., 'USGS-01646500'."

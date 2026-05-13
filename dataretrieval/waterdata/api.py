@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Iterable
 from io import StringIO
 from typing import get_args
 from urllib.parse import quote
@@ -39,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_daily(
-    monitoring_location_id: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | list[str] | None = None,
     statistic_id: str | list[str] | None = None,
     properties: list[str] | None = None,
@@ -242,7 +243,7 @@ def get_daily(
 
 
 def get_continuous(
-    monitoring_location_id: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | list[str] | None = None,
     statistic_id: str | list[str] | None = None,
     properties: list[str] | None = None,
@@ -431,7 +432,7 @@ def get_continuous(
 
 
 def get_monitoring_locations(
-    monitoring_location_id: list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
     agency_code: list[str] | None = None,
     agency_name: list[str] | None = None,
     monitoring_location_number: list[str] | None = None,
@@ -730,7 +731,7 @@ def get_monitoring_locations(
 
 
 def get_time_series_metadata(
-    monitoring_location_id: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | list[str] | None = None,
     parameter_name: str | list[str] | None = None,
     properties: str | list[str] | None = None,
@@ -1186,7 +1187,7 @@ site_type_code : string or list of strings, optional
 
 
 def get_latest_continuous(
-    monitoring_location_id: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | list[str] | None = None,
     statistic_id: str | list[str] | None = None,
     properties: str | list[str] | None = None,
@@ -1382,7 +1383,7 @@ def get_latest_continuous(
 
 
 def get_latest_daily(
-    monitoring_location_id: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | list[str] | None = None,
     statistic_id: str | list[str] | None = None,
     properties: str | list[str] | None = None,
@@ -1579,7 +1580,7 @@ def get_latest_daily(
 
 
 def get_field_measurements(
-    monitoring_location_id: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | list[str] | None = None,
     observing_procedure_code: str | list[str] | None = None,
     properties: list[str] | None = None,
@@ -2423,7 +2424,7 @@ def get_stats_por(
     county_code: str | list[str] | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
-    monitoring_location_id: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
     page_size: int = 1000,
     parent_time_series_id: str | list[str] | None = None,
     site_type_code: str | list[str] | None = None,
@@ -2548,7 +2549,7 @@ def get_stats_date_range(
     county_code: str | list[str] | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
-    monitoring_location_id: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
     page_size: int = 1000,
     parent_time_series_id: str | list[str] | None = None,
     site_type_code: str | list[str] | None = None,
@@ -2673,7 +2674,7 @@ def get_stats_date_range(
 
 
 def get_channel(
-    monitoring_location_id: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
     field_visit_id: str | list[str] | None = None,
     measurement_number: str | list[str] | None = None,
     time: str | list[str] | None = None,
