@@ -52,7 +52,7 @@ class Test_query:
         url = "https://example.com/svc"
         requests_mock.get(url, text="ok")
         payload = {"sites": ["A", "B"], "stateCd": "MD"}
-        original = {k: v for k, v in payload.items()}
+        original = dict(payload)
 
         utils.query(url, payload)
 
@@ -69,7 +69,7 @@ class Test_query:
         """
         url = "https://example.com/svc"
         requests_mock.get(url, status_code=status, text="<html>denied</html>")
-        with pytest.raises(ValueError, match=str(status)):
+        with pytest.raises(ValueError, match=rf"HTTP {status}\b"):
             utils.query(url, {"k": "v"})
 
 
