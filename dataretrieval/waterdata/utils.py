@@ -1188,15 +1188,14 @@ def _check_profiles(
 _MONITORING_LOCATION_ID_RE = re.compile(r"[^-\s]+-[^-\s]+")
 
 
-# Param names that ``_get_args`` must NOT push through ``_normalize_str_iterable``.
-# Scalar non-string knobs are detected by runtime type; only iterable-shaped
-# params with special handling need to be named here:
-#   - ``monitoring_location_id`` is validated separately (AGENCY-ID format)
+# Iterable-shaped params that ``_get_args`` must NOT push through
+# ``_normalize_str_iterable`` (scalar non-string knobs are caught by runtime
+# type, so only iterables with special handling need to be named here):
 #   - date-range params may contain ``pd.NaT``/None or interval strings
 #   - ``bbox``/``boundingBox`` are ``list[float]``, sometimes ``numpy.ndarray``
 #   - ``get_peaks``'s int-valued filters (``water_year`` etc.) are ``list[int]``
+#   - ``get_combined_metadata``'s ``thresholds`` is ``list[float]``
 _NO_NORMALIZE_PARAMS = _DATE_RANGE_PARAMS | {
-    "monitoring_location_id",
     "bbox",
     "boundingBox",
     "water_year",
@@ -1295,11 +1294,8 @@ def _check_monitoring_location_id(
         ) from None
     if value is None:
         return None
-    if isinstance(value, str):
-        _check_id_format(value)
-    else:
-        for v in value:
-            _check_id_format(v)
+    for item in (value,) if isinstance(value, str) else value:
+        _check_id_format(item)
     return value
 
 
