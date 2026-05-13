@@ -144,6 +144,13 @@ _DATETIME_FORMATS = (
 # admits time-only forms like ``PT36H``.
 _DURATION_RE = re.compile(r"^[Pp]T?\d")
 
+# OGC API parameters that carry a date/datetime value (single string,
+# two-element range, or interval/duration string) rather than a multi-value
+# string list. Used by ``_construct_api_requests`` to keep them out of the
+# POST/CQL2 multi-value path and to route them through ``_format_api_dates``,
+# and by ``_NO_NORMALIZE_PARAMS`` to bypass string-iterable normalization.
+_DATE_RANGE_PARAMS = frozenset({"datetime", "last_modified", "begin", "end", "time"})
+
 
 def _parse_datetime(value: str) -> datetime | None:
     """Parse a single datetime string against the supported formats.
@@ -434,14 +441,11 @@ def _construct_api_requests(
     """
     service_url = f"{OGC_API_URL}/collections/{service}/items"
 
-    # Single parameters can only have one value
-    single_params = {"datetime", "last_modified", "begin", "end", "time"}
-
     # Identify which parameters should be included in the POST content body
     post_params = {
         k: v
         for k, v in kwargs.items()
-        if k not in single_params and isinstance(v, (list, tuple)) and len(v) > 1
+        if k not in _DATE_RANGE_PARAMS and isinstance(v, (list, tuple)) and len(v) > 1
     }
 
     # Everything else goes into the params dictionary for the URL
@@ -457,8 +461,7 @@ def _construct_api_requests(
     POST = bool(post_params)
 
     # Convert dates to ISO08601 format
-    time_periods = {"last_modified", "datetime", "time", "begin", "end"}
-    for i in time_periods:
+    for i in _DATE_RANGE_PARAMS:
         if i in params:
             dates = service == "daily" and i != "last_modified"
             params[i] = _format_api_dates(params[i], date=dates)
@@ -1176,63 +1179,35 @@ def _check_profiles(
 _MONITORING_LOCATION_ID_RE = re.compile(r"[^-\s]+-[^-\s]+")
 
 
-# Parameter names skipped by ``_get_args``'s string-iterable normalization.
-# Scalar non-string knobs (``limit``, ``ssl_check``, …) and ``list[float]``
-# params (``bbox``, ``boundingBox``) are detected by *runtime type* and pass
-# through automatically. The names below need explicit listing because their
-# values *are* string-iterables but have separate handling downstream:
-#
-#   * ``monitoring_location_id`` — validated by
-#     ``_check_monitoring_location_id`` at the public-function entry.
-#   * Date-range params (``time``, ``last_modified``, ``begin``, ``end``,
-#     ``datetime``) — support ``pd.NaT``/``None`` half-bounded endpoints and
-#     interval/duration strings; parsing happens in ``_format_api_dates``.
-_NO_NORMALIZE_PARAMS = frozenset(
-    {
-        "monitoring_location_id",
-        "time",
-        "last_modified",
-        "begin",
-        "end",
-        "datetime",
-    }
-)
+# Param names that ``_get_args`` must NOT push through ``_normalize_str_iterable``.
+# Scalar non-string knobs and ``list[float]`` params are detected by runtime
+# type; only string-iterable-shaped params with special handling need to be
+# named here: ``monitoring_location_id`` (validated separately) and the date-
+# range params (which may contain ``pd.NaT``/None or interval strings).
+_NO_NORMALIZE_PARAMS = _DATE_RANGE_PARAMS | {"monitoring_location_id"}
 
 
 def _normalize_str_iterable(
     value: str | Iterable[str] | None,
     param_name: str = "value",
 ) -> str | list[str] | None:
-    """Validate and normalize a parameter that accepts a string or iterable of strings.
+    """Validate that ``value`` is None, a string, or an iterable of strings.
 
-    Called from ``_get_args`` for every multi-value string parameter on
-    every waterdata getter that uses ``_get_args`` (every OGC/Samples
-    function in ``dataretrieval/waterdata/api.py``). Accepts ``list``,
-    ``tuple``, ``pandas.Series``, ``pandas.Index``, ``numpy.ndarray``,
-    generators — anything iterable whose elements are strings. The
-    downstream ``_construct_api_requests`` branches on ``isinstance(v,
-    (list, tuple))``, so iterables are materialized to a ``list`` here.
-    ``Mapping`` types are rejected because iterating a mapping yields
-    keys, which would be a footgun.
-
-    Date-range params (``time``, ``last_modified``, ``begin``, ``end``,
-    ``datetime``, ...) deliberately bypass this helper via
-    ``_NO_NORMALIZE_PARAMS``; their single-string-or-two-element-range
-    semantics (including ``pd.NaT``/``None`` half-bounded endpoints) are
-    handled by ``_format_api_dates`` inside ``_construct_api_requests``.
+    Non-string iterables (``list``, ``tuple``, ``pandas.Series``,
+    ``pandas.Index``, ``numpy.ndarray``, generators) are materialized to a
+    ``list`` so downstream code that branches on ``isinstance(v, (list,
+    tuple))`` keeps working. ``Mapping`` types are rejected because
+    iterating a mapping yields keys, not values.
 
     Parameters
     ----------
     value : None, str, or iterable of str
     param_name : str, optional
-        Name of the parameter, used in error messages. Defaults to
-        ``"value"``.
+        Used in error messages. Defaults to ``"value"``.
 
     Returns
     -------
     None, str, or list of str
-        ``None`` and ``str`` are returned unchanged; non-string iterables
-        are returned as a ``list``.
 
     Raises
     ------
@@ -1346,17 +1321,13 @@ def _get_args(
     for k, v in local_vars.items():
         if k in to_exclude or v is None:
             continue
-        if k in _NO_NORMALIZE_PARAMS or isinstance(v, str):
+        if (
+            k in _NO_NORMALIZE_PARAMS
+            or isinstance(v, str)
+            or not isinstance(v, Iterable)
+            or (isinstance(v, (list, tuple)) and v and not isinstance(v[0], str))
+        ):
             args[k] = v
-            continue
-        if not isinstance(v, Iterable):
-            # Scalar non-string knob (bool / int / float) — pass through.
-            args[k] = v
-            continue
-        if isinstance(v, (list, tuple)) and v and not isinstance(v[0], str):
-            # list[float] / list[int] (e.g. bbox) — pass through.
-            args[k] = v
-            continue
-        # String-iterable: validate elements and materialize to list.
-        args[k] = _normalize_str_iterable(v, k)
+        else:
+            args[k] = _normalize_str_iterable(v, k)
     return args
