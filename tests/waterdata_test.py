@@ -680,3 +680,17 @@ class TestNormalizeStrIterable:
         args_dict = fake.call_args[0][0]
         assert args_dict["parameter_code"] == ["00060", "00010"]
         assert isinstance(args_dict["parameter_code"], list)
+
+    def test_list_of_ints_rejected_at_boundary(self):
+        """List-of-non-strings must be caught client-side, not silently sent.
+
+        Regression: an earlier pass through ``_get_args`` had a
+        ``list-of-non-str`` fast-path that bypassed normalization, so
+        ``parameter_code=[60, 65]`` would reach the OGC API and surface as
+        a confusing JSONDecodeError on the malformed response.
+        """
+        with pytest.raises(TypeError, match="parameter_code elements must be strings"):
+            get_daily(
+                monitoring_location_id="USGS-05427718",
+                parameter_code=[60, 65],
+            )

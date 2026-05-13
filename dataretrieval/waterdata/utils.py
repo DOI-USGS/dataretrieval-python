@@ -1345,7 +1345,6 @@ def _get_args(
             k in _NO_NORMALIZE_PARAMS
             or isinstance(v, str)
             or not isinstance(v, Iterable)
-            or (isinstance(v, (list, tuple)) and v and not isinstance(v[0], str))
         ):
             args[k] = v
         else:
