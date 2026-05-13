@@ -1200,6 +1200,7 @@ _NO_NORMALIZE_PARAMS = _DATE_RANGE_PARAMS | {
     "month",
     "day",
     "peak_since",
+    "thresholds",
 }
 
 # Param names that must be a list of strings (never a single string).

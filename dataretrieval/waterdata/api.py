@@ -43,7 +43,7 @@ def get_daily(
     monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
     statistic_id: str | Iterable[str] | None = None,
-    properties: list[str] | None = None,
+    properties: str | list[str] | None = None,
     time_series_id: str | Iterable[str] | None = None,
     daily_id: str | Iterable[str] | None = None,
     approval_status: str | Iterable[str] | None = None,
@@ -246,7 +246,7 @@ def get_continuous(
     monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
     statistic_id: str | Iterable[str] | None = None,
-    properties: list[str] | None = None,
+    properties: str | list[str] | None = None,
     time_series_id: str | Iterable[str] | None = None,
     continuous_id: str | Iterable[str] | None = None,
     approval_status: str | Iterable[str] | None = None,
@@ -472,7 +472,7 @@ def get_monitoring_locations(
     well_constructed_depth: str | Iterable[str] | None = None,
     hole_constructed_depth: str | Iterable[str] | None = None,
     depth_source_code: str | Iterable[str] | None = None,
-    properties: list[str] | None = None,
+    properties: str | list[str] | None = None,
     skip_geometry: bool | None = None,
     time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
@@ -734,7 +734,7 @@ def get_time_series_metadata(
     monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
     parameter_name: str | Iterable[str] | None = None,
-    properties: list[str] | None = None,
+    properties: str | list[str] | None = None,
     statistic_id: str | Iterable[str] | None = None,
     hydrologic_unit_code: str | Iterable[str] | None = None,
     state_name: str | Iterable[str] | None = None,
@@ -1181,6 +1181,7 @@ site_type_code : string or list of strings, optional
     service = "combined-metadata"
     output_id = "combined_meta_id"
 
+    monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
     args = _get_args(locals())
 
     return get_ogc_data(args, output_id, service)
@@ -1190,7 +1191,7 @@ def get_latest_continuous(
     monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
     statistic_id: str | Iterable[str] | None = None,
-    properties: list[str] | None = None,
+    properties: str | list[str] | None = None,
     time_series_id: str | Iterable[str] | None = None,
     latest_continuous_id: str | Iterable[str] | None = None,
     approval_status: str | Iterable[str] | None = None,
@@ -1386,7 +1387,7 @@ def get_latest_daily(
     monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
     statistic_id: str | Iterable[str] | None = None,
-    properties: list[str] | None = None,
+    properties: str | list[str] | None = None,
     time_series_id: str | Iterable[str] | None = None,
     latest_daily_id: str | Iterable[str] | None = None,
     approval_status: str | Iterable[str] | None = None,
@@ -1583,7 +1584,7 @@ def get_field_measurements(
     monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
     observing_procedure_code: str | Iterable[str] | None = None,
-    properties: list[str] | None = None,
+    properties: str | list[str] | None = None,
     field_visit_id: str | Iterable[str] | None = None,
     approval_status: str | Iterable[str] | None = None,
     unit_of_measure: str | Iterable[str] | None = None,
@@ -1882,6 +1883,7 @@ def get_field_measurements_metadata(
     service = "field-measurements-metadata"
     output_id = "field_series_id"
 
+    monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
     args = _get_args(locals())
 
     return get_ogc_data(args, output_id, service)
@@ -2002,6 +2004,7 @@ def get_peaks(
     service = "peaks"
     output_id = "peak_id"
 
+    monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
     args = _get_args(locals())
 
     return get_ogc_data(args, output_id, service)
@@ -2698,7 +2701,7 @@ def get_channel(
     measurement_type: str | Iterable[str] | None = None,
     last_modified: str | Iterable[str] | None = None,
     channel_measurement_type: str | Iterable[str] | None = None,
-    properties: list[str] | None = None,
+    properties: str | list[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
@@ -2840,11 +2843,6 @@ def get_channel(
     service = "channel-measurements"
     output_id = "channel_measurements_id"
 
-    # Build argument dictionary, omitting None values
-    args = {
-        k: v
-        for k, v in locals().items()
-        if k not in {"service", "output_id"} and v is not None
-    }
+    args = _get_args(locals())
 
     return get_ogc_data(args, output_id, service)
