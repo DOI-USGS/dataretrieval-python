@@ -1054,7 +1054,9 @@ def _read_json(json):
                 method = parameter["method"][0]["methodDescription"]
 
                 if method:
-                    method = method.strip("[]()").lower()
+                    # Strip NWIS sublocation qualifier before using the description as a
+                    # column suffix (e.g. "HEADWATER, [Headwater]" → "headwater").
+                    method = method.split(", [")[0].strip("[]() ").lower()
                     col_name = f"{col_name}_{method}"
 
                 if option:
