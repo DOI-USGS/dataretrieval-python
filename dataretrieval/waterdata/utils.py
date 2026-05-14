@@ -153,6 +153,10 @@ _DATE_RANGE_PARAMS = frozenset(
     {"datetime", "last_modified", "begin", "begin_utc", "end", "end_utc", "time"}
 )
 
+# Services that don't support comma-separated values for multi-value GET
+# parameters and require POST with CQL2 JSON instead.
+_CQL2_REQUIRED_SERVICES = frozenset({"monitoring-locations"})
+
 
 def _parse_datetime(value: str) -> datetime | None:
     """Parse a single datetime string against the supported formats.
@@ -450,10 +454,6 @@ def _construct_api_requests(
     """
     service_url = f"{OGC_API_URL}/collections/{service}/items"
 
-    # The monitoring-locations endpoint does not support comma-separated values
-    # for multi-value GET parameters; CQL2 POST is required for that service.
-    _cql2_required_services = {"monitoring-locations"}
-
     # Format date/time parameters to ISO8601 first — both routing paths need it.
     for key in _DATE_RANGE_PARAMS:
         if key in kwargs:
@@ -462,8 +462,8 @@ def _construct_api_requests(
                 date=(service == "daily" and key != "last_modified"),
             )
 
-    if service in _cql2_required_services:
-        # Legacy path: POST with CQL2 for multi-value params
+    if service in _CQL2_REQUIRED_SERVICES:
+        # POST with CQL2 JSON: multi-value params go in the request body.
         post_params = {
             k: v
             for k, v in kwargs.items()
@@ -473,7 +473,7 @@ def _construct_api_requests(
         }
         params = {k: v for k, v in kwargs.items() if k not in post_params}
     else:
-        # Join list/tuple values with commas for multi-value GET parameters.
+        # GET with comma-separated values: join list/tuple values into one string.
         post_params = {}
         params = {
             k: ",".join(str(x) for x in v) if isinstance(v, (list, tuple)) else v

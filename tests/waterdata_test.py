@@ -134,6 +134,47 @@ def test_construct_api_requests_monitoring_locations_post():
     assert req.body is not None
 
 
+def test_construct_api_requests_single_value_stays_get():
+    """A length-1 list (or scalar) reaches the URL as a plain value, not a
+    comma-separated form, so existing single-site callers see no change."""
+    req = _construct_api_requests(
+        "daily",
+        monitoring_location_id="USGS-05427718",
+        parameter_code="00060",
+    )
+    assert req.method == "GET"
+    assert "monitoring_location_id=USGS-05427718" in req.url
+    assert "%2C" not in req.url  # no comma-encoded multi-value
+
+
+def test_construct_api_requests_numeric_list_joins_with_str():
+    """Numeric-list params (e.g. ``water_year=[2020, 2021]`` on get_peaks)
+    must reach the URL as a comma-joined string, not crash on ``",".join``
+    of ints. The generator-of-``str(x)`` exists exactly for this case."""
+    req = _construct_api_requests(
+        "peaks",
+        monitoring_location_id="USGS-05427718",
+        water_year=[2020, 2021],
+    )
+    assert req.method == "GET"
+    assert "water_year=2020%2C2021" in req.url
+
+
+def test_construct_api_requests_two_element_date_list_becomes_interval():
+    """A two-element date list is interpreted as start/end of an OGC datetime
+    interval (joined with '/'), NOT as two discrete dates. The OGC `datetime`
+    parameter does not support "these N specific dates" — that would require
+    a CQL filter. Verifying so this contract is locked in."""
+    req = _construct_api_requests(
+        "daily",
+        monitoring_location_id="USGS-05427718",
+        time=["2024-01-01", "2024-01-31"],
+    )
+    assert req.method == "GET"
+    # `/` URL-encodes to %2F. Confirms _format_api_dates ran before the join.
+    assert "time=2024-01-01%2F2024-01-31" in req.url
+
+
 def test_samples_results():
     """Test results call for proper columns"""
     df, _ = get_samples(
