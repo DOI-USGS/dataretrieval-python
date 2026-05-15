@@ -236,6 +236,26 @@ def test_get_stats_data_surfaces_5xx_mid_pagination(caplog, monkeypatch):
     assert any("503" in m or "ServiceUnavailable" in m for m in messages), messages
 
 
+def test_get_stats_data_warning_includes_next_token(caplog, monkeypatch):
+    """The pagination-failure warning includes the next_token so operators
+    can identify which page in the sequence failed. (Addresses Copilot's
+    PR #273 review note: the base URL alone drops cursor context.)"""
+    caplog.set_level(logging.WARNING, logger=_LOGGER_NAME)
+
+    page2_503 = mock.MagicMock()
+    page2_503.status_code = 503
+    page2_503.json.return_value = {
+        "code": "ServiceUnavailable",
+        "description": "upstream timeout",
+    }
+
+    _run_get_stats_data_with_failure(page2_503, monkeypatch)
+
+    warnings_ = [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING]
+    # The initial response from _stats_initial_ok carries next=tok2.
+    assert any("tok2" in m for m in warnings_), warnings_
+
+
 def test_handle_stats_nesting_tolerates_missing_drop_columns():
     """If the upstream stats response shape ever changes such that one of
     the columns we try to drop ("type", "properties.data") is absent, the

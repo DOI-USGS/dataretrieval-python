@@ -1149,7 +1149,10 @@ def get_stats_data(
             except Exception as e:  # noqa: BLE001
                 logger.exception("Request incomplete: %s", e)
                 logger.warning(
-                    "Request failed for URL: %s. Data download interrupted.", url
+                    "Request failed for URL: %s (next_token=%s). "
+                    "Data download interrupted.",
+                    url,
+                    next_token,
                 )
                 next_token = None
 
