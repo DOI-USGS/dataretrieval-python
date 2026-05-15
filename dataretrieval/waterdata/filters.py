@@ -268,20 +268,25 @@ def _combine_chunk_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
 def _combine_chunk_responses(
     responses: list[requests.Response],
 ) -> requests.Response:
-    """Return one response: last chunk's URL/headers + summed ``elapsed``.
+    """Return one response: first chunk's URL (for query identity) +
+    last chunk's headers (for current rate-limit state) + summed
+    ``elapsed`` (for total wall-clock).
 
-    Returning the latest sub-response (rather than the first) preserves
-    current rate-limit headers (e.g. ``x-ratelimit-remaining``), which the
-    outer ``multi_value_chunked`` decorator inspects to honor its
-    ``QuotaExhausted`` safety floor between sub-requests.
+    Splitting fields this way keeps ``BaseMetadata.url`` reflecting the
+    user's original query (useful for reproduction and debugging) while
+    still surfacing current ``x-ratelimit-remaining`` to the outer
+    ``multi_value_chunked`` decorator's ``QuotaExhausted`` guard.
 
-    Mutates the last response in place (only ``elapsed``); downstream only
-    reads ``elapsed`` (in ``BaseMetadata.query_time``), URL, and headers.
+    Mutates the first response in place: ``.headers`` is replaced with
+    the last response's headers and ``.elapsed`` is accumulated across
+    all chunks. Downstream reads ``.url``, ``.headers``, and
+    ``.elapsed`` (via ``BaseMetadata``).
     """
-    tail = responses[-1]
+    head = responses[0]
     if len(responses) > 1:
-        tail.elapsed = sum((r.elapsed for r in responses[:-1]), start=tail.elapsed)
-    return tail
+        head.headers = responses[-1].headers
+        head.elapsed = sum((r.elapsed for r in responses[1:]), start=head.elapsed)
+    return head
 
 
 _FetchOnce = TypeVar(
@@ -300,11 +305,11 @@ def chunked(*, build_request: Callable[..., Any]) -> Callable[[_FetchOnce], _Fet
     - Chunkable cql-text filter: run the lexicographic-pitfall guard, split
       into URL-length-safe sub-expressions, call the wrapped function once
       per chunk, concatenate frames (drop empties, dedup by feature ``id``),
-      and return an aggregated response (last chunk's URL/headers, summed
-      ``elapsed``). The last chunk's headers are preferred so callers see
-      current rate-limit state (``x-ratelimit-remaining``) on which the
-      outer ``multi_value_chunked`` decorator's ``QuotaExhausted`` guard
-      depends.
+      and return an aggregated response — first chunk's URL (so
+      ``BaseMetadata.url`` still reflects the user's original query), last
+      chunk's headers (so callers see current ``x-ratelimit-remaining``,
+      which the outer ``multi_value_chunked`` decorator's ``QuotaExhausted``
+      guard depends on), and summed ``elapsed``.
 
     Either way the return shape matches the undecorated function's, so the
     caller wraps the response in ``BaseMetadata`` the same way in both paths.

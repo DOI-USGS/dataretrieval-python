@@ -124,11 +124,13 @@ class QuotaExhausted(RuntimeError):
         Concatenated, deduplicated result of every sub-request that
         completed before the floor was crossed.
     partial_response : requests.Response
-        Aggregated response (URL/headers of the last completed sub-
-        request, summed ``elapsed``). The last sub-request's headers
-        are preferred so callers inspecting ``x-ratelimit-remaining``
-        see current quota state. Wrap in ``BaseMetadata`` to surface
-        to the caller alongside the partial frame.
+        Aggregated response: first sub-request's URL (so
+        ``BaseMetadata.url`` still reflects the user's original query
+        for reproducibility), last completed sub-request's headers
+        (so callers inspecting ``x-ratelimit-remaining`` see current
+        quota state), and summed ``elapsed`` across completed
+        sub-requests. Wrap in ``BaseMetadata`` to surface to the
+        caller alongside the partial frame.
     completed_chunks : int
         Number of sub-requests successfully completed.
     total_chunks : int

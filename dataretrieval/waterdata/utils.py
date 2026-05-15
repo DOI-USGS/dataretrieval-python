@@ -643,10 +643,11 @@ def _walk_pages(
     pd.DataFrame
         A DataFrame containing the aggregated results from all pages.
     requests.Response
-        The latest response from the pagination walk. Returning the most
-        recent response (not the first) lets downstream callers observe
-        current rate-limit headers (e.g. ``x-ratelimit-remaining``) on
-        which the multi-value chunker's ``QuotaExhausted`` guard relies.
+        Aggregated response: the initial request's URL (for query
+        identity), the final page's headers (so downstream callers see
+        current rate-limit state, which the multi-value chunker's
+        ``QuotaExhausted`` guard relies on), and cumulative ``elapsed``
+        summed across every page.
 
     Raises
     ------
@@ -668,6 +669,11 @@ def _walk_pages(
     try:
         resp = client.send(req)
         _raise_for_non_200(resp)
+        # Keep the original-request response as the "canonical" one for
+        # ``md.url`` reproducibility; ``.headers`` and ``.elapsed`` get
+        # overwritten with latest/cumulative values below.
+        initial_response = resp
+        total_elapsed = resp.elapsed
 
         # Grab some aspects of the original request: headers and the
         # request type (GET or POST)
@@ -688,6 +694,7 @@ def _walk_pages(
                 )
                 _raise_for_non_200(resp)
                 dfs.append(_get_resp_data(resp, geopd=geopd))
+                total_elapsed += resp.elapsed
                 curr_url = _next_req_url(resp)
             except Exception as e:  # noqa: BLE001
                 logger.error("Request incomplete: %s", e)
@@ -696,8 +703,12 @@ def _walk_pages(
                 )
                 curr_url = None
 
+        if resp is not initial_response:
+            initial_response.headers = resp.headers
+            initial_response.elapsed = total_elapsed
+
         # Concatenate all pages at once for efficiency
-        return pd.concat(dfs, ignore_index=True), resp
+        return pd.concat(dfs, ignore_index=True), initial_response
     finally:
         if close_client:
             client.close()
@@ -1127,6 +1138,11 @@ def get_stats_data(
     try:
         resp = client.send(req)
         _raise_for_non_200(resp)
+        # Keep the original-request response as the "canonical" one for
+        # ``md.url`` reproducibility; ``.headers`` and ``.elapsed`` get
+        # overwritten with latest/cumulative values below.
+        initial_response = resp
+        total_elapsed = resp.elapsed
 
         # Grab some aspects of the original request: headers and the
         # request type (GET or POST)
@@ -1152,6 +1168,7 @@ def get_stats_data(
                 _raise_for_non_200(resp)
                 body = resp.json()
                 all_dfs.append(_handle_stats_nesting(body, geopd=GEOPANDAS))
+                total_elapsed += resp.elapsed
                 next_token = body["next"]
             except Exception as e:  # noqa: BLE001
                 logger.error("Request incomplete: %s", e)
@@ -1163,6 +1180,10 @@ def get_stats_data(
                 )
                 next_token = None
 
+        if resp is not initial_response:
+            initial_response.headers = resp.headers
+            initial_response.elapsed = total_elapsed
+
         dfs = pd.concat(all_dfs, ignore_index=True) if len(all_dfs) > 1 else all_dfs[0]
 
         # . If expand percentiles is True, make each percentile
@@ -1170,7 +1191,7 @@ def get_stats_data(
         if expand_percentiles:
             dfs = _expand_percentiles(dfs)
 
-        return dfs, BaseMetadata(resp)
+        return dfs, BaseMetadata(initial_response)
     finally:
         if close_client:
             client.close()
