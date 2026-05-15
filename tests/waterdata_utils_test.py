@@ -1,8 +1,10 @@
+import logging
 from unittest import mock
 
 import pandas as pd
 import requests
 
+import dataretrieval.waterdata.utils as _utils_module
 from dataretrieval.waterdata.utils import (
     _arrange_cols,
     _error_body,
@@ -11,6 +13,8 @@ from dataretrieval.waterdata.utils import (
     _handle_stats_nesting,
     _walk_pages,
 )
+
+_LOGGER_NAME = _utils_module.__name__
 
 
 def test_get_args_basic():
@@ -85,6 +89,171 @@ def test_walk_pages_multiple_mocked():
     assert mock_client.send.called
     assert mock_client.request.called
     assert mock_client.request.call_args[0][1] == "https://example.com/page2"
+
+
+def _resp_ok(features):
+    """Build a 200-OK mock response carrying the given features list."""
+    links = [{"rel": "next", "href": "https://example.com/page2"}] if features else []
+    resp = mock.MagicMock()
+    resp.json.return_value = {
+        "numberReturned": len(features),
+        "features": features,
+        "links": links,
+    }
+    resp.headers = {}
+    resp.status_code = 200
+    resp.url = "https://example.com/page1"
+    return resp
+
+
+def _error_log_messages(caplog):
+    """Pull ERROR-and-above message strings out of caplog. Shared by the
+    pagination-failure tests below."""
+    return [r.getMessage() for r in caplog.records if r.levelno >= logging.ERROR]
+
+
+def _walk_pages_with_failure(failure_resp_or_exc):
+    """Run _walk_pages where page 1 succeeds and page 2 fails as given."""
+    resp1 = _resp_ok([{"id": "1", "properties": {"val": "a"}}])
+
+    mock_client = mock.MagicMock(spec=requests.Session)
+    mock_client.send.return_value = resp1
+    if isinstance(failure_resp_or_exc, BaseException):
+        mock_client.request.side_effect = failure_resp_or_exc
+    else:
+        mock_client.request.return_value = failure_resp_or_exc
+
+    mock_req = mock.MagicMock(spec=requests.PreparedRequest)
+    mock_req.method = "GET"
+    mock_req.headers = {}
+    mock_req.url = "https://example.com/page1"
+
+    return _walk_pages(geopd=False, req=mock_req, client=mock_client)
+
+
+def test_walk_pages_logs_actual_exception_when_request_raises(caplog):
+    """Exception from client.request() must be logged with its actual message."""
+    caplog.set_level(logging.ERROR, logger=_LOGGER_NAME)
+
+    df, _ = _walk_pages_with_failure(requests.ConnectionError("boom"))
+
+    # First page's data is preserved (best-effort behavior).
+    assert list(df["val"]) == ["a"]
+    # Logged error mentions the actual ConnectionError, not a stale page body.
+    messages = _error_log_messages(caplog)
+    assert any("boom" in m for m in messages), messages
+
+
+def test_walk_pages_surfaces_5xx_mid_pagination(caplog):
+    """A non-200 mid-pagination response must be logged, not silently swallowed."""
+    caplog.set_level(logging.ERROR, logger=_LOGGER_NAME)
+
+    page2_503 = mock.MagicMock()
+    page2_503.status_code = 503
+    page2_503.json.return_value = {
+        "code": "ServiceUnavailable",
+        "description": "upstream timeout",
+    }
+    page2_503.url = "https://example.com/page2"
+
+    df, _ = _walk_pages_with_failure(page2_503)
+
+    assert list(df["val"]) == ["a"]
+    messages = _error_log_messages(caplog)
+    assert any("503" in m or "ServiceUnavailable" in m for m in messages), messages
+
+
+def _stats_initial_ok():
+    """A 200-OK initial stats response: empty data list, signals one more page."""
+    resp = mock.MagicMock()
+    resp.status_code = 200
+    resp.json.return_value = {
+        "next": "tok2",
+        "features": [],
+    }
+    resp.headers = {}
+    resp.url = "https://example.com/stats?service=foo"
+    return resp
+
+
+def _run_get_stats_data_with_failure(failure_resp_or_exc, monkeypatch):
+    """Exercise get_stats_data where the initial response succeeds and the
+    paginated follow-up fails as given. Mirrors _walk_pages_with_failure.
+    `monkeypatch` stubs ``_handle_stats_nesting`` so the synthetic minimal
+    response body doesn't need to parse — these tests only assert on the
+    pagination loop's error surfacing."""
+    from dataretrieval.waterdata.utils import get_stats_data
+
+    monkeypatch.setattr(
+        _utils_module,
+        "_handle_stats_nesting",
+        mock.MagicMock(return_value=pd.DataFrame()),
+    )
+
+    mock_client = mock.MagicMock(spec=requests.Session)
+    mock_client.send.return_value = _stats_initial_ok()
+    if isinstance(failure_resp_or_exc, BaseException):
+        mock_client.request.side_effect = failure_resp_or_exc
+    else:
+        mock_client.request.return_value = failure_resp_or_exc
+
+    return get_stats_data(
+        args={"monitoring_location_id": "USGS-1"},
+        service="observationNormals",
+        expand_percentiles=False,
+        client=mock_client,
+    )
+
+
+def test_get_stats_data_logs_actual_exception_when_request_raises(caplog, monkeypatch):
+    """get_stats_data variant of the connection-error scenario."""
+    caplog.set_level(logging.ERROR, logger=_LOGGER_NAME)
+
+    _run_get_stats_data_with_failure(
+        requests.ConnectionError("stats-boom"),
+        monkeypatch,
+    )
+
+    messages = _error_log_messages(caplog)
+    assert any("stats-boom" in m for m in messages), messages
+
+
+def test_get_stats_data_surfaces_5xx_mid_pagination(caplog, monkeypatch):
+    """get_stats_data variant of the mid-pagination 5xx scenario."""
+    caplog.set_level(logging.ERROR, logger=_LOGGER_NAME)
+
+    page2_503 = mock.MagicMock()
+    page2_503.status_code = 503
+    page2_503.json.return_value = {
+        "code": "ServiceUnavailable",
+        "description": "upstream timeout",
+    }
+    page2_503.url = "https://example.com/stats?service=foo&next_token=tok2"
+
+    _run_get_stats_data_with_failure(page2_503, monkeypatch)
+
+    messages = _error_log_messages(caplog)
+    assert any("503" in m or "ServiceUnavailable" in m for m in messages), messages
+
+
+def test_get_stats_data_warning_includes_next_token(caplog, monkeypatch):
+    """The pagination-failure warning includes the next_token so operators
+    can identify which page in the sequence failed. (Addresses Copilot's
+    PR #273 review note: the base URL alone drops cursor context.)"""
+    caplog.set_level(logging.WARNING, logger=_LOGGER_NAME)
+
+    page2_503 = mock.MagicMock()
+    page2_503.status_code = 503
+    page2_503.json.return_value = {
+        "code": "ServiceUnavailable",
+        "description": "upstream timeout",
+    }
+
+    _run_get_stats_data_with_failure(page2_503, monkeypatch)
+
+    warnings_ = [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING]
+    # The initial response from _stats_initial_ok carries next=tok2.
+    assert any("tok2" in m for m in warnings_), warnings_
 
 
 def test_handle_stats_nesting_tolerates_missing_drop_columns():

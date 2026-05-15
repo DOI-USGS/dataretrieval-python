@@ -1,4 +1,5 @@
 import datetime
+import json
 import sys
 from unittest import mock
 
@@ -43,6 +44,26 @@ from dataretrieval.waterdata.utils import (
     _check_profiles,
     _construct_api_requests,
     _normalize_str_iterable,
+)
+
+# Most tests in this module call the live USGS Water Data API. After
+# PR #273, transient upstream errors (5xx / 429 / connection drops)
+# propagate instead of silently truncating, which makes CI susceptible
+# to flaking on a brief upstream blip. Auto-retry such failures, but
+# only for the narrow set of transient-error trace patterns below —
+# library bugs raising other exception types still fail on the first
+# try. The marker is attached to every test in the module, but the
+# patterns match only traces produced by real network round-trips
+# (``_raise_for_non_200`` output, ``requests`` exceptions), so tests
+# using ``requests_mock`` or ``mock.patch`` are no-ops for the rerun.
+pytestmark = pytest.mark.flaky(
+    reruns=2,
+    reruns_delay=5,
+    only_rerun=[
+        r"RuntimeError:\s*(?:429|5\d\d):",  # _raise_for_non_200 output
+        r"ConnectionError",
+        r"ReadTimeout|ConnectTimeout|Timeout",
+    ],
 )
 
 
@@ -142,7 +163,18 @@ def test_construct_api_requests_monitoring_locations_post():
         hydrologic_unit_code=["010802050102", "010802050103"],
     )
     assert req.method == "POST"
-    assert req.body is not None
+    assert req.headers["Content-Type"] == "application/query-cql-json"
+
+    body = json.loads(req.body)
+    # Top-level shape: AND over a list of per-param predicates.
+    assert body["op"] == "and"
+    assert isinstance(body["args"], list) and len(body["args"]) == 1
+
+    # The single predicate is an IN over hydrologic_unit_code with both values.
+    predicate = body["args"][0]
+    assert predicate["op"] == "in"
+    assert predicate["args"][0] == {"property": "hydrologic_unit_code"}
+    assert predicate["args"][1] == ["010802050102", "010802050103"]
 
 
 def test_construct_api_requests_single_value_stays_get():
