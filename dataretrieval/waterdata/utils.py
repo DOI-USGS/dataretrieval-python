@@ -153,6 +153,10 @@ _DATE_RANGE_PARAMS = frozenset(
     {"datetime", "last_modified", "begin", "begin_utc", "end", "end_utc", "time"}
 )
 
+# Services that don't support comma-separated values for multi-value GET
+# parameters and require POST with CQL2 JSON instead.
+_CQL2_REQUIRED_SERVICES = frozenset({"monitoring-locations"})
+
 
 def _parse_datetime(value: str) -> datetime | None:
     """Parse a single datetime string against the supported formats.
@@ -417,9 +421,11 @@ def _construct_api_requests(
     """
     Constructs an HTTP request object for the specified water data API service.
 
-    Depending on the input parameters (whether there's lists of multiple
-    argument values), the function determines whether to use a GET or POST
-    request, formats parameters appropriately, and sets required headers.
+    For most services, list parameters are comma-joined and sent as a single
+    GET request (e.g. ``parameter_code=["00060","00010"]`` becomes
+    ``parameter_code=00060,00010`` in the URL). For services that do not
+    support comma-separated values (currently only ``monitoring-locations``),
+    a POST request with CQL2 JSON is used instead.
 
     Parameters
     ----------
@@ -445,36 +451,37 @@ def _construct_api_requests(
     Notes
     -----
     - Date/time parameters are automatically formatted to ISO8601.
-    - If multiple values are provided for non-single parameters, a POST request
-    is constructed.
-    - The function sets appropriate headers for GET and POST requests.
     """
     service_url = f"{OGC_API_URL}/collections/{service}/items"
 
-    # Identify which parameters should be included in the POST content body
-    post_params = {
-        k: v
-        for k, v in kwargs.items()
-        if k not in _DATE_RANGE_PARAMS and isinstance(v, (list, tuple)) and len(v) > 1
-    }
+    # Format date/time parameters to ISO8601 first — both routing paths need it.
+    for key in _DATE_RANGE_PARAMS:
+        if key in kwargs:
+            kwargs[key] = _format_api_dates(
+                kwargs[key],
+                date=(service == "daily" and key != "last_modified"),
+            )
 
-    # Everything else goes into the params dictionary for the URL
-    params = {k: v for k, v in kwargs.items() if k not in post_params}
-    # Set skipGeometry parameter (API expects camelCase)
+    if service in _CQL2_REQUIRED_SERVICES:
+        # POST with CQL2 JSON: multi-value params go in the request body.
+        # The date-range loop above has already collapsed any _DATE_RANGE_PARAMS
+        # value to a string, so the list/tuple check below cannot match them.
+        post_params = {
+            k: v
+            for k, v in kwargs.items()
+            if isinstance(v, (list, tuple)) and len(v) > 1
+        }
+        params = {k: v for k, v in kwargs.items() if k not in post_params}
+    else:
+        # GET with comma-separated values: join list/tuple values into one string.
+        post_params = {}
+        params = {
+            k: ",".join(str(x) for x in v) if isinstance(v, (list, tuple)) else v
+            for k, v in kwargs.items()
+        }
+
     params["skipGeometry"] = skip_geometry
-
-    # If limit is none or greater than 50000, then set limit to max results. Otherwise,
-    # use the limit
     params["limit"] = 50000 if limit is None or limit > 50000 else limit
-
-    # Indicate if function needs to perform POST conversion
-    POST = bool(post_params)
-
-    # Convert dates to ISO08601 format
-    for i in _DATE_RANGE_PARAMS:
-        if i in params:
-            dates = service == "daily" and i != "last_modified"
-            params[i] = _format_api_dates(params[i], date=dates)
 
     # `len()` instead of truthiness: a numpy ndarray would raise on `if bbox:`.
     if bbox is not None and len(bbox) > 0:
@@ -490,7 +497,7 @@ def _construct_api_requests(
 
     headers = _default_headers()
 
-    if POST:
+    if post_params:
         headers["Content-Type"] = "application/query-cql-json"
         request = requests.Request(
             method="POST",
