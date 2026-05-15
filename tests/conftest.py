@@ -6,12 +6,25 @@ the right behavior, but it makes any CI test that calls the live USGS
 Water Data API susceptible to flaking on a transient upstream blip
 (e.g. the HTTP 502 Bad Gateway that broke CI on PR #273's merge).
 
-Selection: a test is "live" iff (a) it does not request the
-``requests_mock`` fixture, AND (b) its function body references one of
-the package's public user-facing getters (the ``_PUBLIC_GETTERS`` set).
-This skips pure unit tests of internal helpers (``_get_args``,
-``_check_*``, ``_normalize_*``, ``_construct_api_requests``) that
-share the test file with live tests.
+Scope: ``waterdata`` only. PR #273 specifically fixed the pagination
+loops in ``dataretrieval.waterdata.utils`` (``_walk_pages`` /
+``get_stats_data``); other modules (``wqp``, ``samples``, ``nadp``,
+``streamstats``, ``nldi``, ``nwis``) reach the network through
+different paths with their own error semantics and don't share PR
+#273's regression.
+
+Selection: a test is "live" iff (a) its file path is under
+``tests/waterdata`` (other modules' tests are out of scope), AND (b)
+it does not request the ``requests_mock`` fixture, AND (c) its
+function body references one of the waterdata public user-facing
+getters (the ``_PUBLIC_GETTERS`` set). The file-path scope is
+necessary because some getter names (``get_ratings``, ``get_daily``)
+collide with legacy ``nwis`` function names; without the scope, a
+test of the legacy ``nwis.get_ratings`` would be retried under
+waterdata's transient-error patterns. The function-body check skips
+pure unit tests of internal helpers (``_get_args``, ``_check_*``,
+``_normalize_*``, ``_construct_api_requests``) that share the test
+file with live tests.
 
 Retry: live tests are retried up to twice on a 5-second backoff,
 but only when the failure trace matches a narrow transient-upstream
@@ -24,12 +37,11 @@ import re
 
 import pytest
 
-# Public, network-doing entry points. The set is intentionally exhaustive
-# so the source-inspection heuristic catches every test that exercises
-# the library's user-facing API surface. Add new public getters here.
+# Public, network-doing entry points of the waterdata module.
+# Other modules' getters are intentionally out of scope (see module
+# docstring). Add new waterdata getters here.
 _PUBLIC_GETTERS = frozenset(
     {
-        # waterdata
         "get_channel",
         "get_combined_metadata",
         "get_continuous",
@@ -46,41 +58,6 @@ _PUBLIC_GETTERS = frozenset(
         "get_time_series_metadata",
         "get_stats_por",
         "get_stats_date_range",
-        # wqp / samples
-        "get_results",
-        "get_samples",
-        "get_samples_summary",
-        "what_activities",
-        "what_activity_metrics",
-        "what_detection_limits",
-        "what_habitat_metrics",
-        "what_organizations",
-        "what_project_weights",
-        "what_projects",
-        "what_sites",
-        # nadp
-        "get_annual_MDN_map",
-        "get_annual_NTN_map",
-        "get_zip",
-        # streamstats / nldi
-        "get_basin",
-        "get_features",
-        "get_features_by_data_source",
-        "get_flowlines",
-        "get_sample_watershed",
-        "get_watershed",
-        # nwis (legacy)
-        "get_discharge_measurements",
-        "get_discharge_peaks",
-        "get_dv",
-        "get_gwlevels",
-        "get_info",
-        "get_iv",
-        "get_pmcodes",
-        "get_qwdata",
-        "get_record",
-        "get_stats",
-        "get_water_use",
     }
 )
 
@@ -102,6 +79,10 @@ _MAX_RERUNS = 2
 
 def pytest_collection_modifyitems(config, items):
     for item in items:
+        # Scope: waterdata test files only. See module docstring for why
+        # this file-path filter is needed in addition to the name check.
+        if "tests/waterdata" not in item.nodeid.replace("\\", "/"):
+            continue
         if "requests_mock" in item.fixturenames:
             continue
         try:
