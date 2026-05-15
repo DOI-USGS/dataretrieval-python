@@ -4,22 +4,8 @@ PR 233 routes most services through GET with comma-separated values
 (e.g. ``monitoring_location_id=USGS-A,USGS-B,...``). Long lists can blow
 the server's ~8 KB URL byte limit. This module adds a decorator that
 sits OUTSIDE ``filters.chunked`` and splits multi-value list params
-across multiple sub-requests so each URL fits.
-
-Motivating use case: chained queries where one getter feeds the next:
-
-    >>> # All stream sites in Ohio, then their daily discharge.
-    >>> # Without chunking the second call's URL would exceed the
-    >>> # server's byte limit for any state with > ~500 stations.
-    >>> sites_df, _ = waterdata.get_monitoring_locations(
-    ...     state_name="Ohio",
-    ...     site_type="Stream",
-    ... )
-    >>> df, _ = waterdata.get_daily(
-    ...     monitoring_location_id=sites_df["monitoring_location_id"].tolist(),
-    ...     parameter_code="00060",
-    ...     time="P7D",
-    ... )
+across multiple sub-requests so each URL fits. See ``get_daily``'s
+docstring for an end-to-end chained-query example.
 
 Design (orthogonal to filter chunking):
 
@@ -138,9 +124,11 @@ class QuotaExhausted(RuntimeError):
         Concatenated, deduplicated result of every sub-request that
         completed before the floor was crossed.
     partial_response : requests.Response
-        Aggregated response (URL/headers of the first sub-request,
-        summed ``elapsed``). Wrap in ``BaseMetadata`` to surface to
-        the caller alongside the partial frame.
+        Aggregated response (URL/headers of the last completed sub-
+        request, summed ``elapsed``). The last sub-request's headers
+        are preferred so callers inspecting ``x-ratelimit-remaining``
+        see current quota state. Wrap in ``BaseMetadata`` to surface
+        to the caller alongside the partial frame.
     completed_chunks : int
         Number of sub-requests successfully completed.
     total_chunks : int
@@ -218,9 +206,11 @@ def _filter_aware_probe_args(args: dict[str, Any]) -> dict[str, Any]:
 def _chunk_bytes(chunk: list) -> int:
     """Byte length of ``chunk`` when comma-joined into a URL param value.
 
-    This is the cost the planner uses to compare chunks across dims; the
-    real URL builder also URL-encodes the comma, but the byte counts come
-    out the same modulo a constant per-chunk overhead.
+    The planner uses this only to compare chunks across dims, so the
+    raw `",".join` length is sufficient: the real URL builder
+    URL-encodes each comma to ``%2C`` (adding ``2 * (len(chunk) - 1)``
+    bytes), but that overhead is monotone in chunk size and doesn't
+    change the relative ordering this function exists to support.
     """
     return len(",".join(map(str, chunk)))
 
@@ -258,7 +248,7 @@ def _plan_chunks(
     args: dict[str, Any],
     build_request: Callable[..., Any],
     url_limit: int,
-    max_chunks: int = _DEFAULT_MAX_CHUNKS,
+    max_chunks: int | None = None,
 ) -> dict[str, list[list]] | None:
     """Greedy halving until the worst-case sub-request URL fits.
 
@@ -267,9 +257,16 @@ def _plan_chunks(
     - every multi-value param is already a singleton chunk AND the
       filter (if any) is already at its smallest OR-clause and the URL
       still exceeds ``url_limit`` (irreducible), or
-    - the converged cartesian-product plan would issue more than
-      ``max_chunks`` sub-requests (hourly API budget).
+    - the cartesian-product plan exceeds ``max_chunks`` sub-requests
+      (the hourly API budget); checked after each split so we bail
+      promptly once the cap is unreachable.
+
+    ``max_chunks`` defaults to ``_DEFAULT_MAX_CHUNKS`` resolved at call
+    time, so monkeypatching the module constant takes effect for
+    direct callers too.
     """
+    if max_chunks is None:
+        max_chunks = _DEFAULT_MAX_CHUNKS
     chunkable = _chunkable_params(args)
     if not chunkable:
         return None
@@ -282,7 +279,7 @@ def _plan_chunks(
     while True:
         worst = _worst_case_args(probe_args, plan)
         if _request_bytes(build_request(**worst)) <= url_limit:
-            break
+            return plan
 
         # Find the single biggest chunk across all dims and halve it.
         best: tuple[str, int, int] | None = None  # (dim, chunk_index, size)
@@ -306,15 +303,18 @@ def _plan_chunks(
         mid = len(big) // 2
         plan[dim] = plan[dim][:idx] + [big[:mid], big[mid:]] + plan[dim][idx + 1 :]
 
-    total = math.prod(len(chunks) for chunks in plan.values())
-    if total > max_chunks:
-        raise RequestTooLarge(
-            f"Chunked plan would issue {total} sub-requests, exceeding "
-            f"max_chunks={max_chunks} (USGS API's default hourly rate "
-            f"limit per key). Reduce input list sizes, narrow the time "
-            f"window, or raise max_chunks if you have a higher quota."
-        )
-    return plan
+        # Each split only grows the cartesian product, so once we
+        # cross max_chunks we can never come back under. Bail now
+        # rather than keep splitting (the URL probe could still take
+        # many more iterations).
+        total = math.prod(len(chunks) for chunks in plan.values())
+        if total > max_chunks:
+            raise RequestTooLarge(
+                f"Chunked plan would issue {total} sub-requests, exceeding "
+                f"max_chunks={max_chunks} (USGS API's default hourly rate "
+                f"limit per key). Reduce input list sizes, narrow the time "
+                f"window, or raise max_chunks if you have a higher quota."
+            )
 
 
 _FetchOnce = TypeVar(
@@ -376,13 +376,12 @@ def multi_value_chunked(
                 if url_limit is not None
                 else filters._WATERDATA_URL_BYTE_LIMIT
             )
-            cap = max_chunks if max_chunks is not None else _DEFAULT_MAX_CHUNKS
             floor = (
                 quota_safety_floor
                 if quota_safety_floor is not None
                 else _DEFAULT_QUOTA_SAFETY_FLOOR
             )
-            plan = _plan_chunks(args, build_request, limit, cap)
+            plan = _plan_chunks(args, build_request, limit, max_chunks)
             if plan is None:
                 return fetch_once(args)
 
