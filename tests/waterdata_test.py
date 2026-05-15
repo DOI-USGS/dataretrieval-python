@@ -1,4 +1,5 @@
 import datetime
+import json
 import sys
 from unittest import mock
 
@@ -30,6 +31,7 @@ from dataretrieval.waterdata import (
 from dataretrieval.waterdata.utils import (
     _check_monitoring_location_id,
     _check_profiles,
+    _construct_api_requests,
     _normalize_str_iterable,
 )
 
@@ -129,6 +131,80 @@ def test_check_profiles():
         _check_profiles(service="foo", profile="bar")
     with pytest.raises(ValueError):
         _check_profiles(service="results", profile="foo")
+
+
+def test_construct_api_requests_multivalue_get():
+    """Multi-value params use GET with comma-separated values for daily service."""
+    req = _construct_api_requests(
+        "daily",
+        monitoring_location_id=["USGS-05427718", "USGS-05427719"],
+        parameter_code=["00060", "00065"],
+    )
+    assert req.method == "GET"
+    assert "monitoring_location_id=USGS-05427718%2CUSGS-05427719" in req.url
+    assert "parameter_code=00060%2C00065" in req.url
+
+
+def test_construct_api_requests_monitoring_locations_post():
+    """monitoring-locations uses POST+CQL2 for multi-value params (API limitation)."""
+    req = _construct_api_requests(
+        "monitoring-locations",
+        hydrologic_unit_code=["010802050102", "010802050103"],
+    )
+    assert req.method == "POST"
+    assert req.headers["Content-Type"] == "application/query-cql-json"
+
+    body = json.loads(req.body)
+    # Top-level shape: AND over a list of per-param predicates.
+    assert body["op"] == "and"
+    assert isinstance(body["args"], list) and len(body["args"]) == 1
+
+    # The single predicate is an IN over hydrologic_unit_code with both values.
+    predicate = body["args"][0]
+    assert predicate["op"] == "in"
+    assert predicate["args"][0] == {"property": "hydrologic_unit_code"}
+    assert predicate["args"][1] == ["010802050102", "010802050103"]
+
+
+def test_construct_api_requests_single_value_stays_get():
+    """A length-1 list (or scalar) reaches the URL as a plain value, not a
+    comma-separated form, so existing single-site callers see no change."""
+    req = _construct_api_requests(
+        "daily",
+        monitoring_location_id="USGS-05427718",
+        parameter_code="00060",
+    )
+    assert req.method == "GET"
+    assert "monitoring_location_id=USGS-05427718" in req.url
+    assert "%2C" not in req.url  # no comma-encoded multi-value
+
+
+def test_construct_api_requests_numeric_list_joins_with_str():
+    """Numeric-list params (e.g. ``water_year=[2020, 2021]`` on get_peaks)
+    must reach the URL as a comma-joined string, not crash on ``",".join``
+    of ints. The generator-of-``str(x)`` exists exactly for this case."""
+    req = _construct_api_requests(
+        "peaks",
+        monitoring_location_id="USGS-05427718",
+        water_year=[2020, 2021],
+    )
+    assert req.method == "GET"
+    assert "water_year=2020%2C2021" in req.url
+
+
+def test_construct_api_requests_two_element_date_list_becomes_interval():
+    """A two-element date list is interpreted as start/end of an OGC datetime
+    interval (joined with '/'), NOT as two discrete dates. The OGC `datetime`
+    parameter does not support "these N specific dates" — that would require
+    a CQL filter. Verifying so this contract is locked in."""
+    req = _construct_api_requests(
+        "daily",
+        monitoring_location_id="USGS-05427718",
+        time=["2024-01-01", "2024-01-31"],
+    )
+    assert req.method == "GET"
+    # `/` URL-encodes to %2F. Confirms _format_api_dates ran before the join.
+    assert "time=2024-01-01%2F2024-01-31" in req.url
 
 
 def test_samples_results():
