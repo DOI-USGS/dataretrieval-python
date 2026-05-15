@@ -406,6 +406,18 @@ def _error_body(resp: requests.Response):
     )
 
 
+def _raise_for_non_200(resp: requests.Response) -> None:
+    """Raise ``RuntimeError(_error_body(resp))`` if ``resp`` is not 200.
+
+    Routes through ``_error_body`` (USGS-API-aware: handles 429/403
+    specially, extracts ``code``/``description`` from JSON error bodies)
+    rather than ``Response.raise_for_status``, which raises
+    ``HTTPError`` with a generic message.
+    """
+    if resp.status_code != 200:
+        raise RuntimeError(_error_body(resp))
+
+
 def _construct_api_requests(
     service: str,
     properties: list[str] | None = None,
@@ -645,8 +657,7 @@ def _walk_pages(
     client = client or requests.Session()
     try:
         resp = client.send(req)
-        if resp.status_code != 200:
-            raise RuntimeError(_error_body(resp))
+        _raise_for_non_200(resp)
 
         # Store the initial response for metadata
         initial_response = resp
@@ -668,11 +679,11 @@ def _walk_pages(
                     headers=headers,
                     data=content if method == "POST" else None,
                 )
+                _raise_for_non_200(resp)
                 dfs.append(_get_resp_data(resp, geopd=geopd))
                 curr_url = _next_req_url(resp)
-            except Exception:  # noqa: BLE001
-                error_text = _error_body(resp)
-                logger.error("Request incomplete. %s", error_text)
+            except Exception as e:  # noqa: BLE001
+                logger.error("Request incomplete: %s", e)
                 logger.warning(
                     "Request failed for URL: %s. Data download interrupted.", curr_url
                 )
@@ -1105,8 +1116,7 @@ def get_stats_data(
 
     try:
         resp = client.send(req)
-        if resp.status_code != 200:
-            raise RuntimeError(_error_body(resp))
+        _raise_for_non_200(resp)
 
         # Store the initial response for metadata
         initial_response = resp
@@ -1132,14 +1142,17 @@ def get_stats_data(
                     params=args,
                     headers=headers,
                 )
+                _raise_for_non_200(resp)
                 body = resp.json()
                 all_dfs.append(_handle_stats_nesting(body, geopd=GEOPANDAS))
                 next_token = body["next"]
-            except Exception:  # noqa: BLE001
-                error_text = _error_body(resp)
-                logger.error("Request incomplete. %s", error_text)
+            except Exception as e:  # noqa: BLE001
+                logger.error("Request incomplete: %s", e)
                 logger.warning(
-                    "Request failed for URL: %s. Data download interrupted.", resp.url
+                    "Request failed for URL: %s (next_token=%s). "
+                    "Data download interrupted.",
+                    url,
+                    next_token,
                 )
                 next_token = None
 
