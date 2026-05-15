@@ -21,15 +21,15 @@ Design (orthogonal to filter chunking):
 
 Coordination with ``filters.chunked``:
 The planner probes the URL with a synthetic clause sized to the inner
-chunker's bail floor — ``len(longest_clause) * max(per_clause_encoding
-_ratio)`` — when a chunkable filter is present. The inner chunker
-bails (emits the full filter) when any single clause's URL-encoded
-length exceeds its per-sub-request budget; mirroring ``filters._
-effective_filter_budget``, that floor already accounts for the worst
-per-call encoding ratio, so a long alphanumeric clause coexisting
-with a shorter heavily-encoded clause is sized correctly. Without
-this coordination, a long OR-filter plus multi-value lists would
-trigger a premature ``RequestTooLarge`` even though the combined
+chunker's bail floor — ``len(longest_clause) * max(per-clause encoding
+ratio)`` — when a chunkable filter is present. The inner chunker bails
+(emits the full filter) when any single clause's URL-encoded length
+exceeds its per-sub-request budget; mirroring
+``filters._effective_filter_budget``, that floor already accounts for
+the worst per-call encoding ratio, so a long alphanumeric clause
+coexisting with a shorter heavily-encoded clause is sized correctly.
+Without this coordination, a long OR-filter plus multi-value lists
+would trigger a premature ``RequestTooLarge`` even though the combined
 chunkers would have made things fit.
 """
 
@@ -204,15 +204,19 @@ def _filter_aware_probe_args(args: dict[str, Any]) -> dict[str, Any]:
 
 
 def _chunk_bytes(chunk: list) -> int:
-    """Byte length of ``chunk`` when comma-joined into a URL param value.
+    """URL-encoded byte length of ``chunk`` when comma-joined into a
+    URL parameter value.
 
-    The planner uses this only to compare chunks across dims, so the
-    raw `",".join` length is sufficient: the real URL builder
-    URL-encodes each comma to ``%2C`` (adding ``2 * (len(chunk) - 1)``
-    bytes), but that overhead is monotone in chunk size and doesn't
-    change the relative ordering this function exists to support.
+    Used both as the planner's biggest-chunk comparator (in
+    ``_worst_case_args`` and the halving loop) and indirectly as the
+    URL contribution estimate. Sizing with ``quote_plus`` rather than
+    raw ``,``-join length avoids mis-ranking chunks whose values
+    contain characters that expand under URL encoding (``%``, ``+``,
+    ``/``, ``&``, etc.) — for typical USGS multi-value workloads
+    (alphanumeric IDs and codes) the two are equal, but the encoded
+    form is always correct.
     """
-    return len(",".join(map(str, chunk)))
+    return len(quote_plus(",".join(map(str, chunk))))
 
 
 def _request_bytes(req: requests.PreparedRequest) -> int:

@@ -300,8 +300,11 @@ def chunked(*, build_request: Callable[..., Any]) -> Callable[[_FetchOnce], _Fet
     - Chunkable cql-text filter: run the lexicographic-pitfall guard, split
       into URL-length-safe sub-expressions, call the wrapped function once
       per chunk, concatenate frames (drop empties, dedup by feature ``id``),
-      and return an aggregated response (first chunk's URL/headers, summed
-      ``elapsed``).
+      and return an aggregated response (last chunk's URL/headers, summed
+      ``elapsed``). The last chunk's headers are preferred so callers see
+      current rate-limit state (``x-ratelimit-remaining``) on which the
+      outer ``multi_value_chunked`` decorator's ``QuotaExhausted`` guard
+      depends.
 
     Either way the return shape matches the undecorated function's, so the
     caller wraps the response in ``BaseMetadata`` the same way in both paths.
