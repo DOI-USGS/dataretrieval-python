@@ -6,6 +6,21 @@ the server's ~8 KB URL byte limit. This module adds a decorator that
 sits OUTSIDE ``filters.chunked`` and splits multi-value list params
 across multiple sub-requests so each URL fits.
 
+Motivating use case: chained queries where one getter feeds the next:
+
+    >>> # All stream sites in Ohio, then their daily discharge.
+    >>> # Without chunking the second call's URL would exceed the
+    >>> # server's byte limit for any state with > ~500 stations.
+    >>> sites_df, _ = waterdata.get_monitoring_locations(
+    ...     state_name="Ohio",
+    ...     site_type="Stream",
+    ... )
+    >>> df, _ = waterdata.get_daily(
+    ...     monitoring_location_id=sites_df["monitoring_location_id"].tolist(),
+    ...     parameter_code="00060",
+    ...     time="P7D",
+    ... )
+
 Design (orthogonal to filter chunking):
 
 - N-dimensional cartesian product: for each chunkable list param, the
