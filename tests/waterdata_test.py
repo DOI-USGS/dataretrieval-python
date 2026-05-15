@@ -263,14 +263,23 @@ def test_filter_aware_probe_args_passes_through_when_not_chunkable():
     assert _filter_aware_probe_args(args) == args
 
 
-def test_filter_aware_probe_args_substitutes_longest_or_clause():
-    """Chunkable filter → return args with filter replaced by the LONGEST
-    clause. The inner filter chunker bails if any single clause exceeds
-    the per-sub-request budget, so the longest clause is the smallest
-    filter size the chunker can guarantee to emit per sub-request."""
+def test_filter_aware_probe_args_models_inner_chunker_bail_floor():
+    """Chunkable filter → return args with filter replaced by a synthetic
+    ASCII clause whose URL byte count equals the inner chunker's bail
+    floor ``len(longest) * max(per_clause_encoding_ratio)``. Mirrors
+    ``filters._effective_filter_budget``'s worst-case model so the
+    planner doesn't approve plans the inner chunker would refuse."""
+    import math
+    from urllib.parse import quote_plus
+
     args = {"filter": "a='1' OR a='22' OR a='333'", "x": 7}
     probe = _filter_aware_probe_args(args)
-    assert probe["filter"] == "a='333'"
+    parts = ["a='1'", "a='22'", "a='333'"]
+    expected = math.ceil(
+        max(len(p) for p in parts) * max(len(quote_plus(p)) / len(p) for p in parts)
+    )
+    assert len(probe["filter"]) == expected
+    assert probe["filter"].isascii() and probe["filter"].isalnum()
     assert probe["x"] == 7
     assert args["filter"] == "a='1' OR a='22' OR a='333'"  # input not mutated
 

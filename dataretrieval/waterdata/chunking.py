@@ -34,14 +34,17 @@ Design (orthogonal to filter chunking):
   determines output schema and chunking it would shard columns.
 
 Coordination with ``filters.chunked``:
-The planner probes URL length using the LONGEST top-level OR-clause
-when a chunkable filter is present, not the full filter. ``filters.
-chunked`` (inner) will split the filter per sub-request but bails if
-any single clause exceeds its budget, so the longest clause is the
-smallest filter size the stack is guaranteed to emit. Without this
-coordination, a long OR-filter plus multi-value lists would trigger a
-premature ``RequestTooLarge`` even though the combined chunkers would
-have made things fit.
+The planner probes the URL with a synthetic clause sized to the inner
+chunker's bail floor — ``len(longest_clause) * max(per_clause_encoding
+_ratio)`` — when a chunkable filter is present. The inner chunker
+bails (emits the full filter) when any single clause's URL-encoded
+length exceeds its per-sub-request budget; mirroring ``filters._
+effective_filter_budget``, that floor already accounts for the worst
+per-call encoding ratio, so a long alphanumeric clause coexisting
+with a shorter heavily-encoded clause is sized correctly. Without
+this coordination, a long OR-filter plus multi-value lists would
+trigger a premature ``RequestTooLarge`` even though the combined
+chunkers would have made things fit.
 """
 
 from __future__ import annotations
@@ -51,6 +54,7 @@ import itertools
 import math
 from collections.abc import Callable
 from typing import Any, TypeVar
+from urllib.parse import quote_plus
 
 import pandas as pd
 import requests
@@ -178,18 +182,25 @@ def _chunkable_params(args: dict[str, Any]) -> dict[str, list]:
 
 
 def _filter_aware_probe_args(args: dict[str, Any]) -> dict[str, Any]:
-    """Substitute the filter with its LONGEST top-level OR-clause if the
-    filter is chunkable, otherwise return ``args`` unchanged.
+    """Substitute the filter with a synthetic ASCII clause sized to the
+    inner chunker's bail floor if the filter is chunkable, otherwise
+    return ``args`` unchanged.
 
     The inner ``filters.chunked`` decorator splits a filter into chunks
-    each ≤ the per-sub-request byte budget, but bails (returns the full
-    filter unchanged) when ANY single OR-clause exceeds the budget. So
-    the smallest filter the inner chunker is guaranteed to emit per
-    sub-request is bounded below by the largest single clause — not the
-    smallest. Probing with ``max(parts, key=len)`` models the worst
-    achievable per-sub-request URL the decorator stack can produce; if
-    that fits, we know the inner chunker won't bail and the actual URL
-    will fit too.
+    each whose URL-encoded length is ≤ the per-sub-request budget, but
+    bails (emits the full filter unchanged) when ANY single OR-clause's
+    URL-encoded length exceeds the budget. Mirroring ``filters._
+    effective_filter_budget``, the bail floor on the longest clause is
+    ``len(longest) * max(per_clause_encoding_ratio)``: even a clause
+    whose own ratio is low inherits the worst per-call ratio because
+    the budget is computed against the heaviest-encoding clause.
+
+    Substituting a synthetic ASCII clause of that exact length (ASCII
+    has a 1:1 encoding ratio, so ``quote_plus`` is a no-op) makes the
+    planner's URL probe and the inner chunker's bail condition agree
+    on worst-case size — the planner won't approve a plan the inner
+    chunker would then refuse to emit, and won't prematurely raise
+    when the inner chunker could have made it fit.
     """
     filter_expr = args.get("filter")
     filter_lang = args.get("filter_lang")
@@ -198,7 +209,10 @@ def _filter_aware_probe_args(args: dict[str, Any]) -> dict[str, Any]:
     parts = _split_top_level_or(filter_expr)
     if len(parts) < 2:
         return args  # one-clause filter — inner chunker can't shrink it
-    return {**args, "filter": max(parts, key=len)}
+    encoding_ratio_max = max(len(quote_plus(p)) / len(p) for p in parts)
+    longest_raw = max(len(p) for p in parts)
+    probe_size = math.ceil(longest_raw * encoding_ratio_max)
+    return {**args, "filter": "x" * probe_size}
 
 
 def _chunk_bytes(chunk: list) -> int:
