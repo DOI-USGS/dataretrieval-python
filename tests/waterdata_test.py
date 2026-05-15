@@ -27,6 +27,17 @@ from dataretrieval.waterdata import (
     get_stats_por,
     get_time_series_metadata,
 )
+from dataretrieval.waterdata.chunking import (
+    _DEFAULT_MAX_CHUNKS,
+    _DEFAULT_QUOTA_SAFETY_FLOOR,
+    QuotaExhausted,
+    RequestTooLarge,
+    _chunkable_params,
+    _filter_aware_probe_args,
+    _plan_chunks,
+    _read_remaining,
+    multi_value_chunked,
+)
 from dataretrieval.waterdata.utils import (
     _check_monitoring_location_id,
     _check_profiles,
@@ -173,6 +184,402 @@ def test_construct_api_requests_two_element_date_list_becomes_interval():
     assert req.method == "GET"
     # `/` URL-encodes to %2F. Confirms _format_api_dates ran before the join.
     assert "time=2024-01-01%2F2024-01-31" in req.url
+
+
+# ----- Multi-value GET-parameter chunker (chunking.py) ----------------------
+#
+# These tests exercise the planner with a fake ``build_request`` whose URL
+# byte length is a deterministic function of its inputs. Tests below model:
+#   - non-chunkable args contribute ``base_bytes``,
+#   - every multi-value list contributes ``len(",".join(map(str, v)))``,
+#   - the ``filter`` kwarg contributes ``len(filter)``.
+# This isolates planner behaviour from the real HTTP request builder.
+
+
+class _FakeReq:
+    __slots__ = ("url",)
+
+    def __init__(self, url):
+        self.url = url
+
+
+def _fake_build(*, base=200, **kwargs):
+    """Fake build_request: URL length deterministic in its inputs."""
+    bytes_ = base
+    for v in kwargs.values():
+        if isinstance(v, (list, tuple)):
+            bytes_ += len(",".join(map(str, v)))
+        elif isinstance(v, str):
+            bytes_ += len(v)
+    return _FakeReq("x" * bytes_)
+
+
+def test_filter_aware_probe_args_passes_through_when_not_chunkable():
+    """No filter, json-lang filter, single-clause filter — return unchanged."""
+    assert _filter_aware_probe_args({"a": 1}) == {"a": 1}
+    assert _filter_aware_probe_args({"filter": "a='1'", "filter_lang": "cql-json"}) == {
+        "filter": "a='1'",
+        "filter_lang": "cql-json",
+    }
+    args = {"filter": "a='single clause with no OR'"}
+    assert _filter_aware_probe_args(args) == args
+
+
+def test_filter_aware_probe_args_substitutes_shortest_or_clause():
+    """Chunkable filter → return args with filter replaced by shortest clause."""
+    args = {"filter": "a='1' OR a='22' OR a='333'", "x": 7}
+    probe = _filter_aware_probe_args(args)
+    assert probe["filter"] == "a='1'"
+    assert probe["x"] == 7
+    assert args["filter"] == "a='1' OR a='22' OR a='333'"  # input not mutated
+
+
+def test_plan_chunks_returns_none_when_request_fits():
+    """URL under limit → planner returns None, decorator passes through."""
+    args = {"monitoring_location_id": ["A", "B", "C"]}
+    plan = _plan_chunks(args, _fake_build, url_limit=8000)
+    assert plan is None
+
+
+def test_plan_chunks_returns_none_when_no_chunkable_lists():
+    """No multi-value lists, however over-limit → planner can't help, returns None
+    (decorator falls through; server may 414 but that's not chunker's job)."""
+    args = {"monitoring_location_id": "scalar-only"}
+    plan = _plan_chunks(args, _fake_build, url_limit=10)
+    assert plan is None
+
+
+def test_plan_chunks_greedy_halving_targets_largest_dim():
+    """Two dims with one much larger — the heavy dim halves first."""
+    args = {
+        "monitoring_location_id": ["X" * 30, "Y" * 30, "Z" * 30, "W" * 30],
+        "parameter_code": ["00060", "00065"],
+    }
+    # full URL ≈ 200 + 123 + 12 = 335; force splitting heavy dim only.
+    plan = _plan_chunks(args, _fake_build, url_limit=310)
+    assert len(plan["monitoring_location_id"]) > 1
+    assert len(plan["parameter_code"]) == 1  # heavy-dim split was enough
+
+
+def test_plan_chunks_raises_request_too_large_at_singleton_floor():
+    """Limit below singleton-per-dim floor (with no chunkable filter to
+    fall back on) → RequestTooLarge with a clear message."""
+    args = {"monitoring_location_id": ["A", "B"]}
+    # base=200 alone exceeds limit; no relief possible.
+    with pytest.raises(RequestTooLarge, match="multi-value parameter"):
+        _plan_chunks(args, _fake_build, url_limit=100)
+
+
+def test_plan_chunks_coordinates_with_filter_chunker():
+    """COORDINATION REGRESSION TEST.
+
+    With the FULL filter in URL-length probes, singleton-per-dim URL still
+    exceeds the limit and the planner would raise RequestTooLarge. With
+    filter-aware probing, the planner models the per-sub-request URL as
+    ``worst-dim-chunk + shortest-clause`` (what the inner filter chunker
+    will actually emit), sees it fits, and returns a plan.
+
+    Sanity-check the *negative*: with filter-aware probing disabled, the
+    same inputs would raise.
+    """
+    clauses = [f"f='{i}'" for i in range(10)]
+    args = {
+        "monitoring_location_id": ["A" * 10, "B" * 10, "C" * 10, "D" * 10],
+        "filter": " OR ".join(clauses),
+    }
+    # singleton+full-filter ≈ 200 + 10 + 86 = 296 (over limit 240) — would raise.
+    # min-clause probe model ≈ 200 + 10 + 5 = 215 (under limit) — plan succeeds.
+    plan = _plan_chunks(args, _fake_build, url_limit=240)
+    assert plan is not None  # coordination prevented the premature raise
+    assert len(plan["monitoring_location_id"]) > 1  # planner did split
+
+    # Negative control: monkey-patch the probe helper to be a no-op
+    # (model "no filter awareness") and confirm the same inputs raise.
+    import dataretrieval.waterdata.chunking as ch
+
+    saved = ch._filter_aware_probe_args
+    try:
+        ch._filter_aware_probe_args = lambda a: a  # pretend no awareness
+        with pytest.raises(RequestTooLarge):
+            _plan_chunks(args, _fake_build, url_limit=240)
+    finally:
+        ch._filter_aware_probe_args = saved
+
+
+def test_plan_chunks_still_raises_when_even_min_clause_doesnt_fit():
+    """If the limit is so tight that singleton + shortest-clause STILL
+    exceeds it, filter chunker can't save us either — raise."""
+    args = {
+        "monitoring_location_id": ["A" * 10, "B" * 10],
+        "filter": "x='12345' OR x='67890'",  # min clause is 9 chars
+    }
+    # Singleton + min-clause ≈ 200 + 10 + 9 = 219; limit below that → unrecoverable.
+    with pytest.raises(RequestTooLarge):
+        _plan_chunks(args, _fake_build, url_limit=210)
+
+
+def test_multi_value_chunked_passes_through_when_url_fits():
+    """No planning needed → decorator calls underlying function exactly once
+    with the original args."""
+    calls = []
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=8000)
+    def fetch(args):
+        calls.append(args)
+        return pd.DataFrame(), mock.Mock(elapsed=datetime.timedelta(seconds=0.1))
+
+    fetch({"monitoring_location_id": ["A", "B"]})
+    assert len(calls) == 1
+    assert calls[0]["monitoring_location_id"] == ["A", "B"]
+
+
+def test_multi_value_chunked_emits_cartesian_product():
+    """Two chunkable dims, each split into 2 chunks → exactly 4 sub-calls,
+    each pairing one chunk from each dim."""
+    calls = []
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=240)
+    def fetch(args):
+        calls.append({k: v for k, v in args.items() if k in ("sites", "pcodes")})
+        return pd.DataFrame(), mock.Mock(elapsed=datetime.timedelta(seconds=0.1))
+
+    fetch(
+        {
+            "sites": ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10],
+            "pcodes": ["P1" * 10, "P2" * 10, "P3" * 10, "P4" * 10],
+        }
+    )
+    # Both heavy → planner should split both dims. Confirm a cartesian shape:
+    # every unique site-chunk pairs with every unique pcode-chunk.
+    sites_seen = {tuple(c["sites"]) for c in calls}
+    pcodes_seen = {tuple(c["pcodes"]) for c in calls}
+    assert len(calls) == len(sites_seen) * len(pcodes_seen)
+    assert len(sites_seen) > 1
+    assert len(pcodes_seen) > 1
+
+
+def test_multi_value_chunked_lazy_url_limit():
+    """``url_limit=None`` → resolve filters._WATERDATA_URL_BYTE_LIMIT at call
+    time, so tests that patch the constant affect this decorator too."""
+    from dataretrieval.waterdata import filters as wd_filters
+
+    calls = []
+
+    @multi_value_chunked(build_request=_fake_build)  # url_limit defaults to None
+    def fetch(args):
+        calls.append(args)
+        return pd.DataFrame(), mock.Mock(elapsed=datetime.timedelta(seconds=0.1))
+
+    saved = wd_filters._WATERDATA_URL_BYTE_LIMIT
+    try:
+        wd_filters._WATERDATA_URL_BYTE_LIMIT = 240
+        # 4 sites of 10 chars → exceeds 240 → planner splits.
+        fetch({"sites": ["S" * 10 + str(i) for i in range(4)]})
+        assert len(calls) > 1, "patched constant should drive chunking"
+    finally:
+        wd_filters._WATERDATA_URL_BYTE_LIMIT = saved
+
+
+def test_default_max_chunks_matches_hourly_api_quota():
+    """The default cap mirrors the USGS Water Data API's documented
+    per-API-key hourly limit. Locking this in so future changes have to
+    explicitly acknowledge the quota."""
+    assert _DEFAULT_MAX_CHUNKS == 1000
+
+
+def test_plan_chunks_raises_when_plan_exceeds_max_chunks():
+    """A converged plan with more sub-requests than ``max_chunks`` must
+    raise rather than silently issue them and burn the user's API quota."""
+    # 2 dims with long values, each needing many singleton-ish chunks.
+    # Pick chunk sizes that converge to a plan exceeding a tight cap.
+    args = {
+        "dim_a": [f"long-string-value-{i}" for i in range(50)],
+        "dim_b": [f"another-long-value-{i}" for i in range(50)],
+    }
+    # url_limit forces splitting; max_chunks=10 forces the cap to fire.
+    with pytest.raises(RequestTooLarge, match="exceeding max_chunks=10"):
+        _plan_chunks(args, _fake_build, url_limit=250, max_chunks=10)
+
+
+def test_plan_chunks_respects_default_cap_without_explicit_arg():
+    """Default kwarg path: ``max_chunks`` defaults to _DEFAULT_MAX_CHUNKS
+    when not specified, so direct callers (e.g., other library code) get
+    the same safety net as the decorator wrapper."""
+    args = {
+        "dim_a": [f"v{i:03d}" for i in range(60)],
+        "dim_b": [f"v{i:03d}" for i in range(60)],
+        "dim_c": [f"v{i:03d}" for i in range(60)],
+    }
+    # Without explicit max_chunks: defaults to 1000. The plan for these
+    # inputs would emit > 1000 sub-requests at a tight limit, so should
+    # raise on default cap alone.
+    with pytest.raises(RequestTooLarge, match=r"max_chunks=1000"):
+        _plan_chunks(args, _fake_build, url_limit=220)
+
+
+def test_multi_value_chunked_cap_override():
+    """A decorator-time ``max_chunks`` override lets callers with higher
+    quotas raise the ceiling without monkeypatching the module constant."""
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=220, max_chunks=10)
+    def fetch(args):
+        return pd.DataFrame(), mock.Mock(elapsed=datetime.timedelta(seconds=0.1))
+
+    with pytest.raises(RequestTooLarge, match="exceeding max_chunks=10"):
+        fetch(
+            {
+                "dim_a": [f"longer-v{i}" for i in range(30)],
+                "dim_b": [f"longer-v{i}" for i in range(30)],
+            }
+        )
+
+
+def _quota_response(remaining: int | str | None) -> mock.Mock:
+    """A mock requests.Response-like object whose ``x-ratelimit-remaining``
+    header reflects the given value (None → header absent)."""
+    resp = mock.Mock(elapsed=datetime.timedelta(seconds=0.1))
+    resp.headers = (
+        {} if remaining is None else {"x-ratelimit-remaining": str(remaining)}
+    )
+    return resp
+
+
+def test_read_remaining_parses_header():
+    assert _read_remaining(_quota_response(42)) == 42
+
+
+def test_read_remaining_treats_missing_header_as_plenty():
+    """Servers that don't echo a rate-limit header must not trigger
+    spurious QuotaExhausted aborts. Sentinel is a large integer so any
+    plausible safety floor compares cleanly."""
+    assert _read_remaining(_quota_response(None)) >= 1_000_000
+
+
+def test_read_remaining_treats_malformed_header_as_plenty():
+    """Defensive: non-integer header value → don't abort."""
+    assert _read_remaining(_quota_response("not-a-number")) >= 1_000_000
+
+
+def test_default_quota_safety_floor():
+    """Default floor lives at 50 — enough headroom for one final
+    chunked call's pagination spike without breaching the hourly cap."""
+    assert _DEFAULT_QUOTA_SAFETY_FLOOR == 50
+
+
+def test_multi_value_chunked_aborts_when_quota_floor_breached():
+    """Mid-call, when ``x-ratelimit-remaining`` drops below the floor,
+    the chunker must raise ``QuotaExhausted`` *before* issuing the next
+    sub-request — and the exception must carry the partial frame plus
+    the chunk offset so callers can resume."""
+    # Build a fetch_once whose response 'remaining' header decrements
+    # through 200, 100, 40 (below floor=50), 10.
+    remaining_seq = iter([200, 100, 40, 10])
+    page_idx = iter(range(10))
+
+    def fetch(args):
+        idx = next(page_idx)
+        return (
+            pd.DataFrame(
+                {"site": list(args["sites"]), "page": [idx] * len(args["sites"])}
+            ),
+            _quota_response(next(remaining_seq)),
+        )
+
+    decorated = multi_value_chunked(
+        build_request=_fake_build,
+        url_limit=240,
+        quota_safety_floor=50,
+    )(fetch)
+
+    # Plan forces 4 sub-requests (4 singleton site chunks).
+    with pytest.raises(QuotaExhausted) as excinfo:
+        decorated({"sites": ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10]})
+
+    err = excinfo.value
+    # Aborted after the 3rd sub-request (remaining=40 < floor=50).
+    assert err.completed_chunks == 3
+    assert err.total_chunks == 4
+    assert err.remaining == 40
+    # Partial frame combines rows from the first three completed sub-requests.
+    assert err.partial_frame is not None
+    assert set(err.partial_frame["page"]) == {0, 1, 2}
+
+
+def test_multi_value_chunked_does_not_abort_on_last_chunk():
+    """Aborting on the final sub-request would be pointless — there's
+    no 'next' to protect. The check is skipped there. Earlier chunks
+    stay above the floor; only the last drops below, and we still
+    return cleanly because the check is skipped at i == total-1."""
+    remaining_seq = iter([500, 5])  # only the LAST chunk dips below floor=50
+
+    def fetch(args):
+        return (
+            pd.DataFrame({"site": list(args["sites"])}),
+            _quota_response(next(remaining_seq)),
+        )
+
+    decorated = multi_value_chunked(
+        build_request=_fake_build,
+        url_limit=240,
+        quota_safety_floor=50,
+    )(fetch)
+
+    df, _ = decorated({"sites": ["S1" * 10, "S2" * 10]})  # forces 2 chunks
+    assert len(df) == 2  # no raise — both chunks ran
+
+
+def test_multi_value_chunked_quota_check_disabled_with_zero_floor():
+    """Setting the floor to 0 effectively disables the quota guard —
+    counter can go to 1 without aborting (since 1 > 0 = floor)."""
+    remaining_seq = iter([5, 1])
+
+    def fetch(args):
+        return (
+            pd.DataFrame({"site": list(args["sites"])}),
+            _quota_response(next(remaining_seq)),
+        )
+
+    decorated = multi_value_chunked(
+        build_request=_fake_build,
+        url_limit=240,
+        quota_safety_floor=0,
+    )(fetch)
+    df, _ = decorated({"sites": ["S1" * 10, "S2" * 10]})
+    assert len(df) == 2  # no raise
+
+
+def test_quota_exhausted_message_includes_resume_offset():
+    """The error message must point the user at the chunk offset to
+    resume from, otherwise the partial_frame attribute is a footgun
+    — the user has no way to know which chunks still need re-issuing."""
+    e = QuotaExhausted(
+        partial_frame=pd.DataFrame(),
+        partial_response=mock.Mock(),
+        completed_chunks=7,
+        total_chunks=20,
+        remaining=12,
+    )
+    msg = str(e)
+    assert "7/20" in msg
+    assert "12" in msg
+    assert "QuotaExhausted" in msg or "resume" in msg
+
+
+def test_chunkable_params_skips_filter_passed_as_list():
+    """Defensive guard: ``filter`` is documented as a string. If a caller
+    mistakenly passes it as a list, the chunker must NOT treat it as a
+    multi-value dim — comma-joining CQL clauses inside the URL would
+    produce a malformed filter expression. The inner ``filters.chunked``
+    is the only place that may shrink ``filter``."""
+    args = {
+        "monitoring_location_id": ["USGS-A", "USGS-B"],
+        "filter": ["a='1'", "a='2'"],  # malformed input
+        "filter_lang": ["cql-text", "cql-json"],  # ditto
+    }
+    chunkable = _chunkable_params(args)
+    assert "monitoring_location_id" in chunkable
+    assert "filter" not in chunkable
+    assert "filter_lang" not in chunkable
 
 
 def test_samples_results():

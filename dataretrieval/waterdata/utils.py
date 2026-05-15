@@ -14,7 +14,7 @@ import requests
 
 from dataretrieval import __version__
 from dataretrieval.utils import BaseMetadata
-from dataretrieval.waterdata import filters
+from dataretrieval.waterdata import chunking, filters
 from dataretrieval.waterdata.types import (
     PROFILE_LOOKUP,
     PROFILES,
@@ -912,17 +912,20 @@ def get_ogc_data(
     return return_list, BaseMetadata(response)
 
 
+@chunking.multi_value_chunked(build_request=_construct_api_requests)
 @filters.chunked(build_request=_construct_api_requests)
 def _fetch_once(
     args: dict[str, Any],
 ) -> tuple[pd.DataFrame, requests.Response]:
     """Send one prepared-args OGC request; return the frame + response.
 
-    Filter chunking is added orthogonally by the ``@filters.chunked``
-    decorator: with no filter (or an un-chunkable one) the decorator
-    passes ``args`` through to this body; with a chunkable filter it
-    fans out and calls this body once per sub-filter, then combines.
-    Either way the return shape is ``(frame, response)``.
+    Two orthogonal chunkers wrap this body. ``@chunking.multi_value_chunked``
+    (outer) splits multi-value list params (e.g. ``monitoring_location_id``)
+    across sub-requests so each URL fits the server byte limit; the
+    cartesian product of per-dim chunks is iterated. ``@filters.chunked``
+    (inner) splits long cql-text filters at top-level ``OR``. With no
+    chunkable inputs both pass through unchanged. Either way the return
+    shape is ``(frame, response)``.
     """
     req = _construct_api_requests(**args)
     return _walk_pages(geopd=GEOPANDAS, req=req)
