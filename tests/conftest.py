@@ -81,10 +81,6 @@ _PUBLIC_GETTERS = frozenset(
         "get_record",
         "get_stats",
         "get_water_use",
-        # ngwmn
-        "get_data",
-        "get_levels",
-        "get_sites",
     }
 )
 
