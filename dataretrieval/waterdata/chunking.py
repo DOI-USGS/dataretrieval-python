@@ -211,17 +211,13 @@ def _chunk_bytes(chunk: list) -> int:
     return len(",".join(map(str, chunk)))
 
 
-def _request_bytes(req: Any) -> int:
+def _request_bytes(req: requests.PreparedRequest) -> int:
     """Total bytes of a prepared request: URL + body.
 
-    For the GET-routed services PR 233 introduced, the multi-value list
-    lives in the URL and ``req.body`` is ``None`` — this reduces to URL
-    length. For POST-routed services (currently only ``monitoring-
-    locations``, which the upstream API still rejects comma-separated
-    values for and routes through CQL2 JSON), the multi-value list lives
-    in the body and the URL stays ~200 bytes regardless of payload;
-    counting body bytes is the only way the planner can recognize that
-    a POST request needs to chunk.
+    GET routes have ``body=None`` and reduce to URL length. POST routes
+    (CQL2 JSON body) need body bytes — the URL stays short regardless of
+    payload, so URL-only sizing would underestimate the request and skip
+    chunking when it's needed.
     """
     url_len = len(req.url)
     body = req.body
@@ -229,7 +225,7 @@ def _request_bytes(req: Any) -> int:
         return url_len
     if isinstance(body, (bytes, bytearray)):
         return url_len + len(body)
-    return url_len + len(str(body).encode("utf-8"))
+    return url_len + len(body.encode("utf-8"))
 
 
 def _worst_case_args(
