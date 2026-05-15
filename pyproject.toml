@@ -35,6 +35,7 @@ dataretrieval = ["py.typed"]
 test = [
   "pytest > 5.0.0",
   "pytest-cov[all]",
+  "pytest-rerunfailures",
   "coverage",
   "requests-mock",
   "ruff",
