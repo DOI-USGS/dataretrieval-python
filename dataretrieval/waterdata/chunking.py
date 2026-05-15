@@ -48,6 +48,7 @@ from __future__ import annotations
 
 import functools
 import itertools
+import math
 from collections.abc import Callable
 from typing import Any, TypeVar
 
@@ -99,6 +100,12 @@ _DEFAULT_MAX_CHUNKS = 1000
 # HTTP 429. Carries the partial result so callers can resume from a
 # known offset instead of retrying the whole chunked call from scratch.
 _DEFAULT_QUOTA_SAFETY_FLOOR = 50
+
+# Sentinel returned by ``_read_remaining`` when the response has no
+# parseable ``x-ratelimit-remaining`` header. Large enough to beat any
+# plausible safety floor so a missing/malformed header doesn't trigger
+# spurious ``QuotaExhausted`` aborts.
+_QUOTA_UNKNOWN = 10**9
 
 
 class RequestTooLarge(ValueError):
@@ -194,6 +201,16 @@ def _filter_aware_probe_args(args: dict[str, Any]) -> dict[str, Any]:
     return {**args, "filter": max(parts, key=len)}
 
 
+def _chunk_bytes(chunk: list) -> int:
+    """Byte length of ``chunk`` when comma-joined into a URL param value.
+
+    This is the cost the planner uses to compare chunks across dims; the
+    real URL builder also URL-encodes the comma, but the byte counts come
+    out the same modulo a constant per-chunk overhead.
+    """
+    return len(",".join(map(str, chunk)))
+
+
 def _worst_case_args(
     probe_args: dict[str, Any], plan: dict[str, list[list]]
 ) -> dict[str, Any]:
@@ -202,7 +219,7 @@ def _worst_case_args(
     already reduced to its filter-chunker floor."""
     out = dict(probe_args)
     for k, chunks in plan.items():
-        out[k] = max(chunks, key=lambda c: len(",".join(map(str, c))))
+        out[k] = max(chunks, key=_chunk_bytes)
     return out
 
 
@@ -242,7 +259,7 @@ def _plan_chunks(
             for idx, chunk in enumerate(dim_chunks):
                 if len(chunk) <= 1:
                     continue
-                size = len(",".join(map(str, chunk)))
+                size = _chunk_bytes(chunk)
                 if best is None or size > best[2]:
                     best = (dim, idx, size)
 
@@ -258,9 +275,7 @@ def _plan_chunks(
         mid = len(big) // 2
         plan[dim] = plan[dim][:idx] + [big[:mid], big[mid:]] + plan[dim][idx + 1 :]
 
-    total = 1
-    for chunks in plan.values():
-        total *= len(chunks)
+    total = math.prod(len(chunks) for chunks in plan.values())
     if total > max_chunks:
         raise RequestTooLarge(
             f"Chunked plan would issue {total} sub-requests, exceeding "
@@ -279,15 +294,15 @@ _FetchOnce = TypeVar(
 
 def _read_remaining(response: requests.Response) -> int:
     """Parse ``x-ratelimit-remaining`` from a response. Missing or
-    malformed header → return a large sentinel so the safety check
+    malformed header → return ``_QUOTA_UNKNOWN`` so the safety check
     treats it as 'plenty of quota' (don't abort on header glitches)."""
     raw = response.headers.get("x-ratelimit-remaining")
     if raw is None:
-        return 10**9
+        return _QUOTA_UNKNOWN
     try:
         return int(raw)
     except (TypeError, ValueError):
-        return 10**9
+        return _QUOTA_UNKNOWN
 
 
 def multi_value_chunked(
@@ -341,9 +356,7 @@ def multi_value_chunked(
                 return fetch_once(args)
 
             keys = list(plan)
-            total = 1
-            for k in keys:
-                total *= len(plan[k])
+            total = math.prod(len(plan[k]) for k in keys)
             frames: list[pd.DataFrame] = []
             responses: list[requests.Response] = []
             for i, combo in enumerate(itertools.product(*(plan[k] for k in keys))):
