@@ -107,8 +107,8 @@ def _resp_ok(features):
 
 
 def _error_log_messages(caplog):
-    """Pull ERROR-and-above message strings out of caplog. The pagination-
-    failure tests below all assert against the same shape."""
+    """Pull ERROR-and-above message strings out of caplog. Shared by the
+    pagination-failure tests below."""
     return [r.getMessage() for r in caplog.records if r.levelno >= logging.ERROR]
 
 
