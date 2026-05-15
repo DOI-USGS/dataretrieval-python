@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_ratings() Examples &mdash; dataretrieval 0.1.dev1+g0a14ba5d4 documentation</title>
+  <title>USGS dataretrieval Python Package get_ratings() Examples &mdash; dataretrieval 0.1.dev1+gc3bc2b851 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=3e9fbd23"></script>
+      <script src="../_static/documentation_options.js?v=2c6ddcc2"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -125,7 +125,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g0a14ba5d4)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+gc3bc2b851)
 Requirement already satisfied: requests in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (2.34.2)
 Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.4)
@@ -179,18 +179,18 @@ Requirement already satisfied: certifi&gt;=2023.5.7 in /opt/hostedtoolcache/Pyth
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
+<div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-Retrieved 409 data values.
+/tmp/ipykernel_6282/101140699.py:5: DeprecationWarning: `nwis.get_ratings` is deprecated and will be removed from `dataretrieval` on or after 2027-05-06; use `waterdata.get_ratings()` instead.
+  ratingData = nwis.get_ratings(site=site_id, file_type=&#34;exsa&#34;)
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area stderr docutils container">
+<div class="output_area docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_6199/101140699.py:5: DeprecationWarning: `nwis.get_ratings` is deprecated and will be removed from `dataretrieval` on or after 2027-05-06; use `waterdata.get_ratings()` instead.
-  ratingData = nwis.get_ratings(site=site_id, file_type=&#34;exsa&#34;)
+Retrieved 409 data values.
 </pre></div></div>
 </div>
 </section>
@@ -384,7 +384,7 @@ The query URL used to retrieve the data from NWIS was: https://nwis.waterdata.us
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_6199/552008530.py:2: DeprecationWarning: `nwis.get_ratings` is deprecated and will be removed from `dataretrieval` on or after 2027-05-06; use `waterdata.get_ratings()` instead.
+/tmp/ipykernel_6282/552008530.py:2: DeprecationWarning: `nwis.get_ratings` is deprecated and will be removed from `dataretrieval` on or after 2027-05-06; use `waterdata.get_ratings()` instead.
   data = nwis.get_ratings(site=site_id, file_type=&#34;base&#34;)
 </pre></div></div>
 </div>
