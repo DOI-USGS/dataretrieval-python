@@ -7,6 +7,7 @@ import requests
 import dataretrieval.waterdata.utils as _utils_module
 from dataretrieval.waterdata.utils import (
     _arrange_cols,
+    _error_body,
     _format_api_dates,
     _get_args,
     _handle_stats_nesting,
@@ -18,26 +19,26 @@ _LOGGER_NAME = _utils_module.__name__
 
 def test_get_args_basic():
     local_vars = {
-        "monitoring_location_id": "123",
+        "monitoring_location_id": "USGS-123",
         "service": "daily",
         "output_id": "daily_id",
         "none_val": None,
         "other": "val",
     }
     result = _get_args(local_vars)
-    assert result == {"monitoring_location_id": "123", "other": "val"}
+    assert result == {"monitoring_location_id": "USGS-123", "other": "val"}
 
 
 def test_get_args_with_exclude():
     local_vars = {
-        "monitoring_location_id": "123",
+        "monitoring_location_id": "USGS-123",
         "service": "daily",
         "output_id": "daily_id",
         "to_exclude": "secret",
         "other": "val",
     }
     result = _get_args(local_vars, exclude={"to_exclude"})
-    assert result == {"monitoring_location_id": "123", "other": "val"}
+    assert result == {"monitoring_location_id": "USGS-123", "other": "val"}
 
 
 def test_get_args_empty():
@@ -370,3 +371,65 @@ def test_format_api_dates_open_ended_range_with_none():
     """A None / NaN endpoint becomes '..' in the output range."""
     assert _format_api_dates(["2024-01-01", None], date=True) == "2024-01-01/.."
     assert _format_api_dates([None, "2024-01-01"], date=True) == "../2024-01-01"
+
+
+def test_format_api_dates_rejects_mapping():
+    """`time={"2024-01-01": "x"}` would silently materialize as the keys list,
+    accepting input the user clearly didn't intend.
+    """
+    import pytest
+
+    with pytest.raises(TypeError, match="date input must be a string or sequence"):
+        _format_api_dates({"2024-01-01": "ignored"})
+
+
+def _make_response(status, body, reason=None, content_type="text/html"):
+    resp = requests.Response()
+    resp.status_code = status
+    resp.reason = reason
+    resp._content = body.encode("utf-8")
+    resp.headers["Content-Type"] = content_type
+    return resp
+
+
+def test_error_body_handles_non_json_html_response():
+    """A non-JSON 502 HTML body must be summarized, not raise JSONDecodeError."""
+    html = (
+        "<html>\r\n<head><title>502 Bad Gateway</title></head>"
+        "<body><center><h1>502 Bad Gateway</h1></center><hr>"
+        "<center>openresty</center></body></html>"
+    )
+    resp = _make_response(502, html, reason="Bad Gateway")
+    msg = _error_body(resp)
+    assert "502" in msg
+    assert "Bad Gateway" in msg
+
+
+def test_error_body_handles_empty_response_body():
+    """An empty error body returns a status/reason message without crashing."""
+    resp = _make_response(500, "", reason="Internal Server Error")
+    msg = _error_body(resp)
+    assert msg == "500: Internal Server Error."
+
+
+def test_error_body_truncates_long_non_json_body():
+    """Non-JSON bodies are truncated to 200 chars to keep the message readable."""
+    body = ("x" * 200) + "Y" + ("z" * 299)
+    resp = _make_response(502, body, reason="Bad Gateway")
+    msg = _error_body(resp)
+    assert "x" * 200 in msg
+    assert (("x" * 200) + "Y") not in msg
+
+
+def test_error_body_still_parses_well_formed_json():
+    """JSON error bodies continue to render code/description fields."""
+    resp = _make_response(
+        400,
+        '{"code": "BadRequest", "description": "missing parameter"}',
+        reason="Bad Request",
+        content_type="application/json",
+    )
+    msg = _error_body(resp)
+    assert "400" in msg
+    assert "BadRequest" in msg
+    assert "missing parameter" in msg

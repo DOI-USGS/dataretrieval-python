@@ -291,10 +291,13 @@ def get_discharge_peaks(
 
 
 def get_gwlevels(**kwargs):
-    """Defunct: use ``waterdata.get_field_measurements()``."""
+    """Defunct: use ``waterdata.get_continuous()``, ``waterdata.get_daily()``,
+    or ``waterdata.get_field_measurements()``."""
     raise NameError(
-        "`nwis.get_gwlevels` has been replaced "
-        "with `waterdata.get_field_measurements()`."
+        "`nwis.get_gwlevels` has been replaced. Use "
+        "`waterdata.get_continuous()` for continuous (typically 15-minute) "
+        "values, `waterdata.get_daily()` for daily values, or "
+        "`waterdata.get_field_measurements()` for discrete/manual readings."
     )
 
 
@@ -885,7 +888,8 @@ def get_record(
         - 'site' : site description
         - 'measurements' : (defunct) use `waterdata.get_field_measurements`
         - 'peaks': discharge peaks
-        - 'gwlevels': (defunct) use `waterdata.get_field_measurements`
+        - 'gwlevels': (defunct) use `waterdata.get_continuous`,
+          `waterdata.get_daily`, or `waterdata.get_field_measurements`
         - 'pmcodes': (defunct) use `get_reference_table`
         - 'water_use': (defunct) no replacement available
         - 'ratings': get rating table
@@ -933,7 +937,11 @@ def get_record(
 
     defunct_replacements = {
         "measurements": "`waterdata.get_field_measurements`",
-        "gwlevels": "`waterdata.get_field_measurements`",
+        "gwlevels": (
+            "`waterdata.get_continuous` (continuous), "
+            "`waterdata.get_daily`, or `waterdata.get_field_measurements` "
+            "(discrete)"
+        ),
         "pmcodes": "`waterdata.get_reference_table`",
         "water_use": "no replacement available",
     }

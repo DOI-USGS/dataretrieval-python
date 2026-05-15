@@ -14,14 +14,21 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Any, Iterable, Literal, get_args
+from collections.abc import Iterable
+from typing import Any, Literal, get_args
 
 import pandas as pd
 import requests
 
 from dataretrieval.rdb import extract_rdb_comment, read_rdb
 
-from .utils import _DURATION_RE, BASE_URL, _default_headers, _format_api_dates
+from .utils import (
+    _DURATION_RE,
+    BASE_URL,
+    _check_monitoring_location_id,
+    _default_headers,
+    _format_api_dates,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +39,7 @@ _VALID_FILE_TYPES = get_args(RATING_FILE_TYPE)
 
 
 def get_ratings(
-    monitoring_location_id: str | list[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
     file_type: RATING_FILE_TYPE | list[RATING_FILE_TYPE] = "exsa",
     file_path: str | None = None,
     time: str | list[str] | None = None,
@@ -61,7 +68,7 @@ def get_ratings(
 
     Parameters
     ----------
-    monitoring_location_id : string or list of strings, optional
+    monitoring_location_id : string or iterable of strings, optional
         One or more identifiers in ``AGENCY-ID`` form (e.g.
         ``"USGS-01104475"``). If omitted, the spatial / temporal filters
         determine the result set.
@@ -141,6 +148,7 @@ def get_ratings(
         ... )
 
     """
+    monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
     file_types = _as_list(file_type)
     invalid = [ft for ft in file_types if ft not in _VALID_FILE_TYPES]
     if invalid:

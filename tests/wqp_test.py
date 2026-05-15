@@ -33,11 +33,12 @@ def test_get_results(requests_mock):
         startDateHi="09-30-2011",
     )
     assert type(df) is DataFrame
-    assert df.size == 315
+    assert df.shape == (5, 65)
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
     assert md.header == {"mock_header": "value"}
     assert md.comment is None
+    assert df["ActivityStartDateTime"].notna().all()
 
 
 def test_get_results_WQX3(requests_mock):
@@ -58,11 +59,12 @@ def test_get_results_WQX3(requests_mock):
         startDateHi="09-30-2011",
     )
     assert type(df) is DataFrame
-    assert df.size == 900
+    assert df.shape == (5, 186)
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
     assert md.header == {"mock_header": "value"}
     assert md.comment is None
+    assert df["Activity_StartDateTime"].notna().all()
 
 
 def test_what_sites(requests_mock):

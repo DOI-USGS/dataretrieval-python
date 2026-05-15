@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 
 import pandas as pd
 
-from .utils import BaseMetadata, query
+from .utils import BaseMetadata, _attach_datetime_columns, query
 
 if TYPE_CHECKING:
     from pandas import DataFrame
@@ -101,7 +101,14 @@ def get_results(
     Returns
     -------
     df : ``pandas.DataFrame``
-        Formatted data returned from the API query.
+        Formatted data returned from the API query. For each
+        ``<prefix>Date`` / ``<prefix>Time`` / ``<prefix>TimeZone`` triplet in
+        the response (legacy WQP uses ``<prefix>Time/Time`` and
+        ``<prefix>Time/TimeZoneCode``), an additional ``<prefix>DateTime``
+        column is appended holding a UTC ``Timestamp``. Original triplet
+        columns are preserved; unrecognized timezone codes yield ``NaT``.
+        Rows are sorted by ``ActivityStartDateTime`` (or ``Activity_StartDateTime``
+        for WQX3 responses) when present.
     md : :obj:`dataretrieval.utils.Metadata`
         Custom ``dataretrieval`` metadata object pertaining to the query.
 
@@ -147,6 +154,7 @@ def get_results(
     response = query(url, kwargs, delimiter=";", ssl_check=ssl_check)
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _attach_datetime_columns(df)
     return df, WQP_Metadata(response)
 
 

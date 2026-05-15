@@ -4,12 +4,13 @@ import json
 import logging
 import os
 import re
+from collections.abc import Iterable, Mapping
 from datetime import datetime
 from typing import Any, get_args
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import requests
-from zoneinfo import ZoneInfo
 
 from dataretrieval import __version__
 from dataretrieval.utils import BaseMetadata
@@ -143,6 +144,15 @@ _DATETIME_FORMATS = (
 # admits time-only forms like ``PT36H``.
 _DURATION_RE = re.compile(r"^[Pp]T?\d")
 
+# OGC API parameters that carry a date/datetime value (single string,
+# two-element range, or interval/duration string) rather than a multi-value
+# string list. Used by ``_construct_api_requests`` to keep them out of the
+# POST/CQL2 multi-value path and to route them through ``_format_api_dates``,
+# and by ``_NO_NORMALIZE_PARAMS`` to bypass string-iterable normalization.
+_DATE_RANGE_PARAMS = frozenset(
+    {"datetime", "last_modified", "begin", "begin_utc", "end", "end_utc", "time"}
+)
+
 
 def _parse_datetime(value: str) -> datetime | None:
     """Parse a single datetime string against the supported formats.
@@ -223,12 +233,24 @@ def _format_api_dates(
     converted from that offset to UTC; naive inputs are interpreted in the
     local time zone for backwards compatibility.
     """
+    if datetime_input is None:
+        return None
     # Get timezone
     local_timezone = datetime.now().astimezone().tzinfo
 
     # Convert single string to list for uniform processing
     if isinstance(datetime_input, str):
         datetime_input = [datetime_input]
+    elif isinstance(datetime_input, Mapping):
+        # `list(mapping)` returns keys, which silently accepts the wrong shape.
+        raise TypeError(
+            f"date input must be a string or sequence of strings, "
+            f"not {type(datetime_input).__name__}."
+        )
+    elif not isinstance(datetime_input, (list, tuple)):
+        # Materialize any other iterable (pandas.Series, numpy.ndarray,
+        # generator, ...) so the len()/subscript operations below work.
+        datetime_input = list(datetime_input)
 
     # Check for null or all NA and return None
     if all(pd.isna(dt) or dt == "" or dt is None for dt in datetime_input):
@@ -335,7 +357,7 @@ def _check_ogc_requests(endpoint: str = "daily", req_type: str = "queryables"):
 
 def _error_body(resp: requests.Response):
     """
-    Provide more informative error messages based on the response status.
+    Build an informative error message from an HTTP response.
 
     Parameters
     ----------
@@ -345,10 +367,19 @@ def _error_body(resp: requests.Response):
     Returns
     -------
     str
-        The extracted error message. For status code 429, returns the 'message'
-        field from the JSON error object. For status code 403, returns a
-        predefined message indicating possible reasons for denial. For other
-        status codes, returns the raw response text.
+        An error message string assembled per status code:
+
+        * **429** — predefined message describing the rate-limit and pointing
+          at the API-token path; the response body is not consulted.
+        * **403** — predefined message describing the most common cause
+          (query exceeding server limits); the response body is not
+          consulted.
+        * **other statuses** — attempts ``resp.json()`` and renders
+          ``"<status>: <code>. <description>."`` from the JSON error
+          envelope. If the body is not JSON (e.g. an HTML 502 from a
+          gateway), falls back to ``"<status>: <reason>. <snippet>"`` with
+          the first 200 characters of ``resp.text``; an empty body
+          degrades to ``"<status>: <reason>."``.
     """
     status = resp.status_code
     if status == 429:
@@ -361,7 +392,14 @@ def _error_body(resp: requests.Response):
             "403: Query request denied. Possible reasons include "
             "query exceeding server limits."
         )
-    j_txt = resp.json()
+    try:
+        j_txt = resp.json()
+    except ValueError:
+        snippet = (resp.text or "").strip()[:200]
+        reason = resp.reason or "Error"
+        if snippet:
+            return f"{status}: {reason}. {snippet}"
+        return f"{status}: {reason}."
     return (
         f"{status}: {j_txt.get('code', 'Unknown type')}. "
         f"{j_txt.get('description', 'No description provided')}."
@@ -425,14 +463,11 @@ def _construct_api_requests(
     """
     service_url = f"{OGC_API_URL}/collections/{service}/items"
 
-    # Single parameters can only have one value
-    single_params = {"datetime", "last_modified", "begin", "end", "time"}
-
     # Identify which parameters should be included in the POST content body
     post_params = {
         k: v
         for k, v in kwargs.items()
-        if k not in single_params and isinstance(v, (list, tuple)) and len(v) > 1
+        if k not in _DATE_RANGE_PARAMS and isinstance(v, (list, tuple)) and len(v) > 1
     }
 
     # Everything else goes into the params dictionary for the URL
@@ -448,15 +483,13 @@ def _construct_api_requests(
     POST = bool(post_params)
 
     # Convert dates to ISO08601 format
-    time_periods = {"last_modified", "datetime", "time", "begin", "end"}
-    for i in time_periods:
+    for i in _DATE_RANGE_PARAMS:
         if i in params:
             dates = service == "daily" and i != "last_modified"
             params[i] = _format_api_dates(params[i], date=dates)
 
-    # String together bbox elements from a list to a comma-separated string,
-    # and string together properties if provided
-    if bbox:
+    # `len()` instead of truthiness: a numpy ndarray would raise on `if bbox:`.
+    if bbox is not None and len(bbox) > 0:
         params["bbox"] = ",".join(map(str, bbox))
     if properties:
         params["properties"] = ",".join(properties)
@@ -1162,6 +1195,129 @@ def _check_profiles(
         )
 
 
+_MONITORING_LOCATION_ID_RE = re.compile(r"[^-\s]+-[^-\s]+")
+
+
+# Iterable-shaped params that ``_get_args`` must NOT push through
+# ``_normalize_str_iterable`` (scalar non-string knobs are caught by runtime
+# type, so only iterables with special handling need to be named here):
+#   - date-range params may contain ``pd.NaT``/None or interval strings
+#   - ``bbox``/``boundingBox`` are ``list[float]``, sometimes ``numpy.ndarray``
+#   - ``get_peaks``'s int-valued filters (``water_year`` etc.) are ``list[int]``
+#   - ``get_combined_metadata``'s ``thresholds`` is ``list[float]``
+_NO_NORMALIZE_PARAMS = _DATE_RANGE_PARAMS | {
+    "bbox",
+    "boundingBox",
+    "water_year",
+    "year",
+    "month",
+    "day",
+    "peak_since",
+    "thresholds",
+}
+
+
+def _normalize_str_iterable(
+    value: str | Iterable[str] | None,
+    param_name: str = "value",
+) -> str | list[str] | None:
+    """Validate that ``value`` is None, a string, or an iterable of strings.
+
+    Non-string iterables (``list``, ``tuple``, ``pandas.Series``,
+    ``pandas.Index``, ``numpy.ndarray``, generators) are materialized to a
+    ``list`` so downstream code that branches on ``isinstance(v, (list,
+    tuple))`` keeps working. ``Mapping`` types are rejected because
+    iterating a mapping yields keys, not values.
+
+    Parameters
+    ----------
+    value : None, str, or iterable of str
+    param_name : str, optional
+        Used in error messages. Defaults to ``"value"``.
+
+    Returns
+    -------
+    None, str, or list of str
+
+    Raises
+    ------
+    TypeError
+        If the input isn't ``None``, ``str``, or a non-``Mapping``
+        iterable; or if any iterable element isn't a string.
+    """
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return value
+    if isinstance(value, Mapping) or not isinstance(value, Iterable):
+        raise TypeError(
+            f"{param_name} must be a string or iterable of strings, "
+            f"not {type(value).__name__} (got {value!r})."
+        )
+    values: list[str] = []
+    for v in value:
+        if not isinstance(v, str):
+            raise TypeError(
+                f"{param_name} elements must be strings, "
+                f"not {type(v).__name__} (got {v!r})."
+            )
+        values.append(v)
+    return values
+
+
+def _check_monitoring_location_id(
+    monitoring_location_id: str | Iterable[str] | None,
+) -> str | list[str] | None:
+    """Validate and normalize a ``monitoring_location_id`` value.
+
+    Combines :func:`_normalize_str_iterable` with the AGENCY-ID format
+    check that is unique to ``monitoring_location_id`` (the OGC spec
+    requires a hyphen separator, e.g. ``USGS-01646500``).
+
+    Parameters
+    ----------
+    monitoring_location_id : None, str, or iterable of str
+        See :func:`_normalize_str_iterable`. Each string is additionally
+        required to match the AGENCY-ID hyphen-separated format.
+
+    Returns
+    -------
+    None, str, or list of str
+
+    Raises
+    ------
+    TypeError
+        If the input isn't ``None``, ``str``, or a non-``Mapping``
+        iterable; or if any iterable element isn't a string.
+    ValueError
+        If any identifier doesn't contain a hyphen separator
+        (per the OGC API spec: AGENCY-ID format, e.g. ``USGS-01646500``).
+    """
+    try:
+        value = _normalize_str_iterable(
+            monitoring_location_id, "monitoring_location_id"
+        )
+    except TypeError as exc:
+        # Re-raise with the AGENCY-ID hint the generic helper doesn't carry.
+        raise TypeError(
+            f"{exc} Expected 'AGENCY-ID' format, e.g., 'USGS-01646500'."
+        ) from None
+    if value is None:
+        return None
+    for item in (value,) if isinstance(value, str) else value:
+        _check_id_format(item)
+    return value
+
+
+def _check_id_format(value: str) -> None:
+    """Raise ``ValueError`` if ``value`` is not in ``AGENCY-ID`` format."""
+    if not _MONITORING_LOCATION_ID_RE.fullmatch(value):
+        raise ValueError(
+            f"Invalid monitoring_location_id: {value!r}. "
+            f"Expected 'AGENCY-ID' format, e.g., 'USGS-01646500'."
+        )
+
+
 def _get_args(
     local_vars: dict[str, Any], exclude: set[str] | None = None
 ) -> dict[str, Any]:
@@ -1188,6 +1344,21 @@ def _get_args(
     if exclude:
         to_exclude.update(exclude)
 
-    return {
-        k: v for k, v in local_vars.items() if k not in to_exclude and v is not None
-    }
+    args: dict[str, Any] = {}
+    for k, v in local_vars.items():
+        if k in to_exclude or v is None:
+            continue
+        if k == "monitoring_location_id":
+            args[k] = _check_monitoring_location_id(v)
+        elif k == "properties":
+            # `",".join(properties)` would iterate a bare string as characters.
+            args[k] = [v] if isinstance(v, str) else _normalize_str_iterable(v, k)
+        elif (
+            k in _NO_NORMALIZE_PARAMS
+            or isinstance(v, str)
+            or not isinstance(v, Iterable)
+        ):
+            args[k] = v
+        else:
+            args[k] = _normalize_str_iterable(v, k)
+    return args
