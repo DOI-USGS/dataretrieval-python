@@ -229,14 +229,20 @@ def test_construct_api_requests_two_element_date_list_becomes_interval():
 
 
 class _FakeReq:
-    __slots__ = ("url",)
+    __slots__ = ("url", "body")
 
-    def __init__(self, url):
+    def __init__(self, url, body=None):
         self.url = url
+        self.body = body
 
 
 def _fake_build(*, base=200, **kwargs):
-    """Fake build_request: URL length deterministic in its inputs."""
+    """Fake build_request: URL length deterministic in its inputs.
+
+    Mirrors the GET-routed shape: payload goes in the URL, body is None.
+    The chunker's ``_request_bytes`` helper sums url + body, so this
+    stays equivalent to URL-only sizing for these tests.
+    """
     bytes_ = base
     for v in kwargs.values():
         if isinstance(v, (list, tuple)):

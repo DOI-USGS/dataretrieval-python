@@ -211,6 +211,27 @@ def _chunk_bytes(chunk: list) -> int:
     return len(",".join(map(str, chunk)))
 
 
+def _request_bytes(req: Any) -> int:
+    """Total bytes of a prepared request: URL + body.
+
+    For the GET-routed services PR 233 introduced, the multi-value list
+    lives in the URL and ``req.body`` is ``None`` — this reduces to URL
+    length. For POST-routed services (currently only ``monitoring-
+    locations``, which the upstream API still rejects comma-separated
+    values for and routes through CQL2 JSON), the multi-value list lives
+    in the body and the URL stays ~200 bytes regardless of payload;
+    counting body bytes is the only way the planner can recognize that
+    a POST request needs to chunk.
+    """
+    url_len = len(req.url)
+    body = req.body
+    if body is None:
+        return url_len
+    if isinstance(body, (bytes, bytearray)):
+        return url_len + len(body)
+    return url_len + len(str(body).encode("utf-8"))
+
+
 def _worst_case_args(
     probe_args: dict[str, Any], plan: dict[str, list[list]]
 ) -> dict[str, Any]:
@@ -243,14 +264,14 @@ def _plan_chunks(
     if not chunkable:
         return None
     probe_args = _filter_aware_probe_args(args)
-    if len(build_request(**probe_args).url) <= url_limit:
+    if _request_bytes(build_request(**probe_args)) <= url_limit:
         return None
 
     plan: dict[str, list[list]] = {k: [v] for k, v in chunkable.items()}
 
     while True:
         worst = _worst_case_args(probe_args, plan)
-        if len(build_request(**worst).url) <= url_limit:
+        if _request_bytes(build_request(**worst)) <= url_limit:
             break
 
         # Find the single biggest chunk across all dims and halve it.
@@ -265,10 +286,10 @@ def _plan_chunks(
 
         if best is None:
             raise RequestTooLarge(
-                f"Request URL exceeds {url_limit} bytes even with every "
-                f"multi-value parameter at a singleton chunk and any "
-                f"chunkable filter reduced to one OR-clause. Reduce the "
-                f"number of values or split the call manually."
+                f"Request exceeds {url_limit} bytes (URL + body) even "
+                f"with every multi-value parameter at a singleton chunk "
+                f"and any chunkable filter reduced to one OR-clause. "
+                f"Reduce the number of values or split the call manually."
             )
         dim, idx, _ = best
         big = plan[dim][idx]
