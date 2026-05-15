@@ -37,10 +37,12 @@ from dataretrieval.waterdata.utils import (
 # PR #273, transient upstream errors (5xx / 429 / connection drops)
 # propagate instead of silently truncating, which makes CI susceptible
 # to flaking on a brief upstream blip. Auto-retry such failures, but
-# only for the narrow set of transient-error trace patterns — library
-# bugs raising other exception types still fail on the first try.
-# Tests in this file that use ``requests_mock`` or ``mock.patch`` won't
-# match these patterns and so are effectively unaffected.
+# only for the narrow set of transient-error trace patterns below —
+# library bugs raising other exception types still fail on the first
+# try. The marker is attached to every test in the module, but the
+# patterns match only traces produced by real network round-trips
+# (``_raise_for_non_200`` output, ``requests`` exceptions), so tests
+# using ``requests_mock`` or ``mock.patch`` are no-ops for the rerun.
 pytestmark = pytest.mark.flaky(
     reruns=2,
     reruns_delay=5,
