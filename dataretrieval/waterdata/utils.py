@@ -683,7 +683,7 @@ def _walk_pages(
                 dfs.append(_get_resp_data(resp, geopd=geopd))
                 curr_url = _next_req_url(resp)
             except Exception as e:  # noqa: BLE001
-                logger.exception("Request incomplete: %s", e)
+                logger.error("Request incomplete: %s", e)
                 logger.warning(
                     "Request failed for URL: %s. Data download interrupted.", curr_url
                 )
@@ -1147,7 +1147,7 @@ def get_stats_data(
                 all_dfs.append(_handle_stats_nesting(body, geopd=GEOPANDAS))
                 next_token = body["next"]
             except Exception as e:  # noqa: BLE001
-                logger.exception("Request incomplete: %s", e)
+                logger.error("Request incomplete: %s", e)
                 logger.warning(
                     "Request failed for URL: %s (next_token=%s). "
                     "Data download interrupted.",
