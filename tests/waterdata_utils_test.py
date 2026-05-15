@@ -148,15 +148,15 @@ def test_walk_pages_surfaces_5xx_mid_pagination(caplog):
     """A non-200 mid-pagination response must be logged, not silently swallowed."""
     caplog.set_level(logging.ERROR, logger=_LOGGER_NAME)
 
-    page2_500 = mock.MagicMock()
-    page2_500.status_code = 503
-    page2_500.json.return_value = {
+    page2_503 = mock.MagicMock()
+    page2_503.status_code = 503
+    page2_503.json.return_value = {
         "code": "ServiceUnavailable",
         "description": "upstream timeout",
     }
-    page2_500.url = "https://example.com/page2"
+    page2_503.url = "https://example.com/page2"
 
-    df, _ = _walk_pages_with_failure(page2_500)
+    df, _ = _walk_pages_with_failure(page2_503)
 
     assert list(df["val"]) == ["a"]
     messages = _error_log_messages(caplog)
