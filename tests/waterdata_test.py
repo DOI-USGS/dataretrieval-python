@@ -33,6 +33,24 @@ from dataretrieval.waterdata.utils import (
     _normalize_str_iterable,
 )
 
+# Most tests in this module call the live USGS Water Data API. After
+# PR #273, transient upstream errors (5xx / 429 / connection drops)
+# propagate instead of silently truncating, which makes CI susceptible
+# to flaking on a brief upstream blip. Auto-retry such failures, but
+# only for the narrow set of transient-error trace patterns — library
+# bugs raising other exception types still fail on the first try.
+# Tests in this file that use ``requests_mock`` or ``mock.patch`` won't
+# match these patterns and so are effectively unaffected.
+pytestmark = pytest.mark.flaky(
+    reruns=2,
+    reruns_delay=5,
+    only_rerun=[
+        r"RuntimeError:\s*(?:429|5\d\d):",  # _raise_for_non_200 output
+        r"ConnectionError",
+        r"ReadTimeout|ConnectTimeout|Timeout",
+    ],
+)
+
 
 def mock_request(requests_mock, request_url, file_path):
     """Mock request code"""
