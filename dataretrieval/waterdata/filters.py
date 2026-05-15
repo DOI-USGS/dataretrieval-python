@@ -268,15 +268,20 @@ def _combine_chunk_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
 def _combine_chunk_responses(
     responses: list[requests.Response],
 ) -> requests.Response:
-    """Return one response: first chunk's URL/headers + summed ``elapsed``.
+    """Return one response: last chunk's URL/headers + summed ``elapsed``.
 
-    Mutates the first response in place (only ``elapsed``); downstream only
+    Returning the latest sub-response (rather than the first) preserves
+    current rate-limit headers (e.g. ``x-ratelimit-remaining``), which the
+    outer ``multi_value_chunked`` decorator inspects to honor its
+    ``QuotaExhausted`` safety floor between sub-requests.
+
+    Mutates the last response in place (only ``elapsed``); downstream only
     reads ``elapsed`` (in ``BaseMetadata.query_time``), URL, and headers.
     """
-    head = responses[0]
+    tail = responses[-1]
     if len(responses) > 1:
-        head.elapsed = sum((r.elapsed for r in responses[1:]), start=head.elapsed)
-    return head
+        tail.elapsed = sum((r.elapsed for r in responses[:-1]), start=tail.elapsed)
+    return tail
 
 
 _FetchOnce = TypeVar(

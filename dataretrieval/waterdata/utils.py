@@ -643,7 +643,10 @@ def _walk_pages(
     pd.DataFrame
         A DataFrame containing the aggregated results from all pages.
     requests.Response
-        The initial response object containing metadata about the first request.
+        The latest response from the pagination walk. Returning the most
+        recent response (not the first) lets downstream callers observe
+        current rate-limit headers (e.g. ``x-ratelimit-remaining``) on
+        which the multi-value chunker's ``QuotaExhausted`` guard relies.
 
     Raises
     ------
@@ -665,9 +668,6 @@ def _walk_pages(
     try:
         resp = client.send(req)
         _raise_for_non_200(resp)
-
-        # Store the initial response for metadata
-        initial_response = resp
 
         # Grab some aspects of the original request: headers and the
         # request type (GET or POST)
@@ -697,7 +697,7 @@ def _walk_pages(
                 curr_url = None
 
         # Concatenate all pages at once for efficiency
-        return pd.concat(dfs, ignore_index=True), initial_response
+        return pd.concat(dfs, ignore_index=True), resp
     finally:
         if close_client:
             client.close()
@@ -1128,9 +1128,6 @@ def get_stats_data(
         resp = client.send(req)
         _raise_for_non_200(resp)
 
-        # Store the initial response for metadata
-        initial_response = resp
-
         # Grab some aspects of the original request: headers and the
         # request type (GET or POST)
         method = req.method.upper()
@@ -1173,7 +1170,7 @@ def get_stats_data(
         if expand_percentiles:
             dfs = _expand_percentiles(dfs)
 
-        return dfs, BaseMetadata(initial_response)
+        return dfs, BaseMetadata(resp)
     finally:
         if close_client:
             client.close()
