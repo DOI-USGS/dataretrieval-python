@@ -19,13 +19,14 @@ Design (orthogonal to filter chunking):
   determines output schema and chunking it would shard columns.
 
 Coordination with ``filters.chunked``:
-The planner probes URL length using the SHORTEST top-level OR-clause
+The planner probes URL length using the LONGEST top-level OR-clause
 when a chunkable filter is present, not the full filter. ``filters.
-chunked`` (inner) will split the filter per sub-request, so probing
-with the smallest clause models the per-sub-request URL the stack will
-actually produce. Without this, a long OR-filter plus multi-value
-lists would trigger a premature ``RequestTooLarge`` even though the
-combined chunkers would have made things fit.
+chunked`` (inner) will split the filter per sub-request but bails if
+any single clause exceeds its budget, so the longest clause is the
+smallest filter size the stack is guaranteed to emit. Without this
+coordination, a long OR-filter plus multi-value lists would trigger a
+premature ``RequestTooLarge`` even though the combined chunkers would
+have made things fit.
 """
 
 from __future__ import annotations
@@ -155,14 +156,18 @@ def _chunkable_params(args: dict[str, Any]) -> dict[str, list]:
 
 
 def _filter_aware_probe_args(args: dict[str, Any]) -> dict[str, Any]:
-    """Substitute the filter with its shortest top-level OR-clause if the
+    """Substitute the filter with its LONGEST top-level OR-clause if the
     filter is chunkable, otherwise return ``args`` unchanged.
 
-    The inner ``filters.chunked`` decorator will reduce the filter per
-    sub-request to at most one OR-clause (its hard floor — see
-    ``_chunk_cql_or``). Probing with that minimum models the per-sub-
-    request URL the decorator stack will actually emit, so we don't
-    plan around bytes the filter chunker has already promised to remove.
+    The inner ``filters.chunked`` decorator splits a filter into chunks
+    each ≤ the per-sub-request byte budget, but bails (returns the full
+    filter unchanged) when ANY single OR-clause exceeds the budget. So
+    the smallest filter the inner chunker is guaranteed to emit per
+    sub-request is bounded below by the largest single clause — not the
+    smallest. Probing with ``max(parts, key=len)`` models the worst
+    achievable per-sub-request URL the decorator stack can produce; if
+    that fits, we know the inner chunker won't bail and the actual URL
+    will fit too.
     """
     filter_expr = args.get("filter")
     filter_lang = args.get("filter_lang")
@@ -170,8 +175,8 @@ def _filter_aware_probe_args(args: dict[str, Any]) -> dict[str, Any]:
         return args
     parts = _split_top_level_or(filter_expr)
     if len(parts) < 2:
-        return args  # one-clause filter — filter chunker can't shrink it
-    return {**args, "filter": min(parts, key=len)}
+        return args  # one-clause filter — inner chunker can't shrink it
+    return {**args, "filter": max(parts, key=len)}
 
 
 def _worst_case_args(

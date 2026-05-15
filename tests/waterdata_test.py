@@ -225,11 +225,14 @@ def test_filter_aware_probe_args_passes_through_when_not_chunkable():
     assert _filter_aware_probe_args(args) == args
 
 
-def test_filter_aware_probe_args_substitutes_shortest_or_clause():
-    """Chunkable filter → return args with filter replaced by shortest clause."""
+def test_filter_aware_probe_args_substitutes_longest_or_clause():
+    """Chunkable filter → return args with filter replaced by the LONGEST
+    clause. The inner filter chunker bails if any single clause exceeds
+    the per-sub-request budget, so the longest clause is the smallest
+    filter size the chunker can guarantee to emit per sub-request."""
     args = {"filter": "a='1' OR a='22' OR a='333'", "x": 7}
     probe = _filter_aware_probe_args(args)
-    assert probe["filter"] == "a='1'"
+    assert probe["filter"] == "a='333'"
     assert probe["x"] == 7
     assert args["filter"] == "a='1' OR a='22' OR a='333'"  # input not mutated
 
@@ -288,7 +291,9 @@ def test_plan_chunks_coordinates_with_filter_chunker():
         "filter": " OR ".join(clauses),
     }
     # singleton+full-filter ≈ 200 + 10 + 86 = 296 (over limit 240) — would raise.
-    # min-clause probe model ≈ 200 + 10 + 5 = 215 (under limit) — plan succeeds.
+    # max-clause probe model ≈ 200 + 10 + 5 = 215 (under limit) — plan succeeds.
+    # (Here all clauses are the same length, so min==max; the fix matters for
+    # filters with lopsided clauses where min < max.)
     plan = _plan_chunks(args, _fake_build, url_limit=240)
     assert plan is not None  # coordination prevented the premature raise
     assert len(plan["monitoring_location_id"]) > 1  # planner did split
@@ -304,6 +309,25 @@ def test_plan_chunks_coordinates_with_filter_chunker():
             _plan_chunks(args, _fake_build, url_limit=240)
     finally:
         ch._filter_aware_probe_args = saved
+
+
+def test_plan_chunks_probes_with_max_clause_not_min():
+    """Regression: with lopsided OR-clauses (one short, one long), probing
+    with min(parts) lets the planner falsely declare a plan feasible that
+    the inner filter chunker can't actually deliver — it bails when any
+    single clause exceeds the per-sub-request budget. Probing with the
+    longest clause is the safe lower bound on per-sub-request filter
+    size, so the planner correctly raises when no plan can fit."""
+    args = {
+        "sites": ["A" * 10, "B" * 10],
+        "filter": "x='1' OR x='" + "a" * 28 + "'",  # 5-char and 33-char clauses
+    }
+    # base 200 + singleton sites 10 + min-clause 5  = 215  (limit 230 -> fits)
+    # base 200 + singleton sites 10 + max-clause 33 = 243  (limit 230 -> exceeds)
+    # With min: planner succeeds, but real URL with full filter (42) exceeds
+    # 230 -> server 414. With max: planner raises early, as it should.
+    with pytest.raises(RequestTooLarge):
+        _plan_chunks(args, _fake_build, url_limit=230)
 
 
 def test_plan_chunks_still_raises_when_even_min_clause_doesnt_fit():
