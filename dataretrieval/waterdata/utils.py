@@ -422,6 +422,32 @@ def _raise_for_non_200(resp: requests.Response) -> None:
         raise RuntimeError(_error_body(resp))
 
 
+def _paginated_failure_message(pages_collected: int, cause: BaseException) -> str:
+    """User-facing message for a mid-pagination failure.
+
+    The API exposes no resume cursor, so the caller's only recovery is
+    to retry the whole call — the message lists the practical knobs,
+    tailored to whether the failure was rate-limit (429) or something
+    else.
+    """
+    cause_str = str(cause).removesuffix(".")
+    # Some ``requests`` exceptions (e.g. ``Timeout()`` with no args)
+    # stringify to empty; fall back to the class name so the wrapper
+    # message is always informative.
+    if not cause_str.strip():
+        cause_str = type(cause).__name__
+    if cause_str.startswith("429"):
+        action = "wait for the rate-limit window to reset and retry"
+    else:
+        action = "retry the request (possibly after a short backoff)"
+    return (
+        f"Paginated request failed after collecting {pages_collected} "
+        f"page(s): {cause_str}. To recover: {action}, reduce the "
+        f"request size (e.g. fewer locations, a shorter time range, or "
+        f"a smaller ``limit``), or obtain an API token."
+    )
+
+
 def _construct_api_requests(
     service: str,
     properties: list[str] | None = None,
@@ -647,8 +673,17 @@ def _walk_pages(
 
     Raises
     ------
-    Exception
-        If a request fails/returns a non-200 status code.
+    RuntimeError
+        On a non-200 initial response (bare message from ``_error_body``)
+        or any failure on a subsequent page (wrapped message built by
+        ``_paginated_failure_message`` with the original exception
+        chained as ``__cause__``).
+    requests.exceptions.RequestException
+        Network-level failures on the *initial* request (e.g.
+        ``ConnectionError``, ``Timeout``) propagate unmodified to
+        preserve their specific type for callers that branch on it.
+        Equivalent failures on *subsequent* pages are caught and
+        re-raised as ``RuntimeError`` per the rule above.
     """
     logger.info("Requesting: %s", req.url)
 
@@ -690,11 +725,10 @@ def _walk_pages(
                 dfs.append(_get_resp_data(resp, geopd=geopd))
                 curr_url = _next_req_url(resp)
             except Exception as e:  # noqa: BLE001
-                logger.error("Request incomplete: %s", e)
                 logger.warning(
                     "Request failed for URL: %s. Data download interrupted.", curr_url
                 )
-                curr_url = None
+                raise RuntimeError(_paginated_failure_message(len(dfs), e)) from e
 
         # Concatenate all pages at once for efficiency
         return pd.concat(dfs, ignore_index=True), initial_response
@@ -1154,14 +1188,13 @@ def get_stats_data(
                 all_dfs.append(_handle_stats_nesting(body, geopd=GEOPANDAS))
                 next_token = body["next"]
             except Exception as e:  # noqa: BLE001
-                logger.error("Request incomplete: %s", e)
                 logger.warning(
                     "Request failed for URL: %s (next_token=%s). "
                     "Data download interrupted.",
                     url,
                     next_token,
                 )
-                next_token = None
+                raise RuntimeError(_paginated_failure_message(len(all_dfs), e)) from e
 
         dfs = pd.concat(all_dfs, ignore_index=True) if len(all_dfs) > 1 else all_dfs[0]
 
