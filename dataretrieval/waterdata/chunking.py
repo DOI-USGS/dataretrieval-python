@@ -349,12 +349,13 @@ def multi_value_chunked(
     max_chunks: int | None = None,
     quota_safety_floor: int | None = None,
 ) -> Callable[[_FetchOnce], _FetchOnce]:
-    """Decorator that splits multi-value list params across sub-requests so
-    each URL fits ``url_limit`` bytes (defaults to ``filters._WATERDATA_
-    URL_BYTE_LIMIT``) and the cartesian-product plan stays ≤ ``max_chunks``
-    sub-requests (defaults to ``_DEFAULT_MAX_CHUNKS``). All defaults are
-    resolved at call time so tests/users that patch the module constants
-    affect this decorator uniformly.
+    """Decorator that splits multi-value list params across sub-requests
+    so each URL fits ``url_limit`` bytes (defaults to
+    ``filters._WATERDATA_URL_BYTE_LIMIT``) and the cartesian-product
+    plan stays ≤ ``max_chunks`` sub-requests (defaults to
+    ``_DEFAULT_MAX_CHUNKS``). All defaults are resolved at call time so
+    tests/users that patch the module constants affect this decorator
+    uniformly.
 
     Between sub-requests the wrapper reads ``x-ratelimit-remaining`` from
     each response. If it drops below ``quota_safety_floor`` (default
