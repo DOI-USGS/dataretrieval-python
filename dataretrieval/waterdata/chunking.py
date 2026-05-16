@@ -35,6 +35,7 @@ chunkers would have made things fit.
 
 from __future__ import annotations
 
+import concurrent.futures
 import functools
 import itertools
 import math
@@ -339,6 +340,7 @@ def multi_value_chunked(
     url_limit: int | None = None,
     max_chunks: int | None = None,
     quota_safety_floor: int | None = None,
+    max_workers: int | None = None,
 ) -> Callable[[_FetchOnce], _FetchOnce]:
     """Decorator that splits multi-value list params across sub-requests
     so each URL fits ``url_limit`` bytes (defaults to
@@ -362,6 +364,14 @@ def multi_value_chunked(
     response)`` — so the two decorators compose cleanly. The planner is
     filter-aware so it doesn't raise prematurely when the inner filter
     chunker would have shrunk the per-sub-request URL on its own.
+
+    ``max_workers`` (default ``None``, sequential) runs sub-requests in a
+    ``ThreadPoolExecutor`` when ``> 1``. Parallel mode forfeits the mid-call
+    quota guard and ``QuotaExhausted.partial_frame`` resumability — workers
+    race past the floor before any one observes the crossing, and any
+    chunk failure discards completed-but-uncollected results. Empirically
+    helpful only on pagination-bound workloads, where shared per-IP rate
+    limits cap useful parallelism well below host CPU count.
     """
 
     def decorator(fetch_once: _FetchOnce) -> _FetchOnce:
@@ -385,10 +395,30 @@ def multi_value_chunked(
 
             keys = list(plan)
             total = math.prod(len(plan[k]) for k in keys)
+            sub_args_list = [
+                {**args, **dict(zip(keys, combo))}
+                for combo in itertools.product(*(plan[k] for k in keys))
+            ]
+
+            if max_workers is not None and max_workers > 1:
+                # Parallel mode forfeits the mid-call quota guard and
+                # ``QuotaExhausted.partial_frame`` resumability: workers race
+                # past the floor before any one observes the crossing, and a
+                # failed chunk discards completed-but-uncollected results.
+                with concurrent.futures.ThreadPoolExecutor(
+                    max_workers=max_workers
+                ) as executor:
+                    results = list(executor.map(fetch_once, sub_args_list))
+                frames = [r[0] for r in results]
+                responses = [r[1] for r in results]
+                return (
+                    _combine_chunk_frames(frames),
+                    _combine_chunk_responses(responses),
+                )
+
             frames: list[pd.DataFrame] = []
             responses: list[requests.Response] = []
-            for i, combo in enumerate(itertools.product(*(plan[k] for k in keys))):
-                sub_args = {**args, **dict(zip(keys, combo))}
+            for i, sub_args in enumerate(sub_args_list):
                 frame, response = fetch_once(sub_args)
                 frames.append(frame)
                 responses.append(response)
