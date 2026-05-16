@@ -103,9 +103,10 @@ _QUOTA_UNKNOWN = 10**9
 class RequestTooLarge(ValueError):
     """Raised when a chunked request cannot be issued. Two cases:
     (1) URL exceeds the byte limit even with every multi-value param at
-    a singleton chunk and any chunkable filter reduced to its smallest
-    top-level OR-clause; (2) the cartesian-product plan would issue more
-    than ``max_chunks`` sub-requests."""
+    a singleton chunk and any chunkable filter at the inner chunker's
+    bail-floor size (the URL contribution of its longest single
+    OR-clause, after URL-encoding); (2) the cartesian-product plan
+    would issue more than ``max_chunks`` sub-requests."""
 
 
 class QuotaExhausted(RuntimeError):

@@ -240,15 +240,20 @@ def _fake_build(*, base=200, **kwargs):
     """Fake build_request: URL length deterministic in its inputs.
 
     Mirrors the GET-routed shape: payload goes in the URL, body is None.
-    The chunker's ``_request_bytes`` helper sums url + body, so this
-    stays equivalent to URL-only sizing for these tests.
+    List/string values are URL-encoded via ``quote_plus`` so the fake's
+    byte count matches what the real ``_construct_api_requests`` would
+    produce; otherwise an alphanumeric test could pass against the fake
+    but fail in production once values containing ``%``, ``+``, ``/``,
+    ``&`` etc. (which expand under encoding) reach the same code path.
     """
+    from urllib.parse import quote_plus
+
     bytes_ = base
     for v in kwargs.values():
         if isinstance(v, (list, tuple)):
-            bytes_ += len(",".join(map(str, v)))
+            bytes_ += len(quote_plus(",".join(map(str, v))))
         elif isinstance(v, str):
-            bytes_ += len(v)
+            bytes_ += len(quote_plus(v))
     return _FakeReq("x" * bytes_)
 
 
@@ -326,8 +331,10 @@ def test_plan_chunks_coordinates_with_filter_chunker():
     With the FULL filter in URL-length probes, singleton-per-dim URL still
     exceeds the limit and the planner would raise RequestTooLarge. With
     filter-aware probing, the planner models the per-sub-request URL as
-    ``worst-dim-chunk + shortest-clause`` (what the inner filter chunker
-    will actually emit), sees it fits, and returns a plan.
+    ``worst-dim-chunk + longest-clause-after-encoding`` (the inner filter
+    chunker's bail floor — it returns the FULL filter if any single
+    clause exceeds the budget, so the longest clause is the smallest
+    floor it can guarantee). The probe fits, plan returns.
 
     Sanity-check the *negative*: with filter-aware probing disabled, the
     same inputs would raise.
@@ -338,9 +345,9 @@ def test_plan_chunks_coordinates_with_filter_chunker():
         "filter": " OR ".join(clauses),
     }
     # singleton+full-filter ≈ 200 + 10 + 86 = 296 (over limit 240) — would raise.
-    # max-clause probe model ≈ 200 + 10 + 5 = 215 (under limit) — plan succeeds.
-    # (Here all clauses are the same length, so min==max; the fix matters for
-    # filters with lopsided clauses where min < max.)
+    # longest-clause probe model ≈ 200 + 10 + 5 = 215 (under limit) — plan succeeds.
+    # (Here all clauses are the same length, so longest == shortest; the
+    # encoding-ratio coordination matters for lopsided clauses.)
     plan = _plan_chunks(args, _fake_build, url_limit=240)
     assert plan is not None  # coordination prevented the premature raise
     assert len(plan["monitoring_location_id"]) > 1  # planner did split
