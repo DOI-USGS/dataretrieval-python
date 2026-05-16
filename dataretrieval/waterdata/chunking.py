@@ -84,7 +84,8 @@ _NEVER_CHUNK = frozenset(
 # 1000 matches the default hourly quota and is a reasonable upper bound
 # for single-page sub-requests; tune lower if your queries paginate.
 # Override per-decorator via ``max_chunks=`` or by monkeypatching this
-# module attribute (read lazily in the wrapper).
+# module attribute — both the decorator wrapper and ``_plan_chunks``
+# read it lazily.
 _DEFAULT_MAX_CHUNKS = 1000
 
 # When ``x-ratelimit-remaining`` drops below this between sub-requests,
@@ -203,14 +204,14 @@ def _chunk_bytes(chunk: list[Any]) -> int:
     """URL-encoded byte length of ``chunk`` when comma-joined into a
     URL parameter value.
 
-    Used both as the planner's biggest-chunk comparator (in
-    ``_worst_case_args`` and the halving loop) and indirectly as the
-    URL contribution estimate. Sizing with ``quote_plus`` rather than
-    raw ``,``-join length avoids mis-ranking chunks whose values
-    contain characters that expand under URL encoding (``%``, ``+``,
-    ``/``, ``&``, etc.) — for typical USGS multi-value workloads
-    (alphanumeric IDs and codes) the two are equal, but the encoded
-    form is always correct.
+    Used as the planner's biggest-chunk comparator in
+    ``_worst_case_args`` and the halving loop. ``quote_plus`` (rather
+    than raw ``,``-join length) keeps the comparator faithful to what
+    the real URL builder produces, so values containing characters
+    that expand under URL encoding (``%``, ``+``, ``/``, ``&``, …)
+    can't be mis-ranked. For typical USGS multi-value workloads
+    (alphanumeric IDs and codes) raw and encoded lengths are equal,
+    but the encoded form is always correct.
     """
     return len(quote_plus(",".join(map(str, chunk))))
 
@@ -235,9 +236,12 @@ def _request_bytes(req: requests.PreparedRequest) -> int:
 def _worst_case_args(
     probe_args: dict[str, Any], plan: dict[str, list[list[Any]]]
 ) -> dict[str, Any]:
-    """Args dict using the LARGEST chunk from each dim — represents the
-    most byte-heavy sub-request the plan will issue, with the filter
-    already reduced to its filter-chunker floor."""
+    """Args representing the worst-case sub-request the plan will issue:
+    each dim's largest chunk (by URL-encoded bytes), against the
+    ``probe_args`` already returned by ``_filter_aware_probe_args``
+    (so any chunkable filter is at the inner chunker's bail-floor
+    size). Driving the URL probe with this args dict tells the
+    planner whether the *biggest* sub-request it would emit fits."""
     out = dict(probe_args)
     for k, chunks in plan.items():
         out[k] = max(chunks, key=_chunk_bytes)
@@ -254,9 +258,9 @@ def _plan_chunks(
 
     Returns ``None`` when no chunking is needed (request as-is fits or
     no chunkable lists). Raises ``RequestTooLarge`` when:
-    - every multi-value param is already a singleton chunk AND the
-      filter (if any) is already at its smallest OR-clause and the URL
-      still exceeds ``url_limit`` (irreducible), or
+    - the smallest reducible plan still exceeds ``url_limit`` (every
+      multi-value param at a singleton chunk and any chunkable filter
+      already at the inner chunker's bail-floor size), or
     - the cartesian-product plan exceeds ``max_chunks`` sub-requests
       (the hourly API budget); checked after each split so we bail
       promptly once the cap is unreachable.
@@ -291,10 +295,12 @@ def _plan_chunks(
         biggest = max(splittable, key=lambda t: _chunk_bytes(t[2]), default=None)
         if biggest is None:
             raise RequestTooLarge(
-                f"Request exceeds {url_limit} bytes (URL + body) even "
-                f"with every multi-value parameter at a singleton chunk "
-                f"and any chunkable filter reduced to one OR-clause. "
-                f"Reduce the number of values or split the call manually."
+                f"Request exceeds {url_limit} bytes (URL + body) at the "
+                f"smallest reducible plan: every multi-value parameter "
+                f"at a singleton chunk and any chunkable filter at the "
+                f"inner chunker's bail-floor size. Reduce the number "
+                f"of values, shorten the filter, or split the call "
+                f"manually."
             )
         dim, idx, chunk = biggest
         mid = len(chunk) // 2
