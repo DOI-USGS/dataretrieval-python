@@ -5,7 +5,7 @@ import logging
 import os
 import re
 from collections.abc import Iterable, Mapping
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, get_args
 from zoneinfo import ZoneInfo
 
@@ -621,7 +621,7 @@ def _get_resp_data(resp: requests.Response, geopd: bool) -> pd.DataFrame:
 def _finalize_paginated_response(
     initial: requests.Response,
     last: requests.Response,
-    total_elapsed,
+    total_elapsed: timedelta,
 ) -> None:
     """Carry the last page's headers + cumulative elapsed onto the initial
     response in place.

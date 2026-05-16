@@ -198,7 +198,7 @@ def _filter_aware_probe_args(args: dict[str, Any]) -> dict[str, Any]:
     return {**args, "filter": "x" * probe_size}
 
 
-def _chunk_bytes(chunk: list) -> int:
+def _chunk_bytes(chunk: list[Any]) -> int:
     """URL-encoded byte length of ``chunk`` when comma-joined into a
     URL parameter value.
 
