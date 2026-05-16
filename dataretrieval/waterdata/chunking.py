@@ -39,7 +39,7 @@ import functools
 import itertools
 import math
 from collections.abc import Callable
-from typing import Any, TypeVar
+from typing import Any
 from urllib.parse import quote_plus
 
 import pandas as pd
@@ -49,7 +49,9 @@ from . import filters
 from .filters import (
     _combine_chunk_frames,
     _combine_chunk_responses,
+    _FetchOnce,
     _is_chunkable,
+    _max_per_clause_encoding_ratio,
     _split_top_level_or,
 )
 
@@ -161,7 +163,7 @@ class QuotaExhausted(RuntimeError):
         self.remaining = remaining
 
 
-def _chunkable_params(args: dict[str, Any]) -> dict[str, list]:
+def _chunkable_params(args: dict[str, Any]) -> dict[str, list[Any]]:
     """Return ``{name: list(values)}`` for every list/tuple kwarg with
     >1 element that is allowed to chunk."""
     return {
@@ -173,24 +175,16 @@ def _chunkable_params(args: dict[str, Any]) -> dict[str, list]:
 
 def _filter_aware_probe_args(args: dict[str, Any]) -> dict[str, Any]:
     """Substitute the filter with a synthetic ASCII clause sized to the
-    inner chunker's bail floor if the filter is chunkable, otherwise
-    return ``args`` unchanged.
+    inner chunker's bail floor, so the planner's URL probe matches what
+    the inner chunker would emit.
 
-    The inner ``filters.chunked`` decorator splits a filter into chunks
-    each whose URL-encoded length is ≤ the per-sub-request budget, but
-    bails (emits the full filter unchanged) when ANY single OR-clause's
-    URL-encoded length exceeds the budget. Mirroring ``filters._
-    effective_filter_budget``, the bail floor on the longest clause is
-    ``len(longest) * max(per_clause_encoding_ratio)``: even a clause
-    whose own ratio is low inherits the worst per-call ratio because
-    the budget is computed against the heaviest-encoding clause.
-
-    Substituting a synthetic ASCII clause of that exact length (ASCII
-    has a 1:1 encoding ratio, so ``quote_plus`` is a no-op) makes the
-    planner's URL probe and the inner chunker's bail condition agree
-    on worst-case size — the planner won't approve a plan the inner
-    chunker would then refuse to emit, and won't prematurely raise
-    when the inner chunker could have made it fit.
+    The inner ``filters.chunked`` bails (emits the full filter) when any
+    single OR-clause's URL-encoded length exceeds the per-sub-request
+    budget. Mirroring ``filters._effective_filter_budget``, that floor
+    is ``len(longest_clause) * max(per-clause encoding ratio)``.
+    Substituting an ASCII clause of that exact length makes
+    ``quote_plus`` a no-op, so the URL builder sees exactly the
+    bail-floor byte count.
     """
     filter_expr = args.get("filter")
     filter_lang = args.get("filter_lang")
@@ -199,9 +193,8 @@ def _filter_aware_probe_args(args: dict[str, Any]) -> dict[str, Any]:
     parts = _split_top_level_or(filter_expr)
     if len(parts) < 2:
         return args  # one-clause filter — inner chunker can't shrink it
-    encoding_ratio_max = max(len(quote_plus(p)) / len(p) for p in parts)
     longest_raw = max(len(p) for p in parts)
-    probe_size = math.ceil(longest_raw * encoding_ratio_max)
+    probe_size = math.ceil(longest_raw * _max_per_clause_encoding_ratio(parts))
     return {**args, "filter": "x" * probe_size}
 
 
@@ -239,7 +232,7 @@ def _request_bytes(req: requests.PreparedRequest) -> int:
 
 
 def _worst_case_args(
-    probe_args: dict[str, Any], plan: dict[str, list[list]]
+    probe_args: dict[str, Any], plan: dict[str, list[list[Any]]]
 ) -> dict[str, Any]:
     """Args dict using the LARGEST chunk from each dim — represents the
     most byte-heavy sub-request the plan will issue, with the filter
@@ -255,7 +248,7 @@ def _plan_chunks(
     build_request: Callable[..., Any],
     url_limit: int,
     max_chunks: int | None = None,
-) -> dict[str, list[list]] | None:
+) -> dict[str, list[list[Any]]] | None:
     """Greedy halving until the worst-case sub-request URL fits.
 
     Returns ``None`` when no chunking is needed (request as-is fits or
@@ -280,34 +273,31 @@ def _plan_chunks(
     if _request_bytes(build_request(**probe_args)) <= url_limit:
         return None
 
-    plan: dict[str, list[list]] = {k: [v] for k, v in chunkable.items()}
+    plan: dict[str, list[list[Any]]] = {k: [v] for k, v in chunkable.items()}
 
     while True:
         worst = _worst_case_args(probe_args, plan)
         if _request_bytes(build_request(**worst)) <= url_limit:
             return plan
 
-        # Find the single biggest chunk across all dims and halve it.
-        best: tuple[str, int, int] | None = None  # (dim, chunk_index, size)
-        for dim, dim_chunks in plan.items():
-            for idx, chunk in enumerate(dim_chunks):
-                if len(chunk) <= 1:
-                    continue
-                size = _chunk_bytes(chunk)
-                if best is None or size > best[2]:
-                    best = (dim, idx, size)
-
-        if best is None:
+        # Largest splittable chunk across all dims, by URL-encoded bytes.
+        splittable = (
+            (dim, idx, chunk)
+            for dim, dim_chunks in plan.items()
+            for idx, chunk in enumerate(dim_chunks)
+            if len(chunk) > 1
+        )
+        biggest = max(splittable, key=lambda t: _chunk_bytes(t[2]), default=None)
+        if biggest is None:
             raise RequestTooLarge(
                 f"Request exceeds {url_limit} bytes (URL + body) even "
                 f"with every multi-value parameter at a singleton chunk "
                 f"and any chunkable filter reduced to one OR-clause. "
                 f"Reduce the number of values or split the call manually."
             )
-        dim, idx, _ = best
-        big = plan[dim][idx]
-        mid = len(big) // 2
-        plan[dim] = plan[dim][:idx] + [big[:mid], big[mid:]] + plan[dim][idx + 1 :]
+        dim, idx, chunk = biggest
+        mid = len(chunk) // 2
+        plan[dim] = plan[dim][:idx] + [chunk[:mid], chunk[mid:]] + plan[dim][idx + 1 :]
 
         # Each split only grows the cartesian product, so once we
         # cross max_chunks we can never come back under. Bail now
@@ -321,12 +311,6 @@ def _plan_chunks(
                 f"limit per key). Reduce input list sizes, narrow the time "
                 f"window, or raise max_chunks if you have a higher quota."
             )
-
-
-_FetchOnce = TypeVar(
-    "_FetchOnce",
-    bound=Callable[[dict[str, Any]], tuple[pd.DataFrame, requests.Response]],
-)
 
 
 def _read_remaining(response: requests.Response) -> int:

@@ -152,6 +152,18 @@ def _chunk_cql_or(expr: str, max_len: int = _CQL_FILTER_CHUNK_LEN) -> list[str]:
     return chunks
 
 
+def _max_per_clause_encoding_ratio(parts: list[str]) -> float:
+    """Worst per-clause ``len(quote_plus(p)) / len(p)`` across OR-clauses.
+
+    Any sub-request chunk could end up containing only the heavier-encoding
+    clauses, so per-sub-request byte budgets must be sized against the
+    worst (not average) ratio to avoid overflow. Used by both this
+    module's filter chunker and the outer ``chunking._filter_aware_probe_args``;
+    pinning the formula here keeps the two from drifting.
+    """
+    return max(len(quote_plus(p)) / len(p) for p in parts)
+
+
 def _effective_filter_budget(
     args: dict[str, Any],
     filter_expr: str,
@@ -163,8 +175,7 @@ def _effective_filter_budget(
     non-filter URL bytes by building the request with a 1-byte placeholder
     filter, subtract from the URL limit to get the bytes available for the
     encoded filter, then convert back to raw CQL bytes via the *maximum*
-    per-clause encoding ratio (a chunk could contain only the heavier-encoding
-    clauses, so budgeting by the average ratio could overflow).
+    per-clause encoding ratio.
     """
     # Fast path: encoded filter clearly fits with room for any plausible
     # non-filter URL. Skips the PreparedRequest build and splitter scan.
@@ -179,7 +190,7 @@ def _effective_filter_budget(
         # the caller sees one 414 instead of N parallel sub-request failures.
         return len(filter_expr) + 1
     parts = _split_top_level_or(filter_expr) or [filter_expr]
-    encoding_ratio = max(len(quote_plus(p)) / len(p) for p in parts)
+    encoding_ratio = _max_per_clause_encoding_ratio(parts)
     return max(100, int(available_url_bytes / encoding_ratio))
 
 

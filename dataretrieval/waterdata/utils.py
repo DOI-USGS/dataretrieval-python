@@ -618,6 +618,26 @@ def _get_resp_data(resp: requests.Response, geopd: bool) -> pd.DataFrame:
     return df
 
 
+def _finalize_paginated_response(
+    initial: requests.Response,
+    last: requests.Response,
+    total_elapsed,
+) -> None:
+    """Carry the last page's headers + cumulative elapsed onto the initial
+    response in place.
+
+    The initial response stays canonical for ``md.url`` (user's original
+    query), but its ``.headers`` and ``.elapsed`` are overwritten so the
+    multi-value chunker's ``QuotaExhausted`` guard sees current
+    ``x-ratelimit-remaining`` and ``md.query_time`` reflects total
+    wall-clock across pages. No-op when ``initial is last`` (single page).
+    """
+    if last is initial:
+        return
+    initial.headers = last.headers
+    initial.elapsed = total_elapsed
+
+
 def _walk_pages(
     geopd: bool,
     req: requests.PreparedRequest,
@@ -703,9 +723,7 @@ def _walk_pages(
                 )
                 curr_url = None
 
-        if resp is not initial_response:
-            initial_response.headers = resp.headers
-            initial_response.elapsed = total_elapsed
+        _finalize_paginated_response(initial_response, resp, total_elapsed)
 
         # Concatenate all pages at once for efficiency
         return pd.concat(dfs, ignore_index=True), initial_response
@@ -1180,9 +1198,7 @@ def get_stats_data(
                 )
                 next_token = None
 
-        if resp is not initial_response:
-            initial_response.headers = resp.headers
-            initial_response.elapsed = total_elapsed
+        _finalize_paginated_response(initial_response, resp, total_elapsed)
 
         dfs = pd.concat(all_dfs, ignore_index=True) if len(all_dfs) > 1 else all_dfs[0]
 
