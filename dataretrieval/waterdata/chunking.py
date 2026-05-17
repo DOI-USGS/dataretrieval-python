@@ -586,10 +586,13 @@ def multi_value_chunked(
     ``resume_from=partial_metadata``, instead of crashing into a
     mid-pagination HTTP 429.
 
-    Any other failure inside a sub-request (transport errors,
-    mid-pagination ``RuntimeError``, inner-filter ``RequestTooLarge``)
-    is re-raised as ``PartialResult`` with the same partial-state
-    payload, with the underlying exception preserved via ``__cause__``.
+    Any other ``Exception`` raised inside a sub-request — transport
+    errors, mid-pagination ``RuntimeError``, inner-filter
+    ``RequestTooLarge``, or unexpected exceptions from the wrapped
+    function — is caught and re-raised as ``PartialResult`` with the
+    same partial-state payload, with the underlying exception preserved
+    via ``__cause__``. ``BaseException`` subclasses (``KeyboardInterrupt``,
+    ``SystemExit``) propagate unchanged.
 
     Sits OUTSIDE ``@filters.chunked``: list-chunking is the outer loop,
     filter-chunking is the inner loop. The wrapped function has the same

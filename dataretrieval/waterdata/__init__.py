@@ -29,6 +29,12 @@ from .api import (
     get_stats_por,
     get_time_series_metadata,
 )
+from .chunking import (
+    ChunkManifest,
+    PartialResult,
+    QuotaExhausted,
+    RequestTooLarge,
+)
 from .filters import FILTER_LANG
 from .nearest import get_nearest_continuous
 from .ratings import get_ratings
@@ -45,6 +51,10 @@ __all__ = [
     "PROFILES",
     "PROFILE_LOOKUP",
     "SERVICES",
+    "ChunkManifest",
+    "PartialResult",
+    "QuotaExhausted",
+    "RequestTooLarge",
     "get_channel",
     "get_codes",
     "get_combined_metadata",

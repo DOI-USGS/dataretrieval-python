@@ -50,7 +50,7 @@ rather than spin forever.
     import time
     import pandas as pd
     from dataretrieval import waterdata
-    from dataretrieval.waterdata.chunking import PartialResult
+    from dataretrieval.waterdata import PartialResult
 
     sites_df, _ = waterdata.get_monitoring_locations(
         state_name="Ohio",
