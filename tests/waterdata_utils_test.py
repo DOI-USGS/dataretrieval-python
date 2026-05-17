@@ -2,6 +2,7 @@ import logging
 from unittest import mock
 
 import pandas as pd
+import pytest
 import requests
 
 import dataretrieval.waterdata.utils as _utils_module
@@ -106,12 +107,6 @@ def _resp_ok(features):
     return resp
 
 
-def _error_log_messages(caplog):
-    """Pull ERROR-and-above message strings out of caplog. Shared by the
-    pagination-failure tests below."""
-    return [r.getMessage() for r in caplog.records if r.levelno >= logging.ERROR]
-
-
 def _walk_pages_with_failure(failure_resp_or_exc):
     """Run _walk_pages where page 1 succeeds and page 2 fails as given."""
     resp1 = _resp_ok([{"id": "1", "properties": {"val": "a"}}])
@@ -131,23 +126,38 @@ def _walk_pages_with_failure(failure_resp_or_exc):
     return _walk_pages(geopd=False, req=mock_req, client=mock_client)
 
 
-def test_walk_pages_logs_actual_exception_when_request_raises(caplog):
-    """Exception from client.request() must be logged with its actual message."""
-    caplog.set_level(logging.ERROR, logger=_LOGGER_NAME)
+def test_walk_pages_raises_on_connection_error_mid_pagination():
+    """A connection error mid-pagination must raise with the upstream cause
+    chained, and the wrapper message must include recovery guidance that
+    is NOT rate-limit-specific (no quota window involved)."""
+    with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
+        _walk_pages_with_failure(requests.ConnectionError("boom"))
 
-    df, _ = _walk_pages_with_failure(requests.ConnectionError("boom"))
-
-    # First page's data is preserved (best-effort behavior).
-    assert list(df["val"]) == ["a"]
-    # Logged error mentions the actual ConnectionError, not a stale page body.
-    messages = _error_log_messages(caplog)
-    assert any("boom" in m for m in messages), messages
+    msg = str(excinfo.value)
+    assert isinstance(excinfo.value.__cause__, requests.ConnectionError)
+    assert "boom" in msg
+    assert "retry the request" in msg
+    assert "rate-limit window" not in msg
 
 
-def test_walk_pages_surfaces_5xx_mid_pagination(caplog):
-    """A non-200 mid-pagination response must be logged, not silently swallowed."""
-    caplog.set_level(logging.ERROR, logger=_LOGGER_NAME)
+def test_walk_pages_raises_with_class_name_when_cause_stringifies_empty():
+    """Some ``requests`` exceptions (e.g. ``Timeout()`` with no args)
+    stringify to ``""``. The wrapper must still produce an informative
+    message — fall back to the exception class name."""
+    with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
+        _walk_pages_with_failure(requests.Timeout())
 
+    msg = str(excinfo.value)
+    assert "Timeout" in msg, msg
+    # Sanity-check the malformed-empty placeholder didn't slip through.
+    assert "page(s): ." not in msg
+    assert "page(s): To recover" not in msg
+
+
+def test_walk_pages_raises_on_5xx_mid_pagination():
+    """A 5xx mid-pagination must raise — partial data is no longer returned
+    because the API has no resume cursor, so silently truncating is the
+    wrong default."""
     page2_503 = mock.MagicMock()
     page2_503.status_code = 503
     page2_503.json.return_value = {
@@ -156,11 +166,27 @@ def test_walk_pages_surfaces_5xx_mid_pagination(caplog):
     }
     page2_503.url = "https://example.com/page2"
 
-    df, _ = _walk_pages_with_failure(page2_503)
+    with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
+        _walk_pages_with_failure(page2_503)
 
-    assert list(df["val"]) == ["a"]
-    messages = _error_log_messages(caplog)
-    assert any("503" in m or "ServiceUnavailable" in m for m in messages), messages
+    msg = str(excinfo.value)
+    assert "503" in msg or "ServiceUnavailable" in msg
+    assert "rate-limit window" not in msg  # not rate-limited
+
+
+def test_walk_pages_raises_on_mid_pagination_429():
+    """A 429 mid-pagination must raise. Specific status code is preserved in
+    the chained cause so callers can branch on rate-limit vs other failures."""
+    page2_429 = mock.MagicMock()
+    page2_429.status_code = 429
+    page2_429.url = "https://example.com/page2"
+
+    with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
+        _walk_pages_with_failure(page2_429)
+
+    msg = str(excinfo.value)
+    assert "429" in msg
+    assert "rate-limit window" in msg  # 429-specific guidance present
 
 
 def _stats_initial_ok():
@@ -205,23 +231,20 @@ def _run_get_stats_data_with_failure(failure_resp_or_exc, monkeypatch):
     )
 
 
-def test_get_stats_data_logs_actual_exception_when_request_raises(caplog, monkeypatch):
-    """get_stats_data variant of the connection-error scenario."""
-    caplog.set_level(logging.ERROR, logger=_LOGGER_NAME)
+def test_get_stats_data_raises_on_connection_error_mid_pagination(monkeypatch):
+    """get_stats_data variant of the connection-error-raises contract."""
+    with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
+        _run_get_stats_data_with_failure(
+            requests.ConnectionError("stats-boom"),
+            monkeypatch,
+        )
 
-    _run_get_stats_data_with_failure(
-        requests.ConnectionError("stats-boom"),
-        monkeypatch,
-    )
-
-    messages = _error_log_messages(caplog)
-    assert any("stats-boom" in m for m in messages), messages
+    assert isinstance(excinfo.value.__cause__, requests.ConnectionError)
+    assert "stats-boom" in str(excinfo.value)
 
 
-def test_get_stats_data_surfaces_5xx_mid_pagination(caplog, monkeypatch):
-    """get_stats_data variant of the mid-pagination 5xx scenario."""
-    caplog.set_level(logging.ERROR, logger=_LOGGER_NAME)
-
+def test_get_stats_data_raises_on_5xx_mid_pagination(monkeypatch):
+    """get_stats_data variant of the 5xx-raises contract."""
     page2_503 = mock.MagicMock()
     page2_503.status_code = 503
     page2_503.json.return_value = {
@@ -230,10 +253,22 @@ def test_get_stats_data_surfaces_5xx_mid_pagination(caplog, monkeypatch):
     }
     page2_503.url = "https://example.com/stats?service=foo&next_token=tok2"
 
-    _run_get_stats_data_with_failure(page2_503, monkeypatch)
+    with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
+        _run_get_stats_data_with_failure(page2_503, monkeypatch)
 
-    messages = _error_log_messages(caplog)
-    assert any("503" in m or "ServiceUnavailable" in m for m in messages), messages
+    assert "503" in str(excinfo.value) or "ServiceUnavailable" in str(excinfo.value)
+
+
+def test_get_stats_data_raises_on_mid_pagination_429(monkeypatch):
+    """get_stats_data variant of the 429-raises contract."""
+    page2_429 = mock.MagicMock()
+    page2_429.status_code = 429
+    page2_429.url = "https://example.com/stats?service=foo&next_token=tok2"
+
+    with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
+        _run_get_stats_data_with_failure(page2_429, monkeypatch)
+
+    assert "429" in str(excinfo.value)
 
 
 def test_get_stats_data_warning_includes_next_token(caplog, monkeypatch):
@@ -249,7 +284,8 @@ def test_get_stats_data_warning_includes_next_token(caplog, monkeypatch):
         "description": "upstream timeout",
     }
 
-    _run_get_stats_data_with_failure(page2_503, monkeypatch)
+    with pytest.raises(RuntimeError):
+        _run_get_stats_data_with_failure(page2_503, monkeypatch)
 
     warnings_ = [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING]
     # The initial response from _stats_initial_ok carries next=tok2.
