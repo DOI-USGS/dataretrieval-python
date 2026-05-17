@@ -237,11 +237,11 @@ def _worst_case_args(
     probe_args: dict[str, Any], plan: dict[str, list[list[Any]]]
 ) -> dict[str, Any]:
     """Args representing the worst-case sub-request the plan will issue:
-    each dim's largest chunk (by URL-encoded bytes), against the
-    ``probe_args`` already returned by ``_filter_aware_probe_args``
-    (so any chunkable filter is at the inner chunker's bail-floor
-    size). Driving the URL probe with this args dict tells the
-    planner whether the *biggest* sub-request it would emit fits."""
+    each dim's largest chunk (by URL-encoded bytes), composed onto
+    the ``probe_args`` already returned by ``_filter_aware_probe_args``
+    so any chunkable filter sits at the inner chunker's bail-floor
+    size. The planner feeds these args through ``_request_bytes`` to
+    decide whether the biggest sub-request fits the budget."""
     out = dict(probe_args)
     for k, chunks in plan.items():
         out[k] = max(chunks, key=_chunk_bytes)
@@ -254,7 +254,11 @@ def _plan_chunks(
     url_limit: int,
     max_chunks: int | None = None,
 ) -> dict[str, list[list[Any]]] | None:
-    """Greedy halving until the worst-case sub-request URL fits.
+    """Greedy halving until the worst-case sub-request fits ``url_limit``.
+
+    Budget is total request bytes (URL + body, via ``_request_bytes``)
+    so POST routes size correctly — see ``multi_value_chunked`` for the
+    parameter-name caveat.
 
     Returns ``None`` when no chunking is needed (request as-is fits or
     no chunkable lists). Raises ``RequestTooLarge`` when:
@@ -341,12 +345,18 @@ def multi_value_chunked(
     quota_safety_floor: int | None = None,
 ) -> Callable[[_FetchOnce], _FetchOnce]:
     """Decorator that splits multi-value list params across sub-requests
-    so each URL fits ``url_limit`` bytes (defaults to
+    so each sub-request fits ``url_limit`` bytes (defaults to
     ``filters._WATERDATA_URL_BYTE_LIMIT``) and the cartesian-product
     plan stays ≤ ``max_chunks`` sub-requests (defaults to
     ``_DEFAULT_MAX_CHUNKS``). All defaults are resolved at call time so
     tests/users that patch the module constants affect this decorator
     uniformly.
+
+    ``url_limit`` is enforced against total request bytes (URL + body,
+    via ``_request_bytes``); the name reflects the dominant GET case
+    where body is empty. POST routes (e.g. ``monitoring-locations`` via
+    CQL2 JSON) are conservatively sized — never under-chunks, but may
+    over-chunk at the body's true ceiling.
 
     Between sub-requests the wrapper reads ``x-ratelimit-remaining`` from
     each response. If it drops below ``quota_safety_floor`` (default
