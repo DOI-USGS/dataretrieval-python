@@ -36,10 +36,13 @@ from dataretrieval.waterdata.chunking import (
     _DEFAULT_MAX_CHUNKS,
     _DEFAULT_QUOTA_SAFETY_FLOOR,
     _QUOTA_HEADER,
+    ChunkManifest,
+    PartialResult,
     QuotaExhausted,
     RequestTooLarge,
     _chunkable_params,
     _filter_aware_probe_args,
+    _normalize_plan,
     _plan_chunks,
     _read_remaining,
     multi_value_chunked,
@@ -610,12 +613,16 @@ def test_multi_value_chunked_aborts_when_quota_floor_breached():
 
     err = excinfo.value
     # Aborted after the 3rd sub-request (remaining=40 < floor=50).
-    assert err.completed_chunks == 3
-    assert err.total_chunks == 4
+    assert err.manifest.completed == 3
+    assert err.manifest.total == 4
     assert err.remaining == 40
     # Partial frame combines rows from the first three completed sub-requests.
     assert err.partial_frame is not None
     assert set(err.partial_frame["page"]) == {0, 1, 2}
+    # The partial_response carries the manifest so callers can resume.
+    assert err.partial_response.chunk_manifest is err.manifest
+    assert err.manifest.is_complete is False
+    assert err.manifest.remaining == 1
 
 
 def test_multi_value_chunked_does_not_abort_on_last_chunk():
@@ -665,11 +672,14 @@ def test_quota_exhausted_message_includes_resume_offset():
     """The error message must point the user at the chunk offset to
     resume from, otherwise the partial_frame attribute is a footgun
     — the user has no way to know which chunks still need re-issuing."""
+    manifest = ChunkManifest(
+        plan=(("sites", tuple(("s" + str(i),) for i in range(20))),),
+        completed=7,
+    )
     e = QuotaExhausted(
         partial_frame=pd.DataFrame(),
         partial_response=mock.Mock(),
-        completed_chunks=7,
-        total_chunks=20,
+        manifest=manifest,
         remaining=12,
     )
     msg = str(e)
@@ -766,6 +776,380 @@ def test_chunkable_params_skips_filter_passed_as_list():
     assert "monitoring_location_id" in chunkable
     assert "filter" not in chunkable
     assert "filter_lang" not in chunkable
+
+
+# -- ChunkManifest + resume_from --------------------------------------------
+
+
+def test_chunk_manifest_basic_properties():
+    """``total`` is cartesian-product cardinality; ``is_complete`` and
+    ``remaining`` are derived from ``completed``."""
+    plan = _normalize_plan({"a": [["x"], ["y"]], "b": [["1"], ["2"], ["3"]]})
+    m = ChunkManifest(plan=plan, completed=0)
+    assert m.total == 6
+    assert m.is_complete is False
+    assert m.remaining == 6
+
+    m = ChunkManifest(plan=plan, completed=4)
+    assert m.remaining == 2
+    assert m.is_complete is False
+
+    m = ChunkManifest(plan=plan, completed=6)
+    assert m.is_complete is True
+    assert m.remaining == 0
+
+
+def test_chunk_manifest_is_hashable_and_immutable():
+    """``frozen=True`` lets users stash a manifest in a set or use it as
+    a dict key when bookkeeping partial-resume state across calls."""
+    import dataclasses
+
+    plan = _normalize_plan({"a": [["x"], ["y"]]})
+    m1 = ChunkManifest(plan=plan, completed=1)
+    m2 = ChunkManifest(plan=plan, completed=1)
+    assert m1 == m2 and hash(m1) == hash(m2)
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        m1.completed = 99  # type: ignore[misc]
+
+
+def test_normalize_plan_preserves_insertion_order():
+    """Cartesian-product iteration order is dict-insertion order; the
+    normalized plan must keep it stable for the resume validity check."""
+    p1 = _normalize_plan({"a": [["1"]], "b": [["x"]]})
+    p2 = _normalize_plan({"b": [["x"]], "a": [["1"]]})  # reversed insertion
+    assert p1 != p2  # order is significant — same chunks, different iteration
+
+
+def test_multi_value_chunked_attaches_manifest_on_success():
+    """A successful chunked call attaches the manifest to the aggregated
+    response so callers can log ``md.chunk_manifest`` and confirm the
+    request fanned out, even when nothing went wrong."""
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=240)
+    def fetch(args):
+        return (
+            pd.DataFrame({"site": list(args["sites"])}),
+            _quota_response(remaining=500),
+        )
+
+    _df, resp = fetch({"sites": ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10]})
+    manifest = resp.chunk_manifest
+    assert isinstance(manifest, ChunkManifest)
+    assert manifest.is_complete is True
+    assert manifest.completed == manifest.total > 1
+
+
+def test_multi_value_chunked_no_manifest_when_pass_through():
+    """If the request fits in one round-trip the wrapper short-circuits
+    to ``fetch_once`` and no manifest is attached — caller-side
+    ``md.chunk_manifest`` (via ``BaseMetadata.__init__``'s ``getattr``
+    default) would be ``None``."""
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=8000)
+    def fetch(args):
+        # Use a real ``requests.Response`` so attribute presence is honest:
+        # ``mock.Mock`` autocreates attributes on access, which would mask
+        # a missing ``chunk_manifest``.
+        import requests as _r  # local to avoid module-level test dependency
+
+        resp = _r.Response()
+        resp.elapsed = datetime.timedelta(seconds=0.1)
+        return pd.DataFrame(), resp
+
+    _df, resp = fetch({"sites": ["A", "B"]})
+    assert not hasattr(resp, "chunk_manifest")
+
+
+def test_basemetadata_exposes_chunk_manifest():
+    """BaseMetadata is the user's view onto a response — the manifest
+    must reach the caller through it without any extra wrapping."""
+    from dataretrieval.utils import BaseMetadata
+
+    plan = _normalize_plan({"a": [["x"], ["y"]]})
+    manifest = ChunkManifest(plan=plan, completed=1)
+    resp = mock.Mock(
+        url="u",
+        elapsed=datetime.timedelta(seconds=0),
+        headers={},
+        chunk_manifest=manifest,
+    )
+    md = BaseMetadata(resp)
+    assert md.chunk_manifest is manifest
+
+    # A response with no chunk_manifest attribute → md.chunk_manifest is None.
+    resp_plain = mock.Mock(
+        url="u", elapsed=datetime.timedelta(seconds=0), headers={}, spec=[]
+    )
+    md_plain = BaseMetadata(resp_plain)
+    assert md_plain.chunk_manifest is None
+
+
+def test_multi_value_chunked_wraps_walk_pages_failure_in_partial_result():
+    """When a sub-request raises (e.g. PR #279's ``RuntimeError`` for
+    mid-pagination failure), the chunker re-raises as ``PartialResult``
+    with the underlying exception preserved via ``__cause__`` and a
+    manifest pinned at the failing sub-request's index — so the caller
+    can resume from that exact offset."""
+    call_count = {"n": 0}
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=240)
+    def fetch(args):
+        call_count["n"] += 1
+        if call_count["n"] == 3:
+            raise RuntimeError("simulated mid-pagination 5xx after 2 pages")
+        return (
+            pd.DataFrame({"site": list(args["sites"])}),
+            _quota_response(remaining=500),
+        )
+
+    with pytest.raises(PartialResult) as excinfo:
+        fetch({"sites": ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10]})
+
+    err = excinfo.value
+    assert err.manifest.completed == 2  # two succeeded before the 3rd failed
+    assert err.manifest.total == 4
+    assert isinstance(err.__cause__, RuntimeError)
+    assert "mid-pagination" in str(err.__cause__)
+    # Partial frame combines the two successful chunks.
+    assert len(err.partial_frame) == 2
+    # The synthesized response carries the manifest for BaseMetadata.
+    assert err.partial_response.chunk_manifest is err.manifest
+
+
+def test_partial_result_first_chunk_failure_returns_empty_frame():
+    """Edge case: the very first sub-request fails. ``partial_frame`` is
+    empty, ``manifest.completed`` is 0, but the response still has the
+    canonical URL and manifest so a resume attempt can validate the plan."""
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=240)
+    def fetch(_args):
+        raise RuntimeError("transient transport failure")
+
+    with pytest.raises(PartialResult) as excinfo:
+        fetch({"sites": ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10]})
+
+    err = excinfo.value
+    assert err.manifest.completed == 0
+    assert err.manifest.total == 4
+    assert err.partial_frame.empty
+    assert err.partial_response.url  # canonical URL set even with no responses
+
+
+def test_partial_result_partial_metadata_wraps_response():
+    """``PartialResult.partial_metadata`` lazy-wraps the response in
+    ``BaseMetadata`` so callers can grab the manifest without importing
+    ``BaseMetadata`` themselves at the catch site."""
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=240)
+    def fetch(_args):
+        raise RuntimeError("boom")
+
+    with pytest.raises(PartialResult) as excinfo:
+        fetch({"sites": ["S1" * 10, "S2" * 10]})
+
+    md = excinfo.value.partial_metadata
+    assert md.chunk_manifest is excinfo.value.manifest
+
+
+def test_resume_from_skips_completed_chunks():
+    """``resume_from`` makes the wrapper skip the first ``manifest.completed``
+    cartesian-product combinations and fetch only the remainder. The
+    returned frame contains only the *new* chunks' data — the caller is
+    responsible for concatenating their saved partial frame."""
+    seen: list[tuple[str, ...]] = []
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=240)
+    def fetch(args):
+        seen.append(tuple(args["sites"]))
+        return (
+            pd.DataFrame({"site": list(args["sites"])}),
+            _quota_response(remaining=500),
+        )
+
+    sites = ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10]
+    # First, run normally to get the plan that would have been used.
+    plan = _plan_chunks({"sites": sites}, _fake_build, url_limit=240)
+    plan_norm = _normalize_plan(plan)
+
+    # Pretend a prior call completed 2 of 4 sub-requests.
+    prior_manifest = ChunkManifest(plan=plan_norm, completed=2)
+    md = mock.Mock(chunk_manifest=prior_manifest)
+
+    df, resp = fetch({"sites": sites, "resume_from": md})
+    # Only the last 2 cartesian-product combos should have run.
+    assert len(seen) == 2
+    assert len(df) == sum(len(s) for s in seen)
+    # The returned response's manifest shows the full plan completed.
+    assert resp.chunk_manifest.is_complete
+
+
+def test_resume_from_rejects_mismatched_plan():
+    """If the caller changed their kwargs between the original failure
+    and the resume call, the fresh plan won't match the manifest's plan.
+    Silently re-fetching with a different plan would interleave data
+    from two incompatible queries — raise instead."""
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=240)
+    def fetch(_args):
+        pytest.fail("should not reach fetch_once on a mismatched-plan resume")
+
+    plan = _plan_chunks(
+        {"sites": ["S" * 10 + str(i) for i in range(4)]},
+        _fake_build,
+        url_limit=240,
+    )
+    manifest = ChunkManifest(plan=_normalize_plan(plan), completed=1)
+    md = mock.Mock(chunk_manifest=manifest)
+
+    with pytest.raises(ValueError, match="manifest does not match"):
+        fetch(
+            {
+                "sites": ["T" * 10 + str(i) for i in range(4)],  # different values
+                "resume_from": md,
+            }
+        )
+
+
+def test_resume_from_rejects_no_manifest():
+    """A metadata that wasn't returned by a chunked call has no
+    ``chunk_manifest``. Treating that as "fresh query" silently would
+    confuse users who think they're resuming — raise."""
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=240)
+    def fetch(_args):
+        pytest.fail("should not reach fetch_once when resume metadata is invalid")
+
+    md = mock.Mock(chunk_manifest=None)
+    with pytest.raises(ValueError, match="no chunk_manifest"):
+        fetch({"sites": ["S" * 10 + str(i) for i in range(4)], "resume_from": md})
+
+
+def test_resume_from_rejects_complete_manifest():
+    """A complete manifest has nothing to resume; the caller probably
+    has stale state. Raise so they notice rather than re-issuing the
+    whole plan (which we'd happily skip-to-end)."""
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=240)
+    def fetch(_args):
+        pytest.fail("should not reach fetch_once on an already-complete manifest")
+
+    plan = _plan_chunks(
+        {"sites": ["S" * 10 + str(i) for i in range(4)]},
+        _fake_build,
+        url_limit=240,
+    )
+    plan_norm = _normalize_plan(plan)
+    total = math.prod(len(c) for _, c in plan_norm)
+    md = mock.Mock(chunk_manifest=ChunkManifest(plan=plan_norm, completed=total))
+
+    with pytest.raises(ValueError, match="already complete"):
+        fetch({"sites": ["S" * 10 + str(i) for i in range(4)], "resume_from": md})
+
+
+def test_resume_from_rejects_when_fresh_args_dont_chunk():
+    """If the current args fit in one round-trip the wrapper would
+    short-circuit to ``fetch_once`` — there'd be no plan to skip
+    against. That state is almost certainly a caller bug (they probably
+    pruned their site list between calls), so raise."""
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=8000)
+    def fetch(_args):
+        pytest.fail("should not reach fetch_once when resume can't be validated")
+
+    plan = _plan_chunks(
+        {"sites": ["S" * 10 + str(i) for i in range(4)]},
+        _fake_build,
+        url_limit=240,
+    )
+    manifest = ChunkManifest(plan=_normalize_plan(plan), completed=1)
+    md = mock.Mock(chunk_manifest=manifest)
+
+    with pytest.raises(ValueError, match="do not produce a chunk plan"):
+        fetch({"sites": ["A", "B"], "resume_from": md})
+
+
+def test_resume_from_not_forwarded_to_underlying_fetch():
+    """``resume_from`` is a chunker-only control kwarg; it must never
+    reach ``fetch_once`` (which would forward it to the URL builder as a
+    bogus query parameter)."""
+    forwarded: list[dict] = []
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=240)
+    def fetch(args):
+        forwarded.append(args)
+        return (
+            pd.DataFrame({"site": list(args["sites"])}),
+            _quota_response(remaining=500),
+        )
+
+    sites = ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10]
+    plan = _plan_chunks({"sites": sites}, _fake_build, url_limit=240)
+    md = mock.Mock(
+        chunk_manifest=ChunkManifest(plan=_normalize_plan(plan), completed=2)
+    )
+
+    fetch({"sites": sites, "resume_from": md})
+    assert forwarded, "fetch_once should have been called for the remaining chunks"
+    for sub_args in forwarded:
+        assert "resume_from" not in sub_args
+
+
+def test_resume_e2e_quota_exhaust_then_resume_completes_query():
+    """End-to-end: a first call exhausts quota partway through; the
+    caller catches ``QuotaExhausted``, saves ``(partial_df,
+    partial_metadata)``, then re-runs with ``resume_from=`` to fetch
+    the rest. Concatenating the two frames reproduces what a single
+    successful call would have returned."""
+    # First call: 4 chunks, quota header decrements 500, 200, 100, then
+    # 40 (< floor=50). Quota check runs *after* each chunk but only
+    # gates the *next* one, so 3 chunks land then the 4th is skipped.
+    remaining_seq_1 = iter([500, 200, 40])  # only need first 3 — abort before 4th
+    pages_1 = iter(range(3))
+
+    def fetch_first(args):
+        return (
+            pd.DataFrame(
+                {
+                    "site": list(args["sites"]),
+                    "page": [next(pages_1)] * len(args["sites"]),
+                }
+            ),
+            _quota_response(next(remaining_seq_1)),
+        )
+
+    decorated_first = multi_value_chunked(
+        build_request=_fake_build, url_limit=240, quota_safety_floor=50
+    )(fetch_first)
+
+    sites = ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10]
+    with pytest.raises(QuotaExhausted) as excinfo:
+        decorated_first({"sites": sites})
+    partial_df = excinfo.value.partial_frame
+    partial_md = excinfo.value.partial_metadata
+    assert excinfo.value.manifest.completed == 3
+    assert excinfo.value.manifest.total == 4
+
+    # Second call (after quota window resets): same args + resume_from.
+    # Only the final cartesian combo should run.
+    def fetch_second(args):
+        return (
+            pd.DataFrame(
+                {"site": list(args["sites"]), "page": [99] * len(args["sites"])}
+            ),
+            _quota_response(remaining=800),
+        )
+
+    decorated_second = multi_value_chunked(
+        build_request=_fake_build, url_limit=240, quota_safety_floor=50
+    )(fetch_second)
+
+    rest_df, rest_md = decorated_second({"sites": sites, "resume_from": partial_md})
+    assert rest_md.chunk_manifest.is_complete
+    assert list(rest_df["page"]) == [99]  # exactly one chunk fetched on resume
+
+    final = pd.concat([partial_df, rest_df], ignore_index=True)
+    assert set(final["page"]) == {0, 1, 2, 99}
+    assert len(final) == 4  # 4 singleton chunks total
 
 
 def test_samples_results():

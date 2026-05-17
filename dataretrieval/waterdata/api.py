@@ -57,6 +57,7 @@ def get_daily(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    resume_from: BaseMetadata | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data provide one data value to represent water conditions for the
     day.
@@ -189,6 +190,12 @@ def get_daily(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    resume_from : BaseMetadata, optional
+        Metadata returned alongside a ``PartialResult`` (or
+        ``QuotaExhausted``) exception from a previous call. The chunker
+        consults its ``chunk_manifest`` to skip already-completed
+        sub-requests and fetch only the remainder. Pass the same other
+        kwargs as the original call.
 
     Returns
     -------
@@ -272,6 +279,7 @@ def get_continuous(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    resume_from: BaseMetadata | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Continuous data provide instantanous water conditions.
@@ -399,6 +407,12 @@ def get_continuous(
     convert_type : boolean, optional
         If True, the function will convert the data to dates and qualifier to
         string vector
+    resume_from : BaseMetadata, optional
+        Metadata returned alongside a ``PartialResult`` (or
+        ``QuotaExhausted``) exception from a previous call. The chunker
+        consults its ``chunk_manifest`` to skip already-completed
+        sub-requests and fetch only the remainder. Pass the same other
+        kwargs as the original call.
 
     Returns
     -------
@@ -492,6 +506,7 @@ def get_monitoring_locations(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    resume_from: BaseMetadata | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Location information is basic information about the monitoring location
     including the name, identifier, agency responsible for data collection, and
@@ -707,6 +722,12 @@ def get_monitoring_locations(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    resume_from : BaseMetadata, optional
+        Metadata returned alongside a ``PartialResult`` (or
+        ``QuotaExhausted``) exception from a previous call. The chunker
+        consults its ``chunk_manifest`` to skip already-completed
+        sub-requests and fetch only the remainder. Pass the same other
+        kwargs as the original call.
 
     Returns
     -------
@@ -770,6 +791,7 @@ def get_time_series_metadata(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    resume_from: BaseMetadata | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data and continuous measurements are grouped into time series,
     which represent a collection of observations of a single parameter,
@@ -930,6 +952,12 @@ def get_time_series_metadata(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    resume_from : BaseMetadata, optional
+        Metadata returned alongside a ``PartialResult`` (or
+        ``QuotaExhausted``) exception from a previous call. The chunker
+        consults its ``chunk_manifest`` to skip already-completed
+        sub-requests and fetch only the remainder. Pass the same other
+        kwargs as the original call.
 
     Returns
     -------
@@ -1027,6 +1055,7 @@ def get_combined_metadata(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    resume_from: BaseMetadata | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get combined monitoring-location and time-series metadata.
 
@@ -1127,6 +1156,12 @@ site_type_code : string or iterable of strings, optional
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    resume_from : BaseMetadata, optional
+        Metadata returned alongside a ``PartialResult`` (or
+        ``QuotaExhausted``) exception from a previous call. The chunker
+        consults its ``chunk_manifest`` to skip already-completed
+        sub-requests and fetch only the remainder. Pass the same other
+        kwargs as the original call.
 
     Returns
     -------
@@ -1215,6 +1250,7 @@ def get_latest_continuous(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    resume_from: BaseMetadata | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """This endpoint provides the most recent observation for each time series
     of continuous data. Continuous data are collected via automated sensors
@@ -1344,6 +1380,12 @@ def get_latest_continuous(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    resume_from : BaseMetadata, optional
+        Metadata returned alongside a ``PartialResult`` (or
+        ``QuotaExhausted``) exception from a previous call. The chunker
+        consults its ``chunk_manifest`` to skip already-completed
+        sub-requests and fetch only the remainder. Pass the same other
+        kwargs as the original call.
 
     Returns
     -------
@@ -1410,6 +1452,7 @@ def get_latest_daily(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    resume_from: BaseMetadata | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data provide one data value to represent water conditions for the
     day.
@@ -1541,6 +1584,12 @@ def get_latest_daily(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    resume_from : BaseMetadata, optional
+        Metadata returned alongside a ``PartialResult`` (or
+        ``QuotaExhausted``) exception from a previous call. The chunker
+        consults its ``chunk_manifest`` to skip already-completed
+        sub-requests and fetch only the remainder. Pass the same other
+        kwargs as the original call.
 
     Returns
     -------
@@ -1608,6 +1657,7 @@ def get_field_measurements(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    resume_from: BaseMetadata | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Field measurements are physically measured values collected during a
     visit to the monitoring location. Field measurements consist of measurements
@@ -1729,6 +1779,12 @@ def get_field_measurements(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    resume_from : BaseMetadata, optional
+        Metadata returned alongside a ``PartialResult`` (or
+        ``QuotaExhausted``) exception from a previous call. The chunker
+        consults its ``chunk_manifest`` to skip already-completed
+        sub-requests and fetch only the remainder. Pass the same other
+        kwargs as the original call.
 
     Returns
     -------
@@ -1792,6 +1848,7 @@ def get_field_measurements_metadata(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    resume_from: BaseMetadata | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get field-measurement metadata: one row per (location, parameter) series.
 
@@ -1847,6 +1904,12 @@ def get_field_measurements_metadata(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    resume_from : BaseMetadata, optional
+        Metadata returned alongside a ``PartialResult`` (or
+        ``QuotaExhausted``) exception from a previous call. The chunker
+        consults its ``chunk_manifest`` to skip already-completed
+        sub-requests and fetch only the remainder. Pass the same other
+        kwargs as the original call.
 
     Returns
     -------
@@ -1913,6 +1976,7 @@ def get_peaks(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    resume_from: BaseMetadata | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get the annual peak streamflow / stage record for a monitoring location.
 
@@ -1971,6 +2035,12 @@ def get_peaks(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    resume_from : BaseMetadata, optional
+        Metadata returned alongside a ``PartialResult`` (or
+        ``QuotaExhausted``) exception from a previous call. The chunker
+        consults its ``chunk_manifest`` to skip already-completed
+        sub-requests and fetch only the remainder. Pass the same other
+        kwargs as the original call.
 
     Returns
     -------
@@ -2710,6 +2780,7 @@ def get_channel(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    resume_from: BaseMetadata | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Channel measurements taken as part of streamflow field measurements.
@@ -2823,6 +2894,12 @@ def get_channel(
     convert_type : boolean, optional
         If True, the function will convert the data to dates and qualifier to
         string vector
+    resume_from : BaseMetadata, optional
+        Metadata returned alongside a ``PartialResult`` (or
+        ``QuotaExhausted``) exception from a previous call. The chunker
+        consults its ``chunk_manifest`` to skip already-completed
+        sub-requests and fetch only the remainder. Pass the same other
+        kwargs as the original call.
 
     Returns
     -------

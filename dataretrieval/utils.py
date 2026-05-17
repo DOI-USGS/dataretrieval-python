@@ -230,6 +230,11 @@ class BaseMetadata:
         self.query_time = response.elapsed
         self.header = response.headers
         self.comment = None
+        # Set by ``waterdata.chunking.multi_value_chunked`` when a request
+        # was split into sub-requests. ``None`` for non-chunked calls. See
+        # ``ChunkManifest`` for how callers use this to resume a partial
+        # query.
+        self.chunk_manifest = getattr(response, "chunk_manifest", None)
 
         # # not sure what statistic_info is
         # self.statistic_info = None
