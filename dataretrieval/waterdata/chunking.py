@@ -99,6 +99,11 @@ _DEFAULT_QUOTA_SAFETY_FLOOR = 50
 # Response header USGS uses to advertise remaining hourly quota.
 _QUOTA_HEADER = "x-ratelimit-remaining"
 
+# Reserved kwarg name the wrapper strips from ``args`` before any planner
+# or URL probe runs — it's a chunker-only control parameter and must not
+# reach the underlying API as a bogus query parameter.
+_RESUME_FROM_KEY = "resume_from"
+
 # Sentinel returned by ``_read_remaining`` when the response has no
 # parseable ``x-ratelimit-remaining`` header. Large enough to beat any
 # plausible safety floor so a missing/malformed header doesn't trigger
@@ -215,29 +220,43 @@ class PartialResult(RuntimeError):
         partial_frame: pd.DataFrame,
         partial_response: requests.Response,
         manifest: ChunkManifest,
+        cause: BaseException | None = None,
         message: str | None = None,
     ) -> None:
-        super().__init__(
-            message
-            or (
-                f"Chunked request failed after "
-                f"{manifest.completed}/{manifest.total} sub-requests. "
-                f"Catch PartialResult to access .partial_frame and "
-                f"resume_from=partial_metadata on a retry."
-            )
-        )
+        super().__init__(message or _partial_result_message(manifest, cause))
         self.partial_frame = partial_frame
         self.partial_response = partial_response
         self.manifest = manifest
 
     @property
     def partial_metadata(self):
-        """``BaseMetadata`` wrapping ``partial_response``. Lazy so the
-        chunker module stays decoupled from ``dataretrieval.utils`` at
-        import time (avoids a circular-import-shaped surface)."""
+        """``BaseMetadata`` wrapping ``partial_response``. Lazy to avoid
+        a circular import with ``dataretrieval.utils`` at module load."""
         from dataretrieval.utils import BaseMetadata
 
         return BaseMetadata(self.partial_response)
+
+
+def _partial_result_message(
+    manifest: ChunkManifest, cause: BaseException | None
+) -> str:
+    """Single source of truth for the user-facing failure message. The
+    ``cause`` branch names the failing sub-request and underlying
+    exception (most common path); the no-cause branch is the generic
+    aborted-after-N form used by ``QuotaExhausted``'s pre-emptive bail."""
+    tail = (
+        " Catch PartialResult to access .partial_frame and resume with "
+        "resume_from=partial_metadata."
+    )
+    if cause is None:
+        return (
+            f"Chunked request failed after {manifest.completed}/"
+            f"{manifest.total} sub-requests.{tail}"
+        )
+    return (
+        f"Chunked request failed at sub-request {manifest.completed + 1}/"
+        f"{manifest.total} ({type(cause).__name__}: {cause}).{tail}"
+    )
 
 
 class QuotaExhausted(PartialResult):
@@ -268,8 +287,8 @@ class QuotaExhausted(PartialResult):
                 f"x-ratelimit-remaining dropped to {remaining} after "
                 f"{manifest.completed}/{manifest.total} chunks; aborting to "
                 f"avoid mid-call HTTP 429. Catch QuotaExhausted to access "
-                f".partial_frame and resume_from=partial_metadata after the "
-                f"hourly window resets."
+                f".partial_frame and resume with resume_from=partial_metadata "
+                f"after the hourly window resets."
             ),
         )
         self.remaining = remaining
@@ -357,9 +376,7 @@ def _request_bytes(req: requests.PreparedRequest) -> int:
 
 def _plan_total(plan: dict[str, list[list[Any]]]) -> int:
     """Sub-request count a plan will issue: the cartesian product of
-    per-dim chunk counts. Computed in two places (planner's max_chunks
-    early-bail and wrapper's QuotaExhausted payload) — centralized
-    here so the two can't drift."""
+    per-dim chunk counts."""
     return math.prod(len(chunks) for chunks in plan.values())
 
 
@@ -472,26 +489,19 @@ def _read_remaining(response: requests.Response) -> int:
         return _QUOTA_UNKNOWN
 
 
-def _build_partial_failure(
+def _assemble_partial(
     *,
     frames: list[pd.DataFrame],
     responses: list[requests.Response],
     canonical_url: str,
     plan_norm: _NormalizedPlan,
     completed: int,
-    sub_index: int,
-    total: int,
-    cause: BaseException,
-) -> PartialResult:
-    """Assemble a ``PartialResult`` for a sub-request that errored.
-
-    ``completed`` is the count of sub-requests that finished before the
-    failure (so a fresh ``ChunkManifest(completed=completed)`` resumes at
-    the failed one). ``responses`` may be empty (failure on the very
-    first attempted sub-request, including the first chunk of a resume
-    call); in that case the synthesized response carries only the
-    canonical URL and an empty header set, with the manifest still
-    attached so caller-side ``BaseMetadata.chunk_manifest`` works.
+) -> tuple[pd.DataFrame, requests.Response, ChunkManifest]:
+    """Build the partial-state triple shared by every chunker abort path
+    (quota-exhausted, sub-request error, and the success path's final
+    response). ``responses`` may be empty (first attempted sub-request
+    failed); the synthesized response then carries only the canonical
+    URL so caller-side ``BaseMetadata.chunk_manifest`` still works.
     """
     if responses:
         partial = _combine_chunk_responses(responses)
@@ -502,17 +512,7 @@ def _build_partial_failure(
     manifest = ChunkManifest(plan=plan_norm, completed=completed)
     partial.chunk_manifest = manifest
     partial_frame = _combine_chunk_frames(frames) if frames else pd.DataFrame()
-    return PartialResult(
-        partial_frame=partial_frame,
-        partial_response=partial,
-        manifest=manifest,
-        message=(
-            f"Chunked request failed at sub-request "
-            f"{sub_index + 1}/{total} ({type(cause).__name__}: {cause}). "
-            f"Catch PartialResult to access .partial_frame and resume "
-            f"with resume_from=partial_metadata."
-        ),
-    )
+    return partial_frame, partial, manifest
 
 
 def _resolve_resume(
@@ -584,14 +584,12 @@ def multi_value_chunked(
     carrying the combined partial result and a ``ChunkManifest`` so
     callers can resume after the hourly window resets via
     ``resume_from=partial_metadata``, instead of crashing into a
-    mid-pagination HTTP 429 (which the upstream pagination loop in
-    ``_walk_pages`` historically truncated silently — see PR #273).
+    mid-pagination HTTP 429.
 
-    Any other failure inside a sub-request (transport errors, mid-
-    pagination ``RuntimeError`` from PR #279, inner-filter
-    ``RequestTooLarge``) is re-raised as ``PartialResult`` with the
-    same partial-state payload, with the underlying exception preserved
-    via ``__cause__``.
+    Any other failure inside a sub-request (transport errors,
+    mid-pagination ``RuntimeError``, inner-filter ``RequestTooLarge``)
+    is re-raised as ``PartialResult`` with the same partial-state
+    payload, with the underlying exception preserved via ``__cause__``.
 
     Sits OUTSIDE ``@filters.chunked``: list-chunking is the outer loop,
     filter-chunking is the inner loop. The wrapped function has the same
@@ -638,11 +636,11 @@ def multi_value_chunked(
                 if quota_safety_floor is not None
                 else _DEFAULT_QUOTA_SAFETY_FLOOR
             )
-            # ``resume_from`` is a chunker-only control kwarg; pull it
-            # out before any planner/URL probe runs so it can't reach
-            # the underlying API as a bogus query parameter.
-            resume_from = args.get("resume_from")
-            args = {k: v for k, v in args.items() if k != "resume_from"}
+            # ``resume_from`` is a chunker-only control kwarg; strip it
+            # before the planner runs so it can't reach the underlying
+            # API as a bogus query parameter.
+            args = dict(args)
+            resume_from = args.pop(_RESUME_FROM_KEY, None)
 
             plan = _plan_chunks(args, build_request, limit, max_chunks)
 
@@ -655,12 +653,9 @@ def multi_value_chunked(
             if plan is None:
                 return fetch_once(args)
 
-            # Pre-build the canonical URL representing the user's full
-            # original query. The chunker sends sub-requests with sliced
-            # multi-value lists; without this restore, the aggregated
-            # response's ``.url`` would only show the first chunk and
-            # callers logging ``md.url`` for reproducibility would see a
-            # truncated view of their own query.
+            # Rebuild the canonical original-query URL so the aggregated
+            # response's ``.url`` reflects the user's request, not the
+            # first sub-request's sliced view.
             canonical_url = build_request(**args).url
 
             keys = list(plan)
@@ -675,14 +670,17 @@ def multi_value_chunked(
                 try:
                     frame, response = fetch_once(sub_args)
                 except Exception as exc:
-                    raise _build_partial_failure(
+                    partial_frame, partial_response, manifest = _assemble_partial(
                         frames=frames,
                         responses=responses,
                         canonical_url=canonical_url,
                         plan_norm=plan_norm,
                         completed=i,
-                        sub_index=i,
-                        total=total,
+                    )
+                    raise PartialResult(
+                        partial_frame=partial_frame,
+                        partial_response=partial_response,
+                        manifest=manifest,
                         cause=exc,
                     ) from exc
                 frames.append(frame)
@@ -692,21 +690,28 @@ def multi_value_chunked(
                 if i < total - 1:
                     remaining = _read_remaining(response)
                     if remaining < floor:
-                        partial = _combine_chunk_responses(responses)
-                        partial.url = canonical_url
-                        manifest = ChunkManifest(plan=plan_norm, completed=i + 1)
-                        partial.chunk_manifest = manifest
+                        partial_frame, partial_response, manifest = _assemble_partial(
+                            frames=frames,
+                            responses=responses,
+                            canonical_url=canonical_url,
+                            plan_norm=plan_norm,
+                            completed=i + 1,
+                        )
                         raise QuotaExhausted(
-                            partial_frame=_combine_chunk_frames(frames),
-                            partial_response=partial,
+                            partial_frame=partial_frame,
+                            partial_response=partial_response,
                             manifest=manifest,
                             remaining=remaining,
                         )
 
-            combined = _combine_chunk_responses(responses)
-            combined.url = canonical_url
-            combined.chunk_manifest = ChunkManifest(plan=plan_norm, completed=total)
-            return _combine_chunk_frames(frames), combined
+            combined_frame, combined, _ = _assemble_partial(
+                frames=frames,
+                responses=responses,
+                canonical_url=canonical_url,
+                plan_norm=plan_norm,
+                completed=total,
+            )
+            return combined_frame, combined
 
         return wrapper  # type: ignore[return-value]
 
