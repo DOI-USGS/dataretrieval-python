@@ -617,7 +617,9 @@ def multi_value_chunked(
     the caller's kwargs. The wrapper pops it before planning (so it
     never reaches the underlying HTTP request), validates the saved
     plan matches the fresh plan, and skips the already-completed
-    cartesian-product combinations.
+    cartesian-product combinations. See ``get_daily``'s docstring for
+    a worked retry-loop example using a one-hour deadline matched to
+    the API's rate-limit window.
     """
 
     def decorator(fetch_once: _FetchOnce) -> _FetchOnce:
