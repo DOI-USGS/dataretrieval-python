@@ -5,7 +5,7 @@ import logging
 import os
 import re
 from collections.abc import Iterable, Mapping
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, get_args
 from zoneinfo import ZoneInfo
 
@@ -14,7 +14,7 @@ import requests
 
 from dataretrieval import __version__
 from dataretrieval.utils import BaseMetadata
-from dataretrieval.waterdata import filters
+from dataretrieval.waterdata import chunking, filters
 from dataretrieval.waterdata.types import (
     PROFILE_LOOKUP,
     PROFILES,
@@ -644,6 +644,26 @@ def _get_resp_data(resp: requests.Response, geopd: bool) -> pd.DataFrame:
     return df
 
 
+def _finalize_paginated_response(
+    initial: requests.Response,
+    last: requests.Response,
+    total_elapsed: timedelta,
+) -> None:
+    """Carry the last page's headers + cumulative elapsed onto the initial
+    response in place.
+
+    The initial response stays canonical for ``md.url`` (user's original
+    query), but its ``.headers`` and ``.elapsed`` are overwritten so the
+    multi-value chunker's ``QuotaExhausted`` guard sees current
+    ``x-ratelimit-remaining`` and ``md.query_time`` reflects total
+    wall-clock across pages. No-op when ``initial is last`` (single page).
+    """
+    if last is initial:
+        return
+    initial.headers = last.headers
+    initial.elapsed = total_elapsed
+
+
 def _walk_pages(
     geopd: bool,
     req: requests.PreparedRequest,
@@ -669,7 +689,11 @@ def _walk_pages(
     pd.DataFrame
         A DataFrame containing the aggregated results from all pages.
     requests.Response
-        The initial response object containing metadata about the first request.
+        Aggregated response: the initial request's URL (for query
+        identity), the final page's headers (so downstream callers see
+        current rate-limit state, which the multi-value chunker's
+        ``QuotaExhausted`` guard relies on), and cumulative ``elapsed``
+        summed across every page.
 
     Raises
     ------
@@ -700,9 +724,11 @@ def _walk_pages(
     try:
         resp = client.send(req)
         _raise_for_non_200(resp)
-
-        # Store the initial response for metadata
+        # Keep the original-request response as the "canonical" one for
+        # ``md.url`` reproducibility; ``.headers`` and ``.elapsed`` get
+        # overwritten with latest/cumulative values below.
         initial_response = resp
+        total_elapsed = resp.elapsed
 
         # Grab some aspects of the original request: headers and the
         # request type (GET or POST)
@@ -723,12 +749,15 @@ def _walk_pages(
                 )
                 _raise_for_non_200(resp)
                 dfs.append(_get_resp_data(resp, geopd=geopd))
+                total_elapsed += resp.elapsed
                 curr_url = _next_req_url(resp)
             except Exception as e:  # noqa: BLE001
                 logger.warning(
                     "Request failed for URL: %s. Data download interrupted.", curr_url
                 )
                 raise RuntimeError(_paginated_failure_message(len(dfs), e)) from e
+
+        _finalize_paginated_response(initial_response, resp, total_elapsed)
 
         # Concatenate all pages at once for efficiency
         return pd.concat(dfs, ignore_index=True), initial_response
@@ -957,17 +986,20 @@ def get_ogc_data(
     return return_list, BaseMetadata(response)
 
 
+@chunking.multi_value_chunked(build_request=_construct_api_requests)
 @filters.chunked(build_request=_construct_api_requests)
 def _fetch_once(
     args: dict[str, Any],
 ) -> tuple[pd.DataFrame, requests.Response]:
     """Send one prepared-args OGC request; return the frame + response.
 
-    Filter chunking is added orthogonally by the ``@filters.chunked``
-    decorator: with no filter (or an un-chunkable one) the decorator
-    passes ``args`` through to this body; with a chunkable filter it
-    fans out and calls this body once per sub-filter, then combines.
-    Either way the return shape is ``(frame, response)``.
+    Two orthogonal chunkers wrap this body. ``@chunking.multi_value_chunked``
+    (outer) splits multi-value list params (e.g. ``monitoring_location_id``)
+    across sub-requests so each URL fits the server byte limit; the
+    cartesian product of per-dim chunks is iterated. ``@filters.chunked``
+    (inner) splits long cql-text filters at top-level ``OR``. With no
+    chunkable inputs both pass through unchanged. Either way the return
+    shape is ``(frame, response)``.
     """
     req = _construct_api_requests(**args)
     return _walk_pages(geopd=GEOPANDAS, req=req)
@@ -1158,9 +1190,11 @@ def get_stats_data(
     try:
         resp = client.send(req)
         _raise_for_non_200(resp)
-
-        # Store the initial response for metadata
+        # Keep the original-request response as the "canonical" one for
+        # ``md.url`` reproducibility; ``.headers`` and ``.elapsed`` get
+        # overwritten with latest/cumulative values below.
         initial_response = resp
+        total_elapsed = resp.elapsed
 
         # Grab some aspects of the original request: headers and the
         # request type (GET or POST)
@@ -1186,6 +1220,7 @@ def get_stats_data(
                 _raise_for_non_200(resp)
                 body = resp.json()
                 all_dfs.append(_handle_stats_nesting(body, geopd=GEOPANDAS))
+                total_elapsed += resp.elapsed
                 next_token = body["next"]
             except Exception as e:  # noqa: BLE001
                 logger.warning(
@@ -1195,6 +1230,8 @@ def get_stats_data(
                     next_token,
                 )
                 raise RuntimeError(_paginated_failure_message(len(all_dfs), e)) from e
+
+        _finalize_paginated_response(initial_response, resp, total_elapsed)
 
         dfs = pd.concat(all_dfs, ignore_index=True) if len(all_dfs) > 1 else all_dfs[0]
 

@@ -152,6 +152,18 @@ def _chunk_cql_or(expr: str, max_len: int = _CQL_FILTER_CHUNK_LEN) -> list[str]:
     return chunks
 
 
+def _max_per_clause_encoding_ratio(parts: list[str]) -> float:
+    """Worst per-clause ``len(quote_plus(p)) / len(p)`` across OR-clauses.
+
+    Any sub-request chunk could end up containing only the heavier-encoding
+    clauses, so per-sub-request byte budgets must be sized against the
+    worst (not average) ratio to avoid overflow. Used by both this
+    module's filter chunker and the outer ``chunking._filter_aware_probe_args``;
+    pinning the formula here keeps the two from drifting.
+    """
+    return max(len(quote_plus(p)) / len(p) for p in parts)
+
+
 def _effective_filter_budget(
     args: dict[str, Any],
     filter_expr: str,
@@ -163,8 +175,7 @@ def _effective_filter_budget(
     non-filter URL bytes by building the request with a 1-byte placeholder
     filter, subtract from the URL limit to get the bytes available for the
     encoded filter, then convert back to raw CQL bytes via the *maximum*
-    per-clause encoding ratio (a chunk could contain only the heavier-encoding
-    clauses, so budgeting by the average ratio could overflow).
+    per-clause encoding ratio.
     """
     # Fast path: encoded filter clearly fits with room for any plausible
     # non-filter URL. Skips the PreparedRequest build and splitter scan.
@@ -179,7 +190,7 @@ def _effective_filter_budget(
         # the caller sees one 414 instead of N parallel sub-request failures.
         return len(filter_expr) + 1
     parts = _split_top_level_or(filter_expr) or [filter_expr]
-    encoding_ratio = max(len(quote_plus(p)) / len(p) for p in parts)
+    encoding_ratio = _max_per_clause_encoding_ratio(parts)
     return max(100, int(available_url_bytes / encoding_ratio))
 
 
@@ -268,13 +279,24 @@ def _combine_chunk_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
 def _combine_chunk_responses(
     responses: list[requests.Response],
 ) -> requests.Response:
-    """Return one response: first chunk's URL/headers + summed ``elapsed``.
+    """Return one response with the last chunk's headers (for current
+    rate-limit state) and summed ``elapsed`` (for total wall-clock).
 
-    Mutates the first response in place (only ``elapsed``); downstream only
-    reads ``elapsed`` (in ``BaseMetadata.query_time``), URL, and headers.
+    The returned response's ``.url`` is the *first chunk's* URL, which
+    only reflects the first slice of the user's query. Callers wanting
+    the canonical original-query URL on ``BaseMetadata`` must overwrite
+    ``.url`` themselves (using ``build_request(**original_args).url``);
+    the decorator wrappers in ``filters.chunked`` and
+    ``chunking.multi_value_chunked`` do this.
+
+    Mutates the first response in place: ``.headers`` is replaced with
+    the last response's headers and ``.elapsed`` is accumulated across
+    all chunks. Downstream reads ``.url``, ``.headers``, and
+    ``.elapsed`` (via ``BaseMetadata``).
     """
     head = responses[0]
     if len(responses) > 1:
+        head.headers = responses[-1].headers
         head.elapsed = sum((r.elapsed for r in responses[1:]), start=head.elapsed)
     return head
 
@@ -295,8 +317,12 @@ def chunked(*, build_request: Callable[..., Any]) -> Callable[[_FetchOnce], _Fet
     - Chunkable cql-text filter: run the lexicographic-pitfall guard, split
       into URL-length-safe sub-expressions, call the wrapped function once
       per chunk, concatenate frames (drop empties, dedup by feature ``id``),
-      and return an aggregated response (first chunk's URL/headers, summed
-      ``elapsed``).
+      and return an aggregated response with ``.url`` restored to the
+      canonical full-filter URL (so ``BaseMetadata.url`` reflects the
+      user's original query rather than the first filter chunk), last
+      chunk's headers (so callers see current ``x-ratelimit-remaining``,
+      which the outer ``multi_value_chunked`` decorator's ``QuotaExhausted``
+      guard depends on), and summed ``elapsed``.
 
     Either way the return shape matches the undecorated function's, so the
     caller wraps the response in ``BaseMetadata`` the same way in both paths.
@@ -327,7 +353,12 @@ def chunked(*, build_request: Callable[..., Any]) -> Callable[[_FetchOnce], _Fet
                 frames.append(frame)
                 responses.append(response)
 
-            return _combine_chunk_frames(frames), _combine_chunk_responses(responses)
+            # Restore the canonical URL representing the user's full filter
+            # (the aggregated response otherwise carries only the first
+            # filter-chunk's URL, which misleads callers logging md.url).
+            combined = _combine_chunk_responses(responses)
+            combined.url = build_request(**args).url
+            return _combine_chunk_frames(frames), combined
 
         return wrapper  # type: ignore[return-value]
 
