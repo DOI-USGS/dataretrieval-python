@@ -195,7 +195,8 @@ def get_daily(
         ``QuotaExhausted``) exception from a previous call. The chunker
         consults its ``chunk_manifest`` to skip already-completed
         sub-requests and fetch only the remainder. Pass the same other
-        kwargs as the original call. See ``get_daily`` for a worked
+        kwargs as the original call. See the
+        :ref:`waterdata-chunking-resume` user guide for a worked
         retry-loop example.
 
     Returns
@@ -253,51 +254,6 @@ def get_daily(
         ...     parameter_code="00060",
         ...     time="P7D",
         ... )
-
-        >>> # Resume loop: a heavy chunked query may exhaust the hourly
-        >>> # rate-limit budget partway through or hit a transient upstream
-        >>> # error. Catch ``PartialResult``, accumulate the partial frames,
-        >>> # and re-call with ``resume_from=`` to fetch only the
-        >>> # outstanding chunks. The USGS API rate-limit window is one
-        >>> # hour, so a total retry window of one hour is a sensible
-        >>> # ceiling — anything longer means the failure is structural,
-        >>> # not transient, and the loop should surface the error.
-        >>> import time
-        >>> import pandas as pd
-        >>> from dataretrieval import waterdata
-        >>> from dataretrieval.waterdata.chunking import PartialResult
-        >>>
-        >>> sites = sites_df["monitoring_location_id"].tolist()
-        >>> deadline = time.monotonic() + 3600  # one hour cap
-        >>> partials = []
-        >>> md = None  # carries the latest chunk_manifest between attempts
-        >>> attempt = 0
-        >>> while True:
-        ...     try:
-        ...         df, md = waterdata.get_daily(
-        ...             monitoring_location_id=sites,
-        ...             parameter_code="00060",
-        ...             time="P7D",
-        ...             resume_from=md,  # ``None`` on the first attempt
-        ...         )
-        ...         break  # full result fetched
-        ...     except PartialResult as exc:
-        ...         partials.append(exc.partial_frame)
-        ...         md = exc.partial_metadata
-        ...         if time.monotonic() >= deadline:
-        ...             raise TimeoutError(
-        ...                 f"Could not complete chunked query within one hour "
-        ...                 f"({md.chunk_manifest.completed}/"
-        ...                 f"{md.chunk_manifest.total} chunks done)."
-        ...             ) from exc
-        ...         attempt += 1
-        ...         # Exponential backoff, capped at 10 minutes. Quota-
-        ...         # reset failures benefit from a longer wait; transient
-        ...         # transport errors clear quickly. ``min(...)`` ensures
-        ...         # a tight cap; the outer deadline ensures we never wait
-        ...         # past one hour total.
-        ...         time.sleep(min(60 * 2 ** (attempt - 1), 600))
-        >>> full = pd.concat([*partials, df], ignore_index=True)
     """
     service = "daily"
     output_id = "daily_id"
@@ -458,7 +414,8 @@ def get_continuous(
         ``QuotaExhausted``) exception from a previous call. The chunker
         consults its ``chunk_manifest`` to skip already-completed
         sub-requests and fetch only the remainder. Pass the same other
-        kwargs as the original call. See ``get_daily`` for a worked
+        kwargs as the original call. See the
+        :ref:`waterdata-chunking-resume` user guide for a worked
         retry-loop example.
 
     Returns
@@ -774,7 +731,8 @@ def get_monitoring_locations(
         ``QuotaExhausted``) exception from a previous call. The chunker
         consults its ``chunk_manifest`` to skip already-completed
         sub-requests and fetch only the remainder. Pass the same other
-        kwargs as the original call. See ``get_daily`` for a worked
+        kwargs as the original call. See the
+        :ref:`waterdata-chunking-resume` user guide for a worked
         retry-loop example.
 
     Returns
@@ -1005,7 +963,8 @@ def get_time_series_metadata(
         ``QuotaExhausted``) exception from a previous call. The chunker
         consults its ``chunk_manifest`` to skip already-completed
         sub-requests and fetch only the remainder. Pass the same other
-        kwargs as the original call. See ``get_daily`` for a worked
+        kwargs as the original call. See the
+        :ref:`waterdata-chunking-resume` user guide for a worked
         retry-loop example.
 
     Returns
@@ -1210,7 +1169,8 @@ site_type_code : string or iterable of strings, optional
         ``QuotaExhausted``) exception from a previous call. The chunker
         consults its ``chunk_manifest`` to skip already-completed
         sub-requests and fetch only the remainder. Pass the same other
-        kwargs as the original call. See ``get_daily`` for a worked
+        kwargs as the original call. See the
+        :ref:`waterdata-chunking-resume` user guide for a worked
         retry-loop example.
 
     Returns
@@ -1435,7 +1395,8 @@ def get_latest_continuous(
         ``QuotaExhausted``) exception from a previous call. The chunker
         consults its ``chunk_manifest`` to skip already-completed
         sub-requests and fetch only the remainder. Pass the same other
-        kwargs as the original call. See ``get_daily`` for a worked
+        kwargs as the original call. See the
+        :ref:`waterdata-chunking-resume` user guide for a worked
         retry-loop example.
 
     Returns
@@ -1640,7 +1601,8 @@ def get_latest_daily(
         ``QuotaExhausted``) exception from a previous call. The chunker
         consults its ``chunk_manifest`` to skip already-completed
         sub-requests and fetch only the remainder. Pass the same other
-        kwargs as the original call. See ``get_daily`` for a worked
+        kwargs as the original call. See the
+        :ref:`waterdata-chunking-resume` user guide for a worked
         retry-loop example.
 
     Returns
@@ -1836,7 +1798,8 @@ def get_field_measurements(
         ``QuotaExhausted``) exception from a previous call. The chunker
         consults its ``chunk_manifest`` to skip already-completed
         sub-requests and fetch only the remainder. Pass the same other
-        kwargs as the original call. See ``get_daily`` for a worked
+        kwargs as the original call. See the
+        :ref:`waterdata-chunking-resume` user guide for a worked
         retry-loop example.
 
     Returns
@@ -1962,7 +1925,8 @@ def get_field_measurements_metadata(
         ``QuotaExhausted``) exception from a previous call. The chunker
         consults its ``chunk_manifest`` to skip already-completed
         sub-requests and fetch only the remainder. Pass the same other
-        kwargs as the original call. See ``get_daily`` for a worked
+        kwargs as the original call. See the
+        :ref:`waterdata-chunking-resume` user guide for a worked
         retry-loop example.
 
     Returns
@@ -2094,7 +2058,8 @@ def get_peaks(
         ``QuotaExhausted``) exception from a previous call. The chunker
         consults its ``chunk_manifest`` to skip already-completed
         sub-requests and fetch only the remainder. Pass the same other
-        kwargs as the original call. See ``get_daily`` for a worked
+        kwargs as the original call. See the
+        :ref:`waterdata-chunking-resume` user guide for a worked
         retry-loop example.
 
     Returns
@@ -2954,7 +2919,8 @@ def get_channel(
         ``QuotaExhausted``) exception from a previous call. The chunker
         consults its ``chunk_manifest`` to skip already-completed
         sub-requests and fetch only the remainder. Pass the same other
-        kwargs as the original call. See ``get_daily`` for a worked
+        kwargs as the original call. See the
+        :ref:`waterdata-chunking-resume` user guide for a worked
         retry-loop example.
 
     Returns
