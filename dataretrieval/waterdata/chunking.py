@@ -94,6 +94,9 @@ _DEFAULT_MAX_CHUNKS = 1000
 # known offset instead of retrying the whole chunked call from scratch.
 _DEFAULT_QUOTA_SAFETY_FLOOR = 50
 
+# Response header USGS uses to advertise remaining hourly quota.
+_QUOTA_HEADER = "x-ratelimit-remaining"
+
 # Sentinel returned by ``_read_remaining`` when the response has no
 # parseable ``x-ratelimit-remaining`` header. Large enough to beat any
 # plausible safety floor so a missing/malformed header doesn't trigger
@@ -328,7 +331,7 @@ def _read_remaining(response: requests.Response) -> int:
     """Parse ``x-ratelimit-remaining`` from a response. Missing or
     malformed header → return ``_QUOTA_UNKNOWN`` so the safety check
     treats it as 'plenty of quota' (don't abort on header glitches)."""
-    raw = response.headers.get("x-ratelimit-remaining")
+    raw = response.headers.get(_QUOTA_HEADER)
     if raw is None:
         return _QUOTA_UNKNOWN
     try:
@@ -402,8 +405,8 @@ def multi_value_chunked(
                 frame, response = fetch_once(sub_args)
                 frames.append(frame)
                 responses.append(response)
-                # Quota check happens BETWEEN sub-requests: skip on the
-                # last iteration because there's nothing left to abort.
+                # Skip the quota check after the last sub-request —
+                # nothing left to abort.
                 if i < total - 1:
                     remaining = _read_remaining(response)
                     if remaining < floor:

@@ -1,7 +1,9 @@
 import datetime
 import json
+import math
 import sys
 from unittest import mock
+from urllib.parse import quote_plus
 
 import pandas as pd
 import pytest
@@ -10,6 +12,8 @@ from pandas import DataFrame
 if sys.version_info < (3, 10):
     pytest.skip("Skip entire module on Python < 3.10", allow_module_level=True)
 
+from dataretrieval.waterdata import chunking as _chunking
+from dataretrieval.waterdata import filters as _filters
 from dataretrieval.waterdata import (
     get_channel,
     get_combined_metadata,
@@ -31,6 +35,7 @@ from dataretrieval.waterdata import (
 from dataretrieval.waterdata.chunking import (
     _DEFAULT_MAX_CHUNKS,
     _DEFAULT_QUOTA_SAFETY_FLOOR,
+    _QUOTA_HEADER,
     QuotaExhausted,
     RequestTooLarge,
     _chunkable_params,
@@ -246,8 +251,6 @@ def _fake_build(*, base=200, **kwargs):
     but fail in production once values containing ``%``, ``+``, ``/``,
     ``&`` etc. (which expand under encoding) reach the same code path.
     """
-    from urllib.parse import quote_plus
-
     bytes_ = base
     for v in kwargs.values():
         if isinstance(v, (list, tuple)):
@@ -274,9 +277,6 @@ def test_filter_aware_probe_args_models_inner_chunker_bail_floor():
     floor ``len(longest) * max(per_clause_encoding_ratio)``. Mirrors
     ``filters._effective_filter_budget``'s worst-case model so the
     planner doesn't approve plans the inner chunker would refuse."""
-    import math
-    from urllib.parse import quote_plus
-
     args = {"filter": "a='1' OR a='22' OR a='333'", "x": 7}
     probe = _filter_aware_probe_args(args)
     parts = ["a='1'", "a='22'", "a='333'"]
@@ -325,7 +325,7 @@ def test_plan_chunks_raises_request_too_large_at_singleton_floor():
         _plan_chunks(args, _fake_build, url_limit=100)
 
 
-def test_plan_chunks_coordinates_with_filter_chunker():
+def test_plan_chunks_coordinates_with_filter_chunker(monkeypatch):
     """COORDINATION REGRESSION TEST.
 
     With the FULL filter in URL-length probes, singleton-per-dim URL still
@@ -352,17 +352,11 @@ def test_plan_chunks_coordinates_with_filter_chunker():
     assert plan is not None  # coordination prevented the premature raise
     assert len(plan["monitoring_location_id"]) > 1  # planner did split
 
-    # Negative control: monkey-patch the probe helper to be a no-op
-    # (model "no filter awareness") and confirm the same inputs raise.
-    import dataretrieval.waterdata.chunking as ch
-
-    saved = ch._filter_aware_probe_args
-    try:
-        ch._filter_aware_probe_args = lambda a: a  # pretend no awareness
-        with pytest.raises(RequestTooLarge):
-            _plan_chunks(args, _fake_build, url_limit=240)
-    finally:
-        ch._filter_aware_probe_args = saved
+    # Negative control: patch the probe helper to be a no-op (model "no
+    # filter awareness") and confirm the same inputs raise.
+    monkeypatch.setattr(_chunking, "_filter_aware_probe_args", lambda a: a)
+    with pytest.raises(RequestTooLarge):
+        _plan_chunks(args, _fake_build, url_limit=240)
 
 
 def test_plan_chunks_probes_with_max_clause_not_min():
@@ -436,11 +430,9 @@ def test_multi_value_chunked_emits_cartesian_product():
     assert len(pcodes_seen) > 1
 
 
-def test_multi_value_chunked_lazy_url_limit():
+def test_multi_value_chunked_lazy_url_limit(monkeypatch):
     """``url_limit=None`` → resolve filters._WATERDATA_URL_BYTE_LIMIT at call
     time, so tests that patch the constant affect this decorator too."""
-    from dataretrieval.waterdata import filters as wd_filters
-
     calls = []
 
     @multi_value_chunked(build_request=_fake_build)  # url_limit defaults to None
@@ -448,14 +440,10 @@ def test_multi_value_chunked_lazy_url_limit():
         calls.append(args)
         return pd.DataFrame(), mock.Mock(elapsed=datetime.timedelta(seconds=0.1))
 
-    saved = wd_filters._WATERDATA_URL_BYTE_LIMIT
-    try:
-        wd_filters._WATERDATA_URL_BYTE_LIMIT = 240
-        # 4 sites of 10 chars → exceeds 240 → planner splits.
-        fetch({"sites": ["S" * 10 + str(i) for i in range(4)]})
-        assert len(calls) > 1, "patched constant should drive chunking"
-    finally:
-        wd_filters._WATERDATA_URL_BYTE_LIMIT = saved
+    monkeypatch.setattr(_filters, "_WATERDATA_URL_BYTE_LIMIT", 240)
+    # 4 sites of 10 chars → exceeds 240 → planner splits.
+    fetch({"sites": ["S" * 10 + str(i) for i in range(4)]})
+    assert len(calls) > 1, "patched constant should drive chunking"
 
 
 def test_default_max_chunks_matches_hourly_api_quota():
@@ -516,9 +504,7 @@ def _quota_response(remaining: int | str | None) -> mock.Mock:
     """A mock requests.Response-like object whose ``x-ratelimit-remaining``
     header reflects the given value (None → header absent)."""
     resp = mock.Mock(elapsed=datetime.timedelta(seconds=0.1))
-    resp.headers = (
-        {} if remaining is None else {"x-ratelimit-remaining": str(remaining)}
-    )
+    resp.headers = {} if remaining is None else {_QUOTA_HEADER: str(remaining)}
     return resp
 
 
