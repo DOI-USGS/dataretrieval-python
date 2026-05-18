@@ -62,6 +62,11 @@ from .filters import (
 # CQL ``filter`` (and its ``filter_lang``) is a string that has its own
 # inner chunker (``filters.chunked``); if a caller passes ``filter`` as
 # a list, treating it as a multi-value param would emit malformed CQL.
+# ``limit`` and ``skip_geometry`` are scalars-by-contract: their public
+# signatures are ``int | None`` and ``bool | None``, so a list value
+# reaching the chunker would be a type-erasure smuggle. Chunking it would
+# change request semantics in confusing ways (e.g. ``limit=["100","200"]``
+# fanning out into separate paginated queries with different caps).
 _NEVER_CHUNK = frozenset(
     {
         "properties",
@@ -75,6 +80,8 @@ _NEVER_CHUNK = frozenset(
         "time",
         "filter",
         "filter_lang",
+        "limit",
+        "skip_geometry",
     }
 )
 
@@ -417,6 +424,13 @@ def multi_value_chunked(
     across repeated calls with the same arguments — resume is
     well-defined.
     """
+    if quota_safety_floor is not None and quota_safety_floor < 0:
+        raise ValueError(
+            f"quota_safety_floor must be >= 0; got {quota_safety_floor}. "
+            f"A negative floor silently disables the guard the same way "
+            f"``0`` does, but obscures the intent — pass 0 explicitly to "
+            f"disable, or a positive integer to set a real safety margin."
+        )
 
     def decorator(fetch_once: _FetchOnce) -> _FetchOnce:
         @functools.wraps(fetch_once)

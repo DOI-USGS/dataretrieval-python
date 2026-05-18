@@ -768,6 +768,36 @@ def test_chunkable_params_skips_filter_passed_as_list():
     assert "filter_lang" not in chunkable
 
 
+def test_chunkable_params_skips_scalar_contract_params():
+    """``limit`` and ``skip_geometry`` are scalars by contract
+    (``int | None`` and ``bool | None`` respectively). If a caller smuggles
+    a list through type erasure (e.g. ``limit=["100","200"]`` after a bad
+    cast), the chunker must NOT treat it as a multi-value dim. Chunking
+    ``limit`` would silently fan into separate paginated queries with
+    different per-request caps; chunking ``skip_geometry`` would emit
+    sub-requests with conflicting geometry-output settings."""
+    args = {
+        "monitoring_location_id": ["USGS-A", "USGS-B"],
+        "limit": ["100", "200"],
+        "skip_geometry": ["true", "false"],
+    }
+    chunkable = _chunkable_params(args)
+    assert "monitoring_location_id" in chunkable
+    assert "limit" not in chunkable
+    assert "skip_geometry" not in chunkable
+
+
+def test_multi_value_chunked_rejects_negative_quota_safety_floor():
+    """``quota_safety_floor=0`` is the documented "disable the guard"
+    sentinel (tested elsewhere). A negative value disables it the same
+    way but obscures intent — reject at decoration time so the caller
+    notices, parallel to the ``max_chunks < 1`` check in ``_plan_chunks``."""
+    with pytest.raises(ValueError, match="quota_safety_floor must be >= 0"):
+        multi_value_chunked(build_request=_fake_build, quota_safety_floor=-1)
+    with pytest.raises(ValueError, match="quota_safety_floor must be >= 0"):
+        multi_value_chunked(build_request=_fake_build, quota_safety_floor=-50)
+
+
 def test_samples_results():
     """Test results call for proper columns"""
     df, _ = get_samples(
