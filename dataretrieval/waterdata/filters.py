@@ -1,46 +1,26 @@
 """CQL ``filter`` support for the Water Data OGC getters.
 
-Two names are public to the rest of the package:
+Public:
 
 - ``FILTER_LANG``: the type alias used for the ``filter_lang`` kwarg.
-- ``chunked``: the decorator ``utils.py`` applies to its single-request
-  fetch function. It runs the lexicographic-comparison pitfall guard,
-  splits long cql-text filters at top-level ``OR`` so each sub-request
-  fits under the server's URL byte limit, and concatenates the results.
 
-Other CQL shapes (``AND``, ``NOT``, ``LIKE``, spatial/temporal predicates,
-function calls) are forwarded verbatim — only top-level ``OR`` chunks
-losslessly into independent sub-queries whose result sets can be union'd.
+Internal helpers used by ``chunking.multi_value_chunked``'s joint
+planner: ``_split_top_level_or`` (clause partitioning),
+``_is_chunkable`` (filter-language gate), and
+``_check_numeric_filter_pitfall`` (the lexicographic-comparison guard).
+
+Other CQL shapes (``AND``, ``NOT``, ``LIKE``, spatial/temporal
+predicates, function calls) are forwarded verbatim — only top-level
+``OR`` chunks losslessly into independent sub-queries whose result sets
+can be union'd.
 """
 
 from __future__ import annotations
 
-import functools
 import re
-from collections.abc import Callable
-from typing import Any, Literal, TypeVar
-from urllib.parse import quote_plus
-
-import pandas as pd
-import requests
+from typing import Any, Literal
 
 FILTER_LANG = Literal["cql-text", "cql-json"]
-
-# Conservative fallback budget when ``_chunk_cql_or`` is called without
-# an explicit ``max_len``. The ``chunked`` decorator computes a tighter
-# per-request budget from ``_WATERDATA_URL_BYTE_LIMIT``.
-_CQL_FILTER_CHUNK_LEN = 5000
-
-# Empirically the API replies HTTP 414 above ~8200 bytes of full URL —
-# matches nginx's default ``large_client_header_buffers`` of 8 KB. 8000
-# leaves ~200 bytes for request-line framing and proxy variance.
-_WATERDATA_URL_BYTE_LIMIT = 8000
-
-# Conservative over-estimate of URL bytes used by everything *except*
-# the filter value. Used only by the fast path in
-# ``_effective_filter_budget`` to skip the probe when the encoded filter
-# clearly already fits.
-_NON_FILTER_URL_HEADROOM = 1000
 
 
 _NUM = r"-?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?"
@@ -120,69 +100,6 @@ def _split_top_level_or(expr: str) -> list[str]:
     return [p for p in parts if p]
 
 
-def _chunk_cql_or(expr: str, max_len: int = _CQL_FILTER_CHUNK_LEN) -> list[str]:
-    """Split ``expr`` into OR-chunks each under ``max_len`` characters.
-
-    Only top-level ``OR`` chains can be recombined losslessly as a disjunction
-    of independent sub-queries. Returns ``[expr]`` unchanged when the whole
-    expression already fits, when there is no top-level ``OR``, or when any
-    single clause exceeds ``max_len`` (sending it as-is and surfacing the
-    server's 414 is clearer than silently dropping data).
-    """
-    if len(expr) <= max_len:
-        return [expr]
-    parts = _split_top_level_or(expr)
-    if len(parts) < 2 or any(len(p) > max_len for p in parts):
-        return [expr]
-
-    chunks = []
-    current: list[str] = []
-    current_len = 0
-    for part in parts:
-        join_cost = len(" OR ") if current else 0
-        if current and current_len + join_cost + len(part) > max_len:
-            chunks.append(" OR ".join(current))
-            current = [part]
-            current_len = len(part)
-        else:
-            current.append(part)
-            current_len += join_cost + len(part)
-    if current:
-        chunks.append(" OR ".join(current))
-    return chunks
-
-
-def _effective_filter_budget(
-    args: dict[str, Any],
-    filter_expr: str,
-    build_request: Callable[..., Any],
-) -> int:
-    """Raw-CQL byte budget that, after URL-encoding, fits the URL byte limit.
-
-    The server caps total URL length, not raw CQL length. We probe the
-    non-filter URL bytes by building the request with a 1-byte placeholder
-    filter, subtract from the URL limit to get the bytes available for the
-    encoded filter, then convert back to raw CQL bytes via the *maximum*
-    per-clause encoding ratio (a chunk could contain only the heavier-encoding
-    clauses, so budgeting by the average ratio could overflow).
-    """
-    # Fast path: encoded filter clearly fits with room for any plausible
-    # non-filter URL. Skips the PreparedRequest build and splitter scan.
-    encoded_len = len(quote_plus(filter_expr))
-    if encoded_len + _NON_FILTER_URL_HEADROOM <= _WATERDATA_URL_BYTE_LIMIT:
-        return len(filter_expr) + 1
-
-    probe = build_request(**{**args, "filter": "x"})
-    available_url_bytes = _WATERDATA_URL_BYTE_LIMIT - (len(probe.url) - 1)
-    if available_url_bytes <= 0:
-        # Non-filter URL already over the limit. Pass through unchanged so
-        # the caller sees one 414 instead of N parallel sub-request failures.
-        return len(filter_expr) + 1
-    parts = _split_top_level_or(filter_expr) or [filter_expr]
-    encoding_ratio = max(len(quote_plus(p)) / len(p) for p in parts)
-    return max(100, int(available_url_bytes / encoding_ratio))
-
-
 def _check_numeric_filter_pitfall(filter_expr: str) -> None:
     """Raise if the filter pairs a field with an unquoted numeric literal.
 
@@ -243,92 +160,3 @@ def _is_chunkable(filter_expr: Any, filter_lang: Any) -> bool:
         and bool(filter_expr)
         and filter_lang in {None, "cql-text"}
     )
-
-
-def _combine_chunk_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
-    """Concatenate per-chunk frames, dropping empties and deduping by ``id``.
-
-    ``_get_resp_data`` returns a plain ``pd.DataFrame()`` on empty responses;
-    concat'ing it with real GeoDataFrames downgrades the result to plain
-    DataFrame and strips geometry/CRS, so empties are dropped first. Dedup
-    on the pre-rename feature ``id`` keeps overlapping user OR-clauses from
-    producing duplicate rows across chunks.
-    """
-    non_empty = [f for f in frames if not f.empty]
-    if not non_empty:
-        return pd.DataFrame()
-    if len(non_empty) == 1:
-        return non_empty[0]
-    combined = pd.concat(non_empty, ignore_index=True)
-    if "id" in combined.columns:
-        combined = combined.drop_duplicates(subset="id", ignore_index=True)
-    return combined
-
-
-def _combine_chunk_responses(
-    responses: list[requests.Response],
-) -> requests.Response:
-    """Return one response: first chunk's URL/headers + summed ``elapsed``.
-
-    Mutates the first response in place (only ``elapsed``); downstream only
-    reads ``elapsed`` (in ``BaseMetadata.query_time``), URL, and headers.
-    """
-    head = responses[0]
-    if len(responses) > 1:
-        head.elapsed = sum((r.elapsed for r in responses[1:]), start=head.elapsed)
-    return head
-
-
-_FetchOnce = TypeVar(
-    "_FetchOnce",
-    bound=Callable[[dict[str, Any]], tuple[pd.DataFrame, requests.Response]],
-)
-
-
-def chunked(*, build_request: Callable[..., Any]) -> Callable[[_FetchOnce], _FetchOnce]:
-    """Decorator that adds CQL-filter chunking to a single-request fetch.
-
-    The wrapped function has signature ``(args: dict) -> (frame, response)``
-    and represents one HTTP round-trip. The decorator inspects ``args``:
-
-    - No chunkable filter: pass through unchanged.
-    - Chunkable cql-text filter: run the lexicographic-pitfall guard, split
-      into URL-length-safe sub-expressions, call the wrapped function once
-      per chunk, concatenate frames (drop empties, dedup by feature ``id``),
-      and return an aggregated response (first chunk's URL/headers, summed
-      ``elapsed``).
-
-    Either way the return shape matches the undecorated function's, so the
-    caller wraps the response in ``BaseMetadata`` the same way in both paths.
-
-    ``build_request`` is injected so the decorator can probe URL length
-    without importing any specific HTTP builder; it receives the same kwargs
-    the wrapped function's ``args`` would and returns a prepared-request-like
-    object with a ``.url`` attribute.
-    """
-
-    def decorator(fetch_once: _FetchOnce) -> _FetchOnce:
-        @functools.wraps(fetch_once)
-        def wrapper(
-            args: dict[str, Any],
-        ) -> tuple[pd.DataFrame, requests.Response]:
-            filter_expr = args.get("filter")
-            if not _is_chunkable(filter_expr, args.get("filter_lang")):
-                return fetch_once(args)
-
-            _check_numeric_filter_pitfall(filter_expr)
-            budget = _effective_filter_budget(args, filter_expr, build_request)
-            chunks = _chunk_cql_or(filter_expr, max_len=budget)
-
-            frames: list[pd.DataFrame] = []
-            responses: list[requests.Response] = []
-            for chunk in chunks:
-                frame, response = fetch_once({**args, "filter": chunk})
-                frames.append(frame)
-                responses.append(response)
-
-            return _combine_chunk_frames(frames), _combine_chunk_responses(responses)
-
-        return wrapper  # type: ignore[return-value]
-
-    return decorator

@@ -7,11 +7,7 @@ import pandas as pd
 import pytest
 
 from dataretrieval.waterdata.filters import (
-    _CQL_FILTER_CHUNK_LEN,
-    _WATERDATA_URL_BYTE_LIMIT,
     _check_numeric_filter_pitfall,
-    _chunk_cql_or,
-    _effective_filter_budget,
     _split_top_level_or,
 )
 from dataretrieval.waterdata.utils import _construct_api_requests
@@ -33,11 +29,6 @@ def _fake_response(url="https://example.test", elapsed_ms=1):
         elapsed=timedelta(milliseconds=elapsed_ms),
         headers={},
     )
-
-
-def _build_request(**kwargs):
-    """Wrapper that matches the ``build_request`` callable shape."""
-    return _construct_api_requests(**kwargs)
 
 
 def test_construct_filter_passthrough():
@@ -113,35 +104,6 @@ def test_split_top_level_or_single_clause():
     ]
 
 
-def test_chunk_cql_or_short_passthrough():
-    expr = "time >= '2023-01-01T00:00:00Z'"
-    assert _chunk_cql_or(expr, max_len=1000) == [expr]
-
-
-def test_chunk_cql_or_splits_into_multiple():
-    clause = "(time >= '2023-01-01T00:00:00Z' AND time <= '2023-01-01T00:30:00Z')"
-    expr = " OR ".join([clause] * 200)
-    chunks = _chunk_cql_or(expr, max_len=1000)
-    # each chunk must be under the budget
-    assert all(len(c) <= 1000 for c in chunks)
-    # rejoined chunks must cover every clause
-    rejoined_clauses = sum(len(c.split(" OR ")) for c in chunks)
-    assert rejoined_clauses == 200
-    # and must be a valid OR chain (each chunk is itself a top-level OR of clauses)
-    assert len(chunks) > 1
-
-
-def test_chunk_cql_or_unsplittable_returns_input():
-    big = "value > 0 AND " + ("A " * 4000)
-    assert _chunk_cql_or(big, max_len=1000) == [big]
-
-
-def test_chunk_cql_or_single_clause_over_budget_returns_input():
-    huge_clause = "(value > " + "9" * 6000 + ")"
-    expr = f"{huge_clause} OR (value > 0)"
-    assert _chunk_cql_or(expr, max_len=1000) == [expr]
-
-
 @pytest.mark.parametrize(
     "service",
     [
@@ -167,40 +129,46 @@ def test_construct_filter_on_all_ogc_services(service):
     assert qs["filter-lang"] == ["cql-text"]
 
 
-def test_long_filter_fans_out_into_multiple_requests():
-    """An oversized top-level OR filter triggers multiple HTTP requests
-    whose results are concatenated."""
-    from dataretrieval.waterdata import get_continuous
-
+def _filter_chunking_clauses(n: int = 300) -> str:
+    """Stock long filter used by the end-to-end fan-out tests below."""
     clause = (
         "(time >= '2023-01-{day:02d}T00:00:00Z' "
         "AND time <= '2023-01-{day:02d}T00:30:00Z')"
     )
-    expr = " OR ".join(clause.format(day=(i % 28) + 1) for i in range(300))
-    assert len(expr) > _CQL_FILTER_CHUNK_LEN
+    return " OR ".join(clause.format(day=(i % 28) + 1) for i in range(n))
 
-    sent_filters = []
 
-    def fake_construct_api_requests(**kwargs):
-        sent_filters.append(kwargs.get("filter"))
-        return _fake_prepared_request()
+def _filter_size_aware_build(**kwargs):
+    """Fake ``_construct_api_requests`` whose returned URL length scales
+    with the request's ``filter`` value, so the joint planner naturally
+    triggers chunking on long filters."""
+    return _fake_prepared_request(
+        url=f"https://example.test/?filter={kwargs.get('filter', '')}",
+    )
 
-    def fake_walk_pages(*_args, **_kwargs):
+
+def test_long_filter_fans_out_into_multiple_requests():
+    """An oversized top-level OR filter triggers multiple HTTP
+    sub-requests via the joint planner; every original clause is
+    preserved across sub-requests; results concatenate to one row per
+    sub-request given the one-row-per-chunk mock."""
+    from dataretrieval.waterdata import get_continuous
+
+    expr = _filter_chunking_clauses()
+    sent_filters: list[str] = []
+
+    def fake_walk_pages(*, geopd, req):
         idx = len(sent_filters)
-        frame = pd.DataFrame({"id": [f"chunk-{idx}"], "value": [idx]})
-        return frame, _fake_response()
+        sent_filters.append(_query_params(req).get("filter", [None])[0])
+        return pd.DataFrame({"id": [f"chunk-{idx}"], "value": [idx]}), _fake_response()
 
     with (
         mock.patch(
             "dataretrieval.waterdata.utils._construct_api_requests",
-            side_effect=fake_construct_api_requests,
+            side_effect=_filter_size_aware_build,
         ),
         mock.patch(
             "dataretrieval.waterdata.utils._walk_pages", side_effect=fake_walk_pages
-        ),
-        mock.patch(
-            "dataretrieval.waterdata.filters._effective_filter_budget",
-            return_value=_CQL_FILTER_CHUNK_LEN,
         ),
     ):
         df, _ = get_continuous(
@@ -210,50 +178,37 @@ def test_long_filter_fans_out_into_multiple_requests():
             filter_lang="cql-text",
         )
 
-    # Mocking _effective_filter_budget bypasses the URL-length probe, so
-    # sent_filters contains only real chunk requests. Assert invariants:
-    # chunking happened, every original clause is preserved exactly once
-    # in order, each chunk stays under the budget, and the mock's
-    # one-row-per-chunk responses concatenate to a row per chunk.
     expected_parts = _split_top_level_or(expr)
     assert len(sent_filters) > 1
-    rejoined_parts = []
+    rejoined_parts: list[str] = []
     for chunk in sent_filters:
         rejoined_parts.extend(_split_top_level_or(chunk))
     assert rejoined_parts == expected_parts
     assert len(df) == len(sent_filters)
-    assert all(len(chunk) <= _CQL_FILTER_CHUNK_LEN for chunk in sent_filters)
 
 
 def test_long_filter_deduplicates_cross_chunk_overlap():
-    """Features returned by multiple chunks (same feature `id`) are
-    deduplicated in the concatenated result."""
+    """Features returned by multiple sub-requests with the same ``id``
+    are deduplicated in the concatenated result."""
     from dataretrieval.waterdata import get_continuous
 
-    clause = (
-        "(time >= '2023-01-{day:02d}T00:00:00Z' "
-        "AND time <= '2023-01-{day:02d}T00:30:00Z')"
-    )
-    expr = " OR ".join(clause.format(day=(i % 28) + 1) for i in range(300))
-
+    expr = _filter_chunking_clauses()
     call_count = {"n": 0}
 
     def fake_walk_pages(*_args, **_kwargs):
         call_count["n"] += 1
-        frame = pd.DataFrame({"id": ["shared-feature"], "value": [1]})
-        return frame, _fake_response()
+        return (
+            pd.DataFrame({"id": ["shared-feature"], "value": [1]}),
+            _fake_response(),
+        )
 
     with (
         mock.patch(
             "dataretrieval.waterdata.utils._construct_api_requests",
-            return_value=_fake_prepared_request(),
+            side_effect=_filter_size_aware_build,
         ),
         mock.patch(
             "dataretrieval.waterdata.utils._walk_pages", side_effect=fake_walk_pages
-        ),
-        mock.patch(
-            "dataretrieval.waterdata.filters._effective_filter_budget",
-            return_value=_CQL_FILTER_CHUNK_LEN,
         ),
     ):
         df, _ = get_continuous(
@@ -263,55 +218,45 @@ def test_long_filter_deduplicates_cross_chunk_overlap():
             filter_lang="cql-text",
         )
 
-    # Chunking must have happened (otherwise dedup wouldn't be exercised).
-    assert call_count["n"] > 1
-    # Even though each chunk returned a feature, dedup by id collapses them.
-    assert len(df) == 1
+    assert call_count["n"] > 1  # chunking must have happened
+    assert len(df) == 1  # dedup by ``id`` collapses the duplicates
 
 
 def test_empty_chunks_do_not_downgrade_geodataframe():
-    """A mix of empty and non-empty chunk responses must not downgrade a
-    GeoDataFrame-typed result to a plain DataFrame. ``_get_resp_data``
-    returns ``pd.DataFrame()`` on empty responses, which would otherwise
-    strip geometry/CRS from the concatenated output."""
+    """A mix of empty and non-empty sub-request responses must not
+    downgrade a GeoDataFrame-typed result to a plain DataFrame.
+    ``_get_resp_data`` returns ``pd.DataFrame()`` on empty responses,
+    which would otherwise strip geometry/CRS from the concatenated
+    output."""
     pytest.importorskip("geopandas")
     import geopandas as gpd
     from shapely.geometry import Point
 
     from dataretrieval.waterdata import get_continuous
 
-    clause = (
-        "(time >= '2023-01-{day:02d}T00:00:00Z' "
-        "AND time <= '2023-01-{day:02d}T00:30:00Z')"
-    )
-    expr = " OR ".join(clause.format(day=(i % 28) + 1) for i in range(300))
-
+    expr = _filter_chunking_clauses()
     call_count = {"n": 0}
 
     def fake_walk_pages(*_args, **_kwargs):
         call_count["n"] += 1
-        # Chunk 2 returns empty; chunks 1 and 3 return GeoDataFrames.
         if call_count["n"] == 2:
-            frame = pd.DataFrame()
-        else:
-            frame = gpd.GeoDataFrame(
+            return pd.DataFrame(), _fake_response()
+        return (
+            gpd.GeoDataFrame(
                 {"id": [f"feat-{call_count['n']}"], "value": [call_count["n"]]},
                 geometry=[Point(call_count["n"], call_count["n"])],
                 crs="EPSG:4326",
-            )
-        return frame, _fake_response()
+            ),
+            _fake_response(),
+        )
 
     with (
         mock.patch(
             "dataretrieval.waterdata.utils._construct_api_requests",
-            return_value=_fake_prepared_request(),
+            side_effect=_filter_size_aware_build,
         ),
         mock.patch(
             "dataretrieval.waterdata.utils._walk_pages", side_effect=fake_walk_pages
-        ),
-        mock.patch(
-            "dataretrieval.waterdata.filters._effective_filter_budget",
-            return_value=_CQL_FILTER_CHUNK_LEN,
         ),
     ):
         df, _ = get_continuous(
@@ -321,117 +266,9 @@ def test_empty_chunks_do_not_downgrade_geodataframe():
             filter_lang="cql-text",
         )
 
-    # The empty chunk must not have stripped the GeoDataFrame type.
     assert isinstance(df, gpd.GeoDataFrame)
     assert "geometry" in df.columns
     assert df.crs is not None
-
-
-def test_effective_filter_budget_respects_url_limit():
-    """The computed budget, once encoded, fits within the URL byte limit
-    alongside the other query params."""
-    from urllib.parse import quote_plus
-
-    filter_expr = "(time >= '2023-01-15T00:00:00Z' AND time <= '2023-01-15T00:30:00Z')"
-    args = {
-        "service": "continuous",
-        "monitoring_location_id": "USGS-02238500",
-        "parameter_code": "00060",
-        "filter": filter_expr,
-        "filter_lang": "cql-text",
-    }
-    raw_budget = _effective_filter_budget(args, filter_expr, _build_request)
-
-    # Build a chunk exactly at the raw budget (padded with the clause repeated)
-    # and confirm the full URL it produces stays under the URL byte limit.
-    padded = (" OR ".join([filter_expr] * 200))[:raw_budget]
-    req = _construct_api_requests(**{**args, "filter": padded})
-    assert len(req.url) <= _WATERDATA_URL_BYTE_LIMIT
-    # And the budget scales inversely with encoding ratio (sanity).
-    assert raw_budget < _WATERDATA_URL_BYTE_LIMIT
-    # Quick sanity on the encoding math itself.
-    assert len(quote_plus(padded)) <= _WATERDATA_URL_BYTE_LIMIT
-
-
-def test_effective_filter_budget_uses_max_clause_ratio():
-    """Heavy clauses clustered in one part of the filter must not be able
-    to push any chunk over the URL limit. The budget is computed against
-    the max per-clause encoding ratio, not the whole-filter average, so
-    a chunk of only-heaviest-clauses still fits."""
-    from urllib.parse import quote_plus
-
-    heavy = (
-        "(time >= '2023-01-15T00:00:00Z' AND time <= '2023-01-15T00:30:00Z' "
-        "AND approval_status IN ('Approved','Provisional','Revised'))"
-    )
-    light = "(time >= '2023-01-15T00:00:00Z' AND time <= '2023-01-15T00:30:00Z')"
-    # Heavy ratio < light ratio for these shapes; cluster them at opposite
-    # ends so the chunker must produce at least one light-only chunk.
-    clauses = [heavy] * 100 + [light] * 400
-    expr = " OR ".join(clauses)
-    args = {
-        "service": "continuous",
-        "monitoring_location_id": "USGS-02238500",
-        "filter": expr,
-        "filter_lang": "cql-text",
-    }
-    budget = _effective_filter_budget(args, expr, _build_request)
-    chunks = _chunk_cql_or(expr, max_len=budget)
-    assert len(chunks) > 1
-
-    # Every chunk, once built into a full request, fits under the URL byte
-    # limit — even the all-light chunks that have a higher-than-average ratio.
-    for chunk in chunks:
-        req = _construct_api_requests(**{**args, "filter": chunk})
-        assert len(req.url) <= _WATERDATA_URL_BYTE_LIMIT, (
-            f"chunk url {len(req.url)} exceeds {_WATERDATA_URL_BYTE_LIMIT}"
-        )
-
-    # Budget should be tight enough that a chunk of only-light clauses
-    # (the heavier-encoding shape here) still fits.
-    assert len(quote_plus(light)) * (budget // len(light)) < _WATERDATA_URL_BYTE_LIMIT
-
-
-def test_effective_filter_budget_passes_through_when_no_url_space():
-    """If the non-filter URL already exceeds the byte limit, chunking
-    cannot make the request succeed. The budget helper should signal
-    pass-through (return a budget larger than the filter) so
-    ``_chunk_cql_or`` emits one chunk — one 414 from the server is
-    clearer than a burst of N guaranteed-414 sub-requests."""
-    expr = " OR ".join(
-        ["(time >= '2023-01-15T00:00:00Z' AND time <= '2023-01-15T00:30:00Z')"] * 50
-    )
-    fake_build = mock.Mock(
-        return_value=_fake_prepared_request(url="https://example.test/" + "A" * 9000)
-    )
-    budget = _effective_filter_budget({"filter": expr}, expr, fake_build)
-    # Budget is large enough that _chunk_cql_or returns the expression
-    # unchanged (passthrough) rather than producing many small chunks.
-    assert budget > len(expr)
-    assert _chunk_cql_or(expr, max_len=budget) == [expr]
-
-
-def test_effective_filter_budget_shrinks_with_more_url_params():
-    """Adding more scalar query params consumes URL bytes and should
-    shrink the raw filter budget accordingly. Use a filter large enough
-    to skip the short-circuit fast path so the probe actually runs."""
-    clause = "(time >= '2023-01-15T00:00:00Z' AND time <= '2023-01-15T00:30:00Z')"
-    expr = " OR ".join([clause] * 100)
-    sparse_args = {
-        "service": "continuous",
-        "monitoring_location_id": "USGS-02238500",
-        "filter": expr,
-        "filter_lang": "cql-text",
-    }
-    dense_args = {
-        **sparse_args,
-        "parameter_code": "00060",
-        "statistic_id": "00003",
-        "last_modified": "2023-01-01T00:00:00Z/2023-12-31T23:59:59Z",
-    }
-    sparse_budget = _effective_filter_budget(sparse_args, expr, _build_request)
-    dense_budget = _effective_filter_budget(dense_args, expr, _build_request)
-    assert dense_budget < sparse_budget
 
 
 def test_cql_json_filter_is_not_chunked():

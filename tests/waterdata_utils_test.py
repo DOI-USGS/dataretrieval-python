@@ -1,3 +1,4 @@
+import json
 import logging
 from unittest import mock
 
@@ -6,12 +7,15 @@ import pytest
 import requests
 
 import dataretrieval.waterdata.utils as _utils_module
+from dataretrieval.waterdata.chunking import RateLimited, ServiceUnavailable
 from dataretrieval.waterdata.utils import (
     _arrange_cols,
     _error_body,
     _format_api_dates,
     _get_args,
     _handle_stats_nesting,
+    _parse_retry_after,
+    _raise_for_non_200,
     _walk_pages,
 )
 
@@ -189,6 +193,110 @@ def test_walk_pages_raises_on_mid_pagination_429():
     assert "rate-limit window" in msg  # 429-specific guidance present
 
 
+def test_walk_pages_wraps_initial_page_parse_error():
+    """A 200 response whose body fails to parse on the FIRST page used
+    to escape ``_walk_pages`` as a raw ``JSONDecodeError``, while the
+    SAME failure on a subsequent page was wrapped via
+    ``_paginated_failure_message``. The asymmetry meant operators got
+    different exception types for the same logical bug depending on
+    which page hit it. The initial-parse wrapper closes the gap."""
+    resp = mock.MagicMock()
+    resp.status_code = 200
+    resp.url = "https://example.com/page1"
+    # Body is unparseable JSON (gateway HTML page, truncated stream).
+    resp.json.side_effect = json.JSONDecodeError("Expecting value", "<html>...", 0)
+
+    mock_client = mock.MagicMock(spec=requests.Session)
+    mock_client.send.return_value = resp
+
+    mock_req = mock.MagicMock(spec=requests.PreparedRequest)
+    mock_req.method = "GET"
+    mock_req.headers = {}
+    mock_req.url = "https://example.com/page1"
+
+    with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
+        _walk_pages(geopd=False, req=mock_req, client=mock_client)
+
+    # The JSONDecodeError causing it is on __cause__ so callers can drill in.
+    assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
+
+
+def test_get_resp_data_handles_missing_features_key():
+    """Regression: a 200 with ``numberReturned > 0`` but no
+    ``features`` key (real schema-drift shape) used to crash
+    ``_get_resp_data`` with ``KeyError`` — wrapped downstream by
+    ``_paginate`` as a generic transport error. ``_handle_stats_nesting``
+    was already hardened against this; ``_get_resp_data`` now mirrors
+    that defensiveness and returns an empty frame instead."""
+    from dataretrieval.waterdata.utils import _get_resp_data
+
+    resp = mock.Mock()
+    resp.json.return_value = {"numberReturned": 1, "links": []}
+    df = _get_resp_data(resp, geopd=False)
+    assert df.empty
+    assert isinstance(df, pd.DataFrame)
+
+
+def test_walk_pages_does_not_mutate_initial_response():
+    """The aggregated response returned from ``_walk_pages`` is built
+    via ``_aggregate_paginated_response``, which returns a fresh copy.
+    Any caller that inspected ``initial_response.headers`` /
+    ``.elapsed`` before pagination completed (a Session response hook,
+    a logging middleware) must continue to see the original first-page
+    values — NOT the rewritten cumulative values."""
+    import datetime as _dt
+
+    page1 = mock.MagicMock()
+    page1.status_code = 200
+    page1.url = "https://example.com/page1"
+    page1.elapsed = _dt.timedelta(seconds=1)
+    page1.headers = {"x-ratelimit-remaining": "999"}
+    page1.json.return_value = {
+        "numberReturned": 1,
+        "features": [{"id": "1", "properties": {"val": "a"}}],
+        "links": [{"rel": "next", "href": "https://example.com/page2"}],
+    }
+    page1_initial_headers_id = id(page1.headers)
+    page1_initial_elapsed = page1.elapsed
+
+    page2 = mock.MagicMock()
+    page2.status_code = 200
+    page2.url = "https://example.com/page2"
+    page2.elapsed = _dt.timedelta(seconds=2)
+    page2.headers = {"x-ratelimit-remaining": "998"}
+    page2.json.return_value = {
+        "numberReturned": 1,
+        "features": [{"id": "2", "properties": {"val": "b"}}],
+        "links": [],
+    }
+
+    mock_client = mock.MagicMock(spec=requests.Session)
+    mock_client.send.return_value = page1
+    mock_client.request.return_value = page2
+
+    mock_req = mock.MagicMock(spec=requests.PreparedRequest)
+    mock_req.method = "GET"
+    mock_req.headers = {}
+    mock_req.url = "https://example.com/page1"
+
+    df, final = _walk_pages(geopd=False, req=mock_req, client=mock_client)
+    assert len(df) == 2
+
+    # The original first-page response object must be unmutated:
+    # both .headers (same dict object) and .elapsed unchanged.
+    assert id(page1.headers) == page1_initial_headers_id
+    assert page1.headers["x-ratelimit-remaining"] == "999"
+    assert page1.elapsed == page1_initial_elapsed
+
+    # The returned aggregate carries page-2 headers + cumulative elapsed.
+    assert final.headers["x-ratelimit-remaining"] == "998"
+    assert final.elapsed == _dt.timedelta(seconds=3)
+    # And mutating the aggregate's headers doesn't leak into either page.
+    final.headers["X-Trace-Id"] = "abc"
+    assert "X-Trace-Id" not in page1.headers
+    assert "X-Trace-Id" not in page2.headers
+
+
 def _stats_initial_ok():
     """A 200-OK initial stats response: empty data list, signals one more page."""
     resp = mock.MagicMock()
@@ -231,8 +339,12 @@ def _run_get_stats_data_with_failure(failure_resp_or_exc, monkeypatch):
     )
 
 
-def test_get_stats_data_raises_on_connection_error_mid_pagination(monkeypatch):
-    """get_stats_data variant of the connection-error-raises contract."""
+def test_get_stats_data_raises_on_mid_pagination_failure(monkeypatch):
+    """Wiring smoke: ``get_stats_data`` and ``_walk_pages`` share the
+    same ``_paginate`` strategy helper, so error-routing behaviour is
+    exercised by the ``_walk_pages`` triplet above. This single
+    ``get_stats_data`` mid-pagination case proves the stats-specific
+    follow-up callback is wired into ``_paginate`` correctly."""
     with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
         _run_get_stats_data_with_failure(
             requests.ConnectionError("stats-boom"),
@@ -241,34 +353,6 @@ def test_get_stats_data_raises_on_connection_error_mid_pagination(monkeypatch):
 
     assert isinstance(excinfo.value.__cause__, requests.ConnectionError)
     assert "stats-boom" in str(excinfo.value)
-
-
-def test_get_stats_data_raises_on_5xx_mid_pagination(monkeypatch):
-    """get_stats_data variant of the 5xx-raises contract."""
-    page2_503 = mock.MagicMock()
-    page2_503.status_code = 503
-    page2_503.json.return_value = {
-        "code": "ServiceUnavailable",
-        "description": "upstream timeout",
-    }
-    page2_503.url = "https://example.com/stats?service=foo&next_token=tok2"
-
-    with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
-        _run_get_stats_data_with_failure(page2_503, monkeypatch)
-
-    assert "503" in str(excinfo.value) or "ServiceUnavailable" in str(excinfo.value)
-
-
-def test_get_stats_data_raises_on_mid_pagination_429(monkeypatch):
-    """get_stats_data variant of the 429-raises contract."""
-    page2_429 = mock.MagicMock()
-    page2_429.status_code = 429
-    page2_429.url = "https://example.com/stats?service=foo&next_token=tok2"
-
-    with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
-        _run_get_stats_data_with_failure(page2_429, monkeypatch)
-
-    assert "429" in str(excinfo.value)
 
 
 def test_get_stats_data_warning_includes_next_token(caplog, monkeypatch):
@@ -320,6 +404,87 @@ def test_handle_stats_nesting_tolerates_missing_drop_columns():
 
     assert len(df) == 1
     assert df["monitoring_location_id"].iloc[0] == "USGS-12345"
+
+
+def test_handle_stats_nesting_returns_empty_on_empty_features():
+    """A mid-pagination empty page ({\"features\": [], \"next\": <tok>})
+    must not crash the downstream merge with
+    ``KeyError: 'monitoring_location_id'``. The function short-
+    circuits to an empty DataFrame so pagination can continue."""
+    df = _handle_stats_nesting({"features": [], "next": None}, geopd=False)
+    assert df.empty
+
+
+def test_handle_stats_nesting_empty_preserves_geopd_type():
+    """When geopandas is available, the empty-features short-circuit
+    must return a ``GeoDataFrame`` rather than a plain ``DataFrame``.
+    Otherwise a subsequent ``pd.concat([empty, geo_page])`` downgrades
+    the final result to a plain ``DataFrame`` and strips geometry/CRS
+    — a real regression for geopd-installed users on stats queries
+    that hit an empty intermediate page."""
+    # Monkeypatch a stub gpd into the utils module so the test runs
+    # whether or not geopandas is actually installed.
+    fake_gpd = mock.MagicMock()
+
+    class _Sentinel:
+        pass
+
+    fake_gpd.GeoDataFrame = lambda *a, **kw: _Sentinel()
+    with mock.patch.object(_utils_module, "gpd", fake_gpd, create=True):
+        result = _handle_stats_nesting({"features": []}, geopd=True)
+    assert isinstance(result, _Sentinel)
+
+
+def test_get_resp_data_empty_preserves_geopd_type():
+    """Same as the stats-side preservation: ``_get_resp_data``'s
+    ``numberReturned == 0`` short-circuit must return a
+    ``GeoDataFrame`` (not a plain ``DataFrame``) when geopd is True,
+    so paginating across a sparse intermediate page doesn't downgrade
+    the final concat result."""
+    from dataretrieval.waterdata.utils import _get_resp_data
+
+    fake_gpd = mock.MagicMock()
+
+    class _Sentinel:
+        pass
+
+    fake_gpd.GeoDataFrame = lambda *a, **kw: _Sentinel()
+
+    resp = mock.MagicMock()
+    resp.json.return_value = {"numberReturned": 0, "features": [], "links": []}
+    with mock.patch.object(_utils_module, "gpd", fake_gpd, create=True):
+        result = _get_resp_data(resp, geopd=True)
+    assert isinstance(result, _Sentinel)
+
+
+def test_handle_stats_nesting_tolerates_missing_features_key():
+    """A 200 response with a body that doesn't carry ``features`` at
+    all (rare but seen in error envelopes) must also short-circuit
+    rather than KeyError before the schema-aware extraction even
+    runs."""
+    df = _handle_stats_nesting({}, geopd=False)
+    assert df.empty
+
+
+def test_get_resp_data_always_materializes_id_column():
+    """``_get_resp_data`` must always materialize the ``id`` column
+    (NaN-filled when no feature carries one) so the downstream
+    ``_arrange_cols`` rename to the service-specific output_id
+    (``daily_id``, ``channel_measurements_id``, etc.) isn't a
+    silent no-op."""
+    from dataretrieval.waterdata.utils import _get_resp_data
+
+    resp = mock.MagicMock()
+    resp.json.return_value = {
+        "numberReturned": 2,
+        "features": [
+            {"properties": {"val": "a"}},  # no top-level id
+            {"properties": {"val": "b"}},  # ditto
+        ],
+    }
+    df = _get_resp_data(resp, geopd=False)
+    assert "id" in df.columns
+    assert df["id"].isna().all()
 
 
 # --- _arrange_cols ----------------------------------------------------------
@@ -489,3 +654,79 @@ def test_error_body_still_parses_well_formed_json():
     assert "400" in msg
     assert "BadRequest" in msg
     assert "missing parameter" in msg
+
+
+def test_parse_retry_after_handles_none_and_empty():
+    """Absent or empty header → ``None`` (no quota signal). The chunker
+    treats ``None`` as "fall back to my own retry policy," so this
+    branch must not return a misleading 0."""
+    assert _parse_retry_after(None) is None
+    assert _parse_retry_after("") is None
+    assert _parse_retry_after("   ") is None
+
+
+def test_parse_retry_after_parses_delta_seconds():
+    """Integer and float forms of delta-seconds (the common shape USGS
+    sends) are parsed directly without touching the HTTP-date branch."""
+    assert _parse_retry_after("120") == 120.0
+    assert _parse_retry_after("0") == 0.0
+    assert _parse_retry_after("42.5") == 42.5
+    # Surrounding whitespace is stripped before parsing.
+    assert _parse_retry_after("  30  ") == 30.0
+
+
+def test_parse_retry_after_clamps_negative_delta_to_zero():
+    """A negative delta-seconds means the server is saying "retry now."
+    Returning the negative value would let callers pass it to
+    ``time.sleep`` and get a ``ValueError`` — clamp at the source."""
+    assert _parse_retry_after("-10") == 0.0
+    assert _parse_retry_after("-0.5") == 0.0
+
+
+def test_parse_retry_after_returns_none_for_unparseable():
+    """Garbage values (including the RFC 1123 HTTP-date form that the
+    HTTP spec allows but USGS doesn't actually send) surface as
+    ``None``, letting the chunker fall back to its own retry policy
+    instead of guessing a delay."""
+    assert _parse_retry_after("not-a-date") is None
+    assert _parse_retry_after("Wed, 21 Oct 2099 07:28:00 GMT") is None
+
+
+def test_raise_for_non_200_raises_service_unavailable_for_5xx():
+    """5xx must surface as the typed ``ServiceUnavailable`` (not bare
+    ``RuntimeError``) so the chunker can wrap it as a resumable
+    ``ServiceInterrupted`` rather than treating it as a fatal error."""
+    resp = _make_response(503, "", reason="Service Unavailable")
+    resp.headers["Retry-After"] = "120"
+    with pytest.raises(ServiceUnavailable) as excinfo:
+        _raise_for_non_200(resp)
+    assert excinfo.value.retry_after == 120.0
+
+
+def test_raise_for_non_200_attaches_retry_after_to_rate_limited():
+    """``Retry-After`` on a 429 response must travel onto
+    ``RateLimited.retry_after`` so the chunker can surface it on
+    ``QuotaExhausted.retry_after`` for callers to honor."""
+    resp = _make_response(429, "", reason="Too Many Requests")
+    resp.headers["Retry-After"] = "60"
+    with pytest.raises(RateLimited) as excinfo:
+        _raise_for_non_200(resp)
+    assert excinfo.value.retry_after == 60.0
+
+
+def test_raise_for_non_200_still_raises_bare_runtimeerror_for_other_4xx():
+    """4xx other than 429 (e.g. 400 Bad Request) is a programmer error
+    that retry won't fix. Must remain bare ``RuntimeError`` so the
+    chunker's classifier doesn't wrap it as resumable."""
+    resp = _make_response(
+        400,
+        '{"code": "BadRequest", "description": "missing parameter"}',
+        reason="Bad Request",
+        content_type="application/json",
+    )
+    with pytest.raises(RuntimeError) as excinfo:
+        _raise_for_non_200(resp)
+    # Must be exactly RuntimeError — not RateLimited, not
+    # ServiceUnavailable. Both subclass RuntimeError, so a plain
+    # ``pytest.raises(RuntimeError)`` would match either.
+    assert type(excinfo.value) is RuntimeError
