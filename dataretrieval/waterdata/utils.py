@@ -896,15 +896,7 @@ def _type_cols(df: pd.DataFrame) -> pd.DataFrame:
         df[col] = pd.to_datetime(df[col], errors="coerce")
 
     for col in cols.intersection(numerical_cols):
-        # ``pd.to_numeric`` infers ``int64`` when every value happens to
-        # be integer-shaped (e.g. all-whole-CFS discharge values at a
-        # small stream). These are physical measurements — discharge,
-        # altitude, drainage area — and are continuous quantities by
-        # nature, so force ``float64`` to avoid surprise arithmetic
-        # surfaces (e.g. integer division on a chained subsequent
-        # query) and to keep dtype stable across sites with mixed
-        # whole vs fractional observations.
-        df[col] = pd.to_numeric(df[col], errors="coerce").astype("float64")
+        df[col] = pd.to_numeric(df[col], errors="coerce")
 
     return df
 
