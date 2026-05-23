@@ -40,7 +40,7 @@ def test_renders_pages_rows_and_rate_limit():
     out = stream.getvalue()
     assert "1 page" in out
     assert "1,234 rows" in out
-    assert "4870 requests left" in out
+    assert "4,870 requests left" in out
 
 
 def test_page_count_is_pluralized():
@@ -175,7 +175,7 @@ def test_walk_pages_reports_pages_and_rate_limit():
     assert len(df) == 2
     out = stream.getvalue()
     assert "2 pages" in out
-    assert "4998 requests left" in out
+    assert "4,998 requests left" in out
     assert out.endswith("\n")
 
 

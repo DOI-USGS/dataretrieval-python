@@ -101,7 +101,11 @@ class ProgressReporter:
         if self.rows:
             parts.append(f"{self.rows:,} rows")
         if self.rate_remaining is not None:
-            parts.append(f"{self.rate_remaining} requests left")
+            # The header is a string; group it like the row count when it's a
+            # plain integer, otherwise show it verbatim.
+            rate = self.rate_remaining
+            rate = f"{int(rate):,}" if rate.isdigit() else rate
+            parts.append(f"{rate} requests left")
         return " · ".join(parts)
 
     def _render(self) -> None:
