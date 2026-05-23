@@ -14,7 +14,7 @@ import requests
 
 from dataretrieval import __version__
 from dataretrieval.utils import BaseMetadata
-from dataretrieval.waterdata import filters
+from dataretrieval.waterdata import _progress, filters
 from dataretrieval.waterdata.types import (
     PROFILE_LOOKUP,
     PROFILES,
@@ -545,9 +545,7 @@ def _next_req_url(resp: requests.Response) -> str | None:
 
     Notes
     -----
-    - If the environment variable "API_USGS_PAT" is set, logs the remaining
-    requests for the current hour.
-    - Logs the next URL if found at info level.
+    - Returns None when the response carries no features.
     - Expects the response JSON to contain a "links" list with objects having
     "rel" and "href" keys.
     - Checks for the "next" relation in the "links" to determine the next URL.
@@ -555,17 +553,9 @@ def _next_req_url(resp: requests.Response) -> str | None:
     body = resp.json()
     if not body.get("numberReturned"):
         return None
-    header_info = resp.headers
-    if os.getenv("API_USGS_PAT", ""):
-        logger.info(
-            "Remaining requests this hour: %s",
-            header_info.get("x-ratelimit-remaining", ""),
-        )
     for link in body.get("links", []):
         if link.get("rel") == "next":
-            next_url = link.get("href")
-            logger.info("Next URL: %s", next_url)
-            return next_url
+            return link.get("href")
     return None
 
 
@@ -650,13 +640,15 @@ def _walk_pages(
     Exception
         If a request fails/returns a non-200 status code.
     """
-    logger.info("Requesting: %s", req.url)
+    logger.debug("Requesting: %s", req.url)
 
     if not geopd:
         logger.warning(
             "Geopandas not installed. Geometries will be flattened "
             "into pandas DataFrames."
         )
+
+    reporter = _progress.current()
 
     # Get first response from client
     # using GET or POST call
@@ -676,7 +668,11 @@ def _walk_pages(
         content = req.body if method == "POST" else None
 
         # List to collect dataframes from each page
-        dfs = [_get_resp_data(resp, geopd=geopd)]
+        page = _get_resp_data(resp, geopd=geopd)
+        dfs = [page]
+        if reporter is not None:
+            reporter.set_rate_remaining(resp.headers.get("x-ratelimit-remaining"))
+            reporter.add_page(rows=len(page))
         curr_url = _next_req_url(resp)
         while curr_url:
             try:
@@ -687,7 +683,13 @@ def _walk_pages(
                     data=content if method == "POST" else None,
                 )
                 _raise_for_non_200(resp)
-                dfs.append(_get_resp_data(resp, geopd=geopd))
+                page = _get_resp_data(resp, geopd=geopd)
+                dfs.append(page)
+                if reporter is not None:
+                    reporter.set_rate_remaining(
+                        resp.headers.get("x-ratelimit-remaining")
+                    )
+                    reporter.add_page(rows=len(page))
                 curr_url = _next_req_url(resp)
             except Exception as e:  # noqa: BLE001
                 logger.error("Request incomplete: %s", e)
@@ -913,7 +915,8 @@ def get_ogc_data(
     convert_type = args.pop("convert_type", False)
     args = {k: v for k, v in args.items() if v is not None}
 
-    return_list, response = _fetch_once(args)
+    with _progress.progress_context():
+        return_list, response = _fetch_once(args)
     return_list = _deal_with_empty(return_list, properties, service)
     if convert_type:
         return_list = _type_cols(return_list)
@@ -1114,7 +1117,7 @@ def get_stats_data(
         params=args,
     )
     req = request.prepare()
-    logger.info("Request: %s", req.url)
+    logger.debug("Request: %s", req.url)
 
     # create temp client if not provided
     # and close it after the request is done
@@ -1122,55 +1125,68 @@ def get_stats_data(
     client = client or requests.Session()
 
     try:
-        resp = client.send(req)
-        _raise_for_non_200(resp)
+        with _progress.progress_context() as reporter:
+            resp = client.send(req)
+            _raise_for_non_200(resp)
 
-        # Store the initial response for metadata
-        initial_response = resp
+            # Store the initial response for metadata
+            initial_response = resp
 
-        # Grab some aspects of the original request: headers and the
-        # request type (GET or POST)
-        method = req.method.upper()
-        headers = dict(req.headers)
+            # Grab some aspects of the original request: headers and the
+            # request type (GET or POST)
+            method = req.method.upper()
+            headers = dict(req.headers)
 
-        body = resp.json()
-        all_dfs = [_handle_stats_nesting(body, geopd=GEOPANDAS)]
+            body = resp.json()
+            page = _handle_stats_nesting(body, geopd=GEOPANDAS)
+            all_dfs = [page]
+            reporter.set_rate_remaining(resp.headers.get("x-ratelimit-remaining"))
+            reporter.add_page(rows=len(page))
 
-        # Look for a next code in the response body
-        next_token = body["next"]
+            # Look for a next code in the response body
+            next_token = body["next"]
 
-        while next_token:
-            args["next_token"] = next_token
+            while next_token:
+                args["next_token"] = next_token
 
-            try:
-                resp = client.request(
-                    method,
-                    url=url,
-                    params=args,
-                    headers=headers,
-                )
-                _raise_for_non_200(resp)
-                body = resp.json()
-                all_dfs.append(_handle_stats_nesting(body, geopd=GEOPANDAS))
-                next_token = body["next"]
-            except Exception as e:  # noqa: BLE001
-                logger.error("Request incomplete: %s", e)
-                logger.warning(
-                    "Request failed for URL: %s (next_token=%s). "
-                    "Data download interrupted.",
-                    url,
-                    next_token,
-                )
-                next_token = None
+                try:
+                    resp = client.request(
+                        method,
+                        url=url,
+                        params=args,
+                        headers=headers,
+                    )
+                    _raise_for_non_200(resp)
+                    body = resp.json()
+                    page = _handle_stats_nesting(body, geopd=GEOPANDAS)
+                    all_dfs.append(page)
+                    reporter.set_rate_remaining(
+                        resp.headers.get("x-ratelimit-remaining")
+                    )
+                    reporter.add_page(rows=len(page))
+                    next_token = body["next"]
+                except Exception as e:  # noqa: BLE001
+                    logger.error("Request incomplete: %s", e)
+                    logger.warning(
+                        "Request failed for URL: %s (next_token=%s). "
+                        "Data download interrupted.",
+                        url,
+                        next_token,
+                    )
+                    next_token = None
 
-        dfs = pd.concat(all_dfs, ignore_index=True) if len(all_dfs) > 1 else all_dfs[0]
+            dfs = (
+                pd.concat(all_dfs, ignore_index=True)
+                if len(all_dfs) > 1
+                else all_dfs[0]
+            )
 
-        # . If expand percentiles is True, make each percentile
-        # its own row in the returned dataset.
-        if expand_percentiles:
-            dfs = _expand_percentiles(dfs)
+            # . If expand percentiles is True, make each percentile
+            # its own row in the returned dataset.
+            if expand_percentiles:
+                dfs = _expand_percentiles(dfs)
 
-        return dfs, BaseMetadata(initial_response)
+            return dfs, BaseMetadata(initial_response)
     finally:
         if close_client:
             client.close()

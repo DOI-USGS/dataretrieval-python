@@ -24,6 +24,8 @@ from urllib.parse import quote_plus
 import pandas as pd
 import requests
 
+from dataretrieval.waterdata import _progress
+
 FILTER_LANG = Literal["cql-text", "cql-json"]
 
 # Conservative fallback budget when ``_chunk_cql_or`` is called without
@@ -320,9 +322,15 @@ def chunked(*, build_request: Callable[..., Any]) -> Callable[[_FetchOnce], _Fet
             budget = _effective_filter_budget(args, filter_expr, build_request)
             chunks = _chunk_cql_or(filter_expr, max_len=budget)
 
+            reporter = _progress.current()
+            if reporter is not None:
+                reporter.set_chunks(len(chunks))
+
             frames: list[pd.DataFrame] = []
             responses: list[requests.Response] = []
-            for chunk in chunks:
+            for index, chunk in enumerate(chunks, start=1):
+                if reporter is not None:
+                    reporter.start_chunk(index)
                 frame, response = fetch_once({**args, "filter": chunk})
                 frames.append(frame)
                 responses.append(response)

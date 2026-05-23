@@ -2323,7 +2323,7 @@ def get_samples(
 
     req = PreparedRequest()
     req.prepare_url(url, params=params)
-    logger.info("Request: %s", req.url)
+    logger.debug("Request: %s", req.url)
 
     response = requests.get(
         url, params=params, verify=ssl_check, headers=_default_headers()
@@ -2395,7 +2395,7 @@ def get_samples_summary(
 
     req = PreparedRequest()
     req.prepare_url(url, params=params)
-    logger.info("Request: %s", req.url)
+    logger.debug("Request: %s", req.url)
 
     response = requests.get(
         url, params=params, verify=ssl_check, headers=_default_headers()
