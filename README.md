@@ -4,29 +4,6 @@
 ![Conda Version](https://img.shields.io/conda/v/conda-forge/dataretrieval)
 ![Downloads](https://static.pepy.tech/badge/dataretrieval)
 
-## Latest Announcements
-
-**02/24/2026** The `get_gwlevels`, `get_discharge_measurements` functions in the `nwis` module are defunct and have been replaced with the `get_field_measurements` function in the `waterdata` module. The `get_pmcodes` function in the `nwis` module has been replaced with the `get_reference_table(collection='parameter_code)` function. Finally, the `get_water_use` function in the `nwis` module is defunct with no current replacement.
-
-:mega: **01/16/2026:** `dataretrieval` now features the `waterdata` module,
-which provides access to USGS's modernized [Water Data
-APIs](https://api.waterdata.usgs.gov/). The Water Data API endpoints include
-daily values, instantaneous values, field measurements, time series metadata, statistics,
-and discrete water quality data from the [Samples database](https://waterdata.usgs.gov/download-samples/#dataProfile=site). This new module replaces the `nwis` module, which provides access to the legacy [NWIS
-Water Services](https://waterservices.usgs.gov/). Take a look at the new [`waterdata` module demo notebook](demos/WaterData_demo.ipynb), which walks through an extended example using a majority of the available `waterdata` functions.
-
-Check out the [NEWS](NEWS.md) file for all updates and announcements.
-
-**Important:** Users of the Water Data APIs are strongly encouraged to obtain an
-API key for higher rate limits and greater access to USGS data. [Register for
-an API key](https://api.waterdata.usgs.gov/signup/) and set it as an
-environment variable:
-
-```python
-import os
-os.environ["API_USGS_PAT"] = "your_api_key_here"
-```
-
 ## What is dataretrieval?
 
 `dataretrieval` simplifies the process of loading hydrologic data into Python.
@@ -36,6 +13,8 @@ U.S. Geological Survey (USGS) hydrology data types available on the Web, as well
 as data from the Water Quality Portal (WQP) and Network Linked Data Index
 (NLDI).
 
+Check the [NEWS](NEWS.md) for all updates and announcements.
+
 ## Installation
 
 Install dataretrieval using pip:
@@ -44,13 +23,13 @@ Install dataretrieval using pip:
 pip install dataretrieval
 ```
 
-Or using conda:
+Or conda:
 
 ```bash
 conda install -c conda-forge dataretrieval
 ```
 
-To install the "main" branch directly from GitHub, use:
+Or directly from GitHub:
 
 ```bash
 pip install git+https://github.com/DOI-USGS/dataretrieval-python.git
@@ -60,11 +39,20 @@ pip install git+https://github.com/DOI-USGS/dataretrieval-python.git
 
 ### Water Data API (Recommended - Modern USGS Data)
 
-The `waterdata` module provides access to modern USGS Water Data APIs.
+Access USGS water-monitoring data.
 
-Some basic usage examples include retrieving daily streamflow data for a
-specific monitoring location, where the `/` in the `time` argument indicates
-the desired range:
+**Important:** Users are strongly encouraged to obtain an API key for higher
+rate limits. [Register for an API key](https://api.waterdata.usgs.gov/signup/)
+and set it as an environment variable:
+
+```python
+import os
+os.environ["API_USGS_PAT"] = "your_api_key_here"
+```
+
+The following example retrieves daily streamflow data for a specific
+monitoring location. The `/` in the `time` argument separates the start and
+end of the desired range:
 
 ```python
 from dataretrieval import waterdata
@@ -80,7 +68,7 @@ print(f"Retrieved {len(df)} records")
 print(f"Site: {df['monitoring_location_id'].iloc[0]}")
 print(f"Mean discharge: {df['value'].mean():.2f} {df['unit_of_measure'].iloc[0]}")
 ```
-Retrieving streamflow at multiple locations from October 1, 2024 to the present:
+Retrieve streamflow at multiple locations from October 1, 2024 to the present:
 
 ```python
 df, metadata = waterdata.get_daily(
@@ -91,8 +79,8 @@ df, metadata = waterdata.get_daily(
 
 print(f"Retrieved {len(df)} records")
 ```
-Retrieving location information for all monitoring locations categorized as
-stream sites in the state of Maryland:
+Retrieve location information for all monitoring locations categorized as
+stream sites in Maryland:
 
 ```python
 # Get monitoring location information
@@ -103,8 +91,9 @@ df, metadata = waterdata.get_monitoring_locations(
 
 print(f"Found {len(df)} stream monitoring locations in Maryland")
 ```
-Finally, retrieving continuous (a.k.a. "instantaneous") data
-for one location. We *strongly advise* breaking up continuous data requests into smaller time periods and collections to avoid timeouts and other issues:
+Finally, retrieve continuous (a.k.a. "instantaneous") data for one location.
+We *strongly advise* breaking continuous data requests into smaller time
+windows to avoid timeouts and other issues:
 
 ```python
 # Get continuous data for a single monitoring location and water year
@@ -118,14 +107,14 @@ print(f"Retrieved {len(df)} continuous gage height measurements")
 
 Visit the
 [API Reference](https://doi-usgs.github.io/dataretrieval-python/reference/waterdata.html)
-for more information and examples on available services and input parameters. 
+for more information and examples on available services and input parameters.
 
-**NEW:** This new module implements
+**NEW:** This module implements
 [logging](https://docs.python.org/3/howto/logging.html#logging-basic-tutorial)
-in which users can view the URL requests sent to the USGS Water Data APIs
-and the number of requests they have remaining each hour. These messages can
-be helpful for troubleshooting and support. To enable logging in your python
-console or notebook:
+so you can view the URL requests sent to the USGS Water Data APIs and the
+number of requests remaining each hour. These messages can be helpful for
+troubleshooting and support. To enable logging in your Python console or
+notebook:
 
 ```python
 import logging
@@ -136,29 +125,6 @@ To log messages to a file, you can specify a filename in the
 
 ```python
 logging.basicConfig(filename='waterdata.log', level=logging.INFO)
-```
-
-### Legacy NWIS Services (Deprecated but still functional)
-
-The `nwis` module accesses legacy NWIS Water Services:
-
-```python
-from dataretrieval import nwis
-
-# Get site information
-info, metadata = nwis.get_info(sites='01646500')
-    
-print(f"Site name: {info['station_nm'].iloc[0]}")
-
-# Get daily values
-dv, metadata = nwis.get_dv(
-  sites='01646500',
-  start='2024-10-01',
-  end='2024-10-02',
-  parameterCd='00060',
-)
-    
-print(f"Retrieved {len(dv)} daily values")
 ```
 
 ### Water Quality Portal (WQP)
@@ -246,13 +212,13 @@ print(f"Found {len(flowlines)} upstream tributaries within 50km")
 ## More Examples
 
 Explore additional examples in the
-[`demos`](https://github.com/USGS-python/dataretrieval/tree/main/demos)
+[`demos`](https://github.com/DOI-USGS/dataretrieval-python/tree/main/demos)
 directory, including Jupyter notebooks demonstrating advanced usage patterns.
 
 ## Getting Help
 
-- **Issue tracker**: Report bugs and request features at https://github.com/USGS-python/dataretrieval/issues
-- **Documentation**: Full API documentation available in the source code docstrings
+- **Issue tracker**: Report bugs and request features at https://github.com/DOI-USGS/dataretrieval-python/issues
+- **Documentation**: https://doi-usgs.github.io/dataretrieval-python/
 
 ## Contributing
 
