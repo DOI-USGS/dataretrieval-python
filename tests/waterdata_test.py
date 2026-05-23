@@ -52,7 +52,7 @@ from dataretrieval.waterdata.utils import (
 )
 
 # Most tests in this module call the live USGS Water Data API. After
-# PR #273, transient upstream errors (5xx / 429 / connection drops)
+# PR #279, transient upstream errors (5xx / 429 / connection drops)
 # propagate instead of silently truncating, which makes CI susceptible
 # to flaking on a brief upstream blip. Auto-retry such failures, but
 # only for the narrow set of transient-error trace patterns below —

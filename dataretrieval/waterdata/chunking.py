@@ -11,7 +11,7 @@ Design (orthogonal to filter chunking):
 
 - N-dimensional cartesian product: for each chunkable list param, the
   values are partitioned into sub-lists; the planner emits the cartesian
-  product of those partitions. Sub-chunks of the same dim never overlap,
+  product of those partitions. Chunks of the same dim never overlap,
   so frame concat needs no dedup across multi-value chunks.
 - Greedy halving of the largest chunk in any dim until the worst-case
   sub-request URL fits the limit. Minimises total request count.
@@ -125,12 +125,13 @@ class QuotaExhausted(RuntimeError):
     (``x-ratelimit-remaining`` header) drops below the configured safety
     floor. The chunker stops before issuing the next sub-request to
     avoid a mid-call HTTP 429 that would silently truncate paginated
-    results (see PR #273 for the pagination side of that bug).
+    results (see PR #279 for the pagination side of that bug).
 
     The exception carries everything needed to resume: the combined
-    partial frame from completed sub-requests, the metadata for the
-    last successful sub-request, the number of chunks completed out of
-    the plan total, and the last-observed ``remaining`` value.
+    partial frame from completed sub-requests, an aggregated response
+    (canonical URL of the original query, last sub-request's headers,
+    summed ``elapsed``), the number of chunks completed out of the
+    plan total, and the last-observed ``remaining`` value.
 
     Attributes
     ----------
@@ -401,7 +402,7 @@ def multi_value_chunked(
     carrying the combined partial result and the chunk offset so callers
     can resume after the hourly window resets, instead of crashing into
     a mid-pagination HTTP 429 (which the upstream pagination loop in
-    ``_walk_pages`` historically truncated silently — see PR #273).
+    ``_walk_pages`` historically truncated silently — see PR #279).
 
     Sits OUTSIDE ``@filters.chunked``: list-chunking is the outer loop,
     filter-chunking is the inner loop. The wrapped function has the same
