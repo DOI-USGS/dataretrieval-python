@@ -1,20 +1,29 @@
 from __future__ import annotations
 
+import copy
 import json
 import logging
 import os
 import re
-from collections.abc import Iterable, Mapping
-from datetime import datetime
-from typing import Any, get_args
+from collections.abc import Callable, Iterable, Iterator, Mapping
+from contextlib import contextmanager
+from datetime import datetime, timedelta
+from typing import Any, TypeVar, get_args
 from zoneinfo import ZoneInfo
 
 import pandas as pd
 import requests
+from requests.structures import CaseInsensitiveDict
 
 from dataretrieval import __version__
 from dataretrieval.utils import BaseMetadata
-from dataretrieval.waterdata import filters
+from dataretrieval.waterdata import chunking
+from dataretrieval.waterdata.chunking import (
+    _QUOTA_HEADER,
+    RateLimited,
+    ServiceUnavailable,
+    get_active_session,
+)
 from dataretrieval.waterdata.types import (
     PROFILE_LOOKUP,
     PROFILES,
@@ -410,33 +419,104 @@ def _error_body(resp: requests.Response):
     )
 
 
-def _raise_for_non_200(resp: requests.Response) -> None:
-    """Raise ``RuntimeError(_error_body(resp))`` if ``resp`` is not 200.
-
-    Routes through ``_error_body`` (USGS-API-aware: handles 429/403
-    specially, extracts ``code``/``description`` from JSON error bodies)
-    rather than ``Response.raise_for_status``, which raises
-    ``HTTPError`` with a generic message.
+def _parse_retry_after(value: str | None) -> float | None:
     """
-    if resp.status_code != 200:
-        raise RuntimeError(_error_body(resp))
+    Parse a USGS ``Retry-After`` header into seconds.
+
+    Parameters
+    ----------
+    value : str or None
+        The raw header value, or ``None`` if absent.
+
+    Returns
+    -------
+    float or None
+        Non-negative delta-seconds, clamped at zero. ``None`` when the
+        header is absent or unparseable; ``ChunkedCall`` treats
+        ``None`` as "fall back to my own retry policy".
+
+    Notes
+    -----
+    USGS sends ``Retry-After`` as integer delta-seconds (empirically
+    verified — e.g. ``Retry-After: 2619``). The HTTP spec also allows
+    HTTP-date form, but USGS doesn't use it, so this function doesn't
+    bother parsing it.
+    """
+    if not value:
+        return None
+    try:
+        return max(0.0, float(value.strip()))
+    except ValueError:
+        return None
+
+
+def _raise_for_non_200(resp: requests.Response) -> None:
+    """
+    Raise a typed exception for any non-200 response.
+
+    Routes through :func:`_error_body` (USGS-API-aware: handles
+    429/403 specially, extracts ``code``/``description`` from JSON
+    error bodies) rather than ``Response.raise_for_status``, which
+    raises ``HTTPError`` with a generic message.
+
+    Parameters
+    ----------
+    resp : requests.Response
+        The HTTP response to inspect.
+
+    Raises
+    ------
+    RateLimited
+        On HTTP 429 — typed so ``ChunkedCall`` can wrap as a resumable
+        :class:`~dataretrieval.waterdata.chunking.QuotaExhausted`.
+    ServiceUnavailable
+        On HTTP 5xx — typed so ``ChunkedCall`` can wrap as a resumable
+        :class:`~dataretrieval.waterdata.chunking.ServiceInterrupted`.
+    RuntimeError
+        On any other non-200 (4xx other than 429) — these are
+        programmer errors that retry won't fix.
+    """
+    status = resp.status_code
+    if status == 200:
+        return
+    body = _error_body(resp)
+    retry_after = _parse_retry_after(resp.headers.get("Retry-After"))
+    if status == 429:
+        raise RateLimited(body, retry_after=retry_after)
+    if 500 <= status < 600:
+        raise ServiceUnavailable(body, retry_after=retry_after)
+    raise RuntimeError(body)
 
 
 def _paginated_failure_message(pages_collected: int, cause: BaseException) -> str:
-    """User-facing message for a mid-pagination failure.
+    """
+    Build a user-facing message for a mid-pagination failure.
 
     The API exposes no resume cursor, so the caller's only recovery is
     to retry the whole call — the message lists the practical knobs,
     tailored to whether the failure was rate-limit (429) or something
     else.
+
+    Parameters
+    ----------
+    pages_collected : int
+        Number of pages successfully fetched before the failure.
+    cause : BaseException
+        The underlying exception that interrupted pagination.
+
+    Returns
+    -------
+    str
+        A message suitable for the ``RuntimeError`` that ``_walk_pages``
+        and ``get_stats_data`` raise from the original exception.
     """
     cause_str = str(cause).removesuffix(".")
     # Some ``requests`` exceptions (e.g. ``Timeout()`` with no args)
-    # stringify to empty; fall back to the class name so the wrapper
-    # message is always informative.
+    # stringify to empty; fall back to the class name so the
+    # returned message is always informative.
     if not cause_str.strip():
         cause_str = type(cause).__name__
-    if cause_str.startswith("429"):
+    if isinstance(cause, RateLimited):
         action = "wait for the rate-limit window to reset and retry"
     else:
         action = "retry the request (possibly after a short backoff)"
@@ -554,7 +634,9 @@ def _construct_api_requests(
     return request.prepare()
 
 
-def _next_req_url(resp: requests.Response) -> str | None:
+def _next_req_url(
+    resp: requests.Response, *, body: dict[str, Any] | None = None
+) -> str | None:
     """
     Extracts the URL for the next page of results from an HTTP response from a
     water data endpoint.
@@ -563,6 +645,10 @@ def _next_req_url(resp: requests.Response) -> str | None:
     ----------
     resp : requests.Response
         The HTTP response object containing JSON data and headers.
+    body : dict, optional
+        Pre-parsed JSON body for ``resp``. When provided, skips the
+        ``resp.json()`` call — useful when the caller has already
+        decoded the body for its own use (avoids a second parse pass).
 
     Returns
     -------
@@ -578,14 +664,15 @@ def _next_req_url(resp: requests.Response) -> str | None:
     "rel" and "href" keys.
     - Checks for the "next" relation in the "links" to determine the next URL.
     """
-    body = resp.json()
+    if body is None:
+        body = resp.json()
     if not body.get("numberReturned"):
         return None
     header_info = resp.headers
     if os.getenv("API_USGS_PAT", ""):
         logger.info(
             "Remaining requests this hour: %s",
-            header_info.get("x-ratelimit-remaining", ""),
+            header_info.get(_QUOTA_HEADER, ""),
         )
     for link in body.get("links", []):
         if link.get("rel") == "next":
@@ -595,7 +682,12 @@ def _next_req_url(resp: requests.Response) -> str | None:
     return None
 
 
-def _get_resp_data(resp: requests.Response, geopd: bool) -> pd.DataFrame:
+def _get_resp_data(
+    resp: requests.Response,
+    geopd: bool,
+    *,
+    body: dict[str, Any] | None = None,
+) -> pd.DataFrame:
     """
     Extracts and normalizes data from an HTTP response containing GeoJSON features.
 
@@ -607,33 +699,66 @@ def _get_resp_data(resp: requests.Response, geopd: bool) -> pd.DataFrame:
     geopd : bool
         Indicates whether geopandas is installed and should be used to
         handle geometries.
+    body : dict, optional
+        Pre-parsed JSON body for ``resp``. When provided, skips the
+        ``resp.json()`` call — useful when the caller has already
+        decoded the body for its own use (avoids a second parse pass).
 
     Returns
     -------
     gpd.GeoDataFrame or pd.DataFrame
-        A geopandas GeoDataFrame if geometry is included, or a pandas DataFrame
-        containing the feature properties and each row's service-specific id.
-        Returns an empty pandas DataFrame if no features are returned.
-    """
-    # Check if it's an empty response
-    body = resp.json()
-    if not body.get("numberReturned"):
-        return pd.DataFrame()
+        A ``GeoDataFrame`` when ``geopd`` is True; otherwise a plain
+        ``DataFrame`` carrying the feature properties plus an ``id``
+        column and a ``geometry`` column (coordinates list) where the
+        response includes them. Returns an empty ``DataFrame`` when no
+        features are returned.
 
-    # If geopandas not installed, return a pandas dataframe
+    Notes
+    -----
+    The non-geopandas branch builds the frame directly from each
+    feature's ``properties`` dict, plus the top-level ``id`` and
+    ``geometry.coordinates`` columns — but adds the ``id`` and
+    ``geometry`` columns only when at least one feature actually
+    carries them. This skips the GeoJSON envelope entirely, so
+    newly-added Feature-level fields (e.g. ``geometry.type`` after
+    USGS migrated to full GeoJSON geometry objects) can't leak into
+    the result frame; no reactive drop-list needs maintenance every
+    time the upstream schema grows.
+    """
+    if body is None:
+        body = resp.json()
+    if not body.get("numberReturned"):
+        # Preserve the GeoDataFrame type on empty short-circuit so a
+        # downstream ``pd.concat([empty_page, geo_page])`` doesn't
+        # downgrade the geopd-installed user's result to a plain
+        # DataFrame (stripping geometry/CRS).
+        return gpd.GeoDataFrame() if geopd else pd.DataFrame()
+
+    # Defensive: a 200 with ``numberReturned > 0`` but missing
+    # ``features`` is a real schema-drift shape (mirrors the guard in
+    # ``_handle_stats_nesting``). Treat as empty rather than crash with
+    # ``KeyError`` — the wrapped failure would otherwise look like a
+    # transient transport error to ``_paginate``'s exception handler.
+    features = body.get("features") or []
+    if not features:
+        return gpd.GeoDataFrame() if geopd else pd.DataFrame()
+
     if not geopd:
-        df = pd.json_normalize(body["features"], sep="_")
-        df = df.drop(
-            columns=["type", "geometry", "AsGeoJSON(geometry)"], errors="ignore"
-        )
-        df.columns = [col.replace("properties_", "") for col in df.columns]
-        df.rename(columns={"geometry_coordinates": "geometry"}, inplace=True)
-        df = df.loc[:, ~df.columns.duplicated()]
+        df = pd.json_normalize([f.get("properties") or {} for f in features], sep="_")
+        # Always materialize the ``id`` column (may be all-None) so
+        # ``_arrange_cols``'s ``df.rename(columns={"id": output_id})``
+        # produces the documented service-specific output_id column
+        # (daily_id, channel_measurements_id, …) even if the upstream
+        # response carried no feature-level id.
+        df["id"] = [f.get("id") for f in features]
+        geoms = [(f.get("geometry") or {}).get("coordinates") for f in features]
+        if any(g is not None for g in geoms):
+            df["geometry"] = geoms
         return df
 
     # Organize json into geodataframe and make sure id column comes along.
-    df = gpd.GeoDataFrame.from_features(body["features"])
-    df["id"] = pd.json_normalize(body["features"])["id"].values
+    df = gpd.GeoDataFrame.from_features(features)
+    df["id"] = pd.json_normalize(features)["id"].values
     df = df[["id"] + [col for col in df.columns if col != "id"]]
 
     # If no geometry present, then return pandas dataframe. A geodataframe
@@ -644,97 +769,269 @@ def _get_resp_data(resp: requests.Response, geopd: bool) -> pd.DataFrame:
     return df
 
 
-def _walk_pages(
-    geopd: bool,
-    req: requests.PreparedRequest,
-    client: requests.Session | None = None,
-) -> tuple[pd.DataFrame, requests.Response]:
+@contextmanager
+def _session(client: requests.Session | None) -> Iterator[requests.Session]:
     """
-    Iterates through paginated API responses and aggregates the results
-    into a single DataFrame.
+    Yield a usable session, picking the best available source.
+
+    Resolution order:
+
+    1. ``client`` if the caller supplied one (borrowed; not closed
+       here — the caller owns its lifecycle).
+    2. The chunker's shared session if we're inside a ``ChunkedCall``
+       fan-out (per :func:`chunking.get_active_session`). Borrowed;
+       ``ChunkedCall.resume`` closes it on exit.
+    3. A fresh short-lived ``requests.Session`` opened here and closed
+       on context exit.
 
     Parameters
     ----------
-    geopd : bool
-        Indicates whether geopandas is installed and should be used for handling
-        geometries.
-    req : requests.PreparedRequest
-        The initial HTTP request to send.
-    client : Optional[requests.Session], default None
-        An optional HTTP client to use for requests. If not provided, a new
-        client is created.
+    client : requests.Session or None
+        A caller-owned session to borrow, or ``None`` to defer to the
+        chunker's shared session or a temporary one.
+
+    Yields
+    ------
+    requests.Session
+        The chosen session.
+    """
+    if client is not None:
+        yield client
+        return
+    shared = get_active_session()
+    if shared is not None:
+        yield shared
+        return
+    with requests.Session() as new:
+        yield new
+
+
+def _aggregate_paginated_response(
+    initial: requests.Response,
+    last: requests.Response,
+    total_elapsed: timedelta,
+) -> requests.Response:
+    """
+    Build a single response covering a paginated call.
+
+    Returns a shallow copy of ``initial`` with ``.headers`` set to the
+    LAST page's (so downstream sees current ``x-ratelimit-remaining``)
+    and ``.elapsed`` set to total wall-clock. The canonical
+    ``initial.url`` is preserved (it's the user's original query).
+    Both ``initial`` and ``last`` are left unmutated, mirroring the
+    convention of
+    :func:`dataretrieval.waterdata.chunking._combine_chunk_responses`.
+
+    Parameters
+    ----------
+    initial : requests.Response
+        First-page response (the canonical one for ``md.url``).
+    last : requests.Response
+        Last-page response — supplies the headers to copy over.
+    total_elapsed : datetime.timedelta
+        Cumulative wall-clock across every page, including ``initial``.
 
     Returns
     -------
-    pd.DataFrame
-        A DataFrame containing the aggregated results from all pages.
     requests.Response
-        The initial response object containing metadata about the first request.
+        A shallow copy of ``initial`` with ``.headers`` set to a fresh
+        ``CaseInsensitiveDict`` and ``.elapsed`` set to the
+        cumulative wall-clock. ``initial.headers`` / ``initial.elapsed``
+        are never mutated, so callers holding a pre-pagination
+        reference still see the original first-page values. Other
+        ``Response`` fields (``_content``, ``raw``, ``cookies``,
+        ``request``) are still aliased to ``initial`` by the shallow
+        copy — callers that mutate those will affect ``initial``.
+    """
+    final = copy.copy(initial)
+    final.headers = CaseInsensitiveDict(last.headers)
+    final.elapsed = total_elapsed
+    return final
+
+
+_Cursor = TypeVar("_Cursor")
+
+
+def _paginate(
+    initial_req: requests.PreparedRequest,
+    *,
+    geopd: bool,
+    parse_response: Callable[[requests.Response], tuple[pd.DataFrame, _Cursor | None]],
+    follow_up: Callable[[_Cursor, requests.Session], requests.Response],
+    client: requests.Session | None = None,
+) -> tuple[pd.DataFrame, requests.Response]:
+    """
+    Drive a paginated request to completion.
+
+    Common shape behind :func:`_walk_pages` and :func:`get_stats_data`:
+    send the initial request, then loop calling ``follow_up`` until
+    ``parse_response`` reports a ``None`` cursor, accumulating frames
+    and elapsed time. Any mid-pagination failure raises
+    ``RuntimeError`` wrapping the cause — the API exposes no resume
+    cursor, so the caller's only recovery is to retry the whole call.
+
+    Parameters
+    ----------
+    initial_req : requests.PreparedRequest
+        First-page request to send.
+    geopd : bool
+        Whether ``geopandas`` is available — logged once at WARNING
+        level when ``False`` (matches historical behavior of both
+        callers).
+    parse_response : callable
+        ``resp -> (df, next_cursor_or_None)``. Returns the page's
+        DataFrame and the cursor (URL, token, …) used to drive
+        ``follow_up`` for the next page; ``None`` terminates the loop.
+    follow_up : callable
+        ``(cursor, session) -> requests.Response``. Builds and sends
+        the next-page request.
+    client : requests.Session, optional
+        Caller-borrowed session. ``None`` (default) means use the
+        chunker's shared session (if inside a chunked call) or open
+        a temporary one.
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        Concatenation of every page's parsed frame.
+    response : requests.Response
+        A shallow copy of the first-page response, with ``.headers``
+        rebuilt as a fresh ``CaseInsensitiveDict`` reflecting the last
+        page and ``.elapsed`` set to cumulative wall-clock. The
+        canonical URL is preserved from the first page. The original
+        first-page response is not mutated.
 
     Raises
     ------
     RuntimeError
-        On a non-200 initial response (bare message from ``_error_body``)
-        or any failure on a subsequent page (wrapped message built by
-        ``_paginated_failure_message`` with the original exception
-        chained as ``__cause__``).
+        On a non-200 initial response (typed
+        :class:`~dataretrieval.waterdata.chunking.RateLimited` /
+        :class:`~dataretrieval.waterdata.chunking.ServiceUnavailable`
+        for 429/5xx, otherwise plain ``RuntimeError`` from
+        :func:`_error_body`), on an initial-page parse failure
+        (wrapped via :func:`_paginated_failure_message` with the
+        original exception on ``__cause__``), or any failure on a
+        subsequent page (same wrapping).
     requests.exceptions.RequestException
         Network-level failures on the *initial* request (e.g.
-        ``ConnectionError``, ``Timeout``) propagate unmodified to
-        preserve their specific type for callers that branch on it.
-        Equivalent failures on *subsequent* pages are caught and
-        re-raised as ``RuntimeError`` per the rule above.
+        ``ConnectionError``, ``Timeout``) propagate unmodified so
+        callers can branch on the specific type; equivalent failures
+        on subsequent pages are wrapped per above.
     """
-    logger.info("Requesting: %s", req.url)
-
+    logger.info("Requesting: %s", initial_req.url)
     if not geopd:
         logger.warning(
             "Geopandas not installed. Geometries will be flattened "
             "into pandas DataFrames."
         )
 
-    # Get first response from client
-    # using GET or POST call
-    close_client = client is None
-    client = client or requests.Session()
-    try:
-        resp = client.send(req)
+    with _session(client) as sess:
+        resp = sess.send(initial_req)
         _raise_for_non_200(resp)
-
-        # Store the initial response for metadata
+        # Keep the original-request response as the "canonical" one for
+        # ``md.url`` reproducibility; ``.headers`` and ``.elapsed`` get
+        # overwritten with latest/cumulative values below.
         initial_response = resp
+        total_elapsed = resp.elapsed
 
-        # Grab some aspects of the original request: headers and the
-        # request type (GET or POST)
-        method = req.method.upper()
-        headers = dict(req.headers)
-        content = req.body if method == "POST" else None
-
-        # List to collect dataframes from each page
-        dfs = [_get_resp_data(resp, geopd=geopd)]
-        curr_url = _next_req_url(resp)
-        while curr_url:
+        try:
+            df, cursor = parse_response(resp)
+        except Exception as e:  # noqa: BLE001
+            # Initial-page parse failures (malformed JSON, missing
+            # ``features``, schema drift) get the same wrapped-message
+            # treatment as follow-up failures so callers see a
+            # consistent diagnostic regardless of which page broke.
+            logger.warning("Initial response parse failed.")
+            raise RuntimeError(_paginated_failure_message(0, e)) from e
+        dfs = [df]
+        while cursor is not None:
             try:
-                resp = client.request(
-                    method,
-                    curr_url,
-                    headers=headers,
-                    data=content if method == "POST" else None,
-                )
+                resp = follow_up(cursor, sess)
                 _raise_for_non_200(resp)
-                dfs.append(_get_resp_data(resp, geopd=geopd))
-                curr_url = _next_req_url(resp)
+                df, cursor = parse_response(resp)
+                dfs.append(df)
+                total_elapsed += resp.elapsed
             except Exception as e:  # noqa: BLE001
                 logger.warning(
-                    "Request failed for URL: %s. Data download interrupted.", curr_url
+                    "Request failed at cursor %r. Data download interrupted.",
+                    cursor,
                 )
                 raise RuntimeError(_paginated_failure_message(len(dfs), e)) from e
 
-        # Concatenate all pages at once for efficiency
-        return pd.concat(dfs, ignore_index=True), initial_response
-    finally:
-        if close_client:
-            client.close()
+        # Aggregate headers / elapsed onto a COPY of the initial
+        # response so the user's caller never sees an in-place
+        # mutation of the response object they may have inspected
+        # mid-pagination via a hook or test fixture.
+        final_response = _aggregate_paginated_response(
+            initial_response, resp, total_elapsed
+        )
+        return pd.concat(dfs, ignore_index=True), final_response
+
+
+def _walk_pages(
+    geopd: bool,
+    req: requests.PreparedRequest,
+    client: requests.Session | None = None,
+) -> tuple[pd.DataFrame, requests.Response]:
+    """
+    Iterate through paginated OGC API responses and aggregate into one
+    DataFrame.
+
+    Thin wrapper that hands off to :func:`_paginate` with OGC-specific
+    strategies: pages are parsed via :func:`_get_resp_data` and the
+    next-page cursor is the URL from the response's ``links`` array
+    (per :func:`_next_req_url`).
+
+    Parameters
+    ----------
+    geopd : bool
+        Whether geopandas is installed (drives geometry handling).
+    req : requests.PreparedRequest
+        The initial HTTP request to send.
+    client : requests.Session, optional
+        Caller-borrowed session; ``None`` defers session management to
+        :func:`_paginate`.
+
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame containing the aggregated results from all pages.
+    requests.Response
+        Aggregated response — initial-request URL (for query identity),
+        final page's headers (so downstream sees current rate-limit
+        state), and cumulative ``elapsed`` summed across pages.
+
+    Raises
+    ------
+    RuntimeError
+        See :func:`_paginate`.
+    requests.exceptions.RequestException
+        See :func:`_paginate`.
+    """
+    method = req.method  # ``PreparedRequest.method`` is already upper-cased.
+    headers = dict(req.headers)
+    content = req.body if method == "POST" else None
+
+    def parse_response(resp: requests.Response) -> tuple[pd.DataFrame, str | None]:
+        body = resp.json()
+        # Coerce falsy cursors (empty href, etc.) to None so
+        # _paginate's `while cursor is not None` terminates instead of
+        # spinning on a meaningless value.
+        return (
+            _get_resp_data(resp, geopd=geopd, body=body),
+            _next_req_url(resp, body=body) or None,
+        )
+
+    def follow_up(cursor: str, sess: requests.Session) -> requests.Response:
+        return sess.request(method, cursor, headers=headers, data=content)
+
+    return _paginate(
+        req,
+        geopd=geopd,
+        parse_response=parse_response,
+        follow_up=follow_up,
+        client=client,
+    )
 
 
 def _deal_with_empty(
@@ -864,7 +1161,6 @@ def _type_cols(df: pd.DataFrame) -> pd.DataFrame:
         "construction_date",
         "end",
         "end_utc",
-        "datetime",  # unused
         "last_modified",
         "time",
     ]
@@ -920,7 +1216,8 @@ def get_ogc_data(
     output_id : str
         The name of the output identifier to use in the request.
     service : str
-        The OGC service type (e.g., "wfs", "wms").
+        The OGC API collection name (e.g., ``"daily"``,
+        ``"monitoring-locations"``, ``"continuous"``).
 
     Returns
     -------
@@ -957,17 +1254,18 @@ def get_ogc_data(
     return return_list, BaseMetadata(response)
 
 
-@filters.chunked(build_request=_construct_api_requests)
+@chunking.multi_value_chunked(build_request=_construct_api_requests)
 def _fetch_once(
     args: dict[str, Any],
 ) -> tuple[pd.DataFrame, requests.Response]:
     """Send one prepared-args OGC request; return the frame + response.
 
-    Filter chunking is added orthogonally by the ``@filters.chunked``
-    decorator: with no filter (or an un-chunkable one) the decorator
-    passes ``args`` through to this body; with a chunkable filter it
-    fans out and calls this body once per sub-filter, then combines.
-    Either way the return shape is ``(frame, response)``.
+    ``@chunking.multi_value_chunked`` models every multi-value list
+    parameter and the cql-text filter as a chunkable axis, greedy-halves
+    the biggest chunk across all axes until each sub-request URL fits,
+    and iterates the cartesian product. With no chunkable inputs the
+    decorator passes args through unchanged. Either way the return
+    shape is ``(frame, response)``.
     """
     req = _construct_api_requests(**args)
     return _walk_pages(geopd=GEOPANDAS, req=req)
@@ -985,30 +1283,59 @@ def _handle_stats_nesting(
     ----------
     body : Dict[str, Any]
         The JSON response body from the statistics service containing nested data.
+    geopd : bool, optional
+        Whether ``geopandas`` is available — when ``True`` the returned
+        frame is a ``GeoDataFrame``; when ``False`` (default) a plain
+        ``pd.DataFrame`` is returned with geometry flattened.
 
     Returns
     -------
     pd.DataFrame
         A DataFrame containing the flattened statistical data.
+
+    Notes
+    -----
+    The non-geopandas branch uses the same schema-aware extraction as
+    :func:`_get_resp_data`: it builds the per-feature outer frame
+    directly from each feature's ``properties`` (minus the nested
+    ``data`` field, which is unrolled separately below via the
+    ``record_path`` json_normalize), then adds ``id`` and ``geometry``
+    only when present. Skipping the GeoJSON envelope keeps newly-added
+    fields like ``geometry.type`` from leaking into the result.
     """
     if body is None:
-        return pd.DataFrame()
+        return gpd.GeoDataFrame() if geopd else pd.DataFrame()
 
-    if not geopd:
-        logger.info(
-            "Geopandas not installed. Geometries will be flattened "
-            "into pandas DataFrames."
-        )
+    # An empty (or missing) features list — a real mid-pagination
+    # shape — would otherwise crash the downstream merge with
+    # ``KeyError: 'monitoring_location_id'`` because neither df nor
+    # dat would carry the merge key. Bail out with an empty frame —
+    # ``GeoDataFrame`` when geopd is available so the eventual
+    # ``pd.concat`` with non-empty geo pages doesn't downgrade to a
+    # plain DataFrame and strip geometry/CRS.
+    features = body.get("features") or []
+    if not features:
+        return gpd.GeoDataFrame() if geopd else pd.DataFrame()
 
-    # If geopandas not installed, return a pandas dataframe
-    # otherwise return a geodataframe
+    # The geopd-missing warning is emitted once at the top of
+    # ``get_stats_data`` (parallel to ``_walk_pages``); doing it here
+    # would log per page.
     if not geopd:
-        df = pd.json_normalize(body["features"]).drop(
-            columns=["type", "properties.data"], errors="ignore"
-        )
+        outer_props = [
+            {k: v for k, v in (f.get("properties") or {}).items() if k != "data"}
+            for f in features
+        ]
+        df = pd.json_normalize(outer_props, sep=".")
         df.columns = df.columns.str.split(".").str[-1]
+        # Stats features don't carry a top-level ``id`` field — the
+        # geopandas branch (``GeoDataFrame.from_features``) doesn't
+        # surface one either, so the non-geopd branch stays
+        # consistent by NOT adding an id column.
+        geoms = [(f.get("geometry") or {}).get("coordinates") for f in features]
+        if any(g is not None for g in geoms):
+            df["geometry"] = geoms
     else:
-        df = gpd.GeoDataFrame.from_features(body["features"]).drop(
+        df = gpd.GeoDataFrame.from_features(features).drop(
             columns=["data"], errors="ignore"
         )
 
@@ -1022,7 +1349,6 @@ def _handle_stats_nesting(
             ["features", "properties", "data", "parameter_code"],
             ["features", "properties", "data", "unit_of_measure"],
             ["features", "properties", "data", "parent_time_series_id"],
-            # ["features", "geometry", "coordinates"],
         ],
         meta_prefix="",
         errors="ignore",
@@ -1138,75 +1464,41 @@ def get_stats_data(
     """
 
     url = f"{STATISTICS_API_URL}/{service}"
-
-    headers = _default_headers()
-
     request = requests.Request(
         method="GET",
         url=url,
-        headers=headers,
+        headers=_default_headers(),
         params=args,
     )
     req = request.prepare()
-    logger.info("Request: %s", req.url)
+    method = req.method  # ``PreparedRequest.method`` is already upper-cased.
+    headers = dict(req.headers)
 
-    # create temp client if not provided
-    # and close it after the request is done
-    close_client = client is None
-    client = client or requests.Session()
-
-    try:
-        resp = client.send(req)
-        _raise_for_non_200(resp)
-
-        # Store the initial response for metadata
-        initial_response = resp
-
-        # Grab some aspects of the original request: headers and the
-        # request type (GET or POST)
-        method = req.method.upper()
-        headers = dict(req.headers)
-
+    def parse_response(resp: requests.Response) -> tuple[pd.DataFrame, str | None]:
         body = resp.json()
-        all_dfs = [_handle_stats_nesting(body, geopd=GEOPANDAS)]
+        # Coerce falsy cursors ("", 0) to None so _paginate terminates.
+        # USGS uses "next": null at end-of-stream, but defensive coerce
+        # protects against any "" sentinel a future schema might use.
+        return _handle_stats_nesting(body, geopd=GEOPANDAS), body.get("next") or None
 
-        # Look for a next code in the response body
-        next_token = body["next"]
+    def follow_up(cursor: str, sess: requests.Session) -> requests.Response:
+        # Build a fresh params dict per page so the caller's ``args`` is
+        # never mutated.
+        return sess.request(
+            method, url=url, params={**args, "next_token": cursor}, headers=headers
+        )
 
-        while next_token:
-            args["next_token"] = next_token
+    df, response = _paginate(
+        req,
+        geopd=GEOPANDAS,
+        parse_response=parse_response,
+        follow_up=follow_up,
+        client=client,
+    )
 
-            try:
-                resp = client.request(
-                    method,
-                    url=url,
-                    params=args,
-                    headers=headers,
-                )
-                _raise_for_non_200(resp)
-                body = resp.json()
-                all_dfs.append(_handle_stats_nesting(body, geopd=GEOPANDAS))
-                next_token = body["next"]
-            except Exception as e:  # noqa: BLE001
-                logger.warning(
-                    "Request failed for URL: %s (next_token=%s). "
-                    "Data download interrupted.",
-                    url,
-                    next_token,
-                )
-                raise RuntimeError(_paginated_failure_message(len(all_dfs), e)) from e
-
-        dfs = pd.concat(all_dfs, ignore_index=True) if len(all_dfs) > 1 else all_dfs[0]
-
-        # . If expand percentiles is True, make each percentile
-        # its own row in the returned dataset.
-        if expand_percentiles:
-            dfs = _expand_percentiles(dfs)
-
-        return dfs, BaseMetadata(initial_response)
-    finally:
-        if close_client:
-            client.close()
+    if expand_percentiles:
+        df = _expand_percentiles(df)
+    return df, BaseMetadata(response)
 
 
 def _check_profiles(
@@ -1365,23 +1657,36 @@ def _get_args(
     local_vars: dict[str, Any], exclude: set[str] | None = None
 ) -> dict[str, Any]:
     """
-    Standardize parameter filtering for WaterData API functions.
+    Build the API-request kwargs dict from a getter's ``locals()``.
 
-    Filters out internal function arguments ('service', 'output_id')
-    and None values from the provided local variables dictionary.
-    Additional variables can be excluded via the 'exclude' parameter.
+    Drops bookkeeping keys (``service``, ``output_id``, anything in
+    ``exclude``) and ``None``-valued kwargs, then normalizes the
+    remaining values:
+
+    - ``monitoring_location_id`` is validated against the AGENCY-ID
+      format (per :func:`_check_monitoring_location_id`).
+    - ``properties`` is materialized to ``list[str]`` (a bare string
+      gets wrapped in a single-element list so downstream
+      ``",".join(properties)`` doesn't iterate per character).
+    - Any other ``Iterable[str]`` that isn't in ``_NO_NORMALIZE_PARAMS``
+      is materialized to ``list[str]`` via
+      :func:`_normalize_str_iterable` so downstream code that branches
+      on ``isinstance(v, (list, tuple))`` works for ``pandas.Series``,
+      ``numpy.ndarray``, generators, etc.
+    - Scalars, strings, and ``_NO_NORMALIZE_PARAMS`` values pass through
+      unchanged.
 
     Parameters
     ----------
     local_vars : dict[str, Any]
-        Dictionary of local variables, typically from `locals()`.
+        Dictionary of local variables, typically from ``locals()``.
     exclude : set[str], optional
         Additional keys to exclude from the resulting dictionary.
 
     Returns
     -------
     dict[str, Any]
-        Filtered dictionary of arguments for API requests.
+        Filtered and normalized arguments for API requests.
     """
     to_exclude = {"service", "output_id"}
     if exclude:
