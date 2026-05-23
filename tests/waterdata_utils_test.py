@@ -12,6 +12,7 @@ from dataretrieval.waterdata.utils import (
     _format_api_dates,
     _get_args,
     _handle_stats_nesting,
+    _type_cols,
     _walk_pages,
 )
 
@@ -290,6 +291,27 @@ def test_get_stats_data_warning_includes_next_token(caplog, monkeypatch):
     warnings_ = [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING]
     # The initial response from _stats_initial_ok carries next=tok2.
     assert any("tok2" in m for m in warnings_), warnings_
+
+
+def test_type_cols_value_is_always_float_even_for_whole_numbers():
+    """Regression: ``pd.to_numeric`` infers ``int64`` when every value
+    is integer-shaped. The USGS API returns whole-CFS discharge as
+    string-typed integers at small streams (e.g. ``"12"`` for 12 cfs),
+    so ``_type_cols`` would coerce ``value`` to ``int64`` and a
+    downstream chained query mixing this site with another that has
+    fractional readings would surface a confusing dtype upcast. Force
+    ``float64`` for every physical-measurement column."""
+    df = pd.DataFrame(
+        {
+            "value": ["12", "15", "18", "14", "11"],
+            "altitude": ["100", "200"] + [None] * 3,
+            "drainage_area": ["5", "10", "15", "20", "25"],
+        }
+    )
+    out = _type_cols(df)
+    assert out["value"].dtype == "float64"
+    assert out["altitude"].dtype == "float64"
+    assert out["drainage_area"].dtype == "float64"
 
 
 def test_handle_stats_nesting_tolerates_missing_drop_columns():
