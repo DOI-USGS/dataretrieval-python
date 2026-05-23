@@ -717,8 +717,6 @@ def _walk_pages(
             "into pandas DataFrames."
         )
 
-    # Get first response from client
-    # using GET or POST call
     close_client = client is None
     client = client or requests.Session()
     try:
@@ -730,13 +728,10 @@ def _walk_pages(
         initial_response = resp
         total_elapsed = resp.elapsed
 
-        # Grab some aspects of the original request: headers and the
-        # request type (GET or POST)
         method = req.method.upper()
         headers = dict(req.headers)
         content = req.body if method == "POST" else None
 
-        # List to collect dataframes from each page
         dfs = [_get_resp_data(resp, geopd=geopd)]
         curr_url = _next_req_url(resp)
         while curr_url:
@@ -893,7 +888,6 @@ def _type_cols(df: pd.DataFrame) -> pd.DataFrame:
         "construction_date",
         "end",
         "end_utc",
-        "datetime",  # unused
         "last_modified",
         "time",
     ]
@@ -1032,8 +1026,6 @@ def _handle_stats_nesting(
             "into pandas DataFrames."
         )
 
-    # If geopandas not installed, return a pandas dataframe
-    # otherwise return a geodataframe
     if not geopd:
         df = pd.json_normalize(body["features"]).drop(
             columns=["type", "properties.data"], errors="ignore"
@@ -1182,8 +1174,6 @@ def get_stats_data(
     req = request.prepare()
     logger.info("Request: %s", req.url)
 
-    # create temp client if not provided
-    # and close it after the request is done
     close_client = client is None
     client = client or requests.Session()
 
@@ -1196,15 +1186,12 @@ def get_stats_data(
         initial_response = resp
         total_elapsed = resp.elapsed
 
-        # Grab some aspects of the original request: headers and the
-        # request type (GET or POST)
         method = req.method.upper()
         headers = dict(req.headers)
 
         body = resp.json()
         all_dfs = [_handle_stats_nesting(body, geopd=GEOPANDAS)]
 
-        # Look for a next code in the response body
         next_token = body["next"]
 
         while next_token:
@@ -1235,8 +1222,6 @@ def get_stats_data(
 
         dfs = pd.concat(all_dfs, ignore_index=True) if len(all_dfs) > 1 else all_dfs[0]
 
-        # . If expand percentiles is True, make each percentile
-        # its own row in the returned dataset.
         if expand_percentiles:
             dfs = _expand_percentiles(dfs)
 
