@@ -51,7 +51,7 @@ def test_renders_pages_rows_and_rate_limit():
     assert out.lstrip("\r").startswith("Progress: ")
     assert "1 page" in out
     assert "1,234 rows" in out
-    assert "4,870 requests left" in out
+    assert "4,870 requests remaining" in out
 
 
 def test_page_count_is_pluralized():
@@ -84,7 +84,46 @@ def test_missing_rate_limit_does_not_blank_last_known_value():
     reporter.set_rate_remaining(None)
     reporter.set_rate_remaining("")
     reporter.add_page()
-    assert "500 requests left" in stream.getvalue()
+    assert "500 requests remaining" in stream.getvalue()
+
+
+def test_format_duration():
+    assert _progress._format_duration(0) == "0s"
+    assert _progress._format_duration(45) == "45s"
+    assert _progress._format_duration(600) == "10m"
+    assert _progress._format_duration(3600) == "1h"
+    assert _progress._format_duration(3700) == "1h01m"
+    assert _progress._format_duration(-5) == "0s"  # clamped
+
+
+def test_reset_countdown_rendered(monkeypatch):
+    # Pin the clock so the countdown is deterministic.
+    monkeypatch.setattr(_progress.time, "time", lambda: 1_000_000_000.0)
+    stream = io.StringIO()
+    reporter = ProgressReporter(stream=stream, enabled=True)
+    reporter.set_rate_remaining("4870", reset="600")  # delta seconds -> 10m
+    reporter.add_page(rows=1)
+    out = stream.getvalue()
+    assert "4,870 requests remaining, resets in 10m" in out
+
+
+def test_reset_accepts_absolute_epoch(monkeypatch):
+    monkeypatch.setattr(_progress.time, "time", lambda: 1_000_000_000.0)
+    stream = io.StringIO()
+    reporter = ProgressReporter(stream=stream, enabled=True)
+    reporter.set_rate_remaining("10", reset="1000000900")  # epoch: 900s out -> 15m
+    reporter.add_page()
+    assert "resets in 15m" in stream.getvalue()
+
+
+def test_no_reset_segment_without_reset_header():
+    stream = io.StringIO()
+    reporter = ProgressReporter(stream=stream, enabled=True)
+    reporter.set_rate_remaining("4870")  # remaining only, no reset
+    reporter.add_page()
+    out = stream.getvalue()
+    assert "4,870 requests remaining" in out
+    assert "resets in" not in out
 
 
 def test_close_terminates_active_line_with_newline():
@@ -262,7 +301,7 @@ def test_walk_pages_reports_pages_and_rate_limit():
     assert len(df) == 2
     out = stream.getvalue()
     assert "2 pages" in out
-    assert "4,998 requests left" in out
+    assert "4,998 requests remaining" in out
     assert out.endswith("\n")
 
 

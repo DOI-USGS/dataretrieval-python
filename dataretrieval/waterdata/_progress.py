@@ -6,7 +6,7 @@ follows ``next`` links across an unknown number of *pages* (``utils._walk_pages`
 and ``utils.get_stats_data``). This module surfaces that work as one line on
 stderr, rewritten in place as data arrives::
 
-    Progress: chunk 2/5 · 14 pages · 8,421 rows · 4,870 requests left
+    Progress: chunk 2/5 · 14 pages · 8,421 rows · 4,870 requests remaining
 
 It replaces the per-page ``logger.info`` calls that previously narrated the same
 events one line at a time.
@@ -27,9 +27,23 @@ from __future__ import annotations
 import contextvars
 import os
 import sys
+import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import TextIO
+
+
+def _format_duration(seconds: float) -> str:
+    """Compact human duration: ``45s``, ``12m``, ``1h03m`` (clamped at 0)."""
+    secs = int(max(0, seconds))
+    if secs < 60:
+        return f"{secs}s"
+    if secs < 3600:
+        return f"{secs // 60}m"
+    hours, rem = divmod(secs, 3600)
+    minutes = rem // 60
+    return f"{hours}h{minutes:02d}m" if minutes else f"{hours}h"
+
 
 # The reporter active for the current query. A ContextVar (not a module global)
 # so concurrent queries — threads or async tasks sharing a client — each track
@@ -74,6 +88,9 @@ class ProgressReporter:
         self.pages = 0
         self.rows = 0
         self.rate_remaining: str | None = None
+        # Absolute epoch second when the rate-limit window resets, derived from
+        # the server's reset header so the rendered countdown stays live.
+        self._reset_at: float | None = None
         self._last_len = 0
         self._closed = False
 
@@ -82,9 +99,15 @@ class ProgressReporter:
         self.total_chunks = max(int(total), 1)
 
     def start_chunk(self, index: int) -> None:
-        """Mark the start of chunk ``index`` (1-based) and redraw."""
+        """Mark the start of chunk ``index`` (1-based) and redraw.
+
+        Only redraws when actually chunking (``total_chunks > 1``); a
+        single-chunk plan has nothing chunk-specific to show yet, so it
+        avoids a premature "0 pages" frame before the first page arrives.
+        """
         self.current_chunk = index
-        self._render()
+        if self.total_chunks > 1:
+            self._render()
 
     def add_page(self, rows: int = 0) -> None:
         """Record one fetched page carrying ``rows`` rows and redraw."""
@@ -92,14 +115,26 @@ class ProgressReporter:
         self.rows += int(rows)
         self._render()
 
-    def set_rate_remaining(self, value: str | int | None) -> None:
-        """Update the remaining-requests count from an ``x-ratelimit-remaining`` header.
+    def set_rate_remaining(
+        self, value: str | int | None, reset: str | int | None = None
+    ) -> None:
+        """Update the rate-limit display from the response headers.
 
-        Ignores empty/missing values so a page that omits the header doesn't
-        blank out the last known count.
+        ``value`` is ``x-ratelimit-remaining``; ``reset`` is the optional
+        ``x-ratelimit-reset`` companion. Empty/missing values are ignored so a
+        page that omits a header doesn't blank out the last known value. The
+        reset value is interpreted as an absolute epoch second when large
+        (the conventional form) and as seconds-until-reset otherwise; either
+        way it's stored as an absolute deadline so the countdown stays live.
         """
         if value not in (None, ""):
             self.rate_remaining = str(value)
+        if reset not in (None, ""):
+            try:
+                secs = float(reset)
+            except (TypeError, ValueError):
+                return
+            self._reset_at = secs if secs > 1_000_000 else time.time() + secs
 
     def _format(self) -> str:
         parts: list[str] = []
@@ -114,7 +149,11 @@ class ProgressReporter:
             # alone is True for non-decimal unicode digits that ``int`` rejects.)
             rate = self.rate_remaining
             rate = f"{int(rate):,}" if rate.isascii() and rate.isdigit() else rate
-            parts.append(f"{rate} requests left")
+            segment = f"{rate} requests remaining"
+            if self._reset_at is not None:
+                eta = _format_duration(self._reset_at - time.time())
+                segment += f", resets in {eta}"
+            parts.append(segment)
         return "Progress: " + " · ".join(parts)
 
     def _render(self) -> None:

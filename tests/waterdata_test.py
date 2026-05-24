@@ -49,7 +49,7 @@ pytestmark = pytest.mark.flaky(
     reruns=2,
     reruns_delay=5,
     only_rerun=[
-        r"RuntimeError:\s*(?:429|5\d\d):",  # _raise_for_non_200 output
+        r"(?:RateLimited|RuntimeError):\s*(?:429|5\d\d):",  # _raise_for_non_200 output
         r"ConnectionError",
         r"ReadTimeout|ConnectTimeout|Timeout",
     ],
@@ -609,23 +609,19 @@ def test_get_channel():
 
 
 class TestCheckMonitoringLocationId:
-    """Tests for _check_monitoring_location_id input validation.
+    """Tests for the AGENCY-ID-specific layer over ``_normalize_str_iterable``.
+
+    Generic type/iterable normalization is covered by
+    ``TestNormalizeStrIterable`` below; this suite holds only the format
+    check (``AGENCY-NUMBER`` shape) and the public-API integration smokes.
 
     Regression tests for GitHub issue #188.
     """
 
     def test_valid_string(self):
-        """A correctly formatted string passes and is returned unchanged."""
+        """Happy-path smoke: the wrapper still routes through normalization
+        for a well-formed AGENCY-ID string."""
         assert _check_monitoring_location_id("USGS-01646500") == "USGS-01646500"
-
-    def test_valid_list(self):
-        """A list of correctly formatted strings passes without error."""
-        ids = ["USGS-01646500", "USGS-02238500"]
-        assert _check_monitoring_location_id(ids) == ids
-
-    def test_none_passes(self):
-        """None is allowed (optional parameter)."""
-        assert _check_monitoring_location_id(None) is None
 
     def test_integer_raises_type_error(self):
         """An integer ID raises TypeError with a helpful AGENCY-ID hint."""
@@ -634,11 +630,6 @@ class TestCheckMonitoringLocationId:
         # The wrapper appends the AGENCY-ID format hint that the generic
         # helper alone doesn't carry.
         assert "USGS-01646500" in str(exc_info.value)
-
-    def test_integer_in_list_raises_type_error(self):
-        """An integer inside a list raises TypeError."""
-        with pytest.raises(TypeError, match="not int"):
-            _check_monitoring_location_id(["USGS-01646500", 5129115])
 
     def test_missing_agency_prefix_raises_value_error(self):
         """A string without the AGENCY- prefix raises ValueError."""
@@ -655,56 +646,18 @@ class TestCheckMonitoringLocationId:
         with pytest.raises(TypeError):
             get_daily(monitoring_location_id=5129115, parameter_code="00060")
 
-    def test_tuple_normalizes_to_list(self):
-        """A tuple of valid strings is accepted and normalized to list."""
-        result = _check_monitoring_location_id(("USGS-01646500", "USGS-02238500"))
-        assert result == ["USGS-01646500", "USGS-02238500"]
-        assert isinstance(result, list)
-
-    def test_pandas_series_normalizes_to_list(self):
-        """A pandas.Series of valid strings is accepted and normalized to list."""
-        s = pd.Series(["USGS-01646500", "USGS-02238500"])
-        result = _check_monitoring_location_id(s)
-        assert result == ["USGS-01646500", "USGS-02238500"]
-        assert isinstance(result, list)
-
-    def test_pandas_index_normalizes_to_list(self):
-        """A pandas.Index of valid strings is accepted and normalized to list."""
-        idx = pd.Index(["USGS-01646500", "USGS-02238500"])
-        result = _check_monitoring_location_id(idx)
-        assert result == ["USGS-01646500", "USGS-02238500"]
-        assert isinstance(result, list)
-
-    def test_numpy_array_normalizes_to_list(self):
-        """A numpy.ndarray of valid strings is accepted and normalized to list."""
-        import numpy as np
-
-        arr = np.array(["USGS-01646500", "USGS-02238500"])
-        result = _check_monitoring_location_id(arr)
-        assert result == ["USGS-01646500", "USGS-02238500"]
-        assert isinstance(result, list)
-
-    def test_numpy_int_array_raises_type_error(self):
-        """An iterable whose elements aren't strings (numpy int array) raises."""
-        import numpy as np
-
-        with pytest.raises(TypeError, match="elements must be strings"):
-            _check_monitoring_location_id(np.array([1, 2, 3]))
-
-    def test_pandas_series_of_ints_raises_type_error(self):
-        """An iterable whose elements aren't strings (Series of ints) raises."""
-        with pytest.raises(TypeError, match="elements must be strings"):
-            _check_monitoring_location_id(pd.Series([1, 2, 3]))
-
-    def test_dict_raises_type_error(self):
-        """Mappings are rejected — iterating a dict yields keys, which is a footgun."""
-        with pytest.raises(TypeError, match="not dict"):
-            _check_monitoring_location_id({"USGS-01646500": "site"})
-
     def test_get_daily_malformed_id_raises(self):
         """get_daily raises ValueError for a malformed string ID."""
         with pytest.raises(ValueError):
             get_daily(monitoring_location_id="dog", parameter_code="00060")
+
+    def test_per_item_format_check_in_list(self):
+        """The AGENCY-ID format check runs on EVERY element of an
+        iterable, not just the first. Regression guard against a
+        future ``_check_id_format`` loop that bails after one valid
+        item or only checks the head."""
+        with pytest.raises(ValueError, match="Invalid monitoring_location_id"):
+            _check_monitoring_location_id(["USGS-01646500", "badformat"])
 
 
 class TestNormalizeStrIterable:

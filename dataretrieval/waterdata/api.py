@@ -113,7 +113,7 @@ def get_daily(
         data are released on the condition that neither the USGS nor the United
         States Government may be held liable for any damages resulting from its
         use. This field reflects the approval status of each record, and is either
-        "Approved", meaining processing review has been completed and the data is
+        "Approved", meaning processing review has been completed and the data is
         approved for publication, or "Provisional" and subject to revision. For
         more information about provisional data, go to:
         https://waterdata.usgs.gov/provisional-data-statement/.
@@ -230,6 +230,21 @@ def get_daily(
         ...     parameter_code="00060",
         ...     last_modified="P7D",
         ... )
+
+        >>> # Chain queries: pull all stream sites in a state, then their
+        >>> # daily discharge for the last week. The site list can be hundreds
+        >>> # of values long — the request is transparently chunked across
+        >>> # multiple sub-requests so the URL stays under the server's byte
+        >>> # limit. Combined output looks like a single query.
+        >>> sites_df, _ = dataretrieval.waterdata.get_monitoring_locations(
+        ...     state_name="Ohio",
+        ...     site_type="Stream",
+        ... )
+        >>> df, md = dataretrieval.waterdata.get_daily(
+        ...     monitoring_location_id=sites_df["monitoring_location_id"].tolist(),
+        ...     parameter_code="00060",
+        ...     time="P7D",
+        ... )
     """
     service = "daily"
     output_id = "daily_id"
@@ -259,7 +274,7 @@ def get_continuous(
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
-    Continuous data provide instantanous water conditions.
+    Continuous data provide instantaneous water conditions.
 
     This is an early version of the continuous endpoint that is feature-complete
     and is being made available for limited use.  Geometries are not included
@@ -320,7 +335,7 @@ def get_continuous(
         data are released on the condition that neither the USGS nor the United
         States Government may be held liable for any damages resulting from its
         use. This field reflects the approval status of each record, and is either
-        "Approved", meaining processing review has been completed and the data is
+        "Approved", meaning processing review has been completed and the data is
         approved for publication, or "Provisional" and subject to revision. For
         more information about provisional data, go to:
         https://waterdata.usgs.gov/provisional-data-statement/.
@@ -1254,7 +1269,7 @@ def get_latest_continuous(
         data are released on the condition that neither the USGS nor the United
         States Government may be held liable for any damages resulting from its
         use. This field reflects the approval status of each record, and is either
-        "Approved", meaining processing review has been completed and the data is
+        "Approved", meaning processing review has been completed and the data is
         approved for publication, or "Provisional" and subject to revision. For
         more information about provisional data, go to:
         https://waterdata.usgs.gov/provisional-data-statement/.
@@ -1451,7 +1466,7 @@ def get_latest_daily(
         data are released on the condition that neither the USGS nor the United
         States Government may be held liable for any damages resulting from its
         use. This field reflects the approval status of each record, and is either
-        "Approved", meaining processing review has been completed and the data is
+        "Approved", meaning processing review has been completed and the data is
         approved for publication, or "Provisional" and subject to revision. For
         more information about provisional data, go to:
         https://waterdata.usgs.gov/provisional-data-statement/.
@@ -1633,7 +1648,7 @@ def get_field_measurements(
         data are released on the condition that neither the USGS nor the United
         States Government may be held liable for any damages resulting from its
         use. This field reflects the approval status of each record, and is either
-        "Approved", meaining processing review has been completed and the data is
+        "Approved", meaning processing review has been completed and the data is
         approved for publication, or "Provisional" and subject to revision. For
         more information about provisional data, go to:
         https://waterdata.usgs.gov/provisional-data-statement/.
