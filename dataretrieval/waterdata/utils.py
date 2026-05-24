@@ -938,7 +938,7 @@ def _paginate(
         if reporter is not None:
             reporter.set_rate_remaining(
                 resp.headers.get(_QUOTA_HEADER),
-                reset=resp.headers.get("x-ratelimit-reset"),
+                limit=resp.headers.get("x-ratelimit-limit"),
             )
             reporter.add_page(rows=len(df))
         while cursor is not None:
@@ -951,7 +951,7 @@ def _paginate(
                 if reporter is not None:
                     reporter.set_rate_remaining(
                         resp.headers.get(_QUOTA_HEADER),
-                        reset=resp.headers.get("x-ratelimit-reset"),
+                        limit=resp.headers.get("x-ratelimit-limit"),
                     )
                     reporter.add_page(rows=len(df))
             except Exception as e:  # noqa: BLE001

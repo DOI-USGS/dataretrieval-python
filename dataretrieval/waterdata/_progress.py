@@ -1,19 +1,19 @@
 """A single self-updating status line for paginated / chunked Water Data queries.
 
-Water Data getters fan out two ways the caller can't see: long CQL filters are
-split into URL-length-safe *chunks* (``filters.chunked``), and each request
-follows ``next`` links across an unknown number of *pages* (``utils._walk_pages``
-and ``utils.get_stats_data``). This module surfaces that work as one line on
-stderr, rewritten in place as data arrives::
+Water Data getters fan out two ways the caller can't see: large multi-value
+requests are split into URL-length-safe *chunks* (``chunking`` module), and each
+request follows ``next`` links across an unknown number of *pages*
+(``utils._paginate``). This module surfaces that work as one line on stderr,
+rewritten in place as data arrives::
 
-    Progress: chunk 2/5 · 14 pages · 8,421 rows · 4,870 requests remaining
+    Progress: chunk 2/5 · 14 pages · 8,421 rows · 4,870 / 5,000 requests remaining
 
 It replaces the per-page ``logger.info`` calls that previously narrated the same
 events one line at a time.
 
 The active reporter lives in a :class:`~contextvars.ContextVar` rather than being
 threaded through every signature: progress is a cross-cutting concern that the
-``chunked`` decorator (outer, chunk counts) and the page-walking loops (inner,
+chunk orchestrator (outer, chunk counts) and the page-walking loop (inner,
 page/row/rate-limit counts) both update without knowing about each other. Call
 :func:`progress_context` to activate one and :func:`current` to reach it.
 
@@ -27,27 +27,25 @@ from __future__ import annotations
 import contextvars
 import os
 import sys
-import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import TextIO
 
 
-def _format_duration(seconds: float) -> str:
-    """Compact human duration: ``45s``, ``12m``, ``1h03m`` (clamped at 0)."""
-    secs = int(max(0, seconds))
-    if secs < 60:
-        return f"{secs}s"
-    if secs < 3600:
-        return f"{secs // 60}m"
-    hours, rem = divmod(secs, 3600)
-    minutes = rem // 60
-    return f"{hours}h{minutes:02d}m" if minutes else f"{hours}h"
+def _group_int(value: str) -> str:
+    """Comma-group a plain ASCII integer string; pass anything else through.
+
+    (``str.isdigit`` alone is True for non-decimal unicode digits that ``int``
+    rejects, hence the ``isascii`` guard.)
+    """
+    return f"{int(value):,}" if value.isascii() and value.isdigit() else value
 
 
 # The reporter active for the current query. A ContextVar (not a module global)
-# so concurrent queries — threads or async tasks sharing a client — each track
-# their own progress line.
+# so the chunk orchestrator and the page loop resolve to the same reporter
+# within one query, and an unrelated query in another context can't clobber its
+# state. (It does not give concurrent queries sharing one stderr separate
+# lines — they would still interleave.)
 _active: contextvars.ContextVar[ProgressReporter | None] = contextvars.ContextVar(
     "waterdata_progress", default=None
 )
@@ -88,10 +86,14 @@ class ProgressReporter:
         self.pages = 0
         self.rows = 0
         self.rate_remaining: str | None = None
-        # Absolute epoch second when the rate-limit window resets, derived from
-        # the server's reset header so the rendered countdown stays live.
-        self._reset_at: float | None = None
+        # The hourly request quota (``x-ratelimit-limit``), shown as the
+        # denominator when the server reports it.
+        self.rate_limit: str | None = None
         self._last_len = 0
+        # Whether anything was actually written to the stream — drives whether
+        # close() needs a terminating newline. (``current_chunk`` is a poor
+        # proxy: ``start_chunk`` sets it even when it doesn't render.)
+        self._rendered = False
         self._closed = False
 
     def set_chunks(self, total: int) -> None:
@@ -116,25 +118,19 @@ class ProgressReporter:
         self._render()
 
     def set_rate_remaining(
-        self, value: str | int | None, reset: str | int | None = None
+        self, value: str | int | None, limit: str | int | None = None
     ) -> None:
         """Update the rate-limit display from the response headers.
 
-        ``value`` is ``x-ratelimit-remaining``; ``reset`` is the optional
-        ``x-ratelimit-reset`` companion. Empty/missing values are ignored so a
-        page that omits a header doesn't blank out the last known value. The
-        reset value is interpreted as an absolute epoch second when large
-        (the conventional form) and as seconds-until-reset otherwise; either
-        way it's stored as an absolute deadline so the countdown stays live.
+        ``value`` is ``x-ratelimit-remaining``; ``limit`` is the optional
+        ``x-ratelimit-limit`` quota, shown as the denominator. Empty/missing
+        values are ignored so a page that omits a header doesn't blank out the
+        last known value.
         """
         if value not in (None, ""):
             self.rate_remaining = str(value)
-        if reset not in (None, ""):
-            try:
-                secs = float(reset)
-            except (TypeError, ValueError):
-                return
-            self._reset_at = secs if secs > 1_000_000 else time.time() + secs
+        if limit not in (None, ""):
+            self.rate_limit = str(limit)
 
     def _format(self) -> str:
         parts: list[str] = []
@@ -144,15 +140,12 @@ class ProgressReporter:
         if self.rows:
             parts.append(f"{self.rows:,} rows")
         if self.rate_remaining is not None:
-            # The header is a string; group it like the row count when it's a
-            # plain ASCII integer, otherwise show it verbatim. (``str.isdigit``
-            # alone is True for non-decimal unicode digits that ``int`` rejects.)
-            rate = self.rate_remaining
-            rate = f"{int(rate):,}" if rate.isascii() and rate.isdigit() else rate
-            segment = f"{rate} requests remaining"
-            if self._reset_at is not None:
-                eta = _format_duration(self._reset_at - time.time())
-                segment += f", resets in {eta}"
+            remaining = _group_int(self.rate_remaining)
+            if self.rate_limit is not None:
+                limit = _group_int(self.rate_limit)
+                segment = f"{remaining} / {limit} requests remaining"
+            else:
+                segment = f"{remaining} requests remaining"
             parts.append(segment)
         return "Progress: " + " · ".join(parts)
 
@@ -165,6 +158,7 @@ class ProgressReporter:
             self._stream.write("\r" + line + " " * pad)
             self._stream.flush()
             self._last_len = len(line)
+            self._rendered = True
         except Exception:  # noqa: BLE001
             # Progress output is best-effort cosmetics; a broken pipe (output
             # piped to ``head``), a closed stream, or an encoding error must
@@ -182,7 +176,7 @@ class ProgressReporter:
         if self._closed:
             return
         self._closed = True
-        if not (self.enabled and (self.pages or self.current_chunk)):
+        if not (self.enabled and self._rendered):
             return
         try:
             self._stream.write("\n")
@@ -195,10 +189,13 @@ class ProgressReporter:
         global _api_key_hint_shown
         if _api_key_hint_shown or os.getenv("API_USGS_PAT"):
             return
-        _api_key_hint_shown = True
+        # Set the once-per-process latch only after a successful write, so a
+        # failed write (broken pipe) doesn't silently burn the hint for every
+        # later query in the process.
         self._stream.write(
             f"No API key detected — register for higher rate limits at {SIGNUP_URL}\n"
         )
+        _api_key_hint_shown = True
 
 
 @contextmanager

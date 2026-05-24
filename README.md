@@ -111,11 +111,12 @@ for more information and examples on available services and input parameters.
 
 **Tracking progress:** Paginated and chunked `waterdata` queries report their
 progress on a single, self-updating line on `stderr` — showing the chunk and
-page counts, rows retrieved so far, and the API requests remaining (with the
-time until the hourly limit resets, when the server reports it):
+page counts, rows retrieved so far, and the hourly API quota remaining (the
+``remaining / limit`` from the server's rate-limit headers, shown when you
+have an API key set):
 
 ```text
-Progress: chunk 2/5 · 14 pages · 8,421 rows · 4,870 requests remaining, resets in 47m
+Progress: chunk 2/5 · 14 pages · 8,421 rows · 4,870 / 5,000 requests remaining
 ```
 
 The line appears automatically when `stderr` is an interactive terminal.

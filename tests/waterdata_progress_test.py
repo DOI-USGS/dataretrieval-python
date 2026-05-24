@@ -87,43 +87,22 @@ def test_missing_rate_limit_does_not_blank_last_known_value():
     assert "500 requests remaining" in stream.getvalue()
 
 
-def test_format_duration():
-    assert _progress._format_duration(0) == "0s"
-    assert _progress._format_duration(45) == "45s"
-    assert _progress._format_duration(600) == "10m"
-    assert _progress._format_duration(3600) == "1h"
-    assert _progress._format_duration(3700) == "1h01m"
-    assert _progress._format_duration(-5) == "0s"  # clamped
-
-
-def test_reset_countdown_rendered(monkeypatch):
-    # Pin the clock so the countdown is deterministic.
-    monkeypatch.setattr(_progress.time, "time", lambda: 1_000_000_000.0)
+def test_renders_remaining_over_limit():
     stream = io.StringIO()
     reporter = ProgressReporter(stream=stream, enabled=True)
-    reporter.set_rate_remaining("4870", reset="600")  # delta seconds -> 10m
+    reporter.set_rate_remaining("952", limit="1000")
     reporter.add_page(rows=1)
-    out = stream.getvalue()
-    assert "4,870 requests remaining, resets in 10m" in out
+    assert "952 / 1,000 requests remaining" in stream.getvalue()
 
 
-def test_reset_accepts_absolute_epoch(monkeypatch):
-    monkeypatch.setattr(_progress.time, "time", lambda: 1_000_000_000.0)
+def test_no_slash_when_limit_absent():
     stream = io.StringIO()
     reporter = ProgressReporter(stream=stream, enabled=True)
-    reporter.set_rate_remaining("10", reset="1000000900")  # epoch: 900s out -> 15m
-    reporter.add_page()
-    assert "resets in 15m" in stream.getvalue()
-
-
-def test_no_reset_segment_without_reset_header():
-    stream = io.StringIO()
-    reporter = ProgressReporter(stream=stream, enabled=True)
-    reporter.set_rate_remaining("4870")  # remaining only, no reset
+    reporter.set_rate_remaining("4870")  # remaining only, no limit header
     reporter.add_page()
     out = stream.getvalue()
     assert "4,870 requests remaining" in out
-    assert "resets in" not in out
+    assert "/" not in out
 
 
 def test_close_terminates_active_line_with_newline():
