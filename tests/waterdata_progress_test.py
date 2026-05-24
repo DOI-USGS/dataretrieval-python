@@ -9,14 +9,24 @@ reporter.
 import io
 from unittest import mock
 
+import pytest
 import requests
 
+from dataretrieval.waterdata import _progress
 from dataretrieval.waterdata._progress import (
     ProgressReporter,
     current,
     progress_context,
 )
 from dataretrieval.waterdata.utils import _walk_pages
+
+
+@pytest.fixture(autouse=True)
+def _reset_api_key_hint_latch(monkeypatch):
+    """The 'no API key' pointer is latched once per process; reset it so each
+    test sees a clean slate regardless of order."""
+    monkeypatch.setattr(_progress, "_api_key_hint_shown", False)
+
 
 # -- ProgressReporter rendering ------------------------------------------------
 
@@ -89,6 +99,62 @@ def test_close_without_activity_writes_nothing():
     reporter = ProgressReporter(stream=stream, enabled=True)
     reporter.close()
     assert stream.getvalue() == ""
+
+
+# -- API-key pointer -----------------------------------------------------------
+
+
+def test_hints_api_key_when_no_rate_limit_seen(monkeypatch):
+    monkeypatch.delenv("API_USGS_PAT", raising=False)
+    stream = io.StringIO()
+    reporter = ProgressReporter(stream=stream, enabled=True)
+    reporter.add_page(rows=5)  # never set a rate-limit -> likely unauthenticated
+    reporter.close()
+    assert _progress.SIGNUP_URL in stream.getvalue()
+
+
+def test_no_hint_when_rate_limit_was_seen(monkeypatch):
+    monkeypatch.delenv("API_USGS_PAT", raising=False)
+    stream = io.StringIO()
+    reporter = ProgressReporter(stream=stream, enabled=True)
+    reporter.set_rate_remaining("4999")
+    reporter.add_page(rows=5)
+    reporter.close()
+    assert _progress.SIGNUP_URL not in stream.getvalue()
+
+
+def test_no_hint_when_api_key_present(monkeypatch):
+    monkeypatch.setenv("API_USGS_PAT", "secret")
+    stream = io.StringIO()
+    reporter = ProgressReporter(stream=stream, enabled=True)
+    reporter.add_page(rows=5)  # no rate-limit, but a key is configured
+    reporter.close()
+    assert _progress.SIGNUP_URL not in stream.getvalue()
+
+
+def test_no_hint_when_disabled(monkeypatch):
+    monkeypatch.delenv("API_USGS_PAT", raising=False)
+    stream = io.StringIO()
+    reporter = ProgressReporter(stream=stream, enabled=False)
+    reporter.add_page(rows=5)
+    reporter.close()
+    assert stream.getvalue() == ""
+
+
+def test_api_key_hint_shown_at_most_once(monkeypatch):
+    monkeypatch.delenv("API_USGS_PAT", raising=False)
+
+    first = io.StringIO()
+    r1 = ProgressReporter(stream=first, enabled=True)
+    r1.add_page(rows=5)
+    r1.close()
+    assert _progress.SIGNUP_URL in first.getvalue()
+
+    second = io.StringIO()
+    r2 = ProgressReporter(stream=second, enabled=True)
+    r2.add_page(rows=5)
+    r2.close()
+    assert _progress.SIGNUP_URL not in second.getvalue()
 
 
 # -- enable/disable gating -----------------------------------------------------

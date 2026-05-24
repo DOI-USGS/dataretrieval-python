@@ -128,9 +128,7 @@ page counts, rows retrieved so far, and the API requests remaining for the hour:
 waterdata · chunk 2/5 · 14 pages · 8,421 rows · 4,870 requests left
 ```
 
-The line appears automatically when `stderr` is an interactive terminal. Set the
-`API_USGS_PROGRESS` environment variable to `1` to force it on (for example, when
-redirecting output to a file) or to `0` to turn it off.
+The line appears automatically when `stderr` is an interactive terminal.
 
 For verbose troubleshooting and support — including the request URL sent to the
 API — enable debug-level
