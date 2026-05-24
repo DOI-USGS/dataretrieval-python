@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_info() Examples &mdash; dataretrieval 0.1.dev1+g092f1b02c documentation</title>
+  <title>USGS dataretrieval Python Package get_info() Examples &mdash; dataretrieval 0.1.dev1+g51bdc6fe4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=b4b04f32"></script>
+      <script src="../_static/documentation_options.js?v=1351cf97"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -127,7 +127,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g092f1b02c)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g51bdc6fe4)
 Requirement already satisfied: requests in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (2.34.2)
 Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.6)
@@ -221,27 +221,27 @@ Requirement already satisfied: certifi&gt;=2023.5.7 in /opt/hostedtoolcache/Pyth
 <span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">739</span> args = <span class="ansi-black-fg ansi-yellow-bg">_get_args</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">locals</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
 <span class="ansi-green-fg">    741</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> get_ogc_data(args, output_id, service)
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:1700</span>, in <span class="ansi-cyan-fg">_get_args</span><span class="ansi-blue-fg">(local_vars, exclude)</span>
-<span class="ansi-green-fg">   1698</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">continue</span>
-<span class="ansi-green-fg">   1699</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> k == <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">monitoring_location_id</span><span class="ansi-yellow-fg">&#34;</span>:
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1700</span>     args[k] = <span class="ansi-black-fg ansi-yellow-bg">_check_monitoring_location_id</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">v</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   1701</span> <span class="ansi-bold" style="color: rgb(0,135,0)">elif</span> k == <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">properties</span><span class="ansi-yellow-fg">&#34;</span>:
-<span class="ansi-green-fg">   1702</span>     <span style="color: rgb(95,135,135)"># `&#34;,&#34;.join(properties)` would iterate a bare string as characters.</span>
-<span class="ansi-green-fg">   1703</span>     args[k] = [v] <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(v, <span style="color: rgb(0,135,0)">str</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">else</span> _normalize_str_iterable(v, k)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:1702</span>, in <span class="ansi-cyan-fg">_get_args</span><span class="ansi-blue-fg">(local_vars, exclude)</span>
+<span class="ansi-green-fg">   1700</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">continue</span>
+<span class="ansi-green-fg">   1701</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> k == <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">monitoring_location_id</span><span class="ansi-yellow-fg">&#34;</span>:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1702</span>     args[k] = <span class="ansi-black-fg ansi-yellow-bg">_check_monitoring_location_id</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">v</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   1703</span> <span class="ansi-bold" style="color: rgb(0,135,0)">elif</span> k == <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">properties</span><span class="ansi-yellow-fg">&#34;</span>:
+<span class="ansi-green-fg">   1704</span>     <span style="color: rgb(95,135,135)"># `&#34;,&#34;.join(properties)` would iterate a bare string as characters.</span>
+<span class="ansi-green-fg">   1705</span>     args[k] = [v] <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(v, <span style="color: rgb(0,135,0)">str</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">else</span> _normalize_str_iterable(v, k)
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:1643</span>, in <span class="ansi-cyan-fg">_check_monitoring_location_id</span><span class="ansi-blue-fg">(monitoring_location_id)</span>
-<span class="ansi-green-fg">   1641</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
-<span class="ansi-green-fg">   1642</span> <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> item <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> (value,) <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(value, <span style="color: rgb(0,135,0)">str</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">else</span> value:
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1643</span>     <span class="ansi-black-fg ansi-yellow-bg">_check_id_format</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">item</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   1644</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> value
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:1645</span>, in <span class="ansi-cyan-fg">_check_monitoring_location_id</span><span class="ansi-blue-fg">(monitoring_location_id)</span>
+<span class="ansi-green-fg">   1643</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
+<span class="ansi-green-fg">   1644</span> <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> item <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> (value,) <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(value, <span style="color: rgb(0,135,0)">str</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">else</span> value:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1645</span>     <span class="ansi-black-fg ansi-yellow-bg">_check_id_format</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">item</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   1646</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> value
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:1650</span>, in <span class="ansi-cyan-fg">_check_id_format</span><span class="ansi-blue-fg">(value)</span>
-<span class="ansi-green-fg">   1648</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Raise ``ValueError`` if ``value`` is not in ``AGENCY-ID`` format.&#34;&#34;&#34;</span>
-<span class="ansi-green-fg">   1649</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> _MONITORING_LOCATION_ID_RE.fullmatch(value):
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1650</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(
-<span class="ansi-green-fg">   1651</span>         <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Invalid monitoring_location_id: </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>value<span class="ansi-bold" style="color: rgb(175,95,135)">!r}</span><span class="ansi-yellow-fg">. </span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">   1652</span>         <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Expected </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">AGENCY-ID</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> format, e.g., </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">USGS-01646500</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">.</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">   1653</span>     )
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:1652</span>, in <span class="ansi-cyan-fg">_check_id_format</span><span class="ansi-blue-fg">(value)</span>
+<span class="ansi-green-fg">   1650</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Raise ``ValueError`` if ``value`` is not in ``AGENCY-ID`` format.&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">   1651</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> _MONITORING_LOCATION_ID_RE.fullmatch(value):
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1652</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(
+<span class="ansi-green-fg">   1653</span>         <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Invalid monitoring_location_id: </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>value<span class="ansi-bold" style="color: rgb(175,95,135)">!r}</span><span class="ansi-yellow-fg">. </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">   1654</span>         <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Expected </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">AGENCY-ID</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> format, e.g., </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">USGS-01646500</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">.</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">   1655</span>     )
 
 <span class="ansi-red-fg">ValueError</span>: Invalid monitoring_location_id: &#39;10109000&#39;. Expected &#39;AGENCY-ID&#39; format, e.g., &#39;USGS-01646500&#39;.
 </pre></div></div>
@@ -357,27 +357,27 @@ Requirement already satisfied: certifi&gt;=2023.5.7 in /opt/hostedtoolcache/Pyth
 <span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">739</span> args = <span class="ansi-black-fg ansi-yellow-bg">_get_args</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">locals</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
 <span class="ansi-green-fg">    741</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> get_ogc_data(args, output_id, service)
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:1700</span>, in <span class="ansi-cyan-fg">_get_args</span><span class="ansi-blue-fg">(local_vars, exclude)</span>
-<span class="ansi-green-fg">   1698</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">continue</span>
-<span class="ansi-green-fg">   1699</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> k == <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">monitoring_location_id</span><span class="ansi-yellow-fg">&#34;</span>:
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1700</span>     args[k] = <span class="ansi-black-fg ansi-yellow-bg">_check_monitoring_location_id</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">v</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   1701</span> <span class="ansi-bold" style="color: rgb(0,135,0)">elif</span> k == <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">properties</span><span class="ansi-yellow-fg">&#34;</span>:
-<span class="ansi-green-fg">   1702</span>     <span style="color: rgb(95,135,135)"># `&#34;,&#34;.join(properties)` would iterate a bare string as characters.</span>
-<span class="ansi-green-fg">   1703</span>     args[k] = [v] <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(v, <span style="color: rgb(0,135,0)">str</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">else</span> _normalize_str_iterable(v, k)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:1702</span>, in <span class="ansi-cyan-fg">_get_args</span><span class="ansi-blue-fg">(local_vars, exclude)</span>
+<span class="ansi-green-fg">   1700</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">continue</span>
+<span class="ansi-green-fg">   1701</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> k == <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">monitoring_location_id</span><span class="ansi-yellow-fg">&#34;</span>:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1702</span>     args[k] = <span class="ansi-black-fg ansi-yellow-bg">_check_monitoring_location_id</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">v</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   1703</span> <span class="ansi-bold" style="color: rgb(0,135,0)">elif</span> k == <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">properties</span><span class="ansi-yellow-fg">&#34;</span>:
+<span class="ansi-green-fg">   1704</span>     <span style="color: rgb(95,135,135)"># `&#34;,&#34;.join(properties)` would iterate a bare string as characters.</span>
+<span class="ansi-green-fg">   1705</span>     args[k] = [v] <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(v, <span style="color: rgb(0,135,0)">str</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">else</span> _normalize_str_iterable(v, k)
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:1643</span>, in <span class="ansi-cyan-fg">_check_monitoring_location_id</span><span class="ansi-blue-fg">(monitoring_location_id)</span>
-<span class="ansi-green-fg">   1641</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
-<span class="ansi-green-fg">   1642</span> <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> item <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> (value,) <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(value, <span style="color: rgb(0,135,0)">str</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">else</span> value:
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1643</span>     <span class="ansi-black-fg ansi-yellow-bg">_check_id_format</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">item</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">   1644</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> value
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:1645</span>, in <span class="ansi-cyan-fg">_check_monitoring_location_id</span><span class="ansi-blue-fg">(monitoring_location_id)</span>
+<span class="ansi-green-fg">   1643</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
+<span class="ansi-green-fg">   1644</span> <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> item <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> (value,) <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(value, <span style="color: rgb(0,135,0)">str</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">else</span> value:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1645</span>     <span class="ansi-black-fg ansi-yellow-bg">_check_id_format</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">item</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   1646</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> value
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:1650</span>, in <span class="ansi-cyan-fg">_check_id_format</span><span class="ansi-blue-fg">(value)</span>
-<span class="ansi-green-fg">   1648</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Raise ``ValueError`` if ``value`` is not in ``AGENCY-ID`` format.&#34;&#34;&#34;</span>
-<span class="ansi-green-fg">   1649</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> _MONITORING_LOCATION_ID_RE.fullmatch(value):
-<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1650</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(
-<span class="ansi-green-fg">   1651</span>         <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Invalid monitoring_location_id: </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>value<span class="ansi-bold" style="color: rgb(175,95,135)">!r}</span><span class="ansi-yellow-fg">. </span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">   1652</span>         <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Expected </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">AGENCY-ID</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> format, e.g., </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">USGS-01646500</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">.</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">   1653</span>     )
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:1652</span>, in <span class="ansi-cyan-fg">_check_id_format</span><span class="ansi-blue-fg">(value)</span>
+<span class="ansi-green-fg">   1650</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Raise ``ValueError`` if ``value`` is not in ``AGENCY-ID`` format.&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">   1651</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> _MONITORING_LOCATION_ID_RE.fullmatch(value):
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1652</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(
+<span class="ansi-green-fg">   1653</span>         <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Invalid monitoring_location_id: </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>value<span class="ansi-bold" style="color: rgb(175,95,135)">!r}</span><span class="ansi-yellow-fg">. </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">   1654</span>         <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Expected </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">AGENCY-ID</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg"> format, e.g., </span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">USGS-01646500</span><span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">.</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">   1655</span>     )
 
 <span class="ansi-red-fg">ValueError</span>: Invalid monitoring_location_id: &#39;05114000&#39;. Expected &#39;AGENCY-ID&#39; format, e.g., &#39;USGS-01646500&#39;.
 </pre></div></div>
@@ -394,6 +394,15 @@ Requirement already satisfied: certifi&gt;=2023.5.7 in /opt/hostedtoolcache/Pyth
 <span class="n">display</span><span class="p">(</span><span class="n">siteINFO_state</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: monitoring-locations · 1 page
+No API key detected — register for higher rate limits at https://api.waterdata.usgs.gov/signup/
+</pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
@@ -461,6 +470,14 @@ Requirement already satisfied: certifi&gt;=2023.5.7 in /opt/hostedtoolcache/Pyth
 <span class="n">display</span><span class="p">(</span><span class="n">siteINFO_huc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: monitoring-locations · 1 page · 29 rows
+</pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">

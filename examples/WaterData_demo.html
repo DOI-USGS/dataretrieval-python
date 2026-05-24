@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Using the waterdata module to pull data from the USGS Water Data APIs &mdash; dataretrieval 0.1.dev1+g092f1b02c documentation</title>
+  <title>Using the waterdata module to pull data from the USGS Water Data APIs &mdash; dataretrieval 0.1.dev1+g51bdc6fe4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=b4b04f32"></script>
+      <script src="../_static/documentation_options.js?v=1351cf97"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -194,6 +194,15 @@ database, it will return all the data in 2 pages, and each page counts as a “r
 <span class="n">display</span><span class="p">(</span><span class="n">pcodes</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: parameter-codes · 1 page · 19,675 rows
+No API key detected — register for higher rate limits at https://api.waterdata.usgs.gov/signup/
+</pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
@@ -506,7 +515,7 @@ database, it will return all the data in 2 pages, and each page counts as a “r
 </div>
 </div>
 <p>We will also use the <code class="docutils literal notranslate"><span class="pre">skip_geometry</span></code> argument in our timeseries metadata call. By default, most <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> functions return a geometry column containing the monitoring location’s coordinates. This is a really cool feature that we will use later, but for this particular data pull, we don’t need it. Setting <code class="docutils literal notranslate"><span class="pre">skip_geometry=True</span></code> makes the returned dataframe smaller and more efficient.</p>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
@@ -519,6 +528,14 @@ database, it will return all the data in 2 pages, and each page counts as a “r
 <span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: time-series-metadata · 1 page · 221 rows
+</pre></div></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
@@ -586,11 +603,11 @@ database, it will return all the data in 2 pages, and each page counts as a “r
       <td>00003</td>
       <td>101701040305</td>
       <td>Nebraska</td>
-      <td>2026-05-23 06:30:14.730943</td>
+      <td>2026-05-24 06:30:24.225948</td>
       <td>1957-10-01 00:00:00.000001</td>
-      <td>2026-05-22 00:00:00.000001</td>
+      <td>2026-05-23 00:00:00.000001</td>
       <td>...</td>
-      <td>2026-05-22 05:00:00+00:00</td>
+      <td>2026-05-23 05:00:00+00:00</td>
       <td>Daily</td>
       <td>Mean</td>
       <td>[]</td>
@@ -610,11 +627,11 @@ database, it will return all the data in 2 pages, and each page counts as a “r
       <td>00011</td>
       <td>101701040305</td>
       <td>Nebraska</td>
-      <td>2026-05-23 05:30:18.066057</td>
+      <td>2026-05-24 06:00:55.307217</td>
       <td>1990-10-01 05:30:00.000001</td>
-      <td>2026-05-23 05:15:00.000001</td>
+      <td>2026-05-24 05:45:00.000001</td>
       <td>...</td>
-      <td>2026-05-23 10:15:00+00:00</td>
+      <td>2026-05-24 10:45:00+00:00</td>
       <td>Points</td>
       <td>Instantaneous</td>
       <td>[{'Name': 'Peak of record discharge on March 2...</td>
@@ -634,11 +651,11 @@ database, it will return all the data in 2 pages, and each page counts as a “r
       <td>00003</td>
       <td>101500040905</td>
       <td>Nebraska</td>
-      <td>2026-05-23 06:59:22.106815</td>
+      <td>2026-05-24 06:59:38.330365</td>
       <td>1945-10-01 00:00:00.000001</td>
-      <td>2026-05-21 00:00:00.000001</td>
+      <td>2026-05-23 00:00:00.000001</td>
       <td>...</td>
-      <td>2026-05-21 05:00:00+00:00</td>
+      <td>2026-05-23 05:00:00+00:00</td>
       <td>Daily</td>
       <td>Mean</td>
       <td>[]</td>
@@ -658,11 +675,11 @@ database, it will return all the data in 2 pages, and each page counts as a “r
       <td>00011</td>
       <td>101500040905</td>
       <td>Nebraska</td>
-      <td>2026-05-23 07:59:11.391407</td>
+      <td>2026-05-24 09:59:13.591294</td>
       <td>1991-05-17 05:00:00.000001</td>
-      <td>2026-05-23 07:45:00.000001</td>
+      <td>2026-05-24 09:45:00.000001</td>
       <td>...</td>
-      <td>2026-05-23 12:45:00+00:00</td>
+      <td>2026-05-24 14:45:00+00:00</td>
       <td>Points</td>
       <td>Instantaneous</td>
       <td>[{'Name': 'VERY HIGH', 'Type': 'ThresholdAbove...</td>
@@ -682,11 +699,11 @@ database, it will return all the data in 2 pages, and each page counts as a “r
       <td>00003</td>
       <td>101500041309</td>
       <td>Nebraska</td>
-      <td>2026-05-23 06:50:46.439877</td>
+      <td>2026-05-24 06:50:40.683103</td>
       <td>1948-05-01 00:00:00.000001</td>
-      <td>2026-05-21 00:00:00.000001</td>
+      <td>2026-05-22 00:00:00.000001</td>
       <td>...</td>
-      <td>2026-05-21 05:00:00+00:00</td>
+      <td>2026-05-22 05:00:00+00:00</td>
       <td>Daily</td>
       <td>Mean</td>
       <td>[]</td>
@@ -743,6 +760,16 @@ stitch the resulting dataframes together. A loose rule of thumb is to keep the n
 <span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: monitoring-locations · 1 page · 48 rows
+Retrieving: monitoring-locations · 1 page · 49 rows
+Retrieving: monitoring-locations · 1 page · 8 rows
+</pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
@@ -827,6 +854,14 @@ stitch the resulting dataframes together. A loose rule of thumb is to keep the n
 <span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: monitoring-locations · 1 page · 1,733 rows
+</pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
@@ -958,6 +993,14 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: latest-daily · 1 page · 105 rows
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
@@ -997,18 +1040,18 @@ During handling of the above exception, another exception occurred:
   <tbody>
     <tr>
       <th>0</th>
-      <td>POINT (-96.59513 40.85717)</td>
-      <td>25d572ff16a347438fe186769cbe4cde</td>
-      <td>USGS-06803520</td>
+      <td>POINT (-99.55979 40.70716)</td>
+      <td>a90ecab811784a06b8e081f1701c8e3c</td>
+      <td>USGS-06768020</td>
       <td>00060</td>
       <td>00003</td>
-      <td>2026-05-21</td>
-      <td>7.51</td>
+      <td>2026-05-22</td>
+      <td>37.0</td>
       <td>ft^3/s</td>
       <td>Provisional</td>
       <td>None</td>
-      <td>2026-05-23 02:08:11.749150+00:00</td>
-      <td>c25da597-cb2d-48d1-9f23-629a62155bb8</td>
+      <td>2026-05-23 08:12:01.851641+00:00</td>
+      <td>98f5a7c9-4b8a-40dd-b8aa-48ea5f9f8e0e</td>
     </tr>
     <tr>
       <th>1</th>
@@ -1017,13 +1060,13 @@ During handling of the above exception, another exception occurred:
       <td>USGS-06453600</td>
       <td>00060</td>
       <td>00003</td>
-      <td>2026-05-22</td>
-      <td>16.60</td>
+      <td>2026-05-23</td>
+      <td>15.7</td>
       <td>ft^3/s</td>
       <td>Provisional</td>
       <td>None</td>
-      <td>2026-05-23 08:06:44.430432+00:00</td>
-      <td>eddc5010-8c17-4151-97bb-3e6e91947e54</td>
+      <td>2026-05-24 08:06:43.429130+00:00</td>
+      <td>4fa4fed6-4f9c-4ee3-8ca4-e93091f7b951</td>
     </tr>
     <tr>
       <th>2</th>
@@ -1032,13 +1075,13 @@ During handling of the above exception, another exception occurred:
       <td>USGS-06461500</td>
       <td>00060</td>
       <td>00003</td>
-      <td>2026-05-22</td>
-      <td>854.00</td>
+      <td>2026-05-23</td>
+      <td>855.0</td>
       <td>ft^3/s</td>
       <td>Provisional</td>
       <td>None</td>
-      <td>2026-05-23 08:11:52.686127+00:00</td>
-      <td>bf088d47-c90e-4a62-91cd-f381101aeb8c</td>
+      <td>2026-05-24 08:12:28.897722+00:00</td>
+      <td>102cdadd-b537-4223-98a1-bd052a663a96</td>
     </tr>
     <tr>
       <th>3</th>
@@ -1047,13 +1090,13 @@ During handling of the above exception, another exception occurred:
       <td>USGS-06463500</td>
       <td>00060</td>
       <td>00003</td>
-      <td>2026-05-22</td>
-      <td>172.00</td>
+      <td>2026-05-23</td>
+      <td>171.0</td>
       <td>ft^3/s</td>
       <td>Provisional</td>
       <td>None</td>
-      <td>2026-05-23 08:08:32.316596+00:00</td>
-      <td>8b7d6c23-ff1b-473e-a253-996cf6a00f5d</td>
+      <td>2026-05-24 08:17:06.289908+00:00</td>
+      <td>5e3829b8-b143-4fed-bebd-f7469f133182</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1062,13 +1105,13 @@ During handling of the above exception, another exception occurred:
       <td>USGS-06463720</td>
       <td>00060</td>
       <td>00003</td>
-      <td>2026-05-22</td>
-      <td>1760.00</td>
+      <td>2026-05-23</td>
+      <td>1500.0</td>
       <td>ft^3/s</td>
       <td>Provisional</td>
       <td>None</td>
-      <td>2026-05-23 08:10:20.255996+00:00</td>
-      <td>5d780038-ba0a-458d-8f4a-a8637ca137d5</td>
+      <td>2026-05-24 08:10:50.095064+00:00</td>
+      <td>54845e5a-6c30-45c9-9a03-64dbdabf4b09</td>
     </tr>
   </tbody>
 </table>
@@ -1149,6 +1192,14 @@ During handling of the above exception, another exception occurred:
 <span class="p">]</span><span class="o">.</span><span class="n">set_crs</span><span class="p">(</span><span class="n">crs</span><span class="o">=</span><span class="s2">&quot;WGS84&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">column</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;YlOrRd&quot;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: latest-continuous · 1 page · 105 rows
+</pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
@@ -1303,7 +1354,7 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
@@ -1317,7 +1368,15 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
-<div class="nbinput nblast docutils container">
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: daily · 1 page · 1,460 rows
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
@@ -1328,6 +1387,14 @@ During handling of the above exception, another exception occurred:
 <span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: continuous · 3 pages · 138,864 rows
+</pre></div></div>
 </div>
 <p>With these two datasets, let’s plot daily and instantaneous discharge values for the four Missouri River sites using <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>. We will plot each site on a different subplot, with instantaneous values represented by a blue line and daily mean values represented by black points.</p>
 <div class="nbinput docutils container">
@@ -1411,6 +1478,14 @@ During handling of the above exception, another exception occurred:
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: field-measurements · 1 page · 136 rows
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
@@ -1470,10 +1545,10 @@ During handling of the above exception, another exception occurred:
       <td>None</td>
       <td>Approved</td>
       <td>USGS</td>
-      <td>2026-05-18 19:45:49.444794+00:00</td>
+      <td>2026-05-24 02:29:27.064907+00:00</td>
       <td>Clear</td>
       <td>Good</td>
-      <td>306cc0cd-f80d-4043-9cab-7de46de8087e</td>
+      <td>313df8fb-2f8b-40c2-9778-d97cf4c7fcf6</td>
     </tr>
     <tr>
       <th>1</th>
@@ -1491,10 +1566,10 @@ During handling of the above exception, another exception occurred:
       <td>None</td>
       <td>Approved</td>
       <td>USGS</td>
-      <td>2026-05-22 16:40:39.860664+00:00</td>
+      <td>2026-05-24 02:30:30.705353+00:00</td>
       <td>Clear</td>
       <td>Good</td>
-      <td>b7f23a10-12cc-479f-af69-df26b467c7c2</td>
+      <td>7f484f7e-d995-4fda-b70b-bcbcfbf14fbd</td>
     </tr>
     <tr>
       <th>2</th>
@@ -1512,10 +1587,10 @@ During handling of the above exception, another exception occurred:
       <td>None</td>
       <td>Approved</td>
       <td>USGS</td>
-      <td>2026-05-19 21:10:43.731055+00:00</td>
+      <td>2026-05-24 02:33:40.676246+00:00</td>
       <td>Clear</td>
       <td>Good</td>
-      <td>2fb98649-2cbe-4517-bf96-12b9a05795a5</td>
+      <td>314e6942-1d77-4bb1-9de7-e1d0757f5400</td>
     </tr>
     <tr>
       <th>3</th>
@@ -1533,10 +1608,10 @@ During handling of the above exception, another exception occurred:
       <td>None</td>
       <td>Approved</td>
       <td>USGS</td>
-      <td>2026-05-22 12:16:00.708542+00:00</td>
+      <td>2026-05-24 02:35:56.164086+00:00</td>
       <td>Clear</td>
       <td>Good</td>
-      <td>83586984-fd22-483c-8f24-caf211634ad3</td>
+      <td>50ec6e04-d4b8-40c9-917e-b1655cf5bd68</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1554,10 +1629,10 @@ During handling of the above exception, another exception occurred:
       <td>None</td>
       <td>Approved</td>
       <td>USGS</td>
-      <td>2026-05-18 19:45:49.444794+00:00</td>
+      <td>2026-05-24 02:29:27.064907+00:00</td>
       <td>Clear</td>
       <td>Good</td>
-      <td>7e80cc4d-07b0-4439-b06e-cd98e20ee53f</td>
+      <td>d79fc5b9-8bda-4f8c-a467-28206be89133</td>
     </tr>
   </tbody>
 </table>
