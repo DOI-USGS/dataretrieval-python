@@ -411,25 +411,33 @@ def _warning_messages(caplog):
     return [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING]
 
 
-def test_walk_pages_warns_when_geopandas_missing(caplog):
+@pytest.fixture(autouse=True)
+def _reset_geopandas_warned(monkeypatch):
+    """The geopandas advisory is latched once per process; reset it so these
+    warning tests don't depend on order."""
+    monkeypatch.setattr(_utils_module, "_geopandas_warned", False)
+
+
+def test_warn_geopandas_once_is_latched(monkeypatch, caplog):
+    # Static environment fact -> warn at most once per process.
+    monkeypatch.setattr(_utils_module, "GEOPANDAS", False)
     caplog.set_level(logging.WARNING, logger=_LOGGER_NAME)
-    resp = _resp_ok([])  # single empty page, no "next" link
-    client = mock.MagicMock(spec=requests.Session)
-    client.send.return_value = resp
+    _utils_module._warn_geopandas_once()
+    _utils_module._warn_geopandas_once()  # second call must not re-warn
+    geo = [m for m in _warning_messages(caplog) if "Geopandas not installed" in m]
+    assert len(geo) == 1
 
-    req = mock.MagicMock(spec=requests.PreparedRequest)
-    req.method = "GET"
-    req.headers = {}
-    req.url = "https://example.com/p1"
 
-    _walk_pages(geopd=False, req=req, client=client)
-
-    assert any("Geopandas not installed" in m for m in _warning_messages(caplog))
+def test_warn_geopandas_once_silent_when_installed(monkeypatch, caplog):
+    monkeypatch.setattr(_utils_module, "GEOPANDAS", True)
+    caplog.set_level(logging.WARNING, logger=_LOGGER_NAME)
+    _utils_module._warn_geopandas_once()
+    assert not [m for m in _warning_messages(caplog) if "Geopandas not installed" in m]
 
 
 def test_get_stats_data_warns_once_when_geopandas_missing(caplog, monkeypatch):
-    # The advisory must fire once per query, not once per paginated page
-    # (it previously lived in the per-page _handle_stats_nesting helper).
+    # The advisory fires once per process (via _warn_geopandas_once) before the
+    # progress line — not once per paginated page, and not interleaved with it.
     from dataretrieval.waterdata.utils import get_stats_data
 
     monkeypatch.setattr(_utils_module, "GEOPANDAS", False)
