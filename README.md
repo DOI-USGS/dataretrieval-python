@@ -109,20 +109,6 @@ Visit the
 [API Reference](https://doi-usgs.github.io/dataretrieval-python/reference/waterdata.html)
 for more information and examples on available services and input parameters.
 
-**Tracking progress:** Paginated and chunked `waterdata` queries report their
-progress on a single, self-updating line on `stderr` — the service being
-retrieved, the chunk and page counts, rows retrieved so far, and the hourly API
-quota remaining (the ``remaining / limit`` from the server's rate-limit headers,
-shown when you have an API key set):
-
-```text
-Retrieving: daily · chunk 2/5 · 14 pages · 8,421 rows · 4,870/5,000 requests remaining
-```
-
-The line appears automatically for interactive use — an interactive terminal or
-a Jupyter/IPython notebook (like `tqdm`). Set `API_USGS_PROGRESS=0` to silence
-it, or `=1` to force it on elsewhere.
-
 For verbose troubleshooting and support — including the request URL sent to the
 API — enable debug-level
 [logging](https://docs.python.org/3/howto/logging.html#logging-basic-tutorial):

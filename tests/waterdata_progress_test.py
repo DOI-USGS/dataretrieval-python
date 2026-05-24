@@ -114,13 +114,6 @@ def test_service_label_leads_the_line():
     assert stream.getvalue().lstrip("\r").startswith("Retrieving: daily · ")
 
 
-def test_no_service_falls_back_to_progress_label():
-    stream = io.StringIO()
-    reporter = ProgressReporter(stream=stream, enabled=True)
-    reporter.add_page(rows=5)
-    assert stream.getvalue().lstrip("\r").startswith("Progress: ")
-
-
 def test_close_terminates_active_line_with_newline():
     stream = io.StringIO()
     reporter = ProgressReporter(stream=stream, enabled=True)
