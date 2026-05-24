@@ -125,7 +125,7 @@ progress on a single, self-updating line on `stderr` — showing the chunk and
 page counts, rows retrieved so far, and the API requests remaining for the hour:
 
 ```text
-waterdata · chunk 2/5 · 14 pages · 8,421 rows · 4,870 requests left
+Progress: chunk 2/5 · 14 pages · 8,421 rows · 4,870 requests left
 ```
 
 The line appears automatically when `stderr` is an interactive terminal.

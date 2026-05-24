@@ -6,7 +6,7 @@ follows ``next`` links across an unknown number of *pages* (``utils._walk_pages`
 and ``utils.get_stats_data``). This module surfaces that work as one line on
 stderr, rewritten in place as data arrives::
 
-    waterdata · chunk 2/5 · 14 pages · 8,421 rows · 4,870 requests left
+    Progress: chunk 2/5 · 14 pages · 8,421 rows · 4,870 requests left
 
 It replaces the per-page ``logger.info`` calls that previously narrated the same
 events one line at a time.
@@ -102,7 +102,7 @@ class ProgressReporter:
             self.rate_remaining = str(value)
 
     def _format(self) -> str:
-        parts = ["waterdata"]
+        parts: list[str] = []
         if self.total_chunks > 1:
             parts.append(f"chunk {self.current_chunk}/{self.total_chunks}")
         parts.append(f"{self.pages} page" + ("" if self.pages == 1 else "s"))
@@ -114,7 +114,7 @@ class ProgressReporter:
             rate = self.rate_remaining
             rate = f"{int(rate):,}" if rate.isdigit() else rate
             parts.append(f"{rate} requests left")
-        return " · ".join(parts)
+        return "Progress: " + " · ".join(parts)
 
     def _render(self) -> None:
         if not self.enabled or self._closed:

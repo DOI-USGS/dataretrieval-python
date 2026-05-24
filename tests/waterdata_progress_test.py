@@ -48,6 +48,7 @@ def test_renders_pages_rows_and_rate_limit():
     reporter.set_rate_remaining("4870")
     reporter.add_page(rows=1234)
     out = stream.getvalue()
+    assert out.lstrip("\r").startswith("Progress: ")
     assert "1 page" in out
     assert "1,234 rows" in out
     assert "4,870 requests left" in out
