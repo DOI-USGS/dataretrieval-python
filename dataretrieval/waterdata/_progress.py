@@ -18,7 +18,7 @@ page/row/rate-limit counts) both update without knowing about each other. Call
 :func:`progress_context` to activate one and :func:`current` to reach it.
 
 By default the line is shown only on an interactive terminal, so notebooks,
-redirected logs, and CI stay clean. ``DATARETRIEVAL_PROGRESS`` forces it on
+redirected logs, and CI stay clean. ``API_USGS_PROGRESS`` forces it on
 (``1``/``true``) or off (``0``/``false``).
 """
 
@@ -40,8 +40,8 @@ _active: contextvars.ContextVar[ProgressReporter | None] = contextvars.ContextVa
 
 
 def _enabled_default(stream: TextIO) -> bool:
-    """Whether to draw the line: ``DATARETRIEVAL_PROGRESS`` wins, else TTY-only."""
-    override = os.getenv("DATARETRIEVAL_PROGRESS")
+    """Whether to draw the line: ``API_USGS_PROGRESS`` wins, else TTY-only."""
+    override = os.getenv("API_USGS_PROGRESS")
     if override is not None:
         return override.strip().lower() not in {"", "0", "false", "no", "off"}
     return hasattr(stream, "isatty") and stream.isatty()

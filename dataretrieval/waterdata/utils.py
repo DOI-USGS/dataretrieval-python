@@ -964,7 +964,7 @@ def _handle_stats_nesting(
         return pd.DataFrame()
 
     if not geopd:
-        logger.info(
+        logger.warning(
             "Geopandas not installed. Geometries will be flattened "
             "into pandas DataFrames."
         )

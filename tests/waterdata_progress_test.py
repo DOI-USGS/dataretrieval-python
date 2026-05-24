@@ -95,18 +95,18 @@ def test_close_without_activity_writes_nothing():
 
 
 def test_default_disabled_for_non_tty(monkeypatch):
-    monkeypatch.delenv("DATARETRIEVAL_PROGRESS", raising=False)
+    monkeypatch.delenv("API_USGS_PROGRESS", raising=False)
     # io.StringIO.isatty() returns False.
     assert ProgressReporter(stream=io.StringIO()).enabled is False
 
 
 def test_env_var_forces_on(monkeypatch):
-    monkeypatch.setenv("DATARETRIEVAL_PROGRESS", "1")
+    monkeypatch.setenv("API_USGS_PROGRESS", "1")
     assert ProgressReporter(stream=io.StringIO()).enabled is True
 
 
 def test_env_var_forces_off_even_on_tty(monkeypatch):
-    monkeypatch.setenv("DATARETRIEVAL_PROGRESS", "0")
+    monkeypatch.setenv("API_USGS_PROGRESS", "0")
     tty = mock.MagicMock()
     tty.isatty.return_value = True
     assert ProgressReporter(stream=tty).enabled is False
@@ -116,7 +116,7 @@ def test_env_var_forces_off_even_on_tty(monkeypatch):
 
 
 def test_progress_context_sets_and_clears_current(monkeypatch):
-    monkeypatch.delenv("DATARETRIEVAL_PROGRESS", raising=False)
+    monkeypatch.delenv("API_USGS_PROGRESS", raising=False)
     assert current() is None
     with progress_context(enabled=False) as reporter:
         assert current() is reporter

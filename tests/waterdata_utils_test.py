@@ -286,6 +286,54 @@ def test_handle_stats_nesting_tolerates_missing_drop_columns():
     assert df["monitoring_location_id"].iloc[0] == "USGS-12345"
 
 
+def _warning_messages(caplog):
+    """Pull WARNING-level message strings out of caplog."""
+    return [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING]
+
+
+def test_walk_pages_warns_when_geopandas_missing(caplog):
+    caplog.set_level(logging.WARNING, logger=_LOGGER_NAME)
+    resp = _resp_ok([])  # single empty page, no "next" link
+    client = mock.MagicMock(spec=requests.Session)
+    client.send.return_value = resp
+
+    req = mock.MagicMock(spec=requests.PreparedRequest)
+    req.method = "GET"
+    req.headers = {}
+    req.url = "https://example.com/p1"
+
+    _walk_pages(geopd=False, req=req, client=client)
+
+    assert any("Geopandas not installed" in m for m in _warning_messages(caplog))
+
+
+def test_handle_stats_nesting_warns_when_geopandas_missing(caplog):
+    # This path previously logged at INFO (silent by default); it must warn.
+    caplog.set_level(logging.WARNING, logger=_LOGGER_NAME)
+    body = {
+        "next": None,
+        "features": [
+            {
+                "properties": {
+                    "monitoring_location_id": "USGS-12345",
+                    "data": [
+                        {
+                            "parameter_code": "00060",
+                            "unit_of_measure": "ft^3/s",
+                            "parent_time_series_id": "ts-1",
+                            "values": [{"statistic_id": "mean", "value": 10.0}],
+                        }
+                    ],
+                },
+            }
+        ],
+    }
+
+    _handle_stats_nesting(body, geopd=False)
+
+    assert any("Geopandas not installed" in m for m in _warning_messages(caplog))
+
+
 # --- _arrange_cols ----------------------------------------------------------
 
 
