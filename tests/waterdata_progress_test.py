@@ -94,7 +94,7 @@ def test_renders_remaining_over_limit():
     reporter = ProgressReporter(stream=stream, enabled=True)
     reporter.set_rate_remaining("952", limit="1000")
     reporter.add_page(rows=1)
-    assert "952 / 1,000 requests remaining" in stream.getvalue()
+    assert "952/1,000 requests remaining" in stream.getvalue()
 
 
 def test_no_slash_when_limit_absent():

@@ -116,7 +116,7 @@ quota remaining (the ``remaining / limit`` from the server's rate-limit headers,
 shown when you have an API key set):
 
 ```text
-Retrieving: daily · chunk 2/5 · 14 pages · 8,421 rows · 4,870 / 5,000 requests remaining
+Retrieving: daily · chunk 2/5 · 14 pages · 8,421 rows · 4,870/5,000 requests remaining
 ```
 
 The line appears automatically for interactive use — an interactive terminal or

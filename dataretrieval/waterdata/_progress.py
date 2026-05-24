@@ -6,7 +6,7 @@ request follows ``next`` links across an unknown number of *pages*
 (``utils._paginate``). This module surfaces that work as one line on stderr,
 rewritten in place as data arrives::
 
-    Retrieving: daily · 6 pages · 2,881 rows · 995 / 1,000 requests remaining
+    Retrieving: daily · 6 pages · 2,881 rows · 995/1,000 requests remaining
 
 It replaces the per-page ``logger.info`` calls that previously narrated the same
 events one line at a time.
@@ -175,7 +175,7 @@ class ProgressReporter:
             remaining = _group_int(self.rate_remaining)
             if self.rate_limit is not None:
                 limit = _group_int(self.rate_limit)
-                segment = f"{remaining} / {limit} requests remaining"
+                segment = f"{remaining}/{limit} requests remaining"
             else:
                 segment = f"{remaining} requests remaining"
             parts.append(segment)
