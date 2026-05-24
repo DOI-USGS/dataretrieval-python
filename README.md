@@ -120,22 +120,25 @@ Visit the
 [API Reference](https://doi-usgs.github.io/dataretrieval-python/reference/waterdata.html)
 for more information and examples on available services and input parameters. 
 
-**NEW:** This new module implements
-[logging](https://docs.python.org/3/howto/logging.html#logging-basic-tutorial)
-in which users can view the URL requests sent to the USGS Water Data APIs
-and the number of requests they have remaining each hour. These messages can
-be helpful for troubleshooting and support. To enable logging in your python
-console or notebook:
+**Tracking progress:** Paginated and chunked `waterdata` queries report their
+progress on a single, self-updating line on `stderr` — showing the chunk and
+page counts, rows retrieved so far, and the API requests remaining for the hour:
+
+```text
+waterdata · chunk 2/5 · 14 pages · 8,421 rows · 4,870 requests left
+```
+
+The line appears automatically when `stderr` is an interactive terminal. Set the
+`API_USGS_PROGRESS` environment variable to `1` to force it on (for example, when
+redirecting output to a file) or to `0` to turn it off.
+
+For verbose troubleshooting and support — including the request URL sent to the
+API — enable debug-level
+[logging](https://docs.python.org/3/howto/logging.html#logging-basic-tutorial):
 
 ```python
 import logging
-logging.basicConfig(level=logging.INFO)
-``` 
-To log messages to a file, you can specify a filename in the
-`basicConfig` call:
-
-```python
-logging.basicConfig(filename='waterdata.log', level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 ```
 
 ### Legacy NWIS Services (Deprecated but still functional)
