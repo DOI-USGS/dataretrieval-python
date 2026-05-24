@@ -38,9 +38,9 @@ _active: contextvars.ContextVar[ProgressReporter | None] = contextvars.ContextVa
     "waterdata_progress", default=None
 )
 
-# Where to register for an API key. Surfaced once when a query completes without
-# ever seeing a rate-limit header, which usually means the caller is
-# unauthenticated (see the API_USGS_PAT note in the README).
+# Where to register for an API key. Surfaced once when a query runs without an
+# API key configured (no API_USGS_PAT), since unauthenticated callers hit much
+# lower rate limits (see the API_USGS_PAT note in the README).
 SIGNUP_URL = "https://api.waterdata.usgs.gov/signup/"
 
 # Process-level latch so the "no API key" pointer is shown at most once.
@@ -128,9 +128,9 @@ class ProgressReporter:
     def close(self) -> None:
         """Finalize the line with a trailing newline so it persists on screen.
 
-        If the query never observed a rate-limit header — which usually means no
-        API key is configured — append a one-time pointer to API-key
-        registration, since unauthenticated callers hit much lower limits.
+        If no API key is configured (no ``API_USGS_PAT``), append a one-time
+        pointer to API-key registration, since unauthenticated callers hit much
+        lower rate limits.
         """
         if self._closed:
             return
@@ -143,11 +143,7 @@ class ProgressReporter:
 
     def _maybe_hint_api_key(self) -> None:
         global _api_key_hint_shown
-        if (
-            _api_key_hint_shown
-            or self.rate_remaining is not None
-            or os.getenv("API_USGS_PAT")
-        ):
+        if _api_key_hint_shown or os.getenv("API_USGS_PAT"):
             return
         _api_key_hint_shown = True
         self._stream.write(

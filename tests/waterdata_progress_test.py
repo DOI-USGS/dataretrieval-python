@@ -104,23 +104,25 @@ def test_close_without_activity_writes_nothing():
 # -- API-key pointer -----------------------------------------------------------
 
 
-def test_hints_api_key_when_no_rate_limit_seen(monkeypatch):
+def test_hints_api_key_when_no_key_configured(monkeypatch):
     monkeypatch.delenv("API_USGS_PAT", raising=False)
     stream = io.StringIO()
     reporter = ProgressReporter(stream=stream, enabled=True)
-    reporter.add_page(rows=5)  # never set a rate-limit -> likely unauthenticated
+    reporter.add_page(rows=5)
     reporter.close()
     assert _progress.SIGNUP_URL in stream.getvalue()
 
 
-def test_no_hint_when_rate_limit_was_seen(monkeypatch):
+def test_hint_fires_even_when_rate_limit_was_seen(monkeypatch):
+    # Anonymous responses still carry a rate-limit header, so absence of a key
+    # — not absence of the header — is what drives the pointer.
     monkeypatch.delenv("API_USGS_PAT", raising=False)
     stream = io.StringIO()
     reporter = ProgressReporter(stream=stream, enabled=True)
-    reporter.set_rate_remaining("4999")
+    reporter.set_rate_remaining("891")
     reporter.add_page(rows=5)
     reporter.close()
-    assert _progress.SIGNUP_URL not in stream.getvalue()
+    assert _progress.SIGNUP_URL in stream.getvalue()
 
 
 def test_no_hint_when_api_key_present(monkeypatch):
