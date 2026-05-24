@@ -854,7 +854,6 @@ _Cursor = TypeVar("_Cursor")
 def _paginate(
     initial_req: requests.PreparedRequest,
     *,
-    geopd: bool,
     parse_response: Callable[[requests.Response], tuple[pd.DataFrame, _Cursor | None]],
     follow_up: Callable[[_Cursor, requests.Session], requests.Response],
     client: requests.Session | None = None,
@@ -873,10 +872,6 @@ def _paginate(
     ----------
     initial_req : requests.PreparedRequest
         First-page request to send.
-    geopd : bool
-        Whether ``geopandas`` is available — logged once at WARNING
-        level when ``False`` (matches historical behavior of both
-        callers).
     parse_response : callable
         ``resp -> (df, next_cursor_or_None)``. Returns the page's
         DataFrame and the cursor (URL, token, …) used to drive
@@ -1033,7 +1028,6 @@ def _walk_pages(
 
     return _paginate(
         req,
-        geopd=geopd,
         parse_response=parse_response,
         follow_up=follow_up,
         client=client,
@@ -1499,7 +1493,6 @@ def get_stats_data(
     with _progress.progress_context(service=service):
         df, response = _paginate(
             req,
-            geopd=GEOPANDAS,
             parse_response=parse_response,
             follow_up=follow_up,
             client=client,
