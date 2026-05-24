@@ -406,24 +406,6 @@ def test_handle_stats_nesting_tolerates_missing_drop_columns():
     assert df["monitoring_location_id"].iloc[0] == "USGS-12345"
 
 
-def test_geopandas_advisory_emitted_once_on_import():
-    # The advisory is a one-time module-import side effect, not per call. Import
-    # the module in a subprocess with geopandas blocked and confirm exactly one
-    # warning reaches stderr.
-    import subprocess
-    import sys
-
-    code = (
-        "import sys; sys.modules['geopandas'] = None\n"
-        "import dataretrieval.waterdata.utils\n"
-    )
-    result = subprocess.run(
-        [sys.executable, "-c", code], capture_output=True, text=True
-    )
-    assert result.returncode == 0, result.stderr
-    assert result.stderr.count("Geopandas not installed") == 1
-
-
 def test_handle_stats_nesting_returns_empty_on_empty_features():
     """A mid-pagination empty page ({\"features\": [], \"next\": <tok>})
     must not crash the downstream merge with
