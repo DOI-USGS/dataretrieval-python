@@ -40,28 +40,21 @@ except ImportError:
 # Set up logger for this module
 logger = logging.getLogger(__name__)
 
+# Whether geopandas is present is a static, environment-level fact, so warn once
+# here at import time rather than per query/chunk. That avoids the warning
+# repeating on every call and avoids it interleaving with the progress line's
+# carriage-return rewrites.
+if not GEOPANDAS:
+    logger.warning(
+        "Geopandas not installed. Geometries will be flattened into pandas DataFrames."
+    )
+
 BASE_URL = "https://api.waterdata.usgs.gov"
 OGC_API_VERSION = "v0"
 OGC_API_URL = f"{BASE_URL}/ogcapi/{OGC_API_VERSION}"
 SAMPLES_URL = f"{BASE_URL}/samples-data"
 STATISTICS_API_VERSION = "v0"
 STATISTICS_API_URL = f"{BASE_URL}/statistics/{STATISTICS_API_VERSION}"
-
-# "Geopandas not installed" is a static, environment-level fact. Emit it at most
-# once per process (and before any progress line opens) so it neither repeats
-# per query/chunk nor interleaves with the status line's carriage-return rewrites.
-_geopandas_warned = False
-
-
-def _warn_geopandas_once() -> None:
-    """Warn (once per process) that geometries are flattened without geopandas."""
-    global _geopandas_warned
-    if not GEOPANDAS and not _geopandas_warned:
-        _geopandas_warned = True
-        logger.warning(
-            "Geopandas not installed. Geometries will be flattened "
-            "into pandas DataFrames."
-        )
 
 
 def _switch_arg_id(ls: dict[str, Any], id_name: str, service: str):
@@ -1257,7 +1250,6 @@ def get_ogc_data(
     convert_type = args.pop("convert_type", False)
     args = {k: v for k, v in args.items() if v is not None}
 
-    _warn_geopandas_once()  # before the progress line, so it never interleaves
     with _progress.progress_context(service=service):
         return_list, response = _fetch_once(args)
     return_list = _deal_with_empty(return_list, properties, service)
@@ -1332,9 +1324,8 @@ def _handle_stats_nesting(
     if not features:
         return gpd.GeoDataFrame() if geopd else pd.DataFrame()
 
-    # The geopd-missing warning is emitted once per process by
-    # ``_warn_geopandas_once`` at the getter entry; doing it here would log
-    # per page.
+    # The geopd-missing warning is emitted once at import (see top of module);
+    # doing it here would log per page.
     if not geopd:
         outer_props = [
             {k: v for k, v in (f.get("properties") or {}).items() if k != "data"}
@@ -1505,7 +1496,6 @@ def get_stats_data(
 
     # The stats path doesn't go through ``multi_value_chunked``, so it opens
     # its own progress context; ``_paginate`` reports pages/rate-limit into it.
-    _warn_geopandas_once()  # before the progress line, so it never interleaves
     with _progress.progress_context(service=service):
         df, response = _paginate(
             req,

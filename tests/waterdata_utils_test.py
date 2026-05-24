@@ -406,66 +406,22 @@ def test_handle_stats_nesting_tolerates_missing_drop_columns():
     assert df["monitoring_location_id"].iloc[0] == "USGS-12345"
 
 
-def _warning_messages(caplog):
-    """Pull WARNING-level message strings out of caplog."""
-    return [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING]
+def test_geopandas_advisory_emitted_once_on_import():
+    # The advisory is a one-time module-import side effect, not per call. Import
+    # the module in a subprocess with geopandas blocked and confirm exactly one
+    # warning reaches stderr.
+    import subprocess
+    import sys
 
-
-@pytest.fixture(autouse=True)
-def _reset_geopandas_warned(monkeypatch):
-    """The geopandas advisory is latched once per process; reset it so these
-    warning tests don't depend on order."""
-    monkeypatch.setattr(_utils_module, "_geopandas_warned", False)
-
-
-def test_warn_geopandas_once_is_latched(monkeypatch, caplog):
-    # Static environment fact -> warn at most once per process.
-    monkeypatch.setattr(_utils_module, "GEOPANDAS", False)
-    caplog.set_level(logging.WARNING, logger=_LOGGER_NAME)
-    _utils_module._warn_geopandas_once()
-    _utils_module._warn_geopandas_once()  # second call must not re-warn
-    geo = [m for m in _warning_messages(caplog) if "Geopandas not installed" in m]
-    assert len(geo) == 1
-
-
-def test_warn_geopandas_once_silent_when_installed(monkeypatch, caplog):
-    monkeypatch.setattr(_utils_module, "GEOPANDAS", True)
-    caplog.set_level(logging.WARNING, logger=_LOGGER_NAME)
-    _utils_module._warn_geopandas_once()
-    assert not [m for m in _warning_messages(caplog) if "Geopandas not installed" in m]
-
-
-def test_get_stats_data_warns_once_when_geopandas_missing(caplog, monkeypatch):
-    # The advisory fires once per process (via _warn_geopandas_once) before the
-    # progress line — not once per paginated page, and not interleaved with it.
-    from dataretrieval.waterdata.utils import get_stats_data
-
-    monkeypatch.setattr(_utils_module, "GEOPANDAS", False)
-    monkeypatch.setattr(
-        _utils_module,
-        "_handle_stats_nesting",
-        mock.MagicMock(return_value=pd.DataFrame()),
+    code = (
+        "import sys; sys.modules['geopandas'] = None\n"
+        "import dataretrieval.waterdata.utils\n"
     )
-    caplog.set_level(logging.WARNING, logger=_LOGGER_NAME)
-
-    page1 = mock.MagicMock(status_code=200, headers={})
-    page1.json.return_value = {"next": "tok", "features": []}
-    page2 = mock.MagicMock(status_code=200, headers={})
-    page2.json.return_value = {"next": None, "features": []}
-
-    client = mock.MagicMock(spec=requests.Session)
-    client.send.return_value = page1
-    client.request.return_value = page2
-
-    get_stats_data(
-        args={"monitoring_location_id": "USGS-1"},
-        service="observationNormals",
-        expand_percentiles=False,
-        client=client,
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True
     )
-
-    geo = [m for m in _warning_messages(caplog) if "Geopandas not installed" in m]
-    assert len(geo) == 1
+    assert result.returncode == 0, result.stderr
+    assert result.stderr.count("Geopandas not installed") == 1
 
 
 def test_handle_stats_nesting_returns_empty_on_empty_features():
