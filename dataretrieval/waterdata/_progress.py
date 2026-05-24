@@ -17,9 +17,9 @@ chunk orchestrator (outer, chunk counts) and the page-walking loop (inner,
 page/row/rate-limit counts) both update without knowing about each other. Call
 :func:`progress_context` to activate one and :func:`current` to reach it.
 
-By default the line is shown only on an interactive terminal, so notebooks,
-redirected logs, and CI stay clean. ``API_USGS_PROGRESS`` forces it on
-(``1``/``true``) or off (``0``/``false``).
+By default the line is shown for interactive use — an interactive terminal or a
+Jupyter/IPython kernel (like ``tqdm``) — while redirected logs and CI stay clean.
+``API_USGS_PROGRESS`` forces it on (``1``/``true``) or off (``0``/``false``).
 """
 
 from __future__ import annotations
@@ -59,11 +59,36 @@ SIGNUP_URL = "https://api.waterdata.usgs.gov/signup/"
 _api_key_hint_shown = False
 
 
+def _in_jupyter_kernel() -> bool:
+    """True when running inside a Jupyter/IPython *kernel* (notebook, lab,
+    qtconsole).
+
+    A kernel's ``stderr`` isn't a TTY, but it honors carriage-return rewrites in
+    the cell output area — the same mechanism ``tqdm`` rides on — so the line is
+    worth showing there. The plain IPython terminal REPL is a
+    ``TerminalInteractiveShell`` (already a TTY), so only the ZMQ kernel needs
+    this extra signal. Detected without importing IPython: if it isn't already
+    imported, we aren't in a shell.
+    """
+    ipython = sys.modules.get("IPython")
+    if ipython is None:
+        return False
+    shell = ipython.get_ipython()
+    return shell is not None and type(shell).__name__ == "ZMQInteractiveShell"
+
+
 def _enabled_default(stream: TextIO) -> bool:
-    """Whether to draw the line: ``API_USGS_PROGRESS`` wins, else TTY-only."""
+    """Whether to draw the line by default.
+
+    ``API_USGS_PROGRESS`` wins when set. Otherwise show it for interactive use —
+    a TTY or a Jupyter/IPython kernel — and stay quiet for redirected output,
+    logs, and CI.
+    """
     override = os.getenv("API_USGS_PROGRESS")
     if override is not None:
         return override.strip().lower() not in {"", "0", "false", "no", "off"}
+    if _in_jupyter_kernel():
+        return True
     return hasattr(stream, "isatty") and stream.isatty()
 
 

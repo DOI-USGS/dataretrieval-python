@@ -7,6 +7,8 @@ reporter.
 """
 
 import io
+import sys
+import types
 from unittest import mock
 
 import pytest
@@ -215,6 +217,7 @@ def test_api_key_hint_shown_at_most_once(monkeypatch):
 
 def test_default_disabled_for_non_tty(monkeypatch):
     monkeypatch.delenv("API_USGS_PROGRESS", raising=False)
+    monkeypatch.setattr(_progress, "_in_jupyter_kernel", lambda: False)
     # io.StringIO.isatty() returns False.
     assert ProgressReporter(stream=io.StringIO()).enabled is False
 
@@ -229,6 +232,37 @@ def test_env_var_forces_off_even_on_tty(monkeypatch):
     tty = mock.MagicMock()
     tty.isatty.return_value = True
     assert ProgressReporter(stream=tty).enabled is False
+
+
+def _fake_ipython(shell_class_name):
+    """A stand-in IPython module whose get_ipython() returns a shell of the
+    given class name (e.g. 'ZMQInteractiveShell' for a Jupyter kernel)."""
+    shell = type(shell_class_name, (), {})()
+    return types.SimpleNamespace(get_ipython=lambda: shell)
+
+
+def test_enabled_in_jupyter_kernel(monkeypatch):
+    # A Jupyter kernel's stderr isn't a TTY, but the line should still show
+    # (it honors \r in the cell output, like tqdm).
+    monkeypatch.delenv("API_USGS_PROGRESS", raising=False)
+    monkeypatch.setitem(sys.modules, "IPython", _fake_ipython("ZMQInteractiveShell"))
+    assert ProgressReporter(stream=io.StringIO()).enabled is True
+
+
+def test_terminal_ipython_without_tty_stays_disabled(monkeypatch):
+    # The terminal REPL is its own TTY; the kernel signal must not force the
+    # line on for a non-TTY (e.g. redirected) stream.
+    monkeypatch.delenv("API_USGS_PROGRESS", raising=False)
+    monkeypatch.setitem(
+        sys.modules, "IPython", _fake_ipython("TerminalInteractiveShell")
+    )
+    assert ProgressReporter(stream=io.StringIO()).enabled is False
+
+
+def test_env_var_off_overrides_jupyter_kernel(monkeypatch):
+    monkeypatch.setenv("API_USGS_PROGRESS", "0")
+    monkeypatch.setitem(sys.modules, "IPython", _fake_ipython("ZMQInteractiveShell"))
+    assert ProgressReporter(stream=io.StringIO()).enabled is False
 
 
 # -- progress_context ----------------------------------------------------------

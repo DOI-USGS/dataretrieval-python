@@ -119,7 +119,9 @@ shown when you have an API key set):
 Retrieving: daily · chunk 2/5 · 14 pages · 8,421 rows · 4,870 / 5,000 requests remaining
 ```
 
-The line appears automatically when `stderr` is an interactive terminal.
+The line appears automatically for interactive use — an interactive terminal or
+a Jupyter/IPython notebook (like `tqdm`). Set `API_USGS_PROGRESS=0` to silence
+it, or `=1` to force it on elsewhere.
 
 For verbose troubleshooting and support — including the request URL sent to the
 API — enable debug-level
