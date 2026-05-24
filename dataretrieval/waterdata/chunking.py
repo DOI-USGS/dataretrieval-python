@@ -49,6 +49,7 @@ import pandas as pd
 import requests
 from requests.structures import CaseInsensitiveDict
 
+from . import _progress
 from .filters import (
     _check_numeric_filter_pitfall,
     _is_chunkable,
@@ -1126,10 +1127,15 @@ class ChunkedCall:
             (checked after the first sub-request).
         """
         with requests.Session() as session, _publish_session(session):
+            reporter = _progress.current()
+            if reporter is not None:
+                reporter.set_chunks(self.plan.total)
             completed = len(self._chunks)
             for i, sub_args in enumerate(self.plan.iter_sub_args()):
                 if i < completed:
                     continue
+                if reporter is not None:
+                    reporter.start_chunk(i + 1)
                 self._issue(sub_args)
             frames = [frame for frame, _ in self._chunks]
             responses = [resp for _, resp in self._chunks]

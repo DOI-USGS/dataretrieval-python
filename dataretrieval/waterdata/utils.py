@@ -17,7 +17,7 @@ from requests.structures import CaseInsensitiveDict
 
 from dataretrieval import __version__
 from dataretrieval.utils import BaseMetadata
-from dataretrieval.waterdata import chunking
+from dataretrieval.waterdata import _progress, chunking
 from dataretrieval.waterdata.chunking import (
     _QUOTA_HEADER,
     RateLimited,
@@ -39,6 +39,15 @@ except ImportError:
 
 # Set up logger for this module
 logger = logging.getLogger(__name__)
+
+# Whether geopandas is present is a static, environment-level fact, so warn once
+# here at import time rather than per query/chunk. That avoids the warning
+# repeating on every call and avoids it interleaving with the progress line's
+# carriage-return rewrites.
+if not GEOPANDAS:
+    logger.warning(
+        "Geopandas not installed. Geometries will be flattened into pandas DataFrames."
+    )
 
 BASE_URL = "https://api.waterdata.usgs.gov"
 OGC_API_VERSION = "v0"
@@ -657,9 +666,7 @@ def _next_req_url(
 
     Notes
     -----
-    - If the environment variable "API_USGS_PAT" is set, logs the remaining
-    requests for the current hour.
-    - Logs the next URL if found at info level.
+    - Returns None when the response carries no features.
     - Expects the response JSON to contain a "links" list with objects having
     "rel" and "href" keys.
     - Checks for the "next" relation in the "links" to determine the next URL.
@@ -668,17 +675,9 @@ def _next_req_url(
         body = resp.json()
     if not body.get("numberReturned"):
         return None
-    header_info = resp.headers
-    if os.getenv("API_USGS_PAT", ""):
-        logger.info(
-            "Remaining requests this hour: %s",
-            header_info.get(_QUOTA_HEADER, ""),
-        )
     for link in body.get("links", []):
         if link.get("rel") == "next":
-            next_url = link.get("href")
-            logger.info("Next URL: %s", next_url)
-            return next_url
+            return link.get("href")
     return None
 
 
@@ -855,7 +854,6 @@ _Cursor = TypeVar("_Cursor")
 def _paginate(
     initial_req: requests.PreparedRequest,
     *,
-    geopd: bool,
     parse_response: Callable[[requests.Response], tuple[pd.DataFrame, _Cursor | None]],
     follow_up: Callable[[_Cursor, requests.Session], requests.Response],
     client: requests.Session | None = None,
@@ -874,10 +872,6 @@ def _paginate(
     ----------
     initial_req : requests.PreparedRequest
         First-page request to send.
-    geopd : bool
-        Whether ``geopandas`` is available — logged once at WARNING
-        level when ``False`` (matches historical behavior of both
-        callers).
     parse_response : callable
         ``resp -> (df, next_cursor_or_None)``. Returns the page's
         DataFrame and the cursor (URL, token, …) used to drive
@@ -918,13 +912,8 @@ def _paginate(
         callers can branch on the specific type; equivalent failures
         on subsequent pages are wrapped per above.
     """
-    logger.info("Requesting: %s", initial_req.url)
-    if not geopd:
-        logger.warning(
-            "Geopandas not installed. Geometries will be flattened "
-            "into pandas DataFrames."
-        )
-
+    logger.debug("Requesting: %s", initial_req.url)
+    reporter = _progress.current()
     with _session(client) as sess:
         resp = sess.send(initial_req)
         _raise_for_non_200(resp)
@@ -944,6 +933,12 @@ def _paginate(
             logger.warning("Initial response parse failed.")
             raise RuntimeError(_paginated_failure_message(0, e)) from e
         dfs = [df]
+        if reporter is not None:
+            reporter.set_rate_remaining(
+                resp.headers.get(_QUOTA_HEADER),
+                limit=resp.headers.get("x-ratelimit-limit"),
+            )
+            reporter.add_page(rows=len(df))
         while cursor is not None:
             try:
                 resp = follow_up(cursor, sess)
@@ -951,6 +946,12 @@ def _paginate(
                 df, cursor = parse_response(resp)
                 dfs.append(df)
                 total_elapsed += resp.elapsed
+                if reporter is not None:
+                    reporter.set_rate_remaining(
+                        resp.headers.get(_QUOTA_HEADER),
+                        limit=resp.headers.get("x-ratelimit-limit"),
+                    )
+                    reporter.add_page(rows=len(df))
             except Exception as e:  # noqa: BLE001
                 logger.warning(
                     "Request failed at cursor %r. Data download interrupted.",
@@ -1027,7 +1028,6 @@ def _walk_pages(
 
     return _paginate(
         req,
-        geopd=geopd,
         parse_response=parse_response,
         follow_up=follow_up,
         client=client,
@@ -1244,7 +1244,8 @@ def get_ogc_data(
     convert_type = args.pop("convert_type", False)
     args = {k: v for k, v in args.items() if v is not None}
 
-    return_list, response = _fetch_once(args)
+    with _progress.progress_context(service=service):
+        return_list, response = _fetch_once(args)
     return_list = _deal_with_empty(return_list, properties, service)
     if convert_type:
         return_list = _type_cols(return_list)
@@ -1317,9 +1318,8 @@ def _handle_stats_nesting(
     if not features:
         return gpd.GeoDataFrame() if geopd else pd.DataFrame()
 
-    # The geopd-missing warning is emitted once at the top of
-    # ``get_stats_data`` (parallel to ``_walk_pages``); doing it here
-    # would log per page.
+    # The geopd-missing warning is emitted once at import (see top of module);
+    # doing it here would log per page.
     if not geopd:
         outer_props = [
             {k: v for k, v in (f.get("properties") or {}).items() if k != "data"}
@@ -1488,13 +1488,15 @@ def get_stats_data(
             method, url=url, params={**args, "next_token": cursor}, headers=headers
         )
 
-    df, response = _paginate(
-        req,
-        geopd=GEOPANDAS,
-        parse_response=parse_response,
-        follow_up=follow_up,
-        client=client,
-    )
+    # The stats path doesn't go through ``multi_value_chunked``, so it opens
+    # its own progress context; ``_paginate`` reports pages/rate-limit into it.
+    with _progress.progress_context(service=service):
+        df, response = _paginate(
+            req,
+            parse_response=parse_response,
+            follow_up=follow_up,
+            client=client,
+        )
 
     if expand_percentiles:
         df = _expand_percentiles(df)

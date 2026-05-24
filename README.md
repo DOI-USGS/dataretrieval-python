@@ -109,22 +109,13 @@ Visit the
 [API Reference](https://doi-usgs.github.io/dataretrieval-python/reference/waterdata.html)
 for more information and examples on available services and input parameters.
 
-**NEW:** This module implements
-[logging](https://docs.python.org/3/howto/logging.html#logging-basic-tutorial)
-so you can view the URL requests sent to the USGS Water Data APIs and the
-number of requests remaining each hour. These messages can be helpful for
-troubleshooting and support. To enable logging in your Python console or
-notebook:
+For verbose troubleshooting and support — including the request URL sent to the
+API — enable debug-level
+[logging](https://docs.python.org/3/howto/logging.html#logging-basic-tutorial):
 
 ```python
 import logging
-logging.basicConfig(level=logging.INFO)
-``` 
-To log messages to a file, you can specify a filename in the
-`basicConfig` call:
-
-```python
-logging.basicConfig(filename='waterdata.log', level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 ```
 
 ### Water Quality Portal (WQP)
