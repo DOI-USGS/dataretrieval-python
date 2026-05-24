@@ -6,7 +6,7 @@ request follows ``next`` links across an unknown number of *pages*
 (``utils._paginate``). This module surfaces that work as one line on stderr,
 rewritten in place as data arrives::
 
-    Progress: chunk 2/5 · 14 pages · 8,421 rows · 4,870 / 5,000 requests remaining
+    Retrieving: daily · 6 pages · 2,881 rows · 995 / 1,000 requests remaining
 
 It replaces the per-page ``logger.info`` calls that previously narrated the same
 events one line at a time.
@@ -77,10 +77,17 @@ class ProgressReporter:
     """
 
     def __init__(
-        self, *, stream: TextIO | None = None, enabled: bool | None = None
+        self,
+        *,
+        service: str | None = None,
+        stream: TextIO | None = None,
+        enabled: bool | None = None,
     ) -> None:
         self._stream = stream if stream is not None else sys.stderr
         self.enabled = _enabled_default(self._stream) if enabled is None else enabled
+        # The service/collection being retrieved (e.g. "daily", "peaks"),
+        # shown as the line's leading label.
+        self.service = service
         self.total_chunks = 1
         self.current_chunk = 0
         self.pages = 0
@@ -147,6 +154,8 @@ class ProgressReporter:
             else:
                 segment = f"{remaining} requests remaining"
             parts.append(segment)
+        if self.service:
+            return f"Retrieving: {self.service} · " + " · ".join(parts)
         return "Progress: " + " · ".join(parts)
 
     def _render(self) -> None:
@@ -200,19 +209,23 @@ class ProgressReporter:
 
 @contextmanager
 def progress_context(
-    *, stream: TextIO | None = None, enabled: bool | None = None
+    *,
+    service: str | None = None,
+    stream: TextIO | None = None,
+    enabled: bool | None = None,
 ) -> Iterator[ProgressReporter]:
     """Activate a :class:`ProgressReporter` for the duration of a query.
 
-    If a reporter is already active (a nested call), the existing one is yielded
-    unchanged so the outermost query owns the single line; only the outermost
-    context closes it.
+    ``service`` labels the line (e.g. ``"Retrieving: daily ..."``). If a reporter
+    is already active (a nested call), the existing one is yielded unchanged so
+    the outermost query owns the single line; only the outermost context closes
+    it (and ``service``/``stream``/``enabled`` of a nested call are ignored).
     """
     existing = _active.get()
     if existing is not None:
         yield existing
         return
-    reporter = ProgressReporter(stream=stream, enabled=enabled)
+    reporter = ProgressReporter(service=service, stream=stream, enabled=enabled)
     token = _active.set(reporter)
     try:
         yield reporter

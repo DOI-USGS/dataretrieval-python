@@ -105,6 +105,20 @@ def test_no_slash_when_limit_absent():
     assert "/" not in out
 
 
+def test_service_label_leads_the_line():
+    stream = io.StringIO()
+    reporter = ProgressReporter(service="daily", stream=stream, enabled=True)
+    reporter.add_page(rows=5)
+    assert stream.getvalue().lstrip("\r").startswith("Retrieving: daily · ")
+
+
+def test_no_service_falls_back_to_progress_label():
+    stream = io.StringIO()
+    reporter = ProgressReporter(stream=stream, enabled=True)
+    reporter.add_page(rows=5)
+    assert stream.getvalue().lstrip("\r").startswith("Progress: ")
+
+
 def test_close_terminates_active_line_with_newline():
     stream = io.StringIO()
     reporter = ProgressReporter(stream=stream, enabled=True)
@@ -274,11 +288,13 @@ def test_walk_pages_reports_pages_and_rate_limit():
     req.url = "https://example.com/p1"
 
     stream = io.StringIO()
-    with progress_context(stream=stream, enabled=True):
+    with progress_context(service="daily", stream=stream, enabled=True):
         df, _ = _walk_pages(geopd=False, req=req, client=client)
 
     assert len(df) == 2
     out = stream.getvalue()
+    # The service set on the context reaches _paginate's render via the contextvar.
+    assert "Retrieving: daily ·" in out
     assert "2 pages" in out
     assert "4,998 requests remaining" in out
     assert out.endswith("\n")

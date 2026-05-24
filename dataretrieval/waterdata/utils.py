@@ -1247,7 +1247,7 @@ def get_ogc_data(
     convert_type = args.pop("convert_type", False)
     args = {k: v for k, v in args.items() if v is not None}
 
-    with _progress.progress_context():
+    with _progress.progress_context(service=service):
         return_list, response = _fetch_once(args)
     return_list = _deal_with_empty(return_list, properties, service)
     if convert_type:
@@ -1494,7 +1494,7 @@ def get_stats_data(
 
     # The stats path doesn't go through ``multi_value_chunked``, so it opens
     # its own progress context; ``_paginate`` reports pages/rate-limit into it.
-    with _progress.progress_context():
+    with _progress.progress_context(service=service):
         df, response = _paginate(
             req,
             geopd=GEOPANDAS,
