@@ -102,6 +102,24 @@ def test_close_without_activity_writes_nothing():
     assert stream.getvalue() == ""
 
 
+class _RaisingStream:
+    """A stream whose writes always fail, e.g. a broken pipe (output | head)."""
+
+    def write(self, *_):
+        raise BrokenPipeError("broken pipe")
+
+    def flush(self):
+        pass
+
+
+def test_reporter_swallows_stream_errors_and_disables(monkeypatch):
+    monkeypatch.delenv("API_USGS_PAT", raising=False)
+    reporter = ProgressReporter(stream=_RaisingStream(), enabled=True)
+    reporter.add_page(rows=1)  # render write raises -> must be swallowed
+    reporter.close()  # newline + hint writes raise -> must be swallowed
+    assert reporter.enabled is False
+
+
 # -- API-key pointer -----------------------------------------------------------
 
 
@@ -262,3 +280,25 @@ def test_walk_pages_without_context_does_not_error():
     df, _ = _walk_pages(geopd=False, req=req, client=client)
     assert len(df) == 1
     assert current() is None
+
+
+def test_broken_progress_stream_does_not_truncate_pagination():
+    # A render failure (broken pipe) lands inside _walk_pages' per-page try;
+    # it must NOT be mistaken for a failed request and silently drop pages.
+    resp1 = _resp(
+        [{"id": "1", "properties": {"v": "a"}}], next_url="https://example.com/p2"
+    )
+    resp2 = _resp([{"id": "2", "properties": {"v": "b"}}])
+    client = mock.MagicMock(spec=requests.Session)
+    client.send.return_value = resp1
+    client.request.return_value = resp2
+
+    req = mock.MagicMock(spec=requests.PreparedRequest)
+    req.method = "GET"
+    req.headers = {}
+    req.url = "https://example.com/p1"
+
+    with progress_context(stream=_RaisingStream(), enabled=True):
+        df, _ = _walk_pages(geopd=False, req=req, client=client)
+
+    assert len(df) == 2  # both pages returned despite the broken progress stream

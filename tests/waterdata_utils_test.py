@@ -307,31 +307,37 @@ def test_walk_pages_warns_when_geopandas_missing(caplog):
     assert any("Geopandas not installed" in m for m in _warning_messages(caplog))
 
 
-def test_handle_stats_nesting_warns_when_geopandas_missing(caplog):
-    # This path previously logged at INFO (silent by default); it must warn.
+def test_get_stats_data_warns_once_when_geopandas_missing(caplog, monkeypatch):
+    # The advisory must fire once per query, not once per paginated page
+    # (it previously lived in the per-page _handle_stats_nesting helper).
+    from dataretrieval.waterdata.utils import get_stats_data
+
+    monkeypatch.setattr(_utils_module, "GEOPANDAS", False)
+    monkeypatch.setattr(
+        _utils_module,
+        "_handle_stats_nesting",
+        mock.MagicMock(return_value=pd.DataFrame()),
+    )
     caplog.set_level(logging.WARNING, logger=_LOGGER_NAME)
-    body = {
-        "next": None,
-        "features": [
-            {
-                "properties": {
-                    "monitoring_location_id": "USGS-12345",
-                    "data": [
-                        {
-                            "parameter_code": "00060",
-                            "unit_of_measure": "ft^3/s",
-                            "parent_time_series_id": "ts-1",
-                            "values": [{"statistic_id": "mean", "value": 10.0}],
-                        }
-                    ],
-                },
-            }
-        ],
-    }
 
-    _handle_stats_nesting(body, geopd=False)
+    page1 = mock.MagicMock(status_code=200, headers={})
+    page1.json.return_value = {"next": "tok", "features": []}
+    page2 = mock.MagicMock(status_code=200, headers={})
+    page2.json.return_value = {"next": None, "features": []}
 
-    assert any("Geopandas not installed" in m for m in _warning_messages(caplog))
+    client = mock.MagicMock(spec=requests.Session)
+    client.send.return_value = page1
+    client.request.return_value = page2
+
+    get_stats_data(
+        args={"monitoring_location_id": "USGS-1"},
+        service="observationNormals",
+        expand_percentiles=False,
+        client=client,
+    )
+
+    geo = [m for m in _warning_messages(caplog) if "Geopandas not installed" in m]
+    assert len(geo) == 1
 
 
 # --- _arrange_cols ----------------------------------------------------------

@@ -963,12 +963,6 @@ def _handle_stats_nesting(
     if body is None:
         return pd.DataFrame()
 
-    if not geopd:
-        logger.warning(
-            "Geopandas not installed. Geometries will be flattened "
-            "into pandas DataFrames."
-        )
-
     # If geopandas not installed, return a pandas dataframe
     # otherwise return a geodataframe
     if not geopd:
@@ -1118,6 +1112,12 @@ def get_stats_data(
     )
     req = request.prepare()
     logger.debug("Request: %s", req.url)
+
+    if not GEOPANDAS:
+        logger.warning(
+            "Geopandas not installed. Geometries will be flattened "
+            "into pandas DataFrames."
+        )
 
     # create temp client if not provided
     # and close it after the request is done

@@ -110,20 +110,28 @@ class ProgressReporter:
             parts.append(f"{self.rows:,} rows")
         if self.rate_remaining is not None:
             # The header is a string; group it like the row count when it's a
-            # plain integer, otherwise show it verbatim.
+            # plain ASCII integer, otherwise show it verbatim. (``str.isdigit``
+            # alone is True for non-decimal unicode digits that ``int`` rejects.)
             rate = self.rate_remaining
-            rate = f"{int(rate):,}" if rate.isdigit() else rate
+            rate = f"{int(rate):,}" if rate.isascii() and rate.isdigit() else rate
             parts.append(f"{rate} requests left")
         return "Progress: " + " · ".join(parts)
 
     def _render(self) -> None:
         if not self.enabled or self._closed:
             return
-        line = self._format()
-        pad = max(self._last_len - len(line), 0)
-        self._stream.write("\r" + line + " " * pad)
-        self._stream.flush()
-        self._last_len = len(line)
+        try:
+            line = self._format()
+            pad = max(self._last_len - len(line), 0)
+            self._stream.write("\r" + line + " " * pad)
+            self._stream.flush()
+            self._last_len = len(line)
+        except Exception:  # noqa: BLE001
+            # Progress output is best-effort cosmetics; a broken pipe (output
+            # piped to ``head``), a closed stream, or an encoding error must
+            # never disturb — let alone truncate — the query. Disable so we
+            # don't retry on every subsequent page.
+            self.enabled = False
 
     def close(self) -> None:
         """Finalize the line with a trailing newline so it persists on screen.
@@ -137,9 +145,12 @@ class ProgressReporter:
         self._closed = True
         if not (self.enabled and (self.pages or self.current_chunk)):
             return
-        self._stream.write("\n")
-        self._maybe_hint_api_key()
-        self._stream.flush()
+        try:
+            self._stream.write("\n")
+            self._maybe_hint_api_key()
+            self._stream.flush()
+        except Exception:  # noqa: BLE001
+            self.enabled = False
 
     def _maybe_hint_api_key(self) -> None:
         global _api_key_hint_shown
