@@ -17,7 +17,7 @@ from dataretrieval.wqp import (
 )
 
 
-def test_get_results(requests_mock):
+def test_get_results(httpx_mock):
     """Tests water quality portal ratings query"""
     request_url = (
         "https://www.waterqualitydata.us/data/Result/Search?siteid=WIDNR_WQX-10032762"
@@ -25,7 +25,7 @@ def test_get_results(requests_mock):
         "&mimeType=csv"
     )
     response_file_path = "tests/data/wqp_results.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     df, md = get_results(
         siteid="WIDNR_WQX-10032762",
         characteristicName="Specific conductance",
@@ -36,12 +36,12 @@ def test_get_results(requests_mock):
     assert df.shape == (5, 65)
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header == {"mock_header": "value"}
+    assert md.header.get("mock_header") == "value"
     assert md.comment is None
     assert df["ActivityStartDateTime"].notna().all()
 
 
-def test_get_results_WQX3(requests_mock):
+def test_get_results_WQX3(httpx_mock):
     """Tests water quality portal results query with new WQX3.0 profile"""
     request_url = (
         "https://www.waterqualitydata.us/wqx3/Result/search?siteid=WIDNR_WQX-10032762"
@@ -50,7 +50,7 @@ def test_get_results_WQX3(requests_mock):
         "&dataProfile=fullPhysChem"
     )
     response_file_path = "tests/data/wqp3_results.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     df, md = get_results(
         legacy=False,
         siteid="WIDNR_WQX-10032762",
@@ -62,151 +62,154 @@ def test_get_results_WQX3(requests_mock):
     assert df.shape == (5, 186)
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header == {"mock_header": "value"}
+    assert md.header.get("mock_header") == "value"
     assert md.comment is None
     assert df["Activity_StartDateTime"].notna().all()
 
 
-def test_what_sites(requests_mock):
+def test_what_sites(httpx_mock):
     """Tests Water quality portal sites query"""
     request_url = (
         "https://www.waterqualitydata.us/data/Station/Search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
     response_file_path = "tests/data/wqp_sites.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     df, md = what_sites(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
     assert df.size == 239868
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header == {"mock_header": "value"}
+    assert md.header.get("mock_header") == "value"
     assert md.comment is None
 
 
-def test_what_organizations(requests_mock):
+def test_what_organizations(httpx_mock):
     """Tests Water quality portal organizations query"""
     request_url = (
         "https://www.waterqualitydata.us/data/Organization/Search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
     response_file_path = "tests/data/wqp_organizations.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     df, md = what_organizations(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
     assert df.size == 576
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header == {"mock_header": "value"}
+    assert md.header.get("mock_header") == "value"
     assert md.comment is None
 
 
-def test_what_projects(requests_mock):
+def test_what_projects(httpx_mock):
     """Tests Water quality portal projects query"""
     request_url = (
         "https://www.waterqualitydata.us/data/Project/Search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
     response_file_path = "tests/data/wqp_projects.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     df, md = what_projects(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
     assert df.size == 530
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header == {"mock_header": "value"}
+    assert md.header.get("mock_header") == "value"
     assert md.comment is None
 
 
-def test_what_activities(requests_mock):
+def test_what_activities(httpx_mock):
     """Tests Water quality portal activities query"""
     request_url = (
         "https://www.waterqualitydata.us/data/Activity/Search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
     response_file_path = "tests/data/wqp_activities.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     df, md = what_activities(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
     assert df.size == 5087443
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header == {"mock_header": "value"}
+    assert md.header.get("mock_header") == "value"
     assert md.comment is None
 
 
-def test_what_detection_limits(requests_mock):
+def test_what_detection_limits(httpx_mock):
     """Tests Water quality portal detection limits query"""
     request_url = (
         "https://www.waterqualitydata.us/data/ResultDetectionQuantitationLimit/Search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
     response_file_path = "tests/data/wqp_detection_limits.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     df, md = what_detection_limits(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
     assert df.size == 98770
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header == {"mock_header": "value"}
+    assert md.header.get("mock_header") == "value"
     assert md.comment is None
 
 
-def test_what_habitat_metrics(requests_mock):
+def test_what_habitat_metrics(httpx_mock):
     """Tests Water quality portal habitat metrics query"""
     request_url = (
         "https://www.waterqualitydata.us/data/BiologicalMetric/Search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
     response_file_path = "tests/data/wqp_habitat_metrics.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     df, md = what_habitat_metrics(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
     assert df.size == 48114
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header == {"mock_header": "value"}
+    assert md.header.get("mock_header") == "value"
     assert md.comment is None
 
 
-def test_what_project_weights(requests_mock):
+def test_what_project_weights(httpx_mock):
     """Tests Water quality portal project weights query"""
     request_url = (
         "https://www.waterqualitydata.us/data/ProjectMonitoringLocationWeighting/Search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
     response_file_path = "tests/data/wqp_project_weights.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     df, md = what_project_weights(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
     assert df.size == 33098
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header == {"mock_header": "value"}
+    assert md.header.get("mock_header") == "value"
     assert md.comment is None
 
 
-def test_what_activity_metrics(requests_mock):
+def test_what_activity_metrics(httpx_mock):
     """Tests Water quality portal activity metrics query"""
     request_url = (
         "https://www.waterqualitydata.us/data/ActivityMetric/Search?statecode=US%3A34&characteristicName=Chloride"
         "&mimeType=csv"
     )
     response_file_path = "tests/data/wqp_activity_metrics.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     df, md = what_activity_metrics(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
     assert df.size == 378
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header == {"mock_header": "value"}
+    assert md.header.get("mock_header") == "value"
     assert md.comment is None
 
 
-def mock_request(requests_mock, request_url, file_path):
+def mock_request(httpx_mock, request_url, file_path):
     with open(file_path) as text:
-        requests_mock.get(
-            request_url, text=text.read(), headers={"mock_header": "value"}
+        httpx_mock.add_response(
+            method="GET",
+            url=request_url,
+            text=text.read(),
+            headers={"mock_header": "value"},
         )
 
 
@@ -220,7 +223,7 @@ def test_check_kwargs():
         kwargs = _check_kwargs(kwargs)
 
 
-def test_get_results_wqx3_preserves_user_dataProfile(requests_mock):
+def test_get_results_wqx3_preserves_user_dataProfile(httpx_mock):
     """A valid user-supplied WQX3.0 profile must not be overwritten.
 
     Regression: previously the `else` branch of the `dataProfile` validation
@@ -232,11 +235,11 @@ def test_get_results_wqx3_preserves_user_dataProfile(requests_mock):
         "siteid=UTAHDWQ_WQX-4993795&mimeType=csv&dataProfile=narrow"
     )
     response_file_path = "tests/data/wqp3_results.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
 
     df, _md = get_results(
         legacy=False, siteid="UTAHDWQ_WQX-4993795", dataProfile="narrow"
     )
     assert isinstance(df, DataFrame)
-    sent = requests_mock.request_history[-1]
-    assert sent.qs.get("dataprofile") == ["narrow"]
+    sent = httpx_mock.get_requests()[-1]
+    assert sent.url.params.get("dataProfile") == "narrow"

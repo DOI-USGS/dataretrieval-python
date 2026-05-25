@@ -9,18 +9,12 @@ for each axis that minimizes total sub-requests under the URL budget;
 sub-request URL fits. Requests that already fit get a trivial
 single-step plan — ``ChunkedCall`` has one code path either way.
 
-Quota: after the first sub-request ``ChunkedCall`` reads
-``x-ratelimit-remaining``; if the rest of the plan won't fit, it
-raises ``RequestExceedsQuota`` before burning more budget. Set
-``API_USGS_LIMIT=0`` to skip this pre-emptive check and attempt the
-full plan anyway.
-
 Interruption: any mid-stream transient failure (429, 5xx) surfaces
 as a ``ChunkInterrupted`` subclass — ``QuotaExhausted`` for 429,
 ``ServiceInterrupted`` for 5xx. The exception carries ``.call``, a
 ``ChunkedCall`` handle that owns the already-completed sub-request
-state. Call ``.call.resume()`` once the underlying condition clears
-to resume; only the still-pending sub-requests are re-issued.
+state. Call ``.call.resume()`` once the underlying condition
+clears; only the still-pending sub-requests are re-issued.
 ``Retry-After`` (when the server sets it) is surfaced on the
 exception as ``.retry_after``.
 
@@ -37,17 +31,18 @@ import copy
 import functools
 import itertools
 import math
-import os
 from collections.abc import Callable, Iterator
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from contextvars import ContextVar
 from dataclasses import dataclass
+from datetime import timedelta
 from typing import Any, ClassVar
 from urllib.parse import quote_plus
 
+import httpx
 import pandas as pd
-import requests
-from requests.structures import CaseInsensitiveDict
+
+from dataretrieval.utils import HTTPX_DEFAULTS
 
 from . import _progress
 from .filters import (
@@ -98,45 +93,45 @@ _NEVER_CHUNK = frozenset(
 # Response header USGS uses to advertise remaining hourly quota.
 _QUOTA_HEADER = "x-ratelimit-remaining"
 
-# Session shared across all sub-requests of a single chunked call so
+# Client shared across all sub-requests of a single chunked call so
 # paginated-loop helpers downstream (``_walk_pages``) reuse one
-# connection pool across the whole fan-out. ``None`` when not inside a
+# connection pool across the whole call. ``None`` when not inside a
 # chunked call — paginated helpers fall back to their own short-lived
-# session in that case.
-_chunked_session: ContextVar[requests.Session | None] = ContextVar(
-    "_chunked_session", default=None
+# client in that case.
+_chunked_client: ContextVar[httpx.Client | None] = ContextVar(
+    "_chunked_client", default=None
 )
 
 
 @contextmanager
-def _publish_session(session: requests.Session) -> Iterator[None]:
+def _publish_client(client: httpx.Client) -> Iterator[None]:
     """
-    Make ``session`` visible to :func:`get_active_session` for the
-    duration of the ``with`` block via the ``_chunked_session``
+    Make ``client`` visible to :func:`get_active_client` for the
+    duration of the ``with`` block via the ``_chunked_client``
     ContextVar. Wraps the set/reset token dance so callers don't have to.
     """
-    token = _chunked_session.set(session)
+    token = _chunked_client.set(client)
     try:
         yield
     finally:
-        _chunked_session.reset(token)
+        _chunked_client.reset(token)
 
 
-def get_active_session() -> requests.Session | None:
+def get_active_client() -> httpx.Client | None:
     """
-    Return the chunker's currently-published session, or ``None``.
+    Return the chunker's currently-published sync client, or ``None``.
 
-    Public accessor for the ``_chunked_session`` ContextVar so
+    Public accessor for the ``_chunked_client`` ContextVar so
     sibling modules (notably :func:`dataretrieval.waterdata.utils._session`)
     don't have to reach into the private ContextVar directly.
 
     Returns
     -------
-    requests.Session or None
-        The session published by :func:`_publish_session` if currently
+    httpx.Client or None
+        The client published by :func:`_publish_client` if currently
         inside a :class:`ChunkedCall` ``resume`` block; ``None`` otherwise.
     """
-    return _chunked_session.get()
+    return _chunked_client.get()
 
 
 # Separators the two axis kinds use to join their atoms back into
@@ -145,7 +140,7 @@ def get_active_session() -> requests.Session | None:
 _LIST_SEP = ","
 _OR_SEP = " OR "
 
-_FetchOnce = Callable[[dict[str, Any]], tuple[pd.DataFrame, requests.Response]]
+_FetchOnce = Callable[[dict[str, Any]], tuple[pd.DataFrame, httpx.Response]]
 
 
 class _RetryableTransportError(RuntimeError):
@@ -211,60 +206,6 @@ class RequestTooLarge(ValueError):
     """
 
 
-class RequestExceedsQuota(ValueError):
-    """
-    Remaining rate-limit window can't cover the rest of the chunked plan.
-
-    Raised after a sub-request when ``x-ratelimit-remaining`` in the
-    response shows the rest of the plan can't fit in the current per-key
-    rate-limit window. The chunks completed so far have already been
-    issued and consumed quota; ``ChunkedCall`` stops here rather than
-    burn more quota on a call that will fail mid-way. The completed
-    work is preserved on ``.call`` (the originating ``ChunkedCall``)
-    so callers can recover its ``partial_frame`` / ``partial_response``
-    and, once the rate-limit window resets, call ``.call.resume()``
-    to continue.
-
-    Attributes
-    ----------
-    planned_chunks : int
-        Total sub-requests the joint plan would issue.
-    available : int
-        Sub-requests this caller can still issue in the current window
-        (``x-ratelimit-remaining`` + chunks already completed).
-    deficit : int
-        ``planned_chunks - available`` — how far over budget the call
-        would run if it continued.
-    call : ChunkedCall or None
-        The originating call handle. ``None`` on hand-constructed
-        exceptions (test fixtures); otherwise the live handle whose
-        ``partial_frame`` / ``partial_response`` expose the work
-        completed before the check fired and whose ``resume()`` can be
-        called once the rate-limit window rolls over.
-    """
-
-    def __init__(
-        self,
-        *,
-        planned_chunks: int,
-        available: int,
-        deficit: int,
-        call: ChunkedCall | None = None,
-    ) -> None:
-        super().__init__(
-            f"Request would issue {planned_chunks} sub-requests but only "
-            f"{available} fit in the current rate-limit window (short by "
-            f"{deficit}). Wait for the window to reset, request a higher "
-            f"per-key quota, narrow the query, or set "
-            f"API_USGS_LIMIT=0 to bypass this check and risk a "
-            f"mid-stream 429 (recoverable via QuotaExhausted.resume())."
-        )
-        self.planned_chunks = planned_chunks
-        self.available = available
-        self.deficit = deficit
-        self.call = call
-
-
 class ChunkInterrupted(RuntimeError):
     """
     Base class for mid-stream chunk failures whose completed work is
@@ -302,7 +243,7 @@ class ChunkInterrupted(RuntimeError):
         was raised. Snapshot at raise time — does NOT advance on a
         later ``call.resume()`` (use ``exc.call.partial_frame`` for
         the live view).
-    partial_response : requests.Response or None
+    partial_response : httpx.Response or None
         Aggregated response covering the completed sub-requests at
         raise time; ``None`` if nothing had completed yet. Same
         snapshot semantics as ``partial_frame``.
@@ -346,12 +287,15 @@ class ChunkInterrupted(RuntimeError):
         total_chunks: int,
         call: ChunkedCall | None = None,
         retry_after: float | None = None,
+        cause: BaseException | None = None,
     ) -> None:
-        super().__init__(
-            self._MESSAGE_TEMPLATE.format(
-                completed_chunks=completed_chunks, total_chunks=total_chunks
-            )
+        message = self._MESSAGE_TEMPLATE.format(
+            completed_chunks=completed_chunks, total_chunks=total_chunks
         )
+        if cause is not None:
+            cause_msg = str(cause) or type(cause).__name__
+            message = f"{message} Cause: {type(cause).__name__}: {cause_msg}"
+        super().__init__(message)
         self.completed_chunks = completed_chunks
         self.total_chunks = total_chunks
         self.call = call
@@ -365,7 +309,7 @@ class ChunkInterrupted(RuntimeError):
         # already comes via ``copy.copy`` from ``_combine_chunk_responses``.
         if call is None:
             self.partial_frame: pd.DataFrame = pd.DataFrame()
-            self.partial_response: requests.Response | None = None
+            self.partial_response: httpx.Response | None = None
         else:
             self.partial_frame = call.partial_frame.copy()
             self.partial_response = call.partial_response
@@ -376,17 +320,10 @@ class QuotaExhausted(ChunkInterrupted):
     A sub-request returned HTTP 429 — the per-key rate-limit window
     is exhausted. Subclass of :class:`ChunkInterrupted`.
 
-    For a chunked call (``total_chunks > 1``) reached past chunk 0,
-    the post-first-chunk :class:`RequestExceedsQuota` check normally
-    short-circuits before burning quota on a plan that won't fit;
-    arrival here typically means a concurrent caller drained the
-    window faster than predicted. ``partial_frame`` holds what
-    completed first.
-
-    For a single-shot call (``total_chunks == 1``) or a 429 on the
-    very first chunk, ``partial_frame`` is empty and
-    ``partial_response`` is ``None``; the original ``RateLimited`` is
-    on ``__cause__``.
+    The completed sub-requests are preserved on ``.call``; once the
+    rate-limit window resets, ``.call.resume()`` re-issues only the
+    still-pending work. ``partial_frame`` holds what completed
+    before the 429.
     """
 
     _MESSAGE_TEMPLATE = (
@@ -414,47 +351,112 @@ class ServiceInterrupted(ChunkInterrupted):
     )
 
 
-def _request_bytes(req: requests.PreparedRequest) -> int:
+def _request_bytes(req: httpx.Request) -> int:
     """
-    Total bytes of a prepared request: URL + body.
+    Return the total bytes of an httpx request: URL + body.
 
-    GET routes have ``body=None`` and reduce to URL length. POST routes
-    (CQL2 JSON body) need body bytes — the URL stays short regardless
-    of payload, so URL-only sizing would underestimate the request and
-    skip chunking when it's needed.
+    GET routes have empty ``.content`` and reduce to URL length. POST
+    routes (CQL2 JSON body) need body bytes — the URL stays short
+    regardless of payload, so URL-only sizing would underestimate the
+    request and skip chunking when it's needed.
 
     Parameters
     ----------
-    req : requests.PreparedRequest
-        The prepared request to size.
+    req : httpx.Request
+        The request to size.
 
     Returns
     -------
     int
-        ``len(req.url) + len(req.body)`` where ``req.body`` is treated
-        as 0 bytes when ``None`` and UTF-8 encoded when ``str``.
-
-    Raises
-    ------
-    TypeError
-        If ``req.body`` is not ``None``, ``bytes``/``bytearray``, or
-        ``str``. Size-based planning needs a deterministic byte count,
-        so generators and file-like streams are rejected up front
-        rather than silently treated as zero bytes.
+        ``len(str(req.url)) + len(req.content)``. ``httpx.URL`` doesn't
+        support ``len()`` directly, so the str-coercion is required.
     """
-    body = req.body
-    if body is None:
-        body_len = 0
-    elif isinstance(body, (bytes, bytearray)):
-        body_len = len(body)
-    elif isinstance(body, str):
-        body_len = len(body.encode("utf-8"))
-    else:
-        raise TypeError(
-            f"multi_value_chunked cannot size a request body of type "
-            f"{type(body).__name__!r}; pass str, bytes, or None."
+    return len(str(req.url)) + len(req.content)
+
+
+def _safe_request_bytes(
+    build_request: Callable[..., httpx.Request],
+    args: dict[str, Any],
+    url_limit: int,
+) -> int:
+    """
+    Size a candidate sub-request, treating ``httpx.InvalidURL`` as
+    "still too large".
+
+    ``httpx.URL`` enforces a hard 64 KB cap per URL component
+    (``MAX_URL_LENGTH``) and raises ``httpx.InvalidURL`` for anything
+    bigger. We report ``url_limit + 1`` on overflow so the greedy
+    halving loop in :meth:`ChunkPlan._plan` keeps shrinking the
+    largest axis until ``httpx.Request`` can be constructed at all.
+
+    Parameters
+    ----------
+    build_request : Callable[..., httpx.Request]
+        Factory that turns a kwargs dict into a sized request.
+    args : dict[str, Any]
+        Per-sub-request kwargs to pass through to ``build_request``.
+    url_limit : int
+        The chunker's byte budget; returned + 1 on overflow.
+
+    Returns
+    -------
+    int
+        Real byte count when the request builds, otherwise
+        ``url_limit + 1`` so the planner's "too large" branch keeps
+        halving.
+    """
+    try:
+        req = build_request(**args)
+    except httpx.InvalidURL:
+        return url_limit + 1
+    return _request_bytes(req)
+
+
+def _safe_elapsed(response: httpx.Response) -> timedelta:
+    """
+    Read ``response.elapsed``, falling back to ``timedelta(0)`` when
+    the attribute hasn't been populated.
+
+    httpx only writes ``.elapsed`` when a response is closed through
+    its normal transport path. ``MockTransport`` (used by
+    ``pytest-httpx``) and hand-constructed ``httpx.Response`` objects
+    leave the attribute unset, so accessing it raises ``RuntimeError``.
+    Combining responses across chunks needs a defined duration, so we
+    treat the missing attribute as zero elapsed.
+    """
+    try:
+        return response.elapsed
+    except RuntimeError:
+        return timedelta(0)
+
+
+def _set_response_url(response: httpx.Response, url: str | httpx.URL) -> None:
+    """
+    Overwrite the URL surfaced by a response without back-propagating
+    the change into any aliased original.
+
+    On real ``httpx.Response`` instances ``.url`` is a read-only
+    property that resolves through the bound request; rather than
+    mutate the existing request's URL (which would be visible through
+    any shallow copy that shares the same ``.request``), we replace
+    the response's request with a fresh :class:`httpx.Request` carrying
+    the new URL. On lightweight test mocks ``.url`` is a plain
+    writable attribute — that path is tried first.
+    """
+    try:
+        response.url = url  # type: ignore[misc]
+    except AttributeError:
+        target = httpx.URL(str(url))
+        try:
+            old = response.request
+        except RuntimeError:
+            # No request bound (some hand-built httpx.Response fixtures);
+            # synthesize a minimal one to hold the URL.
+            response.request = httpx.Request("GET", target)
+            return
+        response.request = httpx.Request(
+            method=old.method, url=target, headers=old.headers
         )
-    return len(req.url) + body_len
 
 
 @dataclass(frozen=True)
@@ -489,7 +491,8 @@ class _Axis:
 
     def chunk_bytes(self, chunk: list[str]) -> int:
         """
-        URL-encoded bytes a chunk contributes when substituted.
+        Return the URL-encoded byte count this chunk contributes when
+        substituted into the request.
 
         ``quote_plus`` is faithful to what the real URL builder
         produces, so values containing characters that expand under URL
@@ -588,11 +591,11 @@ class ChunkPlan:
     ----------
     args : dict[str, Any]
         The user-level request kwargs.
-    build_request : Callable[..., requests.PreparedRequest]
-        Factory that turns a kwargs dict into a sized prepared
-        request, e.g. ``_construct_api_requests``.
+    build_request : Callable[..., httpx.Request]
+        Factory that turns a kwargs dict into a sized httpx request,
+        e.g. ``_construct_api_requests``.
     url_limit : int
-        Byte budget for the prepared request (URL + body).
+        Byte budget for the request (URL + body).
 
     Attributes
     ----------
@@ -607,12 +610,10 @@ class ChunkPlan:
         Per-axis partition: ``chunks[axis.arg_key]`` is the list of
         atom-sublists this axis is split into. Empty in passthrough.
     canonical_url : str or None
-        URL of the full original request, used to overwrite the first
-        chunk's ``response.url`` so ``BaseMetadata`` reflects the
-        user's full query. ``None`` on the nothing-to-chunk passthrough
-        path — ``fetch_once``'s response already carries the canonical
-        URL there, so ``ChunkedCall`` skips the override to avoid an
-        extra ``build_request`` call on the hot path.
+        URL of the user's original (un-chunked) request, used to
+        overwrite a chunked response's ``.url`` so ``BaseMetadata``
+        reflects the full query. ``None`` on the passthrough path
+        and when no buildable URL exists.
 
     Raises
     ------
@@ -624,7 +625,7 @@ class ChunkPlan:
     def __init__(
         self,
         args: dict[str, Any],
-        build_request: Callable[..., requests.PreparedRequest],
+        build_request: Callable[..., httpx.Request],
         url_limit: int,
     ) -> None:
         self.args = args
@@ -635,22 +636,45 @@ class ChunkPlan:
         axes = _extract_axes(args)
         # No chunkable axes → skip ``build_request`` entirely; the
         # common Water Data call shape shouldn't pay for an unused
-        # request prep on the passthrough hot path.
+        # request prep on the passthrough hot path. ``fetch_once``
+        # will run with the user's args verbatim; if that produces
+        # an over-budget URL, the server (or httpx itself) rejects.
         if not axes:
             return
 
-        initial_request = build_request(**args)
-        self.canonical_url = initial_request.url
-        if _request_bytes(initial_request) <= url_limit:
-            return
+        # Constructing the initial request can itself trip
+        # ``httpx.InvalidURL`` (URL > 64 KB) — that's the canonical
+        # "needs chunking" signal, so swallow it and proceed to plan.
+        # When the unchunked URL does build, preserve it as
+        # ``canonical_url`` so ``BaseMetadata.url`` echoes the user's
+        # original query verbatim; only fall back to a worst-case
+        # sub-request URL when the URL itself can't be constructed.
+        try:
+            initial_request = build_request(**args)
+        except httpx.InvalidURL:
+            initial_request = None
+
+        if initial_request is not None:
+            self.canonical_url = str(initial_request.url)
+            if _request_bytes(initial_request) <= url_limit:
+                return
 
         self.axes = axes
         self.chunks = {axis.arg_key: [list(axis.atoms)] for axis in axes}
         self._plan(build_request, url_limit)
 
+        if self.canonical_url is None:
+            # Original URL was un-constructable (httpx.InvalidURL); fall
+            # back to the worst-case sub-request URL so
+            # ``BaseMetadata.url`` still surfaces something
+            # informative. If even that overflows, leave canonical_url
+            # as None (set above) and let the response's own URL stand.
+            with suppress(httpx.InvalidURL):
+                self.canonical_url = str(build_request(**self._worst_case_args()).url)
+
     def _plan(
         self,
-        build_request: Callable[..., requests.PreparedRequest],
+        build_request: Callable[..., httpx.Request],
         url_limit: int,
     ) -> None:
         """
@@ -668,7 +692,7 @@ class ChunkPlan:
         """
         while True:
             worst = self._worst_case_args()
-            if _request_bytes(build_request(**worst)) <= url_limit:
+            if _safe_request_bytes(build_request, worst, url_limit) <= url_limit:
                 return
 
             biggest_axis: _Axis | None = None
@@ -743,7 +767,7 @@ class ChunkPlan:
                 sub_args[axis.arg_key] = axis.render(chunk)
             yield sub_args
 
-    def execute(self, fetch_once: _FetchOnce) -> tuple[pd.DataFrame, requests.Response]:
+    def execute(self, fetch_once: _FetchOnce) -> tuple[pd.DataFrame, httpx.Response]:
         """
         Run the plan and return the combined ``(frame, response)``.
 
@@ -760,7 +784,7 @@ class ChunkPlan:
         -------
         df : pandas.DataFrame
             Combined data from every successful sub-request.
-        response : requests.Response
+        response : httpx.Response
             Aggregated response (canonical URL, last page's headers,
             cumulative elapsed time).
 
@@ -771,52 +795,8 @@ class ChunkPlan:
             (:class:`QuotaExhausted` for 429,
             :class:`ServiceInterrupted` for 5xx). The resumable handle
             is on ``exc.call``.
-        RequestExceedsQuota
-            When the rate-limit window can't cover the remaining plan.
         """
         return ChunkedCall(self, fetch_once).resume()
-
-
-def _quota_check_disabled() -> bool:
-    """
-    Check whether the pre-emptive quota check is disabled.
-
-    Read at call time (not import time) so test patches via
-    ``monkeypatch.setenv`` take effect.
-
-    Returns
-    -------
-    bool
-        ``True`` when the environment variable ``API_USGS_LIMIT`` is
-        set to ``"0"`` (stripped), bypassing the post-first-chunk
-        :class:`RequestExceedsQuota` check.
-    """
-    return os.environ.get("API_USGS_LIMIT", "").strip() == "0"
-
-
-def _read_remaining(response: requests.Response) -> int | None:
-    """
-    Parse the ``x-ratelimit-remaining`` header from a response.
-
-    Parameters
-    ----------
-    response : requests.Response
-        A response that may or may not carry the quota header.
-
-    Returns
-    -------
-    int or None
-        The parsed integer, or ``None`` when the header is missing or
-        unparseable. ``ChunkedCall`` treats ``None`` as "no quota
-        signal" and skips the post-first-chunk plan check.
-    """
-    raw = response.headers.get(_QUOTA_HEADER)
-    if raw is None:
-        return None
-    try:
-        return int(raw)
-    except (TypeError, ValueError):
-        return None
 
 
 def _classify_chunk_error(
@@ -850,11 +830,13 @@ def _classify_chunk_error(
     ``__cause__``, so this function must walk the chain rather than
     just ``isinstance`` the top-level exception.
 
-    Bare ``requests.exceptions.RequestException`` (ConnectionError,
-    Timeout, SSLError, …) is also treated as a transient transport
-    failure and wrapped as :class:`ServiceInterrupted` — these don't
-    inherit from ``RuntimeError`` and would otherwise escape the
-    chunker's catch with no resumable handle.
+    Bare ``httpx.HTTPError`` (``ConnectError``, ``TimeoutException``,
+    etc.) and ``httpx.InvalidURL`` (server-supplied cursor URL too
+    long, oversize follow-up) are also treated as transport failures
+    and wrapped as :class:`ServiceInterrupted` — these don't inherit
+    from ``RuntimeError`` (and ``InvalidURL`` doesn't even inherit
+    from ``HTTPError``), so without explicit handling they would
+    escape the chunker's catch with no resumable handle.
     """
     cur: BaseException | None = exc
     while cur is not None:
@@ -862,7 +844,7 @@ def _classify_chunk_error(
             return QuotaExhausted, cur.retry_after
         if isinstance(cur, ServiceUnavailable):
             return ServiceInterrupted, cur.retry_after
-        if isinstance(cur, requests.exceptions.RequestException):
+        if isinstance(cur, (httpx.HTTPError, httpx.InvalidURL)):
             return ServiceInterrupted, None
         cur = cur.__cause__
     return None
@@ -930,59 +912,63 @@ def _combine_chunk_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
 
 
 def _combine_chunk_responses(
-    responses: list[requests.Response], canonical_url: str | None
-) -> requests.Response:
+    responses: list[httpx.Response], canonical_url: str | None
+) -> httpx.Response:
     """
     Fold per-sub-request responses into a single aggregated response.
 
-    Returns a shallow copy of ``responses[0]`` with ``.headers`` set to
-    the last response's (so ``x-ratelimit-remaining`` reflects current
-    state), ``.elapsed`` set to total wall-clock across every response,
-    and ``.url`` set to the canonical original-query URL so
-    ``BaseMetadata`` reflects the user's full request rather than the
-    first chunk.
+    For a multi-response input, returns a shallow copy of
+    ``responses[0]`` with ``.headers`` set to the last response's (so
+    ``x-ratelimit-remaining`` reflects current state), ``.elapsed`` set
+    to total wall-clock across every response, and ``.url`` set to the
+    canonical original-query URL (when supplied) so ``BaseMetadata``
+    reflects the user's full request rather than the first chunk.
+
+    For a single-response input with no canonical-URL override,
+    ``responses[0]`` is returned unchanged to skip the copy on the
+    passthrough hot path.
 
     Parameters
     ----------
-    responses : list[requests.Response]
+    responses : list[httpx.Response]
         One response per completed sub-request, in execution order.
     canonical_url : str or None
         URL of the unchunked original request. ``None`` skips the URL
-        override — used by the trivial-passthrough path where
-        ``fetch_once`` already returns a response whose ``.url`` is
-        the original-query URL.
+        override — used by the passthrough path (``fetch_once``'s
+        response already carries the original-query URL) and by the
+        worst-case overflow path (no buildable canonical URL exists).
 
     Returns
     -------
-    requests.Response
+    httpx.Response
         A shallow copy of the first response with aggregated
         ``headers``, ``elapsed``, and ``url``. The function is
         idempotent (the input responses' ``headers`` / ``elapsed`` /
         ``url`` are never mutated), so it's safe to call repeatedly
         via :attr:`ChunkedCall.partial_response` during error
         inspection or resume retries. ``headers`` on the returned
-        object is a fresh ``CaseInsensitiveDict``, so mutations there
-        don't back-propagate into any chunk's underlying response.
-        Note that other ``Response`` fields (``_content``, ``raw``,
-        ``cookies``, ``request``) are still aliased to the first
-        chunk by the shallow copy — callers that mutate those will
-        affect the underlying chunk response.
+        object is a fresh ``httpx.Headers``, so mutations there don't
+        back-propagate into any chunk's underlying response.
     """
+    if len(responses) == 1 and canonical_url is None:
+        return responses[0]
+
     # ``copy.copy`` lets repeated calls re-sum elapsed from scratch
     # rather than re-mutating ``responses[0]`` in place. The headers
-    # dict is then rewrapped in a fresh ``CaseInsensitiveDict`` so the
+    # dict is then rewrapped in a fresh ``httpx.Headers`` so the
     # aggregate's headers don't share identity with — or leak mutations
     # back into — any underlying response on ``ChunkedCall._chunks``.
     head = copy.copy(responses[0])
     if len(responses) > 1:
-        head.headers = CaseInsensitiveDict(responses[-1].headers)
+        head.headers = httpx.Headers(responses[-1].headers)
         head.elapsed = sum(
-            (r.elapsed for r in responses[1:]), start=responses[0].elapsed
+            (_safe_elapsed(r) for r in responses[1:]),
+            start=_safe_elapsed(responses[0]),
         )
     else:
-        head.headers = CaseInsensitiveDict(responses[0].headers)
+        head.headers = httpx.Headers(responses[0].headers)
     if canonical_url is not None:
-        head.url = canonical_url
+        _set_response_url(head, canonical_url)
     return head
 
 
@@ -1000,12 +986,12 @@ class ChunkedCall:
     executes; callers reach it via :attr:`ChunkInterrupted.call` on
     the exception raised by a mid-stream failure.
 
-    :meth:`resume` is idempotent: it skips sub-requests already
-    completed (``self.completed_chunks`` is the cursor) and re-issues
-    only the still-pending ones. The sub-request
-    ordering matches :meth:`ChunkPlan.iter_sub_args`, which is
-    deterministic, so each call picks up exactly where the previous
-    one stopped.
+    :meth:`resume` is idempotent: it iterates
+    :meth:`ChunkPlan.iter_sub_args` (deterministic order) and skips
+    any index whose result is already in ``self._chunks``. The
+    completion set is a ``dict[int, (df, response)]`` keyed by
+    sub-args index; a subsequent ``resume`` only re-issues
+    sub-requests whose index isn't already present.
 
     Parameters
     ----------
@@ -1028,7 +1014,7 @@ class ChunkedCall:
     partial_frame : pandas.DataFrame
         Combined frame of completed sub-requests (live; recomputed per
         access).
-    partial_response : requests.Response or None
+    partial_response : httpx.Response or None
         Aggregated response with canonical URL restored, or ``None``
         when nothing has completed yet (live; recomputed per access).
     """
@@ -1036,11 +1022,33 @@ class ChunkedCall:
     def __init__(self, plan: ChunkPlan, fetch_once: _FetchOnce) -> None:
         self.plan = plan
         self.fetch_once = fetch_once
-        # One entry per completed sub-request, in execution order.
-        # A single list keeps the (frame, response) pair atomic so the
-        # ``len(_chunks)`` cursor can't ever drift between two parallel
-        # lists.
-        self._chunks: list[tuple[pd.DataFrame, requests.Response]] = []
+        # Completed (frame, response) pairs keyed by sub-args index;
+        # ``resume()`` skips indices already present.
+        self._chunks: dict[int, tuple[pd.DataFrame, httpx.Response]] = {}
+
+    def record(self, index: int, pair: tuple[pd.DataFrame, httpx.Response]) -> None:
+        """Record a completed sub-request's ``(frame, response)`` pair
+        under its sub-args index."""
+        self._chunks[index] = pair
+
+    def wrap_failure(self, exc: BaseException) -> ChunkInterrupted | None:
+        """Build the matching :class:`ChunkInterrupted` carrying this
+        call when ``exc`` is a recognized transient transport failure;
+        return ``None`` for unrecognized failures so the caller can
+        re-raise. Encapsulates the
+        ``classify → instantiate-with-call-state`` recipe so
+        :class:`ChunkedCall`'s private fields stay private."""
+        classification = _classify_chunk_error(exc)
+        if classification is None:
+            return None
+        interrupted_class, retry_after = classification
+        return interrupted_class(
+            completed_chunks=len(self._chunks),
+            total_chunks=self.plan.total,
+            call=self,
+            retry_after=retry_after,
+            cause=exc,
+        )
 
     @property
     def completed_chunks(self) -> int:
@@ -1049,6 +1057,9 @@ class ChunkedCall:
     @property
     def total_chunks(self) -> int:
         return self.plan.total
+
+    def _ordered_chunks(self) -> list[tuple[pd.DataFrame, httpx.Response]]:
+        return [self._chunks[i] for i in sorted(self._chunks)]
 
     @property
     def partial_frame(self) -> pd.DataFrame:
@@ -1067,10 +1078,10 @@ class ChunkedCall:
         """
         if not self._chunks:
             return pd.DataFrame()
-        return _combine_chunk_frames([frame for frame, _ in self._chunks])
+        return _combine_chunk_frames([frame for frame, _ in self._ordered_chunks()])
 
     @property
-    def partial_response(self) -> requests.Response | None:
+    def partial_response(self) -> httpx.Response | None:
         """
         Aggregated response with the canonical URL restored to the
         user's full original query.
@@ -1079,38 +1090,37 @@ class ChunkedCall:
 
         Returns
         -------
-        requests.Response or None
+        httpx.Response or None
             Aggregated response when at least one sub-request has
             completed, ``None`` otherwise.
         """
         if not self._chunks:
             return None
         return _combine_chunk_responses(
-            [resp for _, resp in self._chunks], self.plan.canonical_url
+            [resp for _, resp in self._ordered_chunks()], self.plan.canonical_url
         )
 
-    def resume(self) -> tuple[pd.DataFrame, requests.Response]:
+    def resume(self) -> tuple[pd.DataFrame, httpx.Response]:
         """
-        Drive the chunked call to completion.
+        Drive the chunked call to completion via the sync ``fetch_once``.
 
-        Opens one ``requests.Session`` for the run and publishes it on
-        the ``_chunked_session`` ``ContextVar`` so paginated-loop
+        Opens one ``httpx.Client`` for the run and publishes it on
+        the ``_chunked_client`` ``ContextVar`` so paginated-loop
         helpers downstream (``_walk_pages``) reuse the same connection
         pool across every sub-request instead of handshaking fresh on
-        each. The session is closed when ``resume`` returns or raises;
+        each. The client is closed when ``resume`` returns or raises;
         a follow-up ``resume`` call (after a ``ChunkInterrupted``)
         opens a new one.
 
-        Idempotent: starts from chunk 0 on the first call, then from
-        the cursor (``self.completed_chunks``) on every subsequent
-        call. Re-issues only sub-requests that haven't already
-        completed.
+        Idempotent: only sub-requests whose index isn't already in
+        ``self._chunks`` are re-issued. Sub-args order matches
+        :meth:`ChunkPlan.iter_sub_args` and is deterministic.
 
         Returns
         -------
         df : pandas.DataFrame
             Combined data from every successful sub-request.
-        response : requests.Response
+        response : httpx.Response
             Aggregated response (canonical URL, last page's headers,
             cumulative elapsed time).
 
@@ -1122,75 +1132,52 @@ class ChunkedCall:
             :class:`ServiceInterrupted` for 5xx). The resumable handle
             is on ``exc.call`` — wait for the underlying condition to
             clear and call ``exc.call.resume()`` again.
-        RequestExceedsQuota
-            When the rate-limit window can't cover the remaining plan
-            (checked after the first sub-request).
         """
-        with requests.Session() as session, _publish_session(session):
+        with httpx.Client(**HTTPX_DEFAULTS) as client, _publish_client(client):
             reporter = _progress.current()
             if reporter is not None:
                 reporter.set_chunks(self.plan.total)
-            completed = len(self._chunks)
             for i, sub_args in enumerate(self.plan.iter_sub_args()):
-                if i < completed:
+                if i in self._chunks:
                     continue
                 if reporter is not None:
                     reporter.start_chunk(i + 1)
-                self._issue(sub_args)
-            frames = [frame for frame, _ in self._chunks]
-            responses = [resp for _, resp in self._chunks]
+                self._issue(i, sub_args)
+            ordered = self._ordered_chunks()
+            frames = [frame for frame, _ in ordered]
+            responses = [resp for _, resp in ordered]
             return (
                 _combine_chunk_frames(frames),
                 _combine_chunk_responses(responses, self.plan.canonical_url),
             )
 
-    def _issue(self, sub_args: dict[str, Any]) -> None:
-        # Catch both ``RuntimeError`` (the layer's typed contract:
-        # ``RateLimited`` / ``ServiceUnavailable`` / mid-pagination
-        # wrapper) and ``requests.exceptions.RequestException``
-        # (transport-level failures like ConnectionError / Timeout /
-        # SSLError that bubble up unmodified from
-        # ``sess.send(initial_req)`` and don't inherit from
-        # RuntimeError). Both routes go through ``_classify_chunk_error``
-        # so transient failures become resumable ``ChunkInterrupted``
-        # subclasses; unknown failures re-raise to preserve their type.
+    def _issue(self, index: int, sub_args: dict[str, Any]) -> None:
+        """
+        Issue one sub-request and record its result.
+
+        Catches ``RuntimeError`` (the layer's typed contract:
+        :class:`RateLimited`, :class:`ServiceUnavailable`, or the
+        mid-pagination wrapper), :class:`httpx.HTTPError`
+        (transport-level failures like ``ConnectError`` /
+        ``TimeoutException``), and :class:`httpx.InvalidURL` (which
+        inherits directly from ``Exception``, not ``HTTPError``).
+        All three feed :func:`_classify_chunk_error` so transient
+        failures become resumable :class:`ChunkInterrupted` subclasses;
+        unknown failures re-raise to preserve their type.
+        """
         try:
             chunk = self.fetch_once(sub_args)
-        except (RuntimeError, requests.exceptions.RequestException) as exc:
-            classification = _classify_chunk_error(exc)
-            if classification is None:
+        except (RuntimeError, httpx.HTTPError, httpx.InvalidURL) as exc:
+            interrupted = self.wrap_failure(exc)
+            if interrupted is None:
                 raise
-            interrupted_class, retry_after = classification
-            raise interrupted_class(
-                completed_chunks=len(self._chunks),
-                total_chunks=self.plan.total,
-                call=self,
-                retry_after=retry_after,
-            ) from exc
-        self._chunks.append(chunk)
-        if len(self._chunks) < self.plan.total:
-            self._check_quota_remaining()
-
-    def _check_quota_remaining(self) -> None:
-        if _quota_check_disabled():
-            return
-        _, last_response = self._chunks[-1]
-        remaining = _read_remaining(last_response)
-        completed = len(self._chunks)
-        pending = self.plan.total - completed
-        if remaining is None or remaining >= pending:
-            return
-        raise RequestExceedsQuota(
-            planned_chunks=self.plan.total,
-            available=remaining + completed,
-            deficit=pending - remaining,
-            call=self,
-        )
+            raise interrupted from exc
+        self.record(index, chunk)
 
 
 def multi_value_chunked(
     *,
-    build_request: Callable[..., requests.PreparedRequest],
+    build_request: Callable[..., httpx.Request],
     url_limit: int | None = None,
 ) -> Callable[[_FetchOnce], _FetchOnce]:
     """
@@ -1204,15 +1191,15 @@ def multi_value_chunked(
 
     Parameters
     ----------
-    build_request : Callable[..., requests.PreparedRequest]
-        Factory that turns a kwargs dict into a sized prepared
-        request, e.g. ``_construct_api_requests``. Called during
-        planning to measure each candidate plan.
+    build_request : Callable[..., httpx.Request]
+        Factory that turns a kwargs dict into a sized httpx request,
+        e.g. ``_construct_api_requests``. Called during planning to
+        measure each candidate plan.
     url_limit : int, optional
-        Byte budget for the prepared request (URL + body). When
-        ``None`` (default), the module-level
-        ``_WATERDATA_URL_BYTE_LIMIT`` is resolved at call time so test
-        patches via ``monkeypatch.setattr`` take effect.
+        Byte budget for the request (URL + body). When ``None``
+        (default), the module-level ``_WATERDATA_URL_BYTE_LIMIT`` is
+        resolved at call time so test patches via
+        ``monkeypatch.setattr`` take effect.
 
     Returns
     -------
@@ -1225,9 +1212,6 @@ def multi_value_chunked(
     ------
     RequestTooLarge
         If no plan can fit ``url_limit``.
-    RequestExceedsQuota
-        After the first sub-request, if the remaining plan can't fit
-        the current rate-limit window.
     ChunkInterrupted
         On a mid-execution 429 (:class:`QuotaExhausted`) or 5xx
         (:class:`ServiceInterrupted`). See :class:`ChunkedCall` for
@@ -1243,9 +1227,10 @@ def multi_value_chunked(
         @functools.wraps(fetch_once)
         def wrapper(
             args: dict[str, Any],
-        ) -> tuple[pd.DataFrame, requests.Response]:
+        ) -> tuple[pd.DataFrame, httpx.Response]:
             limit = _WATERDATA_URL_BYTE_LIMIT if url_limit is None else url_limit
-            return ChunkPlan(args, build_request, limit).execute(fetch_once)
+            plan = ChunkPlan(args, build_request, limit)
+            return plan.execute(fetch_once)
 
         return wrapper
 

@@ -57,18 +57,20 @@ def test_query_waterservices_validation():
     assert str(type_error.value) == "Service not recognized"
 
 
-def test_query_validation(requests_mock):
+def test_query_validation(httpx_mock):
     request_url = (
         "https://waterservices.usgs.gov/nwis/stat?sites=bad_site_id&format=rdb"
     )
-    requests_mock.get(request_url, status_code=400)
+    httpx_mock.add_response(method="GET", url=request_url, status_code=400)
     with pytest.raises(ValueError) as type_error:
         get_stats(sites="bad_site_id")
     assert request_url in str(type_error)
 
     request_url = "https://waterservices.usgs.gov/nwis/stat?sites=123456&format=rdb"
-    requests_mock.get(
-        request_url, text="No sites/data found using the selection criteria specified"
+    httpx_mock.add_response(
+        method="GET",
+        url=request_url,
+        text="No sites/data found using the selection criteria specified",
     )
     with pytest.raises(NoSitesError) as no_sites_error:
         get_stats(sites="123456")
@@ -82,7 +84,7 @@ def test_get_record_validation():
     assert str(type_error.value) == "Unrecognized service: not_a_service"
 
 
-def test_get_dv(requests_mock):
+def test_get_dv(httpx_mock):
     """Verify get_dv builds the expected request URL and returns a DataFrame."""
     format = "json"
     site = "01491000%2C01645000"
@@ -91,7 +93,7 @@ def test_get_dv(requests_mock):
         f"&startDT=2020-02-14&endDT=2020-02-15&sites={site}"
     )
     response_file_path = "tests/data/waterservices_dv.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     df, md = get_dv(
         sites=["01491000", "01645000"], start="2020-02-14", end="2020-02-15"
     )
@@ -100,11 +102,11 @@ def test_get_dv(requests_mock):
         raise TypeError(f"{type(df)} is not DataFrame base class type")
 
     assert df.size == 8
-    assert_metadata(requests_mock, request_url, md, site, None, format)
+    assert_metadata(httpx_mock, request_url, md, site, None, format)
 
 
 @pytest.mark.parametrize("site_input_type_list", [True, False])
-def test_get_dv_site_value_types(requests_mock, site_input_type_list):
+def test_get_dv_site_value_types(httpx_mock, site_input_type_list):
     """Tests get_dv method for valid input types for the 'sites' parameter"""
     _format = "json"
     site = "01491000"
@@ -113,7 +115,7 @@ def test_get_dv_site_value_types(requests_mock, site_input_type_list):
         f"&startDT=2020-02-14&endDT=2020-02-15&sites={site}"
     )
     response_file_path = "tests/data/waterservices_dv.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     if site_input_type_list:
         sites = [site]
     else:
@@ -125,7 +127,7 @@ def test_get_dv_site_value_types(requests_mock, site_input_type_list):
     assert df.size == 8
 
 
-def test_get_iv(requests_mock):
+def test_get_iv(httpx_mock):
     """Verify get_iv builds the expected request URL and returns a DataFrame."""
     format = "json"
     site = "01491000%2C01645000"
@@ -134,7 +136,7 @@ def test_get_iv(requests_mock):
         f"&startDT=2019-02-14&endDT=2020-02-15&sites={site}"
     )
     response_file_path = "tests/data/waterservices_iv.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     df, md = get_iv(
         sites=["01491000", "01645000"], start="2019-02-14", end="2020-02-15"
     )
@@ -143,11 +145,11 @@ def test_get_iv(requests_mock):
 
     assert df.size == 563380
     assert md.url == request_url
-    assert_metadata(requests_mock, request_url, md, site, None, format)
+    assert_metadata(httpx_mock, request_url, md, site, None, format)
 
 
 @pytest.mark.parametrize("site_input_type_list", [True, False])
-def test_get_iv_site_value_types(requests_mock, site_input_type_list):
+def test_get_iv_site_value_types(httpx_mock, site_input_type_list):
     """Tests get_iv method for valid input type for the 'sites' parameter"""
     _format = "json"
     site = "01491000"
@@ -156,7 +158,7 @@ def test_get_iv_site_value_types(requests_mock, site_input_type_list):
         f"&startDT=2019-02-14&endDT=2020-02-15&sites={site}"
     )
     response_file_path = "tests/data/waterservices_iv.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     if site_input_type_list:
         sites = [site]
     else:
@@ -168,7 +170,7 @@ def test_get_iv_site_value_types(requests_mock, site_input_type_list):
     assert md.url == request_url
 
 
-def test_get_info(requests_mock):
+def test_get_info(httpx_mock):
     """
     Verify get_info builds the expected request URL and returns a DataFrame.
     Note that only sites and format are passed as query params
@@ -179,7 +181,7 @@ def test_get_info(requests_mock):
     parameter_cd = "00618"
     request_url = f"https://waterservices.usgs.gov/nwis/site?sites={site}&parameterCd={parameter_cd}&siteOutput=Expanded&format={format}"
     response_file_path = "tests/data/waterservices_site.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     df, md = get_info(sites=["01491000", "01645000"], parameterCd="00618")
     if not isinstance(df, DataFrame):
         raise TypeError(f"{type(df)} is not DataFrame base class type")
@@ -194,10 +196,10 @@ def test_get_info(requests_mock):
 
     assert df.size == size
     assert md.url == request_url
-    assert_metadata(requests_mock, request_url, md, site, [parameter_cd], format)
+    assert_metadata(httpx_mock, request_url, md, site, [parameter_cd], format)
 
 
-def test_get_discharge_peaks(requests_mock):
+def test_get_discharge_peaks(httpx_mock):
     """Verify get_discharge_peaks builds the expected URL and returns a DataFrame."""
     format = "rdb"
     site = "01594440"
@@ -206,17 +208,17 @@ def test_get_discharge_peaks(requests_mock):
         "&begin_date=2000-02-14&end_date=2020-02-15"
     )
     response_file_path = "tests/data/waterservices_peaks.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     df, md = get_discharge_peaks(sites=[site], start="2000-02-14", end="2020-02-15")
     if not isinstance(df, DataFrame):
         raise TypeError(f"{type(df)} is not DataFrame base class type")
 
     assert df.size == 240
-    assert_metadata(requests_mock, request_url, md, site, None, format)
+    assert_metadata(httpx_mock, request_url, md, site, None, format)
 
 
 @pytest.mark.parametrize("site_input_type_list", [True, False])
-def test_get_discharge_peaks_sites_value_types(requests_mock, site_input_type_list):
+def test_get_discharge_peaks_sites_value_types(httpx_mock, site_input_type_list):
     """Tests get_discharge_peaks for valid input types of the 'sites' parameter"""
 
     _format = "rdb"
@@ -226,7 +228,7 @@ def test_get_discharge_peaks_sites_value_types(requests_mock, site_input_type_li
         "&begin_date=2000-02-14&end_date=2020-02-15"
     )
     response_file_path = "tests/data/waterservices_peaks.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     if site_input_type_list:
         sites = [site]
     else:
@@ -249,22 +251,22 @@ def test_get_ratings_validation():
     )
 
 
-def test_get_ratings(requests_mock):
+def test_get_ratings(httpx_mock):
     """Verify get_ratings builds the expected URL and returns a DataFrame."""
     format = "rdb"
     site = "01594440"
     request_url = f"https://nwis.waterdata.usgs.gov/nwisweb/get_ratings/?site_no={site}&file_type=base"
     response_file_path = "tests/data/waterservices_ratings.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     df, md = get_ratings(site_no=site)
     if not isinstance(df, DataFrame):
         raise TypeError(f"{type(df)} is not DataFrame base class type")
 
     assert df.size == 33
-    assert_metadata(requests_mock, request_url, md, site, None, format)
+    assert_metadata(httpx_mock, request_url, md, site, None, format)
 
 
-def test_what_sites(requests_mock):
+def test_what_sites(httpx_mock):
     """Verify what_sites builds the expected URL and returns a DataFrame."""
     size = 2472
     format = "rdb"
@@ -275,7 +277,7 @@ def test_what_sites(requests_mock):
         f"&parameterCd={parameter_cd}&hasDataTypeCd=dv&format={format}"
     )
     response_file_path = "tests/data/nwis_sites.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
 
     df, md = what_sites(
         bBox=[-83.0, 36.5, -81.0, 38.5],
@@ -298,25 +300,25 @@ def test_what_sites(requests_mock):
         size += len(df)
 
     assert df.size == size
-    assert_metadata(requests_mock, request_url, md, None, parameter_cd_list, format)
+    assert_metadata(httpx_mock, request_url, md, None, parameter_cd_list, format)
 
 
-def test_get_stats(requests_mock):
+def test_get_stats(httpx_mock):
     """Verify get_stats builds the expected URL and returns a DataFrame."""
     format = "rdb"
     request_url = f"https://waterservices.usgs.gov/nwis/stat?sites=01491000%2C01645000&format={format}"
     response_file_path = "tests/data/waterservices_stats.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
 
     df, md = get_stats(sites=["01491000", "01645000"])
     if not isinstance(df, DataFrame):
         raise TypeError(f"{type(df)} is not DataFrame base class type")
     assert df.size == 51936
-    assert_metadata(requests_mock, request_url, md, None, None, format)
+    assert_metadata(httpx_mock, request_url, md, None, None, format)
 
 
 @pytest.mark.parametrize("site_input_type_list", [True, False])
-def test_get_stats_site_value_types(requests_mock, site_input_type_list):
+def test_get_stats_site_value_types(httpx_mock, site_input_type_list):
     """Tests get_stats method for valid input types for the 'sites' parameter"""
     _format = "rdb"
     site = "01491000"
@@ -324,7 +326,7 @@ def test_get_stats_site_value_types(requests_mock, site_input_type_list):
         f"https://waterservices.usgs.gov/nwis/stat?sites={site}&format={_format}"
     )
     response_file_path = "tests/data/waterservices_stats.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     if site_input_type_list:
         sites = [site]
     else:
@@ -335,23 +337,28 @@ def test_get_stats_site_value_types(requests_mock, site_input_type_list):
     assert df.size == 51936
 
 
-def mock_request(requests_mock, request_url, file_path):
+def mock_request(httpx_mock, request_url, file_path):
     with open(file_path) as text:
-        requests_mock.get(
-            request_url, text=text.read(), headers={"mock_header": "value"}
+        httpx_mock.add_response(
+            method="GET",
+            url=request_url,
+            text=text.read(),
+            headers={"mock_header": "value"},
         )
 
 
-def assert_metadata(requests_mock, request_url, md, site, parameter_cd, format):
+def assert_metadata(httpx_mock, request_url, md, site, parameter_cd, format):
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header == {"mock_header": "value"}
+    assert md.header.get("mock_header") == "value"
     if site is not None:
         site_request_url = (
             f"https://waterservices.usgs.gov/nwis/site?sites={site}&format=rdb"
         )
         with open("tests/data/waterservices_site.txt") as text:
-            requests_mock.get(site_request_url, text=text.read())
+            httpx_mock.add_response(
+                method="GET", url=site_request_url, text=text.read()
+            )
         site_info, _ = md.site_info
         if not isinstance(site_info, DataFrame):
             raise AssertionError(f"{type(site_info)} is not DataFrame base class type")

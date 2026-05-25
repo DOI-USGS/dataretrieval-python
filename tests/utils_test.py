@@ -19,12 +19,12 @@ class Test_query:
         or abruptly close the connection (ConnectionError). Both are valid
         responses to an excessively long URL.
         """
-        import requests as req
+        import httpx
 
         # all sites in MD
         sites, _ = nwis.what_sites(stateCd="MD")
         # raise error by trying to query them all, so URL is way too long
-        with pytest.raises((ValueError, req.exceptions.ConnectionError)):
+        with pytest.raises((ValueError, httpx.ConnectError)):
             nwis.get_iv(sites=sites.site_no.values.tolist())
 
     def test_header(self):

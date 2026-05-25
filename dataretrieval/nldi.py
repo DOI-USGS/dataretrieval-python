@@ -20,7 +20,7 @@ def _query_nldi(url, query_params, error_message):
     # A helper function to query the NLDI API
     response = query(url, payload=query_params)
     if response.status_code != 200:
-        raise ValueError(f"{error_message}. Error reason: {response.reason}")
+        raise ValueError(f"{error_message}. Error reason: {response.reason_phrase}")
 
     response_data = {}
     try:
@@ -453,6 +453,14 @@ def _validate_data_source(data_source: str):
         available_data_sources = _query_nldi(
             url, {}, "Error getting available data sources"
         )
+        if not isinstance(available_data_sources, list) or not all(
+            isinstance(ds, dict) and "source" in ds for ds in available_data_sources
+        ):
+            raise ValueError(
+                "NLDI data-source catalog returned an unexpected shape; "
+                "expected a list of {'source': ..., ...} objects, got: "
+                f"{available_data_sources!r}"
+            )
         _AVAILABLE_DATA_SOURCES = [ds["source"] for ds in available_data_sources]
 
     if data_source not in _AVAILABLE_DATA_SOURCES:

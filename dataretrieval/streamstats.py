@@ -7,7 +7,9 @@ This module is a wrapper for the streamstats API (`streamstats documentation`_).
 
 import json
 
-import requests
+import httpx
+
+from dataretrieval.utils import HTTPX_DEFAULTS
 
 
 def download_workspace(workspaceID, format=""):
@@ -32,7 +34,7 @@ def download_workspace(workspaceID, format=""):
     payload = {"workspaceID": workspaceID, "format": format}
     url = "https://streamstats.usgs.gov/streamstatsservices/download"
 
-    r = requests.get(url, params=payload)
+    r = httpx.get(url, params=payload, **HTTPX_DEFAULTS)
 
     r.raise_for_status()
     return r
@@ -125,7 +127,7 @@ def get_watershed(
     }
     url = "https://streamstats.usgs.gov/streamstatsservices/watershed.geojson"
 
-    r = requests.get(url, params=payload)
+    r = httpx.get(url, params=payload, **HTTPX_DEFAULTS)
 
     r.raise_for_status()
 

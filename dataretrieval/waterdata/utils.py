@@ -1,28 +1,34 @@
 from __future__ import annotations
 
 import copy
+import functools
 import json
 import logging
 import os
 import re
-from collections.abc import Callable, Iterable, Iterator, Mapping
+from collections.abc import (
+    Callable,
+    Iterable,
+    Iterator,
+    Mapping,
+)
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 from typing import Any, TypeVar, get_args
 from zoneinfo import ZoneInfo
 
+import httpx
 import pandas as pd
-import requests
-from requests.structures import CaseInsensitiveDict
 
 from dataretrieval import __version__
-from dataretrieval.utils import BaseMetadata
+from dataretrieval.utils import HTTPX_DEFAULTS, BaseMetadata
 from dataretrieval.waterdata import _progress, chunking
 from dataretrieval.waterdata.chunking import (
     _QUOTA_HEADER,
     RateLimited,
     ServiceUnavailable,
-    get_active_session,
+    _safe_elapsed,
+    get_active_client,
 )
 from dataretrieval.waterdata.types import (
     PROFILE_LOOKUP,
@@ -366,24 +372,26 @@ def _check_ogc_requests(endpoint: str = "daily", req_type: str = "queryables"):
     ------
     ValueError
         If req_type is not "queryables" or "schema".
-    requests.HTTPError
-        If the HTTP request returns an unsuccessful status code.
+    RateLimited, ServiceUnavailable, RuntimeError
+        From :func:`_raise_for_non_200` on any non-200 — same typed
+        contract as the main data path so callers can use one
+        ``except`` clause everywhere.
     """
     if req_type not in ("queryables", "schema"):
         raise ValueError(f"req_type must be 'queryables' or 'schema', got {req_type!r}")
     url = f"{OGC_API_URL}/collections/{endpoint}/{req_type}"
-    resp = requests.get(url, headers=_default_headers())
-    resp.raise_for_status()
+    resp = httpx.get(url, headers=_default_headers(), **HTTPX_DEFAULTS)
+    _raise_for_non_200(resp)
     return resp.json()
 
 
-def _error_body(resp: requests.Response):
+def _error_body(resp: httpx.Response):
     """
     Build an informative error message from an HTTP response.
 
     Parameters
     ----------
-    resp : requests.Response
+    resp : httpx.Response
         The HTTP response object to extract the error message from.
 
     Returns
@@ -418,7 +426,7 @@ def _error_body(resp: requests.Response):
         j_txt = resp.json()
     except ValueError:
         snippet = (resp.text or "").strip()[:200]
-        reason = resp.reason or "Error"
+        reason = resp.reason_phrase or "Error"
         if snippet:
             return f"{status}: {reason}. {snippet}"
         return f"{status}: {reason}."
@@ -459,18 +467,18 @@ def _parse_retry_after(value: str | None) -> float | None:
         return None
 
 
-def _raise_for_non_200(resp: requests.Response) -> None:
+def _raise_for_non_200(resp: httpx.Response) -> None:
     """
     Raise a typed exception for any non-200 response.
 
     Routes through :func:`_error_body` (USGS-API-aware: handles
     429/403 specially, extracts ``code``/``description`` from JSON
     error bodies) rather than ``Response.raise_for_status``, which
-    raises ``HTTPError`` with a generic message.
+    raises ``HTTPStatusError`` with a generic message.
 
     Parameters
     ----------
-    resp : requests.Response
+    resp : httpx.Response
         The HTTP response to inspect.
 
     Raises
@@ -520,7 +528,7 @@ def _paginated_failure_message(pages_collected: int, cause: BaseException) -> st
         and ``get_stats_data`` raise from the original exception.
     """
     cause_str = str(cause).removesuffix(".")
-    # Some ``requests`` exceptions (e.g. ``Timeout()`` with no args)
+    # Some ``httpx`` exceptions (e.g. ``TimeoutException()`` with no args)
     # stringify to empty; fall back to the class name so the
     # returned message is always informative.
     if not cause_str.strip():
@@ -544,7 +552,7 @@ def _construct_api_requests(
     limit: int | None = None,
     skip_geometry: bool = False,
     **kwargs,
-):
+) -> httpx.Request:
     """
     Constructs an HTTP request object for the specified water data API service.
 
@@ -572,7 +580,7 @@ def _construct_api_requests(
 
     Returns
     -------
-    requests.PreparedRequest
+    httpx.Request
         The constructed HTTP request object ready to be sent.
 
     Notes
@@ -626,25 +634,23 @@ def _construct_api_requests(
 
     if post_params:
         headers["Content-Type"] = "application/query-cql-json"
-        request = requests.Request(
+        return httpx.Request(
             method="POST",
             url=service_url,
             headers=headers,
-            data=_cql2_param(post_params),
+            content=_cql2_param(post_params),
             params=params,
         )
-    else:
-        request = requests.Request(
-            method="GET",
-            url=service_url,
-            headers=headers,
-            params=params,
-        )
-    return request.prepare()
+    return httpx.Request(
+        method="GET",
+        url=service_url,
+        headers=headers,
+        params=params,
+    )
 
 
 def _next_req_url(
-    resp: requests.Response, *, body: dict[str, Any] | None = None
+    resp: httpx.Response, *, body: dict[str, Any] | None = None
 ) -> str | None:
     """
     Extracts the URL for the next page of results from an HTTP response from a
@@ -652,7 +658,7 @@ def _next_req_url(
 
     Parameters
     ----------
-    resp : requests.Response
+    resp : httpx.Response
         The HTTP response object containing JSON data and headers.
     body : dict, optional
         Pre-parsed JSON body for ``resp``. When provided, skips the
@@ -676,13 +682,37 @@ def _next_req_url(
     if not body.get("numberReturned"):
         return None
     for link in body.get("links", []):
-        if link.get("rel") == "next":
-            return link.get("href")
+        if link.get("rel") != "next":
+            continue
+        href = link.get("href")
+        if href:
+            # Refuse to follow a next-page link to a different host —
+            # the request's headers/auth were minted for the original
+            # host and shouldn't leak to whatever a poisoned response
+            # body might supply. Guarded against mock-shaped ``resp.url``
+            # attributes (tests sometimes set strings or ``MagicMock``)
+            # by falling open when host extraction isn't reliable.
+            try:
+                next_host = httpx.URL(href).host
+                resp_url = (
+                    resp.url
+                    if isinstance(resp.url, httpx.URL)
+                    else httpx.URL(str(resp.url))
+                )
+                cur_host = resp_url.host
+            except (httpx.InvalidURL, TypeError):
+                next_host = cur_host = None
+            if next_host and cur_host and next_host != cur_host:
+                raise RuntimeError(
+                    f"Refusing to follow cross-host next-page URL: "
+                    f"{next_host} != {cur_host}"
+                )
+        return href
     return None
 
 
 def _get_resp_data(
-    resp: requests.Response,
+    resp: httpx.Response,
     geopd: bool,
     *,
     body: dict[str, Any] | None = None,
@@ -692,7 +722,7 @@ def _get_resp_data(
 
     Parameters
     ----------
-    resp : requests.Response
+    resp : httpx.Response
         The HTTP response object expected to contain a JSON body
         with a "features" key.
     geopd : bool
@@ -769,47 +799,48 @@ def _get_resp_data(
 
 
 @contextmanager
-def _session(client: requests.Session | None) -> Iterator[requests.Session]:
+def _client_for(client: httpx.Client | None) -> Iterator[httpx.Client]:
     """
-    Yield a usable session, picking the best available source.
+    Yield a usable client, picking the best available source.
 
     Resolution order:
 
     1. ``client`` if the caller supplied one (borrowed; not closed
        here — the caller owns its lifecycle).
-    2. The chunker's shared session if we're inside a ``ChunkedCall``
-       fan-out (per :func:`chunking.get_active_session`). Borrowed;
+    2. The chunker's shared client if we're inside a
+       ``ChunkedCall.resume()`` block (per
+       :func:`chunking.get_active_client`). Borrowed;
        ``ChunkedCall.resume`` closes it on exit.
-    3. A fresh short-lived ``requests.Session`` opened here and closed
+    3. A fresh short-lived ``httpx.Client`` opened here and closed
        on context exit.
 
     Parameters
     ----------
-    client : requests.Session or None
-        A caller-owned session to borrow, or ``None`` to defer to the
-        chunker's shared session or a temporary one.
+    client : httpx.Client or None
+        A caller-owned client to borrow, or ``None`` to defer to the
+        chunker's shared client or a temporary one.
 
     Yields
     ------
-    requests.Session
-        The chosen session.
+    httpx.Client
+        The chosen client.
     """
     if client is not None:
         yield client
         return
-    shared = get_active_session()
+    shared = get_active_client()
     if shared is not None:
         yield shared
         return
-    with requests.Session() as new:
+    with httpx.Client(**HTTPX_DEFAULTS) as new:
         yield new
 
 
 def _aggregate_paginated_response(
-    initial: requests.Response,
-    last: requests.Response,
+    initial: httpx.Response,
+    last: httpx.Response,
     total_elapsed: timedelta,
-) -> requests.Response:
+) -> httpx.Response:
     """
     Build a single response covering a paginated call.
 
@@ -823,27 +854,24 @@ def _aggregate_paginated_response(
 
     Parameters
     ----------
-    initial : requests.Response
+    initial : httpx.Response
         First-page response (the canonical one for ``md.url``).
-    last : requests.Response
+    last : httpx.Response
         Last-page response — supplies the headers to copy over.
     total_elapsed : datetime.timedelta
         Cumulative wall-clock across every page, including ``initial``.
 
     Returns
     -------
-    requests.Response
+    httpx.Response
         A shallow copy of ``initial`` with ``.headers`` set to a fresh
-        ``CaseInsensitiveDict`` and ``.elapsed`` set to the
-        cumulative wall-clock. ``initial.headers`` / ``initial.elapsed``
-        are never mutated, so callers holding a pre-pagination
-        reference still see the original first-page values. Other
-        ``Response`` fields (``_content``, ``raw``, ``cookies``,
-        ``request``) are still aliased to ``initial`` by the shallow
-        copy — callers that mutate those will affect ``initial``.
+        ``httpx.Headers`` and ``.elapsed`` set to the cumulative
+        wall-clock. ``initial.headers`` / ``initial.elapsed`` are
+        never mutated, so callers holding a pre-pagination reference
+        still see the original first-page values.
     """
     final = copy.copy(initial)
-    final.headers = CaseInsensitiveDict(last.headers)
+    final.headers = httpx.Headers(last.headers)
     final.elapsed = total_elapsed
     return final
 
@@ -852,12 +880,12 @@ _Cursor = TypeVar("_Cursor")
 
 
 def _paginate(
-    initial_req: requests.PreparedRequest,
+    initial_req: httpx.Request,
     *,
-    parse_response: Callable[[requests.Response], tuple[pd.DataFrame, _Cursor | None]],
-    follow_up: Callable[[_Cursor, requests.Session], requests.Response],
-    client: requests.Session | None = None,
-) -> tuple[pd.DataFrame, requests.Response]:
+    parse_response: Callable[[httpx.Response], tuple[pd.DataFrame, _Cursor | None]],
+    follow_up: Callable[[_Cursor, httpx.Client], httpx.Response],
+    client: httpx.Client | None = None,
+) -> tuple[pd.DataFrame, httpx.Response]:
     """
     Drive a paginated request to completion.
 
@@ -870,27 +898,27 @@ def _paginate(
 
     Parameters
     ----------
-    initial_req : requests.PreparedRequest
+    initial_req : httpx.Request
         First-page request to send.
     parse_response : callable
         ``resp -> (df, next_cursor_or_None)``. Returns the page's
         DataFrame and the cursor (URL, token, …) used to drive
         ``follow_up`` for the next page; ``None`` terminates the loop.
     follow_up : callable
-        ``(cursor, session) -> requests.Response``. Builds and sends
+        ``(cursor, client) -> httpx.Response``. Builds and sends
         the next-page request.
-    client : requests.Session, optional
-        Caller-borrowed session. ``None`` (default) means use the
-        chunker's shared session (if inside a chunked call) or open
+    client : httpx.Client, optional
+        Caller-borrowed client. ``None`` (default) means use the
+        chunker's shared client (if inside a chunked call) or open
         a temporary one.
 
     Returns
     -------
     df : pandas.DataFrame
         Concatenation of every page's parsed frame.
-    response : requests.Response
+    response : httpx.Response
         A shallow copy of the first-page response, with ``.headers``
-        rebuilt as a fresh ``CaseInsensitiveDict`` reflecting the last
+        rebuilt as a fresh ``httpx.Headers`` reflecting the last
         page and ``.elapsed`` set to cumulative wall-clock. The
         canonical URL is preserved from the first page. The original
         first-page response is not mutated.
@@ -906,22 +934,22 @@ def _paginate(
         (wrapped via :func:`_paginated_failure_message` with the
         original exception on ``__cause__``), or any failure on a
         subsequent page (same wrapping).
-    requests.exceptions.RequestException
+    httpx.HTTPError
         Network-level failures on the *initial* request (e.g.
-        ``ConnectionError``, ``Timeout``) propagate unmodified so
-        callers can branch on the specific type; equivalent failures
-        on subsequent pages are wrapped per above.
+        ``ConnectError``, ``TimeoutException``) propagate unmodified
+        so callers can branch on the specific type; equivalent
+        failures on subsequent pages are wrapped per above.
     """
     logger.debug("Requesting: %s", initial_req.url)
     reporter = _progress.current()
-    with _session(client) as sess:
-        resp = sess.send(initial_req)
+    with _client_for(client) as client:
+        resp = client.send(initial_req)
         _raise_for_non_200(resp)
         # Keep the original-request response as the "canonical" one for
         # ``md.url`` reproducibility; ``.headers`` and ``.elapsed`` get
         # overwritten with latest/cumulative values below.
         initial_response = resp
-        total_elapsed = resp.elapsed
+        total_elapsed = _safe_elapsed(resp)
 
         try:
             df, cursor = parse_response(resp)
@@ -941,11 +969,11 @@ def _paginate(
             reporter.add_page(rows=len(df))
         while cursor is not None:
             try:
-                resp = follow_up(cursor, sess)
+                resp = follow_up(cursor, client)
                 _raise_for_non_200(resp)
                 df, cursor = parse_response(resp)
                 dfs.append(df)
-                total_elapsed += resp.elapsed
+                total_elapsed += _safe_elapsed(resp)
                 if reporter is not None:
                     reporter.set_rate_remaining(
                         resp.headers.get(_QUOTA_HEADER),
@@ -969,11 +997,27 @@ def _paginate(
         return pd.concat(dfs, ignore_index=True), final_response
 
 
+def _ogc_parse_response(
+    resp: httpx.Response, *, geopd: bool
+) -> tuple[pd.DataFrame, str | None]:
+    """Parse one OGC API page: extract the DataFrame and the next-page URL.
+
+    Coerces falsy cursors (empty href, etc.) to ``None`` so the
+    paginate loop's ``while cursor is not None`` terminates instead
+    of spinning on a meaningless value.
+    """
+    body = resp.json()
+    return (
+        _get_resp_data(resp, geopd=geopd, body=body),
+        _next_req_url(resp, body=body) or None,
+    )
+
+
 def _walk_pages(
     geopd: bool,
-    req: requests.PreparedRequest,
-    client: requests.Session | None = None,
-) -> tuple[pd.DataFrame, requests.Response]:
+    req: httpx.Request,
+    client: httpx.Client | None = None,
+) -> tuple[pd.DataFrame, httpx.Response]:
     """
     Iterate through paginated OGC API responses and aggregate into one
     DataFrame.
@@ -987,17 +1031,17 @@ def _walk_pages(
     ----------
     geopd : bool
         Whether geopandas is installed (drives geometry handling).
-    req : requests.PreparedRequest
+    req : httpx.Request
         The initial HTTP request to send.
-    client : requests.Session, optional
-        Caller-borrowed session; ``None`` defers session management to
+    client : httpx.Client, optional
+        Caller-borrowed client; ``None`` defers client management to
         :func:`_paginate`.
 
     Returns
     -------
     pd.DataFrame
         A DataFrame containing the aggregated results from all pages.
-    requests.Response
+    httpx.Response
         Aggregated response — initial-request URL (for query identity),
         final page's headers (so downstream sees current rate-limit
         state), and cumulative ``elapsed`` summed across pages.
@@ -1006,29 +1050,19 @@ def _walk_pages(
     ------
     RuntimeError
         See :func:`_paginate`.
-    requests.exceptions.RequestException
+    httpx.HTTPError
         See :func:`_paginate`.
     """
-    method = req.method  # ``PreparedRequest.method`` is already upper-cased.
-    headers = dict(req.headers)
-    content = req.body if method == "POST" else None
+    method = req.method  # ``httpx.Request.method`` is already upper-cased.
+    headers = req.headers
+    content = req.content if method == "POST" else None
 
-    def parse_response(resp: requests.Response) -> tuple[pd.DataFrame, str | None]:
-        body = resp.json()
-        # Coerce falsy cursors (empty href, etc.) to None so
-        # _paginate's `while cursor is not None` terminates instead of
-        # spinning on a meaningless value.
-        return (
-            _get_resp_data(resp, geopd=geopd, body=body),
-            _next_req_url(resp, body=body) or None,
-        )
-
-    def follow_up(cursor: str, sess: requests.Session) -> requests.Response:
-        return sess.request(method, cursor, headers=headers, data=content)
+    def follow_up(cursor: str, client: httpx.Client) -> httpx.Response:
+        return client.request(method, cursor, headers=headers, content=content)
 
     return _paginate(
         req,
-        parse_response=parse_response,
+        parse_response=functools.partial(_ogc_parse_response, geopd=geopd),
         follow_up=follow_up,
         client=client,
     )
@@ -1255,18 +1289,20 @@ def get_ogc_data(
     return return_list, BaseMetadata(response)
 
 
-@chunking.multi_value_chunked(build_request=_construct_api_requests)
+@chunking.multi_value_chunked(
+    build_request=_construct_api_requests,
+)
 def _fetch_once(
     args: dict[str, Any],
-) -> tuple[pd.DataFrame, requests.Response]:
+) -> tuple[pd.DataFrame, httpx.Response]:
     """Send one prepared-args OGC request; return the frame + response.
 
     ``@chunking.multi_value_chunked`` models every multi-value list
     parameter and the cql-text filter as a chunkable axis, greedy-halves
     the biggest chunk across all axes until each sub-request URL fits,
     and iterates the cartesian product. With no chunkable inputs the
-    decorator passes args through unchanged. Either way the return
-    shape is ``(frame, response)``.
+    decorator passes args through unchanged. The return shape
+    is ``(frame, response)``.
     """
     req = _construct_api_requests(**args)
     return _walk_pages(geopd=GEOPANDAS, req=req)
@@ -1432,7 +1468,7 @@ def get_stats_data(
     args: dict[str, Any],
     service: str,
     expand_percentiles: bool,
-    client: requests.Session | None = None,
+    client: httpx.Client | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Retrieves statistical data from a specified endpoint and returns it
@@ -1464,27 +1500,26 @@ def get_stats_data(
     """
 
     url = f"{STATISTICS_API_URL}/{service}"
-    request = requests.Request(
+    req = httpx.Request(
         method="GET",
         url=url,
         headers=_default_headers(),
         params=args,
     )
-    req = request.prepare()
-    method = req.method  # ``PreparedRequest.method`` is already upper-cased.
-    headers = dict(req.headers)
+    method = req.method
+    headers = req.headers
 
-    def parse_response(resp: requests.Response) -> tuple[pd.DataFrame, str | None]:
+    def parse_response(resp: httpx.Response) -> tuple[pd.DataFrame, str | None]:
         body = resp.json()
         # Coerce falsy cursors ("", 0) to None so _paginate terminates.
         # USGS uses "next": null at end-of-stream, but defensive coerce
         # protects against any "" sentinel a future schema might use.
         return _handle_stats_nesting(body, geopd=GEOPANDAS), body.get("next") or None
 
-    def follow_up(cursor: str, sess: requests.Session) -> requests.Response:
-        # Build a fresh params dict per page so the caller's ``args`` is
-        # never mutated.
-        return sess.request(
+    def follow_up(cursor: str, client: httpx.Client) -> httpx.Response:
+        # Build a fresh params dict per page so the caller's ``args``
+        # is never mutated.
+        return client.request(
             method, url=url, params={**args, "next_token": cursor}, headers=headers
         )
 

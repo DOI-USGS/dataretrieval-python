@@ -13,11 +13,15 @@ from io import StringIO
 from typing import get_args
 from urllib.parse import quote
 
+import httpx
 import pandas as pd
-import requests
-from requests.models import PreparedRequest
 
-from dataretrieval.utils import BaseMetadata, _attach_datetime_columns, to_str
+from dataretrieval.utils import (
+    HTTPX_DEFAULTS,
+    BaseMetadata,
+    _attach_datetime_columns,
+    to_str,
+)
 from dataretrieval.waterdata.filters import FILTER_LANG
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,
@@ -2110,7 +2114,7 @@ def get_codes(code_service: CODE_SERVICES) -> pd.DataFrame:
 
     url = f"{SAMPLES_URL}/codeservice/{code_service}?mimeType=application%2Fjson"
 
-    response = requests.get(url, headers=_default_headers())
+    response = httpx.get(url, headers=_default_headers(), **HTTPX_DEFAULTS)
 
     response.raise_for_status()
 
@@ -2336,12 +2340,14 @@ def get_samples(
 
     url = f"{SAMPLES_URL}/{service}/{profile}"
 
-    req = PreparedRequest()
-    req.prepare_url(url, params=params)
-    logger.debug("Request: %s", req.url)
+    logger.debug("Request: %s", httpx.URL(url).copy_merge_params(params))
 
-    response = requests.get(
-        url, params=params, verify=ssl_check, headers=_default_headers()
+    response = httpx.get(
+        url,
+        params=params,
+        verify=ssl_check,
+        headers=_default_headers(),
+        **HTTPX_DEFAULTS,
     )
 
     response.raise_for_status()
@@ -2408,12 +2414,14 @@ def get_samples_summary(
     url = f"{SAMPLES_URL}/summary/{quote(monitoringLocationIdentifier, safe='')}"
     params = {"mimeType": "text/csv"}
 
-    req = PreparedRequest()
-    req.prepare_url(url, params=params)
-    logger.debug("Request: %s", req.url)
+    logger.debug("Request: %s", httpx.URL(url).copy_merge_params(params))
 
-    response = requests.get(
-        url, params=params, verify=ssl_check, headers=_default_headers()
+    response = httpx.get(
+        url,
+        params=params,
+        verify=ssl_check,
+        headers=_default_headers(),
+        **HTTPX_DEFAULTS,
     )
 
     response.raise_for_status()

@@ -17,10 +17,11 @@ import os
 from collections.abc import Iterable
 from typing import Any, Literal, get_args
 
+import httpx
 import pandas as pd
-import requests
 
 from dataretrieval.rdb import extract_rdb_comment, read_rdb
+from dataretrieval.utils import HTTPX_DEFAULTS
 
 from .utils import (
     _DURATION_RE,
@@ -186,7 +187,7 @@ def get_ratings(
         fid = feature["id"]
         try:
             out[fid] = _download_and_parse(feature, file_path, ssl_check)
-        except (requests.RequestException, ValueError, OSError) as e:
+        except (httpx.HTTPError, ValueError, OSError) as e:
             logger.warning("Failed to download / parse %s: %s", fid, e)
 
     return out
@@ -240,11 +241,12 @@ def _search(
     if bbox is not None:
         params["bbox"] = ",".join(map(str, bbox))
 
-    response = requests.get(
+    response = httpx.get(
         f"{STAC_URL}/search",
         params=params,
         headers=_default_headers(),
         verify=ssl_check,
+        **HTTPX_DEFAULTS,
     )
     response.raise_for_status()
     return response.json().get("features", [])
@@ -257,7 +259,9 @@ def _download_and_parse(
 ) -> pd.DataFrame:
     """Fetch the feature's data asset, parse RDB, optionally persist to disk."""
     url = feature["assets"]["data"]["href"]
-    response = requests.get(url, headers=_default_headers(), verify=ssl_check)
+    response = httpx.get(
+        url, headers=_default_headers(), verify=ssl_check, **HTTPX_DEFAULTS
+    )
     response.raise_for_status()
 
     if file_path is not None:

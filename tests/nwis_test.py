@@ -1,5 +1,6 @@
 import datetime
 import json
+import re
 import warnings
 from pathlib import Path
 from unittest import mock
@@ -37,7 +38,7 @@ def _load_mock_json(file_name):
         return json.load(f)
 
 
-def _test_iv_service(requests_mock):
+def _test_iv_service(httpx_mock):
     """Mocked test of instantaneous value service"""
     start = START_DATE
     end = END_DATE
@@ -48,17 +49,17 @@ def _test_iv_service(requests_mock):
     mock_json = _load_mock_json("nwis_iv_mock.json")
 
     # Match the base URL and ensure query parameters are correct
-    requests_mock.get(
-        "https://waterservices.usgs.gov/nwis/iv",
+    httpx_mock.add_response(
+        method="GET",
+        url=re.compile(r"^https://waterservices\.usgs\.gov/nwis/iv(\?.*)?$"),
         json=mock_json,
-        complete_qs=False,
     )
 
     return get_record(site, start, end, service=service)
 
 
-def test_iv_service_answer(requests_mock):
-    df = _test_iv_service(requests_mock)
+def test_iv_service_answer(httpx_mock):
+    df = _test_iv_service(httpx_mock)
     # check multiindex function
     assert df.index.names == [
         SITENO_COL,
@@ -152,23 +153,25 @@ class TestDeprecationWarnings:
         assert replacement_substring in message
         assert _NWIS_REMOVAL_DATE in message
 
-    def test_get_iv_fires_deprecation_on_call(self, requests_mock):
+    def test_get_iv_fires_deprecation_on_call(self, httpx_mock):
         """End-to-end: a real call routes through _warn_deprecated."""
-        requests_mock.get(
-            "https://waterservices.usgs.gov/nwis/iv",
+        httpx_mock.add_response(
+            method="GET",
+            url=re.compile(r"^https://waterservices\.usgs\.gov/nwis/iv(\?.*)?$"),
             json={"value": {"timeSeries": []}},
         )
         with pytest.warns(DeprecationWarning, match="get_iv.*waterdata.get_continuous"):
             get_iv(sites="01491000")
 
-    def test_nested_calls_emit_one_warning(self, requests_mock):
+    def test_nested_calls_emit_one_warning(self, httpx_mock):
         """get_record(service='iv') wraps get_iv -> query_waterservices.
 
         Without re-entrancy suppression the user would see 3 near-identical
         deprecation warnings for one call; pin the outermost-only contract.
         """
-        requests_mock.get(
-            "https://waterservices.usgs.gov/nwis/iv",
+        httpx_mock.add_response(
+            method="GET",
+            url=re.compile(r"^https://waterservices\.usgs\.gov/nwis/iv(\?.*)?$"),
             json={"value": {"timeSeries": []}},
         )
         with warnings.catch_warnings(record=True) as caught:
@@ -318,7 +321,7 @@ class TestSiteseriesCatalogOutput:
         assert "count_nu" not in data.columns
 
 
-def test_empty_timeseries(requests_mock):
+def test_empty_timeseries(httpx_mock):
     """Test based on empty case from GitHub Issue #26."""
     sites = "011277906"
     start = "2010-07-20"
@@ -326,10 +329,10 @@ def test_empty_timeseries(requests_mock):
 
     mock_json = _load_mock_json("nwis_iv_empty_mock.json")
     # Match the base URL and ensure query parameters are correct
-    requests_mock.get(
-        "https://waterservices.usgs.gov/nwis/iv",
+    httpx_mock.add_response(
+        method="GET",
+        url=re.compile(r"^https://waterservices\.usgs\.gov/nwis/iv(\?.*)?$"),
         json=mock_json,
-        complete_qs=False,
     )
 
     df = get_record(sites=sites, service="iv", start=start, end=end)
