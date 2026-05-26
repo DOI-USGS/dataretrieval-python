@@ -122,7 +122,7 @@ def get_active_client() -> httpx.Client | None:
     Return the chunker's currently-published sync client, or ``None``.
 
     Public accessor for the ``_chunked_client`` ContextVar so
-    sibling modules (notably :func:`dataretrieval.waterdata.utils._session`)
+    sibling modules (notably :func:`dataretrieval.waterdata.utils._client_for`)
     don't have to reach into the private ContextVar directly.
 
     Returns

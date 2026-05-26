@@ -685,28 +685,29 @@ def _next_req_url(
         if link.get("rel") != "next":
             continue
         href = link.get("href")
-        if href:
-            # Refuse to follow a next-page link to a different host —
-            # the request's headers/auth were minted for the original
-            # host and shouldn't leak to whatever a poisoned response
-            # body might supply. Guarded against mock-shaped ``resp.url``
-            # attributes (tests sometimes set strings or ``MagicMock``)
-            # by falling open when host extraction isn't reliable.
-            try:
-                next_host = httpx.URL(href).host
-                resp_url = (
-                    resp.url
-                    if isinstance(resp.url, httpx.URL)
-                    else httpx.URL(str(resp.url))
-                )
-                cur_host = resp_url.host
-            except (httpx.InvalidURL, TypeError):
-                next_host = cur_host = None
-            if next_host and cur_host and next_host != cur_host:
-                raise RuntimeError(
-                    f"Refusing to follow cross-host next-page URL: "
-                    f"{next_host} != {cur_host}"
-                )
+        if not href:
+            return href
+        # Refuse to follow a next-page link to a different host —
+        # the request's headers/auth were minted for the original
+        # host and shouldn't leak to whatever a poisoned response
+        # body might supply. Guarded against mock-shaped ``resp.url``
+        # attributes (tests sometimes set strings or ``MagicMock``)
+        # by falling open when host extraction isn't reliable.
+        try:
+            next_host = httpx.URL(href).host
+            resp_url = (
+                resp.url
+                if isinstance(resp.url, httpx.URL)
+                else httpx.URL(str(resp.url))
+            )
+            cur_host = resp_url.host
+        except (httpx.InvalidURL, TypeError):
+            next_host = cur_host = None
+        if next_host and cur_host and next_host != cur_host:
+            raise RuntimeError(
+                f"Refusing to follow cross-host next-page URL: "
+                f"{next_host} != {cur_host}"
+            )
         return href
     return None
 
