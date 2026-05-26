@@ -1007,10 +1007,6 @@ class ChunkedCall:
         The plan being driven (read-only after construction).
     fetch_once : Callable
         The per-sub-request fetch function.
-    completed_chunks : int
-        Number of sub-requests successfully completed so far.
-    total_chunks : int
-        Total sub-requests in ``plan`` (``== plan.total``).
     partial_frame : pandas.DataFrame
         Combined frame of completed sub-requests (live; recomputed per
         access).
@@ -1025,38 +1021,6 @@ class ChunkedCall:
         # Completed (frame, response) pairs keyed by sub-args index;
         # ``resume()`` skips indices already present.
         self._chunks: dict[int, tuple[pd.DataFrame, httpx.Response]] = {}
-
-    def record(self, index: int, pair: tuple[pd.DataFrame, httpx.Response]) -> None:
-        """Record a completed sub-request's ``(frame, response)`` pair
-        under its sub-args index."""
-        self._chunks[index] = pair
-
-    def wrap_failure(self, exc: BaseException) -> ChunkInterrupted | None:
-        """Build the matching :class:`ChunkInterrupted` carrying this
-        call when ``exc`` is a recognized transient transport failure;
-        return ``None`` for unrecognized failures so the caller can
-        re-raise. Encapsulates the
-        ``classify → instantiate-with-call-state`` recipe so
-        :class:`ChunkedCall`'s private fields stay private."""
-        classification = _classify_chunk_error(exc)
-        if classification is None:
-            return None
-        interrupted_class, retry_after = classification
-        return interrupted_class(
-            completed_chunks=len(self._chunks),
-            total_chunks=self.plan.total,
-            call=self,
-            retry_after=retry_after,
-            cause=exc,
-        )
-
-    @property
-    def completed_chunks(self) -> int:
-        return len(self._chunks)
-
-    @property
-    def total_chunks(self) -> int:
-        return self.plan.total
 
     def _ordered_chunks(self) -> list[tuple[pd.DataFrame, httpx.Response]]:
         return [self._chunks[i] for i in sorted(self._chunks)]
@@ -1153,26 +1117,34 @@ class ChunkedCall:
 
     def _issue(self, index: int, sub_args: dict[str, Any]) -> None:
         """
-        Issue one sub-request and record its result.
+        Issue one sub-request and record its ``(frame, response)`` pair
+        under ``index``.
 
-        Catches ``RuntimeError`` (the layer's typed contract:
+        On failure, classify the exception and either wrap it as a
+        resumable :class:`ChunkInterrupted` carrying this call, or
+        re-raise it unchanged to preserve its type. Catches
+        ``RuntimeError`` (the layer's typed contract:
         :class:`RateLimited`, :class:`ServiceUnavailable`, or the
         mid-pagination wrapper), :class:`httpx.HTTPError`
         (transport-level failures like ``ConnectError`` /
         ``TimeoutException``), and :class:`httpx.InvalidURL` (which
-        inherits directly from ``Exception``, not ``HTTPError``).
-        All three feed :func:`_classify_chunk_error` so transient
-        failures become resumable :class:`ChunkInterrupted` subclasses;
-        unknown failures re-raise to preserve their type.
+        inherits directly from ``Exception``, not ``HTTPError``); all
+        three feed :func:`_classify_chunk_error`.
         """
         try:
-            chunk = self.fetch_once(sub_args)
+            self._chunks[index] = self.fetch_once(sub_args)
         except (RuntimeError, httpx.HTTPError, httpx.InvalidURL) as exc:
-            interrupted = self.wrap_failure(exc)
-            if interrupted is None:
+            classification = _classify_chunk_error(exc)
+            if classification is None:
                 raise
-            raise interrupted from exc
-        self.record(index, chunk)
+            interrupted_class, retry_after = classification
+            raise interrupted_class(
+                completed_chunks=len(self._chunks),
+                total_chunks=self.plan.total,
+                call=self,
+                retry_after=retry_after,
+                cause=exc,
+            ) from exc
 
 
 def multi_value_chunked(
