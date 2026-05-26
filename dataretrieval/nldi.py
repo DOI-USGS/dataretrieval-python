@@ -296,8 +296,9 @@ def get_features_by_data_source(data_source: str) -> gpd.GeoDataFrame:
     --------
     .. doctest::
 
-        >>> # Get features for a feature wqp and feature_id USGS-01031500
-        >>> gdf = dataretrieval.nldi.get_features_by_data_source(
+        >>> # "nwissite" returns every NWIS site nationwide, so this example is
+        >>> # skipped in the doctest build to avoid the (very large) download.
+        >>> gdf = dataretrieval.nldi.get_features_by_data_source(  # doctest: +SKIP
         ...     data_source="nwissite"
         ... )
     """

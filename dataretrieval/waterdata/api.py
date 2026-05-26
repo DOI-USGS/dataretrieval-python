@@ -554,11 +554,11 @@ def get_monitoring_locations(
     county_code : string or iterable of strings, optional
         The code for the county or county equivalent (parish, borough, etc.) in which
         the monitoring location is located. A `list of codes
-        <https://help.waterdata.usgs.gov/code/county_query?fmt=html>`_ is available.
+        <https://help.waterdata.usgs.gov/code/county_query?fmt=html>`__ is available.
     county_name : string or iterable of strings, optional
         The name of the county or county equivalent (parish, borough, etc.) in which
         the monitoring location is located. A `list of codes
-        <https://help.waterdata.usgs.gov/code/county_query?fmt=html>`_ is available.
+        <https://help.waterdata.usgs.gov/code/county_query?fmt=html>`__ is available.
     minor_civil_division_code : string or iterable of strings, optional
         Codes for primary governmental or administrative divisions of the county or
         county equivalent in which the monitoring location is located.
@@ -2751,9 +2751,10 @@ def get_channel(
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
             * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
-            "../2018-03-18T12:31:12Z"
-            * Duration objects: "P1M" for data from the past month or "PT36H" for
-            the last 36 hours
+              "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H"
+              for the last 36 hours
+
     channel_name : string or iterable of strings, optional
         The channel name.
     channel_flow : string or iterable of strings, optional
@@ -2799,9 +2800,9 @@ def get_channel(
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
             * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
-            "../2018-03-18T12:31:12Z"
+              "../2018-03-18T12:31:12Z"
             * Duration objects: "P1M" for data from the past month or "PT36H" for the
-            last 36 hours
+              last 36 hours
 
         Only features that have a last_modified that intersects the value of
         datetime are selected.
