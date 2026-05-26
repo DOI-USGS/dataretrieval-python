@@ -41,18 +41,18 @@ project repository.
 .. toctree::
     :maxdepth: 1
 
-    USGS_dataretrieval_DailyValues_Examples
-    USGS_dataretrieval_GroundwaterLevels_Examples
-    USGS_dataretrieval_Measurements_Examples
-    USGS_dataretrieval_ParameterCodes_Examples
-    USGS_dataretrieval_Peaks_Examples
-    USGS_dataretrieval_Ratings_Examples
-    USGS_dataretrieval_SiteInfo_Examples
-    USGS_dataretrieval_SiteInventory_Examples
-    USGS_dataretrieval_Statistics_Examples
-    USGS_dataretrieval_UnitValues_Examples
-    USGS_dataretrieval_WaterSamples_Examples
-    USGS_dataretrieval_WaterUse_Examples
+    USGS_WaterData_DailyValues_Examples
+    USGS_WaterData_GroundwaterLevels_Examples
+    USGS_WaterData_Measurements_Examples
+    USGS_WaterData_ParameterCodes_Examples
+    USGS_WaterData_Peaks_Examples
+    USGS_WaterData_Ratings_Examples
+    USGS_WaterData_SiteInfo_Examples
+    USGS_WaterData_SiteInventory_Examples
+    USGS_WaterData_Statistics_Examples
+    USGS_WaterData_UnitValues_Examples
+    USGS_WaterData_Samples_Examples
+    USGS_NWIS_WaterUse_Examples
 
 
 Using ``dataretrieval`` to obtain nation trends in peak annual streamflow
@@ -61,7 +61,7 @@ Using ``dataretrieval`` to obtain nation trends in peak annual streamflow
 .. toctree::
     :maxdepth: 2
 
-    nwisdemo01
+    peak_streamflow_trends
 
 
 Duplicating the R ``dataRetrieval`` vignettes functionality

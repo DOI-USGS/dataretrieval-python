@@ -1125,12 +1125,11 @@ class NWIS_Metadata(BaseMetadata):
         Response headers
     comments: str | None
         Metadata comments, if any
-    site_info: tuple[pd.DataFrame, NWIS_Metadata] | None
-        Site information if the query included `site_no`, `sites`, `stateCd`,
-        `huc`, `countyCd` or `bBox`. `site_no` is preferred over `sites` if
-        both are present.
-    variable_info: None
-        Deprecated. Accessing variable_info via NWIS_Metadata is deprecated.
+
+    Notes
+    -----
+    ``site_info`` and ``variable_info`` are exposed as properties (documented
+    below) rather than plain attributes.
 
     """
 
@@ -1164,7 +1163,12 @@ class NWIS_Metadata(BaseMetadata):
 
     @property
     def site_info(self) -> tuple[pd.DataFrame, BaseMetadata] | None:
-        """
+        """Site information for the query.
+
+        Populated when the query included ``site_no``, ``sites``, ``stateCd``,
+        ``huc``, ``countyCd`` or ``bBox`` (``site_no`` is preferred over
+        ``sites`` if both are present); ``None`` otherwise.
+
         Return
         ------
         df: ``pandas.DataFrame``
