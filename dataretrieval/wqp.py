@@ -625,7 +625,7 @@ class WQP_Metadata(BaseMetadata):
         Response url
     query_time : datetme.timedelta
         Response elapsed time
-    header : requests.structures.CaseInsensitiveDict
+    header : httpx.Headers
         Response headers
     comments : None
         Metadata comments. WQP does not return comments.
@@ -640,7 +640,7 @@ class WQP_Metadata(BaseMetadata):
         Parameters
         ----------
         response : Response
-            Response object from requests module
+            Response object from httpx module
 
         parameters : dict
             Unpacked dictionary of the parameters supplied in the request

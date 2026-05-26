@@ -5,11 +5,16 @@ Useful utilities for data munging.
 import warnings
 from collections.abc import Iterable
 
+import httpx
 import pandas as pd
-import requests
 
 import dataretrieval
 from dataretrieval.codes import tz
+
+HTTPX_DEFAULTS = {
+    "follow_redirects": True,
+    "timeout": httpx.Timeout(60.0, connect=10.0),
+}
 
 
 def to_str(listlike, delimiter=","):
@@ -205,7 +210,7 @@ class BaseMetadata:
         Response url
     query_time: datetme.timedelta
         Response elapsed time
-    header: requests.structures.CaseInsensitiveDict
+    header: httpx.Headers
         Response headers
 
     """
@@ -216,7 +221,7 @@ class BaseMetadata:
         Parameters
         ----------
         response: Response
-            Response object from requests module
+            Response object from httpx module
 
         Returns
         -------
@@ -225,8 +230,8 @@ class BaseMetadata:
 
         """
 
-        # These are built from the API response
-        self.url = response.url
+        # Coerce httpx.URL -> str: BaseMetadata.url has always been str.
+        self.url = str(response.url)
         self.query_time = response.elapsed
         self.header = response.headers
         self.comment = None
@@ -254,10 +259,29 @@ class BaseMetadata:
         return f"{type(self).__name__}(url={self.url})"
 
 
+_URL_TOO_LONG_EXAMPLE = """
+                    # n is the number of chunks to divide the query into \n
+                    split_list = np.array_split(site_list, n)
+                    data_list = []  # list to store chunk results in \n
+                    # loop through chunks and make requests \n
+                    for site_list in split_list: \n
+                        data = nwis.get_record(sites=site_list, service='dv', \n
+                                               start=start, end=end) \n
+                        data_list.append(data)  # append results to list"""
+
+
+def _url_too_long_error(detail: str) -> ValueError:
+    return ValueError(
+        "Request URL too long. Modify your query to use fewer sites. "
+        f"{detail}. Pseudo-code example of how to split your query: "
+        f"\n {_URL_TOO_LONG_EXAMPLE}"
+    )
+
+
 def query(url, payload, delimiter=",", ssl_check=True):
     """Send a query.
 
-    Wrapper for requests.get that handles errors, converts listed
+    Wrapper for httpx.get that handles errors, converts listed
     query parameters to comma separated strings, and returns response.
 
     Parameters
@@ -265,7 +289,7 @@ def query(url, payload, delimiter=",", ssl_check=True):
     url: string
         URL to query
     payload: dict
-        query parameters passed to ``requests.get``
+        query parameters passed to ``httpx.get``
     delimiter: string
         delimiter to use with lists
     ssl_check: bool
@@ -275,19 +299,27 @@ def query(url, payload, delimiter=",", ssl_check=True):
     Returns
     -------
     string: query response
-        The response from the API query ``requests.get`` function call.
+        The response from the API query ``httpx.get`` function call.
     """
 
     for key, value in payload.items():
         payload[key] = to_str(value, delimiter)
-    # for index in range(len(payload)):
-    #    key, value = payload[index]
-    #    payload[index] = (key, to_str(value))
+    # httpx serializes None params as ``foo=``; USGS rejects with 400.
+    # Drop them. (``to_str`` returns None for non-iterable scalars like bools.)
+    payload = {k: v for k, v in payload.items() if v is not None}
 
-    # define the user agent for the query
     user_agent = {"user-agent": f"python-dataretrieval/{dataretrieval.__version__}"}
 
-    response = requests.get(url, params=payload, headers=user_agent, verify=ssl_check)
+    try:
+        response = httpx.get(
+            url,
+            params=payload,
+            headers=user_agent,
+            verify=ssl_check,
+            **HTTPX_DEFAULTS,
+        )
+    except httpx.InvalidURL as exc:
+        raise _url_too_long_error(f"httpx rejected the URL client-side: {exc}") from exc
 
     if response.status_code == 400:
         raise ValueError(
@@ -299,24 +331,10 @@ def query(url, payload, delimiter=",", ssl_check=True):
             + f"URL: {response.url}"
         )
     elif response.status_code == 414:
-        _reason = response.reason
-        _example = """
-                    # n is the number of chunks to divide the query into \n
-                    split_list = np.array_split(site_list, n)
-                    data_list = []  # list to store chunk results in \n
-                    # loop through chunks and make requests \n
-                    for site_list in split_list: \n
-                        data = nwis.get_record(sites=site_list, service='dv', \n
-                                               start=start, end=end) \n
-                        data_list.append(data)  # append results to list"""
+        raise _url_too_long_error(f"API response reason: {response.reason_phrase}")
+    elif 500 <= response.status_code < 600:
         raise ValueError(
-            "Request URL too long. Modify your query to use fewer sites. "
-            + f"API response reason: {_reason}. Pseudo-code example of how to "
-            + f"split your query: \n {_example}"
-        )
-    elif response.status_code in [500, 502, 503]:
-        raise ValueError(
-            f"Service Unavailable: {response.status_code} {response.reason}. "
+            f"Service Unavailable: {response.status_code} {response.reason_phrase}. "
             + f"The service at {response.url} may be down or experiencing issues."
         )
 

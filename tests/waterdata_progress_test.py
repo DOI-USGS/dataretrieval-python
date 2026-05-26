@@ -11,8 +11,8 @@ import sys
 import types
 from unittest import mock
 
+import httpx
 import pytest
-import requests
 
 from dataretrieval.waterdata import _progress
 from dataretrieval.waterdata._progress import (
@@ -305,11 +305,11 @@ def test_walk_pages_reports_pages_and_rate_limit():
     )
     resp2 = _resp([{"id": "2", "properties": {"v": "b"}}], rate_remaining="4998")
 
-    client = mock.MagicMock(spec=requests.Session)
+    client = mock.MagicMock(spec=httpx.Client)
     client.send.return_value = resp1
     client.request.return_value = resp2
 
-    req = mock.MagicMock(spec=requests.PreparedRequest)
+    req = mock.MagicMock(spec=httpx.Request)
     req.method = "GET"
     req.headers = {}
     req.url = "https://example.com/p1"
@@ -330,10 +330,10 @@ def test_walk_pages_reports_pages_and_rate_limit():
 def test_walk_pages_without_context_does_not_error():
     # No active reporter: pagination must still work and stay silent.
     resp = _resp([{"id": "1", "properties": {"v": "a"}}])
-    client = mock.MagicMock(spec=requests.Session)
+    client = mock.MagicMock(spec=httpx.Client)
     client.send.return_value = resp
 
-    req = mock.MagicMock(spec=requests.PreparedRequest)
+    req = mock.MagicMock(spec=httpx.Request)
     req.method = "GET"
     req.headers = {}
     req.url = "https://example.com/p1"
@@ -350,11 +350,11 @@ def test_broken_progress_stream_does_not_truncate_pagination():
         [{"id": "1", "properties": {"v": "a"}}], next_url="https://example.com/p2"
     )
     resp2 = _resp([{"id": "2", "properties": {"v": "b"}}])
-    client = mock.MagicMock(spec=requests.Session)
+    client = mock.MagicMock(spec=httpx.Client)
     client.send.return_value = resp1
     client.request.return_value = resp2
 
-    req = mock.MagicMock(spec=requests.PreparedRequest)
+    req = mock.MagicMock(spec=httpx.Request)
     req.method = "GET"
     req.headers = {}
     req.url = "https://example.com/p1"

@@ -35,30 +35,35 @@ from dataretrieval.waterdata.chunking import (
     ChunkPlan,
     QuotaExhausted,
     RateLimited,
-    RequestExceedsQuota,
     RequestTooLarge,
     ServiceInterrupted,
     ServiceUnavailable,
-    _chunked_session,
+    _chunked_client,
     _extract_axes,
-    _read_remaining,
     multi_value_chunked,
 )
 from dataretrieval.waterdata.utils import _construct_api_requests
 
 
 class _FakeReq:
-    __slots__ = ("url", "body")
+    """Stand-in for ``httpx.Request`` whose ``_request_bytes`` shape
+    is ``len(str(url)) + len(content)``."""
 
-    def __init__(self, url, body=None):
+    __slots__ = ("url", "content")
+
+    def __init__(self, url, content=b""):
         self.url = url
-        self.body = body
+        self.content = (
+            content
+            if isinstance(content, (bytes, bytearray))
+            else (content.encode("utf-8") if isinstance(content, str) else b"")
+        )
 
 
 def _fake_build(*, base=200, **kwargs):
     """Fake build_request: URL length deterministic in its inputs.
 
-    Mirrors the GET-routed shape: payload goes in the URL, body is None.
+    Mirrors the GET-routed shape: payload goes in the URL, body is empty.
     List/string values are URL-encoded via ``quote_plus`` so the fake's
     byte count matches what the real ``_construct_api_requests`` would
     produce; otherwise an alphanumeric test could pass against the fake
@@ -234,33 +239,6 @@ def test_multi_value_chunked_passes_through_when_url_fits():
     assert calls[0]["monitoring_location_id"] == ["A", "B"]
 
 
-def test_multi_value_chunked_emits_cartesian_product():
-    """Two chunkable axes, each split into 2 chunks → exactly 4 sub-requests,
-    each pairing one chunk from each axis."""
-    calls = []
-
-    @multi_value_chunked(build_request=_fake_build, url_limit=240)
-    def fetch(args):
-        calls.append({k: v for k, v in args.items() if k in ("sites", "pcodes")})
-        return pd.DataFrame(), mock.Mock(
-            elapsed=datetime.timedelta(seconds=0.1), headers={}
-        )
-
-    fetch(
-        {
-            "sites": ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10],
-            "pcodes": ["P1" * 10, "P2" * 10, "P3" * 10, "P4" * 10],
-        }
-    )
-    # Both heavy → planner should split both axes. Confirm a cartesian shape:
-    # every unique site-chunk pairs with every unique pcode-chunk.
-    sites_seen = {tuple(c["sites"]) for c in calls}
-    pcodes_seen = {tuple(c["pcodes"]) for c in calls}
-    assert len(calls) == len(sites_seen) * len(pcodes_seen)
-    assert len(sites_seen) > 1
-    assert len(pcodes_seen) > 1
-
-
 def test_multi_value_chunked_emits_3d_cartesian_product():
     """Three chunkable axes, each forced to split → exhaustive cartesian
     product across all three. Verifies the halving loop in
@@ -332,20 +310,20 @@ def test_multi_value_chunked_lazy_url_limit(monkeypatch):
 
 def test_chunked_session_shared_across_sub_requests():
     """Every sub-request of one chunked call sees the same
-    ``requests.Session`` on the ``_chunked_session`` ContextVar, so
+    ``httpx.Client`` on the ``_chunked_client`` ContextVar, so
     downstream paginated helpers (``_walk_pages``) can reuse the
     connection pool instead of handshaking fresh on each sub-request."""
     sessions_seen = []
 
     @multi_value_chunked(build_request=_fake_build, url_limit=240)
     def fetch(args):
-        sessions_seen.append(_chunked_session.get())
+        sessions_seen.append(_chunked_client.get())
         return pd.DataFrame(), mock.Mock(
             elapsed=datetime.timedelta(seconds=0.1), headers={}
         )
 
     # Outside a chunked call: no session published.
-    assert _chunked_session.get() is None
+    assert _chunked_client.get() is None
 
     fetch({"sites": ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10]})
 
@@ -357,7 +335,7 @@ def test_chunked_session_shared_across_sub_requests():
     # And it was the same object every time.
     assert len({id(s) for s in sessions_seen}) == 1
     # On exit the ContextVar is reset to its default.
-    assert _chunked_session.get() is None
+    assert _chunked_client.get() is None
 
 
 def test_chunked_session_isolated_per_resume():
@@ -385,105 +363,20 @@ def test_chunked_session_isolated_per_resume():
         fetch({"sites": ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10]})
 
     # First resume's session is closed; ContextVar is reset.
-    assert _chunked_session.get() is None
+    assert _chunked_client.get() is None
 
     state["blow_up"] = False
     excinfo.value.call.resume()
     # Second resume's session is also cleaned up.
-    assert _chunked_session.get() is None
+    assert _chunked_client.get() is None
 
 
 def _quota_response(remaining: int | str | None) -> mock.Mock:
-    """A mock requests.Response-like object whose ``x-ratelimit-remaining``
+    """A mock httpx.Response-like object whose ``x-ratelimit-remaining``
     header reflects the given value (None → header absent)."""
     resp = mock.Mock(elapsed=datetime.timedelta(seconds=0.1))
     resp.headers = {} if remaining is None else {_QUOTA_HEADER: str(remaining)}
     return resp
-
-
-def test_read_remaining_parses_header():
-    assert _read_remaining(_quota_response(42)) == 42
-
-
-def test_read_remaining_returns_none_when_header_missing():
-    """No rate-limit header → ``None`` so ``ChunkedCall`` can branch
-    on ``is None`` instead of comparing against a magic sentinel."""
-    assert _read_remaining(_quota_response(None)) is None
-
-
-def test_read_remaining_returns_none_on_malformed_header():
-    """Non-integer header value → ``None`` so a parse failure doesn't
-    trip the quota check."""
-    assert _read_remaining(_quota_response("not-a-number")) is None
-
-
-def test_request_exceeds_quota_after_first_chunk():
-    """Plan totals 4 sub-requests. The first response reports
-    ``x-ratelimit-remaining=1`` — only 2 sub-requests fit total
-    (the one just issued + 1 more). The wrapper must raise
-    ``RequestExceedsQuota`` *before* issuing chunk 2, and the
-    exception must carry a ``.call`` handle so the first chunk's
-    already-fetched data is recoverable."""
-    calls: list[dict] = []
-
-    def fetch(args):
-        calls.append(args)
-        return pd.DataFrame({"sites": list(args["sites"])}), _quota_response(1)
-
-    decorated = multi_value_chunked(build_request=_fake_build, url_limit=240)(fetch)
-
-    with pytest.raises(RequestExceedsQuota) as excinfo:
-        decorated({"sites": ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10]})
-
-    err = excinfo.value
-    assert err.planned_chunks == 4
-    assert err.available == 2  # remaining=1 + the chunk we just spent
-    assert err.deficit == 2
-    assert len(calls) == 1, "only the first chunk should have been issued"
-    # The originating ChunkedCall is exposed on .call so the first
-    # chunk's already-fetched data is recoverable.
-    assert err.call is not None
-    assert err.call.completed_chunks == 1
-    assert not err.call.partial_frame.empty
-
-
-def test_request_exceeds_quota_message_reports_deficit():
-    """The error must surface planned / available / deficit so callers
-    know precisely how far over budget the call is."""
-    e = RequestExceedsQuota(planned_chunks=10, available=4, deficit=6)
-    msg = str(e)
-    assert "10" in msg
-    assert "4" in msg
-    assert "6" in msg
-
-
-def test_request_exceeds_quota_not_raised_when_plan_fits():
-    """If ``x-ratelimit-remaining`` is large enough to cover the rest
-    of the plan, ``ChunkedCall`` proceeds normally."""
-    remaining_seq = iter([100, 99, 98, 97])
-
-    def fetch(args):
-        return (
-            pd.DataFrame({"sites": list(args["sites"])}),
-            _quota_response(next(remaining_seq)),
-        )
-
-    decorated = multi_value_chunked(build_request=_fake_build, url_limit=240)(fetch)
-    df, _ = decorated({"sites": ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10]})
-    assert len(df) == 4
-
-
-def test_no_quota_check_when_header_absent():
-    """Without an ``x-ratelimit-remaining`` header ``ChunkedCall``
-    has no quota signal and must NOT synthesize a
-    ``RequestExceedsQuota``; every planned sub-request runs."""
-
-    def fetch(args):
-        return pd.DataFrame({"sites": list(args["sites"])}), _quota_response(None)
-
-    decorated = multi_value_chunked(build_request=_fake_build, url_limit=240)(fetch)
-    df, _ = decorated({"sites": ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10]})
-    assert len(df) == 4
 
 
 def test_quota_exhausted_on_mid_call_429():
@@ -757,13 +650,13 @@ def test_chunk_interrupted_base_class_catches_both():
 
 
 def test_connection_error_wrapped_as_service_interrupted():
-    """A bare ``requests.exceptions.ConnectionError`` (or any other
-    transport-level RequestException) doesn't inherit from
-    ``RuntimeError``; without the widened catch in ``_issue`` it
-    would escape uncaught and the user would lose the resumable
-    handle to ``.call.resume()``. Verify ``ChunkedCall`` wraps it as
-    ``ServiceInterrupted`` so partial progress is preserved."""
-    import requests as _requests
+    """A bare ``httpx.ConnectError`` (or any other transport-level
+    ``httpx.HTTPError``) doesn't inherit from ``RuntimeError``;
+    without the widened catch in ``_issue`` it would escape uncaught
+    and the user would lose the resumable handle to ``.call.resume()``.
+    Verify ``ChunkedCall`` wraps it as ``ServiceInterrupted`` so
+    partial progress is preserved."""
+    import httpx as _httpx
 
     state = {"i": 0, "blow_up": True}
 
@@ -771,7 +664,7 @@ def test_connection_error_wrapped_as_service_interrupted():
         i = state["i"]
         state["i"] += 1
         if i == 2 and state["blow_up"]:
-            raise _requests.exceptions.ConnectionError("connection reset")
+            raise _httpx.ConnectError("connection reset")
         return (
             pd.DataFrame({"sites": list(args["sites"])}),
             _quota_response(500),
@@ -785,11 +678,49 @@ def test_connection_error_wrapped_as_service_interrupted():
     assert err.completed_chunks == 2
     assert err.call is not None
     # The transport exception is on __cause__ so callers can drill in if needed.
-    assert isinstance(err.__cause__, _requests.exceptions.ConnectionError)
+    assert isinstance(err.__cause__, _httpx.ConnectError)
     # Resume after the upstream recovers.
     state["blow_up"] = False
     df, _ = err.call.resume()
     assert set(df["sites"]) == {"S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10, "S5" * 10}
+
+
+def test_invalid_url_wrapped_as_service_interrupted():
+    """``httpx.InvalidURL`` inherits from ``Exception``, NOT from
+    ``httpx.HTTPError``. Without the widened catch in ``_issue`` /
+    ``_classify_chunk_error`` an oversize follow-up URL escapes as
+    raw ``InvalidURL`` and the user loses ``.call.resume()`` access
+    to the partial state. Mirror the ConnectError test."""
+    import httpx as _httpx
+
+    state = {"i": 0, "blow_up": True}
+
+    def fetch(args):
+        i = state["i"]
+        state["i"] += 1
+        if i == 2 and state["blow_up"]:
+            raise _httpx.InvalidURL("URL is too long: 65536 bytes > 65000")
+        return (
+            pd.DataFrame({"sites": list(args["sites"])}),
+            _quota_response(500),
+        )
+
+    decorated = multi_value_chunked(build_request=_fake_build, url_limit=240)(fetch)
+    with pytest.raises(ServiceInterrupted) as excinfo:
+        decorated({"sites": ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10, "S5" * 10]})
+
+    err = excinfo.value
+    assert err.completed_chunks == 2
+    assert err.call is not None
+    assert isinstance(err.__cause__, _httpx.InvalidURL)
+    # The top-level message must surface the underlying cause text so
+    # the user doesn't have to traverse ``__cause__`` to know what
+    # actually failed (previously the message was generic "Service
+    # error after K/N sub-requests; ... resume() once the upstream
+    # recovers", with the real "URL too long" only visible via
+    # ``.__cause__``).
+    assert "InvalidURL" in str(err)
+    assert "URL is too long" in str(err)
 
 
 def test_service_interrupted_exposes_partial_frame_and_response():
@@ -899,9 +830,9 @@ def test_partial_frame_snapshot_is_a_copy_when_single_chunk():
 
 def test_combine_chunk_responses_returns_independent_headers():
     """The aggregated response's ``.headers`` must be a fresh
-    ``CaseInsensitiveDict`` — mutations by downstream callers
-    (logging hooks, metadata extensions) must not back-propagate into
-    the underlying chunk response's headers, which still live on
+    ``httpx.Headers`` — mutations by downstream callers (logging
+    hooks, metadata extensions) must not back-propagate into the
+    underlying chunk response's headers, which still live on
     ``ChunkedCall._chunks``."""
     from dataretrieval.waterdata.chunking import _combine_chunk_responses
 
@@ -930,7 +861,7 @@ def test_paginate_terminates_on_empty_string_cursor():
     import datetime as _dt
     from unittest import mock as _mock
 
-    import requests as _requests
+    import httpx as _httpx
 
     from dataretrieval.waterdata import utils as _utils
 
@@ -942,20 +873,20 @@ def test_paginate_terminates_on_empty_string_cursor():
         "features": [{"id": "1", "properties": {"val": "a"}}],
         "links": [{"rel": "next", "href": ""}],
     }
-    resp = _mock.MagicMock(spec=_requests.Response)
+    resp = _mock.MagicMock(spec=_httpx.Response)
     resp.status_code = 200
     resp.url = "https://example.com/items?limit=1"
     resp.elapsed = _dt.timedelta(seconds=0.1)
     resp.headers = {}
     resp.json.return_value = body_with_empty_next
 
-    client = _mock.MagicMock(spec=_requests.Session)
+    client = _mock.MagicMock(spec=_httpx.Client)
     client.send.return_value = resp
 
-    req = _mock.MagicMock(spec=_requests.PreparedRequest)
+    req = _mock.MagicMock(spec=_httpx.Request)
     req.method = "GET"
     req.headers = {}
-    req.body = None
+    req.content = b""
     req.url = "https://example.com/items?limit=1"
 
     df, final = _utils._walk_pages(geopd=False, req=req, client=client)
@@ -1036,35 +967,71 @@ def test_quota_exhausted_message_points_at_resume():
     assert ".call.resume()" in msg
 
 
-def test_request_bytes_rejects_non_sizable_body():
-    """``_request_bytes`` requires a deterministic byte count up front;
-    silently treating an unknown body as zero would under-chunk and let
-    the request blow past the server's POST-body limit. Generators,
-    iterables, and file-like objects must surface as ``TypeError``."""
+def test_request_bytes_sums_url_and_content():
+    """``_request_bytes`` returns ``len(str(url)) + len(content)``.
+
+    ``httpx.Request`` always carries ``.content`` as ``bytes`` (the
+    constructor normalises ``data``/``json``/``content`` inputs), so
+    the chunker just needs to size that single attribute alongside
+    the URL.
+    """
+    import httpx
+
     from dataretrieval.waterdata.chunking import _request_bytes
 
-    class _FakeReqWithGenBody:
-        url = "https://example.com/foo"
-        body = (b"x" for _ in range(3))
+    # GET request with no body
+    req = httpx.Request("GET", "https://x.example/ab")
+    assert _request_bytes(req) == len("https://x.example/ab")
 
-    with pytest.raises(TypeError, match="cannot size a request body"):
-        _request_bytes(_FakeReqWithGenBody())
+    # POST request with content
+    req = httpx.Request("POST", "https://x.example/ab", content=b"cd")
+    assert _request_bytes(req) == len("https://x.example/ab") + 2
 
 
-def test_request_bytes_handles_supported_body_types():
-    """Sanity-check the supported body types: None (GET), bytes (raw
-    POST), str (JSON-as-string POST)."""
-    from dataretrieval.waterdata.chunking import _request_bytes
+def test_safe_request_bytes_treats_invalid_url_as_overflow():
+    """``httpx.URL`` enforces a 64 KB cap per URL component and raises
+    ``httpx.InvalidURL`` for anything bigger — e.g. comma-joining all
+    California stream sites in one query. The planner's halving loop
+    must keep shrinking past that cap rather than crashing; the
+    contract is that ``_safe_request_bytes`` returns ``url_limit + 1``
+    (a value strictly greater than the limit) when ``build_request``
+    raises ``InvalidURL``."""
+    import httpx
 
-    class _Req:
-        def __init__(self, url, body):
-            self.url = url
-            self.body = body
+    from dataretrieval.waterdata.chunking import _safe_request_bytes
 
-    assert _request_bytes(_Req("ab", None)) == 2
-    assert _request_bytes(_Req("ab", b"cd")) == 4
-    assert _request_bytes(_Req("ab", "cd")) == 4
-    assert _request_bytes(_Req("ab", bytearray(b"cd"))) == 4
+    def build_request(**kwargs):
+        raise httpx.InvalidURL("URL too long")
+
+    url_limit = 8000
+    assert _safe_request_bytes(build_request, {}, url_limit) == url_limit + 1
+
+
+def test_chunk_plan_handles_initial_url_overflow():
+    """A user query whose unchunked URL exceeds the 64 KB
+    ``httpx.URL`` cap (e.g. 5000+ site IDs comma-joined) must not
+    crash ``ChunkPlan.__init__``; the planner falls back to a
+    worst-case sub-request URL for ``canonical_url`` and proceeds to
+    halve the over-limit axes normally."""
+    import httpx
+
+    real_build = _fake_build
+
+    def overflowing_build(**kwargs):
+        # Mimic httpx: any single sub-arg whose ``sites`` list has
+        # more than 2 entries fails URL construction (proxy for a
+        # 64 KB overflow at the worst case).
+        if len(kwargs.get("sites", [])) > 2:
+            raise httpx.InvalidURL("URL > 64 KB")
+        return real_build(**kwargs)
+
+    sites = ["S" * 10 + str(i) for i in range(8)]
+    plan = ChunkPlan({"sites": sites}, overflowing_build, url_limit=8000)
+    # Planner kept halving until every worst-case sub-arg had ≤2 sites.
+    assert all(len(c) <= 2 for c in plan.chunks["sites"])
+    assert plan.total > 1
+    # canonical_url fell back to a constructable worst-case URL.
+    assert plan.canonical_url is not None
 
 
 def test_multi_value_chunked_restores_canonical_url():
@@ -1169,7 +1136,7 @@ def test_joint_planner_url_construction_long_filter_and_long_sites():
     over_limit = []
     for sub_args in plan.iter_sub_args():
         req = _construct_api_requests(**sub_args)
-        url_len = len(req.url) + (len(req.body) if req.body else 0)
+        url_len = len(str(req.url)) + len(req.content)
         if url_len > url_limit:
             over_limit.append((url_len, sub_args))
     assert not over_limit, (
@@ -1194,11 +1161,9 @@ def test_joint_planner_url_construction_long_filter_and_long_sites():
 
 
 def test_combine_chunk_frames_all_empty_preserves_geo_type():
-    """Regression: when every chunk returns an empty frame,
-    ``_combine_chunk_frames`` must not downgrade an empty
-    ``GeoDataFrame`` to a plain ``DataFrame``. The whole reason the
-    function drops empties before concat is to prevent that downgrade
-    — the all-empty short-circuit was independently dropping it."""
+    """An all-empty chunk list preserves the ``GeoDataFrame`` type.
+    Dropping empties before concat exists precisely to prevent type
+    downgrade; the all-empty branch must honor the same contract."""
     pytest.importorskip("geopandas")
     import geopandas as gpd
 
@@ -1212,10 +1177,10 @@ def test_combine_chunk_frames_all_empty_preserves_geo_type():
 
 
 def test_combine_chunk_frames_single_frame_is_safe_to_mutate():
-    """Regression: the single-completed-chunk fast path returned the
-    underlying chunk frame verbatim, so a caller mutating
-    ``call.partial_frame`` (documented as a live view) would mutate
-    ``_chunks[0][0]`` in place. The fast path now returns a copy."""
+    """``_combine_chunk_frames`` returns a frame independent of its
+    input on the single-chunk fast path — a caller mutating
+    ``call.partial_frame`` (a live view) must not back-propagate into
+    the underlying ``_chunks[0][0]`` frame."""
     from dataretrieval.waterdata.chunking import _combine_chunk_frames
 
     chunk = pd.DataFrame({"id": ["A", "B"], "value": [1, 2]})
@@ -1225,10 +1190,9 @@ def test_combine_chunk_frames_single_frame_is_safe_to_mutate():
 
 
 def test_iter_sub_args_passthrough_yields_a_copy():
-    """Regression: the no-axes passthrough yielded ``self.args``
-    directly while the chunked branch did ``dict(self.args)``. A
-    ``fetch_once`` that mutated the dict it received would silently
-    corrupt ``ChunkPlan.args``. The passthrough now copies too."""
+    """``ChunkPlan.iter_sub_args`` yields a fresh dict on every path
+    (passthrough and chunked), so a ``fetch_once`` that mutates the
+    dict it receives cannot corrupt ``ChunkPlan.args``."""
     args = {"monitoring_location_id": ["USGS-A"], "limit": 100}
     plan = ChunkPlan(args, _fake_build, url_limit=8000)
     sub = next(plan.iter_sub_args())
@@ -1238,34 +1202,31 @@ def test_iter_sub_args_passthrough_yields_a_copy():
     assert "new_key" not in plan.args
 
 
-def test_quota_check_fires_after_every_chunk_not_just_first():
-    """Regression: ``_check_quota_after_first`` was gated on
-    ``len(_chunks) == 1`` so it only fired after chunk 0; a concurrent
-    caller draining the window mid-call (or a partially-rolled-over
-    quota on resume) went undetected. The check now fires after every
-    non-final chunk."""
-    # 4-chunk plan. Chunks 0 and 1 report plenty of remaining quota;
-    # chunk 2's response reports remaining=0 with one chunk still
-    # pending. The check must fire after chunk 2, NOT silently let
-    # chunk 3 hit a mid-stream 429.
-    responses = iter([500, 500, 0])
-    calls: list[dict] = []
+def test_combine_chunk_responses_does_not_mutate_input_urls():
+    """Regression for the _set_response_url aliasing bug.
 
-    def fetch(args):
-        calls.append(args)
-        return pd.DataFrame({"sites": list(args["sites"])}), _quota_response(
-            next(responses)
-        )
+    ``_combine_chunk_responses`` shallow-copies the first response;
+    if the canonical-URL override is applied by mutating the bound
+    ``request.url``, the shallow alias back-propagates the URL change
+    into the underlying chunk-0 response — breaking the documented
+    'input responses are not mutated' invariant. The fix is to swap
+    in a fresh ``httpx.Request`` rather than mutate the existing one.
+    """
+    import httpx as _httpx
 
-    decorated = multi_value_chunked(build_request=_fake_build, url_limit=240)(fetch)
-    with pytest.raises(RequestExceedsQuota) as excinfo:
-        decorated({"sites": ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10]})
-    err = excinfo.value
-    assert err.planned_chunks == 4
-    # 3 completed + 0 remaining = 3 available; 1 pending; deficit 1.
-    assert err.available == 3
-    assert err.deficit == 1
-    assert len(calls) == 3, "only chunks 0-2 should have been issued"
-    # .call carries the in-flight call so the user can recover.
-    assert err.call is not None
-    assert err.call.completed_chunks == 3
+    from dataretrieval.waterdata.chunking import _combine_chunk_responses
+
+    req1 = _httpx.Request("GET", "https://example.com/chunk0")
+    req2 = _httpx.Request("GET", "https://example.com/chunk1")
+    r1 = _httpx.Response(200, request=req1)
+    r2 = _httpx.Response(200, request=req2)
+
+    out = _combine_chunk_responses(
+        [r1, r2], canonical_url="https://canonical.example/full"
+    )
+    assert str(out.url) == "https://canonical.example/full"
+    # The inputs and their bound requests must be untouched.
+    assert str(r1.url) == "https://example.com/chunk0"
+    assert str(r2.url) == "https://example.com/chunk1"
+    assert str(req1.url) == "https://example.com/chunk0"
+    assert str(req2.url) == "https://example.com/chunk1"

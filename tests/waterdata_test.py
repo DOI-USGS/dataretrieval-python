@@ -44,27 +44,30 @@ from dataretrieval.waterdata.utils import (
 # try. The marker is attached to every test in the module, but the
 # patterns match only traces produced by real network round-trips
 # (``_raise_for_non_200`` output, ``requests`` exceptions), so tests
-# using ``requests_mock`` or ``mock.patch`` are no-ops for the rerun.
+# using ``httpx_mock`` or ``mock.patch`` are no-ops for the rerun.
 pytestmark = pytest.mark.flaky(
     reruns=2,
     reruns_delay=5,
     only_rerun=[
         r"(?:RateLimited|RuntimeError):\s*(?:429|5\d\d):",  # _raise_for_non_200 output
-        r"ConnectionError",
+        r"Connect(ion)?Error",  # requests' ConnectionError + httpx' ConnectError
         r"ReadTimeout|ConnectTimeout|Timeout",
     ],
 )
 
 
-def mock_request(requests_mock, request_url, file_path):
+def mock_request(httpx_mock, request_url, file_path):
     """Mock request code"""
     with open(file_path) as text:
-        requests_mock.get(
-            request_url, text=text.read(), headers={"mock_header": "value"}
+        httpx_mock.add_response(
+            method="GET",
+            url=request_url,
+            text=text.read(),
+            headers={"mock_header": "value"},
         )
 
 
-def test_mock_get_samples(requests_mock):
+def test_mock_get_samples(httpx_mock):
     """Tests USGS Samples query"""
     request_url = (
         "https://api.waterdata.usgs.gov/samples-data/results/fullphyschem?"
@@ -72,7 +75,7 @@ def test_mock_get_samples(requests_mock):
         "&activityStartDateUpper=2024-12-31&monitoringLocationIdentifier=USGS-05406500&mimeType=text%2Fcsv"
     )
     response_file_path = "tests/data/samples_results.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     df, md = get_samples(
         service="results",
         profile="fullphyschem",
@@ -86,19 +89,19 @@ def test_mock_get_samples(requests_mock):
     assert df.shape == (67, 187)
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header == {"mock_header": "value"}
+    assert md.header.get("mock_header") == "value"
     assert md.comment is None
     assert df["Activity_StartDateTime"].notna().any()
 
 
-def test_mock_get_samples_summary(requests_mock):
+def test_mock_get_samples_summary(httpx_mock):
     """Tests USGS Samples summary query"""
     request_url = (
         "https://api.waterdata.usgs.gov/samples-data/summary/USGS-04183500"
         "?mimeType=text%2Fcsv"
     )
     response_file_path = "tests/data/samples_summary.txt"
-    mock_request(requests_mock, request_url, response_file_path)
+    mock_request(httpx_mock, request_url, response_file_path)
     df, md = get_samples_summary(monitoringLocationIdentifier="USGS-04183500")
     assert type(df) is DataFrame
     expected_columns = {
@@ -115,7 +118,7 @@ def test_mock_get_samples_summary(requests_mock):
     assert (df["monitoringLocationIdentifier"] == "USGS-04183500").all()
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header == {"mock_header": "value"}
+    assert md.header.get("mock_header") == "value"
     assert md.comment is None
 
 
@@ -141,8 +144,8 @@ def test_construct_api_requests_multivalue_get():
         parameter_code=["00060", "00065"],
     )
     assert req.method == "GET"
-    assert "monitoring_location_id=USGS-05427718%2CUSGS-05427719" in req.url
-    assert "parameter_code=00060%2C00065" in req.url
+    assert "monitoring_location_id=USGS-05427718%2CUSGS-05427719" in str(req.url)
+    assert "parameter_code=00060%2C00065" in str(req.url)
 
 
 def test_construct_api_requests_monitoring_locations_post():
@@ -154,7 +157,7 @@ def test_construct_api_requests_monitoring_locations_post():
     assert req.method == "POST"
     assert req.headers["Content-Type"] == "application/query-cql-json"
 
-    body = json.loads(req.body)
+    body = json.loads(req.content)
     # Top-level shape: AND over a list of per-param predicates.
     assert body["op"] == "and"
     assert isinstance(body["args"], list) and len(body["args"]) == 1
@@ -175,8 +178,8 @@ def test_construct_api_requests_single_value_stays_get():
         parameter_code="00060",
     )
     assert req.method == "GET"
-    assert "monitoring_location_id=USGS-05427718" in req.url
-    assert "%2C" not in req.url  # no comma-encoded multi-value
+    assert "monitoring_location_id=USGS-05427718" in str(req.url)
+    assert "%2C" not in str(req.url)  # no comma-encoded multi-value
 
 
 def test_construct_api_requests_numeric_list_joins_with_str():
@@ -189,7 +192,7 @@ def test_construct_api_requests_numeric_list_joins_with_str():
         water_year=[2020, 2021],
     )
     assert req.method == "GET"
-    assert "water_year=2020%2C2021" in req.url
+    assert "water_year=2020%2C2021" in str(req.url)
 
 
 def test_construct_api_requests_two_element_date_list_becomes_interval():
@@ -204,7 +207,7 @@ def test_construct_api_requests_two_element_date_list_becomes_interval():
     )
     assert req.method == "GET"
     # `/` URL-encodes to %2F. Confirms _format_api_dates ran before the join.
-    assert "time=2024-01-01%2F2024-01-31" in req.url
+    assert "time=2024-01-01%2F2024-01-31" in str(req.url)
 
 
 def test_samples_results():

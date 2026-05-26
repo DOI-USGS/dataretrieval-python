@@ -11,8 +11,8 @@ import threading
 import warnings
 from json import JSONDecodeError
 
+import httpx
 import pandas as pd
-import requests
 
 from dataretrieval.rdb import read_rdb
 from dataretrieval.utils import BaseMetadata
@@ -110,7 +110,7 @@ def _deprecated(func):
     return wrapper
 
 
-def _parse_json_or_raise(response: requests.Response) -> pd.DataFrame:
+def _parse_json_or_raise(response: httpx.Response) -> pd.DataFrame:
     """Parse a JSON NWIS response, raising a helpful error on HTML responses."""
     try:
         return _read_json(response.json())
@@ -364,9 +364,7 @@ def get_stats(
 
 
 @_deprecated
-def query_waterdata(
-    service: str, ssl_check: bool = True, **kwargs
-) -> requests.models.Response:
+def query_waterdata(service: str, ssl_check: bool = True, **kwargs) -> httpx.Response:
     """
     Queries waterdata.
 
@@ -382,7 +380,7 @@ def query_waterdata(
 
     Returns
     -------
-    request: ``requests.models.Response``
+    request: ``httpx.Response``
         The response object from the API request to the web service
     """
     major_params = ["site_no", "state_cd"]
@@ -412,7 +410,7 @@ def query_waterdata(
 @_deprecated
 def query_waterservices(
     service: str, ssl_check: bool = True, **kwargs
-) -> requests.models.Response:
+) -> httpx.Response:
     """
     Queries waterservices.usgs.gov
 
@@ -451,7 +449,7 @@ def query_waterservices(
 
     Returns
     -------
-    request: ``requests.models.Response``
+    request: ``httpx.Response``
         The response object from the API request to the web service
 
     """
@@ -1123,7 +1121,7 @@ class NWIS_Metadata(BaseMetadata):
         Response url
     query_time: datetme.timedelta
         Response elapsed time
-    header: requests.structures.CaseInsensitiveDict
+    header: httpx.Headers
         Response headers
     comments: str | None
         Metadata comments, if any
@@ -1143,7 +1141,7 @@ class NWIS_Metadata(BaseMetadata):
         Parameters
         ----------
         response: Response
-            Response object from requests module
+            Response object from httpx module
         parameters: unpacked dictionary
             Unpacked dictionary of the parameters supplied in the request
 

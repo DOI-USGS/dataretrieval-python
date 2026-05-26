@@ -2,9 +2,9 @@ import json
 import logging
 from unittest import mock
 
+import httpx
 import pandas as pd
 import pytest
-import requests
 
 import dataretrieval.waterdata.utils as _utils_module
 from dataretrieval.waterdata.chunking import RateLimited, ServiceUnavailable
@@ -74,13 +74,13 @@ def test_walk_pages_multiple_mocked():
     resp2.status_code = 200
 
     # Mock client (Session)
-    mock_client = mock.MagicMock(spec=requests.Session)
+    mock_client = mock.MagicMock(spec=httpx.Client)
     # First call to send() returns resp1, then call to request() in loop returns resp2
     mock_client.send.return_value = resp1
     mock_client.request.return_value = resp2
 
     # Mock request (PreparedRequest)
-    mock_req = mock.MagicMock(spec=requests.PreparedRequest)
+    mock_req = mock.MagicMock(spec=httpx.Request)
     mock_req.method = "GET"
     mock_req.headers = {}
     mock_req.url = "https://example.com/page1"
@@ -115,14 +115,14 @@ def _walk_pages_with_failure(failure_resp_or_exc):
     """Run _walk_pages where page 1 succeeds and page 2 fails as given."""
     resp1 = _resp_ok([{"id": "1", "properties": {"val": "a"}}])
 
-    mock_client = mock.MagicMock(spec=requests.Session)
+    mock_client = mock.MagicMock(spec=httpx.Client)
     mock_client.send.return_value = resp1
     if isinstance(failure_resp_or_exc, BaseException):
         mock_client.request.side_effect = failure_resp_or_exc
     else:
         mock_client.request.return_value = failure_resp_or_exc
 
-    mock_req = mock.MagicMock(spec=requests.PreparedRequest)
+    mock_req = mock.MagicMock(spec=httpx.Request)
     mock_req.method = "GET"
     mock_req.headers = {}
     mock_req.url = "https://example.com/page1"
@@ -135,21 +135,21 @@ def test_walk_pages_raises_on_connection_error_mid_pagination():
     chained, and the wrapper message must include recovery guidance that
     is NOT rate-limit-specific (no quota window involved)."""
     with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
-        _walk_pages_with_failure(requests.ConnectionError("boom"))
+        _walk_pages_with_failure(httpx.ConnectError("boom"))
 
     msg = str(excinfo.value)
-    assert isinstance(excinfo.value.__cause__, requests.ConnectionError)
+    assert isinstance(excinfo.value.__cause__, httpx.ConnectError)
     assert "boom" in msg
     assert "retry the request" in msg
     assert "rate-limit window" not in msg
 
 
 def test_walk_pages_raises_with_class_name_when_cause_stringifies_empty():
-    """Some ``requests`` exceptions (e.g. ``Timeout()`` with no args)
+    """Some ``httpx`` exceptions (e.g. ``TimeoutException("")``)
     stringify to ``""``. The wrapper must still produce an informative
     message — fall back to the exception class name."""
     with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
-        _walk_pages_with_failure(requests.Timeout())
+        _walk_pages_with_failure(httpx.TimeoutException(""))
 
     msg = str(excinfo.value)
     assert "Timeout" in msg, msg
@@ -206,10 +206,10 @@ def test_walk_pages_wraps_initial_page_parse_error():
     # Body is unparseable JSON (gateway HTML page, truncated stream).
     resp.json.side_effect = json.JSONDecodeError("Expecting value", "<html>...", 0)
 
-    mock_client = mock.MagicMock(spec=requests.Session)
+    mock_client = mock.MagicMock(spec=httpx.Client)
     mock_client.send.return_value = resp
 
-    mock_req = mock.MagicMock(spec=requests.PreparedRequest)
+    mock_req = mock.MagicMock(spec=httpx.Request)
     mock_req.method = "GET"
     mock_req.headers = {}
     mock_req.url = "https://example.com/page1"
@@ -270,11 +270,11 @@ def test_walk_pages_does_not_mutate_initial_response():
         "links": [],
     }
 
-    mock_client = mock.MagicMock(spec=requests.Session)
+    mock_client = mock.MagicMock(spec=httpx.Client)
     mock_client.send.return_value = page1
     mock_client.request.return_value = page2
 
-    mock_req = mock.MagicMock(spec=requests.PreparedRequest)
+    mock_req = mock.MagicMock(spec=httpx.Request)
     mock_req.method = "GET"
     mock_req.headers = {}
     mock_req.url = "https://example.com/page1"
@@ -324,7 +324,7 @@ def _run_get_stats_data_with_failure(failure_resp_or_exc, monkeypatch):
         mock.MagicMock(return_value=pd.DataFrame()),
     )
 
-    mock_client = mock.MagicMock(spec=requests.Session)
+    mock_client = mock.MagicMock(spec=httpx.Client)
     mock_client.send.return_value = _stats_initial_ok()
     if isinstance(failure_resp_or_exc, BaseException):
         mock_client.request.side_effect = failure_resp_or_exc
@@ -347,11 +347,11 @@ def test_get_stats_data_raises_on_mid_pagination_failure(monkeypatch):
     follow-up callback is wired into ``_paginate`` correctly."""
     with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
         _run_get_stats_data_with_failure(
-            requests.ConnectionError("stats-boom"),
+            httpx.ConnectError("stats-boom"),
             monkeypatch,
         )
 
-    assert isinstance(excinfo.value.__cause__, requests.ConnectionError)
+    assert isinstance(excinfo.value.__cause__, httpx.ConnectError)
     assert "stats-boom" in str(excinfo.value)
 
 
@@ -605,12 +605,16 @@ def test_format_api_dates_rejects_mapping():
 
 
 def _make_response(status, body, reason=None, content_type="text/html"):
-    resp = requests.Response()
-    resp.status_code = status
-    resp.reason = reason
-    resp._content = body.encode("utf-8")
-    resp.headers["Content-Type"] = content_type
-    return resp
+    headers = {"Content-Type": content_type}
+    extensions = {}
+    if reason is not None:
+        extensions["reason_phrase"] = reason.encode("utf-8")
+    return httpx.Response(
+        status_code=status,
+        content=body.encode("utf-8"),
+        headers=headers,
+        extensions=extensions,
+    )
 
 
 def test_error_body_handles_non_json_html_response():
@@ -730,3 +734,41 @@ def test_raise_for_non_200_still_raises_bare_runtimeerror_for_other_4xx():
     # ServiceUnavailable. Both subclass RuntimeError, so a plain
     # ``pytest.raises(RuntimeError)`` would match either.
     assert type(excinfo.value) is RuntimeError
+
+
+def test_next_req_url_rejects_cross_host():
+    """``_next_req_url`` must refuse to follow a next-page link to a
+    different host. The original request's headers (including any
+    auth-like artifacts) were minted for the original host; following
+    a server-supplied cross-host URL would leak them — and the URL
+    itself could be sensitive."""
+    from dataretrieval.waterdata.utils import _next_req_url
+
+    resp = mock.MagicMock()
+    resp.url = httpx.URL("https://api.waterdata.usgs.gov/page1")
+    body = {
+        "numberReturned": 1,
+        "features": [{"id": "1"}],
+        "links": [{"rel": "next", "href": "https://evil.example.org/secret"}],
+    }
+    with pytest.raises(RuntimeError, match="cross-host next-page"):
+        _next_req_url(resp, body=body)
+
+
+def test_check_ogc_requests_raises_typed_on_5xx(httpx_mock):
+    """``_check_ogc_requests`` previously called ``resp.raise_for_status()``,
+    which leaks raw ``httpx.HTTPStatusError``. Now routes through
+    ``_raise_for_non_200`` so callers see ``ServiceUnavailable`` /
+    ``RateLimited`` / ``RuntimeError`` — the same typed contract as
+    the main data path."""
+    from dataretrieval.waterdata.chunking import ServiceUnavailable
+    from dataretrieval.waterdata.utils import OGC_API_URL, _check_ogc_requests
+
+    httpx_mock.add_response(
+        method="GET",
+        url=f"{OGC_API_URL}/collections/daily/schema",
+        status_code=503,
+        json={"code": "ServiceUnavailable", "description": "maintenance window"},
+    )
+    with pytest.raises(ServiceUnavailable):
+        _check_ogc_requests(endpoint="daily", req_type="schema")

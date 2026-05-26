@@ -14,7 +14,7 @@ from dataretrieval.waterdata.utils import _construct_api_requests
 
 
 def _query_params(prepared_request):
-    return parse_qs(urlsplit(prepared_request.url).query)
+    return parse_qs(urlsplit(str(prepared_request.url)).query)
 
 
 def _fake_prepared_request(url="https://example.test"):

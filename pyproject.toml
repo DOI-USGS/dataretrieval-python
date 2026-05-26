@@ -20,7 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "requests",
+    "httpx",
     "pandas>=2.0.0,<4.0.0",
 ]
 dynamic = ["version"]
@@ -37,7 +37,7 @@ test = [
   "pytest-cov[all]",
   "pytest-rerunfailures",
   "coverage",
-  "requests-mock",
+  "pytest-httpx",
   "ruff",
 ]
 doc = [
