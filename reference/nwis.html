@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+gc450c404d documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g7f64c2de7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bb319b34"></script>
+      <script src="../_static/documentation_options.js?v=57830bd8"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -58,11 +58,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata.query_time"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.query_time</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata.header"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.header</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata.comments"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.comments</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata.__init__"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.__init__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata.site_info"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.site_info</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata.variable_info"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.variable_info</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata.__init__"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.__init__()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.site_info</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.variable_info</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._deprecated"><code class="docutils literal notranslate"><span class="pre">_deprecated()</span></code></a></li>
@@ -173,30 +171,9 @@
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="dataretrieval.nwis.NWIS_Metadata.site_info">
-<span class="sig-name descname"><span class="pre">site_info</span></span><a class="headerlink" href="#dataretrieval.nwis.NWIS_Metadata.site_info" title="Link to this definition"></a></dt>
-<dd><p>Site information if the query included <cite>site_no</cite>, <cite>sites</cite>, <cite>stateCd</cite>,
-<cite>huc</cite>, <cite>countyCd</cite> or <cite>bBox</cite>. <cite>site_no</cite> is preferred over <cite>sites</cite> if
-both are present.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple[pd.DataFrame, <a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata">NWIS_Metadata</a>] | None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="dataretrieval.nwis.NWIS_Metadata.variable_info">
-<span class="sig-name descname"><span class="pre">variable_info</span></span><a class="headerlink" href="#dataretrieval.nwis.NWIS_Metadata.variable_info" title="Link to this definition"></a></dt>
-<dd><p>Deprecated. Accessing variable_info via NWIS_Metadata is deprecated.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
+<p class="rubric">Notes</p>
+<p><code class="docutils literal notranslate"><span class="pre">site_info</span></code> and <code class="docutils literal notranslate"><span class="pre">variable_info</span></code> are exposed as properties (documented
+below) rather than plain attributes.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dataretrieval.nwis.NWIS_Metadata.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">response</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#NWIS_Metadata.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.NWIS_Metadata.__init__" title="Link to this definition"></a></dt>
@@ -219,9 +196,13 @@ metadata for NWIS data.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="id0">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">site_info</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dt class="sig sig-object py" id="dataretrieval.nwis.NWIS_Metadata.site_info">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">site_info</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#dataretrieval.nwis.NWIS_Metadata.site_info" title="Link to this definition"></a></dt>
+<dd><p>Site information for the query.</p>
+<p>Populated when the query included <code class="docutils literal notranslate"><span class="pre">site_no</span></code>, <code class="docutils literal notranslate"><span class="pre">sites</span></code>, <code class="docutils literal notranslate"><span class="pre">stateCd</span></code>,
+<code class="docutils literal notranslate"><span class="pre">huc</span></code>, <code class="docutils literal notranslate"><span class="pre">countyCd</span></code> or <code class="docutils literal notranslate"><span class="pre">bBox</span></code> (<code class="docutils literal notranslate"><span class="pre">site_no</span></code> is preferred over
+<code class="docutils literal notranslate"><span class="pre">sites</span></code> if both are present); <code class="docutils literal notranslate"><span class="pre">None</span></code> otherwise.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted requested data from calling <cite>nwis.what_sites</cite></p></li>
@@ -233,8 +214,8 @@ metadata for NWIS data.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="id1">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">variable_info</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="dataretrieval.nwis.NWIS_Metadata.variable_info">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">variable_info</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#dataretrieval.nwis.NWIS_Metadata.variable_info" title="Link to this definition"></a></dt>
 <dd><p>Deprecated. Accessing variable_info via NWIS_Metadata is deprecated.
 Returns None.</p>
 </dd></dl>

@@ -1,0 +1,1297 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>USGS dataretrieval Python Package Statistics Examples &mdash; dataretrieval 0.1.dev1+g7f64c2de7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=57830bd8"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="USGS dataretrieval Python Package get_continuous() Examples" href="USGS_WaterData_UnitValues_Examples.html" />
+    <link rel="prev" title="USGS dataretrieval Python Package get_monitoring_locations() Examples" href="USGS_WaterData_SiteInventory_Examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#introduction-to-the-waterdata-module-of-dataretrieval">Introduction to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DailyValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Measurements_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ParameterCodes_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_reference_table()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Peaks_Examples.html">USGS dataretrieval Python Package Peak Streamflow Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Ratings_Examples.html">USGS dataretrieval Python Package Rating Curve Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_SiteInfo_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_SiteInventory_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> Examples</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">USGS dataretrieval Python Package Statistics Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Install-the-Package">Install the Package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Basic-Usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Interpreting-the-Result">Interpreting the Result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Additional-Examples">Additional Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_UnitValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_continuous()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Samples_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_NWIS_WaterUse_Examples.html">USGS dataretrieval Python Package Water Use Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">USGS dataretrieval Python Package Statistics Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/USGS_WaterData_Statistics_Examples.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="USGS-dataretrieval-Python-Package-Statistics-Examples">
+<h1>USGS dataretrieval Python Package Statistics Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-Statistics-Examples" title="Link to this heading"></a></h1>
+<p>This notebook provides examples of using the Python dataretrieval package to retrieve summary statistics for observed variables at a United States Geological Survey (USGS) monitoring location using the <strong>USGS Water Data API</strong> via the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module. The <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module is the recommended way to access USGS water data and replaces the deprecated <code class="docutils literal notranslate"><span class="pre">nwis</span></code> module.</p>
+<p>Two statistics functions are demonstrated:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">get_stats_date_range()</span></code> — monthly, calendar-year, and water-year summaries (the “observationIntervals” service).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_stats_por()</span></code> — day-of-year and month-of-year summaries over the full period of record (the “observationNormals” service).</p></li>
+</ul>
+<section id="Install-the-Package">
+<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Link to this heading"></a></h2>
+<p>Use the following code to install the package if it doesn’t exist already within your Jupyter Python environment.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>dataretrieval
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g7f64c2de7)
+Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
+Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.3)
+Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.6)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.9.0.post0)
+Requirement already satisfied: six&gt;=1.5 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
+Requirement already satisfied: anyio in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (4.13.0)
+Requirement already satisfied: certifi in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (2026.5.20)
+Requirement already satisfied: httpcore==1.* in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (1.0.9)
+Requirement already satisfied: idna in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (3.16)
+Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpcore==1.*-&gt;httpx-&gt;dataretrieval) (0.16.0)
+</pre></div></div>
+</div>
+<p>Load the package so you can use it along with other packages used in this notebook.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">ticker</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
+<br/></pre></div>
+</div>
+</div>
+</section>
+<section id="Basic-Usage">
+<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Link to this heading"></a></h2>
+<p>This example uses <code class="docutils literal notranslate"><span class="pre">get_stats_date_range()</span></code> to retrieve monthly and annual statistics for an observed variable at a USGS monitoring location. Commonly used arguments include:</p>
+<ul class="simple">
+<li><p><strong>monitoring_location_id</strong> (string or list of strings): USGS monitoring location id(s), formed as the agency code and site number joined by a hyphen (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;USGS-02319394&quot;</span></code>).</p></li>
+<li><p><strong>parameter_code</strong> (string or list of strings): 5-digit USGS parameter code(s), e.g. <code class="docutils literal notranslate"><span class="pre">&quot;00060&quot;</span></code> (discharge).</p></li>
+<li><p><strong>computation_type</strong> (string or list of strings): the statistic(s) to compute — one or more of <code class="docutils literal notranslate"><span class="pre">arithmetic_mean</span></code>, <code class="docutils literal notranslate"><span class="pre">maximum</span></code>, <code class="docutils literal notranslate"><span class="pre">median</span></code>, <code class="docutils literal notranslate"><span class="pre">minimum</span></code>, <code class="docutils literal notranslate"><span class="pre">percentile</span></code>.</p></li>
+<li><p><strong>start_date</strong> / <strong>end_date</strong> (string): optionally bound the period summarized, in <code class="docutils literal notranslate"><span class="pre">YYYY-MM-DD</span></code> format.</p></li>
+</ul>
+<section id="Example-1:-Get-monthly-and-annual-mean-discharge-for-a-single-monitoring-location">
+<h3>Example 1: Get monthly and annual mean discharge for a single monitoring location<a class="headerlink" href="#Example-1:-Get-monthly-and-annual-mean-discharge-for-a-single-monitoring-location" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the parameters needed to retrieve data</span>
+<span class="n">site</span> <span class="o">=</span> <span class="s2">&quot;USGS-02319394&quot;</span>
+<span class="n">parameter_code</span> <span class="o">=</span> <span class="s2">&quot;00060&quot;</span>  <span class="c1"># Discharge</span>
+
+<span class="c1"># Retrieve the statistics (monthly, calendar-year, and water-year means)</span>
+<span class="n">x1</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_date_range</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="n">parameter_code</span><span class="p">,</span>
+    <span class="n">computation_type</span><span class="o">=</span><span class="s2">&quot;arithmetic_mean&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x1</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; statistic values.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: observationIntervals · 1 page · 344 rows
+No API key detected — register for higher rate limits at https://api.waterdata.usgs.gov/signup/
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Retrieved 344 statistic values.
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Interpreting-the-Result">
+<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Link to this heading"></a></h2>
+<p>Each <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> function returns a tuple of a pandas data frame and a metadata object. The data frame holds the computed statistics; each row is one interval, identified by the <code class="docutils literal notranslate"><span class="pre">interval_type</span></code> column (<code class="docutils literal notranslate"><span class="pre">month</span></code>, <code class="docutils literal notranslate"><span class="pre">calendar_year</span></code>, or <code class="docutils literal notranslate"><span class="pre">water_year</span></code>), with the computed statistic in the <code class="docutils literal notranslate"><span class="pre">value</span></code> column.</p>
+<p>Once you’ve got the data frame, there are several useful things you can do to explore the data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Display the data frame as a table</span>
+<span class="n">display</span><span class="p">(</span><span class="n">x1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+      <th>monitoring_location_id</th>
+      <th>monitoring_location_name</th>
+      <th>site_type</th>
+      <th>site_type_code</th>
+      <th>country_code</th>
+      <th>state_code</th>
+      <th>county_code</th>
+      <th>start_date</th>
+      <th>end_date</th>
+      <th>interval_type</th>
+      <th>value</th>
+      <th>percentile</th>
+      <th>sample_count</th>
+      <th>approval_status</th>
+      <th>computation_id</th>
+      <th>computation</th>
+      <th>parameter_code</th>
+      <th>unit_of_measure</th>
+      <th>parent_time_series_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>POINT (-83.18014 30.41049)</td>
+      <td>USGS-02319394</td>
+      <td>WITHLACOOCHEE RIVER NR LEE, FLA</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>12</td>
+      <td>079</td>
+      <td>2000-11-01</td>
+      <td>2000-11-30</td>
+      <td>month</td>
+      <td>600.967</td>
+      <td>NaN</td>
+      <td>30</td>
+      <td>approved</td>
+      <td>30eb30d0-c252-4601-a702-1e053e387200</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>POINT (-83.18014 30.41049)</td>
+      <td>USGS-02319394</td>
+      <td>WITHLACOOCHEE RIVER NR LEE, FLA</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>12</td>
+      <td>079</td>
+      <td>2000-12-01</td>
+      <td>2000-12-31</td>
+      <td>month</td>
+      <td>812.903</td>
+      <td>NaN</td>
+      <td>31</td>
+      <td>approved</td>
+      <td>0bfbd34c-53ed-429b-bea1-facc88c3c639</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>POINT (-83.18014 30.41049)</td>
+      <td>USGS-02319394</td>
+      <td>WITHLACOOCHEE RIVER NR LEE, FLA</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>12</td>
+      <td>079</td>
+      <td>2001-01-01</td>
+      <td>2001-01-31</td>
+      <td>month</td>
+      <td>1668.387</td>
+      <td>NaN</td>
+      <td>31</td>
+      <td>approved</td>
+      <td>533f6064-f298-4eb1-b74f-da0c09d8c525</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>POINT (-83.18014 30.41049)</td>
+      <td>USGS-02319394</td>
+      <td>WITHLACOOCHEE RIVER NR LEE, FLA</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>12</td>
+      <td>079</td>
+      <td>2001-02-01</td>
+      <td>2001-02-28</td>
+      <td>month</td>
+      <td>1234.286</td>
+      <td>NaN</td>
+      <td>28</td>
+      <td>approved</td>
+      <td>67ee8c57-e9d0-42a9-826f-a86dbac7a377</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>POINT (-83.18014 30.41049)</td>
+      <td>USGS-02319394</td>
+      <td>WITHLACOOCHEE RIVER NR LEE, FLA</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>12</td>
+      <td>079</td>
+      <td>2001-03-01</td>
+      <td>2001-03-31</td>
+      <td>month</td>
+      <td>3782.581</td>
+      <td>NaN</td>
+      <td>31</td>
+      <td>approved</td>
+      <td>7d13bc10-dacc-48c5-bf41-63c13569f47c</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>339</th>
+      <td>POINT (-83.18014 30.41049)</td>
+      <td>USGS-02319394</td>
+      <td>WITHLACOOCHEE RIVER NR LEE, FLA</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>12</td>
+      <td>079</td>
+      <td>2021-10-01</td>
+      <td>2022-09-30</td>
+      <td>water_year</td>
+      <td>2034.863</td>
+      <td>NaN</td>
+      <td>365</td>
+      <td>approved</td>
+      <td>a579a7a4-b5bc-45ce-a754-9d784d05dffe</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+    </tr>
+    <tr>
+      <th>340</th>
+      <td>POINT (-83.18014 30.41049)</td>
+      <td>USGS-02319394</td>
+      <td>WITHLACOOCHEE RIVER NR LEE, FLA</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>12</td>
+      <td>079</td>
+      <td>2022-10-01</td>
+      <td>2023-09-30</td>
+      <td>water_year</td>
+      <td>1731.784</td>
+      <td>NaN</td>
+      <td>365</td>
+      <td>approved</td>
+      <td>ef755db3-4cb0-44ec-9192-1a2f85708608</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+    </tr>
+    <tr>
+      <th>341</th>
+      <td>POINT (-83.18014 30.41049)</td>
+      <td>USGS-02319394</td>
+      <td>WITHLACOOCHEE RIVER NR LEE, FLA</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>12</td>
+      <td>079</td>
+      <td>2023-10-01</td>
+      <td>2024-09-30</td>
+      <td>water_year</td>
+      <td>3392.778</td>
+      <td>NaN</td>
+      <td>365</td>
+      <td>approved</td>
+      <td>f73ed1da-35e0-4167-9387-cab6aad5961c</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+    </tr>
+    <tr>
+      <th>342</th>
+      <td>POINT (-83.18014 30.41049)</td>
+      <td>USGS-02319394</td>
+      <td>WITHLACOOCHEE RIVER NR LEE, FLA</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>12</td>
+      <td>079</td>
+      <td>2024-10-01</td>
+      <td>2025-09-30</td>
+      <td>water_year</td>
+      <td>1938.863</td>
+      <td>NaN</td>
+      <td>365</td>
+      <td>approved</td>
+      <td>5004f92c-d1f8-4c1c-9a41-ce1e73d15888</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+    </tr>
+    <tr>
+      <th>343</th>
+      <td>POINT (-83.18014 30.41049)</td>
+      <td>USGS-02319394</td>
+      <td>WITHLACOOCHEE RIVER NR LEE, FLA</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>12</td>
+      <td>079</td>
+      <td>2025-10-01</td>
+      <td>2026-02-08</td>
+      <td>water_year</td>
+      <td>394.382</td>
+      <td>NaN</td>
+      <td>131</td>
+      <td>approved</td>
+      <td>3f636529-a609-4e82-86b0-6c0e03c0072d</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+    </tr>
+  </tbody>
+</table>
+<p>344 rows × 20 columns</p>
+</div></div>
+</div>
+<p>Show the data types of the columns in the resulting data frame.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">x1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtypes</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+geometry                    geometry
+monitoring_location_id           str
+monitoring_location_name         str
+site_type                        str
+site_type_code                   str
+country_code                     str
+state_code                       str
+county_code                      str
+start_date                       str
+end_date                         str
+interval_type                    str
+value                            str
+percentile                   float64
+sample_count                   int64
+approval_status                  str
+computation_id                   str
+computation                      str
+parameter_code                   str
+unit_of_measure                  str
+parent_time_series_id            str
+dtype: object
+</pre></div></div>
+</div>
+<p>Make a quick time series plot of the annual (calendar-year) mean values.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># select the annual (calendar-year) means into a plain DataFrame for plotting.</span>
+<span class="c1"># The statistics services return a GeoDataFrame carrying a site-point geometry,</span>
+<span class="c1"># and report numeric values as strings, so we coerce ``value`` to float.</span>
+<span class="n">annual</span> <span class="o">=</span> <span class="n">x1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+    <span class="n">x1</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;interval_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;calendar_year&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]</span>
+<span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">annual</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">annual</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">annual</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">annual</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">annual</span> <span class="o">=</span> <span class="n">annual</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;year&quot;</span><span class="p">)</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">annual</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">ticker</span><span class="o">.</span><span class="n">FormatStrFormatter</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Year&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Annual mean discharge (cfs)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Text(0, 0.5, &#39;Annual mean discharge (cfs)&#39;)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_USGS_WaterData_Statistics_Examples_13_1.png" src="../_images/examples_USGS_WaterData_Statistics_Examples_13_1.png" />
+</div>
+</div>
+<p>The other part of the result is a metadata object describing the query that was executed. For example, you can access the URL that was assembled to retrieve the requested data from the USGS Water Data API.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The query URL used to retrieve the data was: &quot;</span> <span class="o">+</span> <span class="n">x1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The query URL used to retrieve the data was: https://api.waterdata.usgs.gov/statistics/v0/observationIntervals?computation_type=arithmetic_mean&amp;monitoring_location_id=USGS-02319394&amp;page_size=1000&amp;parameter_code=00060
+</pre></div></div>
+</div>
+</section>
+<section id="Additional-Examples">
+<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Link to this heading"></a></h2>
+<section id="Example-2:-Get-monthly-and-annual-mean-statistics-for-two-monitoring-locations">
+<h3>Example 2: Get monthly and annual mean statistics for two monitoring locations<a class="headerlink" href="#Example-2:-Get-monthly-and-annual-mean-statistics-for-two-monitoring-locations" title="Link to this heading"></a></h3>
+<p>Multiple monitoring locations and parameter codes can be requested at once; only the data that are available are returned.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x2</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_date_range</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USGS-02319394&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-02171500&quot;</span><span class="p">],</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00010&quot;</span><span class="p">,</span> <span class="s2">&quot;00060&quot;</span><span class="p">],</span>
+    <span class="n">computation_type</span><span class="o">=</span><span class="s2">&quot;arithmetic_mean&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">x2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: observationIntervals · 1 page · 2,114 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+      <th>monitoring_location_id</th>
+      <th>monitoring_location_name</th>
+      <th>site_type</th>
+      <th>site_type_code</th>
+      <th>country_code</th>
+      <th>state_code</th>
+      <th>county_code</th>
+      <th>start_date</th>
+      <th>end_date</th>
+      <th>interval_type</th>
+      <th>value</th>
+      <th>percentile</th>
+      <th>sample_count</th>
+      <th>approval_status</th>
+      <th>computation_id</th>
+      <th>computation</th>
+      <th>parameter_code</th>
+      <th>unit_of_measure</th>
+      <th>parent_time_series_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>POINT (-80.14136 33.45378)</td>
+      <td>USGS-02171500</td>
+      <td>SANTEE RIVER NEAR PINEVILLE, SC</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>45</td>
+      <td>015</td>
+      <td>1942-05-01</td>
+      <td>1942-05-31</td>
+      <td>month</td>
+      <td>584.032</td>
+      <td>NaN</td>
+      <td>31</td>
+      <td>approved</td>
+      <td>043dcd51-8a2f-48ca-bb20-20933651f633</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>POINT (-80.14136 33.45378)</td>
+      <td>USGS-02171500</td>
+      <td>SANTEE RIVER NEAR PINEVILLE, SC</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>45</td>
+      <td>015</td>
+      <td>1942-06-01</td>
+      <td>1942-06-30</td>
+      <td>month</td>
+      <td>2571.333</td>
+      <td>NaN</td>
+      <td>30</td>
+      <td>approved</td>
+      <td>0a96c646-ca99-45de-b8ea-b85954d5e029</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>POINT (-80.14136 33.45378)</td>
+      <td>USGS-02171500</td>
+      <td>SANTEE RIVER NEAR PINEVILLE, SC</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>45</td>
+      <td>015</td>
+      <td>1942-07-01</td>
+      <td>1942-07-31</td>
+      <td>month</td>
+      <td>400.742</td>
+      <td>NaN</td>
+      <td>31</td>
+      <td>approved</td>
+      <td>88991dcf-0994-4d18-be50-378146f193fe</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>POINT (-80.14136 33.45378)</td>
+      <td>USGS-02171500</td>
+      <td>SANTEE RIVER NEAR PINEVILLE, SC</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>45</td>
+      <td>015</td>
+      <td>1942-08-01</td>
+      <td>1942-08-31</td>
+      <td>month</td>
+      <td>549.581</td>
+      <td>NaN</td>
+      <td>31</td>
+      <td>approved</td>
+      <td>64fd8688-07e2-4710-8cd4-57ee0e25ff66</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>POINT (-80.14136 33.45378)</td>
+      <td>USGS-02171500</td>
+      <td>SANTEE RIVER NEAR PINEVILLE, SC</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>45</td>
+      <td>015</td>
+      <td>1942-09-01</td>
+      <td>1942-09-30</td>
+      <td>month</td>
+      <td>1338.467</td>
+      <td>NaN</td>
+      <td>30</td>
+      <td>approved</td>
+      <td>c8b93535-460a-4dfd-91ab-a5ec4a16c827</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2109</th>
+      <td>POINT (-83.18014 30.41049)</td>
+      <td>USGS-02319394</td>
+      <td>WITHLACOOCHEE RIVER NR LEE, FLA</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>12</td>
+      <td>079</td>
+      <td>2021-10-01</td>
+      <td>2022-09-30</td>
+      <td>water_year</td>
+      <td>20.784</td>
+      <td>NaN</td>
+      <td>351</td>
+      <td>approved</td>
+      <td>6bdfe85c-4494-4143-84ce-e30849f1e68b</td>
+      <td>arithmetic_mean</td>
+      <td>00010</td>
+      <td>degC</td>
+      <td>ea8d8089780f48428cff4a5ba344f1aa</td>
+    </tr>
+    <tr>
+      <th>2110</th>
+      <td>POINT (-83.18014 30.41049)</td>
+      <td>USGS-02319394</td>
+      <td>WITHLACOOCHEE RIVER NR LEE, FLA</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>12</td>
+      <td>079</td>
+      <td>2022-10-01</td>
+      <td>2023-09-30</td>
+      <td>water_year</td>
+      <td>21.121</td>
+      <td>NaN</td>
+      <td>361</td>
+      <td>approved</td>
+      <td>c4ec6635-83cf-4d54-9fd8-caed23b96a98</td>
+      <td>arithmetic_mean</td>
+      <td>00010</td>
+      <td>degC</td>
+      <td>ea8d8089780f48428cff4a5ba344f1aa</td>
+    </tr>
+    <tr>
+      <th>2111</th>
+      <td>POINT (-83.18014 30.41049)</td>
+      <td>USGS-02319394</td>
+      <td>WITHLACOOCHEE RIVER NR LEE, FLA</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>12</td>
+      <td>079</td>
+      <td>2023-10-01</td>
+      <td>2024-09-30</td>
+      <td>water_year</td>
+      <td>20.383</td>
+      <td>NaN</td>
+      <td>342</td>
+      <td>approved</td>
+      <td>e533a96f-655a-4753-b960-0560b0be2d97</td>
+      <td>arithmetic_mean</td>
+      <td>00010</td>
+      <td>degC</td>
+      <td>ea8d8089780f48428cff4a5ba344f1aa</td>
+    </tr>
+    <tr>
+      <th>2112</th>
+      <td>POINT (-83.18014 30.41049)</td>
+      <td>USGS-02319394</td>
+      <td>WITHLACOOCHEE RIVER NR LEE, FLA</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>12</td>
+      <td>079</td>
+      <td>2024-10-01</td>
+      <td>2025-09-30</td>
+      <td>water_year</td>
+      <td>20.928</td>
+      <td>NaN</td>
+      <td>348</td>
+      <td>approved</td>
+      <td>197d9815-4ecd-4b89-a01e-50e128e4dbd6</td>
+      <td>arithmetic_mean</td>
+      <td>00010</td>
+      <td>degC</td>
+      <td>ea8d8089780f48428cff4a5ba344f1aa</td>
+    </tr>
+    <tr>
+      <th>2113</th>
+      <td>POINT (-83.18014 30.41049)</td>
+      <td>USGS-02319394</td>
+      <td>WITHLACOOCHEE RIVER NR LEE, FLA</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>12</td>
+      <td>079</td>
+      <td>2025-10-01</td>
+      <td>2025-12-06</td>
+      <td>water_year</td>
+      <td>20.439</td>
+      <td>NaN</td>
+      <td>62</td>
+      <td>approved</td>
+      <td>6b6ce4c2-4ca8-4f73-86df-f3583f914dc0</td>
+      <td>arithmetic_mean</td>
+      <td>00010</td>
+      <td>degC</td>
+      <td>ea8d8089780f48428cff4a5ba344f1aa</td>
+    </tr>
+  </tbody>
+</table>
+<p>2114 rows × 20 columns</p>
+</div></div>
+</div>
+</section>
+<section id="Example-3:-Day-of-year-mean-and-median-statistics-over-the-period-of-record">
+<h3>Example 3: Day-of-year mean and median statistics over the period of record<a class="headerlink" href="#Example-3:-Day-of-year-mean-and-median-statistics-over-the-period-of-record" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">get_stats_por()</span></code> summarizes the full period of record by day of year (and month of year). Here we request both the mean and median daily statistics for discharge at a monitoring location.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x3</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_por</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-02171500&quot;</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+    <span class="n">computation_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;arithmetic_mean&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">x3</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: observationNormals · 1 page · 756 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+      <th>monitoring_location_id</th>
+      <th>monitoring_location_name</th>
+      <th>site_type</th>
+      <th>site_type_code</th>
+      <th>country_code</th>
+      <th>state_code</th>
+      <th>county_code</th>
+      <th>time_of_year</th>
+      <th>time_of_year_type</th>
+      <th>value</th>
+      <th>percentile</th>
+      <th>sample_count</th>
+      <th>approval_status</th>
+      <th>computation_id</th>
+      <th>computation</th>
+      <th>parameter_code</th>
+      <th>unit_of_measure</th>
+      <th>parent_time_series_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>POINT (-80.14136 33.45378)</td>
+      <td>USGS-02171500</td>
+      <td>SANTEE RIVER NEAR PINEVILLE, SC</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>45</td>
+      <td>015</td>
+      <td>01-01</td>
+      <td>day_of_year</td>
+      <td>2046.695</td>
+      <td>NaN</td>
+      <td>82</td>
+      <td>approved</td>
+      <td>e7827589-ff6e-472d-9864-1bfe558b9639</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>POINT (-80.14136 33.45378)</td>
+      <td>USGS-02171500</td>
+      <td>SANTEE RIVER NEAR PINEVILLE, SC</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>45</td>
+      <td>015</td>
+      <td>01-02</td>
+      <td>day_of_year</td>
+      <td>2041.866</td>
+      <td>NaN</td>
+      <td>82</td>
+      <td>approved</td>
+      <td>9e8feb48-3652-4bca-82dc-c2f2a65650e5</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>POINT (-80.14136 33.45378)</td>
+      <td>USGS-02171500</td>
+      <td>SANTEE RIVER NEAR PINEVILLE, SC</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>45</td>
+      <td>015</td>
+      <td>01-03</td>
+      <td>day_of_year</td>
+      <td>2080.963</td>
+      <td>NaN</td>
+      <td>82</td>
+      <td>approved</td>
+      <td>35c0af68-80d2-4635-865c-bb224bfb5e9a</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>POINT (-80.14136 33.45378)</td>
+      <td>USGS-02171500</td>
+      <td>SANTEE RIVER NEAR PINEVILLE, SC</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>45</td>
+      <td>015</td>
+      <td>01-04</td>
+      <td>day_of_year</td>
+      <td>2434.256</td>
+      <td>NaN</td>
+      <td>82</td>
+      <td>approved</td>
+      <td>eacd3baa-e0ab-4c08-8334-bb3ed3b916c8</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>POINT (-80.14136 33.45378)</td>
+      <td>USGS-02171500</td>
+      <td>SANTEE RIVER NEAR PINEVILLE, SC</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>45</td>
+      <td>015</td>
+      <td>01-05</td>
+      <td>day_of_year</td>
+      <td>2597.819</td>
+      <td>NaN</td>
+      <td>83</td>
+      <td>approved</td>
+      <td>19f28744-96cb-4cfa-9d28-5f114b82fcc6</td>
+      <td>arithmetic_mean</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>751</th>
+      <td>POINT (-80.14136 33.45378)</td>
+      <td>USGS-02171500</td>
+      <td>SANTEE RIVER NEAR PINEVILLE, SC</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>45</td>
+      <td>015</td>
+      <td>08</td>
+      <td>month_of_year</td>
+      <td>563.0</td>
+      <td>50.0</td>
+      <td>84</td>
+      <td>approved</td>
+      <td>b3fc0cec-1732-4bac-b153-a18bef567453</td>
+      <td>median</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+    </tr>
+    <tr>
+      <th>752</th>
+      <td>POINT (-80.14136 33.45378)</td>
+      <td>USGS-02171500</td>
+      <td>SANTEE RIVER NEAR PINEVILLE, SC</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>45</td>
+      <td>015</td>
+      <td>09</td>
+      <td>month_of_year</td>
+      <td>563.0</td>
+      <td>50.0</td>
+      <td>84</td>
+      <td>approved</td>
+      <td>8cd55012-5b16-42f7-8cb3-b234aa15f859</td>
+      <td>median</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+    </tr>
+    <tr>
+      <th>753</th>
+      <td>POINT (-80.14136 33.45378)</td>
+      <td>USGS-02171500</td>
+      <td>SANTEE RIVER NEAR PINEVILLE, SC</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>45</td>
+      <td>015</td>
+      <td>10</td>
+      <td>month_of_year</td>
+      <td>563.0</td>
+      <td>50.0</td>
+      <td>84</td>
+      <td>approved</td>
+      <td>a1b160db-bc3f-44e7-a150-881474373276</td>
+      <td>median</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+    </tr>
+    <tr>
+      <th>754</th>
+      <td>POINT (-80.14136 33.45378)</td>
+      <td>USGS-02171500</td>
+      <td>SANTEE RIVER NEAR PINEVILLE, SC</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>45</td>
+      <td>015</td>
+      <td>11</td>
+      <td>month_of_year</td>
+      <td>561.5</td>
+      <td>50.0</td>
+      <td>84</td>
+      <td>approved</td>
+      <td>48757820-8d5e-4407-bced-bca2717c6c97</td>
+      <td>median</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+    </tr>
+    <tr>
+      <th>755</th>
+      <td>POINT (-80.14136 33.45378)</td>
+      <td>USGS-02171500</td>
+      <td>SANTEE RIVER NEAR PINEVILLE, SC</td>
+      <td>Stream</td>
+      <td>ST</td>
+      <td>US</td>
+      <td>45</td>
+      <td>015</td>
+      <td>12</td>
+      <td>month_of_year</td>
+      <td>553.5</td>
+      <td>50.0</td>
+      <td>84</td>
+      <td>approved</td>
+      <td>9373bc06-0df5-4a86-9590-dfadcdcb6efb</td>
+      <td>median</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+    </tr>
+  </tbody>
+</table>
+<p>756 rows × 19 columns</p>
+</div></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="USGS_WaterData_SiteInventory_Examples.html" class="btn btn-neutral float-left" title="USGS dataretrieval Python Package get_monitoring_locations() Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="USGS_WaterData_UnitValues_Examples.html" class="btn btn-neutral float-right" title="USGS dataretrieval Python Package get_continuous() Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

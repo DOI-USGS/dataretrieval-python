@@ -1,0 +1,1334 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>USGS dataretrieval Python Package get_field_measurements() Examples &mdash; dataretrieval 0.1.dev1+g7f64c2de7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=57830bd8"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="USGS dataretrieval Python Package get_reference_table() Examples" href="USGS_WaterData_ParameterCodes_Examples.html" />
+    <link rel="prev" title="USGS dataretrieval Python Package get_field_measurements() Examples" href="USGS_WaterData_GroundwaterLevels_Examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#introduction-to-the-waterdata-module-of-dataretrieval">Introduction to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DailyValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Install-the-Package">Install the Package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Basic-Usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Interpreting-the-Result">Interpreting the Result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Additional-Examples">Additional Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ParameterCodes_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_reference_table()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Peaks_Examples.html">USGS dataretrieval Python Package Peak Streamflow Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Ratings_Examples.html">USGS dataretrieval Python Package Rating Curve Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_SiteInfo_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_SiteInventory_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Statistics_Examples.html">USGS dataretrieval Python Package Statistics Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_UnitValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_continuous()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Samples_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_NWIS_WaterUse_Examples.html">USGS dataretrieval Python Package Water Use Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/USGS_WaterData_Measurements_Examples.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="USGS-dataretrieval-Python-Package-get_field_measurements()-Examples">
+<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-get_field_measurements()-Examples" title="Link to this heading"></a></h1>
+<p>This notebook provides examples of using the Python dataretrieval package to retrieve surface water field measurement data for a United States Geological Survey (USGS) monitoring location. The dataretrieval package provides a collection of functions to get data from the USGS Water Data API and other online sources of hydrology and water quality data.</p>
+<section id="Install-the-Package">
+<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Link to this heading"></a></h2>
+<p>Use the following code to install the package if it doesn’t exist already within your Jupyter Python environment.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>dataretrieval
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g7f64c2de7)
+Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
+Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.3)
+Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.6)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.9.0.post0)
+Requirement already satisfied: six&gt;=1.5 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
+Requirement already satisfied: anyio in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (4.13.0)
+Requirement already satisfied: certifi in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (2026.5.20)
+Requirement already satisfied: httpcore==1.* in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (1.0.9)
+Requirement already satisfied: idna in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (3.16)
+Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpcore==1.*-&gt;httpx-&gt;dataretrieval) (0.16.0)
+</pre></div></div>
+</div>
+<p>Load the package so you can use it along with other packages used in this notebook.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval.waterdata</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">waterdata</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Basic-Usage">
+<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Link to this heading"></a></h2>
+<p>The dataretrieval package has several functions that allow you to retrieve data from the USGS Water Data API. This example uses the <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> function to retrieve surface water field measurements for a USGS monitoring location. Field measurements are physically measured values (such as gage height and discharge) collected during a visit to a monitoring location, and are primarily used as calibration readings for the automated sensors collecting continuous data. The function
+accepts the following arguments (all optional):</p>
+<ul class="simple">
+<li><p><strong>monitoring_location_id</strong> (string or list of strings): A unique identifier representing a single monitoring location, formed by combining the responsible agency code with the location ID number, separated by a hyphen (e.g. <code class="docutils literal notranslate"><span class="pre">USGS-10109000</span></code>). A list may be supplied to query multiple locations.</p></li>
+<li><p><strong>parameter_code</strong> (string or list of strings): One or more 5-digit parameter codes identifying the constituent measured and its units of measure.</p></li>
+<li><p><strong>time</strong> (string): The date an observation represents. Accepts an RFC 3339 date-time, a bounded or half-bounded interval (e.g. <code class="docutils literal notranslate"><span class="pre">2019-01-01/2019-12-31</span></code> or <code class="docutils literal notranslate"><span class="pre">2019-01-01/..</span></code>), or an ISO 8601 duration (e.g. <code class="docutils literal notranslate"><span class="pre">P20Y</span></code> for the past 20 years).</p></li>
+<li><p><strong>skip_geometry</strong> (boolean): If <code class="docutils literal notranslate"><span class="pre">True</span></code>, response geometries are omitted and a plain (non-spatial) data frame is returned.</p></li>
+</ul>
+<p>Additional query parameters such as <code class="docutils literal notranslate"><span class="pre">approval_status</span></code>, <code class="docutils literal notranslate"><span class="pre">qualifier</span></code>, <code class="docutils literal notranslate"><span class="pre">bbox</span></code>, and <code class="docutils literal notranslate"><span class="pre">limit</span></code> are also supported; see the <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> docstring for the full list.</p>
+<p>Example 1: Get all of the field measurements for a single monitoring location</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">measurements1</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_field_measurements</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-10109000&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">measurements1</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: field-measurements · 1 page · 1,916 rows
+No API key detected — register for higher rate limits at https://api.waterdata.usgs.gov/signup/
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Retrieved 1916 data values.
+</pre></div></div>
+</div>
+</section>
+<section id="Interpreting-the-Result">
+<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> function returns a tuple of two objects: a pandas data frame and an associated metadata object. The data frame is flat, uses a default integer index, and contains a <code class="docutils literal notranslate"><span class="pre">time</span></code> column holding the date of each measurement (along with columns such as <code class="docutils literal notranslate"><span class="pre">monitoring_location_id</span></code>, <code class="docutils literal notranslate"><span class="pre">parameter_code</span></code>, <code class="docutils literal notranslate"><span class="pre">value</span></code>, and <code class="docutils literal notranslate"><span class="pre">unit_of_measure</span></code>).</p>
+<p>Once you’ve got the data frame, there are several useful things you can do to explore the data.</p>
+<p>Display the data frame as a table</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">measurements1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+      <th>field_measurements_series_id</th>
+      <th>field_visit_id</th>
+      <th>parameter_code</th>
+      <th>monitoring_location_id</th>
+      <th>observing_procedure_code</th>
+      <th>observing_procedure</th>
+      <th>value</th>
+      <th>unit_of_measure</th>
+      <th>time</th>
+      <th>qualifier</th>
+      <th>vertical_datum</th>
+      <th>approval_status</th>
+      <th>measuring_agency</th>
+      <th>last_modified</th>
+      <th>control_condition</th>
+      <th>measurement_rated</th>
+      <th>field_measurement_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>3d14a129-455f-4280-aa2d-ff8106cbe102</td>
+      <td>4cd21ba9-8644-ebfc-e053-0100007fd6db</td>
+      <td>00060</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Unspecified</td>
+      <td>17.00</td>
+      <td>ft^3/s</td>
+      <td>1951-09-06 16:40:00+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Excellent</td>
+      <td>63c35558-0c81-48b7-88c1-d161740da572</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ab1a7c00-5751-4c9a-9c79-9abeb38a4531</td>
+      <td>4cd21ba9-8644-ebfc-e053-0100007fd6db</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>0.94</td>
+      <td>ft</td>
+      <td>1951-09-06 16:40:00+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Excellent</td>
+      <td>882ca3fe-55cf-4415-9fb6-29e2cbf610de</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>3d14a129-455f-4280-aa2d-ff8106cbe102</td>
+      <td>4cd21977-d55d-efa9-e053-0100007fcc60</td>
+      <td>00060</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Unspecified</td>
+      <td>12.50</td>
+      <td>ft^3/s</td>
+      <td>1951-12-13 19:10:00+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Unspecified</td>
+      <td>a04972f0-e812-4f75-ae22-4759f93a7889</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ab1a7c00-5751-4c9a-9c79-9abeb38a4531</td>
+      <td>4cd21977-d55d-efa9-e053-0100007fcc60</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>0.88</td>
+      <td>ft</td>
+      <td>1951-12-13 19:10:00+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Unspecified</td>
+      <td>bb14b3f8-c0c3-4a76-ae1b-04db24518d99</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ab1a7c00-5751-4c9a-9c79-9abeb38a4531</td>
+      <td>4cd21ba9-8645-ebfc-e053-0100007fd6db</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>1.80</td>
+      <td>ft</td>
+      <td>1952-04-23 17:25:00+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>32688292-a8aa-4094-a8b9-f3d030e1e1cd</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>1911</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>3d14a129-455f-4280-aa2d-ff8106cbe102</td>
+      <td>557f1a12-a17e-46b7-a528-6b606b4d0dd7</td>
+      <td>00060</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Acoustic Doppler Current Profiler</td>
+      <td>143.00</td>
+      <td>ft^3/s</td>
+      <td>2026-03-04 22:20:41+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>d7f10aaa-5257-4e15-8441-066afbc8b2e8</td>
+    </tr>
+    <tr>
+      <th>1912</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>3d14a129-455f-4280-aa2d-ff8106cbe102</td>
+      <td>98c59f70-ce2c-4a4d-9acf-18a179a96c78</td>
+      <td>00060</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Acoustic Doppler Current Profiler</td>
+      <td>245.00</td>
+      <td>ft^3/s</td>
+      <td>2026-04-20 16:31:59+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>aa6e5b37-7d5b-4f04-a842-5e43af9eaff4</td>
+    </tr>
+    <tr>
+      <th>1913</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ab1a7c00-5751-4c9a-9c79-9abeb38a4531</td>
+      <td>98c59f70-ce2c-4a4d-9acf-18a179a96c78</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>3.11</td>
+      <td>ft</td>
+      <td>2026-04-20 16:31:59+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>e266883f-7e00-424f-bb3d-0d853d83af62</td>
+    </tr>
+    <tr>
+      <th>1914</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>3d14a129-455f-4280-aa2d-ff8106cbe102</td>
+      <td>6e48b7b6-152b-4a98-a974-87adf3d0ddc8</td>
+      <td>00060</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Acoustic Doppler Current Profiler</td>
+      <td>354.00</td>
+      <td>ft^3/s</td>
+      <td>2026-05-12 20:07:07+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Provisional</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>42664644-54e6-47f6-819d-ab87128698b1</td>
+    </tr>
+    <tr>
+      <th>1915</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ab1a7c00-5751-4c9a-9c79-9abeb38a4531</td>
+      <td>6e48b7b6-152b-4a98-a974-87adf3d0ddc8</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>3.38</td>
+      <td>ft</td>
+      <td>2026-05-12 20:07:07+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Provisional</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>e950a43f-92bd-4f48-a43d-85d9d05e634e</td>
+    </tr>
+  </tbody>
+</table>
+<p>1916 rows × 18 columns</p>
+</div></div>
+</div>
+<p>Show the data types of the columns in the resulting data frame.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">measurements1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtypes</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+geometry                                   geometry
+field_measurements_series_id                    str
+field_visit_id                                  str
+parameter_code                                  str
+monitoring_location_id                          str
+observing_procedure_code                        str
+observing_procedure                             str
+value                                       float64
+unit_of_measure                                 str
+time                            datetime64[us, UTC]
+qualifier                                    object
+vertical_datum                                  str
+approval_status                                 str
+measuring_agency                                str
+last_modified                   datetime64[us, UTC]
+control_condition                               str
+measurement_rated                               str
+field_measurement_id                            str
+dtype: object
+</pre></div></div>
+</div>
+<p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS Water Data API.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The query URL used to retrieve the data from the Water Data API was: &quot;</span> <span class="o">+</span> <span class="n">measurements1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The query URL used to retrieve the data from the Water Data API was: https://api.waterdata.usgs.gov/ogcapi/v0/collections/field-measurements/items?monitoring_location_id=USGS-10109000&amp;skipGeometry=false&amp;limit=50000
+</pre></div></div>
+</div>
+</section>
+<section id="Additional-Examples">
+<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Link to this heading"></a></h2>
+<p>Example 2: Get all of the field measurements between a start and end date</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">measurements2</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_field_measurements</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-10109000&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2019-01-01/2019-12-31&quot;</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">measurements2</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">measurements2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: field-measurements · 1 page · 18 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Retrieved 18 data values.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+      <th>field_measurements_series_id</th>
+      <th>field_visit_id</th>
+      <th>parameter_code</th>
+      <th>monitoring_location_id</th>
+      <th>observing_procedure_code</th>
+      <th>observing_procedure</th>
+      <th>value</th>
+      <th>unit_of_measure</th>
+      <th>time</th>
+      <th>qualifier</th>
+      <th>vertical_datum</th>
+      <th>approval_status</th>
+      <th>measuring_agency</th>
+      <th>last_modified</th>
+      <th>control_condition</th>
+      <th>measurement_rated</th>
+      <th>field_measurement_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>3d14a129-455f-4280-aa2d-ff8106cbe102</td>
+      <td>80a47f55-5d75-9c33-e053-0100007fa04d</td>
+      <td>00060</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Mid-section</td>
+      <td>83.80</td>
+      <td>ft^3/s</td>
+      <td>2019-01-29 19:57:30+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>14b391af-d813-472d-bcc9-d863f33023b0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ab1a7c00-5751-4c9a-9c79-9abeb38a4531</td>
+      <td>80a47f55-5d75-9c33-e053-0100007fa04d</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>2.43</td>
+      <td>ft</td>
+      <td>2019-01-29 19:57:30+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>625a39f8-dee1-4c44-8b7e-8f9100dae45a</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ab1a7c00-5751-4c9a-9c79-9abeb38a4531</td>
+      <td>83ebd5c5-373c-5a52-e053-0100007f5e38</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>2.46</td>
+      <td>ft</td>
+      <td>2019-03-11 19:29:30+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>1e93c787-ee30-40df-9910-bc83610da5f1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>3d14a129-455f-4280-aa2d-ff8106cbe102</td>
+      <td>83ebd5c5-373c-5a52-e053-0100007f5e38</td>
+      <td>00060</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Mid-section</td>
+      <td>94.20</td>
+      <td>ft^3/s</td>
+      <td>2019-03-11 19:29:30+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>52f09cdf-5839-470a-a501-f4ba0d6a6ab4</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>3d14a129-455f-4280-aa2d-ff8106cbe102</td>
+      <td>873f3a85-f698-41b8-e053-0100007fc351</td>
+      <td>00060</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Acoustic Doppler Current Profiler</td>
+      <td>337.00</td>
+      <td>ft^3/s</td>
+      <td>2019-04-23 21:39:16+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>23dc6ac6-3268-4581-8a50-caf7527717cf</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ab1a7c00-5751-4c9a-9c79-9abeb38a4531</td>
+      <td>873f3a85-f698-41b8-e053-0100007fc351</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>3.29</td>
+      <td>ft</td>
+      <td>2019-04-23 21:39:16+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>fb29b62b-e442-46e4-ad74-da42b13eaa19</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>3d14a129-455f-4280-aa2d-ff8106cbe102</td>
+      <td>8b3913bf-9253-4f4f-e053-0100007f3ec4</td>
+      <td>00060</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Mid-section</td>
+      <td>709.00</td>
+      <td>ft^3/s</td>
+      <td>2019-06-12 14:02:56+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>1d3af755-8ac3-4413-acae-68ea946fb39d</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ab1a7c00-5751-4c9a-9c79-9abeb38a4531</td>
+      <td>8b3913bf-9253-4f4f-e053-0100007f3ec4</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>4.09</td>
+      <td>ft</td>
+      <td>2019-06-12 14:02:56+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>447b8a00-70c0-47ce-8aba-eb281958407b</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ab1a7c00-5751-4c9a-9c79-9abeb38a4531</td>
+      <td>8ef1af85-190d-3d4c-e053-0100007f711a</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>2.84</td>
+      <td>ft</td>
+      <td>2019-07-30 17:57:17+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Vegetation - Light</td>
+      <td>Good</td>
+      <td>2e68cb42-dd72-4f21-8a6b-77d329b687b9</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>3d14a129-455f-4280-aa2d-ff8106cbe102</td>
+      <td>8ef1af85-190d-3d4c-e053-0100007f711a</td>
+      <td>00060</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Mid-section</td>
+      <td>167.00</td>
+      <td>ft^3/s</td>
+      <td>2019-07-30 17:57:17+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Vegetation - Light</td>
+      <td>Good</td>
+      <td>42bc3d6c-e4ad-4364-8284-239367589a21</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ab1a7c00-5751-4c9a-9c79-9abeb38a4531</td>
+      <td>8ef1af85-190d-3d4c-e053-0100007f711a</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>2.84</td>
+      <td>ft</td>
+      <td>2019-07-30 18:06:00+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Vegetation - Light</td>
+      <td>Good</td>
+      <td>333a662b-8f54-4ccd-8537-4363131d014c</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>3d14a129-455f-4280-aa2d-ff8106cbe102</td>
+      <td>8ef1af85-190d-3d4c-e053-0100007f711a</td>
+      <td>00060</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Mid-section</td>
+      <td>162.00</td>
+      <td>ft^3/s</td>
+      <td>2019-07-30 18:06:00+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Vegetation - Light</td>
+      <td>Good</td>
+      <td>b295e6f9-ba33-4169-b5b6-23fd31d1daa1</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ab1a7c00-5751-4c9a-9c79-9abeb38a4531</td>
+      <td>92d627a0-a0f4-3689-e053-0100007f10f2</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>2.64</td>
+      <td>ft</td>
+      <td>2019-09-16 16:59:19+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Vegetation - Light</td>
+      <td>Good</td>
+      <td>57470ff5-62ec-4b57-a890-7da7b800f572</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>3d14a129-455f-4280-aa2d-ff8106cbe102</td>
+      <td>92d627a0-a0f4-3689-e053-0100007f10f2</td>
+      <td>00060</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Mid-section</td>
+      <td>126.00</td>
+      <td>ft^3/s</td>
+      <td>2019-09-16 16:59:19+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Vegetation - Light</td>
+      <td>Good</td>
+      <td>f4e2cd33-b381-407c-9ee8-22db02070f0e</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ab1a7c00-5751-4c9a-9c79-9abeb38a4531</td>
+      <td>9603d708-a28c-04b1-e053-0100007f2a41</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>2.64</td>
+      <td>ft</td>
+      <td>2019-10-28 19:06:42+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>0604fa0f-f534-4c10-9633-4357d10cb4eb</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>3d14a129-455f-4280-aa2d-ff8106cbe102</td>
+      <td>9603d708-a28c-04b1-e053-0100007f2a41</td>
+      <td>00060</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Mid-section</td>
+      <td>133.00</td>
+      <td>ft^3/s</td>
+      <td>2019-10-28 19:06:42+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>be6103a6-19f5-457f-8001-e08b1faa54fa</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ab1a7c00-5751-4c9a-9c79-9abeb38a4531</td>
+      <td>92b3d616-e8fb-4f7f-862d-632f6ad1c26b</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>2.60</td>
+      <td>ft</td>
+      <td>2019-12-03 20:53:15+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>75a0c30d-0ed6-45e6-a0f8-0c3aa67627ef</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>3d14a129-455f-4280-aa2d-ff8106cbe102</td>
+      <td>92b3d616-e8fb-4f7f-862d-632f6ad1c26b</td>
+      <td>00060</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Mid-section</td>
+      <td>122.00</td>
+      <td>ft^3/s</td>
+      <td>2019-12-03 20:53:15+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-24 02:13:47.380028+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>8b39c37e-461c-452e-bfc9-a8ef50818381</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Example 3: Get all of the field measurements for multiple monitoring locations</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">measurements3</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_field_measurements</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USGS-01594440&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-040851325&quot;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">measurements3</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">measurements3</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: field-measurements · 1 page · 976 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Retrieved 976 data values.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+      <th>field_measurements_series_id</th>
+      <th>field_visit_id</th>
+      <th>parameter_code</th>
+      <th>monitoring_location_id</th>
+      <th>observing_procedure_code</th>
+      <th>observing_procedure</th>
+      <th>value</th>
+      <th>unit_of_measure</th>
+      <th>time</th>
+      <th>qualifier</th>
+      <th>vertical_datum</th>
+      <th>approval_status</th>
+      <th>measuring_agency</th>
+      <th>last_modified</th>
+      <th>control_condition</th>
+      <th>measurement_rated</th>
+      <th>field_measurement_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>61b6cb68-e338-4dfd-9618-d64e9bdc64be</td>
+      <td>53fb2a20-7b79-4148-e053-0100007f46df</td>
+      <td>00065</td>
+      <td>USGS-01594440</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>3.11</td>
+      <td>ft</td>
+      <td>1955-04-07 19:05:00+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>4b1b4d58-f507-48e9-a4ba-77f6e722d8bb</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>c296b625-80d8-4ee8-a14b-f9bdaf158468</td>
+      <td>53fb2a20-7b79-4148-e053-0100007f46df</td>
+      <td>00060</td>
+      <td>USGS-01594440</td>
+      <td>Z</td>
+      <td>Unspecified</td>
+      <td>152.00</td>
+      <td>ft^3/s</td>
+      <td>1955-04-07 19:05:00+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>845573db-b7cb-4db6-b0fb-1ea3667d89d8</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>61b6cb68-e338-4dfd-9618-d64e9bdc64be</td>
+      <td>53fb2518-fafa-3f15-e053-0100007fbbce</td>
+      <td>00065</td>
+      <td>USGS-01594440</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>2.76</td>
+      <td>ft</td>
+      <td>1955-05-04 21:05:00+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>Clear</td>
+      <td>Fair</td>
+      <td>62218c9c-82a5-46c2-91e1-443fb88cd76b</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>c296b625-80d8-4ee8-a14b-f9bdaf158468</td>
+      <td>53fb2518-fafa-3f15-e053-0100007fbbce</td>
+      <td>00060</td>
+      <td>USGS-01594440</td>
+      <td>Z</td>
+      <td>Unspecified</td>
+      <td>127.00</td>
+      <td>ft^3/s</td>
+      <td>1955-05-04 21:05:00+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>Clear</td>
+      <td>Fair</td>
+      <td>b752e796-671e-4791-bd57-1bf8a2e8d27b</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>61b6cb68-e338-4dfd-9618-d64e9bdc64be</td>
+      <td>53fb2a2a-6d26-3f11-e053-0100007f0ef5</td>
+      <td>00065</td>
+      <td>USGS-01594440</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>4.26</td>
+      <td>ft</td>
+      <td>1955-06-10 13:35:00+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>d6f4cbc0-bd8f-4a3a-8129-3adc73f99e7c</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>971</th>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>61b6cb68-e338-4dfd-9618-d64e9bdc64be</td>
+      <td>25d5d229-9953-4096-8c53-7f62965975a8</td>
+      <td>00065</td>
+      <td>USGS-01594440</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>4.36</td>
+      <td>ft</td>
+      <td>2026-01-07 16:40:27+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>Clear</td>
+      <td>Fair</td>
+      <td>d771ccbd-3df7-4abb-905a-f16925c61879</td>
+    </tr>
+    <tr>
+      <th>972</th>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>c296b625-80d8-4ee8-a14b-f9bdaf158468</td>
+      <td>1cef619c-e54c-4d50-8f72-8a7067de4e15</td>
+      <td>00060</td>
+      <td>USGS-01594440</td>
+      <td>Z</td>
+      <td>Acoustic Doppler Current Profiler</td>
+      <td>219.00</td>
+      <td>ft^3/s</td>
+      <td>2026-03-23 15:23:18+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Provisional</td>
+      <td>USGS</td>
+      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>Debris - Light</td>
+      <td>Fair</td>
+      <td>681c20fe-eb51-4ad1-9990-62494ec0e43a</td>
+    </tr>
+    <tr>
+      <th>973</th>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>61b6cb68-e338-4dfd-9618-d64e9bdc64be</td>
+      <td>1cef619c-e54c-4d50-8f72-8a7067de4e15</td>
+      <td>00065</td>
+      <td>USGS-01594440</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>4.99</td>
+      <td>ft</td>
+      <td>2026-03-23 15:23:18+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Provisional</td>
+      <td>USGS</td>
+      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>Debris - Light</td>
+      <td>Fair</td>
+      <td>f7ef53bd-e01c-4705-8d39-95a1e6eeffde</td>
+    </tr>
+    <tr>
+      <th>974</th>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>c296b625-80d8-4ee8-a14b-f9bdaf158468</td>
+      <td>53cd995f-745d-4342-bbb8-2c3a294fc56a</td>
+      <td>00060</td>
+      <td>USGS-01594440</td>
+      <td>Z</td>
+      <td>Acoustic Doppler Current Profiler</td>
+      <td>121.00</td>
+      <td>ft^3/s</td>
+      <td>2026-05-20 15:33:18+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Provisional</td>
+      <td>USGS</td>
+      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>Clear</td>
+      <td>Fair</td>
+      <td>0411981d-bf8f-4c57-9aea-9b9e537ebbee</td>
+    </tr>
+    <tr>
+      <th>975</th>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>61b6cb68-e338-4dfd-9618-d64e9bdc64be</td>
+      <td>53cd995f-745d-4342-bbb8-2c3a294fc56a</td>
+      <td>00065</td>
+      <td>USGS-01594440</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>4.24</td>
+      <td>ft</td>
+      <td>2026-05-20 15:33:18+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Provisional</td>
+      <td>USGS</td>
+      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>Clear</td>
+      <td>Fair</td>
+      <td>74e911ed-5c5f-4441-8124-19c27af210c3</td>
+    </tr>
+  </tbody>
+</table>
+<p>976 rows × 18 columns</p>
+</div></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="USGS_WaterData_GroundwaterLevels_Examples.html" class="btn btn-neutral float-left" title="USGS dataretrieval Python Package get_field_measurements() Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="USGS_WaterData_ParameterCodes_Examples.html" class="btn btn-neutral float-right" title="USGS dataretrieval Python Package get_reference_table() Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

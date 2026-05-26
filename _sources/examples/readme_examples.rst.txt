@@ -1,40 +1,49 @@
 
-Examples from the Readme file on retrieving NWIS data
------------------------------------------------------
+Retrieving USGS water data with the ``waterdata`` module
+--------------------------------------------------------
 
 .. note::
 
-    NWIS stands for the National Water Information System
+    The ``waterdata`` module accesses the USGS `Water Data API`_ and is the
+    recommended way to retrieve USGS water data. The legacy ``nwis`` module
+    remains available but is deprecated.
 
+.. _Water Data API: https://api.waterdata.usgs.gov/
 
-.. doctest::
+.. code:: python
 
-    >>> # first import the functions for downloading data from NWIS
-    >>> import dataretrieval.nwis as nwis
+    >>> # import the waterdata module
+    >>> from dataretrieval import waterdata
 
-    >>> # specify the USGS site code for which we want data.
-    >>> site = '03339000'
+    >>> # a USGS monitoring location id joins the agency code and the site
+    >>> # number with a hyphen
+    >>> site = "USGS-05427718"
 
-    >>> # get instantaneous values (iv)
-    >>> df = nwis.get_record(sites=site, service='iv', start='2017-12-31', end='2018-01-01')
+    >>> # get continuous (instantaneous) streamflow — parameter code 00060 —
+    >>> # over a one-day window
+    >>> df, md = waterdata.get_continuous(
+    ...     monitoring_location_id=site,
+    ...     parameter_code="00060",
+    ...     time="2024-03-01/2024-03-02",
+    ... )
 
-    >>> df.head()
-                               00010 00010_cd   site_no  00060 00060_cd  ...  63680_ysi), [discontinued 10/5/21_cd 63680_hach  63680_hach_cd 99133  99133_cd
-    datetime                                                             ...
-    2017-12-31 06:00:00+00:00    1.0        A  03339000  140.0        A  ...                                     A        3.6              A  4.61         A
-    2017-12-31 06:15:00+00:00    1.0        A  03339000  138.0        A  ...                                     A        3.6              A  4.61         A
-    2017-12-31 06:30:00+00:00    1.0        A  03339000  139.0        A  ...                                     A        3.4              A  4.61         A
-    2017-12-31 06:45:00+00:00    1.0        A  03339000  139.0        A  ...                                     A        3.4              A  4.61         A
-    2017-12-31 07:00:00+00:00    1.0        A  03339000  139.0        A  ...                                     A        3.5              A  4.61         A
-    <BLANKLINE>
-    [5 rows x 21 columns]
+    >>> df[["time", "value", "unit_of_measure", "approval_status"]].head()
+                            time  value unit_of_measure approval_status
+    0 2024-03-01 00:00:00+00:00   18.7          ft^3/s        Approved
+    1 2024-03-01 00:15:00+00:00   18.5          ft^3/s        Approved
+    2 2024-03-01 00:30:00+00:00   18.5          ft^3/s        Approved
+    3 2024-03-01 00:45:00+00:00   18.5          ft^3/s        Approved
+    4 2024-03-01 01:00:00+00:00   18.3          ft^3/s        Approved
 
+    >>> # get descriptive metadata about the monitoring location itself
+    >>> info, md = waterdata.get_monitoring_locations(
+    ...     monitoring_location_id=site,
+    ...     skip_geometry=True,
+    ... )
 
-    >>> # get basic info about the site
-    >>> df3 = nwis.get_record(sites=site, service='site')
-
-    >>> print(df3)
-      agency_cd   site_no                         station_nm site_tp_cd  lat_va  long_va  ...  aqfr_cd  aqfr_type_cd well_depth_va hole_depth_va depth_src_cd project_no
-    0      USGS  03339000  VERMILION RIVER NEAR DANVILLE, IL         ST  400603   873550  ...      NaN           NaN           NaN           NaN          NaN        100
-    <BLANKLINE>
-    [1 rows x 42 columns]
+    >>> info[["monitoring_location_name", "state_name", "site_type", "drainage_area"]].T
+                                                        0
+    monitoring_location_name  YAHARA RIVER AT WINDSOR, WI
+    state_name                                  Wisconsin
+    site_type                                      Stream
+    drainage_area                                    73.6

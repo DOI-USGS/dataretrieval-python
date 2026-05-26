@@ -1,0 +1,1780 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>USGS dataretrieval Python Package get_monitoring_locations() Examples &mdash; dataretrieval 0.1.dev1+g7f64c2de7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=57830bd8"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="USGS dataretrieval Python Package Statistics Examples" href="USGS_WaterData_Statistics_Examples.html" />
+    <link rel="prev" title="USGS dataretrieval Python Package get_monitoring_locations() Examples" href="USGS_WaterData_SiteInfo_Examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#introduction-to-the-waterdata-module-of-dataretrieval">Introduction to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DailyValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Measurements_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ParameterCodes_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_reference_table()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Peaks_Examples.html">USGS dataretrieval Python Package Peak Streamflow Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Ratings_Examples.html">USGS dataretrieval Python Package Rating Curve Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_SiteInfo_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> Examples</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Install-the-Package">Install the Package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Basic-Usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Interpreting-the-Result">Interpreting the Result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Additional-Examples">Additional Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Statistics_Examples.html">USGS dataretrieval Python Package Statistics Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_UnitValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_continuous()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Samples_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_NWIS_WaterUse_Examples.html">USGS dataretrieval Python Package Water Use Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/USGS_WaterData_SiteInventory_Examples.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="USGS-dataretrieval-Python-Package-get_monitoring_locations()-Examples">
+<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-get_monitoring_locations()-Examples" title="Link to this heading"></a></h1>
+<p>This notebook provides examples of using the Python dataretrieval package to search for monitoring locations within a region or with specific characteristics. The dataretrieval package provides a collection of functions to get data from the USGS Water Data API and other online sources of hydrology and water quality data, including the United States Environmental Protection Agency (USEPA).</p>
+<section id="Install-the-Package">
+<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Link to this heading"></a></h2>
+<p>Use the following code to install the package if it doesn’t exist already within your Jupyter Python environment.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>dataretrieval
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g7f64c2de7)
+Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
+Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.3)
+Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.6)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.9.0.post0)
+Requirement already satisfied: six&gt;=1.5 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
+Requirement already satisfied: anyio in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (4.13.0)
+Requirement already satisfied: certifi in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (2026.5.20)
+Requirement already satisfied: httpcore==1.* in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (1.0.9)
+Requirement already satisfied: idna in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (3.16)
+Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpcore==1.*-&gt;httpx-&gt;dataretrieval) (0.16.0)
+</pre></div></div>
+</div>
+<p>Load the package so you can use it along with other packages used in this notebook.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval.waterdata</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">waterdata</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Basic-Usage">
+<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Link to this heading"></a></h2>
+<p>The dataretrieval package has several functions that allow you to retrieve data from the USGS Water Data API. This example uses the <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> function to search for monitoring locations within a region or with specific characteristics. The function has many optional arguments that act as filters on the query; supply the ones that match the locations you want to retrieve.</p>
+<section id="Commonly-Used-Arguments">
+<h3>Commonly Used Arguments<a class="headerlink" href="#Commonly-Used-Arguments" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>monitoring_location_id</strong> (string or iterable of strings): A unique identifier for a single monitoring location, formed by joining the agency code (e.g. <code class="docutils literal notranslate"><span class="pre">USGS</span></code>) and the location’s ID number with a hyphen (e.g. <code class="docutils literal notranslate"><span class="pre">USGS-05114000</span></code>).</p></li>
+<li><p><strong>state_name</strong> (string or iterable of strings): The full name of the state or state equivalent in which the monitoring location is located (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;Ohio&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;Utah&quot;</span></code>). Note that this is the spelled-out state name, not a two-letter postal abbreviation.</p></li>
+<li><p><strong>county_name</strong> (string or iterable of strings): The name of the county (or county equivalent) in which the monitoring location is located.</p></li>
+<li><p><strong>site_type_code</strong> (string or iterable of strings): A code describing the hydrologic setting of the monitoring location (e.g. stream, spring, or well).</p></li>
+<li><p><strong>site_type</strong> (string or iterable of strings): A text description of the hydrologic setting of the monitoring location.</p></li>
+<li><p><strong>hydrologic_unit_code</strong> (string or iterable of strings): A two- to eight-digit hydrologic unit code (HUC) identifying the region, sub-region, accounting unit, or cataloging unit of interest.</p></li>
+<li><p><strong>bbox</strong> (list of numbers): A bounding box given as <code class="docutils literal notranslate"><span class="pre">[xmin,</span> <span class="pre">ymin,</span> <span class="pre">xmax,</span> <span class="pre">ymax]</span></code> (western-most longitude, southern-most latitude, eastern-most longitude, northern-most latitude). Only locations whose geometry intersects the box are returned.</p></li>
+</ul>
+</section>
+<section id="Formatting-Arguments">
+<h3>Formatting Arguments<a class="headerlink" href="#Formatting-Arguments" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>properties</strong> (string or iterable of strings): The subset of columns to return from the query (for example <code class="docutils literal notranslate"><span class="pre">id</span></code>, <code class="docutils literal notranslate"><span class="pre">state_name</span></code>, <code class="docutils literal notranslate"><span class="pre">site_type_code</span></code>). When omitted, all available columns are returned.</p></li>
+<li><p><strong>skip_geometry</strong> (boolean): When <code class="docutils literal notranslate"><span class="pre">True</span></code>, the response geometries are skipped and the result is a plain <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> with no spatial information. When <code class="docutils literal notranslate"><span class="pre">False</span></code> (the default), the result carries a <code class="docutils literal notranslate"><span class="pre">geometry</span></code> column.</p></li>
+<li><p><strong>limit</strong> (numeric): Controls how many of the selected features are returned per page (maximum 50000).</p></li>
+</ul>
+<p>For the full list of arguments see the <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> docstring and the USGS Water Data API documentation.</p>
+</section>
+<section id="Example-1:-Retrieve-all-monitoring-locations-in-Ohio">
+<h3>Example 1: Retrieve all monitoring locations in Ohio<a class="headerlink" href="#Example-1:-Retrieve-all-monitoring-locations-in-Ohio" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteListPhos</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span><span class="n">state_name</span><span class="o">=</span><span class="s2">&quot;Ohio&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: monitoring-locations · 1 page · 16,074 rows
+No API key detected — register for higher rate limits at https://api.waterdata.usgs.gov/signup/
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Interpreting-the-Result">
+<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Link to this heading"></a></h2>
+<p>Calling <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> returns a tuple of two objects: a pandas data frame of the requested monitoring location records and an associated metadata object. The data frame has one row per monitoring location and one column per requested property; unless <code class="docutils literal notranslate"><span class="pre">skip_geometry=True</span></code> was passed, it also carries a <code class="docutils literal notranslate"><span class="pre">geometry</span></code> column describing each location’s position.</p>
+<p>Once you have the data frame, there are several useful things you can do to explore the data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Display the data frame as a table</span>
+<span class="n">display</span><span class="p">(</span><span class="n">siteListPhos</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>monitoring_location_id</th>
+      <th>geometry</th>
+      <th>agency_code</th>
+      <th>agency_name</th>
+      <th>monitoring_location_number</th>
+      <th>monitoring_location_name</th>
+      <th>district_code</th>
+      <th>country_code</th>
+      <th>country_name</th>
+      <th>state_code</th>
+      <th>...</th>
+      <th>construction_date</th>
+      <th>aquifer_code</th>
+      <th>national_aquifer_code</th>
+      <th>aquifer_type_code</th>
+      <th>well_constructed_depth</th>
+      <th>hole_constructed_depth</th>
+      <th>depth_source_code</th>
+      <th>revision_note</th>
+      <th>revision_created</th>
+      <th>revision_modified</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>OH004-404325082475900</td>
+      <td>POINT (-82.79963 40.72367)</td>
+      <td>OH004</td>
+      <td>Ohio Environmental Protection Agency</td>
+      <td>404325082475900</td>
+      <td>GALION WATER DEPARTMENT</td>
+      <td>39</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>39</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>OH015-383638082103300</td>
+      <td>POINT (-82.17601 38.61071)</td>
+      <td>OH015</td>
+      <td>Ohio Department of Natural Resources</td>
+      <td>383638082103300</td>
+      <td>G-2 OH</td>
+      <td>39</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>39</td>
+      <td>...</td>
+      <td>1972-01-01</td>
+      <td>111TRRC</td>
+      <td>N100ALLUVL</td>
+      <td>U</td>
+      <td>65.0</td>
+      <td>65.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>OH015-385702083013400</td>
+      <td>POINT (-83.02597 38.95062)</td>
+      <td>OH015</td>
+      <td>Ohio Department of Natural Resources</td>
+      <td>385702083013400</td>
+      <td>SC-2 OH</td>
+      <td>39</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>39</td>
+      <td>...</td>
+      <td>2019-10-11</td>
+      <td>112OTSH</td>
+      <td>N100GLCIAL</td>
+      <td>NaN</td>
+      <td>85.0</td>
+      <td>85.0</td>
+      <td>D</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>OH015-385932083412400</td>
+      <td>POINT (-83.68992 38.99229)</td>
+      <td>OH015</td>
+      <td>Ohio Department of Natural Resources</td>
+      <td>385932083412400</td>
+      <td>BR-20 OH</td>
+      <td>39</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>39</td>
+      <td>...</td>
+      <td>1992-12-10</td>
+      <td>357BFLD</td>
+      <td>N400SLRDVN</td>
+      <td>C</td>
+      <td>40.0</td>
+      <td>40.0</td>
+      <td>A</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>OH015-390359083015100</td>
+      <td>POINT (-83.03073 39.06646)</td>
+      <td>OH015</td>
+      <td>Ohio Department of Natural Resources</td>
+      <td>390359083015100</td>
+      <td>PI-2 OH</td>
+      <td>39</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>39</td>
+      <td>...</td>
+      <td>1967-01-01</td>
+      <td>112OTSH</td>
+      <td>N100GLCIAL</td>
+      <td>U</td>
+      <td>63.0</td>
+      <td>63.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>16069</th>
+      <td>USGS-939204016900547</td>
+      <td>POINT (-81.77917 40.96528)</td>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>939204016900547</td>
+      <td>MORTON SALT-RITTMAN</td>
+      <td>39</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>39</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>16070</th>
+      <td>USGS-939204016901922</td>
+      <td>POINT (-81.9725 40.80083)</td>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>939204016901922</td>
+      <td>BOSCH REXROTH CORP</td>
+      <td>39</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>39</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>16071</th>
+      <td>USGS-939204016901945</td>
+      <td>POINT (-81.95 40.77083)</td>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>939204016901945</td>
+      <td>TIMKEN-WOOSTER STEEL PLANT</td>
+      <td>39</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>39</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>16072</th>
+      <td>USGS-939204016902088</td>
+      <td>POINT (-81.97333 40.79944)</td>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>939204016902088</td>
+      <td>FRITO LAY-WOOSTER PLANT</td>
+      <td>39</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>39</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>16073</th>
+      <td>USGS-939204017303335</td>
+      <td>POINT (-83.60417 41.38444)</td>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>939204017303335</td>
+      <td>VEHTEK SYSTEMS INC - DEWATERING</td>
+      <td>39</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>39</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>16074 rows × 44 columns</p>
+</div></div>
+</div>
+<p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS Water Data API.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The query URL used to retrieve the data from the Water Data API was: &quot;</span> <span class="o">+</span> <span class="n">siteListPhos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The query URL used to retrieve the data from the Water Data API was: https://api.waterdata.usgs.gov/ogcapi/v0/collections/monitoring-locations/items?state_name=Ohio&amp;skipGeometry=false&amp;limit=50000
+</pre></div></div>
+</div>
+</section>
+<section id="Additional-Examples">
+<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Link to this heading"></a></h2>
+<section id="Example-2:-Retrieve-information-for-a-single-monitoring-location">
+<h3>Example 2: Retrieve information for a single monitoring location<a class="headerlink" href="#Example-2:-Retrieve-information-for-a-single-monitoring-location" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oneSite</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">oneSite</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: monitoring-locations · 1 page · 1 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>monitoring_location_id</th>
+      <th>geometry</th>
+      <th>agency_code</th>
+      <th>agency_name</th>
+      <th>monitoring_location_number</th>
+      <th>monitoring_location_name</th>
+      <th>district_code</th>
+      <th>country_code</th>
+      <th>country_name</th>
+      <th>state_code</th>
+      <th>...</th>
+      <th>construction_date</th>
+      <th>aquifer_code</th>
+      <th>national_aquifer_code</th>
+      <th>aquifer_type_code</th>
+      <th>well_constructed_depth</th>
+      <th>hole_constructed_depth</th>
+      <th>depth_source_code</th>
+      <th>revision_note</th>
+      <th>revision_created</th>
+      <th>revision_modified</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS-05114000</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>05114000</td>
+      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
+      <td>38</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>38</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>WSP 1308: 1934, 1945. WSP 2113: Drainage area.</td>
+      <td>2017-11-13T06:00:00+00:00</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+<p>1 rows × 44 columns</p>
+</div></div>
+</div>
+</section>
+<section id="Example-3:-Retrieve-information-for-a-single-monitoring-location">
+<h3>Example 3: Retrieve information for a single monitoring location<a class="headerlink" href="#Example-3:-Retrieve-information-for-a-single-monitoring-location" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oneSite</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">oneSite</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: monitoring-locations · 1 page · 1 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>monitoring_location_id</th>
+      <th>geometry</th>
+      <th>agency_code</th>
+      <th>agency_name</th>
+      <th>monitoring_location_number</th>
+      <th>monitoring_location_name</th>
+      <th>district_code</th>
+      <th>country_code</th>
+      <th>country_name</th>
+      <th>state_code</th>
+      <th>...</th>
+      <th>construction_date</th>
+      <th>aquifer_code</th>
+      <th>national_aquifer_code</th>
+      <th>aquifer_type_code</th>
+      <th>well_constructed_depth</th>
+      <th>hole_constructed_depth</th>
+      <th>depth_source_code</th>
+      <th>revision_note</th>
+      <th>revision_created</th>
+      <th>revision_modified</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS-05114000</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>05114000</td>
+      <td>SOURIS RIVER NEAR SHERWOOD, ND</td>
+      <td>38</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>38</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>WSP 1308: 1934, 1945. WSP 2113: Drainage area.</td>
+      <td>2017-11-13T06:00:00+00:00</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+<p>1 rows × 44 columns</p>
+</div></div>
+</div>
+</section>
+<section id="Example-4:-Retrieve-information-for-monitoring-locations-in-Utah">
+<h3>Example 4: Retrieve information for monitoring locations in Utah<a class="headerlink" href="#Example-4:-Retrieve-information-for-monitoring-locations-in-Utah" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">UTsites</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
+    <span class="n">state_name</span><span class="o">=</span><span class="s2">&quot;Utah&quot;</span>
+<span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">UTsites</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: monitoring-locations · 1 page · 32,827 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>monitoring_location_id</th>
+      <th>geometry</th>
+      <th>agency_code</th>
+      <th>agency_name</th>
+      <th>monitoring_location_number</th>
+      <th>monitoring_location_name</th>
+      <th>district_code</th>
+      <th>country_code</th>
+      <th>country_name</th>
+      <th>state_code</th>
+      <th>...</th>
+      <th>construction_date</th>
+      <th>aquifer_code</th>
+      <th>national_aquifer_code</th>
+      <th>aquifer_type_code</th>
+      <th>well_constructed_depth</th>
+      <th>hole_constructed_depth</th>
+      <th>depth_source_code</th>
+      <th>revision_note</th>
+      <th>revision_created</th>
+      <th>revision_modified</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USBLM-09337800</td>
+      <td>POINT (-111.4185 37.77554)</td>
+      <td>USBLM</td>
+      <td>U.S. Bureau of Land Management</td>
+      <td>09337800</td>
+      <td>Escalante River above Calf Creek, near Boulder</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USBLM-09337810</td>
+      <td>POINT (-111.41517 37.6261)</td>
+      <td>USBLM</td>
+      <td>U.S. Bureau of Land Management</td>
+      <td>09337810</td>
+      <td>Calf Creek at BLM campground</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USEPA-370150112583201</td>
+      <td>POINT (-112.97633 37.03054)</td>
+      <td>USEPA</td>
+      <td>U.S. Environmental Protection Agency</td>
+      <td>370150112583201</td>
+      <td>(C-43-21)10cbd-1</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USEPA-370427111405201</td>
+      <td>POINT (-111.68111 37.07417)</td>
+      <td>USEPA</td>
+      <td>U.S. Environmental Protection Agency</td>
+      <td>370427111405201</td>
+      <td>(D-43-15) 2bad-1</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USEPA-370511111410001</td>
+      <td>POINT (-111.68333 37.08639)</td>
+      <td>USEPA</td>
+      <td>U.S. Environmental Protection Agency</td>
+      <td>370511111410001</td>
+      <td>(D-43-10) 2bdc-1</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>32822</th>
+      <td>USGS-415956112532501</td>
+      <td>POINT (-112.8911 41.99881)</td>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>415956112532501</td>
+      <td>(B-15- 9)29dbc- 1</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>1966-01-01</td>
+      <td>100VLFL</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>480.0</td>
+      <td>NaN</td>
+      <td>O</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>32823</th>
+      <td>USGS-415957112411001</td>
+      <td>POINT (-112.68692 41.99909)</td>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>415957112411001</td>
+      <td>(B-15- 7)30cbc- 1</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>1936-01-01</td>
+      <td>100VLFL</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>228.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>32824</th>
+      <td>USGS-415958111242901</td>
+      <td>POINT (-111.40882 41.99938)</td>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>415958111242901</td>
+      <td>(A-15- 5)32dbb- 1</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>1975-06-12</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>191.0</td>
+      <td>191.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>32825</th>
+      <td>USGS-415958112390301</td>
+      <td>POINT (-112.65164 41.99936)</td>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>415958112390301</td>
+      <td>(B-15- 7)29dac- 1</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>1966-01-01</td>
+      <td>100VLFL</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>175.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>32826</th>
+      <td>USGS-88101353</td>
+      <td>POINT (-112.07028 40.70222)</td>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>88101353</td>
+      <td>Carla Bartholoma Test Site at Magna, Utah</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>32827 rows × 44 columns</p>
+</div></div>
+</div>
+</section>
+<section id="Example-5:-Retrieve-the-time-series-metadata-for-a-single-site">
+<h3>Example 5: Retrieve the time series metadata for a single site<a class="headerlink" href="#Example-5:-Retrieve-the-time-series-metadata-for-a-single-site" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">get_time_series_metadata()</span></code> function lists the parameters that have been collected at a monitoring location.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oneSite</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_time_series_metadata</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">oneSite</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: time-series-metadata · 1 page · 25 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time_series_id</th>
+      <th>geometry</th>
+      <th>unit_of_measure</th>
+      <th>parameter_name</th>
+      <th>parameter_code</th>
+      <th>statistic_id</th>
+      <th>hydrologic_unit_code</th>
+      <th>state_name</th>
+      <th>last_modified</th>
+      <th>begin</th>
+      <th>...</th>
+      <th>end_utc</th>
+      <th>computation_period_identifier</th>
+      <th>computation_identifier</th>
+      <th>thresholds</th>
+      <th>sublocation_identifier</th>
+      <th>primary</th>
+      <th>monitoring_location_id</th>
+      <th>web_description</th>
+      <th>parameter_description</th>
+      <th>parent_time_series_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>02209cc1da684d43a85f6985a68eee5a</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>degC</td>
+      <td>Temperature, water</td>
+      <td>00010</td>
+      <td>00003</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2025-09-02 13:13:38.140331</td>
+      <td>1983-08-11 00:00:00.000001</td>
+      <td>...</td>
+      <td>2024-10-31 05:00:00+00:00</td>
+      <td>Daily</td>
+      <td>Mean</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Temperature, water, degrees Celsius</td>
+      <td>6a47b96521c946bebbcb73b4fc6f3538</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0a228ec2b10b4e35a94776cb2b19a729</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>ft^3/s</td>
+      <td>Discharge</td>
+      <td>00060</td>
+      <td>NaN</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2026-04-23 16:10:53.560921</td>
+      <td>1930-04-11 00:00:00.000001</td>
+      <td>...</td>
+      <td>2025-05-25 05:00:00+00:00</td>
+      <td>Water Year</td>
+      <td>Max At Event Time</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Discharge, cubic feet per second</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>15aa662f7df54dd8a1fda8ed030f6155</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>uS/cm</td>
+      <td>Specific cond at 25C</td>
+      <td>00095</td>
+      <td>00011</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2026-03-17 18:13:09.673125</td>
+      <td>2019-05-15 15:00:00.000001</td>
+      <td>...</td>
+      <td>2023-10-11 03:15:00+00:00</td>
+      <td>Points</td>
+      <td>Instantaneous</td>
+      <td>[{'Name': 'VERY LOW', 'Type': 'ThresholdBelow'...</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Specific conductance, water, unfiltered, micro...</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1f227161b9a844769989013bc2961bc7</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>ft</td>
+      <td>Stream level, NAVD88</td>
+      <td>63160</td>
+      <td>00011</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2026-05-26 08:15:39.565256</td>
+      <td>2026-01-26 08:30:00.000001</td>
+      <td>...</td>
+      <td>2026-05-26 13:00:00+00:00</td>
+      <td>Points</td>
+      <td>Instantaneous</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>NaN</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Stream water level elevation above NAVD 1988, ...</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>39fe84674f56420fbb26b30ab446a56b</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>uS/cm</td>
+      <td>Specific cond at 25C</td>
+      <td>00095</td>
+      <td>00003</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2025-08-07 11:19:28.658052</td>
+      <td>1983-08-11 00:00:00.000001</td>
+      <td>...</td>
+      <td>2023-10-09 05:00:00+00:00</td>
+      <td>Daily</td>
+      <td>Mean</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Specific conductance, water, unfiltered, micro...</td>
+      <td>15aa662f7df54dd8a1fda8ed030f6155</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>3eafa55565f14fd18908405ee299d7aa</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>mg/l</td>
+      <td>Dissolved oxygen</td>
+      <td>00300</td>
+      <td>00001</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2023-11-17 17:44:53.028393</td>
+      <td>1993-05-15 00:00:00.000001</td>
+      <td>...</td>
+      <td>2023-10-09 05:00:00+00:00</td>
+      <td>Daily</td>
+      <td>Max</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Dissolved oxygen, water, unfiltered, milligram...</td>
+      <td>74efbbe7893044e8a5463e8d5f752292</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>4edea217371e4a12836f55617fc0a12b</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>ft</td>
+      <td>Gage height</td>
+      <td>00065</td>
+      <td>00011</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2026-05-26 08:14:50.483108</td>
+      <td>2007-10-01 06:30:00.000001</td>
+      <td>...</td>
+      <td>2026-05-26 13:00:00+00:00</td>
+      <td>Points</td>
+      <td>Instantaneous</td>
+      <td>[{'Name': 'Operational limit (maximum) Instrum...</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Gage height, feet</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>524bb4c0ff9d45c5a4eef80b139dbf60</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>mg/l</td>
+      <td>Dissolved oxygen</td>
+      <td>00300</td>
+      <td>00003</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2023-11-17 17:44:53.049018</td>
+      <td>1993-05-15 00:00:00.000001</td>
+      <td>...</td>
+      <td>2023-10-09 05:00:00+00:00</td>
+      <td>Daily</td>
+      <td>Mean</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Dissolved oxygen, water, unfiltered, milligram...</td>
+      <td>74efbbe7893044e8a5463e8d5f752292</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>6a47b96521c946bebbcb73b4fc6f3538</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>degC</td>
+      <td>Temperature, water</td>
+      <td>00010</td>
+      <td>00011</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2026-03-17 18:13:21.767938</td>
+      <td>2019-05-15 15:00:00.000001</td>
+      <td>...</td>
+      <td>2024-11-01 10:45:00+00:00</td>
+      <td>Points</td>
+      <td>Instantaneous</td>
+      <td>[{'Name': 'VERY LOW', 'Type': 'ThresholdBelow'...</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Temperature, water, degrees Celsius</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>725d1146f5844e6dac62047020546b60</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>uS/cm</td>
+      <td>Specific cond at 25C</td>
+      <td>00095</td>
+      <td>00001</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2025-08-07 11:19:29.235786</td>
+      <td>1983-08-11 00:00:00.000001</td>
+      <td>...</td>
+      <td>2023-10-09 05:00:00+00:00</td>
+      <td>Daily</td>
+      <td>Max</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Specific conductance, water, unfiltered, micro...</td>
+      <td>15aa662f7df54dd8a1fda8ed030f6155</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>74efbbe7893044e8a5463e8d5f752292</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>mg/l</td>
+      <td>Dissolved oxygen</td>
+      <td>00300</td>
+      <td>00011</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2026-03-17 18:12:59.439628</td>
+      <td>2019-05-15 15:00:00.000001</td>
+      <td>...</td>
+      <td>2023-10-11 03:15:00+00:00</td>
+      <td>Points</td>
+      <td>Instantaneous</td>
+      <td>[{'Name': 'VERY HIGH', 'Type': 'ThresholdAbove...</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Dissolved oxygen, water, unfiltered, milligram...</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>987c2d767a5a4981acffd51fa253b63b</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>ft^3/s</td>
+      <td>Discharge</td>
+      <td>00060</td>
+      <td>00011</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2026-05-26 07:13:48.640195</td>
+      <td>1994-10-01 06:00:00.000001</td>
+      <td>...</td>
+      <td>2026-05-26 12:00:00+00:00</td>
+      <td>Points</td>
+      <td>Instantaneous</td>
+      <td>[{'Name': 'VERY HIGH', 'Type': 'ThresholdAbove...</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Discharge, cubic feet per second</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>a58dbf3513734ebd91c9e27d38c121f5</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>tons/day</td>
+      <td>Suspnd sedmnt disch</td>
+      <td>80155</td>
+      <td>00003</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2017-05-13 14:48:30.048999</td>
+      <td>1974-10-01 00:00:00.000001</td>
+      <td>...</td>
+      <td>1981-09-29 05:00:00+00:00</td>
+      <td>Daily</td>
+      <td>Mean</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Suspended sediment discharge, short tons per day</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>a6364a8689b546bd9d2d897f8179da47</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>degC</td>
+      <td>Temperature, water</td>
+      <td>00010</td>
+      <td>00002</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2025-09-02 13:13:38.839970</td>
+      <td>1983-08-11 00:00:00.000001</td>
+      <td>...</td>
+      <td>2024-10-31 05:00:00+00:00</td>
+      <td>Daily</td>
+      <td>Min</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Temperature, water, degrees Celsius</td>
+      <td>6a47b96521c946bebbcb73b4fc6f3538</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>ac8bf082bf9a496e89cad5debf5bb38a</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>mg/l</td>
+      <td>Suspnd sedmnt conc</td>
+      <td>80154</td>
+      <td>00003</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2017-05-13 14:53:34.288626</td>
+      <td>1974-10-01 00:00:00.000001</td>
+      <td>...</td>
+      <td>1981-09-29 05:00:00+00:00</td>
+      <td>Daily</td>
+      <td>Mean</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Suspended sediment concentration, milligrams p...</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>b045f9635b3b49379e81fcc045847f39</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>ft</td>
+      <td>Gage height</td>
+      <td>00065</td>
+      <td>00003</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2026-05-26 20:13:07.498055</td>
+      <td>2000-10-01 00:00:00.000001</td>
+      <td>...</td>
+      <td>2026-05-25 05:00:00+00:00</td>
+      <td>Daily</td>
+      <td>Mean</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Gage height, feet</td>
+      <td>4edea217371e4a12836f55617fc0a12b</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>bab51ad615744962956cd824a31572fb</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>pH Units</td>
+      <td>pH</td>
+      <td>00400</td>
+      <td>00002</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2017-05-13 14:50:10.025905</td>
+      <td>1992-08-12 00:00:00.000001</td>
+      <td>...</td>
+      <td>2003-09-29 05:00:00+00:00</td>
+      <td>Daily</td>
+      <td>Min</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>pH, water, unfiltered, field, standard units</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>bc427f184c4d4478b5761c02f2cb3e07</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>degC</td>
+      <td>Temperature, water</td>
+      <td>00010</td>
+      <td>00011</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2017-05-13 14:52:28.127057</td>
+      <td>NaT</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>Daily</td>
+      <td>Instantaneous</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Temperature, water, degrees Celsius</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>c1031f7855d54510a1e242aeb7ac36e1</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>ft^3/s</td>
+      <td>Discharge</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2026-05-26 06:14:42.251897</td>
+      <td>1930-03-11 00:00:00.000001</td>
+      <td>...</td>
+      <td>2026-05-24 05:00:00+00:00</td>
+      <td>Daily</td>
+      <td>Mean</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Discharge, cubic feet per second</td>
+      <td>987c2d767a5a4981acffd51fa253b63b</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>c170835ac7354feaa6fc42232e7c4d91</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>pH Units</td>
+      <td>pH</td>
+      <td>00400</td>
+      <td>00001</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2017-05-13 14:50:04.064455</td>
+      <td>1992-08-12 00:00:00.000001</td>
+      <td>...</td>
+      <td>2003-09-29 05:00:00+00:00</td>
+      <td>Daily</td>
+      <td>Max</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>pH, water, unfiltered, field, standard units</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>d5a1ccfc54134bce81f37f14b60f4434</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>uS/cm</td>
+      <td>Specific cond at 25C</td>
+      <td>00095</td>
+      <td>00011</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2017-05-13 14:51:12.739716</td>
+      <td>NaT</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>Daily</td>
+      <td>Instantaneous</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Specific conductance, water, unfiltered, micro...</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>d784cef304cf4296af5c3bad7da3e7bf</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>uS/cm</td>
+      <td>Specific cond at 25C</td>
+      <td>00095</td>
+      <td>00002</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2025-08-07 11:19:29.244018</td>
+      <td>1983-08-11 00:00:00.000001</td>
+      <td>...</td>
+      <td>2023-10-09 05:00:00+00:00</td>
+      <td>Daily</td>
+      <td>Min</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Specific conductance, water, unfiltered, micro...</td>
+      <td>15aa662f7df54dd8a1fda8ed030f6155</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>e6bb2ca919aa462cabb7fe13147b2897</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>degC</td>
+      <td>Temperature, water</td>
+      <td>00010</td>
+      <td>00001</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2025-09-02 13:13:38.893858</td>
+      <td>1983-08-11 00:00:00.000001</td>
+      <td>...</td>
+      <td>2024-10-31 05:00:00+00:00</td>
+      <td>Daily</td>
+      <td>Max</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Temperature, water, degrees Celsius</td>
+      <td>6a47b96521c946bebbcb73b4fc6f3538</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>f631082503074085ac183599f79c4fa3</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>mg/l</td>
+      <td>Dissolved oxygen</td>
+      <td>00300</td>
+      <td>00002</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2023-11-17 17:44:53.039108</td>
+      <td>1993-05-15 00:00:00.000001</td>
+      <td>...</td>
+      <td>2023-10-09 05:00:00+00:00</td>
+      <td>Daily</td>
+      <td>Min</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Dissolved oxygen, water, unfiltered, milligram...</td>
+      <td>74efbbe7893044e8a5463e8d5f752292</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>f812872c670d479090e1f9c81f691ea6</td>
+      <td>POINT (-101.95833 48.98996)</td>
+      <td>ft</td>
+      <td>Gage height</td>
+      <td>00065</td>
+      <td>NaN</td>
+      <td>090100080904</td>
+      <td>North Dakota</td>
+      <td>2026-03-22 00:18:02.798534</td>
+      <td>1904-01-01 00:00:00.000001</td>
+      <td>...</td>
+      <td>2025-05-25 05:00:00+00:00</td>
+      <td>Water Year</td>
+      <td>Max At Event Time</td>
+      <td>[]</td>
+      <td>None</td>
+      <td>Primary</td>
+      <td>USGS-05114000</td>
+      <td>None</td>
+      <td>Gage height, feet</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>25 rows × 22 columns</p>
+</div></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="USGS_WaterData_SiteInfo_Examples.html" class="btn btn-neutral float-left" title="USGS dataretrieval Python Package get_monitoring_locations() Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="USGS_WaterData_Statistics_Examples.html" class="btn btn-neutral float-right" title="USGS dataretrieval Python Package Statistics Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

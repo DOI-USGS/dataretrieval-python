@@ -1,0 +1,2155 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>USGS dataretrieval Python Package Peak Streamflow Examples &mdash; dataretrieval 0.1.dev1+g7f64c2de7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=57830bd8"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="USGS dataretrieval Python Package Rating Curve Examples" href="USGS_WaterData_Ratings_Examples.html" />
+    <link rel="prev" title="USGS dataretrieval Python Package get_reference_table() Examples" href="USGS_WaterData_ParameterCodes_Examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#introduction-to-the-waterdata-module-of-dataretrieval">Introduction to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DailyValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Measurements_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ParameterCodes_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_reference_table()</span></code> Examples</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">USGS dataretrieval Python Package Peak Streamflow Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Install-the-Package">Install the Package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Basic-Usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Interpreting-the-Result">Interpreting the Result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Additional-Examples">Additional Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Ratings_Examples.html">USGS dataretrieval Python Package Rating Curve Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_SiteInfo_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_SiteInventory_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Statistics_Examples.html">USGS dataretrieval Python Package Statistics Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_UnitValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_continuous()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Samples_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_NWIS_WaterUse_Examples.html">USGS dataretrieval Python Package Water Use Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">USGS dataretrieval Python Package Peak Streamflow Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/USGS_WaterData_Peaks_Examples.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="USGS-dataretrieval-Python-Package-Peak-Streamflow-Examples">
+<h1>USGS dataretrieval Python Package Peak Streamflow Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-Peak-Streamflow-Examples" title="Link to this heading"></a></h1>
+<p>This notebook provides examples of using the Python dataretrieval package to retrieve annual peak streamflow data for United States Geological Survey (USGS) monitoring locations using the <strong>USGS Water Data API</strong> via the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module. The <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module is the recommended way to access USGS water data and replaces the deprecated <code class="docutils literal notranslate"><span class="pre">nwis</span></code> module.</p>
+<section id="Install-the-Package">
+<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Link to this heading"></a></h2>
+<p>Use the following code to install the package if it doesn’t exist already within your Jupyter Python environment.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>dataretrieval
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g7f64c2de7)
+Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
+Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.3)
+Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.6)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.9.0.post0)
+Requirement already satisfied: six&gt;=1.5 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
+Requirement already satisfied: anyio in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (4.13.0)
+Requirement already satisfied: certifi in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (2026.5.20)
+Requirement already satisfied: httpcore==1.* in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (1.0.9)
+Requirement already satisfied: idna in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (3.16)
+Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpcore==1.*-&gt;httpx-&gt;dataretrieval) (0.16.0)
+</pre></div></div>
+</div>
+<p>Load the package so you can use it along with other packages used in this notebook.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
+<br/></pre></div>
+</div>
+</div>
+</section>
+<section id="Basic-Usage">
+<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Link to this heading"></a></h2>
+<p>This example uses the <code class="docutils literal notranslate"><span class="pre">get_peaks()</span></code> function to retrieve annual peak data for a USGS monitoring location. Commonly used arguments include:</p>
+<ul class="simple">
+<li><p><strong>monitoring_location_id</strong> (string or list of strings): USGS monitoring location id(s), formed as the agency code and site number joined by a hyphen (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;USGS-01594440&quot;</span></code>).</p></li>
+<li><p><strong>parameter_code</strong> (string or list of strings): 5-digit USGS parameter code(s). Peak records include both peak discharge (<code class="docutils literal notranslate"><span class="pre">00060</span></code>) and the corresponding gage height (<code class="docutils literal notranslate"><span class="pre">00065</span></code>); pass <code class="docutils literal notranslate"><span class="pre">parameter_code=&quot;00060&quot;</span></code> to retrieve peak discharge only.</p></li>
+<li><p><strong>time</strong> (string): an ISO-8601 date or interval (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;1953-01-01/1960-01-01&quot;</span></code>) restricting the period retrieved.</p></li>
+</ul>
+<section id="Example-1:-Retrieve-peak-discharge-for-two-USGS-monitoring-locations">
+<h3>Example 1: Retrieve peak discharge for two USGS monitoring locations<a class="headerlink" href="#Example-1:-Retrieve-peak-discharge-for-two-USGS-monitoring-locations" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;USGS-01594440&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-040851325&quot;</span><span class="p">]</span>
+<span class="n">peak_data</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span> <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">peak_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; peak values.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: peaks · 1 page · 57 rows
+No API key detected — register for higher rate limits at https://api.waterdata.usgs.gov/signup/
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Retrieved 57 peak values.
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Interpreting-the-Result">
+<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Link to this heading"></a></h2>
+<p>Each <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> function returns a tuple of a pandas data frame and a metadata object. The data frame contains one row per annual peak, including the peak <code class="docutils literal notranslate"><span class="pre">value</span></code>, its <code class="docutils literal notranslate"><span class="pre">time</span></code>, and the <code class="docutils literal notranslate"><span class="pre">water_year</span></code>.</p>
+<p>Once you’ve got the data frame, there are several useful things you can do to explore the data.</p>
+<p>Display the data frame as a table.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">peak_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>peak_id</th>
+      <th>geometry</th>
+      <th>time_series_id</th>
+      <th>monitoring_location_id</th>
+      <th>parameter_code</th>
+      <th>unit_of_measure</th>
+      <th>value</th>
+      <th>last_modified</th>
+      <th>time</th>
+      <th>water_year</th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>time_of_day</th>
+      <th>peak_since</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>3ae666b2-6658-4cd5-b0d9-9435e327f30e</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>31100</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1972-06-22</td>
+      <td>1972</td>
+      <td>1972</td>
+      <td>6</td>
+      <td>22</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>c2058a02-3a57-4867-b1eb-973d552bfa54</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>10600</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1978-01-27</td>
+      <td>1978</td>
+      <td>1978</td>
+      <td>1</td>
+      <td>27</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>513931e9-5d25-499b-9433-2e1b23f6a4a1</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>11500</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1979-09-07</td>
+      <td>1979</td>
+      <td>1979</td>
+      <td>9</td>
+      <td>7</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3c4e6c32-42f1-4515-b90c-3194394ac576</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>3940</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1979-10-11</td>
+      <td>1980</td>
+      <td>1979</td>
+      <td>10</td>
+      <td>11</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5df555c2-e9f7-4deb-bac5-3467d4eecf5c</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>1640</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1981-02-24</td>
+      <td>1981</td>
+      <td>1981</td>
+      <td>2</td>
+      <td>24</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>5efca373-025b-4980-89ce-b5dcaa6639d8</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>3380</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1982-02-04</td>
+      <td>1982</td>
+      <td>1982</td>
+      <td>2</td>
+      <td>4</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>1d58764d-52c4-4344-bd29-9ab8852d1d89</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>5750</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1983-06-21</td>
+      <td>1983</td>
+      <td>1983</td>
+      <td>6</td>
+      <td>21</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>65bedc17-bc1f-4412-897e-c9c7bc763552</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>4340</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1984-03-30</td>
+      <td>1984</td>
+      <td>1984</td>
+      <td>3</td>
+      <td>30</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>6bedc7e5-5cc8-450d-b5a1-50449b20fe22</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>4730</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1985-02-13</td>
+      <td>1985</td>
+      <td>1985</td>
+      <td>2</td>
+      <td>13</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>2b87d057-7c2b-4cb7-bf44-576545008979</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>1520</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1986-04-16</td>
+      <td>1986</td>
+      <td>1986</td>
+      <td>4</td>
+      <td>16</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>bf952852-cee7-43bc-88c9-70b197c4e62e</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>4060</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1986-12-25</td>
+      <td>1987</td>
+      <td>1986</td>
+      <td>12</td>
+      <td>25</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>867ee68a-f8ea-4f55-a2e1-5e9df0077fcd</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>3510</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1987-11-30</td>
+      <td>1988</td>
+      <td>1987</td>
+      <td>11</td>
+      <td>30</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>10718b58-5763-44e5-a044-812c677f0b61</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>9190</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1989-05-07</td>
+      <td>1989</td>
+      <td>1989</td>
+      <td>5</td>
+      <td>7</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>3dc8ee6a-c076-43d4-977a-e7252a94cac7</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>3140</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1990-05-30</td>
+      <td>1990</td>
+      <td>1990</td>
+      <td>5</td>
+      <td>30</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>b9294137-2fad-4074-bd86-cf52f727ede6</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>4750</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1991-03-24</td>
+      <td>1991</td>
+      <td>1991</td>
+      <td>3</td>
+      <td>24</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>537bb753-c6d6-49a1-a4dc-2b16b29256b5</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>3200</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1992-03-27</td>
+      <td>1992</td>
+      <td>1992</td>
+      <td>3</td>
+      <td>27</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>dddd1dbe-b92a-4739-84b8-350918ecdd7c</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>5550</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1993-03-05</td>
+      <td>1993</td>
+      <td>1993</td>
+      <td>3</td>
+      <td>5</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>29e958a5-ebdb-4290-8fd8-843019b62155</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>6960</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1993-11-29</td>
+      <td>1994</td>
+      <td>1993</td>
+      <td>11</td>
+      <td>29</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>942af9b6-7ace-4d6a-8cb2-f359e9511af3</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>4100</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1995-03-09</td>
+      <td>1995</td>
+      <td>1995</td>
+      <td>3</td>
+      <td>9</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>09d0f0e1-c7ac-4136-b4f8-e4639b313386</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>8280</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1996-01-20</td>
+      <td>1996</td>
+      <td>1996</td>
+      <td>1</td>
+      <td>20</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>9abb8890-e9c6-45bb-a302-678dc691207e</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>6900</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1996-11-09</td>
+      <td>1997</td>
+      <td>1996</td>
+      <td>11</td>
+      <td>9</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>01766a4b-dab4-4698-9c6a-3ef8f2e11153</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>4840</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1998-03-10</td>
+      <td>1998</td>
+      <td>1998</td>
+      <td>3</td>
+      <td>10</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>9e4dd73c-afd1-4fd2-95f4-3f5b3af886c4</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>8200</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>1999-09-17</td>
+      <td>1999</td>
+      <td>1999</td>
+      <td>9</td>
+      <td>17</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>01ad0ff4-f40e-4ad1-93e4-9460f5de1353</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>3640</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2000-03-22</td>
+      <td>2000</td>
+      <td>2000</td>
+      <td>3</td>
+      <td>22</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>3ea2d208-4285-4b9a-adeb-9b17b0d67fea</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>3800</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2001-06-08</td>
+      <td>2001</td>
+      <td>2001</td>
+      <td>6</td>
+      <td>8</td>
+      <td>10:30:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>9ad09dcd-0e49-4baf-a5dd-cb3b1dfb4c1a</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>1510</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2002-04-29</td>
+      <td>2002</td>
+      <td>2002</td>
+      <td>4</td>
+      <td>29</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>406312f8-f7ff-4e68-ade4-8b4dd426bd44</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>6990</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2003-02-24</td>
+      <td>2003</td>
+      <td>2003</td>
+      <td>2</td>
+      <td>24</td>
+      <td>00:30:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>e4550eba-d130-48e4-9abe-f7077b130ee8</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>5790</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2003-12-12</td>
+      <td>2004</td>
+      <td>2003</td>
+      <td>12</td>
+      <td>12</td>
+      <td>15:45:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>c06f6cf2-8668-4f70-851a-b8d704a24807</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>5210</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2005-04-03</td>
+      <td>2005</td>
+      <td>2005</td>
+      <td>4</td>
+      <td>3</td>
+      <td>23:15:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>90bfb29a-82c2-4bba-85cb-f58b87874e28</td>
+      <td>POINT (-87.93621 44.5011)</td>
+      <td>fdd843797b3246efb9f4aa344b5946cc</td>
+      <td>USGS-040851325</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>267</td>
+      <td>2026-05-05 03:36:50.236554+00:00</td>
+      <td>2005-08-18</td>
+      <td>2005</td>
+      <td>2005</td>
+      <td>8</td>
+      <td>18</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td>b94cec80-5c1a-4c93-ad21-a6eea949ab67</td>
+      <td>POINT (-87.93621 44.5011)</td>
+      <td>fdd843797b3246efb9f4aa344b5946cc</td>
+      <td>USGS-040851325</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>288</td>
+      <td>2026-05-05 03:36:50.236554+00:00</td>
+      <td>2006-03-13</td>
+      <td>2006</td>
+      <td>2006</td>
+      <td>3</td>
+      <td>13</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>31</th>
+      <td>b5fc68ad-d404-412a-8bdf-5df5c135887f</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>12700</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2006-06-27</td>
+      <td>2006</td>
+      <td>2006</td>
+      <td>6</td>
+      <td>27</td>
+      <td>03:00:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>32</th>
+      <td>ce07ea88-b517-40a9-8a79-d45d0708c4ca</td>
+      <td>POINT (-87.93621 44.5011)</td>
+      <td>fdd843797b3246efb9f4aa344b5946cc</td>
+      <td>USGS-040851325</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>301</td>
+      <td>2026-05-05 03:36:50.236554+00:00</td>
+      <td>2007-03-14</td>
+      <td>2007</td>
+      <td>2007</td>
+      <td>3</td>
+      <td>14</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>33</th>
+      <td>33973c47-235c-49a6-ad3f-d4ae6dbbe64e</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>5520</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2007-04-16</td>
+      <td>2007</td>
+      <td>2007</td>
+      <td>4</td>
+      <td>16</td>
+      <td>15:15:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>34</th>
+      <td>c64dc6a7-4a8d-414a-9eae-fbbb9f5faf93</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>7860</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2008-05-13</td>
+      <td>2008</td>
+      <td>2008</td>
+      <td>5</td>
+      <td>13</td>
+      <td>06:00:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>35</th>
+      <td>6d756602-b9e4-4063-ad59-870b56014f4d</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>4130</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2009-06-19</td>
+      <td>2009</td>
+      <td>2009</td>
+      <td>6</td>
+      <td>19</td>
+      <td>09:45:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>36</th>
+      <td>29ffbe23-6ed6-4c4a-97be-062acb4a4877</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>5780</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2010-03-14</td>
+      <td>2010</td>
+      <td>2010</td>
+      <td>3</td>
+      <td>14</td>
+      <td>17:00:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>37</th>
+      <td>c4324b2a-1ef8-4aed-b3f2-26fbbd57cb79</td>
+      <td>POINT (-87.93621 44.5011)</td>
+      <td>fdd843797b3246efb9f4aa344b5946cc</td>
+      <td>USGS-040851325</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>386</td>
+      <td>2026-05-05 03:36:50.236554+00:00</td>
+      <td>2010-03-14</td>
+      <td>2010</td>
+      <td>2010</td>
+      <td>3</td>
+      <td>14</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>38</th>
+      <td>6074a5e7-4cb5-4177-98c4-66399fb74609</td>
+      <td>POINT (-87.93621 44.5011)</td>
+      <td>fdd843797b3246efb9f4aa344b5946cc</td>
+      <td>USGS-040851325</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>436</td>
+      <td>2026-05-05 03:36:50.236554+00:00</td>
+      <td>2011-03-18</td>
+      <td>2011</td>
+      <td>2011</td>
+      <td>3</td>
+      <td>18</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>39</th>
+      <td>ba30e845-6905-41ec-af84-92804d870a0e</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>16800</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2011-09-08</td>
+      <td>2011</td>
+      <td>2011</td>
+      <td>9</td>
+      <td>8</td>
+      <td>17:15:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>40</th>
+      <td>3b9cb606-0785-4d3e-9e52-3efa0ad559d9</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>4900</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2011-12-09</td>
+      <td>2012</td>
+      <td>2011</td>
+      <td>12</td>
+      <td>9</td>
+      <td>01:30:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>41</th>
+      <td>3bc2c0c3-50d0-44fe-a640-32a8219364b1</td>
+      <td>POINT (-87.93621 44.5011)</td>
+      <td>fdd843797b3246efb9f4aa344b5946cc</td>
+      <td>USGS-040851325</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>150</td>
+      <td>2026-05-05 03:36:50.236554+00:00</td>
+      <td>2012-03-09</td>
+      <td>2012</td>
+      <td>2012</td>
+      <td>3</td>
+      <td>9</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>42</th>
+      <td>7a277bcb-435f-4b1e-b67c-dd5dac818ac2</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>10800</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2012-10-31</td>
+      <td>2013</td>
+      <td>2012</td>
+      <td>10</td>
+      <td>31</td>
+      <td>03:00:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>43</th>
+      <td>9c628482-896d-4a8a-b12f-091b216cef52</td>
+      <td>POINT (-87.93621 44.5011)</td>
+      <td>fdd843797b3246efb9f4aa344b5946cc</td>
+      <td>USGS-040851325</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>409</td>
+      <td>2026-05-05 03:36:50.236554+00:00</td>
+      <td>2013-03-31</td>
+      <td>2013</td>
+      <td>2013</td>
+      <td>3</td>
+      <td>31</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>44</th>
+      <td>c46e2dc3-6a5c-47ce-9322-dbf417d03caa</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>15600</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2014-05-01</td>
+      <td>2014</td>
+      <td>2014</td>
+      <td>5</td>
+      <td>1</td>
+      <td>21:30:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>45</th>
+      <td>bd89314d-4ba6-429f-83fa-567e5f73ae25</td>
+      <td>POINT (-87.93621 44.5011)</td>
+      <td>fdd843797b3246efb9f4aa344b5946cc</td>
+      <td>USGS-040851325</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>429</td>
+      <td>2026-05-05 03:36:50.236554+00:00</td>
+      <td>2014-06-02</td>
+      <td>2014</td>
+      <td>2014</td>
+      <td>6</td>
+      <td>2</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>46</th>
+      <td>84722b5e-c286-4d69-bdf1-75e05665adb0</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>6610</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2015-06-28</td>
+      <td>2015</td>
+      <td>2015</td>
+      <td>6</td>
+      <td>28</td>
+      <td>22:15:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>47</th>
+      <td>6caf417c-10b1-450d-957f-e5d43973afa9</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>6140</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2016-08-01</td>
+      <td>2016</td>
+      <td>2016</td>
+      <td>8</td>
+      <td>1</td>
+      <td>04:30:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>48</th>
+      <td>e7d3ffaa-e6ff-486e-bbd0-5fcbb11a6268</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>4960</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2017-07-30</td>
+      <td>2017</td>
+      <td>2017</td>
+      <td>7</td>
+      <td>30</td>
+      <td>05:15:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>49</th>
+      <td>99f75026-7ad8-4e9f-bec8-9da13af22530</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>8360</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2018-06-04</td>
+      <td>2018</td>
+      <td>2018</td>
+      <td>6</td>
+      <td>4</td>
+      <td>22:30:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>50</th>
+      <td>f8b816ae-c4a4-4f99-aa80-470856f0c334</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>7220</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2018-12-17</td>
+      <td>2019</td>
+      <td>2018</td>
+      <td>12</td>
+      <td>17</td>
+      <td>04:30:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>51</th>
+      <td>6ce447e3-ec2a-47df-bc1a-71ceff4e47fc</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>4340</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2020-04-14</td>
+      <td>2020</td>
+      <td>2020</td>
+      <td>4</td>
+      <td>14</td>
+      <td>13:15:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>52</th>
+      <td>fd1f1fb2-0329-42ad-bdd1-866d46ef6461</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>4000</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2020-11-12</td>
+      <td>2021</td>
+      <td>2020</td>
+      <td>11</td>
+      <td>12</td>
+      <td>22:45:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>53</th>
+      <td>d353f7b9-eba2-41a9-baa8-fd787e199b23</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>4590</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2021-10-30</td>
+      <td>2022</td>
+      <td>2021</td>
+      <td>10</td>
+      <td>30</td>
+      <td>21:45:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>54</th>
+      <td>b68c3597-8210-4f49-8af6-05b14f003bb0</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>3330</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2022-12-16</td>
+      <td>2023</td>
+      <td>2022</td>
+      <td>12</td>
+      <td>16</td>
+      <td>19:15:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>55</th>
+      <td>850c52c4-5567-4e2f-b30a-fda4fcd0e121</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>7400</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2024-01-11</td>
+      <td>2024</td>
+      <td>2024</td>
+      <td>1</td>
+      <td>11</td>
+      <td>00:15:00+00:00</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>56</th>
+      <td>f9895515-e652-483e-97d2-70412cafa722</td>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>92a4e13a755d406abad1529f6add68e9</td>
+      <td>USGS-01594440</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>2320</td>
+      <td>2026-05-01 19:28:03.170712+00:00</td>
+      <td>2025-06-19</td>
+      <td>2025</td>
+      <td>2025</td>
+      <td>6</td>
+      <td>19</td>
+      <td>18:45:00+00:00</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Show the data types of the columns in the resulting data frame.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">peak_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtypes</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+peak_id                                   str
+geometry                             geometry
+time_series_id                            str
+monitoring_location_id                    str
+parameter_code                            str
+unit_of_measure                           str
+value                                   int64
+last_modified             datetime64[us, UTC]
+time                           datetime64[us]
+water_year                              int64
+year                                    int64
+month                                   int64
+day                                     int64
+time_of_day                               str
+peak_since                             object
+dtype: object
+</pre></div></div>
+</div>
+<p>The other part of the result is a metadata object describing the query that was executed. For example, you can access the URL that was assembled to retrieve the requested data from the USGS Water Data API.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The query URL used to retrieve the data was: &quot;</span> <span class="o">+</span> <span class="n">peak_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The query URL used to retrieve the data was: https://api.waterdata.usgs.gov/ogcapi/v0/collections/peaks/items?monitoring_location_id=USGS-01594440%2CUSGS-040851325&amp;parameter_code=00060&amp;skipGeometry=false&amp;limit=50000
+</pre></div></div>
+</div>
+<p>Peak records cover multiple parameters. By default <code class="docutils literal notranslate"><span class="pre">get_peaks()</span></code> returns both peak discharge (<code class="docutils literal notranslate"><span class="pre">00060</span></code>) and the gage height at the peak (<code class="docutils literal notranslate"><span class="pre">00065</span></code>); inspect the <code class="docutils literal notranslate"><span class="pre">parameter_code</span></code> column to see which are present.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">all_params</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01594440&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">all_params</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;parameter_code&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: peaks · 1 page · 97 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;StringArray&gt;
+[&#39;00060&#39;, &#39;00065&#39;]
+Length: 2, dtype: str
+</pre></div></div>
+</div>
+</section>
+<section id="Additional-Examples">
+<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Link to this heading"></a></h2>
+<section id="Example-2:-Retrieve-peak-discharge-for-a-single-monitoring-location">
+<h3>Example 2: Retrieve peak discharge for a single monitoring location<a class="headerlink" href="#Example-2:-Retrieve-peak-discharge-for-a-single-monitoring-location" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">station</span> <span class="o">=</span> <span class="s2">&quot;USGS-06011000&quot;</span>
+<span class="n">data3</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">station</span><span class="p">,</span> <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">data3</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: peaks · 1 page · 29 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>peak_id</th>
+      <th>geometry</th>
+      <th>time_series_id</th>
+      <th>monitoring_location_id</th>
+      <th>parameter_code</th>
+      <th>unit_of_measure</th>
+      <th>value</th>
+      <th>last_modified</th>
+      <th>time</th>
+      <th>water_year</th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>time_of_day</th>
+      <th>peak_since</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>8489606e-89e2-4cab-9758-969be99c7efc</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>964</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1937-04-28</td>
+      <td>1937</td>
+      <td>1937</td>
+      <td>4</td>
+      <td>28.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2091dc02-2a41-4bd7-a38d-018aff41d2d3</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>1030</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1938-04-27</td>
+      <td>1938</td>
+      <td>1938</td>
+      <td>4</td>
+      <td>27.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>54d4673d-232b-4c0f-84ac-3f2cfa25eae6</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>829</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1939-04-19</td>
+      <td>1939</td>
+      <td>1939</td>
+      <td>4</td>
+      <td>19.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>d65a02cd-7e38-419e-9ca0-f82f7ffb66bb</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>590</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1940-04-14</td>
+      <td>1940</td>
+      <td>1940</td>
+      <td>4</td>
+      <td>14.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>873cdcce-0b39-4328-b5d2-279318692e40</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>430</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1941-04-11</td>
+      <td>1941</td>
+      <td>1941</td>
+      <td>4</td>
+      <td>11.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>95dc6356-39c1-4a3b-b6e4-05f346366e70</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>883</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1942-04-12</td>
+      <td>1942</td>
+      <td>1942</td>
+      <td>4</td>
+      <td>12.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>3889ccaf-cac9-40fd-8900-56ee32fad15f</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>681</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1945-05-04</td>
+      <td>1945</td>
+      <td>1945</td>
+      <td>5</td>
+      <td>4.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>13c36dc5-80ec-43b0-96f5-62a072a7d2d3</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>961</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1946-04-21</td>
+      <td>1946</td>
+      <td>1946</td>
+      <td>4</td>
+      <td>21.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>57120111-fa2d-476e-bdf7-603cbfb03350</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>781</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1947-05-02</td>
+      <td>1947</td>
+      <td>1947</td>
+      <td>5</td>
+      <td>2.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>8e99a440-8114-4ded-9d68-5a06f9d7c7ea</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>820</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1948-04-30</td>
+      <td>1948</td>
+      <td>1948</td>
+      <td>4</td>
+      <td>30.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>4de7db39-d552-4e44-9625-e80af36f552c</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>726</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1949-04-27</td>
+      <td>1949</td>
+      <td>1949</td>
+      <td>4</td>
+      <td>27.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>f9a71afe-de67-497e-a6d4-9f660041f0db</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>781</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1950-04-22</td>
+      <td>1950</td>
+      <td>1950</td>
+      <td>4</td>
+      <td>22.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>f2dac095-aeac-4999-bfb7-4092d1651536</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>640</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1951-04-23</td>
+      <td>1951</td>
+      <td>1951</td>
+      <td>4</td>
+      <td>23.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>42dfc367-59cf-4d12-ab62-405f856697ca</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>1360</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1952-04-30</td>
+      <td>1952</td>
+      <td>1952</td>
+      <td>4</td>
+      <td>30.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>c8c99d0a-1172-4ef4-adf4-892331793e1e</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>715</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1953-05-05</td>
+      <td>1953</td>
+      <td>1953</td>
+      <td>5</td>
+      <td>5.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>dd627cb7-9bc0-43fc-a492-cbc38d0b48d7</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>546</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1954-04-23</td>
+      <td>1954</td>
+      <td>1954</td>
+      <td>4</td>
+      <td>23.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>c1e1d9c4-6ad8-4280-baf8-742511f5e9ef</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>596</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1956-04-24</td>
+      <td>1956</td>
+      <td>1956</td>
+      <td>4</td>
+      <td>24.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>d2f8e901-5fe4-41ca-944a-fb430e30b678</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>1020</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1957-05-06</td>
+      <td>1957</td>
+      <td>1957</td>
+      <td>5</td>
+      <td>6.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>8eb49b9a-dad1-4017-b07f-5a34b8918062</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>590</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1958-04-30</td>
+      <td>1958</td>
+      <td>1958</td>
+      <td>4</td>
+      <td>30.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>184e855e-57e8-4521-a570-97d9e15e8973</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>352</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1959-04-22</td>
+      <td>1959</td>
+      <td>1959</td>
+      <td>4</td>
+      <td>22.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>57371ba5-8341-4d3e-ac4a-3d6f74e2a515</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>800</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1960-04-08</td>
+      <td>1960</td>
+      <td>1960</td>
+      <td>4</td>
+      <td>8.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>185789b2-59cd-42ff-b37f-f1fc734f85b3</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>300</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1961-04-05</td>
+      <td>1961</td>
+      <td>1961</td>
+      <td>4</td>
+      <td>5.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>94025d15-a950-46ee-915e-15eb9e009819</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>900</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1962-04-27</td>
+      <td>1962</td>
+      <td>1962</td>
+      <td>4</td>
+      <td>27.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>945a0c09-7b64-4f4b-91bc-cd1d83b3a248</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>486</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1963-04-20</td>
+      <td>1963</td>
+      <td>1963</td>
+      <td>4</td>
+      <td>20.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>10ae014a-2a37-466a-aba4-78540e1fda47</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>751</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1964-04-28</td>
+      <td>1964</td>
+      <td>1964</td>
+      <td>4</td>
+      <td>28.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>59a2fcb8-bed1-4ac8-8582-bb63fb9f9e11</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>958</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1965-04-28</td>
+      <td>1965</td>
+      <td>1965</td>
+      <td>4</td>
+      <td>28.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>49ea8bac-0e8a-4bec-b981-49a69c925ca7</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>524</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1966-04-16</td>
+      <td>1966</td>
+      <td>1966</td>
+      <td>4</td>
+      <td>16.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>6dee7073-0873-4765-91f1-ed8afb934620</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>604</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1967-05-12</td>
+      <td>1967</td>
+      <td>1967</td>
+      <td>5</td>
+      <td>12.0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>21969473-a764-470b-8ec6-5fa316dbe362</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>1180</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1984-05-01</td>
+      <td>1984</td>
+      <td>1984</td>
+      <td>5</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Example-3:-Retrieve-peak-discharge-for-a-monitoring-location-between-two-dates">
+<h3>Example 3: Retrieve peak discharge for a monitoring location between two dates<a class="headerlink" href="#Example-3:-Retrieve-peak-discharge-for-a-monitoring-location-between-two-dates" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data4</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">station</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;1953-01-01/1960-01-01&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">data4</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: peaks · 1 page · 6 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>peak_id</th>
+      <th>geometry</th>
+      <th>time_series_id</th>
+      <th>monitoring_location_id</th>
+      <th>parameter_code</th>
+      <th>unit_of_measure</th>
+      <th>value</th>
+      <th>last_modified</th>
+      <th>time</th>
+      <th>water_year</th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>time_of_day</th>
+      <th>peak_since</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>c8c99d0a-1172-4ef4-adf4-892331793e1e</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>715</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1953-05-05</td>
+      <td>1953</td>
+      <td>1953</td>
+      <td>5</td>
+      <td>5</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>dd627cb7-9bc0-43fc-a492-cbc38d0b48d7</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>546</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1954-04-23</td>
+      <td>1954</td>
+      <td>1954</td>
+      <td>4</td>
+      <td>23</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>c1e1d9c4-6ad8-4280-baf8-742511f5e9ef</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>596</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1956-04-24</td>
+      <td>1956</td>
+      <td>1956</td>
+      <td>4</td>
+      <td>24</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>d2f8e901-5fe4-41ca-944a-fb430e30b678</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>1020</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1957-05-06</td>
+      <td>1957</td>
+      <td>1957</td>
+      <td>5</td>
+      <td>6</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>8eb49b9a-dad1-4017-b07f-5a34b8918062</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>590</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1958-04-30</td>
+      <td>1958</td>
+      <td>1958</td>
+      <td>4</td>
+      <td>30</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>184e855e-57e8-4521-a570-97d9e15e8973</td>
+      <td>POINT (-112.05641 44.64793)</td>
+      <td>1803f93f789a46f093cc4e7695554bdb</td>
+      <td>USGS-06011000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>352</td>
+      <td>2026-05-06 17:32:44.238660+00:00</td>
+      <td>1959-04-22</td>
+      <td>1959</td>
+      <td>1959</td>
+      <td>4</td>
+      <td>22</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="USGS_WaterData_ParameterCodes_Examples.html" class="btn btn-neutral float-left" title="USGS dataretrieval Python Package get_reference_table() Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="USGS_WaterData_Ratings_Examples.html" class="btn btn-neutral float-right" title="USGS dataretrieval Python Package Rating Curve Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

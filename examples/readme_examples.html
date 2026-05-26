@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Examples from the Readme file on retrieving NWIS data &mdash; dataretrieval 0.1.dev1+gc450c404d documentation</title>
+  <title>Retrieving USGS water data with the waterdata module &mdash; dataretrieval 0.1.dev1+g7f64c2de7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bb319b34"></script>
+      <script src="../_static/documentation_options.js?v=57830bd8"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -49,7 +49,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="index.html#introduction-to-the-waterdata-module-of-dataretrieval">Introduction to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code></a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Examples from the Readme file on retrieving NWIS data</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Retrieving USGS water data with the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="siteinfo_examples.html">Retrieving site information</a></li>
 </ul>
 </li>
@@ -78,7 +78,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
-      <li class="breadcrumb-item active">Examples from the Readme file on retrieving NWIS data</li>
+      <li class="breadcrumb-item active">Retrieving USGS water data with the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/examples/readme_examples.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -88,41 +88,49 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="examples-from-the-readme-file-on-retrieving-nwis-data">
-<h1>Examples from the Readme file on retrieving NWIS data<a class="headerlink" href="#examples-from-the-readme-file-on-retrieving-nwis-data" title="Link to this heading"></a></h1>
+  <section id="retrieving-usgs-water-data-with-the-waterdata-module">
+<h1>Retrieving USGS water data with the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module<a class="headerlink" href="#retrieving-usgs-water-data-with-the-waterdata-module" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>NWIS stands for the National Water Information System</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module accesses the USGS <a class="reference external" href="https://api.waterdata.usgs.gov/">Water Data API</a> and is the
+recommended way to retrieve USGS water data. The legacy <code class="docutils literal notranslate"><span class="pre">nwis</span></code> module
+remains available but is deprecated.</p>
 </div>
-<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># first import the functions for downloading data from NWIS</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval.nwis</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nwis</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># import the waterdata module</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
 
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># specify the USGS site code for which we want data.</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">site</span> <span class="o">=</span> <span class="s1">&#39;03339000&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># a USGS monitoring location id joins the agency code and the site</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># number with a hyphen</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">site</span> <span class="o">=</span> <span class="s2">&quot;USGS-05427718&quot;</span>
 
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># get instantaneous values (iv)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;iv&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2017-12-31&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2018-01-01&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># get continuous (instantaneous) streamflow — parameter code 00060 —</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># over a one-day window</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2024-03-01/2024-03-02&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
 
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-<span class="go">                           00010 00010_cd   site_no  00060 00060_cd  ...  63680_ysi), [discontinued 10/5/21_cd 63680_hach  63680_hach_cd 99133  99133_cd</span>
-<span class="go">datetime                                                             ...</span>
-<span class="go">2017-12-31 06:00:00+00:00    1.0        A  03339000  140.0        A  ...                                     A        3.6              A  4.61         A</span>
-<span class="go">2017-12-31 06:15:00+00:00    1.0        A  03339000  138.0        A  ...                                     A        3.6              A  4.61         A</span>
-<span class="go">2017-12-31 06:30:00+00:00    1.0        A  03339000  139.0        A  ...                                     A        3.4              A  4.61         A</span>
-<span class="go">2017-12-31 06:45:00+00:00    1.0        A  03339000  139.0        A  ...                                     A        3.4              A  4.61         A</span>
-<span class="go">2017-12-31 07:00:00+00:00    1.0        A  03339000  139.0        A  ...                                     A        3.5              A  4.61         A</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">[[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="s2">&quot;unit_of_measure&quot;</span><span class="p">,</span> <span class="s2">&quot;approval_status&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="go">                        time  value unit_of_measure approval_status</span>
+<span class="go">0 2024-03-01 00:00:00+00:00   18.7          ft^3/s        Approved</span>
+<span class="go">1 2024-03-01 00:15:00+00:00   18.5          ft^3/s        Approved</span>
+<span class="go">2 2024-03-01 00:30:00+00:00   18.5          ft^3/s        Approved</span>
+<span class="go">3 2024-03-01 00:45:00+00:00   18.5          ft^3/s        Approved</span>
+<span class="go">4 2024-03-01 01:00:00+00:00   18.3          ft^3/s        Approved</span>
 
-<span class="go">[5 rows x 21 columns]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># get descriptive metadata about the monitoring location itself</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">info</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">skip_geometry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
 
-
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># get basic info about the site</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df3</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
-
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df3</span><span class="p">)</span>
-<span class="go">  agency_cd   site_no                         station_nm site_tp_cd  lat_va  long_va  ...  aqfr_cd  aqfr_type_cd well_depth_va hole_depth_va depth_src_cd project_no</span>
-<span class="go">0      USGS  03339000  VERMILION RIVER NEAR DANVILLE, IL         ST  400603   873550  ...      NaN           NaN           NaN           NaN          NaN        100</span>
-
-<span class="go">[1 rows x 42 columns]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">info</span><span class="p">[[</span><span class="s2">&quot;monitoring_location_name&quot;</span><span class="p">,</span> <span class="s2">&quot;state_name&quot;</span><span class="p">,</span> <span class="s2">&quot;site_type&quot;</span><span class="p">,</span> <span class="s2">&quot;drainage_area&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">T</span>
+<span class="go">                                                    0</span>
+<span class="go">monitoring_location_name  YAHARA RIVER AT WINDSOR, WI</span>
+<span class="go">state_name                                  Wisconsin</span>
+<span class="go">site_type                                      Stream</span>
+<span class="go">drainage_area                                    73.6</span>
 </pre></div>
 </div>
 </section>

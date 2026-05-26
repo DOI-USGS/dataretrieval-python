@@ -1,0 +1,1699 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>USGS dataretrieval Python Package get_samples() Examples &mdash; dataretrieval 0.1.dev1+g7f64c2de7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=57830bd8"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="USGS dataretrieval Python Package Water Use Examples" href="USGS_NWIS_WaterUse_Examples.html" />
+    <link rel="prev" title="USGS dataretrieval Python Package get_continuous() Examples" href="USGS_WaterData_UnitValues_Examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#introduction-to-the-waterdata-module-of-dataretrieval">Introduction to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DailyValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Measurements_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ParameterCodes_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_reference_table()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Peaks_Examples.html">USGS dataretrieval Python Package Peak Streamflow Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Ratings_Examples.html">USGS dataretrieval Python Package Rating Curve Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_SiteInfo_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_SiteInventory_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Statistics_Examples.html">USGS dataretrieval Python Package Statistics Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_UnitValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_continuous()</span></code> Examples</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Install-the-Package">Install the Package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Basic-Usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Interpreting-the-Result">Interpreting the Result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Additional-Examples">Additional Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_NWIS_WaterUse_Examples.html">USGS dataretrieval Python Package Water Use Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/USGS_WaterData_Samples_Examples.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="USGS-dataretrieval-Python-Package-get_samples()-Examples">
+<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-get_samples()-Examples" title="Link to this heading"></a></h1>
+<p>This notebook provides examples of using the Python dataretrieval package to retrieve water quality sample data for United States Geological Survey (USGS) monitoring locations. The dataretrieval package provides a collection of functions to get data from the USGS Samples database and other online sources of hydrology and water quality data, including the United States Environmental Protection Agency (USEPA).</p>
+<section id="Install-the-Package">
+<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Link to this heading"></a></h2>
+<p>Use the following code to install the package if it doesn’t exist already within your Jupyter Python environment.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>dataretrieval
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g7f64c2de7)
+Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
+Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.3)
+Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.6)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.9.0.post0)
+Requirement already satisfied: six&gt;=1.5 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
+Requirement already satisfied: anyio in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (4.13.0)
+Requirement already satisfied: certifi in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (2026.5.20)
+Requirement already satisfied: httpcore==1.* in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (1.0.9)
+Requirement already satisfied: idna in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (3.16)
+Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpcore==1.*-&gt;httpx-&gt;dataretrieval) (0.16.0)
+</pre></div></div>
+</div>
+<p>Load the package so you can use it along with other packages used in this notebook.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Basic-Usage">
+<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Link to this heading"></a></h2>
+<p>The dataretrieval package has several functions that allow you to retrieve data from different web services. This example uses the <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> function to retrieve water quality sample data for USGS monitoring locations from Samples. The following arguments are supported:</p>
+<ul class="simple">
+<li><p><strong>ssl_check</strong> : boolean, optional Check the SSL certificate.</p></li>
+<li><p><strong>service</strong> : string One of the available Samples services: “results”, “locations”, “activities”, “projects”, or “organizations”. Defaults to “results”.</p></li>
+<li><p><strong>profile</strong> : string One of the available profiles associated with a service. Options for each service are: results - “fullphyschem”, “basicphyschem”, “fullbio”, “basicbio”, “narrow”, “resultdetectionquantitationlimit”, “labsampleprep”, “count” locations - “site”, “count” activities - “sampact”, “actmetric”, “actgroup”, “count” projects - “project”, “projectmonitoringlocationweight” organizations - “organization”, “count”</p></li>
+<li><p><strong>activityMediaName</strong> : string or list of strings, optional Name or code indicating environmental medium in which sample was taken. Check the <code class="docutils literal notranslate"><span class="pre">activityMediaName_lookup()</span></code> function in this module for all possible inputs. Example: “Water”.</p></li>
+<li><p><strong>activityStartDateLower</strong> : string, optional The start date if using a date range. Takes the format YYYY-MM-DD. The logic is inclusive, i.e. it will also return results that match the date. If left as None, will pull all data on or before activityStartDateUpper, if populated.</p></li>
+<li><p><strong>activityStartDateUpper</strong> : string, optional The end date if using a date range. Takes the format YYYY-MM-DD. The logic is inclusive, i.e. it will also return results that match the date. If left as None, will pull all data after activityStartDateLower up to the most recent available results.</p></li>
+<li><p><strong>activityTypeCode</strong> : string or list of strings, optional Text code that describes type of field activity performed. Example: “Sample-Routine, regular”.</p></li>
+<li><p><strong>characteristicGroup</strong> : string or list of strings, optional Characteristic group is a broad category of characteristics describing one or more results. Check the <code class="docutils literal notranslate"><span class="pre">characteristicGroup_lookup()</span></code> function in this module for all possible inputs. Example: “Organics, PFAS”</p></li>
+<li><p><strong>characteristic</strong> : string or list of strings, optional Characteristic is a specific category describing one or more results. Check the <code class="docutils literal notranslate"><span class="pre">characteristic_lookup()</span></code> function in this module for all possible inputs. Example: “Suspended Sediment Discharge”</p></li>
+<li><p><strong>characteristicUserSupplied</strong> : string or list of strings, optional A user supplied characteristic name describing one or more results.</p></li>
+<li><p><strong>boundingBox</strong>: list of four floats, optional Filters on the the associated monitoring location’s point location by checking if it is located within the specified geographic area. The logic is inclusive, i.e. it will include locations that overlap with the edge of the bounding box. Values are separated by commas, expressed in decimal degrees, NAD83, and longitudes west of Greenwich are negative. The format is a string consisting of: - Western-most longitude - Southern-most latitude -
+Eastern-most longitude - Northern-most longitude Example: [-92.8,44.2,-88.9,46.0]</p></li>
+<li><p><strong>countryFips</strong> : string or list of strings, optional Example: “US” (United States)</p></li>
+<li><p><strong>stateFips</strong> : string or list of strings, optional Check the <code class="docutils literal notranslate"><span class="pre">stateFips_lookup()</span></code> function in this module for all possible inputs. Example: “US:15” (United States: Hawaii)</p></li>
+<li><p><strong>countyFips</strong> : string or list of strings, optional Check the <code class="docutils literal notranslate"><span class="pre">countyFips_lookup()</span></code> function in this module for all possible inputs. Example: “US:15:001” (United States: Hawaii, Hawaii County)</p></li>
+<li><p><strong>siteTypeCode</strong> : string or list of strings, optional An abbreviation for a certain site type. Check the <code class="docutils literal notranslate"><span class="pre">siteType_lookup()</span></code> function in this module for all possible inputs. Example: “GW” (Groundwater site)</p></li>
+<li><p><strong>siteTypeName</strong> : string or list of strings, optional A full name for a certain site type. Check the <code class="docutils literal notranslate"><span class="pre">siteType_lookup()</span></code> function in this module for all possible inputs. Example: “Well”</p></li>
+<li><p><strong>usgsPCode</strong> : string or list of strings, optional 5-digit number used in the US Geological Survey computerized data system, National Water Information System (NWIS), to uniquely identify a specific constituent. Check the <code class="docutils literal notranslate"><span class="pre">characteristic_lookup()</span></code> function in this module for all possible inputs. Example: “00060” (Discharge, cubic feet per second)</p></li>
+<li><p><strong>hydrologicUnit</strong> : string or list of strings, optional Max 12-digit number used to describe a hydrologic unit. Example: “070900020502”</p></li>
+<li><p><strong>monitoringLocationIdentifier</strong> : string or list of strings, optional A monitoring location identifier has two parts: the agency code and the location number, separated by a dash (-). Example: “USGS-040851385”</p></li>
+<li><p><strong>organizationIdentifier</strong> : string or list of strings, optional Designator used to uniquely identify a specific organization. Currently only accepting the organization “USGS”.</p></li>
+<li><p><strong>pointLocationLatitude</strong> : float, optional Latitude for a point/radius query (decimal degrees). Must be used with pointLocationLongitude and pointLocationWithinMiles.</p></li>
+<li><p><strong>pointLocationLongitude</strong> : float, optional Longitude for a point/radius query (decimal degrees). Must be used with pointLocationLatitude and pointLocationWithinMiles.</p></li>
+<li><p><strong>pointLocationWithinMiles</strong> : float, optional Radius for a point/radius query. Must be used with pointLocationLatitude and pointLocationLongitude</p></li>
+<li><p><strong>projectIdentifier</strong> : string or list of strings, optional Designator used to uniquely identify a data collection project. Project identifiers are specific to an organization (e.g. USGS). Example: “ZH003QW03”</p></li>
+<li><p><strong>recordIdentifierUserSupplied</strong> : string or list of strings, optional Internal AQS record identifier that returns 1 entry. Only available for the “results” service.</p></li>
+</ul>
+<section id="Example-1:-Get-all-water-quality-sample-data-for-a-single-monitoring-site">
+<h3>Example 1: Get all water quality sample data for a single monitoring site<a class="headerlink" href="#Example-1:-Get-all-water-quality-sample-data-for-a-single-monitoring-site" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteID</span> <span class="o">=</span> <span class="s2">&quot;USGS-10109000&quot;</span>
+<span class="n">wq_data</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="n">siteID</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved data for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; samples.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Retrieved data for 2394 samples.
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Interpreting-the-Result">
+<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Link to this heading"></a></h2>
+<p>The result of calling the <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> function is an object that contains a Pandas data frame object and an associated metadata object. The Pandas data frame contains the water quality sample data for the requested monitoring location, observed variables, and time frame.</p>
+<p>Once you’ve got the data frame, there are several useful things you can do to explore the data.</p>
+<p>Display the data frame as a table. The default data frame for this function is a long, flat table, with a row for each observed variable at a given monitoring location and date/time.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">wq_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Org_Identifier</th>
+      <th>Org_FormalName</th>
+      <th>Project_Identifier</th>
+      <th>Project_Name</th>
+      <th>Project_QAPPApproved</th>
+      <th>Project_QAPPApprovalAgency</th>
+      <th>ProjectAttachment_FileName</th>
+      <th>ProjectAttachment_FileType</th>
+      <th>Location_Identifier</th>
+      <th>Location_Name</th>
+      <th>...</th>
+      <th>Org_Type</th>
+      <th>LastChangeDate</th>
+      <th>USGSpcode</th>
+      <th>USGSSampleAquifer</th>
+      <th>Activity_StartDateTime</th>
+      <th>Activity_EndDateTime</th>
+      <th>LabInfo_AnalysisStartDateTime</th>
+      <th>LabInfo_AnalysisEndDateTime</th>
+      <th>LabSamplePrepMethod_StartDateTime</th>
+      <th>LabSamplePrepMethod_EndDateTime</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-27</td>
+      <td>70300</td>
+      <td>NaN</td>
+      <td>1967-09-13 13:35:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-28</td>
+      <td>30208</td>
+      <td>NaN</td>
+      <td>1967-09-13 13:35:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-27</td>
+      <td>410</td>
+      <td>NaN</td>
+      <td>1967-09-13 13:35:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-27</td>
+      <td>933</td>
+      <td>NaN</td>
+      <td>1967-09-13 13:35:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-28</td>
+      <td>70303</td>
+      <td>NaN</td>
+      <td>1967-09-13 13:35:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2389</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-28</td>
+      <td>30209</td>
+      <td>NaN</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>2390</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-28</td>
+      <td>20</td>
+      <td>NaN</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>2391</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-27</td>
+      <td>28</td>
+      <td>NaN</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>2392</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-27</td>
+      <td>10</td>
+      <td>NaN</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>2393</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-10109000</td>
+      <td>LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-27</td>
+      <td>30209</td>
+      <td>NaN</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+  </tbody>
+</table>
+<p>2394 rows × 187 columns</p>
+</div></div>
+</div>
+<p>Show the data types of the columns in the resulting data frame.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">wq_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtypes</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Org_Identifier                                      str
+Org_FormalName                                      str
+Project_Identifier                                  str
+Project_Name                                    float64
+Project_QAPPApproved                            float64
+                                            ...
+Activity_EndDateTime                 datetime64[s, UTC]
+LabInfo_AnalysisStartDateTime        datetime64[s, UTC]
+LabInfo_AnalysisEndDateTime          datetime64[s, UTC]
+LabSamplePrepMethod_StartDateTime    datetime64[s, UTC]
+LabSamplePrepMethod_EndDateTime      datetime64[s, UTC]
+Length: 187, dtype: object
+</pre></div></div>
+</div>
+<p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS Water Data API.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;The query URL used to retrieve the data from USGS Samples was: &quot;</span> <span class="o">+</span> <span class="n">wq_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The query URL used to retrieve the data from USGS Samples was: https://api.waterdata.usgs.gov/samples-data/results/fullphyschem?monitoringLocationIdentifier=USGS-10109000&amp;mimeType=text%2Fcsv
+</pre></div></div>
+</div>
+</section>
+<section id="Additional-Examples">
+<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Link to this heading"></a></h2>
+<section id="Example-2:-Get-water-quality-sample-data-for-multiple-sites-for-a-single-parameter">
+<h3>Example 2: Get water quality sample data for multiple sites for a single parameter<a class="headerlink" href="#Example-2:-Get-water-quality-sample-data-for-multiple-sites-for-a-single-parameter" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;USGS-04024430&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-04024000&quot;</span><span class="p">]</span>
+<span class="n">parameter_code</span> <span class="o">=</span> <span class="s2">&quot;00065&quot;</span>
+<span class="n">wq_multi_site</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span>
+    <span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span> <span class="n">usgsPCode</span><span class="o">=</span><span class="n">parameter_code</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved data for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_multi_site</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; samples.&quot;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">wq_multi_site</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Retrieved data for 309 samples.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Org_Identifier</th>
+      <th>Org_FormalName</th>
+      <th>Project_Identifier</th>
+      <th>Project_Name</th>
+      <th>Project_QAPPApproved</th>
+      <th>Project_QAPPApprovalAgency</th>
+      <th>ProjectAttachment_FileName</th>
+      <th>ProjectAttachment_FileType</th>
+      <th>Location_Identifier</th>
+      <th>Location_Name</th>
+      <th>...</th>
+      <th>Org_Type</th>
+      <th>LastChangeDate</th>
+      <th>USGSpcode</th>
+      <th>USGSSampleAquifer</th>
+      <th>Activity_StartDateTime</th>
+      <th>Activity_EndDateTime</th>
+      <th>LabInfo_AnalysisStartDateTime</th>
+      <th>LabInfo_AnalysisEndDateTime</th>
+      <th>LabSamplePrepMethod_StartDateTime</th>
+      <th>LabSamplePrepMethod_EndDateTime</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024430</td>
+      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-28</td>
+      <td>65</td>
+      <td>NaN</td>
+      <td>1982-11-02 20:10:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024430</td>
+      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-28</td>
+      <td>65</td>
+      <td>NaN</td>
+      <td>1983-01-18 18:30:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024430</td>
+      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-27</td>
+      <td>65</td>
+      <td>NaN</td>
+      <td>1983-04-19 16:00:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024430</td>
+      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-28</td>
+      <td>65</td>
+      <td>NaN</td>
+      <td>1983-05-24 21:10:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["USGS"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024430</td>
+      <td>NEMADJI RIVER NEAR SOUTH SUPERIOR, WI</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-27</td>
+      <td>65</td>
+      <td>NaN</td>
+      <td>1983-07-06 17:00:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>304</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","GLRITRI...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-27</td>
+      <td>65</td>
+      <td>NaN</td>
+      <td>2025-12-02 17:00:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>305</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","GLRITRI...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-28</td>
+      <td>65</td>
+      <td>NaN</td>
+      <td>2026-01-12 16:35:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>306</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","GLRITRI...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-05-14</td>
+      <td>65</td>
+      <td>NaN</td>
+      <td>2026-03-26 16:00:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>307</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-05-21</td>
+      <td>65</td>
+      <td>NaN</td>
+      <td>2026-04-20 15:50:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>308</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative"]</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-05-21</td>
+      <td>65</td>
+      <td>NaN</td>
+      <td>2026-04-28 18:45:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+  </tbody>
+</table>
+<p>309 rows × 187 columns</p>
+</div></div>
+</div>
+</section>
+<section id="Example-3:-Retrieve-water-quality-sample-data-for-multiple-sites,-including-a-list-of-parameters,-within-a-time-period-defined-by-start-date-until-present">
+<h3>Example 3: Retrieve water quality sample data for multiple sites, including a list of parameters, within a time period defined by start date until present<a class="headerlink" href="#Example-3:-Retrieve-water-quality-sample-data-for-multiple-sites,-including-a-list-of-parameters,-within-a-time-period-defined-by-start-date-until-present" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;USGS-04024430&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-04024000&quot;</span><span class="p">]</span>
+<span class="n">parameterCd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;34247&quot;</span><span class="p">,</span> <span class="s2">&quot;30234&quot;</span><span class="p">,</span> <span class="s2">&quot;32104&quot;</span><span class="p">,</span> <span class="s2">&quot;34220&quot;</span><span class="p">]</span>
+<span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;2012-01-01&quot;</span>
+<span class="n">wq_data2</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span>
+    <span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span>
+    <span class="n">usgsPCode</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
+    <span class="n">activityStartDateLower</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved data for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_data2</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; samples.&quot;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">wq_data2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Retrieved data for 152 samples.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Org_Identifier</th>
+      <th>Org_FormalName</th>
+      <th>Project_Identifier</th>
+      <th>Project_Name</th>
+      <th>Project_QAPPApproved</th>
+      <th>Project_QAPPApprovalAgency</th>
+      <th>ProjectAttachment_FileName</th>
+      <th>ProjectAttachment_FileType</th>
+      <th>Location_Identifier</th>
+      <th>Location_Name</th>
+      <th>...</th>
+      <th>Org_Type</th>
+      <th>LastChangeDate</th>
+      <th>USGSpcode</th>
+      <th>USGSSampleAquifer</th>
+      <th>Activity_StartDateTime</th>
+      <th>Activity_EndDateTime</th>
+      <th>LabInfo_AnalysisStartDateTime</th>
+      <th>LabInfo_AnalysisEndDateTime</th>
+      <th>LabSamplePrepMethod_StartDateTime</th>
+      <th>LabSamplePrepMethod_EndDateTime</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-28</td>
+      <td>32104</td>
+      <td>NaN</td>
+      <td>2012-01-25 14:40:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-27</td>
+      <td>30234</td>
+      <td>NaN</td>
+      <td>2012-01-25 14:40:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-27</td>
+      <td>34247</td>
+      <td>NaN</td>
+      <td>2012-01-25 14:40:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-27</td>
+      <td>34220</td>
+      <td>NaN</td>
+      <td>2012-01-25 14:40:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","GR12NK0...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-27</td>
+      <td>32104</td>
+      <td>NaN</td>
+      <td>2012-02-22 14:45:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>147</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","00GQ414...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-28</td>
+      <td>34220</td>
+      <td>NaN</td>
+      <td>2018-05-01 16:05:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>148</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","00GQ414...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-27</td>
+      <td>34220</td>
+      <td>NaN</td>
+      <td>2018-07-09 16:25:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>149</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","00GQ414...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-28</td>
+      <td>32104</td>
+      <td>NaN</td>
+      <td>2018-07-09 16:25:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>150</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","00GQ414...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-27</td>
+      <td>30234</td>
+      <td>NaN</td>
+      <td>2018-07-09 16:25:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>151</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","00GQ414...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-04-27</td>
+      <td>34247</td>
+      <td>NaN</td>
+      <td>2018-07-09 16:25:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+  </tbody>
+</table>
+<p>152 rows × 187 columns</p>
+</div></div>
+</div>
+</section>
+<section id="Example-4:-Retrieve-water-quality-sample-data-for-one-site-and-convert-to-a-wide-format">
+<h3>Example 4: Retrieve water quality sample data for one site and convert to a wide format<a class="headerlink" href="#Example-4:-Retrieve-water-quality-sample-data-for-one-site-and-convert-to-a-wide-format" title="Link to this heading"></a></h3>
+<p>Note that the USGS Samples database returns multiple parameters in a “long” format: each row in the resulting table represents a single observation of a single parameter. Furthermore, every observation has 181 fields of metadata. However, if you wanted to place your water quality data into a “wide” format, where each column represents a water quality parameter code, the code below details one solution.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteID</span> <span class="o">=</span> <span class="s2">&quot;USGS-10109000&quot;</span>
+<span class="n">wq_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="n">siteID</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved data for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wq_data</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot; sample results.&quot;</span><span class="p">)</span>
+
+<span class="n">wq_data</span><span class="p">[</span><span class="s2">&quot;characteristic_unit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">wq_data</span><span class="p">[</span><span class="s2">&quot;Result_Characteristic&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span> <span class="o">+</span> <span class="n">wq_data</span><span class="p">[</span><span class="s2">&quot;Result_MeasureUnit&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">wq_data_wide</span> <span class="o">=</span> <span class="n">wq_data</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
+    <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Location_Identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;Activity_StartDate&quot;</span><span class="p">,</span> <span class="s2">&quot;Activity_StartTime&quot;</span><span class="p">],</span>
+    <span class="n">columns</span><span class="o">=</span><span class="s2">&quot;characteristic_unit&quot;</span><span class="p">,</span>
+    <span class="n">values</span><span class="o">=</span><span class="s2">&quot;Result_Measure&quot;</span><span class="p">,</span>
+    <span class="n">aggfunc</span><span class="o">=</span><span class="s2">&quot;first&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">wq_data_wide</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Retrieved data for 2394 sample results.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_6562/1863275440.py:5: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  wq_data[&#34;characteristic_unit&#34;] = (
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>characteristic_unit</th>
+      <th>Acidity, (H+), mg/L</th>
+      <th>Alkalinity, mg/L</th>
+      <th>Bicarbonate, mg/L</th>
+      <th>Calcium, mg/L</th>
+      <th>Carbon dioxide, mg/L</th>
+      <th>Carbonate, mg/L</th>
+      <th>Chloride, mg/L</th>
+      <th>Depth of water column, ft</th>
+      <th>Hardness, Ca, Mg, mg/L</th>
+      <th>Hardness, non-carbonate, mg/L</th>
+      <th>...</th>
+      <th>Stream flow, instantaneous, m3/sec</th>
+      <th>Stream flow, m3/sec</th>
+      <th>Stream width measure, ft</th>
+      <th>Sulfate, mg/L</th>
+      <th>Temperature, air, deg C</th>
+      <th>Temperature, water, deg C</th>
+      <th>Total dissolved solids, mg/L</th>
+      <th>Total dissolved solids, tons/ac ft</th>
+      <th>Total dissolved solids, tons/day</th>
+      <th>pH, standard units</th>
+    </tr>
+    <tr>
+      <th>Location_Identifier</th>
+      <th>Activity_StartDate</th>
+      <th>Activity_StartTime</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="11" valign="top">USGS-10109000</th>
+      <th>1967-09-13</th>
+      <th>07:35:00</th>
+      <td>0.00001</td>
+      <td>187</td>
+      <td>228</td>
+      <td>44.0</td>
+      <td>2.9</td>
+      <td>0.0</td>
+      <td>3.5</td>
+      <td>NaN</td>
+      <td>190</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>5.8</td>
+      <td>NaN</td>
+      <td>6.5</td>
+      <td>NaN</td>
+      <td>7.0</td>
+      <td>196</td>
+      <td>0.27</td>
+      <td>108</td>
+      <td>8.1</td>
+    </tr>
+    <tr>
+      <th>1968-01-18</th>
+      <th>12:20:00</th>
+      <td>0.00002</td>
+      <td>207</td>
+      <td>252</td>
+      <td>52.0</td>
+      <td>6.5</td>
+      <td>0.0</td>
+      <td>3.9</td>
+      <td>NaN</td>
+      <td>220</td>
+      <td>17</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>3.2</td>
+      <td>NaN</td>
+      <td>17.0</td>
+      <td>NaN</td>
+      <td>4.0</td>
+      <td>210</td>
+      <td>0.29</td>
+      <td>63.5</td>
+      <td>7.8</td>
+    </tr>
+    <tr>
+      <th>1968-05-15</th>
+      <th>12:30:00</th>
+      <td>0.00004</td>
+      <td>149</td>
+      <td>182</td>
+      <td>38.0</td>
+      <td>12</td>
+      <td>0.0</td>
+      <td>1.7</td>
+      <td>NaN</td>
+      <td>150</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>10</td>
+      <td>NaN</td>
+      <td>5.5</td>
+      <td>NaN</td>
+      <td>7.0</td>
+      <td>156</td>
+      <td>0.21</td>
+      <td>151</td>
+      <td>7.4</td>
+    </tr>
+    <tr>
+      <th>1968-07-26</th>
+      <th>14:40:00</th>
+      <td>0.00002</td>
+      <td>179</td>
+      <td>218</td>
+      <td>53.0</td>
+      <td>7.0</td>
+      <td>0.0</td>
+      <td>2.2</td>
+      <td>NaN</td>
+      <td>180</td>
+      <td>3</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>7.5</td>
+      <td>NaN</td>
+      <td>6.2</td>
+      <td>NaN</td>
+      <td>12.0</td>
+      <td>188</td>
+      <td>0.26</td>
+      <td>135</td>
+      <td>7.7</td>
+    </tr>
+    <tr>
+      <th>1972-12-08</th>
+      <th>16:15:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>3.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2025-11-18</th>
+      <th>08:55:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>3.0</td>
+      <td>NaN</td>
+      <td>48.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>6.8</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2025-12-29</th>
+      <th>16:07:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>2.8</td>
+      <td>NaN</td>
+      <td>48.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>3.6</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2026-03-04</th>
+      <th>14:53:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4.0</td>
+      <td>NaN</td>
+      <td>46.9</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>6.7</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2026-04-20</th>
+      <th>10:08:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>7.0</td>
+      <td>NaN</td>
+      <td>50.6</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>7.7</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2026-05-12</th>
+      <th>13:58:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>10</td>
+      <td>NaN</td>
+      <td>51.9</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>10.4</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>356 rows × 34 columns</p>
+</div></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="USGS_WaterData_UnitValues_Examples.html" class="btn btn-neutral float-left" title="USGS dataretrieval Python Package get_continuous() Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="USGS_NWIS_WaterUse_Examples.html" class="btn btn-neutral float-right" title="USGS dataretrieval Python Package Water Use Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

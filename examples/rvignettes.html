@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Python Equivalents to R Vignette Examples &mdash; dataretrieval 0.1.dev1+gc450c404d documentation</title>
+  <title>Python Equivalents to R Vignette Examples &mdash; dataretrieval 0.1.dev1+g7f64c2de7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bb319b34"></script>
+      <script src="../_static/documentation_options.js?v=57830bd8"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -24,7 +24,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Contributing" href="../meta/contributing.html" />
-    <link rel="prev" title="National trends in peak annual streamflow" href="nwisdemo01.html" /> 
+    <link rel="prev" title="National trends in peak annual streamflow" href="peak_streamflow_trends.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -101,8 +101,8 @@
 </pre></div>
 </div>
 </div>
-<p>The dataRetrieval package was created as a python equivalent to the R dataRetrieval tool.</p>
-<p>The following shows python equivalents for methods outlined in the R dataRetrieval Vignette with the equivalent R code in comments</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> Python package was created as an equivalent to the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> package.</p>
+<p>The following shows Python equivalents for the methods outlined in the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignette, with the equivalent R code in comments.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
@@ -112,8 +112,10 @@
 <span class="sd">siteNumbers &lt;- c(&quot;01491000&quot;,&quot;01645000&quot;)</span>
 <span class="sd">siteINFO &lt;- readNWISsite(siteNumbers)</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="n">siteNumbers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;01491000&quot;</span><span class="p">,</span> <span class="s2">&quot;01645000&quot;</span><span class="p">]</span>
-<span class="n">siteINFO</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumbers</span><span class="p">)</span>
+<span class="n">siteNumbers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;USGS-01491000&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-01645000&quot;</span><span class="p">]</span>
+<span class="n">siteINFO</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">siteNumbers</span><span class="p">,</span> <span class="n">skip_geometry</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -122,8 +124,8 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_7759/2169539836.py:7: DeprecationWarning: `nwis.get_iv` is deprecated and will be removed from `dataretrieval` on or after 2027-05-06; use `waterdata.get_continuous()` instead.
-  siteINFO, md = nwis.get_iv(sites=siteNumbers)
+Retrieving: monitoring-locations · 1 page · 2 rows
+No API key detected — register for higher rate limits at https://api.waterdata.usgs.gov/signup/
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -136,8 +138,9 @@
 <span class="sd">dailyDataAvailable &lt;- whatNWISdata(siteNumbers,</span>
 <span class="sd">                    service=&quot;dv&quot;, statCd=&quot;00003&quot;)</span>
 <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="n">dailyDataAvailable</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumbers</span><span class="p">,</span> <span class="n">statCd</span><span class="o">=</span><span class="s2">&quot;00003&quot;</span><span class="p">)</span>
+<span class="n">dailyDataAvailable</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_time_series_metadata</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">siteNumbers</span><span class="p">,</span> <span class="n">statistic_id</span><span class="o">=</span><span class="s2">&quot;00003&quot;</span><span class="p">,</span> <span class="n">skip_geometry</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -146,8 +149,7 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_7759/555441286.py:8: DeprecationWarning: `nwis.get_dv` is deprecated and will be removed from `dataretrieval` on or after 2027-05-06; use `waterdata.get_daily()` instead.
-  dailyDataAvailable, md = nwis.get_dv(sites=siteNumbers, statCd=&#34;00003&#34;)
+Retrieving: time-series-metadata · 1 page · 11 rows
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -161,17 +163,16 @@
 <span class="sd">startDate &lt;- &quot;2009-10-01&quot;</span>
 <span class="sd">endDate &lt;- &quot;2012-09-30&quot;</span>
 
-<span class="sd">discharge &lt;- readNWISdv(siteNumber,</span>
-<span class="sd">                    parameterCd, startDate, endDate)</span>
+<span class="sd">discharge &lt;- readNWISdv(siteNumber, parameterCd, startDate, endDate)</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="c1"># Choptank River near Greensboro, MD:</span>
-<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;01491000&quot;</span>
+<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;USGS-01491000&quot;</span>
 <span class="n">parameterCd</span> <span class="o">=</span> <span class="s2">&quot;00060&quot;</span>  <span class="c1"># Discharge</span>
-<span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;2009-10-01&quot;</span>
-<span class="n">endDate</span> <span class="o">=</span> <span class="s2">&quot;2012-09-30&quot;</span>
 
-<span class="n">discharge</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span>
-    <span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span>
+<span class="n">discharge</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2009-10-01/2012-09-30&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -181,8 +182,7 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_7759/3163579711.py:17: DeprecationWarning: `nwis.get_dv` is deprecated and will be removed from `dataretrieval` on or after 2027-05-06; use `waterdata.get_daily()` instead.
-  discharge, md = nwis.get_dv(
+Retrieving: daily · 1 page · 1,096 rows
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -192,25 +192,21 @@
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">siteNumber &lt;- &quot;01491000&quot;</span>
 <span class="sd">parameterCd &lt;- c(&quot;00010&quot;,&quot;00060&quot;)  # Temperature and discharge</span>
-<span class="sd">statCd &lt;- c(&quot;00001&quot;,&quot;00003&quot;)  # Mean and maximum</span>
+<span class="sd">statCd &lt;- c(&quot;00001&quot;,&quot;00003&quot;)  # Maximum and mean</span>
 <span class="sd">startDate &lt;- &quot;2012-01-01&quot;</span>
 <span class="sd">endDate &lt;- &quot;2012-05-01&quot;</span>
 
-<span class="sd">temperatureAndFlow &lt;- readNWISdv(siteNumber, parameterCd,</span>
-<span class="sd">        startDate, endDate, statCd=statCd)</span>
+<span class="sd">temperatureAndFlow &lt;- readNWISdv(siteNumber, parameterCd, startDate, endDate, statCd=statCd)</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;01491000&quot;</span>
+<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;USGS-01491000&quot;</span>
 <span class="n">parameterCd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;00010&quot;</span><span class="p">,</span> <span class="s2">&quot;00060&quot;</span><span class="p">]</span>  <span class="c1"># Temperature and discharge</span>
-<span class="n">statCd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;00001&quot;</span><span class="p">,</span> <span class="s2">&quot;00003&quot;</span><span class="p">]</span>  <span class="c1"># Mean and maximum</span>
-<span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;2012-01-01&quot;</span>
-<span class="n">endDate</span> <span class="o">=</span> <span class="s2">&quot;2012-05-01&quot;</span>
+<span class="n">statisticId</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;00001&quot;</span><span class="p">,</span> <span class="s2">&quot;00003&quot;</span><span class="p">]</span>  <span class="c1"># Maximum and mean</span>
 
-<span class="n">temperatureAndFlow</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span>
-    <span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span>
-    <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
-    <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span>
-    <span class="n">end</span><span class="o">=</span><span class="n">endDate</span><span class="p">,</span>
-    <span class="n">statCd</span><span class="o">=</span><span class="n">statCd</span><span class="p">,</span>
+<span class="n">temperatureAndFlow</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
+    <span class="n">statistic_id</span><span class="o">=</span><span class="n">statisticId</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2012-01-01/2012-05-01&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -220,8 +216,7 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_7759/1797019918.py:17: DeprecationWarning: `nwis.get_dv` is deprecated and will be removed from `dataretrieval` on or after 2027-05-06; use `waterdata.get_daily()` instead.
-  temperatureAndFlow, md = nwis.get_dv(
+Retrieving: daily · 1 page · 364 rows
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -232,15 +227,15 @@
 <span class="sd">parameterCd &lt;- &quot;00060&quot;  # Discharge</span>
 <span class="sd">startDate &lt;- &quot;2012-05-12&quot;</span>
 <span class="sd">endDate &lt;- &quot;2012-05-13&quot;</span>
-<span class="sd">dischargeUnit &lt;- readNWISuv(siteNumber, parameterCd,</span>
-<span class="sd">        startDate, endDate)</span>
+<span class="sd">dischargeUnit &lt;- readNWISuv(siteNumber, parameterCd, startDate, endDate)</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;01491000&quot;</span>
+<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;USGS-01491000&quot;</span>
 <span class="n">parameterCd</span> <span class="o">=</span> <span class="s2">&quot;00060&quot;</span>  <span class="c1"># Discharge</span>
-<span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;2012-05-12&quot;</span>
-<span class="n">endDate</span> <span class="o">=</span> <span class="s2">&quot;2012-05-13&quot;</span>
-<span class="n">dischargeUnit</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span>
-    <span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">endDate</span>
+
+<span class="n">dischargeUnit</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2012-05-12/2012-05-13&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -250,8 +245,7 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_7759/1044730819.py:12: DeprecationWarning: `nwis.get_iv` is deprecated and will be removed from `dataretrieval` on or after 2027-05-06; use `waterdata.get_continuous()` instead.
-  dischargeUnit, md = nwis.get_iv(
+Retrieving: continuous · 1 page · 97 rows
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
@@ -263,18 +257,17 @@
 <span class="sd">parameterCd &lt;- c(&quot;00618&quot;,&quot;71851&quot;)</span>
 <span class="sd">startDate &lt;- &quot;1985-10-01&quot;</span>
 <span class="sd">endDate &lt;- &quot;2012-09-30&quot;</span>
-<span class="sd">dfLong &lt;- read_USGS_samples(monitoringLocationIdentifier=sprintf(&quot;USGS-%s&quot;, siteNumber), usgsPCode=parameterCd,</span>
-<span class="sd">      activityStartDateLower=startDate, activityStartDateUpper=endDate)</span>
+<span class="sd">dfLong &lt;- read_USGS_samples(monitoringLocationIdentifier=sprintf(&quot;USGS-%s&quot;, siteNumber),</span>
+<span class="sd">      usgsPCode=parameterCd, activityStartDateLower=startDate, activityStartDateUpper=endDate)</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;01491000&quot;</span>
+<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;USGS-01491000&quot;</span>
 <span class="n">parameterCd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;00618&quot;</span><span class="p">,</span> <span class="s2">&quot;71851&quot;</span><span class="p">]</span>
-<span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;1985-10-01&quot;</span>
-<span class="n">endDate</span> <span class="o">=</span> <span class="s2">&quot;2012-09-30&quot;</span>
+
 <span class="n">dfLong</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span>
-    <span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;USGS-</span><span class="si">{</span><span class="n">siteNumber</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">monitoringLocationIdentifier</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span>
     <span class="n">usgsPCode</span><span class="o">=</span><span class="n">parameterCd</span><span class="p">,</span>
-    <span class="n">activityStartDateLower</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span>
-    <span class="n">activityStartDateUpper</span><span class="o">=</span><span class="n">endDate</span><span class="p">,</span>
+    <span class="n">activityStartDateLower</span><span class="o">=</span><span class="s2">&quot;1985-10-01&quot;</span><span class="p">,</span>
+    <span class="n">activityStartDateUpper</span><span class="o">=</span><span class="s2">&quot;2012-09-30&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -287,8 +280,9 @@
 <span class="sd">siteNumber &lt;- &#39;01594440&#39;</span>
 <span class="sd">peakData &lt;- readNWISpeak(siteNumber)</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;01594440&quot;</span>
-<span class="n">peakData</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_discharge_peaks</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">)</span>
+<span class="n">peakData</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01594440&quot;</span><span class="p">,</span> <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -297,8 +291,7 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_7759/153287818.py:6: DeprecationWarning: `nwis.get_discharge_peaks` is deprecated and will be removed from `dataretrieval` on or after 2027-05-06; use `waterdata.get_peaks()` instead.
-  peakData, md = nwis.get_discharge_peaks(sites=siteNumber)
+Retrieving: peaks · 1 page · 49 rows
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -309,17 +302,21 @@
 <span class="sd">ratingData &lt;- readNWISrating(siteNumber, &quot;base&quot;)</span>
 <span class="sd">attr(ratingData, &quot;RATING&quot;)</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="n">ratings_data</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="s2">&quot;01594440&quot;</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="s2">&quot;base&quot;</span><span class="p">)</span>
+<span class="c1"># get_ratings returns a dict keyed by &quot;&lt;id&gt;.&lt;file_type&gt;.rdb&quot;</span>
+<span class="n">ratings_data</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_ratings</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01594440&quot;</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="s2">&quot;base&quot;</span>
+<span class="p">)</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">ratings_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
 </div>
-<div class="output_area stderr docutils container">
+<div class="output_area docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_7759/1447487474.py:5: DeprecationWarning: `nwis.get_ratings` is deprecated and will be removed from `dataretrieval` on or after 2027-05-06; use `waterdata.get_ratings()` instead.
-  ratings_data, md = nwis.get_ratings(site=&#34;01594440&#34;, file_type=&#34;base&#34;)
+[&#39;USGS-01594440.base.rdb&#39;]
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -331,8 +328,10 @@
 <span class="sd">                   parameterCd=c(&quot;00060&quot;),</span>
 <span class="sd">                   statReportType=&quot;annual&quot;)</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="n">discharge_stats</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span>
-    <span class="n">sites</span><span class="o">=</span><span class="s2">&quot;02319394&quot;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="n">statReportType</span><span class="o">=</span><span class="s2">&quot;annual&quot;</span><span class="p">,</span> <span class="n">statTypeCd</span><span class="o">=</span><span class="s2">&quot;all&quot;</span>
+<span class="n">discharge_stats</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_date_range</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-02319394&quot;</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+    <span class="n">computation_type</span><span class="o">=</span><span class="s2">&quot;arithmetic_mean&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -342,22 +341,21 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_7759/910778199.py:6: DeprecationWarning: `nwis.get_stats` is deprecated and will be removed from `dataretrieval` on or after 2027-05-06; use `waterdata.get_stats_por()` or `waterdata.get_stats_date_range()` instead.
-  discharge_stats, md = nwis.get_stats(
+Retrieving: observationIntervals · 1 page · 344 rows
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># &#39;&#39;&#39;</span>
-<span class="c1"># dischargeWI &lt;- readNWISdata(service=&quot;dv&quot;,</span>
-<span class="c1">#                            stateCd=&quot;WI&quot;,</span>
-<span class="c1">#                            parameterCd=&quot;00060&quot;,</span>
-<span class="c1">#                            drainAreaMin=&quot;50&quot;,</span>
-<span class="c1">#                            statCd=&quot;00003&quot;)</span>
-<span class="c1"># &#39;&#39;&#39;</span>
-<span class="c1"># dischargeWI, md = nwis.get_dv(stateCd=&quot;WI&quot;, parameterCd=&quot;00060&quot;, drainAreaMin=&quot;50&quot;, statCd=&quot;00003&quot;)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># R: readNWISdata(service=&quot;dv&quot;, stateCd=&quot;WI&quot;, parameterCd=&quot;00060&quot;,</span>
+<span class="c1">#                 drainAreaMin=&quot;50&quot;, statCd=&quot;00003&quot;)</span>
+<span class="c1">#</span>
+<span class="c1"># The Water Data API serves daily values per monitoring location. To assemble a</span>
+<span class="c1"># state-wide set, first find the locations (optionally filtering by drainage</span>
+<span class="c1"># area) with waterdata.get_monitoring_locations(state_name=&quot;Wisconsin&quot;, ...),</span>
+<span class="c1"># then pass their ids to waterdata.get_daily(parameter_code=&quot;00060&quot;,</span>
+<span class="c1"># statistic_id=&quot;00003&quot;).</span>
 </pre></div>
 </div>
 </div>
@@ -424,16 +422,16 @@
 </section>
 <section id="Embedded-Metadata">
 <h1>Embedded Metadata<a class="headerlink" href="#Embedded-Metadata" title="Link to this heading"></a></h1>
-<p>All service methods return the DataFrame containing requested data and Metadata as a tuple. Note, a call using get_record will only return the DataFrame to remain compatible with previous usage.</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>national, md = nwis.get_water_use()
+<p>Most <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> and <code class="docutils literal notranslate"><span class="pre">wqp</span></code> service methods return a tuple of the requested data (a pandas DataFrame) and a metadata object.</p>
+<p><code class="docutils literal notranslate"><span class="pre">md</span></code> is an object with the following attributes:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Metadata
+    url         # the URL used to query the service
+    query_time  # how long the query took
+    header      # the response headers
 </pre></div>
 </div>
-<p>md is an object with the following attributes</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Metadata
-    url # the resulting url to query usgs
-    query_time # the time it took to query usgs
-    site_info # a method to call site_info with the site parameters supplied
-    header # any headers attached to the response object
+<p>Note: USGS <em>water use</em> data has no Water Data API equivalent yet, so it remains available only through the deprecated <code class="docutils literal notranslate"><span class="pre">nwis</span></code> module:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>national, md = nwis.get_water_use()
 </pre></div>
 </div>
 </section>
@@ -442,7 +440,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="nwisdemo01.html" class="btn btn-neutral float-left" title="National trends in peak annual streamflow" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="peak_streamflow_trends.html" class="btn btn-neutral float-left" title="National trends in peak annual streamflow" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../meta/contributing.html" class="btn btn-neutral float-right" title="Contributing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

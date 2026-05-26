@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+gc450c404d documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g7f64c2de7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=bb319b34"></script>
+      <script src="../../_static/documentation_options.js?v=57830bd8"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -1269,12 +1269,11 @@
 <span class="sd">        Response headers</span>
 <span class="sd">    comments: str | None</span>
 <span class="sd">        Metadata comments, if any</span>
-<span class="sd">    site_info: tuple[pd.DataFrame, NWIS_Metadata] | None</span>
-<span class="sd">        Site information if the query included `site_no`, `sites`, `stateCd`,</span>
-<span class="sd">        `huc`, `countyCd` or `bBox`. `site_no` is preferred over `sites` if</span>
-<span class="sd">        both are present.</span>
-<span class="sd">    variable_info: None</span>
-<span class="sd">        Deprecated. Accessing variable_info via NWIS_Metadata is deprecated.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    ``site_info`` and ``variable_info`` are exposed as properties (documented</span>
+<span class="sd">    below) rather than plain attributes.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -1311,7 +1310,12 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">site_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Site information for the query.</span>
+
+<span class="sd">        Populated when the query included ``site_no``, ``sites``, ``stateCd``,</span>
+<span class="sd">        ``huc``, ``countyCd`` or ``bBox`` (``site_no`` is preferred over</span>
+<span class="sd">        ``sites`` if both are present); ``None`` otherwise.</span>
+
 <span class="sd">        Return</span>
 <span class="sd">        ------</span>
 <span class="sd">        df: ``pandas.DataFrame``</span>

@@ -1,0 +1,1372 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>USGS dataretrieval Python Package get_daily() Examples &mdash; dataretrieval 0.1.dev1+g7f64c2de7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=57830bd8"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="USGS dataretrieval Python Package get_field_measurements() Examples" href="USGS_WaterData_GroundwaterLevels_Examples.html" />
+    <link rel="prev" title="Retrieving site information" href="siteinfo_examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#introduction-to-the-waterdata-module-of-dataretrieval">Introduction to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Install-the-Package">Install the Package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Basic-Usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Interpreting-the-Result">Interpreting the Result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Additional-Examples">Additional Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Measurements_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ParameterCodes_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_reference_table()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Peaks_Examples.html">USGS dataretrieval Python Package Peak Streamflow Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Ratings_Examples.html">USGS dataretrieval Python Package Rating Curve Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_SiteInfo_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_SiteInventory_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Statistics_Examples.html">USGS dataretrieval Python Package Statistics Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_UnitValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_continuous()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Samples_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_NWIS_WaterUse_Examples.html">USGS dataretrieval Python Package Water Use Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/USGS_WaterData_DailyValues_Examples.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="USGS-dataretrieval-Python-Package-get_daily()-Examples">
+<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-get_daily()-Examples" title="Link to this heading"></a></h1>
+<p>This notebook provides examples of using the Python dataretrieval package to retrieve daily streamflow data for a United States Geological Survey (USGS) monitoring location. The dataretrieval package provides a collection of functions to get data from the USGS Water Data API and other online sources of hydrology and water quality data.</p>
+<section id="Install-the-Package">
+<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Link to this heading"></a></h2>
+<p>Use the following code to install the package if it doesn’t exist already within your Jupyter Python environment.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>dataretrieval
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g7f64c2de7)
+Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
+Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.3)
+Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.6)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.9.0.post0)
+Requirement already satisfied: six&gt;=1.5 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
+Requirement already satisfied: anyio in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (4.13.0)
+Requirement already satisfied: certifi in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (2026.5.20)
+Requirement already satisfied: httpcore==1.* in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (1.0.9)
+Requirement already satisfied: idna in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (3.16)
+Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from httpcore==1.*-&gt;httpx-&gt;dataretrieval) (0.16.0)
+</pre></div></div>
+</div>
+<p>Load the package so you can use it along with other packages used in this notebook.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval.waterdata</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">waterdata</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Basic-Usage">
+<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Link to this heading"></a></h2>
+<p>The dataretrieval package has several functions that allow you to retrieve data from different web services. This example uses the <code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> function to retrieve daily streamflow data for a USGS monitoring location from the USGS Water Data API. The following arguments are supported:</p>
+<p>Arguments (Additional arguments, if supplied, will be used as query parameters)</p>
+<ul class="simple">
+<li><p><strong>monitoring_location_id</strong> (string or iterable of strings): A unique identifier representing a single monitoring location, formed by combining the agency code with the site number (e.g. <code class="docutils literal notranslate"><span class="pre">USGS-10109000</span></code>). Accepts a single ID or a list of IDs.</p></li>
+<li><p><strong>parameter_code</strong> (string or iterable of strings): One or more 5-digit USGS parameter codes identifying the constituent measured and its units of measure (e.g. <code class="docutils literal notranslate"><span class="pre">00060</span></code> for discharge).</p></li>
+<li><p><strong>statistic_id</strong> (string or iterable of strings): One or more codes corresponding to the statistic an observation represents (e.g. <code class="docutils literal notranslate"><span class="pre">00001</span></code> for maximum, <code class="docutils literal notranslate"><span class="pre">00003</span></code> for mean).</p></li>
+<li><p><strong>time</strong> (string): The date or interval an observation represents, following RFC 3339. May be a single date, a bounded or half-bounded interval (e.g. <code class="docutils literal notranslate"><span class="pre">2020-10-01/2021-09-30</span></code>), or an ISO 8601 duration (e.g. <code class="docutils literal notranslate"><span class="pre">P7D</span></code> for the past seven days).</p></li>
+<li><p><strong>skip_geometry</strong> (boolean): If <code class="docutils literal notranslate"><span class="pre">True</span></code>, response geometries are omitted and the returned data frame contains no spatial information.</p></li>
+</ul>
+<p>Example 1: Get daily value data for a specific parameter at a single USGS monitoring location between a begin and end date.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the parameters needed to retrieve data</span>
+<span class="n">siteNumber</span> <span class="o">=</span> <span class="s2">&quot;USGS-10109000&quot;</span>  <span class="c1"># LOGAN RIVER ABOVE STATE DAM, NEAR LOGAN, UT</span>
+<span class="n">parameterCode</span> <span class="o">=</span> <span class="s2">&quot;00060&quot;</span>  <span class="c1"># Discharge</span>
+<span class="n">startDate</span> <span class="o">=</span> <span class="s2">&quot;2020-10-01&quot;</span>
+<span class="n">endDate</span> <span class="o">=</span> <span class="s2">&quot;2021-09-30&quot;</span>
+
+<span class="c1"># Retrieve the data</span>
+<span class="n">dailyStreamflow</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">siteNumber</span><span class="p">,</span> <span class="n">parameter_code</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">startDate</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">endDate</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dailyStreamflow</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: daily · 1 page · 365 rows
+No API key detected — register for higher rate limits at https://api.waterdata.usgs.gov/signup/
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Retrieved 365 data values.
+</pre></div></div>
+</div>
+</section>
+<section id="Interpreting-the-Result">
+<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> function returns a tuple containing a pandas data frame and an associated metadata object. The data frame contains the daily values for the observed variable and time period requested. It is a flat table with a default integer index; the dates associated with each observation are held in a <code class="docutils literal notranslate"><span class="pre">time</span></code> column rather than in the index.</p>
+<p>Once you’ve got the data frame, there are several useful things you can do to explore the data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Display the data frame as a table</span>
+<span class="n">display</span><span class="p">(</span><span class="n">dailyStreamflow</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+      <th>time_series_id</th>
+      <th>monitoring_location_id</th>
+      <th>parameter_code</th>
+      <th>statistic_id</th>
+      <th>time</th>
+      <th>value</th>
+      <th>unit_of_measure</th>
+      <th>approval_status</th>
+      <th>qualifier</th>
+      <th>last_modified</th>
+      <th>daily_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ecae32c6bdbe495abe71288c65b9a1af</td>
+      <td>USGS-10109000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2020-10-01</td>
+      <td>88.8</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 21:52:02.820548+00:00</td>
+      <td>24014492-4f8f-48f1-84aa-fe178eb07209</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ecae32c6bdbe495abe71288c65b9a1af</td>
+      <td>USGS-10109000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2020-10-02</td>
+      <td>90.5</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 21:52:02.820548+00:00</td>
+      <td>15e8e430-20ce-4802-ae17-850c593be98c</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ecae32c6bdbe495abe71288c65b9a1af</td>
+      <td>USGS-10109000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2020-10-03</td>
+      <td>92.7</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 21:52:02.820548+00:00</td>
+      <td>73769928-ce1b-4112-a41c-b0d1b1880e34</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ecae32c6bdbe495abe71288c65b9a1af</td>
+      <td>USGS-10109000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2020-10-04</td>
+      <td>91.8</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 21:52:02.820548+00:00</td>
+      <td>c87a8c53-d9d4-4701-9f13-60b0090cca58</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ecae32c6bdbe495abe71288c65b9a1af</td>
+      <td>USGS-10109000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2020-10-05</td>
+      <td>91.0</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 21:52:02.820548+00:00</td>
+      <td>b85a8631-ede6-48a7-a17d-ec0cfd8d7ee0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>360</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ecae32c6bdbe495abe71288c65b9a1af</td>
+      <td>USGS-10109000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2021-09-26</td>
+      <td>54.2</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 21:52:02.820548+00:00</td>
+      <td>7f79ca42-11b6-4c34-b13c-23b3d79f4c7a</td>
+    </tr>
+    <tr>
+      <th>361</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ecae32c6bdbe495abe71288c65b9a1af</td>
+      <td>USGS-10109000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2021-09-27</td>
+      <td>54.5</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 21:52:02.820548+00:00</td>
+      <td>d2ede051-6a50-4e98-b9e8-5fd77cd45ba5</td>
+    </tr>
+    <tr>
+      <th>362</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ecae32c6bdbe495abe71288c65b9a1af</td>
+      <td>USGS-10109000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2021-09-28</td>
+      <td>54.1</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 21:52:02.820548+00:00</td>
+      <td>fb754ea7-372e-432a-90b6-1cf6ecf990ef</td>
+    </tr>
+    <tr>
+      <th>363</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ecae32c6bdbe495abe71288c65b9a1af</td>
+      <td>USGS-10109000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2021-09-29</td>
+      <td>53.5</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 21:52:02.820548+00:00</td>
+      <td>1085b93f-da01-4857-9d93-bbd90871c4d2</td>
+    </tr>
+    <tr>
+      <th>364</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>ecae32c6bdbe495abe71288c65b9a1af</td>
+      <td>USGS-10109000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2021-09-30</td>
+      <td>54.0</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 21:52:02.820548+00:00</td>
+      <td>02de87ce-13bf-4b8a-8666-8a6b24281352</td>
+    </tr>
+  </tbody>
+</table>
+<p>365 rows × 12 columns</p>
+</div></div>
+</div>
+<p>Show the data types of the columns in the resulting data frame.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">dailyStreamflow</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtypes</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+geometry                             geometry
+time_series_id                            str
+monitoring_location_id                    str
+parameter_code                            str
+statistic_id                              str
+time                           datetime64[us]
+value                                 float64
+unit_of_measure                           str
+approval_status                           str
+qualifier                              object
+last_modified             datetime64[us, UTC]
+daily_id                                  str
+dtype: object
+</pre></div></div>
+</div>
+<p>Get summary statistics for the daily streamflow values.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dailyStreamflow</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time</th>
+      <th>value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>365</td>
+      <td>365.000000</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>2021-04-01 00:00:00</td>
+      <td>95.795616</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>2020-10-01 00:00:00</td>
+      <td>45.900000</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>2020-12-31 00:00:00</td>
+      <td>75.200000</td>
+    </tr>
+    <tr>
+      <th>50%</th>
+      <td>2021-04-01 00:00:00</td>
+      <td>85.800000</td>
+    </tr>
+    <tr>
+      <th>75%</th>
+      <td>2021-07-01 00:00:00</td>
+      <td>106.000000</td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td>2021-09-30 00:00:00</td>
+      <td>271.000000</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>NaN</td>
+      <td>41.146872</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Make a quick time series plot.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">dailyStreamflow</span><span class="p">[</span><span class="mi">0</span><span class="p">][[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Date&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Streamflow (cfs)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Text(0, 0.5, &#39;Streamflow (cfs)&#39;)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_USGS_WaterData_DailyValues_Examples_15_1.png" src="../_images/examples_USGS_WaterData_DailyValues_Examples_15_1.png" />
+</div>
+</div>
+<p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the USGS Water Data API.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;The query URL used to retrieve the data from the Water Data API was: &quot;</span> <span class="o">+</span> <span class="n">dailyStreamflow</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The query URL used to retrieve the data from the Water Data API was: https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily/items?monitoring_location_id=USGS-10109000&amp;parameter_code=00060&amp;time=2020-10-01%2F2021-09-30&amp;skipGeometry=false&amp;limit=50000
+</pre></div></div>
+</div>
+</section>
+<section id="Additional-Examples">
+<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Link to this heading"></a></h2>
+<p>Example 2: Get daily mean and max discharge and temperature values for a monitoring location between a begin and end date.</p>
+<p>Parameter Code: 00010 = temperature, 00060 = discharge See <a class="reference external" href="https://help.waterdata.usgs.gov/codes-and-parameters/parameters">https://help.waterdata.usgs.gov/codes-and-parameters/parameters</a></p>
+<p>Statistic Code: 00001 = Maximum, 00003 = Mean See <a class="reference external" href="https://help.waterdata.usgs.gov/stat_code">https://help.waterdata.usgs.gov/stat_code</a></p>
+<p>NOTE: Temperature and discharge are not fully available for both statistics at this monitoring location.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteID</span> <span class="o">=</span> <span class="s2">&quot;USGS-04085427&quot;</span>
+<span class="n">dailyQAndT</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">siteID</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00010&quot;</span><span class="p">,</span> <span class="s2">&quot;00060&quot;</span><span class="p">],</span>
+    <span class="n">time</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">startDate</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">endDate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">statistic_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00001&quot;</span><span class="p">,</span> <span class="s2">&quot;00003&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">dailyQAndT</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: daily · 1 page · 883 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+      <th>time_series_id</th>
+      <th>monitoring_location_id</th>
+      <th>parameter_code</th>
+      <th>statistic_id</th>
+      <th>time</th>
+      <th>value</th>
+      <th>unit_of_measure</th>
+      <th>approval_status</th>
+      <th>qualifier</th>
+      <th>last_modified</th>
+      <th>daily_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>POINT (-87.71603 44.10617)</td>
+      <td>66a73e8ca5654ff39e85a0afd29270e9</td>
+      <td>USGS-04085427</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2020-10-01</td>
+      <td>96.2</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-02-28 23:22:14.727748+00:00</td>
+      <td>8c56a6f4-d1f0-4c80-b909-fabb14f7845d</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>POINT (-87.71603 44.10617)</td>
+      <td>66a73e8ca5654ff39e85a0afd29270e9</td>
+      <td>USGS-04085427</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2020-10-02</td>
+      <td>90.4</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-02-28 23:22:14.727748+00:00</td>
+      <td>6aa9a4f3-470f-41ed-b190-39605fac58a1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>POINT (-87.71603 44.10617)</td>
+      <td>66a73e8ca5654ff39e85a0afd29270e9</td>
+      <td>USGS-04085427</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2020-10-03</td>
+      <td>84.7</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-02-28 23:22:14.727748+00:00</td>
+      <td>490c09f1-84cc-46ff-9a98-eed11438dcdc</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>POINT (-87.71603 44.10617)</td>
+      <td>66a73e8ca5654ff39e85a0afd29270e9</td>
+      <td>USGS-04085427</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2020-10-04</td>
+      <td>84.9</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-02-28 23:22:14.727748+00:00</td>
+      <td>5f0f2fd6-ae2e-4274-beb6-9e66cfa48638</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>POINT (-87.71603 44.10617)</td>
+      <td>66a73e8ca5654ff39e85a0afd29270e9</td>
+      <td>USGS-04085427</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2020-10-05</td>
+      <td>93.4</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-02-28 23:22:14.727748+00:00</td>
+      <td>840a86c7-fc3f-4cda-81b9-d71199592c33</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>878</th>
+      <td>POINT (-87.71603 44.10617)</td>
+      <td>40fb58737a834016aa829aaf5b7852d7</td>
+      <td>USGS-04085427</td>
+      <td>00010</td>
+      <td>00003</td>
+      <td>2021-09-29</td>
+      <td>16.2</td>
+      <td>degC</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-07-04 09:09:05.251279+00:00</td>
+      <td>4edbb797-0d48-4bff-9dc1-c87b591be4f0</td>
+    </tr>
+    <tr>
+      <th>879</th>
+      <td>POINT (-87.71603 44.10617)</td>
+      <td>66a73e8ca5654ff39e85a0afd29270e9</td>
+      <td>USGS-04085427</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2021-09-29</td>
+      <td>96.2</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-02-28 23:22:14.727748+00:00</td>
+      <td>902096d4-0c94-43c2-8915-90b37fcd500e</td>
+    </tr>
+    <tr>
+      <th>880</th>
+      <td>POINT (-87.71603 44.10617)</td>
+      <td>40fb58737a834016aa829aaf5b7852d7</td>
+      <td>USGS-04085427</td>
+      <td>00010</td>
+      <td>00003</td>
+      <td>2021-09-30</td>
+      <td>16.9</td>
+      <td>degC</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-07-04 09:09:05.251279+00:00</td>
+      <td>63685ba1-1a37-4bcb-aa8d-b12029790942</td>
+    </tr>
+    <tr>
+      <th>881</th>
+      <td>POINT (-87.71603 44.10617)</td>
+      <td>66a73e8ca5654ff39e85a0afd29270e9</td>
+      <td>USGS-04085427</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2021-09-30</td>
+      <td>92.9</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-02-28 23:22:14.727748+00:00</td>
+      <td>b4c6d77c-30e6-4aaf-9471-f0f7d08474d4</td>
+    </tr>
+    <tr>
+      <th>882</th>
+      <td>POINT (-87.71603 44.10617)</td>
+      <td>ecb3d6ce4ff24ec78c53004409866f12</td>
+      <td>USGS-04085427</td>
+      <td>00010</td>
+      <td>00001</td>
+      <td>2021-09-30</td>
+      <td>19.0</td>
+      <td>degC</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-07-04 08:49:02.189016+00:00</td>
+      <td>b9f5187d-0058-40de-a520-406348f494a9</td>
+    </tr>
+  </tbody>
+</table>
+<p>883 rows × 12 columns</p>
+</div></div>
+</div>
+<p>Example 3: Get daily mean and max discharge and temperature values for multiple monitoring locations between a begin and end date.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dailyMultiSites</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USGS-01491000&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-01645000&quot;</span><span class="p">],</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00010&quot;</span><span class="p">,</span> <span class="s2">&quot;00060&quot;</span><span class="p">],</span>
+    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2012-01-01/2012-06-30&quot;</span><span class="p">,</span>
+    <span class="n">statistic_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00001&quot;</span><span class="p">,</span> <span class="s2">&quot;00003&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">dailyMultiSites</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: daily · 1 page · 622 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+      <th>time_series_id</th>
+      <th>monitoring_location_id</th>
+      <th>parameter_code</th>
+      <th>statistic_id</th>
+      <th>time</th>
+      <th>value</th>
+      <th>unit_of_measure</th>
+      <th>approval_status</th>
+      <th>qualifier</th>
+      <th>last_modified</th>
+      <th>daily_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>POINT (-75.78581 38.99719)</td>
+      <td>e3e3e89988454bf9b4249a5ec668ebc3</td>
+      <td>USGS-01491000</td>
+      <td>00010</td>
+      <td>00003</td>
+      <td>2012-01-01</td>
+      <td>7.70</td>
+      <td>degC</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-07-03 21:02:30.201507+00:00</td>
+      <td>58b9fbe7-a257-4603-956a-ccb0e06f1bdb</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>POINT (-75.78581 38.99719)</td>
+      <td>dd824d8c6ab448af88a9b197048775cc</td>
+      <td>USGS-01491000</td>
+      <td>00010</td>
+      <td>00001</td>
+      <td>2012-01-01</td>
+      <td>8.40</td>
+      <td>degC</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-07-03 20:40:41.305038+00:00</td>
+      <td>5c897d0c-4de9-4928-b807-1bc16905d853</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>POINT (-75.78581 38.99719)</td>
+      <td>847d8581ff6c45f58ff7cb90dec31fab</td>
+      <td>USGS-01491000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2012-01-01</td>
+      <td>205.00</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 06:37:52.963967+00:00</td>
+      <td>fda9e856-6cb8-432a-a520-9f682b362bc3</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>POINT (-77.33578 39.12808)</td>
+      <td>890f87c5498e4114b24dc0a53b1adcd8</td>
+      <td>USGS-01645000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2012-01-01</td>
+      <td>175.00</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-10 14:07:21.598533+00:00</td>
+      <td>ad61ba49-09b5-4156-a6d1-70ff7e4e123b</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>POINT (-75.78581 38.99719)</td>
+      <td>847d8581ff6c45f58ff7cb90dec31fab</td>
+      <td>USGS-01491000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2012-01-02</td>
+      <td>193.00</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 06:37:52.963967+00:00</td>
+      <td>99038716-80c8-41c4-a899-bf8bb555d04e</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>617</th>
+      <td>POINT (-77.33578 39.12808)</td>
+      <td>890f87c5498e4114b24dc0a53b1adcd8</td>
+      <td>USGS-01645000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2012-06-28</td>
+      <td>53.60</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-10 14:07:21.598533+00:00</td>
+      <td>2be731ab-1ab9-44e5-b204-4b8565f80a55</td>
+    </tr>
+    <tr>
+      <th>618</th>
+      <td>POINT (-75.78581 38.99719)</td>
+      <td>847d8581ff6c45f58ff7cb90dec31fab</td>
+      <td>USGS-01491000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2012-06-29</td>
+      <td>8.58</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 06:37:52.963967+00:00</td>
+      <td>7f5280e2-91b9-478f-8b97-d849ddbde0c0</td>
+    </tr>
+    <tr>
+      <th>619</th>
+      <td>POINT (-77.33578 39.12808)</td>
+      <td>890f87c5498e4114b24dc0a53b1adcd8</td>
+      <td>USGS-01645000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2012-06-29</td>
+      <td>53.10</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-10 14:07:21.598533+00:00</td>
+      <td>0c84c8e9-753d-426c-a486-e63b41b895ac</td>
+    </tr>
+    <tr>
+      <th>620</th>
+      <td>POINT (-75.78581 38.99719)</td>
+      <td>847d8581ff6c45f58ff7cb90dec31fab</td>
+      <td>USGS-01491000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2012-06-30</td>
+      <td>7.15</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 06:37:52.963967+00:00</td>
+      <td>0ba8a05a-e951-4179-9838-34fca388346c</td>
+    </tr>
+    <tr>
+      <th>621</th>
+      <td>POINT (-77.33578 39.12808)</td>
+      <td>890f87c5498e4114b24dc0a53b1adcd8</td>
+      <td>USGS-01645000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2012-06-30</td>
+      <td>129.00</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-10 14:07:21.598533+00:00</td>
+      <td>d6745f0c-a373-495e-9228-ce3a6c2b71a1</td>
+    </tr>
+  </tbody>
+</table>
+<p>622 rows × 12 columns</p>
+</div></div>
+</div>
+<p>Like all of the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> getters, <code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> returns a flat data frame with a default integer index regardless of how many monitoring locations are requested. Each row carries its own <code class="docutils literal notranslate"><span class="pre">monitoring_location_id</span></code>, <code class="docutils literal notranslate"><span class="pre">parameter_code</span></code>, <code class="docutils literal notranslate"><span class="pre">statistic_id</span></code>, and <code class="docutils literal notranslate"><span class="pre">time</span></code>, so multi-location results can be filtered or pivoted as needed.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dailyMultiSites</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USGS-01491000&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-01645000&quot;</span><span class="p">],</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00010&quot;</span><span class="p">,</span> <span class="s2">&quot;00060&quot;</span><span class="p">],</span>
+    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2012-01-01/2012-06-30&quot;</span><span class="p">,</span>
+    <span class="n">statistic_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00001&quot;</span><span class="p">,</span> <span class="s2">&quot;00003&quot;</span><span class="p">],</span>
+
+<span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">dailyMultiSites</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: daily · 1 page · 622 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+      <th>time_series_id</th>
+      <th>monitoring_location_id</th>
+      <th>parameter_code</th>
+      <th>statistic_id</th>
+      <th>time</th>
+      <th>value</th>
+      <th>unit_of_measure</th>
+      <th>approval_status</th>
+      <th>qualifier</th>
+      <th>last_modified</th>
+      <th>daily_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>POINT (-75.78581 38.99719)</td>
+      <td>e3e3e89988454bf9b4249a5ec668ebc3</td>
+      <td>USGS-01491000</td>
+      <td>00010</td>
+      <td>00003</td>
+      <td>2012-01-01</td>
+      <td>7.70</td>
+      <td>degC</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-07-03 21:02:30.201507+00:00</td>
+      <td>58b9fbe7-a257-4603-956a-ccb0e06f1bdb</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>POINT (-75.78581 38.99719)</td>
+      <td>dd824d8c6ab448af88a9b197048775cc</td>
+      <td>USGS-01491000</td>
+      <td>00010</td>
+      <td>00001</td>
+      <td>2012-01-01</td>
+      <td>8.40</td>
+      <td>degC</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-07-03 20:40:41.305038+00:00</td>
+      <td>5c897d0c-4de9-4928-b807-1bc16905d853</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>POINT (-75.78581 38.99719)</td>
+      <td>847d8581ff6c45f58ff7cb90dec31fab</td>
+      <td>USGS-01491000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2012-01-01</td>
+      <td>205.00</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 06:37:52.963967+00:00</td>
+      <td>fda9e856-6cb8-432a-a520-9f682b362bc3</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>POINT (-77.33578 39.12808)</td>
+      <td>890f87c5498e4114b24dc0a53b1adcd8</td>
+      <td>USGS-01645000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2012-01-01</td>
+      <td>175.00</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-10 14:07:21.598533+00:00</td>
+      <td>ad61ba49-09b5-4156-a6d1-70ff7e4e123b</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>POINT (-75.78581 38.99719)</td>
+      <td>847d8581ff6c45f58ff7cb90dec31fab</td>
+      <td>USGS-01491000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2012-01-02</td>
+      <td>193.00</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 06:37:52.963967+00:00</td>
+      <td>99038716-80c8-41c4-a899-bf8bb555d04e</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>617</th>
+      <td>POINT (-77.33578 39.12808)</td>
+      <td>890f87c5498e4114b24dc0a53b1adcd8</td>
+      <td>USGS-01645000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2012-06-28</td>
+      <td>53.60</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-10 14:07:21.598533+00:00</td>
+      <td>2be731ab-1ab9-44e5-b204-4b8565f80a55</td>
+    </tr>
+    <tr>
+      <th>618</th>
+      <td>POINT (-75.78581 38.99719)</td>
+      <td>847d8581ff6c45f58ff7cb90dec31fab</td>
+      <td>USGS-01491000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2012-06-29</td>
+      <td>8.58</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 06:37:52.963967+00:00</td>
+      <td>7f5280e2-91b9-478f-8b97-d849ddbde0c0</td>
+    </tr>
+    <tr>
+      <th>619</th>
+      <td>POINT (-77.33578 39.12808)</td>
+      <td>890f87c5498e4114b24dc0a53b1adcd8</td>
+      <td>USGS-01645000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2012-06-29</td>
+      <td>53.10</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-10 14:07:21.598533+00:00</td>
+      <td>0c84c8e9-753d-426c-a486-e63b41b895ac</td>
+    </tr>
+    <tr>
+      <th>620</th>
+      <td>POINT (-75.78581 38.99719)</td>
+      <td>847d8581ff6c45f58ff7cb90dec31fab</td>
+      <td>USGS-01491000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2012-06-30</td>
+      <td>7.15</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-11 06:37:52.963967+00:00</td>
+      <td>0ba8a05a-e951-4179-9838-34fca388346c</td>
+    </tr>
+    <tr>
+      <th>621</th>
+      <td>POINT (-77.33578 39.12808)</td>
+      <td>890f87c5498e4114b24dc0a53b1adcd8</td>
+      <td>USGS-01645000</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2012-06-30</td>
+      <td>129.00</td>
+      <td>ft^3/s</td>
+      <td>Approved</td>
+      <td>None</td>
+      <td>2025-03-10 14:07:21.598533+00:00</td>
+      <td>d6745f0c-a373-495e-9228-ce3a6c2b71a1</td>
+    </tr>
+  </tbody>
+</table>
+<p>622 rows × 12 columns</p>
+</div></div>
+</div>
+<p>Example 4: Query a monitoring location that has no matching data for the requested period; returns an empty data frame.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteID</span> <span class="o">=</span> <span class="s2">&quot;USGS-05212700&quot;</span>
+<span class="n">notActive</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">siteID</span><span class="p">,</span> <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2014-01-01/2014-01-07&quot;</span>
+<span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">notActive</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: daily · 1 page
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+      <th>time_series_id</th>
+      <th>monitoring_location_id</th>
+      <th>parameter_code</th>
+      <th>statistic_id</th>
+      <th>time</th>
+      <th>value</th>
+      <th>unit_of_measure</th>
+      <th>approval_status</th>
+      <th>qualifier</th>
+      <th>last_modified</th>
+      <th>daily_id</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="siteinfo_examples.html" class="btn btn-neutral float-left" title="Retrieving site information" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="USGS_WaterData_GroundwaterLevels_Examples.html" class="btn btn-neutral float-right" title="USGS dataretrieval Python Package get_field_measurements() Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

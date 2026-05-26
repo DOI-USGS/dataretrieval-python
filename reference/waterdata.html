@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+gc450c404d documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g7f64c2de7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bb319b34"></script>
+      <script src="../_static/documentation_options.js?v=57830bd8"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -143,11 +143,11 @@ Examples:</p>
 <div><ul>
 <li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
-<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</p></li>
+<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or
+“../2018-03-18T12:31:12Z”</p></li>
+<li><p>Duration objects: “P1M” for data from the past month or “PT36H”
+for the last 36 hours</p></li>
 </ul>
-<p>”../2018-03-18T12:31:12Z”
-* Duration objects: “P1M” for data from the past month or “PT36H” for
-the last 36 hours</p>
 </div></blockquote>
 </p></li>
 <li><p><strong>channel_name</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The channel name.</p></li>
@@ -178,11 +178,11 @@ Examples:</p>
 <div><ul>
 <li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
-<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</p></li>
+<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or
+“../2018-03-18T12:31:12Z”</p></li>
+<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for the
+last 36 hours</p></li>
 </ul>
-<p>”../2018-03-18T12:31:12Z”
-* Duration objects: “P1M” for data from the past month or “PT36H” for the
-last 36 hours</p>
 </div></blockquote>
 <p>Only features that have a last_modified that intersects the value of
 datetime are selected.</p>
@@ -1451,9 +1451,8 @@ state codes ranging from 90-98.</p></li>
 is located.</p></li>
 <li><p><strong>county_code</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The code for the county or county equivalent (parish, borough, etc.) in which
 the monitoring location is located. A <a class="reference external" href="https://help.waterdata.usgs.gov/code/county_query?fmt=html">list of codes</a> is available.</p></li>
-<li><p><strong>county_name</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – <p>The name of the county or county equivalent (parish, borough, etc.) in which
-the monitoring location is located. A <a class="reference external" href="https://help.waterdata.usgs.gov/code/county_query?fmt=html">list of codes</a> is available.</p>
-</p></li>
+<li><p><strong>county_name</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The name of the county or county equivalent (parish, borough, etc.) in which
+the monitoring location is located. A <a class="reference external" href="https://help.waterdata.usgs.gov/code/county_query?fmt=html">list of codes</a> is available.</p></li>
 <li><p><strong>minor_civil_division_code</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Codes for primary governmental or administrative divisions of the county or
 county equivalent in which the monitoring location is located.</p></li>
 <li><p><strong>site_type_code</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A code describing the hydrologic setting of the monitoring location.
@@ -1534,10 +1533,9 @@ monitoring locations will not be retrieved using this search criteria.</p></li>
 <li><p><strong>hole_constructed_depth</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The total depth to which the hole is drilled, in feet below land surface datum.
 Note: Not all groundwater monitoring locations have information on Hole Depth.
 Such monitoring locations will not be retrieved using this search criteria.</p></li>
-<li><p><strong>depth_source_code</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – <p>A code indicating the source of water-level data. A <a class="reference external" href="https://help.waterdata.usgs.gov/code/water_level_src_cd_query?fmt=html">list of
+<li><p><strong>depth_source_code</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A code indicating the source of water-level data. A <a class="reference external" href="https://help.waterdata.usgs.gov/code/water_level_src_cd_query?fmt=html">list of
 codes</a>
-is available.</p>
-</p></li>
+is available.</p></li>
 <li><p><strong>properties</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A vector of requested columns to be returned from the query. Available
 options are: geometry, id, agency_code, agency_name,
 monitoring_location_number, monitoring_location_name, district_code,

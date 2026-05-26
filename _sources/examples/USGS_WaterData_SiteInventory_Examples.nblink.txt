@@ -1,0 +1,3 @@
+{
+    "path": "../../../demos/hydroshare/USGS_WaterData_SiteInventory_Examples.ipynb"
+}

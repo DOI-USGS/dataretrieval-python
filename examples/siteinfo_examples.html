@@ -6,22 +6,22 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Retrieving site information &mdash; dataretrieval 0.1.dev1+gc450c404d documentation</title>
+  <title>Retrieving site information &mdash; dataretrieval 0.1.dev1+g7f64c2de7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bb319b34"></script>
+      <script src="../_static/documentation_options.js?v=57830bd8"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="USGS dataretrieval Python Package get_dv() Examples" href="USGS_dataretrieval_DailyValues_Examples.html" />
-    <link rel="prev" title="Examples from the Readme file on retrieving NWIS data" href="readme_examples.html" /> 
+    <link rel="next" title="USGS dataretrieval Python Package get_daily() Examples" href="USGS_WaterData_DailyValues_Examples.html" />
+    <link rel="prev" title="Retrieving USGS water data with the waterdata module" href="readme_examples.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -49,7 +49,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="index.html#introduction-to-the-waterdata-module-of-dataretrieval">Introduction to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code></a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="readme_examples.html">Examples from the Readme file on retrieving NWIS data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="readme_examples.html">Retrieving USGS water data with the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Retrieving site information</a></li>
 </ul>
 </li>
@@ -90,45 +90,44 @@
              
   <section id="retrieving-site-information">
 <h1>Retrieving site information<a class="headerlink" href="#retrieving-site-information" title="Link to this heading"></a></h1>
-<p>By default <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> fetches the so-called “expanded” site date from
-the NWIS web service. However there is an optional keyword parameter called
-<code class="docutils literal notranslate"><span class="pre">seriesCatalogOutput</span></code> that can be set to “True” if you wish to retrieve the
-detailed period of record information for a site instead. Refer to the
-<a class="reference external" href="https://waterservices.usgs.gov/docs/site-service/site-service-details/">NWIS water services documentation</a> for additional information. The below
-example illustrates the use of the <code class="docutils literal notranslate"><span class="pre">seriesCatalogOutput</span></code> switch and displays
-the resulting column names for the output dataframes (example prompted by
-<a class="reference external" href="https://github.com/DOI-USGS/dataretrieval-python/issues/34">GitHub Issue #34</a>).</p>
-<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go"># first import the functions for downloading data from NWIS</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval.nwis</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nwis</span>
+<p>The <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module distinguishes a monitoring location’s <em>descriptive</em>
+metadata from the <em>catalog</em> of data available at it.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations</span></code> for descriptive metadata — name, location,
+site type, drainage area, hydrologic unit, and so on.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
 
-<span class="go"># fetch data from a major HUC basin with seriesCatalogOutput set to True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">huc</span><span class="o">=</span><span class="s1">&#39;20&#39;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;00060&#39;</span><span class="p">,</span>
-<span class="gp">... </span>                     <span class="n">service</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">seriesCatalogOutput</span><span class="o">=</span><span class="s1">&#39;True&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">info</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05427718&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">skip_geometry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
 
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
-<span class="go">Index([&#39;agency_cd&#39;, &#39;site_no&#39;, &#39;station_nm&#39;, &#39;site_tp_cd&#39;, &#39;dec_lat_va&#39;,</span>
-<span class="go">       &#39;dec_long_va&#39;, &#39;coord_acy_cd&#39;, &#39;dec_coord_datum_cd&#39;, &#39;alt_va&#39;,</span>
-<span class="go">       &#39;alt_acy_va&#39;, &#39;alt_datum_cd&#39;, &#39;huc_cd&#39;, &#39;data_type_cd&#39;, &#39;parm_cd&#39;,</span>
-<span class="go">       &#39;stat_cd&#39;, &#39;ts_id&#39;, &#39;loc_web_ds&#39;, &#39;medium_grp_cd&#39;, &#39;parm_grp_cd&#39;,</span>
-<span class="go">       &#39;srs_id&#39;, &#39;access_cd&#39;, &#39;begin_date&#39;, &#39;end_date&#39;, &#39;count_nu&#39;],</span>
-<span class="go">      dtype=&#39;object&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">info</span><span class="p">[[</span><span class="s2">&quot;monitoring_location_name&quot;</span><span class="p">,</span> <span class="s2">&quot;site_type&quot;</span><span class="p">,</span> <span class="s2">&quot;drainage_area&quot;</span><span class="p">,</span> <span class="s2">&quot;hydrologic_unit_code&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">T</span>
+<span class="go">                                                    0</span>
+<span class="go">monitoring_location_name  YAHARA RIVER AT WINDSOR, WI</span>
+<span class="go">site_type                                      Stream</span>
+<span class="go">drainage_area                                    73.6</span>
+<span class="go">hydrologic_unit_code                     070900020504</span>
+</pre></div>
+</div>
+<p>To discover <em>what data are available</em> at a location — the period-of-record
+catalog that the legacy <code class="docutils literal notranslate"><span class="pre">seriesCatalogOutput</span></code> switch used to provide — use
+<code class="docutils literal notranslate"><span class="pre">get_time_series_metadata</span></code>. Each row is one time series; the <code class="docutils literal notranslate"><span class="pre">begin</span></code> and
+<code class="docutils literal notranslate"><span class="pre">end</span></code> columns give its period of record.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">series</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_time_series_metadata</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05427718&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">skip_geometry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
 
-<span class="go"># repeat the same query with seriesCatalogOutput set as False</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">huc</span><span class="o">=</span><span class="s1">&#39;20&#39;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s1">&#39;00060&#39;</span><span class="p">,</span>
-<span class="gp">... </span>                     <span class="n">service</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">seriesCatalogOutput</span><span class="o">=</span><span class="s1">&#39;False&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>  <span class="c1"># number of available time series</span>
+<span class="go">22</span>
 
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
-<span class="go">Index([&#39;agency_cd&#39;, &#39;site_no&#39;, &#39;station_nm&#39;, &#39;site_tp_cd&#39;, &#39;lat_va&#39;, &#39;long_va&#39;,</span>
-<span class="go">       &#39;dec_lat_va&#39;, &#39;dec_long_va&#39;, &#39;coord_meth_cd&#39;, &#39;coord_acy_cd&#39;,</span>
-<span class="go">       &#39;coord_datum_cd&#39;, &#39;dec_coord_datum_cd&#39;, &#39;district_cd&#39;, &#39;state_cd&#39;,</span>
-<span class="go">       &#39;county_cd&#39;, &#39;country_cd&#39;, &#39;land_net_ds&#39;, &#39;map_nm&#39;, &#39;map_scale_fc&#39;,</span>
-<span class="go">       &#39;alt_va&#39;, &#39;alt_meth_cd&#39;, &#39;alt_acy_va&#39;, &#39;alt_datum_cd&#39;, &#39;huc_cd&#39;,</span>
-<span class="go">       &#39;basin_cd&#39;, &#39;topo_cd&#39;, &#39;instruments_cd&#39;, &#39;construction_dt&#39;,</span>
-<span class="go">       &#39;inventory_dt&#39;, &#39;drain_area_va&#39;, &#39;contrib_drain_area_va&#39;, &#39;tz_cd&#39;,</span>
-<span class="go">       &#39;local_time_fg&#39;, &#39;reliability_cd&#39;, &#39;gw_file_cd&#39;, &#39;nat_aqfr_cd&#39;,</span>
-<span class="go">       &#39;aqfr_cd&#39;, &#39;aqfr_type_cd&#39;, &#39;well_depth_va&#39;, &#39;hole_depth_va&#39;,</span>
-<span class="go">       &#39;depth_src_cd&#39;, &#39;project_no&#39;],</span>
-<span class="go">      dtype=&#39;object&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">series</span><span class="p">[[</span><span class="s2">&quot;parameter_code&quot;</span><span class="p">,</span> <span class="s2">&quot;parameter_name&quot;</span><span class="p">,</span> <span class="s2">&quot;computation_period_identifier&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="go">  parameter_code        parameter_name computation_period_identifier</span>
+<span class="go">0          00045         Precipitation                        Points</span>
+<span class="go">1          91060  Orthophosphate, diss                         Daily</span>
+<span class="go">2          91057     NH3+orgN, wu as N                         Daily</span>
+<span class="go">3          00060             Discharge                        Points</span>
+<span class="go">4          80155   Suspnd sedmnt disch                         Daily</span>
 </pre></div>
 </div>
 </section>
@@ -137,8 +136,8 @@ the resulting column names for the output dataframes (example prompted by
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="readme_examples.html" class="btn btn-neutral float-left" title="Examples from the Readme file on retrieving NWIS data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="USGS_dataretrieval_DailyValues_Examples.html" class="btn btn-neutral float-right" title="USGS dataretrieval Python Package get_dv() Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="readme_examples.html" class="btn btn-neutral float-left" title="Retrieving USGS water data with the waterdata module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="USGS_WaterData_DailyValues_Examples.html" class="btn btn-neutral float-right" title="USGS dataretrieval Python Package get_daily() Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

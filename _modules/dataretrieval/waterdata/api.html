@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+gc450c404d documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g7f64c2de7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=bb319b34"></script>
+      <script src="../../../_static/documentation_options.js?v=57830bd8"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -638,11 +638,11 @@
 <span class="sd">    county_code : string or iterable of strings, optional</span>
 <span class="sd">        The code for the county or county equivalent (parish, borough, etc.) in which</span>
 <span class="sd">        the monitoring location is located. A `list of codes</span>
-<span class="sd">        &lt;https://help.waterdata.usgs.gov/code/county_query?fmt=html&gt;`_ is available.</span>
+<span class="sd">        &lt;https://help.waterdata.usgs.gov/code/county_query?fmt=html&gt;`__ is available.</span>
 <span class="sd">    county_name : string or iterable of strings, optional</span>
 <span class="sd">        The name of the county or county equivalent (parish, borough, etc.) in which</span>
 <span class="sd">        the monitoring location is located. A `list of codes</span>
-<span class="sd">        &lt;https://help.waterdata.usgs.gov/code/county_query?fmt=html&gt;`_ is available.</span>
+<span class="sd">        &lt;https://help.waterdata.usgs.gov/code/county_query?fmt=html&gt;`__ is available.</span>
 <span class="sd">    minor_civil_division_code : string or iterable of strings, optional</span>
 <span class="sd">        Codes for primary governmental or administrative divisions of the county or</span>
 <span class="sd">        county equivalent in which the monitoring location is located.</span>
@@ -2877,9 +2877,10 @@
 <span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
 <span class="sd">            * A bounded interval: &quot;2018-02-12T00:00:00Z/2018-03-18T12:31:12Z&quot;</span>
 <span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or</span>
-<span class="sd">            &quot;../2018-03-18T12:31:12Z&quot;</span>
-<span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or &quot;PT36H&quot; for</span>
-<span class="sd">            the last 36 hours</span>
+<span class="sd">              &quot;../2018-03-18T12:31:12Z&quot;</span>
+<span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or &quot;PT36H&quot;</span>
+<span class="sd">              for the last 36 hours</span>
+
 <span class="sd">    channel_name : string or iterable of strings, optional</span>
 <span class="sd">        The channel name.</span>
 <span class="sd">    channel_flow : string or iterable of strings, optional</span>
@@ -2925,9 +2926,9 @@
 <span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
 <span class="sd">            * A bounded interval: &quot;2018-02-12T00:00:00Z/2018-03-18T12:31:12Z&quot;</span>
 <span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or</span>
-<span class="sd">            &quot;../2018-03-18T12:31:12Z&quot;</span>
+<span class="sd">              &quot;../2018-03-18T12:31:12Z&quot;</span>
 <span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or &quot;PT36H&quot; for the</span>
-<span class="sd">            last 36 hours</span>
+<span class="sd">              last 36 hours</span>
 
 <span class="sd">        Only features that have a last_modified that intersects the value of</span>
 <span class="sd">        datetime are selected.</span>
