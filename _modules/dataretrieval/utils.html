@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g51bdc6fe4 documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+gc450c404d documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=1351cf97"></script>
+      <script src="../../_static/documentation_options.js?v=bb319b34"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -81,11 +81,16 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.codes</span><span class="w"> </span><span class="kn">import</span> <span class="n">tz</span>
+
+<span class="n">HTTPX_DEFAULTS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;follow_redirects&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Timeout</span><span class="p">(</span><span class="mf">60.0</span><span class="p">,</span> <span class="n">connect</span><span class="o">=</span><span class="mf">10.0</span><span class="p">),</span>
+<span class="p">}</span>
 
 
 <div class="viewcode-block" id="to_str">
@@ -295,7 +300,7 @@
 <span class="sd">        Response url</span>
 <span class="sd">    query_time: datetme.timedelta</span>
 <span class="sd">        Response elapsed time</span>
-<span class="sd">    header: requests.structures.CaseInsensitiveDict</span>
+<span class="sd">    header: httpx.Headers</span>
 <span class="sd">        Response headers</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -308,7 +313,7 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        response: Response</span>
-<span class="sd">            Response object from requests module</span>
+<span class="sd">            Response object from httpx module</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -317,8 +322,8 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># These are built from the API response</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">url</span>
+        <span class="c1"># Coerce httpx.URL -&gt; str: BaseMetadata.url has always been str.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">query_time</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">elapsed</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="kc">None</span></div>
@@ -351,12 +356,31 @@
 
 
 
+<span class="n">_URL_TOO_LONG_EXAMPLE</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                    # n is the number of chunks to divide the query into </span><span class="se">\n</span>
+<span class="s2">                    split_list = np.array_split(site_list, n)</span>
+<span class="s2">                    data_list = []  # list to store chunk results in </span><span class="se">\n</span>
+<span class="s2">                    # loop through chunks and make requests </span><span class="se">\n</span>
+<span class="s2">                    for site_list in split_list: </span><span class="se">\n</span>
+<span class="s2">                        data = nwis.get_record(sites=site_list, service=&#39;dv&#39;, </span><span class="se">\n</span>
+<span class="s2">                                               start=start, end=end) </span><span class="se">\n</span>
+<span class="s2">                        data_list.append(data)  # append results to list&quot;&quot;&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_url_too_long_error</span><span class="p">(</span><span class="n">detail</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="ne">ValueError</span><span class="p">:</span>
+    <span class="k">return</span> <span class="ne">ValueError</span><span class="p">(</span>
+        <span class="s2">&quot;Request URL too long. Modify your query to use fewer sites. &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">detail</span><span class="si">}</span><span class="s2">. Pseudo-code example of how to split your query: &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">_URL_TOO_LONG_EXAMPLE</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+
+
 <div class="viewcode-block" id="query">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.query">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Send a query.</span>
 
-<span class="sd">    Wrapper for requests.get that handles errors, converts listed</span>
+<span class="sd">    Wrapper for httpx.get that handles errors, converts listed</span>
 <span class="sd">    query parameters to comma separated strings, and returns response.</span>
 
 <span class="sd">    Parameters</span>
@@ -364,7 +388,7 @@
 <span class="sd">    url: string</span>
 <span class="sd">        URL to query</span>
 <span class="sd">    payload: dict</span>
-<span class="sd">        query parameters passed to ``requests.get``</span>
+<span class="sd">        query parameters passed to ``httpx.get``</span>
 <span class="sd">    delimiter: string</span>
 <span class="sd">        delimiter to use with lists</span>
 <span class="sd">    ssl_check: bool</span>
@@ -374,19 +398,27 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    string: query response</span>
-<span class="sd">        The response from the API query ``requests.get`` function call.</span>
+<span class="sd">        The response from the API query ``httpx.get`` function call.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">payload</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">payload</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_str</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">delimiter</span><span class="p">)</span>
-    <span class="c1"># for index in range(len(payload)):</span>
-    <span class="c1">#    key, value = payload[index]</span>
-    <span class="c1">#    payload[index] = (key, to_str(value))</span>
+    <span class="c1"># httpx serializes None params as ``foo=``; USGS rejects with 400.</span>
+    <span class="c1"># Drop them. (``to_str`` returns None for non-iterable scalars like bools.)</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">payload</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
 
-    <span class="c1"># define the user agent for the query</span>
     <span class="n">user_agent</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;user-agent&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;python-dataretrieval/</span><span class="si">{</span><span class="n">dataretrieval</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}</span>
 
-    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">user_agent</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="n">url</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="n">user_agent</span><span class="p">,</span>
+            <span class="n">verify</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">HTTPX_DEFAULTS</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="n">httpx</span><span class="o">.</span><span class="n">InvalidURL</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">_url_too_long_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;httpx rejected the URL client-side: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
 
     <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -398,24 +430,10 @@
             <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;URL: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
     <span class="k">elif</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">414</span><span class="p">:</span>
-        <span class="n">_reason</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">reason</span>
-        <span class="n">_example</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">                    # n is the number of chunks to divide the query into </span><span class="se">\n</span>
-<span class="s2">                    split_list = np.array_split(site_list, n)</span>
-<span class="s2">                    data_list = []  # list to store chunk results in </span><span class="se">\n</span>
-<span class="s2">                    # loop through chunks and make requests </span><span class="se">\n</span>
-<span class="s2">                    for site_list in split_list: </span><span class="se">\n</span>
-<span class="s2">                        data = nwis.get_record(sites=site_list, service=&#39;dv&#39;, </span><span class="se">\n</span>
-<span class="s2">                                               start=start, end=end) </span><span class="se">\n</span>
-<span class="s2">                        data_list.append(data)  # append results to list&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="n">_url_too_long_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;API response reason: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">reason_phrase</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="mi">500</span> <span class="o">&lt;=</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">&lt;</span> <span class="mi">600</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;Request URL too long. Modify your query to use fewer sites. &quot;</span>
-            <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;API response reason: </span><span class="si">{</span><span class="n">_reason</span><span class="si">}</span><span class="s2">. Pseudo-code example of how to &quot;</span>
-            <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;split your query: </span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">_example</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="p">)</span>
-    <span class="k">elif</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">500</span><span class="p">,</span> <span class="mi">502</span><span class="p">,</span> <span class="mi">503</span><span class="p">]:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Service Unavailable: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">reason</span><span class="si">}</span><span class="s2">. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Service Unavailable: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">reason_phrase</span><span class="si">}</span><span class="s2">. &quot;</span>
             <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;The service at </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2"> may be down or experiencing issues.&quot;</span>
         <span class="p">)</span>
 

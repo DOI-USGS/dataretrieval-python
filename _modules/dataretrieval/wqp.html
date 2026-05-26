@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g51bdc6fe4 documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+gc450c404d documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=1351cf97"></script>
+      <script src="../../_static/documentation_options.js?v=bb319b34"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -736,7 +736,7 @@
 <span class="sd">        Response url</span>
 <span class="sd">    query_time : datetme.timedelta</span>
 <span class="sd">        Response elapsed time</span>
-<span class="sd">    header : requests.structures.CaseInsensitiveDict</span>
+<span class="sd">    header : httpx.Headers</span>
 <span class="sd">        Response headers</span>
 <span class="sd">    comments : None</span>
 <span class="sd">        Metadata comments. WQP does not return comments.</span>
@@ -753,7 +753,7 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        response : Response</span>
-<span class="sd">            Response object from requests module</span>
+<span class="sd">            Response object from httpx module</span>
 
 <span class="sd">        parameters : dict</span>
 <span class="sd">            Unpacked dictionary of the parameters supplied in the request</span>
