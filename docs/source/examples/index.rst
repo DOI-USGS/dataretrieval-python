@@ -15,6 +15,23 @@ covers a basic introduction to module functions and usage.
 
     WaterData_demo
 
+USGS Water Data API vignettes
+-----------------------------
+These notebooks are Python ports of the new USGS Water Data API vignettes from
+the R `dataRetrieval`_ package. Each introduces a family of ``waterdata``
+functions and is executed against the live USGS Water Data API.
+
+.. _dataRetrieval: https://doi-usgs.github.io/dataRetrieval/
+
+.. toctree::
+    :maxdepth: 1
+
+    USGS_WaterData_Introduction_Examples
+    USGS_WaterData_DiscreteSamples_Examples
+    USGS_WaterData_DailyStatistics_Examples
+    USGS_WaterData_ContinuousData_Examples
+    USGS_WaterData_ReferenceLists_Examples
+
 Simple uses of the ``dataretrieval`` package
 --------------------------------------------
 
