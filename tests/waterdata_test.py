@@ -157,6 +157,13 @@ def test_construct_api_requests_monitoring_locations_post():
     assert req.method == "POST"
     assert req.headers["Content-Type"] == "application/query-cql-json"
 
+    # Body is serialized compactly (tight separators, no whitespace): the
+    # body counts against the server's ~8 KB request-size cap and the
+    # chunk planner's byte budget, so pretty-printing would needlessly
+    # halve how many ids fit per sub-request and double the chunk count.
+    raw = req.content.decode()
+    assert "\n" not in raw and ", " not in raw and ": " not in raw
+
     body = json.loads(req.content)
     # Top-level shape: AND over a list of per-param predicates.
     assert body["op"] == "and"

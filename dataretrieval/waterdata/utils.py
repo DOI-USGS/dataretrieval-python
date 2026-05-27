@@ -316,7 +316,17 @@ def _cql2_param(args: dict[str, Any]) -> str:
     Returns
     -------
     str
-        JSON string representation of the CQL2 query.
+        Compact JSON string representation of the CQL2 query.
+
+    Notes
+    -----
+    Serialized with the tightest separators (no indentation or
+    whitespace). The body counts against the server's ~8 KB request-size
+    limit and against :func:`chunking._request_bytes` when planning
+    chunks, so every saved byte fits more values per POST: compact
+    encoding roughly halves the per-value cost versus pretty-printing,
+    which roughly doubles how many monitoring-location ids fit in one
+    sub-request and so halves the chunk count for large id lists.
     """
     filters = []
     for key, values in args.items():
@@ -324,7 +334,7 @@ def _cql2_param(args: dict[str, Any]) -> str:
 
     query = {"op": "and", "args": filters}
 
-    return json.dumps(query, indent=4)
+    return json.dumps(query, separators=(",", ":"))
 
 
 def _default_headers():
