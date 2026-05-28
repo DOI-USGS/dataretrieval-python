@@ -121,6 +121,9 @@ class ProgressReporter:
         # The hourly request quota (``x-ratelimit-limit``), shown as the
         # denominator when the server reports it.
         self.rate_limit: str | None = None
+        # Transient note shown while a sub-request backs off before a
+        # retry; cleared by the next page/chunk so it doesn't linger.
+        self.retry_note: str | None = None
         self._last_len = 0
         # Whether anything was actually written to the stream — drives whether
         # close() needs a terminating newline. (``current_chunk`` is a poor
@@ -140,6 +143,7 @@ class ProgressReporter:
         avoids a premature "0 pages" frame before the first page arrives.
         """
         self.current_chunk = index
+        self.retry_note = None
         if self.total_chunks > 1:
             self._render()
 
@@ -147,6 +151,25 @@ class ProgressReporter:
         """Record one fetched page carrying ``rows`` rows and redraw."""
         self.pages += 1
         self.rows += int(rows)
+        self.retry_note = None
+        self._render()
+
+    def note_retry(self, *, attempt: int, wait: float) -> None:
+        """Show that a sub-request is backing off before retry ``attempt``.
+
+        Cleared by the next :meth:`add_page` / :meth:`start_chunk` (or by
+        :meth:`close`) so the line returns to normal once the retry resolves.
+        """
+        # Keep sub-second waits explicit (avoid misleading ``0s``) while
+        # rendering whole-second waits without unnecessary ``.0`` noise.
+        # ``float()`` to support Python 3.9-3.11: ``round(int, 1)`` returns an
+        # int and ``int.is_integer()`` (used below) only exists on 3.12+.
+        wait_1dp = round(float(wait), 1)
+        if wait_1dp < 1 or not wait_1dp.is_integer():
+            secs = f"{wait_1dp:.1f}s"
+        else:
+            secs = f"{wait_1dp:.0f}s"
+        self.retry_note = f"retrying (attempt {attempt}, waiting {secs})"
         self._render()
 
     def set_rate_remaining(
@@ -179,6 +202,8 @@ class ProgressReporter:
             else:
                 segment = f"{remaining} requests remaining"
             parts.append(segment)
+        if self.retry_note is not None:
+            parts.append(self.retry_note)
         if self.service:
             return f"Retrieving: {self.service} · " + " · ".join(parts)
         return "Progress: " + " · ".join(parts)
@@ -209,6 +234,13 @@ class ProgressReporter:
         """
         if self._closed:
             return
+        # A retry note set during the final backoff would otherwise freeze as
+        # the persisted last line of a call that has since completed or given
+        # up; clear it and redraw (while still un-closed, so ``_render`` runs)
+        # so the final state isn't a stale "retrying".
+        if self.enabled and self._rendered and self.retry_note is not None:
+            self.retry_note = None
+            self._render()
         self._closed = True
         if not (self.enabled and self._rendered):
             return

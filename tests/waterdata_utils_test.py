@@ -1,3 +1,5 @@
+import asyncio
+import datetime
 import json
 import logging
 from unittest import mock
@@ -9,17 +11,36 @@ import pytest
 import dataretrieval.waterdata.utils as _utils_module
 from dataretrieval.waterdata.chunking import RateLimited, ServiceUnavailable
 from dataretrieval.waterdata.utils import (
+    OGC_API_URL,
     _arrange_cols,
+    _check_ogc_requests,
     _error_body,
+    _finalize_ogc,
     _format_api_dates,
     _get_args,
+    _get_resp_data,
     _handle_stats_nesting,
+    _next_req_url,
     _parse_retry_after,
     _raise_for_non_200,
+    _row_cap,
     _walk_pages,
+    get_stats_data,
 )
 
 _LOGGER_NAME = _utils_module.__name__
+
+
+def _run_walk_pages(*, geopd, req, client):
+    """Drive the async ``_walk_pages`` to completion synchronously.
+
+    The chunker core is async-only now, so these tests build an
+    ``AsyncMock(spec=httpx.AsyncClient)`` whose ``.send``/``.request`` are
+    awaitable and run the coroutine via ``asyncio.run``. This thin shim
+    keeps the historical sync-shaped call sites terse while exercising the
+    real async pagination loop.
+    """
+    return asyncio.run(_walk_pages(geopd=geopd, req=req, client=client))
 
 
 def test_get_args_basic():
@@ -74,7 +95,7 @@ def test_walk_pages_multiple_mocked():
     resp2.status_code = 200
 
     # Mock client (Session)
-    mock_client = mock.MagicMock(spec=httpx.Client)
+    mock_client = mock.AsyncMock(spec=httpx.AsyncClient)
     # First call to send() returns resp1, then call to request() in loop returns resp2
     mock_client.send.return_value = resp1
     mock_client.request.return_value = resp2
@@ -86,7 +107,7 @@ def test_walk_pages_multiple_mocked():
     mock_req.url = "https://example.com/page1"
 
     # Call _walk_pages
-    df, final_resp = _walk_pages(geopd=False, req=mock_req, client=mock_client)
+    df, _ = _run_walk_pages(geopd=False, req=mock_req, client=mock_client)
 
     assert len(df) == 2
     assert list(df["val"]) == ["a", "b"]
@@ -94,6 +115,91 @@ def test_walk_pages_multiple_mocked():
     assert mock_client.send.called
     assert mock_client.request.called
     assert mock_client.request.call_args[0][1] == "https://example.com/page2"
+
+
+def test_row_cap_truncates_and_stops_within_first_page():
+    # Regression for BUG 2: ``_row_cap`` bounds the TOTAL rows. A first page
+    # already over the cap is truncated to exactly ``max_rows`` and the
+    # ``next`` link is never followed.
+    resp1 = mock.MagicMock()
+    resp1.json.return_value = {
+        "numberReturned": 3,
+        "features": [{"id": str(i), "properties": {"val": i}} for i in range(3)],
+        "links": [{"rel": "next", "href": "https://example.com/page2"}],
+    }
+    resp1.headers = {}
+    resp1.status_code = 200
+    resp1.url = "https://example.com/page1"
+
+    mock_client = mock.AsyncMock(spec=httpx.AsyncClient)
+    mock_client.send.return_value = resp1
+
+    mock_req = mock.MagicMock(spec=httpx.Request)
+    mock_req.method = "GET"
+    mock_req.headers = {}
+    mock_req.url = "https://example.com/page1"
+
+    with _row_cap(2):
+        df, _ = _run_walk_pages(geopd=False, req=mock_req, client=mock_client)
+
+    assert len(df) == 2  # truncated to the cap, not the page's 3 rows
+    assert not mock_client.request.called  # ``next`` link never followed
+
+
+def test_row_cap_stops_across_pages():
+    # The cap accumulates across pages: page 1 (1 row) is under the cap so
+    # page 2 is fetched; once the cap (2) is met the third page is NOT.
+    def _page(idx, *, has_next):
+        resp = mock.MagicMock()
+        nxt = f"https://example.com/page{idx + 1}"
+        resp.json.return_value = {
+            "numberReturned": 1,
+            "features": [{"id": str(idx), "properties": {"val": idx}}],
+            "links": [{"rel": "next", "href": nxt}] if has_next else [],
+        }
+        resp.headers = {}
+        resp.status_code = 200
+        resp.url = f"https://example.com/page{idx}"
+        return resp
+
+    mock_client = mock.AsyncMock(spec=httpx.AsyncClient)
+    mock_client.send.return_value = _page(1, has_next=True)
+    # page 2 still advertises a ``next`` (page 3) that must never be fetched.
+    mock_client.request.return_value = _page(2, has_next=True)
+
+    mock_req = mock.MagicMock(spec=httpx.Request)
+    mock_req.method = "GET"
+    mock_req.headers = {}
+    mock_req.url = "https://example.com/page1"
+
+    with _row_cap(2):
+        df, _ = _run_walk_pages(geopd=False, req=mock_req, client=mock_client)
+
+    assert len(df) == 2
+    assert mock_client.request.call_count == 1  # fetched page 2, stopped before 3
+
+
+def test_finalize_ogc_truncates_combined_to_max_rows():
+    # max_rows is enforced on the *combined* frame in _finalize_ogc (after
+    # dedup/sort), so it bounds the total exactly even when a chunked call's
+    # per-sub-request pages overshoot the per-_paginate early-stop.
+    frame = pd.DataFrame({"id": [str(i) for i in range(10)]})
+    resp = mock.MagicMock()
+    resp.url = "https://example.com/q"
+    resp.elapsed = datetime.timedelta(seconds=0.1)
+    resp.headers = {}
+
+    df, md = _finalize_ogc(
+        frame,
+        resp,
+        properties=None,
+        output_id="thing_id",
+        convert_type=False,
+        service="things",
+        max_rows=3,
+    )
+    assert len(df) == 3
+    assert hasattr(md, "url")  # wrapped as BaseMetadata
 
 
 def _resp_ok(features):
@@ -115,7 +221,7 @@ def _walk_pages_with_failure(failure_resp_or_exc):
     """Run _walk_pages where page 1 succeeds and page 2 fails as given."""
     resp1 = _resp_ok([{"id": "1", "properties": {"val": "a"}}])
 
-    mock_client = mock.MagicMock(spec=httpx.Client)
+    mock_client = mock.AsyncMock(spec=httpx.AsyncClient)
     mock_client.send.return_value = resp1
     if isinstance(failure_resp_or_exc, BaseException):
         mock_client.request.side_effect = failure_resp_or_exc
@@ -127,7 +233,7 @@ def _walk_pages_with_failure(failure_resp_or_exc):
     mock_req.headers = {}
     mock_req.url = "https://example.com/page1"
 
-    return _walk_pages(geopd=False, req=mock_req, client=mock_client)
+    return _run_walk_pages(geopd=False, req=mock_req, client=mock_client)
 
 
 def test_walk_pages_raises_on_connection_error_mid_pagination():
@@ -206,7 +312,7 @@ def test_walk_pages_wraps_initial_page_parse_error():
     # Body is unparseable JSON (gateway HTML page, truncated stream).
     resp.json.side_effect = json.JSONDecodeError("Expecting value", "<html>...", 0)
 
-    mock_client = mock.MagicMock(spec=httpx.Client)
+    mock_client = mock.AsyncMock(spec=httpx.AsyncClient)
     mock_client.send.return_value = resp
 
     mock_req = mock.MagicMock(spec=httpx.Request)
@@ -215,7 +321,7 @@ def test_walk_pages_wraps_initial_page_parse_error():
     mock_req.url = "https://example.com/page1"
 
     with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
-        _walk_pages(geopd=False, req=mock_req, client=mock_client)
+        _run_walk_pages(geopd=False, req=mock_req, client=mock_client)
 
     # The JSONDecodeError causing it is on __cause__ so callers can drill in.
     assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
@@ -228,8 +334,6 @@ def test_get_resp_data_handles_missing_features_key():
     ``_paginate`` as a generic transport error. ``_handle_stats_nesting``
     was already hardened against this; ``_get_resp_data`` now mirrors
     that defensiveness and returns an empty frame instead."""
-    from dataretrieval.waterdata.utils import _get_resp_data
-
     resp = mock.Mock()
     resp.json.return_value = {"numberReturned": 1, "links": []}
     df = _get_resp_data(resp, geopd=False)
@@ -244,12 +348,10 @@ def test_walk_pages_does_not_mutate_initial_response():
     ``.elapsed`` before pagination completed (a Session response hook,
     a logging middleware) must continue to see the original first-page
     values — NOT the rewritten cumulative values."""
-    import datetime as _dt
-
     page1 = mock.MagicMock()
     page1.status_code = 200
     page1.url = "https://example.com/page1"
-    page1.elapsed = _dt.timedelta(seconds=1)
+    page1.elapsed = datetime.timedelta(seconds=1)
     page1.headers = {"x-ratelimit-remaining": "999"}
     page1.json.return_value = {
         "numberReturned": 1,
@@ -262,7 +364,7 @@ def test_walk_pages_does_not_mutate_initial_response():
     page2 = mock.MagicMock()
     page2.status_code = 200
     page2.url = "https://example.com/page2"
-    page2.elapsed = _dt.timedelta(seconds=2)
+    page2.elapsed = datetime.timedelta(seconds=2)
     page2.headers = {"x-ratelimit-remaining": "998"}
     page2.json.return_value = {
         "numberReturned": 1,
@@ -270,7 +372,7 @@ def test_walk_pages_does_not_mutate_initial_response():
         "links": [],
     }
 
-    mock_client = mock.MagicMock(spec=httpx.Client)
+    mock_client = mock.AsyncMock(spec=httpx.AsyncClient)
     mock_client.send.return_value = page1
     mock_client.request.return_value = page2
 
@@ -279,7 +381,7 @@ def test_walk_pages_does_not_mutate_initial_response():
     mock_req.headers = {}
     mock_req.url = "https://example.com/page1"
 
-    df, final = _walk_pages(geopd=False, req=mock_req, client=mock_client)
+    df, final = _run_walk_pages(geopd=False, req=mock_req, client=mock_client)
     assert len(df) == 2
 
     # The original first-page response object must be unmutated:
@@ -290,7 +392,7 @@ def test_walk_pages_does_not_mutate_initial_response():
 
     # The returned aggregate carries page-2 headers + cumulative elapsed.
     assert final.headers["x-ratelimit-remaining"] == "998"
-    assert final.elapsed == _dt.timedelta(seconds=3)
+    assert final.elapsed == datetime.timedelta(seconds=3)
     # And mutating the aggregate's headers doesn't leak into either page.
     final.headers["X-Trace-Id"] = "abc"
     assert "X-Trace-Id" not in page1.headers
@@ -316,15 +418,13 @@ def _run_get_stats_data_with_failure(failure_resp_or_exc, monkeypatch):
     `monkeypatch` stubs ``_handle_stats_nesting`` so the synthetic minimal
     response body doesn't need to parse — these tests only assert on the
     pagination loop's error surfacing."""
-    from dataretrieval.waterdata.utils import get_stats_data
-
     monkeypatch.setattr(
         _utils_module,
         "_handle_stats_nesting",
         mock.MagicMock(return_value=pd.DataFrame()),
     )
 
-    mock_client = mock.MagicMock(spec=httpx.Client)
+    mock_client = mock.AsyncMock(spec=httpx.AsyncClient)
     mock_client.send.return_value = _stats_initial_ok()
     if isinstance(failure_resp_or_exc, BaseException):
         mock_client.request.side_effect = failure_resp_or_exc
@@ -441,8 +541,6 @@ def test_get_resp_data_empty_preserves_geopd_type():
     ``GeoDataFrame`` (not a plain ``DataFrame``) when geopd is True,
     so paginating across a sparse intermediate page doesn't downgrade
     the final concat result."""
-    from dataretrieval.waterdata.utils import _get_resp_data
-
     fake_gpd = mock.MagicMock()
 
     class _Sentinel:
@@ -472,8 +570,6 @@ def test_get_resp_data_always_materializes_id_column():
     ``_arrange_cols`` rename to the service-specific output_id
     (``daily_id``, ``channel_measurements_id``, etc.) isn't a
     silent no-op."""
-    from dataretrieval.waterdata.utils import _get_resp_data
-
     resp = mock.MagicMock()
     resp.json.return_value = {
         "numberReturned": 2,
@@ -598,8 +694,6 @@ def test_format_api_dates_rejects_mapping():
     """`time={"2024-01-01": "x"}` would silently materialize as the keys list,
     accepting input the user clearly didn't intend.
     """
-    import pytest
-
     with pytest.raises(TypeError, match="date input must be a string or sequence"):
         _format_api_dates({"2024-01-01": "ignored"})
 
@@ -742,8 +836,6 @@ def test_next_req_url_rejects_cross_host():
     auth-like artifacts) were minted for the original host; following
     a server-supplied cross-host URL would leak them — and the URL
     itself could be sensitive."""
-    from dataretrieval.waterdata.utils import _next_req_url
-
     resp = mock.MagicMock()
     resp.url = httpx.URL("https://api.waterdata.usgs.gov/page1")
     body = {
@@ -761,9 +853,6 @@ def test_check_ogc_requests_raises_typed_on_5xx(httpx_mock):
     ``_raise_for_non_200`` so callers see ``ServiceUnavailable`` /
     ``RateLimited`` / ``RuntimeError`` — the same typed contract as
     the main data path."""
-    from dataretrieval.waterdata.chunking import ServiceUnavailable
-    from dataretrieval.waterdata.utils import OGC_API_URL, _check_ogc_requests
-
     httpx_mock.add_response(
         method="GET",
         url=f"{OGC_API_URL}/collections/daily/schema",

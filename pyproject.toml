@@ -49,7 +49,14 @@ doc = [
   "ipython",
   "ipykernel",
   "matplotlib",
-  "folium>=0.12"
+  "folium>=0.12",
+  # WaterData_demo.ipynb uses ``.set_crs().explore()`` on geometry-bearing
+  # frames; without geopandas the call raises ``AttributeError`` on plain
+  # pandas DataFrames. ``mapclassify`` is required by ``geopandas.explore()``
+  # (alongside ``folium`` + ``matplotlib`` above). Mirrors the same lower
+  # bound as the [nldi] extra.
+  "geopandas>=0.10",
+  "mapclassify",
 ]
 nldi = [
   'geopandas>=0.10'
