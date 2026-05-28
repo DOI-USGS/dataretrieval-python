@@ -26,3 +26,12 @@ repos:
       - id: ruff-check
         args: [--fix]
       - id: ruff-format
+
+  # Strip cell outputs + execution_count from notebooks on commit so the
+  # diff is the source, not the rendered run. Demos still execute fine
+  # locally; clean commits keep PRs reviewable and avoid quota/timestamp
+  # churn on every re-run.
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
+    hooks:
+      - id: nbstripout
