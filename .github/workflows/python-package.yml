@@ -47,6 +47,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install .[test,nldi]
       - name: Test with pytest and report coverage
+        env:
+          # The live-API portion of ``tests/waterdata_test.py`` benefits
+          # from the authenticated rate limit. Undefined
+          # ``secrets.API_USGS_PAT`` resolves to an empty string —
+          # falling back to unauthenticated, same as today.
+          API_USGS_PAT: ${{ secrets.API_USGS_PAT }}
         run: |
           coverage run -m pytest tests/
           coverage report -m

@@ -21,6 +21,15 @@ jobs:
           cache: "pip"
       - name: Install dataretrieval, dependencies, and Sphinx then build docs
         shell: bash -l {0}
+        env:
+          # nbsphinx executes every notebook with no committed outputs
+          # (the project convention; ``nbsphinx_execute`` defaults to
+          # ``'auto'``). Without an API key the doc build hits the
+          # unauthenticated rate limit (~60 req/min); the secret raises
+          # the ceiling so the build is reliable as the demo notebook set
+          # grows. Undefined ``secrets.API_USGS_PAT`` resolves to an
+          # empty string — falling back to unauthenticated, same as today.
+          API_USGS_PAT: ${{ secrets.API_USGS_PAT }}
         run: |
           python -m pip install --upgrade pip
           pip install .[doc,nldi]
