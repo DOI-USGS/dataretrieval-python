@@ -6,44 +6,23 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
+      # tests/data/ holds byte-exact API response captures (TSV/RDB with
+      # significant trailing tabs, plus pinned JSON). Skip whitespace and
+      # EOL normalization there so we don't silently change fixture bytes.
       - id: trailing-whitespace
+        exclude: ^tests/data/
       - id: end-of-file-fixer
+        exclude: ^tests/data/
+      - id: mixed-line-ending
+        exclude: ^tests/data/
       - id: check-docstring-first
       - id: check-json
       - id: check-yaml
-      - id: double-quote-string-fixer
       - id: debug-statements
-      - id: mixed-line-ending
 
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.3.1
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.15
     hooks:
-      - id: pyupgrade
-        args:
-          - '--py38-plus'
-
-  - repo: https://github.com/psf/black
-    rev: 23.3.0
-    hooks:
-      - id: black
-      - id: black-jupyter
-
-  - repo: https://github.com/keewis/blackdoc
-    rev: v0.3.8
-    hooks:
-      - id: blackdoc
-
-  - repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
-    hooks:
-      - id: flake8
-
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.0-alpha.6
-    hooks:
-      - id: prettier
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format

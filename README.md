@@ -59,7 +59,7 @@ from dataretrieval import waterdata
 
 # Get daily streamflow data (returns DataFrame and metadata)
 df, metadata = waterdata.get_daily(
-    monitoring_location_id='USGS-01646500', 
+    monitoring_location_id='USGS-01646500',
     parameter_code='00060',  # Discharge
     time='2024-10-01/2025-09-30'
 )
@@ -98,7 +98,7 @@ windows to avoid timeouts and other issues:
 ```python
 # Get continuous data for a single monitoring location and water year
 df, metadata = waterdata.get_continuous(
-    monitoring_location_id='USGS-01646500', 
+    monitoring_location_id='USGS-01646500',
     parameter_code='00065',  # Gage height
     time='2024-10-01/2025-09-30'
 )
@@ -152,7 +152,7 @@ from dataretrieval import nldi
 # Get watershed basin for a stream reach
 basin = nldi.get_basin(
     feature_source='comid',
-    feature_id='13293474'  # NHD reach identifier  
+    feature_id='13293474'  # NHD reach identifier
 )
 
 print(f"Basin contains {len(basin)} feature(s)")
@@ -184,7 +184,7 @@ print(f"Found {len(flowlines)} upstream tributaries within 50km")
 ### Legacy NWIS Services (Deprecated)
 - **Daily values (dv)**: Legacy daily statistical data
 - **Instantaneous values (iv)**: Legacy continuous data
-- **Site info (site)**: Basic site information  
+- **Site info (site)**: Basic site information
 - **Statistics (stat)**: Statistical summaries
 - **Discharge peaks (peaks)**: Annual peak discharge events
 
