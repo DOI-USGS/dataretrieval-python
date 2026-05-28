@@ -1,0 +1,990 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily statistics: get_stats_por and get_stats_date_range &mdash; dataretrieval 0.1.dev1+g569ff3836 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=022dad44"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Continuous Data" href="USGS_WaterData_ContinuousData_Examples.html" />
+    <link rel="prev" title="Discrete water-quality samples: get_samples" href="USGS_WaterData_DiscreteSamples_Examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#introduction-to-the-waterdata-module-of-dataretrieval">Introduction to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code></a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#usgs-water-data-api-vignettes">USGS Water Data API vignettes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Introduction_Examples.html">Introduction to the USGS Water Data APIs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DiscreteSamples_Examples.html">Discrete water-quality samples: <code class="docutils literal notranslate"><span class="pre">get_samples</span></code></a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Daily statistics: <code class="docutils literal notranslate"><span class="pre">get_stats_por</span></code> and <code class="docutils literal notranslate"><span class="pre">get_stats_date_range</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Fetching-day-of-year-and-month-of-year-statistics">Fetching day-of-year and month-of-year statistics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Fetching-monthly-and-annual-statistics-within-a-date-range">Fetching monthly and annual statistics within a date range</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Statistics-API-tips">Statistics API tips</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#More-help">More help</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ContinuousData_Examples.html">Continuous Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ReferenceLists_Examples.html">USGS Reference Lists</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">Daily statistics: <code class="docutils literal notranslate"><span class="pre">get_stats_por</span></code> and <code class="docutils literal notranslate"><span class="pre">get_stats_date_range</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/USGS_WaterData_DailyStatistics_Examples.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Daily-statistics:-get_stats_por-and-get_stats_date_range">
+<h1>Daily statistics: <code class="docutils literal notranslate"><span class="pre">get_stats_por</span></code> and <code class="docutils literal notranslate"><span class="pre">get_stats_date_range</span></code><a class="headerlink" href="#Daily-statistics:-get_stats_por-and-get_stats_date_range" title="Link to this heading"></a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">get_stats_por</span></code> and <code class="docutils literal notranslate"><span class="pre">get_stats_date_range</span></code> return pre-computed temporal statistics from the <a class="reference external" href="https://api.waterdata.usgs.gov/statistics/v0/docs">modernized statistics API</a>, the modern replacement for the legacy NWIS statistics service. The two functions wrap endpoints that look similar but answer different questions:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Function</p></th>
+<th class="head"><p>API endpoint</p></th>
+<th class="head"><p>Returns</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">get_stats_por</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">observationNormals</span></code></p></td>
+<td><p>day-of-year and month-of-year statistics across the period of record</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">get_stats_date_range</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">observationIntervals</span></code></p></td>
+<td><p>monthly and annual statistics within a requested date range</p></td>
+</tr>
+</tbody>
+</table>
+<p>A couple of usage notes:</p>
+<ul class="simple">
+<li><p>Pass <code class="docutils literal notranslate"><span class="pre">computation_type=</span></code> to choose the statistic — <code class="docutils literal notranslate"><span class="pre">arithmetic_mean</span></code>, <code class="docutils literal notranslate"><span class="pre">median</span></code>, <code class="docutils literal notranslate"><span class="pre">minimum</span></code>, <code class="docutils literal notranslate"><span class="pre">maximum</span></code>, or <code class="docutils literal notranslate"><span class="pre">percentile</span></code>.</p></li>
+<li><p>There is no dedicated argument to return only day-of-year vs. month-of-year (or only calendar vs. water year), so filter the returned <code class="docutils literal notranslate"><span class="pre">time_of_year_type</span></code> / <code class="docutils literal notranslate"><span class="pre">interval_type</span></code> column in pandas, as shown below.</p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.dates</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mdates</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
+
+<span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="n">site</span> <span class="o">=</span> <span class="s2">&quot;USGS-02037500&quot;</span>
+</pre></div>
+</div>
+</div>
+<section id="Fetching-day-of-year-and-month-of-year-statistics">
+<h2>Fetching day-of-year and month-of-year statistics<a class="headerlink" href="#Fetching-day-of-year-and-month-of-year-statistics" title="Link to this heading"></a></h2>
+<p>Day-of-year and month-of-year statistics aggregate observations for the same calendar day or month across many years to describe typical seasonal conditions (all Januarys, or all January 1sts). Below we request day-of-year discharge averages for January 1 and 2 — note <code class="docutils literal notranslate"><span class="pre">start_date</span></code>/<code class="docutils literal notranslate"><span class="pre">end_date</span></code> are in <code class="docutils literal notranslate"><span class="pre">MM-DD</span></code> format:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">jan_por_mean</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_por</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+    <span class="n">computation_type</span><span class="o">=</span><span class="s2">&quot;arithmetic_mean&quot;</span><span class="p">,</span>
+    <span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;01-01&quot;</span><span class="p">,</span>
+    <span class="n">end_date</span><span class="o">=</span><span class="s2">&quot;01-02&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">jan_por_mean</span><span class="p">[[</span><span class="s2">&quot;time_of_year&quot;</span><span class="p">,</span> <span class="s2">&quot;time_of_year_type&quot;</span><span class="p">,</span> <span class="s2">&quot;computation&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: observationNormals · 1 page · 3 rows
+No API key detected — register for higher rate limits at https://api.waterdata.usgs.gov/signup/
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time_of_year</th>
+      <th>time_of_year_type</th>
+      <th>computation</th>
+      <th>value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>01-01</td>
+      <td>day_of_year</td>
+      <td>arithmetic_mean</td>
+      <td>9342.396</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>01-02</td>
+      <td>day_of_year</td>
+      <td>arithmetic_mean</td>
+      <td>9437.714</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>01</td>
+      <td>month_of_year</td>
+      <td>arithmetic_mean</td>
+      <td>7118.02</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>The first two rows are the day-of-year averages. What’s the third row? Its <code class="docutils literal notranslate"><span class="pre">time_of_year_type</span></code> is <code class="docutils literal notranslate"><span class="pre">month_of_year</span></code> — it’s the average across all <em>Januarys</em>. This is a quirk of the statistics API: whenever the <code class="docutils literal notranslate"><span class="pre">start_date</span></code>–<code class="docutils literal notranslate"><span class="pre">end_date</span></code> range overlaps the first day of a month (here <code class="docutils literal notranslate"><span class="pre">01-01</span></code>), you also get the month-of-year summary.</p>
+<p>To return only one type, filter the <code class="docutils literal notranslate"><span class="pre">time_of_year_type</span></code> column — here, month-of-year only:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">moy</span> <span class="o">=</span> <span class="n">jan_por_mean</span><span class="p">[</span><span class="n">jan_por_mean</span><span class="p">[</span><span class="s2">&quot;time_of_year_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;month_of_year&quot;</span><span class="p">]</span>
+<span class="n">moy</span><span class="p">[[</span><span class="s2">&quot;time_of_year&quot;</span><span class="p">,</span> <span class="s2">&quot;time_of_year_type&quot;</span><span class="p">,</span> <span class="s2">&quot;computation&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time_of_year</th>
+      <th>time_of_year_type</th>
+      <th>computation</th>
+      <th>value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2</th>
+      <td>01</td>
+      <td>month_of_year</td>
+      <td>arithmetic_mean</td>
+      <td>7118.02</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<section id="Percentile-band-plot">
+<h3>Percentile band plot<a class="headerlink" href="#Percentile-band-plot" title="Link to this heading"></a></h3>
+<p>Now an example that shows the power of the statistics API: we pull <em>all</em> day-of-year discharge percentiles for the site. Computing these without the API would mean downloading the entire daily period of record and computing percentiles by hand.</p>
+<p>By default <code class="docutils literal notranslate"><span class="pre">get_stats_por</span></code> sets <code class="docutils literal notranslate"><span class="pre">expand_percentiles=True</span></code>, returning one row per percentile with the value in <code class="docutils literal notranslate"><span class="pre">value</span></code> and the threshold in <code class="docutils literal notranslate"><span class="pre">percentile</span></code> (minimum is reported as percentile 0, maximum as 100).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">full_por_percentiles</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_por</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+    <span class="n">computation_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;minimum&quot;</span><span class="p">,</span> <span class="s2">&quot;maximum&quot;</span><span class="p">,</span> <span class="s2">&quot;percentile&quot;</span><span class="p">],</span>
+    <span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;01-01&quot;</span><span class="p">,</span>
+    <span class="n">end_date</span><span class="o">=</span><span class="s2">&quot;12-31&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="c1"># The January 1 day-of-year percentiles (used on the WDFN state pages):</span>
+<span class="n">jan1</span> <span class="o">=</span> <span class="n">full_por_percentiles</span><span class="p">[</span>
+    <span class="p">(</span><span class="n">full_por_percentiles</span><span class="p">[</span><span class="s2">&quot;time_of_year&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;01-01&quot;</span><span class="p">)</span>
+    <span class="o">&amp;</span> <span class="p">(</span><span class="n">full_por_percentiles</span><span class="p">[</span><span class="s2">&quot;time_of_year_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;day_of_year&quot;</span><span class="p">)</span>
+<span class="p">]</span>
+<span class="n">jan1</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;percentile&quot;</span><span class="p">)[[</span><span class="s2">&quot;time_of_year&quot;</span><span class="p">,</span> <span class="s2">&quot;computation&quot;</span><span class="p">,</span> <span class="s2">&quot;percentile&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: observationNormals · 1 page · 1,134 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time_of_year</th>
+      <th>computation</th>
+      <th>percentile</th>
+      <th>value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>378</th>
+      <td>01-01</td>
+      <td>minimum</td>
+      <td>0.0</td>
+      <td>380.0</td>
+    </tr>
+    <tr>
+      <th>0</th>
+      <td>01-01</td>
+      <td>percentile</td>
+      <td>5.0</td>
+      <td>1266.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>01-01</td>
+      <td>percentile</td>
+      <td>10.0</td>
+      <td>1922.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>01-01</td>
+      <td>percentile</td>
+      <td>25.0</td>
+      <td>3580.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>01-01</td>
+      <td>percentile</td>
+      <td>50.0</td>
+      <td>5550.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>01-01</td>
+      <td>percentile</td>
+      <td>75.0</td>
+      <td>9890.0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>01-01</td>
+      <td>percentile</td>
+      <td>90.0</td>
+      <td>22000.0</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>01-01</td>
+      <td>percentile</td>
+      <td>95.0</td>
+      <td>37780.0</td>
+    </tr>
+    <tr>
+      <th>0</th>
+      <td>01-01</td>
+      <td>maximum</td>
+      <td>100.0</td>
+      <td>60000.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Pivoting the day-of-year rows so each percentile is a column lets us draw the percentile “ribbons” — each band spans two adjacent percentiles (min–5th, 5th–10th, …):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">doy</span> <span class="o">=</span> <span class="n">full_por_percentiles</span><span class="p">[</span>
+    <span class="n">full_por_percentiles</span><span class="p">[</span><span class="s2">&quot;time_of_year_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;day_of_year&quot;</span>
+<span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">doy</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">doy</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;coerce&quot;</span><span class="p">)</span>  <span class="c1"># API returns strings</span>
+<span class="n">bands</span> <span class="o">=</span> <span class="n">doy</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;time_of_year&quot;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s2">&quot;percentile&quot;</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">)</span>
+<span class="n">bands</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">bands</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+<span class="n">bands</span> <span class="o">=</span> <span class="n">bands</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>  <span class="c1"># &quot;MM-DD&quot; strings sort chronologically within a year</span>
+
+<span class="c1"># x positions: map MM-DD onto a reference (leap) year so 02-29 is included</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s2">&quot;2024-&quot;</span> <span class="o">+</span> <span class="n">bands</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># (lo, hi) percentile range, fill color, legend label</span>
+<span class="n">band_defs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">((</span><span class="mi">95</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="s2">&quot;#292f6b&quot;</span><span class="p">,</span> <span class="s2">&quot;95th Percentile - Max&quot;</span><span class="p">),</span>
+    <span class="p">((</span><span class="mi">90</span><span class="p">,</span> <span class="mi">95</span><span class="p">),</span> <span class="s2">&quot;#5699c0&quot;</span><span class="p">,</span> <span class="s2">&quot;90th - 95th Percentile&quot;</span><span class="p">),</span>
+    <span class="p">((</span><span class="mi">75</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span> <span class="s2">&quot;#aacee0&quot;</span><span class="p">,</span> <span class="s2">&quot;75th - 90th Percentile&quot;</span><span class="p">),</span>
+    <span class="p">((</span><span class="mi">25</span><span class="p">,</span> <span class="mi">75</span><span class="p">),</span> <span class="s2">&quot;#e9e9e9&quot;</span><span class="p">,</span> <span class="s2">&quot;25th - 75th Percentile&quot;</span><span class="p">),</span>
+    <span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">25</span><span class="p">),</span> <span class="s2">&quot;#ebd6ab&quot;</span><span class="p">,</span> <span class="s2">&quot;10th - 25th Percentile&quot;</span><span class="p">),</span>
+    <span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s2">&quot;#dcb668&quot;</span><span class="p">,</span> <span class="s2">&quot;5th - 10th Percentile&quot;</span><span class="p">),</span>
+    <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="s2">&quot;#8f4f1f&quot;</span><span class="p">,</span> <span class="s2">&quot;Min - 5th Percentile&quot;</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">),</span> <span class="n">color</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">band_defs</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">bands</span><span class="p">[</span><span class="n">lo</span><span class="p">],</span> <span class="n">bands</span><span class="p">[</span><span class="n">hi</span><span class="p">],</span> <span class="n">facecolor</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">mdates</span><span class="o">.</span><span class="n">MonthLocator</span><span class="p">())</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">mdates</span><span class="o">.</span><span class="n">DateFormatter</span><span class="p">(</span><span class="s2">&quot;%b&quot;</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Month&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Discharge, cubic feet per second&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Day-of-year percentile bands (USGS-02037500)&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Historical percentiles&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;upper right&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_USGS_WaterData_DailyStatistics_Examples_9_0.png" src="../_images/examples_USGS_WaterData_DailyStatistics_Examples_9_0.png" />
+</div>
+</div>
+<p>Finally, overlay the actual daily mean discharge so we can see where recent conditions fall relative to the historical bands — exactly the view on the <a class="reference external" href="https://waterdata.usgs.gov/monitoring-location/USGS-02037500/statistical-graphs/">Water Data for the Nation (WDFN) statistical graphs</a>. We pull two water years of daily means and join them to the bands by month-day.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">daily</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+    <span class="n">statistic_id</span><span class="o">=</span><span class="s2">&quot;00003&quot;</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2024-01-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2025-12-31&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">daily</span> <span class="o">=</span> <span class="n">daily</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">daily</span><span class="p">[</span><span class="s2">&quot;md&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">daily</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Repeat the day-of-year bands across each actual calendar date</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">bands</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">daily</span><span class="p">[</span><span class="s2">&quot;md&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">),</span> <span class="n">color</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">band_defs</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span>
+        <span class="n">daily</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">b</span><span class="p">[</span><span class="n">lo</span><span class="p">],</span> <span class="n">b</span><span class="p">[</span><span class="n">hi</span><span class="p">],</span> <span class="n">facecolor</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span>
+    <span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">daily</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">daily</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Daily mean&quot;</span><span class="p">)</span>
+<span class="n">prov</span> <span class="o">=</span> <span class="n">daily</span><span class="p">[</span><span class="n">daily</span><span class="p">[</span><span class="s2">&quot;approval_status&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Provisional&quot;</span><span class="p">]</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">prov</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">prov</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Provisional&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">mdates</span><span class="o">.</span><span class="n">MonthLocator</span><span class="p">(</span><span class="n">interval</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">mdates</span><span class="o">.</span><span class="n">DateFormatter</span><span class="p">(</span><span class="s2">&quot;%b %Y&quot;</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Discharge, cubic feet per second&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Daily mean discharge vs. historical percentile bands&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;upper right&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">autofmt_xdate</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: daily · 1 page · 731 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_USGS_WaterData_DailyStatistics_Examples_11_1.png" src="../_images/examples_USGS_WaterData_DailyStatistics_Examples_11_1.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Fetching-monthly-and-annual-statistics-within-a-date-range">
+<h2>Fetching monthly and annual statistics within a date range<a class="headerlink" href="#Fetching-monthly-and-annual-statistics-within-a-date-range" title="Link to this heading"></a></h2>
+<p>Unlike the day-/month-of-year normals, <code class="docutils literal notranslate"><span class="pre">get_stats_date_range</span></code> summarizes specific months and years inside a requested window. Here we ask for the average discharge for January 2024 — note the <code class="docutils literal notranslate"><span class="pre">YYYY-MM-DD</span></code> date format:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">jan_daterange_mean</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_date_range</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+    <span class="n">computation_type</span><span class="o">=</span><span class="s2">&quot;arithmetic_mean&quot;</span><span class="p">,</span>
+    <span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;2024-01-01&quot;</span><span class="p">,</span>
+    <span class="n">end_date</span><span class="o">=</span><span class="s2">&quot;2024-01-31&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">jan_daterange_mean</span><span class="p">[[</span><span class="s2">&quot;start_date&quot;</span><span class="p">,</span> <span class="s2">&quot;end_date&quot;</span><span class="p">,</span> <span class="s2">&quot;interval_type&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: observationIntervals · 1 page · 3 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>start_date</th>
+      <th>end_date</th>
+      <th>interval_type</th>
+      <th>value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2024-01-01</td>
+      <td>2024-01-31</td>
+      <td>month</td>
+      <td>15787.097</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2024-01-01</td>
+      <td>2024-12-31</td>
+      <td>calendar_year</td>
+      <td>6795.699</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2023-10-01</td>
+      <td>2024-09-30</td>
+      <td>water_year</td>
+      <td>6306.902</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Instead of <code class="docutils literal notranslate"><span class="pre">time_of_year</span></code>, the output has <code class="docutils literal notranslate"><span class="pre">start_date</span></code>, <code class="docutils literal notranslate"><span class="pre">end_date</span></code>, and <code class="docutils literal notranslate"><span class="pre">interval_type</span></code>. The first row is the monthly average; the API also returns the <strong>calendar year</strong> and <strong>water year</strong> averages for any year intersecting the range. A 93-day window can therefore touch two calendar and two water years:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">multiyear</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_date_range</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+    <span class="n">computation_type</span><span class="o">=</span><span class="s2">&quot;arithmetic_mean&quot;</span><span class="p">,</span>
+    <span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;2023-09-30&quot;</span><span class="p">,</span>
+    <span class="n">end_date</span><span class="o">=</span><span class="s2">&quot;2024-01-01&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">multiyear</span><span class="p">[[</span><span class="s2">&quot;start_date&quot;</span><span class="p">,</span> <span class="s2">&quot;end_date&quot;</span><span class="p">,</span> <span class="s2">&quot;interval_type&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: observationIntervals · 1 page · 9 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>start_date</th>
+      <th>end_date</th>
+      <th>interval_type</th>
+      <th>value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2023-09-01</td>
+      <td>2023-09-30</td>
+      <td>month</td>
+      <td>1917.667</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2023-10-01</td>
+      <td>2023-10-31</td>
+      <td>month</td>
+      <td>1264.516</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2023-11-01</td>
+      <td>2023-11-30</td>
+      <td>month</td>
+      <td>2000.333</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2023-12-01</td>
+      <td>2023-12-31</td>
+      <td>month</td>
+      <td>5939.355</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2024-01-01</td>
+      <td>2024-01-31</td>
+      <td>month</td>
+      <td>15787.097</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>2023-01-01</td>
+      <td>2023-12-31</td>
+      <td>calendar_year</td>
+      <td>5062.219</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>2024-01-01</td>
+      <td>2024-12-31</td>
+      <td>calendar_year</td>
+      <td>6795.699</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>2022-10-01</td>
+      <td>2023-09-30</td>
+      <td>water_year</td>
+      <td>5740.247</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>2023-10-01</td>
+      <td>2024-09-30</td>
+      <td>water_year</td>
+      <td>6306.902</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Filter the <code class="docutils literal notranslate"><span class="pre">interval_type</span></code> column (values <code class="docutils literal notranslate"><span class="pre">month</span></code>, <code class="docutils literal notranslate"><span class="pre">calendar_year</span></code>, <code class="docutils literal notranslate"><span class="pre">water_year</span></code>) to keep only certain intervals — here, the annual rows:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">multiyear</span><span class="p">[</span><span class="n">multiyear</span><span class="p">[</span><span class="s2">&quot;interval_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s2">&quot;calendar_year&quot;</span><span class="p">,</span> <span class="s2">&quot;water_year&quot;</span><span class="p">])][</span>
+    <span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">,</span> <span class="s2">&quot;end_date&quot;</span><span class="p">,</span> <span class="s2">&quot;interval_type&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>start_date</th>
+      <th>end_date</th>
+      <th>interval_type</th>
+      <th>value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>5</th>
+      <td>2023-01-01</td>
+      <td>2023-12-31</td>
+      <td>calendar_year</td>
+      <td>5062.219</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>2024-01-01</td>
+      <td>2024-12-31</td>
+      <td>calendar_year</td>
+      <td>6795.699</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>2022-10-01</td>
+      <td>2023-09-30</td>
+      <td>water_year</td>
+      <td>5740.247</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>2023-10-01</td>
+      <td>2024-09-30</td>
+      <td>water_year</td>
+      <td>6306.902</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<section id="Monthly-mean-table">
+<h3>Monthly mean table<a class="headerlink" href="#Monthly-mean-table" title="Link to this heading"></a></h3>
+<p>We can reproduce something like a Water Year Summary monthly-mean table. We pull the full period of record (no dates), keep the monthly intervals, and aggregate by calendar month in water-year order. (Values may differ slightly from the official summaries due to rounding.)</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">monthly_raw</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_date_range</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+    <span class="n">computation_type</span><span class="o">=</span><span class="s2">&quot;arithmetic_mean&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">monthly_raw</span><span class="p">[</span><span class="n">monthly_raw</span><span class="p">[</span><span class="s2">&quot;interval_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;month&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">m</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">])</span>
+<span class="n">m</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;coerce&quot;</span><span class="p">)</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="p">[(</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="s2">&quot;2004-10-01&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="s2">&quot;2025-09-01&quot;</span><span class="p">)]</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">])</span>
+<span class="n">m</span><span class="p">[</span><span class="s2">&quot;month&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%b&quot;</span><span class="p">)</span>
+<span class="n">m</span><span class="p">[</span><span class="s2">&quot;water_year&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">months</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">summarize</span><span class="p">(</span><span class="n">g</span><span class="p">):</span>
+    <span class="n">hi</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">g</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">idxmax</span><span class="p">()]</span>
+    <span class="n">lo</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">g</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">idxmin</span><span class="p">()]</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;Mean&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()),</span>
+            <span class="s2">&quot;Max (WY)&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">hi</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">hi</span><span class="p">[</span><span class="s1">&#39;water_year&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Min (WY)&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">lo</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">lo</span><span class="p">[</span><span class="s1">&#39;water_year&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+
+
+<span class="n">wy_order</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;Oct&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Nov&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Dec&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Jan&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Feb&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Mar&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Apr&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;May&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Jun&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Jul&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Aug&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Sep&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">table</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;month&quot;</span><span class="p">)[[</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="s2">&quot;water_year&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">summarize</span><span class="p">)</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">wy_order</span><span class="p">)</span>
+<span class="n">table</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: observationIntervals · 1 page · 1,277 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>month</th>
+      <th>Oct</th>
+      <th>Nov</th>
+      <th>Dec</th>
+      <th>Jan</th>
+      <th>Feb</th>
+      <th>Mar</th>
+      <th>Apr</th>
+      <th>May</th>
+      <th>Jun</th>
+      <th>Jul</th>
+      <th>Aug</th>
+      <th>Sep</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Mean</th>
+      <td>4752</td>
+      <td>6211</td>
+      <td>9464</td>
+      <td>9315</td>
+      <td>11258</td>
+      <td>10980</td>
+      <td>10901</td>
+      <td>10397</td>
+      <td>5855</td>
+      <td>3337</td>
+      <td>2661</td>
+      <td>3370</td>
+    </tr>
+    <tr>
+      <th>Max (WY)</th>
+      <td>14059 (2019)</td>
+      <td>20085 (2019)</td>
+      <td>24194 (2019)</td>
+      <td>18138 (2010)</td>
+      <td>26647 (2025)</td>
+      <td>19426 (2019)</td>
+      <td>17269 (2019)</td>
+      <td>19037 (2020)</td>
+      <td>13455 (2013)</td>
+      <td>11236 (2013)</td>
+      <td>6883 (2020)</td>
+      <td>15211 (2018)</td>
+    </tr>
+    <tr>
+      <th>Min (WY)</th>
+      <td>1230 (2009)</td>
+      <td>1497 (2008)</td>
+      <td>1508 (2018)</td>
+      <td>2536 (2018)</td>
+      <td>2900 (2009)</td>
+      <td>3316 (2017)</td>
+      <td>5459 (2025)</td>
+      <td>3344 (2006)</td>
+      <td>1833 (2008)</td>
+      <td>1163 (2010)</td>
+      <td>1094 (2008)</td>
+      <td>968 (2010)</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+</section>
+<section id="Statistics-API-tips">
+<h2>Statistics API tips<a class="headerlink" href="#Statistics-API-tips" title="Link to this heading"></a></h2>
+<p>The statistics API does <strong>not</strong> follow the OGC standards used by the <code class="docutils literal notranslate"><span class="pre">api.waterdata.usgs.gov/ogcapi/v0/</span></code> endpoints. A few things to keep in mind:</p>
+<ul class="simple">
+<li><p><strong>Higher rate limits.</strong> At the time of writing the statistics API allows ~4000 requests/hour per IP (per token if a token is supplied).</p></li>
+<li><p><strong>All columns, always.</strong> There is no <code class="docutils literal notranslate"><span class="pre">skip_geometry</span></code> or <code class="docutils literal notranslate"><span class="pre">properties</span></code> argument — the API returns the full column set.</p></li>
+<li><p><strong>Month-of-year normals.</strong> To get month-of-year statistics from <code class="docutils literal notranslate"><span class="pre">get_stats_por</span></code>, make the <code class="docutils literal notranslate"><span class="pre">start_date</span></code>–<code class="docutils literal notranslate"><span class="pre">end_date</span></code> range overlap the first of the month (e.g. <code class="docutils literal notranslate"><span class="pre">01-01</span></code>–<code class="docutils literal notranslate"><span class="pre">03-01</span></code> returns the January, February, and March month-of-year stats in addition to each day-of-year).</p></li>
+<li><p><strong>Monthly/annual intervals.</strong> <code class="docutils literal notranslate"><span class="pre">get_stats_date_range</span></code> returns a summary for every calendar month, calendar year, and water year that intersects the range.</p></li>
+<li><p><strong>Median = the 50th percentile.</strong> Requesting both <code class="docutils literal notranslate"><span class="pre">median</span></code> and <code class="docutils literal notranslate"><span class="pre">percentile</span></code> duplicates the median; you rarely need both.</p></li>
+<li><p><strong>Min/max are not percentiles.</strong> Use <code class="docutils literal notranslate"><span class="pre">computation_type=[&quot;minimum&quot;,</span> <span class="pre">&quot;maximum&quot;,</span> <span class="pre">&quot;percentile&quot;]</span></code> for a complete set of order statistics (as we did for the band plot).</p></li>
+<li><p><strong>Fixed percentiles.</strong> <code class="docutils literal notranslate"><span class="pre">percentile</span></code> only ever returns the 5th, 10th, 25th, 50th, 75th, 90th, and 95th. For other percentiles, pull the daily record with <code class="docutils literal notranslate"><span class="pre">get_daily</span></code> and compute them yourself.</p></li>
+<li><p><strong>Watch ``sample_count``.</strong> It’s the number of observations behind a statistic; there is no minimum, so a monthly/annual value can rest on a single daily observation.</p></li>
+</ul>
+</section>
+<section id="More-help">
+<h2>More help<a class="headerlink" href="#More-help" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Documentation: <a class="reference external" href="https://doi-usgs.github.io/dataretrieval-python/">https://doi-usgs.github.io/dataretrieval-python/</a></p></li>
+<li><p>Statistics documentation: <a class="reference external" href="https://waterdata.usgs.gov/statistics-documentation/">https://waterdata.usgs.gov/statistics-documentation/</a></p></li>
+<li><p>Equivalent R article: <a class="reference external" href="https://doi-usgs.github.io/dataRetrieval/articles/daily_data_statistics.html">daily statistics</a></p></li>
+<li><p>Issues / questions: <a class="reference external" href="https://github.com/DOI-USGS/dataretrieval-python/issues">https://github.com/DOI-USGS/dataretrieval-python/issues</a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="USGS_WaterData_DiscreteSamples_Examples.html" class="btn btn-neutral float-left" title="Discrete water-quality samples: get_samples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="USGS_WaterData_ContinuousData_Examples.html" class="btn btn-neutral float-right" title="Continuous Data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

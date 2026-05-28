@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Using the waterdata module to pull data from the USGS Water Data APIs &mdash; dataretrieval 0.1.dev1+g9161fbd74 documentation</title>
+  <title>Using the waterdata module to pull data from the USGS Water Data APIs &mdash; dataretrieval 0.1.dev1+g569ff3836 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=ccbfd5e9"></script>
+      <script src="../_static/documentation_options.js?v=022dad44"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -23,7 +23,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Retrieving USGS water data with the waterdata module" href="readme_examples.html" />
+    <link rel="next" title="Introduction to the USGS Water Data APIs" href="USGS_WaterData_Introduction_Examples.html" />
     <link rel="prev" title="Examples" href="index.html" /> 
 </head>
 
@@ -60,6 +60,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#usgs-water-data-api-vignettes">USGS Water Data API vignettes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a></li>
 <li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
@@ -1043,6 +1044,21 @@ Retrieving: latest-daily · 1 page · 104 rows
   <tbody>
     <tr>
       <th>0</th>
+      <td>POINT (-95.94481 40.15667)</td>
+      <td>30c2c99af76e430dac7a5f0030bbd84f</td>
+      <td>USGS-06814500</td>
+      <td>00060</td>
+      <td>00003</td>
+      <td>2026-05-25</td>
+      <td>304.00</td>
+      <td>ft^3/s</td>
+      <td>Provisional</td>
+      <td>None</td>
+      <td>2026-05-28 13:14:18.009709+00:00</td>
+      <td>47b43240-effe-4952-ae38-f51197401ebb</td>
+    </tr>
+    <tr>
+      <th>1</th>
       <td>POINT (-98.1754 42.81086)</td>
       <td>2daeaac402fb46e594ad265d1fed145c</td>
       <td>USGS-06453600</td>
@@ -1057,7 +1073,7 @@ Retrieving: latest-daily · 1 page · 104 rows
       <td>0d070a48-96ab-41f3-81cc-0b098b28506e</td>
     </tr>
     <tr>
-      <th>1</th>
+      <th>2</th>
       <td>POINT (-100.36253 42.90208)</td>
       <td>a661caa558244bf8a054018ccae0553a</td>
       <td>USGS-06461500</td>
@@ -1072,7 +1088,7 @@ Retrieving: latest-daily · 1 page · 104 rows
       <td>16566fd6-4d2c-4c80-9cd5-a9ab564c49ee</td>
     </tr>
     <tr>
-      <th>2</th>
+      <th>3</th>
       <td>POINT (-99.67945 42.68964)</td>
       <td>58fcf157597f4f8f9b351312a1993e05</td>
       <td>USGS-06463500</td>
@@ -1087,7 +1103,7 @@ Retrieving: latest-daily · 1 page · 104 rows
       <td>9dc4cb40-0fc3-4a5b-aa04-ecf268882c83</td>
     </tr>
     <tr>
-      <th>3</th>
+      <th>4</th>
       <td>POINT (-99.33471 42.78141)</td>
       <td>893237eb238543a6a0a87a3e20cb0192</td>
       <td>USGS-06463720</td>
@@ -1100,21 +1116,6 @@ Retrieving: latest-daily · 1 page · 104 rows
       <td>None</td>
       <td>2026-05-28 08:11:13.001759+00:00</td>
       <td>85d6686a-61e1-496a-a75c-bfa3a4dfa06b</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>POINT (-98.22286 42.73979)</td>
-      <td>9084ec7fa6234f85bfb62c9d79a71f8c</td>
-      <td>USGS-06465500</td>
-      <td>00060</td>
-      <td>00003</td>
-      <td>2026-05-27</td>
-      <td>1760.00</td>
-      <td>ft^3/s</td>
-      <td>Provisional</td>
-      <td>None</td>
-      <td>2026-05-28 08:11:43.014083+00:00</td>
-      <td>181a2eec-4b1e-40a2-9b09-c174b9adda89</td>
     </tr>
   </tbody>
 </table>
@@ -1396,7 +1397,7 @@ Retrieving: daily · 1 page · 1,460 rows
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-Retrieving: continuous · 3 pages · 138,819 rows
+Retrieving: continuous · 3 pages · 138,863 rows
 </pre></div></div>
 </div>
 <p>With these two datasets, let’s plot daily and instantaneous discharge values for the four Missouri River sites using <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>. We will plot each site on a different subplot, with instantaneous values represented by a blue line and daily mean values represented by black points.</p>
@@ -1696,7 +1697,7 @@ Retrieving: field-measurements · 1 page · 138 rows
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="readme_examples.html" class="btn btn-neutral float-right" title="Retrieving USGS water data with the waterdata module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="USGS_WaterData_Introduction_Examples.html" class="btn btn-neutral float-right" title="Introduction to the USGS Water Data APIs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

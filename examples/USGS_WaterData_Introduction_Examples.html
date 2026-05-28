@@ -1,0 +1,1723 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introduction to the USGS Water Data APIs &mdash; dataretrieval 0.1.dev1+g569ff3836 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=022dad44"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Discrete water-quality samples: get_samples" href="USGS_WaterData_DiscreteSamples_Examples.html" />
+    <link rel="prev" title="Using the waterdata module to pull data from the USGS Water Data APIs" href="WaterData_demo.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#introduction-to-the-waterdata-module-of-dataretrieval">Introduction to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code></a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#usgs-water-data-api-vignettes">USGS Water Data API vignettes</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Introduction to the USGS Water Data APIs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#New-features">New features</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Lessons-learned">Lessons learned</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#New-functions">New functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#More-notes">More notes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#More-help">More help</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DiscreteSamples_Examples.html">Discrete water-quality samples: <code class="docutils literal notranslate"><span class="pre">get_samples</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DailyStatistics_Examples.html">Daily statistics: <code class="docutils literal notranslate"><span class="pre">get_stats_por</span></code> and <code class="docutils literal notranslate"><span class="pre">get_stats_date_range</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ContinuousData_Examples.html">Continuous Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ReferenceLists_Examples.html">USGS Reference Lists</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">Introduction to the USGS Water Data APIs</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/USGS_WaterData_Introduction_Examples.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Introduction-to-the-USGS-Water-Data-APIs">
+<h1>Introduction to the USGS Water Data APIs<a class="headerlink" href="#Introduction-to-the-USGS-Water-Data-APIs" title="Link to this heading"></a></h1>
+<p>The <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/">USGS Water Data APIs</a> are the modern, OGC-based replacement for the legacy NWIS web services. In Python they are exposed through the <code class="docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code> module, which will gradually replace the older <code class="docutils literal notranslate"><span class="pre">dataretrieval.nwis</span></code> functions.</p>
+<p>This notebook tours each new function. The NWIS shut-down timeline is still uncertain, so we recommend migrating to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> functions sooner rather than later.</p>
+<p>If you are coming from the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> package, the functions map across as follows:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code></p></th>
+<th class="head"><p>Python <code class="docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">read_waterdata_monitoring_location</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">get_monitoring_locations</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">read_waterdata_ts_meta</span></code> / <code class="docutils literal notranslate"><span class="pre">read_waterdata_combined_meta</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">get_time_series_metadata</span></code> / <code class="docutils literal notranslate"><span class="pre">get_combined_metadata</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">read_waterdata_parameter_codes</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">get_reference_table(collection=&quot;parameter-codes&quot;)</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">read_waterdata_daily</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">get_daily</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">read_waterdata_continuous</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">get_continuous</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">read_waterdata_field_measurements</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">get_field_measurements</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">read_waterdata_channel</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">get_channel</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">read_waterdata_latest_continuous</span></code> / <code class="docutils literal notranslate"><span class="pre">read_waterdata_latest_daily</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">get_latest_continuous</span></code> / <code class="docutils literal notranslate"><span class="pre">get_latest_daily</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">read_waterdata</span></code> (CQL)</p></td>
+<td><p>the <code class="docutils literal notranslate"><span class="pre">filter</span></code> / <code class="docutils literal notranslate"><span class="pre">filter_lang</span></code> arguments on any function</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">read_waterdata_metadata</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">get_reference_table</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">read_waterdata_samples</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">get_samples</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">read_waterdata_stats_por</span></code> / <code class="docutils literal notranslate"><span class="pre">read_waterdata_stats_daterange</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">get_stats_por</span></code> / <code class="docutils literal notranslate"><span class="pre">get_stats_date_range</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
+
+<span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">&quot;figure.figsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<blockquote>
+<div><p><strong>Return values.</strong> Every <code class="docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code> function returns a <code class="docutils literal notranslate"><span class="pre">(data,</span> <span class="pre">metadata)</span></code> tuple. The first element is a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> (or a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> when the service returns a geometry column); the second is a small metadata object describing the request. Throughout this notebook we unpack the tuple as <code class="docutils literal notranslate"><span class="pre">df,</span> <span class="pre">md</span> <span class="pre">=</span> <span class="pre">waterdata.get_...(...)</span></code>.</p>
+</div></blockquote>
+<section id="New-features">
+<h2>New features<a class="headerlink" href="#New-features" title="Link to this heading"></a></h2>
+<p>The new API endpoints each deliver a different type of USGS water data, and they all share features the legacy services lacked.</p>
+<section id="Flexible-queries">
+<h3>Flexible queries<a class="headerlink" href="#Flexible-queries" title="Link to this heading"></a></h3>
+<p>The new functions expose <strong>all</strong> of the query parameters the API supports, each defaulting to <code class="docutils literal notranslate"><span class="pre">None</span></code>. You do <strong>not</strong> need to (and usually should not) specify them all. Filters are combined with a Boolean <em>AND</em>: passing both a list of monitoring locations and a list of parameter codes returns only the combinations of the two. Because every argument is named, your IDE can autocomplete the options.</p>
+</section>
+<section id="Flexible-columns-returned">
+<h3>Flexible columns returned<a class="headerlink" href="#Flexible-columns-returned" title="Link to this heading"></a></h3>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">properties</span></code> argument to choose which columns come back. The full set of available properties for a collection is published in that collection’s schema, e.g. <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily/queryables">https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily/queryables</a>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ask for just a few columns instead of the full ~40-column record.</span>
+<span class="n">sites_info</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01491000&quot;</span><span class="p">,</span>
+    <span class="n">properties</span><span class="o">=</span><span class="p">[</span>
+        <span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;site_type&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;drainage_area&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;monitoring_location_name&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="n">sites_info</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s2">&quot;geometry&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: monitoring-locations · 1 page · 1 rows
+No API key detected — register for higher rate limits at https://api.waterdata.usgs.gov/signup/
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>monitoring_location_id</th>
+      <th>site_type</th>
+      <th>drainage_area</th>
+      <th>monitoring_location_name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>USGS-01491000</td>
+      <td>Stream</td>
+      <td>113.0</td>
+      <td>CHOPTANK RIVER NEAR GREENSBORO, MD</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="API-tokens">
+<h3>API tokens<a class="headerlink" href="#API-tokens" title="Link to this heading"></a></h3>
+<p>USGS now rate-limits requests per IP address per hour. If you hit the limit you can request a free API token at <a class="reference external" href="https://api.waterdata.usgs.gov/signup/">https://api.waterdata.usgs.gov/signup/</a>. Keep it out of shared scripts and version control. (At the time of writing the Python <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package does not yet wire a token into these calls; the rate limits are generous for the queries below.)</p>
+</section>
+<section id="Contextual-Query-Language-(CQL2)">
+<h3>Contextual Query Language (CQL2)<a class="headerlink" href="#Contextual-Query-Language-(CQL2)" title="Link to this heading"></a></h3>
+<p>The APIs accept <a class="reference external" href="https://www.loc.gov/standards/sru/cql/">CQL2</a> expressions for complex queries through the <code class="docutils literal notranslate"><span class="pre">filter</span></code> / <code class="docutils literal notranslate"><span class="pre">filter_lang</span></code> arguments. See the <a class="reference internal" href="#General-retrieval-and-CQL2"><span class="std std-ref">General retrieval and CQL2</span></a> section below.</p>
+</section>
+<section id="Simple-features">
+<h3>Simple features<a class="headerlink" href="#Simple-features" title="Link to this heading"></a></h3>
+<p>Spatial collections return a <code class="docutils literal notranslate"><span class="pre">geometry</span></code> column, so <code class="docutils literal notranslate"><span class="pre">get_*</span></code> calls give you a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> that drops straight into geospatial workflows. Pass <code class="docutils literal notranslate"><span class="pre">skip_geometry=True</span></code> to get a plain <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>.</p>
+</section>
+</section>
+<section id="Lessons-learned">
+<h2>Lessons learned<a class="headerlink" href="#Lessons-learned" title="Link to this heading"></a></h2>
+<section id="Request-many-sites-in-one-call">
+<h3>Request many sites in one call<a class="headerlink" href="#Request-many-sites-in-one-call" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> automatically splits a large request — many monitoring locations, several parameter codes, or a complex filter — into URL-sized sub-requests and recombines the results, and it can resume a long pull that hits a rate limit or transient server error without refetching completed work. So pass all your sites in one call rather than looping over them.</p>
+<p>The main exception is <strong>continuous</strong> data, which is capped at 3 years per request. See the <em>Continuous Data</em> notebook for large continuous pulls.</p>
+</section>
+</section>
+<section id="New-functions">
+<h2>New functions<a class="headerlink" href="#New-functions" title="Link to this heading"></a></h2>
+<section id="Monitoring-location">
+<h3>Monitoring location<a class="headerlink" href="#Monitoring-location" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">get_monitoring_locations</span></code> returns site metadata. To browse the service in a web browser, visit <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/monitoring-locations">https://api.waterdata.usgs.gov/ogcapi/v0/collections/monitoring-locations</a>.</p>
+<p>A simple request for one known USGS site:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sites_info</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01491000&quot;</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sites_info</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columns returned&quot;</span><span class="p">)</span>
+<span class="n">sites_info</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s2">&quot;geometry&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: monitoring-locations · 1 page · 1 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+44 columns returned
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>monitoring_location_id</th>
+      <td>USGS-01491000</td>
+    </tr>
+    <tr>
+      <th>agency_code</th>
+      <td>USGS</td>
+    </tr>
+    <tr>
+      <th>agency_name</th>
+      <td>U.S. Geological Survey</td>
+    </tr>
+    <tr>
+      <th>monitoring_location_number</th>
+      <td>01491000</td>
+    </tr>
+    <tr>
+      <th>monitoring_location_name</th>
+      <td>CHOPTANK RIVER NEAR GREENSBORO, MD</td>
+    </tr>
+    <tr>
+      <th>district_code</th>
+      <td>24</td>
+    </tr>
+    <tr>
+      <th>country_code</th>
+      <td>US</td>
+    </tr>
+    <tr>
+      <th>country_name</th>
+      <td>United States of America</td>
+    </tr>
+    <tr>
+      <th>state_code</th>
+      <td>24</td>
+    </tr>
+    <tr>
+      <th>state_name</th>
+      <td>Maryland</td>
+    </tr>
+    <tr>
+      <th>county_code</th>
+      <td>011</td>
+    </tr>
+    <tr>
+      <th>county_name</th>
+      <td>Caroline County</td>
+    </tr>
+    <tr>
+      <th>minor_civil_division_code</th>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>site_type_code</th>
+      <td>ST</td>
+    </tr>
+    <tr>
+      <th>site_type</th>
+      <td>Stream</td>
+    </tr>
+    <tr>
+      <th>hydrologic_unit_code</th>
+      <td>020600050203</td>
+    </tr>
+    <tr>
+      <th>basin_code</th>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>altitude</th>
+      <td>2.73</td>
+    </tr>
+    <tr>
+      <th>altitude_accuracy</th>
+      <td>0.1</td>
+    </tr>
+    <tr>
+      <th>altitude_method_code</th>
+      <td>N</td>
+    </tr>
+    <tr>
+      <th>altitude_method_name</th>
+      <td>Interpolated from Digital Elevation Model</td>
+    </tr>
+    <tr>
+      <th>vertical_datum</th>
+      <td>NAVD88</td>
+    </tr>
+    <tr>
+      <th>vertical_datum_name</th>
+      <td>North American Vertical Datum of 1988</td>
+    </tr>
+    <tr>
+      <th>horizontal_positional_accuracy_code</th>
+      <td>S</td>
+    </tr>
+    <tr>
+      <th>horizontal_positional_accuracy</th>
+      <td>Accurate to + or - 1 sec.</td>
+    </tr>
+    <tr>
+      <th>horizontal_position_method_code</th>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>horizontal_position_method_name</th>
+      <td>Interpolated from MAP.</td>
+    </tr>
+    <tr>
+      <th>original_horizontal_datum</th>
+      <td>NAD83</td>
+    </tr>
+    <tr>
+      <th>original_horizontal_datum_name</th>
+      <td>North American Datum of 1983</td>
+    </tr>
+    <tr>
+      <th>drainage_area</th>
+      <td>113.0</td>
+    </tr>
+    <tr>
+      <th>contributing_drainage_area</th>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>time_zone_abbreviation</th>
+      <td>EST</td>
+    </tr>
+    <tr>
+      <th>uses_daylight_savings</th>
+      <td>Y</td>
+    </tr>
+    <tr>
+      <th>construction_date</th>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>aquifer_code</th>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>national_aquifer_code</th>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>aquifer_type_code</th>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>well_constructed_depth</th>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>hole_constructed_depth</th>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>depth_source_code</th>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>revision_note</th>
+      <td>WSP 1622: 1948. WDR MD-DE-79-1: 1961(P).</td>
+    </tr>
+    <tr>
+      <th>revision_created</th>
+      <td>2017-11-13T06:00:00+00:00</td>
+    </tr>
+    <tr>
+      <th>revision_modified</th>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Any returned column can also be used as an input filter. For example, to find every stream site in Wisconsin:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sites_wi</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
+    <span class="n">state_name</span><span class="o">=</span><span class="s2">&quot;Wisconsin&quot;</span><span class="p">,</span>
+    <span class="n">site_type</span><span class="o">=</span><span class="s2">&quot;Stream&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sites_wi</span><span class="p">)</span><span class="si">}</span><span class="s2"> Wisconsin stream sites&quot;</span><span class="p">)</span>
+<span class="n">sites_wi</span><span class="p">[[</span><span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">,</span> <span class="s2">&quot;monitoring_location_name&quot;</span><span class="p">,</span> <span class="s2">&quot;geometry&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: monitoring-locations · 1 page · 2,813 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+2813 Wisconsin stream sites
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>monitoring_location_id</th>
+      <th>monitoring_location_name</th>
+      <th>geometry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>ASCE-885512345000005</td>
+      <td>MLR 2 BATCH TEST - ASCE 005</td>
+      <td>POINT (-89.13328 44.17978)</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>ASCE-885512345000006</td>
+      <td>MLR 2 BATCH TEST - ASCE 006</td>
+      <td>POINT (-89.1725 44.11972)</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>ASCE-885512345000007</td>
+      <td>MLR 2 BATCH TEST - ASCE 007</td>
+      <td>POINT (-88.81972 44.09361)</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USGS-04023120</td>
+      <td>FLAG RIVER AT PORT WING, WI</td>
+      <td>POINT (-91.37367 46.78267)</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USGS-04024025</td>
+      <td>ST. LOUIS RIVER AT HWY. 23 ABOVE FOND DU LAC, MN</td>
+      <td>POINT (-92.28408 46.65844)</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Because the result is a <code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code>, plotting the locations is a one-liner. For an interactive map, <code class="docutils literal notranslate"><span class="pre">folium</span></code> works well with the same data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">sites_wi</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">markersize</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;USGS stream monitoring locations in Wisconsin&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Longitude&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Latitude&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_USGS_WaterData_Introduction_Examples_12_0.png" src="../_images/examples_USGS_WaterData_Introduction_Examples_12_0.png" />
+</div>
+</div>
+</section>
+<section id="Time-series-&amp;-combined-metadata">
+<h3>Time series &amp; combined metadata<a class="headerlink" href="#Time-series-&-combined-metadata" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">get_combined_metadata</span></code> merges time-series metadata (<code class="docutils literal notranslate"><span class="pre">get_time_series_metadata</span></code>) and field-measurement metadata by site, telling you which time series a site offers and the span of each.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ts_available</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_combined_metadata</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01491000&quot;</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="s2">&quot;00010&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;parameter_name&quot;</span><span class="p">,</span> <span class="s2">&quot;statistic_id&quot;</span><span class="p">,</span> <span class="s2">&quot;begin&quot;</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="s2">&quot;last_modified&quot;</span><span class="p">]</span>
+<span class="n">ts_available</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: combined-metadata · 1 page · 11 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>parameter_name</th>
+      <th>statistic_id</th>
+      <th>begin</th>
+      <th>end</th>
+      <th>last_modified</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Discharge</td>
+      <td>NaN</td>
+      <td>1948-01-15 13:00:00+00:00</td>
+      <td>2026-03-20 14:18:02+00:00</td>
+      <td>2026-05-26 17:51:47.057930+00:00</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Discharge</td>
+      <td>NaN</td>
+      <td>1948-01-14 05:00:00+00:00</td>
+      <td>2025-04-13 04:00:00+00:00</td>
+      <td>2026-03-20 16:28:29.353284+00:00</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Temperature, water</td>
+      <td>00011</td>
+      <td>2023-04-20 22:30:00+00:00</td>
+      <td>2026-05-28 12:30:00+00:00</td>
+      <td>2026-05-28 08:37:04.883551+00:00</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Temperature, water</td>
+      <td>00002</td>
+      <td>2023-04-21 04:00:00+00:00</td>
+      <td>2026-05-26 04:00:00+00:00</td>
+      <td>2026-05-28 05:36:29.434156+00:00</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Discharge</td>
+      <td>00003</td>
+      <td>1948-01-01 05:00:00+00:00</td>
+      <td>2026-05-26 04:00:00+00:00</td>
+      <td>2026-05-28 05:28:38.903565+00:00</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Temperature, water</td>
+      <td>00001</td>
+      <td>2023-04-21 04:00:00+00:00</td>
+      <td>2026-05-26 04:00:00+00:00</td>
+      <td>2026-05-28 05:36:29.446437+00:00</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Temperature, water</td>
+      <td>00003</td>
+      <td>2023-04-21 04:00:00+00:00</td>
+      <td>2026-05-27 04:00:00+00:00</td>
+      <td>2026-05-28 05:36:29.026490+00:00</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Discharge</td>
+      <td>00011</td>
+      <td>1990-10-01 09:08:09+00:00</td>
+      <td>2026-05-28 12:15:00+00:00</td>
+      <td>2026-05-28 08:29:52.042518+00:00</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Temperature, water</td>
+      <td>00001</td>
+      <td>1988-10-01 04:00:00+00:00</td>
+      <td>2012-05-09 04:00:00+00:00</td>
+      <td>2020-08-27 16:15:01.888947+00:00</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Temperature, water</td>
+      <td>00002</td>
+      <td>2010-10-01 04:00:00+00:00</td>
+      <td>2012-05-09 04:00:00+00:00</td>
+      <td>2020-08-27 16:16:01.630091+00:00</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Temperature, water</td>
+      <td>00003</td>
+      <td>2010-10-01 04:00:00+00:00</td>
+      <td>2012-05-09 04:00:00+00:00</td>
+      <td>2020-08-27 16:15:36.763326+00:00</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Parameter-codes">
+<h3>Parameter codes<a class="headerlink" href="#Parameter-codes" title="Link to this heading"></a></h3>
+<p>Parameter-code descriptions come from the <code class="docutils literal notranslate"><span class="pre">parameter-codes</span></code> reference table:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pcode_info</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_reference_table</span><span class="p">(</span>
+    <span class="n">collection</span><span class="o">=</span><span class="s2">&quot;parameter-codes&quot;</span><span class="p">,</span>
+    <span class="n">query</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;00660&quot;</span><span class="p">},</span>
+<span class="p">)</span>
+<span class="n">pcode_info</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: parameter-codes · 1 page · 1 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>parameter_code</th>
+      <td>00660</td>
+    </tr>
+    <tr>
+      <th>parameter_name</th>
+      <td>Orthophosphate, wf</td>
+    </tr>
+    <tr>
+      <th>unit_of_measure</th>
+      <td>mg/l asPO4</td>
+    </tr>
+    <tr>
+      <th>parameter_group_code</th>
+      <td>NUT</td>
+    </tr>
+    <tr>
+      <th>parameter_description</th>
+      <td>Orthophosphate, water, filtered, milligrams pe...</td>
+    </tr>
+    <tr>
+      <th>medium</th>
+      <td>Water</td>
+    </tr>
+    <tr>
+      <th>statistical_basis</th>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>time_basis</th>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>weight_basis</th>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>particle_size_basis</th>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>sample_fraction</th>
+      <td>Dissolved</td>
+    </tr>
+    <tr>
+      <th>temperature_basis</th>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>epa_equivalence</th>
+      <td>Not checked</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Daily-values">
+<h3>Daily values<a class="headerlink" href="#Daily-values" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">get_daily</span></code> returns daily values. Browse it at <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily">https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily</a>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">daily_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01491000&quot;</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="s2">&quot;00010&quot;</span><span class="p">],</span>
+    <span class="n">statistic_id</span><span class="o">=</span><span class="s2">&quot;00003&quot;</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2023-10-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2024-09-30&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">daily_data</span><span class="p">[[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;parameter_code&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="s2">&quot;approval_status&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: daily · 1 page · 730 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time</th>
+      <th>parameter_code</th>
+      <th>value</th>
+      <th>approval_status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2023-10-01</td>
+      <td>00010</td>
+      <td>18.3</td>
+      <td>Approved</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2023-10-01</td>
+      <td>00060</td>
+      <td>61.9</td>
+      <td>Approved</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2023-10-02</td>
+      <td>00060</td>
+      <td>57.2</td>
+      <td>Approved</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2023-10-02</td>
+      <td>00010</td>
+      <td>19.0</td>
+      <td>Approved</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2023-10-03</td>
+      <td>00010</td>
+      <td>19.6</td>
+      <td>Approved</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Notice the data come back in <strong>long</strong> format — one observation per row. Long data are usually easier to work with; here we facet by <code class="docutils literal notranslate"><span class="pre">parameter_code</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">daily_data</span><span class="p">[</span><span class="s2">&quot;parameter_code&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">pcode</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+    <span class="n">sub</span> <span class="o">=</span> <span class="n">daily_data</span><span class="p">[</span><span class="n">daily_data</span><span class="p">[</span><span class="s2">&quot;parameter_code&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">pcode</span><span class="p">]</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">sub</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">pcode</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Daily values at USGS-01491000 (water year 2024)&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">autofmt_xdate</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_USGS_WaterData_Introduction_Examples_20_0.png" src="../_images/examples_USGS_WaterData_Introduction_Examples_20_0.png" />
+</div>
+</div>
+</section>
+<section id="Continuous">
+<h3>Continuous<a class="headerlink" href="#Continuous" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">get_continuous</span></code> returns instantaneous (sensor) values. Browse it at <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/continuous">https://api.waterdata.usgs.gov/ogcapi/v0/collections/continuous</a>.</p>
+<p>This service currently allows at most <strong>3 years</strong> of data per request; with no <code class="docutils literal notranslate"><span class="pre">time</span></code> argument it returns the latest year. Continuous data have no geometry column and do not support bounding-box queries. For large pulls, see the <em>Continuous Data</em> notebook.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sensor_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01491000&quot;</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2024-09-01/2024-09-03&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">sensor_data</span><span class="p">[[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;parameter_code&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="s2">&quot;approval_status&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: continuous · 1 page · 193 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time</th>
+      <th>parameter_code</th>
+      <th>value</th>
+      <th>approval_status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2024-09-01 00:00:00+00:00</td>
+      <td>00060</td>
+      <td>11.7</td>
+      <td>Approved</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2024-09-01 00:15:00+00:00</td>
+      <td>00060</td>
+      <td>12.0</td>
+      <td>Approved</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2024-09-01 00:30:00+00:00</td>
+      <td>00060</td>
+      <td>11.7</td>
+      <td>Approved</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2024-09-01 00:45:00+00:00</td>
+      <td>00060</td>
+      <td>11.7</td>
+      <td>Approved</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2024-09-01 01:00:00+00:00</td>
+      <td>00060</td>
+      <td>12.0</td>
+      <td>Approved</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Field-measurements">
+<h3>Field measurements<a class="headerlink" href="#Field-measurements" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">get_field_measurements</span></code> returns discrete field measurements, including groundwater levels.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">field_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_field_measurements</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span>
+        <span class="s2">&quot;USGS-451605097071701&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;USGS-263819081585801&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="n">time</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2023-10-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2024-09-30&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">field_data</span><span class="p">[[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">,</span> <span class="s2">&quot;parameter_code&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: field-measurements · 1 page · 42 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time</th>
+      <th>monitoring_location_id</th>
+      <th>parameter_code</th>
+      <th>value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2023-11-02 18:45:00+00:00</td>
+      <td>USGS-263819081585801</td>
+      <td>72019</td>
+      <td>27.55</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2023-11-02 18:45:00+00:00</td>
+      <td>USGS-263819081585801</td>
+      <td>62610</td>
+      <td>-14.55</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2023-11-02 18:45:00+00:00</td>
+      <td>USGS-263819081585801</td>
+      <td>62611</td>
+      <td>-15.68</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2023-12-18 21:25:00+00:00</td>
+      <td>USGS-451605097071701</td>
+      <td>62610</td>
+      <td>1836.12</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2023-12-18 21:25:00+00:00</td>
+      <td>USGS-451605097071701</td>
+      <td>72019</td>
+      <td>80.75</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">site</span><span class="p">,</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">field_data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">sub</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Field measurements&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">autofmt_xdate</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_USGS_WaterData_Introduction_Examples_25_0.png" src="../_images/examples_USGS_WaterData_Introduction_Examples_25_0.png" />
+</div>
+</div>
+</section>
+<section id="Channel-measurements">
+<h3>Channel measurements<a class="headerlink" href="#Channel-measurements" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">get_channel</span></code> returns channel-geometry measurements that accompany <code class="docutils literal notranslate"><span class="pre">get_field_measurements</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">channel</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_channel</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-02238500&quot;</span><span class="p">)</span>
+<span class="n">channel</span><span class="p">[[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;channel_width&quot;</span><span class="p">,</span> <span class="s2">&quot;channel_area&quot;</span><span class="p">,</span> <span class="s2">&quot;channel_velocity&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: channel-measurements · 1 page · 472 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time</th>
+      <th>channel_width</th>
+      <th>channel_area</th>
+      <th>channel_velocity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1943-02-13 04:00:00+00:00</td>
+      <td>65.0</td>
+      <td>306</td>
+      <td>0.78</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1943-02-26 04:00:00+00:00</td>
+      <td>47.0</td>
+      <td>187</td>
+      <td>1.07</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1943-03-30 04:00:00+00:00</td>
+      <td>58.0</td>
+      <td>206</td>
+      <td>0.95</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1943-05-01 04:00:00+00:00</td>
+      <td>45.0</td>
+      <td>200</td>
+      <td>0.78</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1943-05-26 04:00:00+00:00</td>
+      <td>51.0</td>
+      <td>222</td>
+      <td>0.85</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Latest-continuous-&amp;-latest-daily">
+<h3>Latest continuous &amp; latest daily<a class="headerlink" href="#Latest-continuous-&-latest-daily" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">get_latest_continuous</span></code> and <code class="docutils literal notranslate"><span class="pre">get_latest_daily</span></code> have no NWIS equivalent — they return the single most recent observation for each time series.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">latest_uv</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_latest_continuous</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01491000&quot;</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="s2">&quot;approval_status&quot;</span><span class="p">,</span> <span class="s2">&quot;parameter_code&quot;</span><span class="p">,</span> <span class="s2">&quot;unit_of_measure&quot;</span><span class="p">]</span>
+<span class="n">latest_uv</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: latest-continuous · 1 page · 1 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>time</th>
+      <td>2026-05-28 14:15:00+00:00</td>
+    </tr>
+    <tr>
+      <th>value</th>
+      <td>42.7</td>
+    </tr>
+    <tr>
+      <th>approval_status</th>
+      <td>Provisional</td>
+    </tr>
+    <tr>
+      <th>parameter_code</th>
+      <td>00060</td>
+    </tr>
+    <tr>
+      <th>unit_of_measure</th>
+      <td>ft^3/s</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">latest_dv</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_latest_daily</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01491000&quot;</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">latest_dv</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: latest-daily · 1 page · 1 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>time</th>
+      <td>2026-05-27 00:00:00</td>
+    </tr>
+    <tr>
+      <th>value</th>
+      <td>44.1</td>
+    </tr>
+    <tr>
+      <th>approval_status</th>
+      <td>Provisional</td>
+    </tr>
+    <tr>
+      <th>parameter_code</th>
+      <td>00060</td>
+    </tr>
+    <tr>
+      <th>unit_of_measure</th>
+      <td>ft^3/s</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="General-retrieval-and-CQL2">
+<h3>General retrieval and CQL2<a class="headerlink" href="#General-retrieval-and-CQL2" title="Link to this heading"></a></h3>
+<p>The OGC <code class="docutils literal notranslate"><span class="pre">get_*</span></code> functions accept a CQL2 expression through the <code class="docutils literal notranslate"><span class="pre">filter</span></code> / <code class="docutils literal notranslate"><span class="pre">filter_lang</span></code> arguments, so even complex queries run against these same functions — there is no separate “general retrieval” call.</p>
+<p>CQL2 supports a wildcard via <code class="docutils literal notranslate"><span class="pre">LIKE</span></code> (<code class="docutils literal notranslate"><span class="pre">%</span></code> matches any trailing characters). This is handy for hydrologic unit codes, which may be stored as <code class="docutils literal notranslate"><span class="pre">02070010</span></code> or as a longer code beginning with those digits. To get every site whose HUC starts with <code class="docutils literal notranslate"><span class="pre">02070010</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">huc_sites</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
+    <span class="nb">filter</span><span class="o">=</span><span class="s2">&quot;hydrologic_unit_code LIKE &#39;02070010%&#39;&quot;</span><span class="p">,</span>
+    <span class="n">filter_lang</span><span class="o">=</span><span class="s2">&quot;cql-text&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">huc_sites</span><span class="p">)</span><span class="si">}</span><span class="s2"> sites in HUC 02070010&quot;</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">huc_sites</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">markersize</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Sites within HUC 02070010&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: monitoring-locations · 1 page · 2,354 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+2354 sites in HUC 02070010
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_USGS_WaterData_Introduction_Examples_32_2.png" src="../_images/examples_USGS_WaterData_Introduction_Examples_32_2.png" />
+</div>
+</div>
+<blockquote>
+<div><p><strong>Numeric filters.</strong> Every queryable on the Water Data API is typed as a <em>string</em>, so an unquoted numeric comparison like <code class="docutils literal notranslate"><span class="pre">drainage_area</span> <span class="pre">&gt;</span> <span class="pre">1000</span></code> is rejected by the server (and quoting it gives a misleading lexicographic comparison). <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> catches this and raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>:</p>
+</div></blockquote>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+    <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
+        <span class="nb">filter</span><span class="o">=</span><span class="s2">&quot;drainage_area &gt; 1000&quot;</span><span class="p">,</span>
+        <span class="n">filter_lang</span><span class="o">=</span><span class="s2">&quot;cql-text&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;-&gt;&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)[:</span><span class="mi">120</span><span class="p">],</span> <span class="s2">&quot;...&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ValueError -&gt; Filter uses an unquoted numeric comparison against &#39;drainage_area&#39; (``drainage_area &gt; 1000``). Every queryable on the Wa ...
+</pre></div></div>
+</div>
+<p>The recommended pattern is to filter on the string-valued attributes the server understands (state, site type, HUC, …) and then do the <strong>numeric</strong> reduction in pandas. For example, large-drainage stream sites in Wisconsin and Minnesota:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sites</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
+    <span class="n">state_name</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Wisconsin&quot;</span><span class="p">,</span> <span class="s2">&quot;Minnesota&quot;</span><span class="p">],</span>
+    <span class="n">site_type</span><span class="o">=</span><span class="s2">&quot;Stream&quot;</span><span class="p">,</span>
+    <span class="n">properties</span><span class="o">=</span><span class="p">[</span>
+        <span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;monitoring_location_name&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;state_name&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;drainage_area&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="n">big</span> <span class="o">=</span> <span class="n">sites</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">sites</span><span class="p">[</span><span class="s2">&quot;drainage_area&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;coerce&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">big</span><span class="p">)</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span><span class="si">}</span><span class="s2"> WI/MN stream sites drain &gt; 1000 sq mi&quot;</span><span class="p">)</span>
+<span class="n">big</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s2">&quot;geometry&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: monitoring-locations · 1 page · 5,400 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+225 of 5400 WI/MN stream sites drain &gt; 1000 sq mi
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>monitoring_location_id</th>
+      <th>monitoring_location_name</th>
+      <th>state_name</th>
+      <th>drainage_area</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>139</th>
+      <td>USGS-04023500</td>
+      <td>ST. LOUIS RIVER NEAR CLOQUET, MN</td>
+      <td>Minnesota</td>
+      <td>3400.0</td>
+    </tr>
+    <tr>
+      <th>141</th>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>Minnesota</td>
+      <td>3430.0</td>
+    </tr>
+    <tr>
+      <th>426</th>
+      <td>USGS-04062011</td>
+      <td>BRULE RIVER NEAR COMMONWEALTH, WI</td>
+      <td>Wisconsin</td>
+      <td>1020.0</td>
+    </tr>
+    <tr>
+      <th>427</th>
+      <td>USGS-04063000</td>
+      <td>MENOMINEE RIVER NEAR FLORENCE, WI</td>
+      <td>Wisconsin</td>
+      <td>1760.0</td>
+    </tr>
+    <tr>
+      <th>456</th>
+      <td>USGS-04065106</td>
+      <td>MENOMINEE RIVER AT NIAGARA, WI</td>
+      <td>Wisconsin</td>
+      <td>2470.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Reference-tables">
+<h3>Reference tables<a class="headerlink" href="#Reference-tables" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">get_reference_table</span></code> exposes a variety of metadata tables. Any returned column can be filtered on. See the <em>USGS Reference Lists</em> notebook for the full list of collections.</p>
+</section>
+<section id="Discrete-samples">
+<h3>Discrete samples<a class="headerlink" href="#Discrete-samples" title="Link to this heading"></a></h3>
+<p>Discrete USGS water-quality data are served from a separate (non-OGC) endpoint via <code class="docutils literal notranslate"><span class="pre">get_samples</span></code>. See the <em>Discrete water-quality samples</em> notebook.</p>
+</section>
+<section id="Daily-data-statistics">
+<h3>Daily data statistics<a class="headerlink" href="#Daily-data-statistics" title="Link to this heading"></a></h3>
+<p>Pre-computed temporal summary statistics are available through <code class="docutils literal notranslate"><span class="pre">get_stats_por</span></code> (day-of-year / month-of-year) and <code class="docutils literal notranslate"><span class="pre">get_stats_date_range</span></code> (calendar month, calendar year, water year). See the <em>Daily statistics</em> notebook.</p>
+</section>
+</section>
+<section id="More-notes">
+<h2>More notes<a class="headerlink" href="#More-notes" title="Link to this heading"></a></h2>
+<section id="limit-and-paging">
+<h3><code class="docutils literal notranslate"><span class="pre">limit</span></code> and paging<a class="headerlink" href="#limit-and-paging" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">limit</span></code> argument sets how many rows come back <strong>per page</strong>, not the overall total — by default <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> pages through everything. You rarely need to touch it; lowering it can help on a spotty connection.</p>
+</section>
+<section id="The-id-column">
+<h3>The <code class="docutils literal notranslate"><span class="pre">id</span></code> column<a class="headerlink" href="#The-id-column" title="Link to this heading"></a></h3>
+<p>Each endpoint natively returns an <code class="docutils literal notranslate"><span class="pre">id</span></code> column, and that value is used as an input to <em>other</em> endpoints under a different name (the monitoring-locations <code class="docutils literal notranslate"><span class="pre">id</span></code> is the <code class="docutils literal notranslate"><span class="pre">monitoring_location_id</span></code> everywhere else). <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> renames <code class="docutils literal notranslate"><span class="pre">id</span></code> accordingly, but you can request the raw <code class="docutils literal notranslate"><span class="pre">id</span></code> column via <code class="docutils literal notranslate"><span class="pre">properties</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site</span> <span class="o">=</span> <span class="s2">&quot;USGS-02238500&quot;</span>
+<span class="n">renamed</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
+    <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">,</span> <span class="s2">&quot;state_name&quot;</span><span class="p">,</span> <span class="s2">&quot;country_name&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">raw_id</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
+    <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;state_name&quot;</span><span class="p">,</span> <span class="s2">&quot;country_name&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;renamed:&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">renamed</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s2">&quot;geometry&quot;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;raw id :&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">raw_id</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s2">&quot;geometry&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: monitoring-locations · 1 page · 1 rows
+Retrieving: monitoring-locations · 1 page · 1 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+renamed: [&#39;monitoring_location_id&#39;, &#39;state_name&#39;, &#39;country_name&#39;]
+raw id : [&#39;monitoring_location_id&#39;, &#39;state_name&#39;, &#39;country_name&#39;]
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="More-help">
+<h2>More help<a class="headerlink" href="#More-help" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Documentation: <a class="reference external" href="https://doi-usgs.github.io/dataretrieval-python/">https://doi-usgs.github.io/dataretrieval-python/</a></p></li>
+<li><p>R package docs (source of these examples): <a class="reference external" href="https://doi-usgs.github.io/dataRetrieval/">https://doi-usgs.github.io/dataRetrieval/</a></p></li>
+<li><p>Issues / questions: <a class="reference external" href="https://github.com/DOI-USGS/dataretrieval-python/issues">https://github.com/DOI-USGS/dataretrieval-python/issues</a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="WaterData_demo.html" class="btn btn-neutral float-left" title="Using the waterdata module to pull data from the USGS Water Data APIs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="USGS_WaterData_DiscreteSamples_Examples.html" class="btn btn-neutral float-right" title="Discrete water-quality samples: get_samples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

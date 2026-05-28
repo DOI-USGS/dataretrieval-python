@@ -1,0 +1,1651 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>USGS Reference Lists &mdash; dataretrieval 0.1.dev1+g569ff3836 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=022dad44"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Retrieving USGS water data with the waterdata module" href="readme_examples.html" />
+    <link rel="prev" title="Continuous Data" href="USGS_WaterData_ContinuousData_Examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#introduction-to-the-waterdata-module-of-dataretrieval">Introduction to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code></a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#usgs-water-data-api-vignettes">USGS Water Data API vignettes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Introduction_Examples.html">Introduction to the USGS Water Data APIs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DiscreteSamples_Examples.html">Discrete water-quality samples: <code class="docutils literal notranslate"><span class="pre">get_samples</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DailyStatistics_Examples.html">Daily statistics: <code class="docutils literal notranslate"><span class="pre">get_stats_por</span></code> and <code class="docutils literal notranslate"><span class="pre">get_stats_date_range</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ContinuousData_Examples.html">Continuous Data</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">USGS Reference Lists</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#A-single-reference-table">A single reference table</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#All-reference-tables">All reference tables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#More-help">More help</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">USGS Reference Lists</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/USGS_WaterData_ReferenceLists_Examples.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="USGS-Reference-Lists">
+<h1>USGS Reference Lists<a class="headerlink" href="#USGS-Reference-Lists" title="Link to this heading"></a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">get_reference_table</span></code> returns the metadata “reference” tables for the USGS Water Data API. These tables enumerate the allowable values for the filter arguments used elsewhere in the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module — for example, the <code class="docutils literal notranslate"><span class="pre">site-types</span></code> table lists every valid <code class="docutils literal notranslate"><span class="pre">site_type_code</span></code>, and <code class="docutils literal notranslate"><span class="pre">parameter-codes</span></code> lists every valid <code class="docutils literal notranslate"><span class="pre">parameter_code</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">get_reference_table</span></code> returns a <code class="docutils literal notranslate"><span class="pre">(data,</span> <span class="pre">metadata)</span></code> tuple.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_args</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">Markdown</span><span class="p">,</span> <span class="n">display</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">METADATA_COLLECTIONS</span>
+
+<span class="n">collections</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">get_args</span><span class="p">(</span><span class="n">METADATA_COLLECTIONS</span><span class="p">))</span>
+<span class="n">collections</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;agency-codes&#39;,
+ &#39;altitude-datums&#39;,
+ &#39;aquifer-codes&#39;,
+ &#39;aquifer-types&#39;,
+ &#39;coordinate-accuracy-codes&#39;,
+ &#39;coordinate-datum-codes&#39;,
+ &#39;coordinate-method-codes&#39;,
+ &#39;counties&#39;,
+ &#39;hydrologic-unit-codes&#39;,
+ &#39;medium-codes&#39;,
+ &#39;national-aquifer-codes&#39;,
+ &#39;parameter-codes&#39;,
+ &#39;reliability-codes&#39;,
+ &#39;site-types&#39;,
+ &#39;states&#39;,
+ &#39;statistic-codes&#39;,
+ &#39;topographic-codes&#39;,
+ &#39;time-zone-codes&#39;]
+</pre></div></div>
+</div>
+<section id="A-single-reference-table">
+<h2>A single reference table<a class="headerlink" href="#A-single-reference-table" title="Link to this heading"></a></h2>
+<p>Fetch one table by name. The first column is the table’s primary code (the collection name, singularized, with hyphens turned into underscores — e.g. <code class="docutils literal notranslate"><span class="pre">site-types</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">site_type</span></code>):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_types</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_reference_table</span><span class="p">(</span><span class="n">collection</span><span class="o">=</span><span class="s2">&quot;site-types&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">site_types</span><span class="p">)</span><span class="si">}</span><span class="s2"> rows&quot;</span><span class="p">)</span>
+<span class="n">site_types</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: site-types · 1 page · 56 rows
+No API key detected — register for higher rate limits at https://api.waterdata.usgs.gov/signup/
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+56 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>site_type</th>
+      <th>site_type_primary_flag</th>
+      <th>site_type_name</th>
+      <th>site_type_description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>AG</td>
+      <td>Y</td>
+      <td>Aggregate groundwater use</td>
+      <td>An Aggregate Groundwater Withdrawal/Return sit...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>AS</td>
+      <td>Y</td>
+      <td>Aggregate surface-water-use</td>
+      <td>An Aggregate Surface-Water Diversion/Return si...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>AT</td>
+      <td>Y</td>
+      <td>Atmosphere</td>
+      <td>A site established primarily to measure meteor...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>AW</td>
+      <td>Y</td>
+      <td>Aggregate water-use establishment</td>
+      <td>An Aggregate Water-Use Establishment represent...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>ES</td>
+      <td>Y</td>
+      <td>Estuary</td>
+      <td>A coastal inlet of the sea or ocean; esp. the ...</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>You can also pass a <code class="docutils literal notranslate"><span class="pre">query</span></code> to retrieve a subset — for instance specific parameter codes by <code class="docutils literal notranslate"><span class="pre">id</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">some_pcodes</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_reference_table</span><span class="p">(</span>
+    <span class="n">collection</span><span class="o">=</span><span class="s2">&quot;parameter-codes&quot;</span><span class="p">,</span>
+    <span class="n">query</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;00060,00065,00010&quot;</span><span class="p">},</span>
+<span class="p">)</span>
+<span class="n">some_pcodes</span><span class="p">[[</span><span class="s2">&quot;parameter_code&quot;</span><span class="p">,</span> <span class="s2">&quot;parameter_name&quot;</span><span class="p">,</span> <span class="s2">&quot;unit_of_measure&quot;</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: parameter-codes · 1 page · 3 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>parameter_code</th>
+      <th>parameter_name</th>
+      <th>unit_of_measure</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>00010</td>
+      <td>Temperature, water</td>
+      <td>deg C</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>00060</td>
+      <td>Discharge</td>
+      <td>ft3/s</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>00065</td>
+      <td>Gage height</td>
+      <td>ft</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="All-reference-tables">
+<h2>All reference tables<a class="headerlink" href="#All-reference-tables" title="Link to this heading"></a></h2>
+<p>The full set of collections is enumerated in <code class="docutils literal notranslate"><span class="pre">METADATA_COLLECTIONS</span></code>. Below we preview the first few rows of each. (Most are small lookup tables; a couple — notably <code class="docutils literal notranslate"><span class="pre">parameter-codes</span></code> and <code class="docutils literal notranslate"><span class="pre">hydrologic-unit-codes</span></code> — are large, so we only display the head.)</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">collection</span> <span class="ow">in</span> <span class="n">collections</span><span class="p">:</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_reference_table</span><span class="p">(</span><span class="n">collection</span><span class="o">=</span><span class="n">collection</span><span class="p">)</span>
+    <span class="n">preview</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s2">&quot;geometry&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;geometry&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">else</span> <span class="n">df</span>
+    <span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;### `</span><span class="si">{</span><span class="n">collection</span><span class="si">}</span><span class="s2">`  </span><span class="se">\n</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> rows&quot;</span><span class="p">))</span>
+    <span class="n">display</span><span class="p">(</span><span class="n">preview</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: agency-codes · 1 page · 738 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="agency-codes">
+<h3><code class="docutils literal notranslate"><span class="pre">agency-codes</span></code><a class="headerlink" href="#agency-codes" title="Link to this heading"></a></h3>
+<p>738 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>agency_code</th>
+      <th>agency_name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>AK001</td>
+      <td>Alaska Department of Transportation and Public...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>AK002</td>
+      <td>Alaska Department of Environmental Conservation</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>AK004</td>
+      <td>Alaska Department of Natural Resources (DNR)</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: altitude-datums · 1 page · 14 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="altitude-datums">
+<h3><code class="docutils literal notranslate"><span class="pre">altitude-datums</span></code><a class="headerlink" href="#altitude-datums" title="Link to this heading"></a></h3>
+<p>14 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>altitude_datum</th>
+      <th>altitude_datum_description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>ASVD02</td>
+      <td>American Samoa Vertical Datum of 2002</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>BARGECANAL</td>
+      <td>New York State Barge Canal datum</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>GUVD04</td>
+      <td>Guam Vertical Datum of 2004</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: aquifer-codes · 1 page · 8,856 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="aquifer-codes">
+<h3><code class="docutils literal notranslate"><span class="pre">aquifer-codes</span></code><a class="headerlink" href="#aquifer-codes" title="Link to this heading"></a></h3>
+<p>8,856 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>aquifer_code</th>
+      <th>aquifer_name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>000AARF</td>
+      <td>Amphibolite and Amphibolite Rich Foliats</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>000AMPB</td>
+      <td>Amphibolite</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>000ANRS</td>
+      <td>Anorthosite</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: aquifer-types · 1 page · 5 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="aquifer-types">
+<h3><code class="docutils literal notranslate"><span class="pre">aquifer-types</span></code><a class="headerlink" href="#aquifer-types" title="Link to this heading"></a></h3>
+<p>5 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>aquifer_type</th>
+      <th>aquifer_type_description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>C</td>
+      <td>Confined single aquifer</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>M</td>
+      <td>Confined multiple aquifers</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>N</td>
+      <td>Unconfined multiple aquifer</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: coordinate-accuracy-codes · 1 page · 13 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="coordinate-accuracy-codes">
+<h3><code class="docutils literal notranslate"><span class="pre">coordinate-accuracy-codes</span></code><a class="headerlink" href="#coordinate-accuracy-codes" title="Link to this heading"></a></h3>
+<p>13 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>coordinate_accuracy_code</th>
+      <th>coordinate_accuracy_description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>Accurate to + or - .1 sec (Differentially-Corr...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>5</td>
+      <td>Accurate to + or - .5 sec (PLGR/PPS GPS).</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>B</td>
+      <td>Level 1 survey-grade GPS</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: coordinate-datum-codes · 1 page · 327 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="coordinate-datum-codes">
+<h3><code class="docutils literal notranslate"><span class="pre">coordinate-datum-codes</span></code><a class="headerlink" href="#coordinate-datum-codes" title="Link to this heading"></a></h3>
+<p>327 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>coordinate_datum_code</th>
+      <th>coordinate_datum_description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>ABIDJAN</td>
+      <td>Cote d'Ivoire</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>ACCRA</td>
+      <td>Ghana</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>ADINDAN</td>
+      <td>Description</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: coordinate-method-codes · 1 page · 14 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="coordinate-method-codes">
+<h3><code class="docutils literal notranslate"><span class="pre">coordinate-method-codes</span></code><a class="headerlink" href="#coordinate-method-codes" title="Link to this heading"></a></h3>
+<p>14 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>coordinate_method_code</th>
+      <th>coordinate_method_description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>C</td>
+      <td>Calculated from land net</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>D</td>
+      <td>Differential Global Positioning System (DGPS)</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>F</td>
+      <td>Survey-grade Global positioning system (SGPS)</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: counties · 1 page · 3,678 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="counties">
+<h3><code class="docutils literal notranslate"><span class="pre">counties</span></code><a class="headerlink" href="#counties" title="Link to this heading"></a></h3>
+<p>3,678 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>county</th>
+      <th>country_code</th>
+      <th>state_fips_code</th>
+      <th>county_fips_code</th>
+      <th>county_name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>AD-00-000</td>
+      <td>AD</td>
+      <td>00</td>
+      <td>000</td>
+      <td>Unspecified</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>AE-00-000</td>
+      <td>AE</td>
+      <td>00</td>
+      <td>000</td>
+      <td>Unspecified</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>AF-00-000</td>
+      <td>AF</td>
+      <td>00</td>
+      <td>000</td>
+      <td>Unspecified</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: hydrologic-unit-codes · 3 pages · 125,119 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="hydrologic-unit-codes">
+<h3><code class="docutils literal notranslate"><span class="pre">hydrologic-unit-codes</span></code><a class="headerlink" href="#hydrologic-unit-codes" title="Link to this heading"></a></h3>
+<p>125,119 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>hydrologic_unit_code</th>
+      <th>hydrologic_unit_name</th>
+      <th>hydrologic_unit_classification_code</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>01</td>
+      <td>New England Region</td>
+      <td>R</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0101</td>
+      <td>St. John</td>
+      <td>S</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>010100</td>
+      <td>St. John</td>
+      <td>B</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: medium-codes · 1 page · 78 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="medium-codes">
+<h3><code class="docutils literal notranslate"><span class="pre">medium-codes</span></code><a class="headerlink" href="#medium-codes" title="Link to this heading"></a></h3>
+<p>78 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>medium_code</th>
+      <th>medium_name</th>
+      <th>medium_description</th>
+      <th>legacy_medium_code</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>AA</td>
+      <td>Air</td>
+      <td>Sample of atmospheric gases.</td>
+      <td>*</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>AAQ</td>
+      <td>QC sample - Air</td>
+      <td>QC sample - Sample of atmospheric gases.</td>
+      <td>[</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>AG</td>
+      <td>Geologic Gases</td>
+      <td>Gases originating from a geologic formation or...</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: national-aquifer-codes · 1 page · 67 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="national-aquifer-codes">
+<h3><code class="docutils literal notranslate"><span class="pre">national-aquifer-codes</span></code><a class="headerlink" href="#national-aquifer-codes" title="Link to this heading"></a></h3>
+<p>67 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>national_aquifer_code</th>
+      <th>national_aquifer_name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>N100AKUNCD</td>
+      <td>Alaska unconsolidated-deposit aquifers</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>N100ALLUVL</td>
+      <td>Alluvial aquifers</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>N100BSNRGB</td>
+      <td>Basin and Range basin-fill aquifers</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: parameter-codes · 1 page · 19,675 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="parameter-codes">
+<h3><code class="docutils literal notranslate"><span class="pre">parameter-codes</span></code><a class="headerlink" href="#parameter-codes" title="Link to this heading"></a></h3>
+<p>19,675 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>parameter_code</th>
+      <th>parameter_name</th>
+      <th>unit_of_measure</th>
+      <th>parameter_group_code</th>
+      <th>parameter_description</th>
+      <th>medium</th>
+      <th>statistical_basis</th>
+      <th>time_basis</th>
+      <th>weight_basis</th>
+      <th>particle_size_basis</th>
+      <th>sample_fraction</th>
+      <th>temperature_basis</th>
+      <th>epa_equivalence</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>00001</td>
+      <td>Xsec loc, US from rb</td>
+      <td>ft</td>
+      <td>INF</td>
+      <td>Location in cross section, distance from right...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Agree</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>00002</td>
+      <td>Xsec loc, US from rb</td>
+      <td>%</td>
+      <td>INF</td>
+      <td>Location in cross section, distance from right...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Agree</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>00003</td>
+      <td>Sampling depth</td>
+      <td>ft</td>
+      <td>INF</td>
+      <td>Sampling depth, feet</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Agree</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: reliability-codes · 1 page · 4 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="reliability-codes">
+<h3><code class="docutils literal notranslate"><span class="pre">reliability-codes</span></code><a class="headerlink" href="#reliability-codes" title="Link to this heading"></a></h3>
+<p>4 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>reliability_code</th>
+      <th>reliability_description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>C</td>
+      <td>Data have been field checked by the reporting ...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>L</td>
+      <td>Location not accurate.</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>M</td>
+      <td>Minimal data.</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: site-types · 1 page · 56 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="site-types">
+<h3><code class="docutils literal notranslate"><span class="pre">site-types</span></code><a class="headerlink" href="#site-types" title="Link to this heading"></a></h3>
+<p>56 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>site_type</th>
+      <th>site_type_primary_flag</th>
+      <th>site_type_name</th>
+      <th>site_type_description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>AG</td>
+      <td>Y</td>
+      <td>Aggregate groundwater use</td>
+      <td>An Aggregate Groundwater Withdrawal/Return sit...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>AS</td>
+      <td>Y</td>
+      <td>Aggregate surface-water-use</td>
+      <td>An Aggregate Surface-Water Diversion/Return si...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>AT</td>
+      <td>Y</td>
+      <td>Atmosphere</td>
+      <td>A site established primarily to measure meteor...</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: states · 1 page · 398 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="states">
+<h3><code class="docutils literal notranslate"><span class="pre">states</span></code><a class="headerlink" href="#states" title="Link to this heading"></a></h3>
+<p>398 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>state</th>
+      <th>country_code</th>
+      <th>state_fips_code</th>
+      <th>state_name</th>
+      <th>state_postal_code</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>AD-00</td>
+      <td>AD</td>
+      <td>00</td>
+      <td>Unspecified</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>AE-00</td>
+      <td>AE</td>
+      <td>00</td>
+      <td>Unspecified</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>AF-00</td>
+      <td>AF</td>
+      <td>00</td>
+      <td>Unspecified</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: statistic-codes · 1 page · 3,188 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="statistic-codes">
+<h3><code class="docutils literal notranslate"><span class="pre">statistic-codes</span></code><a class="headerlink" href="#statistic-codes" title="Link to this heading"></a></h3>
+<p>3,188 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>statistic_code</th>
+      <th>statistic_name</th>
+      <th>statistic_description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>00001</td>
+      <td>MAXIMUM</td>
+      <td>MAXIMUM VALUES</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>00002</td>
+      <td>MINIMUM</td>
+      <td>MINIMUM VALUES</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>00003</td>
+      <td>MEAN</td>
+      <td>MEAN VALUES</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: topographic-codes · 1 page · 18 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="topographic-codes">
+<h3><code class="docutils literal notranslate"><span class="pre">topographic-codes</span></code><a class="headerlink" href="#topographic-codes" title="Link to this heading"></a></h3>
+<p>18 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>topographic_code</th>
+      <th>topography_name</th>
+      <th>short_topography_description</th>
+      <th>full_topography_description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>A</td>
+      <td>Alluvial fan</td>
+      <td>Stream deposit of loose rock material where it...</td>
+      <td>Alluvial fan refers to a low, outspread, relat...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>B</td>
+      <td>Playa</td>
+      <td>Undrained desert basin in which water accumula...</td>
+      <td>Playa refers to a dried-up, vegetation-free, f...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>C</td>
+      <td>Stream channel</td>
+      <td>Bed in which a natural stream of water runs.</td>
+      <td>Stream refers to the bed in which a natural st...</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: time-zone-codes · 1 page · 53 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<section id="time-zone-codes">
+<h3><code class="docutils literal notranslate"><span class="pre">time-zone-codes</span></code><a class="headerlink" href="#time-zone-codes" title="Link to this heading"></a></h3>
+<p>53 rows</p>
+</section>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time_zone_code</th>
+      <th>time_zone_name</th>
+      <th>time_zone_description</th>
+      <th>time_zone_utc_offset</th>
+      <th>time_zone_daylight_savings_time_code</th>
+      <th>time_zone_daylight_savings_time_name</th>
+      <th>time_zone_daylight_savings_utc_offset</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>ACST</td>
+      <td>Central Australia Standard Time</td>
+      <td>Central Australia</td>
+      <td>+09:30</td>
+      <td>ACSST</td>
+      <td>Central Australia Summer Time</td>
+      <td>+10:30</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>AEST</td>
+      <td>Australia Eastern Standard Time</td>
+      <td>Eastern Australia</td>
+      <td>+10:00</td>
+      <td>AESST</td>
+      <td>Australia Eastern Summer Time</td>
+      <td>+11:00</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>AFT</td>
+      <td>Afghanistan Time</td>
+      <td>Afghanistan</td>
+      <td>+04:30</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="More-help">
+<h2>More help<a class="headerlink" href="#More-help" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Documentation: <a class="reference external" href="https://doi-usgs.github.io/dataretrieval-python/">https://doi-usgs.github.io/dataretrieval-python/</a></p></li>
+<li><p>See the <em>Introduction to the USGS Water Data APIs</em> notebook for how these reference values feed the <code class="docutils literal notranslate"><span class="pre">get_*</span></code> filter arguments.</p></li>
+<li><p>Equivalent R article: <a class="reference external" href="https://doi-usgs.github.io/dataRetrieval/articles/Reference_Lists.html">USGS Reference Lists</a></p></li>
+<li><p>Issues / questions: <a class="reference external" href="https://github.com/DOI-USGS/dataretrieval-python/issues">https://github.com/DOI-USGS/dataretrieval-python/issues</a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="USGS_WaterData_ContinuousData_Examples.html" class="btn btn-neutral float-left" title="Continuous Data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="readme_examples.html" class="btn btn-neutral float-right" title="Retrieving USGS water data with the waterdata module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,652 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Continuous Data &mdash; dataretrieval 0.1.dev1+g569ff3836 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=022dad44"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="USGS Reference Lists" href="USGS_WaterData_ReferenceLists_Examples.html" />
+    <link rel="prev" title="Daily statistics: get_stats_por and get_stats_date_range" href="USGS_WaterData_DailyStatistics_Examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#introduction-to-the-waterdata-module-of-dataretrieval">Introduction to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code></a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#usgs-water-data-api-vignettes">USGS Water Data API vignettes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Introduction_Examples.html">Introduction to the USGS Water Data APIs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DiscreteSamples_Examples.html">Discrete water-quality samples: <code class="docutils literal notranslate"><span class="pre">get_samples</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DailyStatistics_Examples.html">Daily statistics: <code class="docutils literal notranslate"><span class="pre">get_stats_por</span></code> and <code class="docutils literal notranslate"><span class="pre">get_stats_date_range</span></code></a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Continuous Data</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#What-continuous-data-are-available?">What continuous data are available?</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Large-requests-are-chunked-for-you">Large requests are chunked for you</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Resilient-pulls:-resume-after-an-interruption">Resilient pulls: resume after an interruption</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#The-3-year-window:-the-one-axis-you-split-yourself">The 3-year window: the one axis you split yourself</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#More-help">More help</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ReferenceLists_Examples.html">USGS Reference Lists</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">Continuous Data</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/USGS_WaterData_ContinuousData_Examples.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Continuous-Data">
+<h1>Continuous Data<a class="headerlink" href="#Continuous-Data" title="Link to this heading"></a></h1>
+<p>Continuous data are collected by automated sensors, typically at a fixed 15-minute interval (you may also hear them called “instantaneous values” or “IV”). They are described by parameter name and parameter code, and retrieved with <code class="docutils literal notranslate"><span class="pre">get_continuous</span></code>.</p>
+<p>This notebook covers the two things that matter when a continuous pull gets large: <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> <strong>chunks big requests for you</strong> and can <strong>resume</strong> a pull that was interrupted partway through, and the one case you still handle yourself — the service’s 3-year-per-request time limit.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
+
+<span class="n">site</span> <span class="o">=</span> <span class="s2">&quot;USGS-0208458892&quot;</span>
+</pre></div>
+</div>
+</div>
+<section id="What-continuous-data-are-available?">
+<h2>What continuous data are available?<a class="headerlink" href="#What-continuous-data-are-available?" title="Link to this heading"></a></h2>
+<p>Filter the combined metadata to <code class="docutils literal notranslate"><span class="pre">data_type=&quot;Continuous</span> <span class="pre">values&quot;</span></code> to see which time series a site offers and how far back each goes:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">continuous_available</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_combined_metadata</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
+    <span class="n">data_type</span><span class="o">=</span><span class="s2">&quot;Continuous values&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">avail</span> <span class="o">=</span> <span class="n">continuous_available</span><span class="p">[[</span><span class="s2">&quot;parameter_code&quot;</span><span class="p">,</span> <span class="s2">&quot;parameter_name&quot;</span><span class="p">,</span> <span class="s2">&quot;begin&quot;</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">]]</span>
+<span class="n">avail</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;parameter_code&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: combined-metadata · 1 page · 8 rows
+No API key detected — register for higher rate limits at https://api.waterdata.usgs.gov/signup/
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>parameter_code</th>
+      <th>parameter_name</th>
+      <th>begin</th>
+      <th>end</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>00010</td>
+      <td>Temperature, water</td>
+      <td>2012-09-21 08:00:00+00:00</td>
+      <td>2026-05-28 10:15:00+00:00</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>00062</td>
+      <td>Reservoir elevation</td>
+      <td>2013-10-01 09:00:00+00:00</td>
+      <td>2026-05-28 12:15:00+00:00</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>00095</td>
+      <td>Specific cond at 25C</td>
+      <td>2012-09-21 08:00:00+00:00</td>
+      <td>2026-05-27 12:15:00+00:00</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>00300</td>
+      <td>Dissolved oxygen</td>
+      <td>2012-09-21 08:00:00+00:00</td>
+      <td>2026-05-28 10:15:00+00:00</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>00400</td>
+      <td>pH</td>
+      <td>2012-09-21 08:00:00+00:00</td>
+      <td>2026-05-28 12:15:00+00:00</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>00480</td>
+      <td>Salinity</td>
+      <td>2012-09-21 08:00:00+00:00</td>
+      <td>2026-05-28 11:15:00+00:00</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>62615</td>
+      <td>Elevation, lake/res, NAVD88</td>
+      <td>2013-10-01 09:00:00+00:00</td>
+      <td>2026-05-27 12:15:00+00:00</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>63680</td>
+      <td>Turbidity, FNU</td>
+      <td>2015-10-02 08:00:00+00:00</td>
+      <td>2020-02-25 21:00:00+00:00</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Large-requests-are-chunked-for-you">
+<h2>Large requests are chunked for you<a class="headerlink" href="#Large-requests-are-chunked-for-you" title="Link to this heading"></a></h2>
+<p>Any list-valued argument — a long list of monitoring locations, several parameter codes, a complex CQL filter — can push a single request URL past the server’s ~8 KB limit. <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> handles this automatically: it splits the query into URL-sized sub-requests, issues them, and recombines (and de-duplicates) the results into one frame. <strong>You never need to loop over sites yourself</strong> — request everything in one call.</p>
+<p>For example, asking for several parameter codes at once just returns one combined long-format frame:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">multi</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00095&quot;</span><span class="p">,</span> <span class="s2">&quot;00010&quot;</span><span class="p">],</span>  <span class="c1"># specific conductance + water temperature</span>
+    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2024-07-01/2024-07-02&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">multi</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;parameter_code&quot;</span><span class="p">)[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;count&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: continuous · 1 page · 194 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>count</th>
+      <th>min</th>
+      <th>max</th>
+    </tr>
+    <tr>
+      <th>parameter_code</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>00010</th>
+      <td>97</td>
+      <td>27.2</td>
+      <td>30.9</td>
+    </tr>
+    <tr>
+      <th>00095</th>
+      <td>97</td>
+      <td>954.0</td>
+      <td>975.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Resilient-pulls:-resume-after-an-interruption">
+<h2>Resilient pulls: resume after an interruption<a class="headerlink" href="#Resilient-pulls:-resume-after-an-interruption" title="Link to this heading"></a></h2>
+<p>A large request becomes many sub-requests under the hood, so a long pull can be interrupted partway through by a rate limit (HTTP 429) or a transient server error (HTTP 5xx). Rather than discard the work already done, <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> raises a <code class="docutils literal notranslate"><span class="pre">ChunkInterrupted</span></code> that <strong>preserves the completed sub-requests</strong> and lets you continue:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">QuotaExhausted</span></code> (429) and <code class="docutils literal notranslate"><span class="pre">ServiceInterrupted</span></code> (5xx) both subclass <code class="docutils literal notranslate"><span class="pre">ChunkInterrupted</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">exc.partial_frame</span></code> holds whatever completed before the failure.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">exc.retry_after</span></code> is the server’s suggested wait (when provided).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">exc.call.resume()</span></code> re-issues <strong>only the still-pending</strong> sub-requests and returns the full <code class="docutils literal notranslate"><span class="pre">(data,</span> <span class="pre">metadata)</span></code>.</p></li>
+</ul>
+<p>The pattern below waits out the interruption and resumes until the pull finishes. (In normal conditions the request completes on the first try and the <code class="docutils literal notranslate"><span class="pre">except</span></code> block never runs.)</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.chunking</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkInterrupted</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">sensor_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span>
+        <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
+        <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00095&quot;</span><span class="p">,</span>
+        <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2024-07-01/2024-07-08&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="k">except</span> <span class="n">ChunkInterrupted</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;interrupted after </span><span class="si">{</span><span class="n">exc</span><span class="o">.</span><span class="n">completed_chunks</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">exc</span><span class="o">.</span><span class="n">total_chunks</span><span class="si">}</span><span class="s2"> chunks; resuming&quot;</span>
+    <span class="p">)</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">exc</span><span class="o">.</span><span class="n">retry_after</span> <span class="ow">or</span> <span class="mi">5</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>  <span class="c1"># honor Retry-After, else back off</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sensor_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">exc</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
+            <span class="k">break</span>
+        <span class="k">except</span> <span class="n">ChunkInterrupted</span> <span class="k">as</span> <span class="n">again</span><span class="p">:</span>
+            <span class="n">exc</span> <span class="o">=</span> <span class="n">again</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sensor_data</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> rows&quot;</span><span class="p">)</span>
+<span class="n">sensor_data</span><span class="p">[[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;parameter_code&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="s2">&quot;approval_status&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: continuous · 1 page · 673 rows
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+673 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time</th>
+      <th>parameter_code</th>
+      <th>value</th>
+      <th>approval_status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2024-07-01 00:00:00+00:00</td>
+      <td>00095</td>
+      <td>967</td>
+      <td>Approved</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2024-07-01 00:15:00+00:00</td>
+      <td>00095</td>
+      <td>967</td>
+      <td>Approved</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2024-07-01 00:30:00+00:00</td>
+      <td>00095</td>
+      <td>967</td>
+      <td>Approved</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2024-07-01 00:45:00+00:00</td>
+      <td>00095</td>
+      <td>966</td>
+      <td>Approved</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2024-07-01 01:00:00+00:00</td>
+      <td>00095</td>
+      <td>966</td>
+      <td>Approved</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="The-3-year-window:-the-one-axis-you-split-yourself">
+<h2>The 3-year window: the one axis you split yourself<a class="headerlink" href="#The-3-year-window:-the-one-axis-you-split-yourself" title="Link to this heading"></a></h2>
+<p>There is one limit the library does <strong>not</strong> chunk for you: the continuous service returns at most <strong>3 years of data per request</strong>, and a time window is not a list-shaped axis it can fan out. (With no <code class="docutils literal notranslate"><span class="pre">time</span></code> argument the service returns the latest year; continuous data also has no geometry column and ignores bounding-box queries.)</p>
+<p>So a multi-year, single-site pull is the one place you still split by time. The service is most efficient one calendar year at a time, so build a list of yearly windows:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Split [start, end] into per-calendar-year (start, end) date strings.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">year_chunks</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+    <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+    <span class="n">edges</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">-01-01&quot;</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+    <span class="n">starts</span> <span class="o">=</span> <span class="p">[</span><span class="n">start</span><span class="p">,</span> <span class="o">*</span><span class="n">edges</span><span class="p">]</span>
+    <span class="n">ends</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="p">(</span><span class="n">edges</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)),</span> <span class="n">end</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">),</span> <span class="n">e</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">))</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">)</span>
+    <span class="p">]</span>
+
+
+<span class="c1"># Covering a full multi-year record (no data downloaded here):</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">year_chunks</span><span class="p">(</span><span class="s2">&quot;2012-10-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2025-09-30&quot;</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>start</th>
+      <th>end</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2012-10-01</td>
+      <td>2012-12-31</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2013-01-01</td>
+      <td>2013-12-31</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2014-01-01</td>
+      <td>2014-12-31</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2015-01-01</td>
+      <td>2015-12-31</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2016-01-01</td>
+      <td>2016-12-31</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>2017-01-01</td>
+      <td>2017-12-31</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>2018-01-01</td>
+      <td>2018-12-31</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>2019-01-01</td>
+      <td>2019-12-31</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>2020-01-01</td>
+      <td>2020-12-31</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>2021-01-01</td>
+      <td>2021-12-31</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>2022-01-01</td>
+      <td>2022-12-31</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>2023-01-01</td>
+      <td>2023-12-31</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>2024-01-01</td>
+      <td>2024-12-31</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>2025-01-01</td>
+      <td>2025-09-30</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Then request each window and concatenate. (We use a short two-window span here so the notebook runs quickly; widen the dates for a full period of record.)</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">chunks</span> <span class="o">=</span> <span class="n">year_chunks</span><span class="p">(</span><span class="s2">&quot;2023-10-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2024-03-31&quot;</span><span class="p">)</span>
+
+<span class="n">frames</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">:</span>
+    <span class="n">part</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span>
+        <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
+        <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00095&quot;</span><span class="p">,</span>
+        <span class="n">time</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">end</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+
+<span class="n">por</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">por</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> rows from </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span><span class="si">}</span><span class="s2"> windows, &quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">por</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">por</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: continuous · 1 page · 8,734 rows
+Retrieving: continuous · 1 page · 8,637 rows
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+17,371 rows from 2 windows, 2023-10-01 00:00:00+00:00 -&gt; 2024-03-31 00:00:00+00:00
+</pre></div></div>
+</div>
+<p>Wrap each window’s call in the resume pattern above for an unattended, restart-safe pull. USGS also expects to offer a direct full-period-of-record download before the legacy NWIS services are decommissioned, which may make time-window splitting unnecessary — check the documentation for updates.</p>
+</section>
+<section id="More-help">
+<h2>More help<a class="headerlink" href="#More-help" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Documentation: <a class="reference external" href="https://doi-usgs.github.io/dataretrieval-python/">https://doi-usgs.github.io/dataretrieval-python/</a></p></li>
+<li><p>Chunking and resume internals: <code class="docutils literal notranslate"><span class="pre">dataretrieval.waterdata.chunking</span></code></p></li>
+<li><p>Issues / questions: <a class="reference external" href="https://github.com/DOI-USGS/dataretrieval-python/issues">https://github.com/DOI-USGS/dataretrieval-python/issues</a></p></li>
+<li><p>Equivalent R article: <a class="reference external" href="https://doi-usgs.github.io/dataRetrieval/articles/continuous_pr.html">Continuous Data</a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="USGS_WaterData_DailyStatistics_Examples.html" class="btn btn-neutral float-left" title="Daily statistics: get_stats_por and get_stats_date_range" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="USGS_WaterData_ReferenceLists_Examples.html" class="btn btn-neutral float-right" title="USGS Reference Lists" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
