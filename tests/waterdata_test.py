@@ -3,6 +3,7 @@ import json
 import sys
 from unittest import mock
 
+import numpy as np
 import pandas as pd
 import pytest
 from pandas import DataFrame
@@ -558,6 +559,23 @@ def test_get_reference_table_wrong_name():
         get_reference_table("agency-cod")
 
 
+@pytest.mark.parametrize("bad", [0, -1, 2.5, 10.0, True])
+def test_get_reference_table_rejects_bad_max_rows(bad):
+    # max_rows must be a genuine positive int; a non-positive value, a float
+    # (even integral like 10.0), or a bool must raise ValueError up front —
+    # not crash later inside pandas .head(). Raises before any HTTP request.
+    with pytest.raises(ValueError, match="positive integer"):
+        get_reference_table("agency-codes", max_rows=bad)
+
+
+def test_get_reference_table_accepts_numpy_int_max_rows():
+    # numpy integers are valid caps: isinstance(np.int64, int) is False, so the
+    # validation must accept numbers.Integral (not just int) — otherwise a cap
+    # derived from a numpy/pandas computation is wrongly rejected.
+    df, _ = get_reference_table("agency-codes", max_rows=np.int64(2))
+    assert len(df) == 2
+
+
 def test_get_stats_por():
     df, _ = get_stats_por(
         monitoring_location_id="USGS-12451000",
@@ -700,8 +718,6 @@ class TestNormalizeStrIterable:
         assert isinstance(result, list)
 
     def test_numpy_array_normalizes_to_list(self):
-        import numpy as np
-
         result = _normalize_str_iterable(np.array(["00060", "00010"]), "p")
         assert result == ["00060", "00010"]
         assert isinstance(result, list)

@@ -2022,6 +2022,7 @@ def get_reference_table(
     collection: str,
     limit: int | None = None,
     query: dict | None = None,
+    max_rows: int | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get metadata reference tables for the USGS Water Data API.
 
@@ -2046,6 +2047,12 @@ def get_reference_table(
     query: dictionary, optional
         The optional args parameter can be used to pass a dictionary of
         query parameters to the collection API call.
+    max_rows : int, optional
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole table. Useful for cheaply
+        previewing large tables (e.g. ``hydrologic-unit-codes`` has ~125k
+        rows). Unlike ``limit`` (the per-page size), this bounds the total
+        result. The default (None) downloads every page.
 
     Returns
     -------
@@ -2092,7 +2099,9 @@ def get_reference_table(
     query_args = dict(query) if query else {}
     if limit is not None:
         query_args["limit"] = limit
-    return get_ogc_data(args=query_args, output_id=output_id, service=collection)
+    return get_ogc_data(
+        args=query_args, output_id=output_id, service=collection, max_rows=max_rows
+    )
 
 
 def get_codes(code_service: CODE_SERVICES) -> pd.DataFrame:
