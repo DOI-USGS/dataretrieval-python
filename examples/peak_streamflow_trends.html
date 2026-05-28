@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>National trends in peak annual streamflow &mdash; dataretrieval 0.1.dev1+g906c85927 documentation</title>
+  <title>National trends in peak annual streamflow &mdash; dataretrieval 0.1.dev1+gad4e980fa documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=d989164f"></script>
+      <script src="../_static/documentation_options.js?v=766d5bac"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -108,7 +108,7 @@
 <section id="Setup">
 <h2>Setup<a class="headerlink" href="#Setup" title="Link to this heading"></a></h2>
 <p>Before we begin any analysis, we’ll need to set up our environment by importing a few modules.</p>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
@@ -119,23 +119,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[1]</span><span class="ansi-green-fg">, line 3</span>
-<span class="ansi-green-fg">      1</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> numpy <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> np
-<span class="ansi-green-fg">      2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> pandas <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> pd
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">3</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> scipy <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> stats
-<span class="ansi-green-fg">      4</span>
-<span class="ansi-green-fg">      5</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> dataretrieval <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> waterdata
-
-<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;scipy&#39;
-</pre></div></div>
 </div>
 </section>
 <section id="Basic-usage">
@@ -155,22 +138,149 @@
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
+<div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
+<div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[2]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> <span style="color: rgb(95,135,135)"># download annual peaks (discharge, parameter 00060) from a single site</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> df, md = waterdata.get_peaks(
-<span class="ansi-green-fg">      3</span>     monitoring_location_id=<span class="ansi-yellow-fg">&#34;USGS-03339000&#34;</span>,
-<span class="ansi-green-fg">      4</span>     parameter_code=<span class="ansi-yellow-fg">&#34;00060&#34;</span>,
-<span class="ansi-green-fg">      5</span>     time=<span class="ansi-yellow-fg">&#34;1970-01-01/..&#34;</span>,
-
-<span class="ansi-red-fg">NameError</span>: name &#39;waterdata&#39; is not defined
+Retrieving: peaks · 1 page · 56 rows
+No API key detected — register for higher rate limits at https://api.waterdata.usgs.gov/signup/
 </pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>peak_id</th>
+      <th>geometry</th>
+      <th>time_series_id</th>
+      <th>monitoring_location_id</th>
+      <th>parameter_code</th>
+      <th>unit_of_measure</th>
+      <th>value</th>
+      <th>last_modified</th>
+      <th>time</th>
+      <th>water_year</th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>time_of_day</th>
+      <th>peak_since</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>5282b66f-ee19-43d9-b772-936da66a968d</td>
+      <td>POINT (-87.59761 40.10108)</td>
+      <td>1587ac4ee41d4f6b9debe9724e8ddb79</td>
+      <td>USGS-03339000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>16300</td>
+      <td>2026-04-28 09:40:12.927288+00:00</td>
+      <td>1970-04-20</td>
+      <td>1970</td>
+      <td>1970</td>
+      <td>4</td>
+      <td>20</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>935a7d88-6e6c-4b80-b6a2-20b909d6e67f</td>
+      <td>POINT (-87.59761 40.10108)</td>
+      <td>1587ac4ee41d4f6b9debe9724e8ddb79</td>
+      <td>USGS-03339000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>8910</td>
+      <td>2026-04-28 09:40:12.927288+00:00</td>
+      <td>1971-02-05</td>
+      <td>1971</td>
+      <td>1971</td>
+      <td>2</td>
+      <td>5</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>69975ecd-959a-46bc-a221-815c947a76b6</td>
+      <td>POINT (-87.59761 40.10108)</td>
+      <td>1587ac4ee41d4f6b9debe9724e8ddb79</td>
+      <td>USGS-03339000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>9240</td>
+      <td>2026-04-28 09:40:12.927288+00:00</td>
+      <td>1972-04-22</td>
+      <td>1972</td>
+      <td>1972</td>
+      <td>4</td>
+      <td>22</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>55fc2bdd-fc45-44d5-b291-6767e5e44ff6</td>
+      <td>POINT (-87.59761 40.10108)</td>
+      <td>1587ac4ee41d4f6b9debe9724e8ddb79</td>
+      <td>USGS-03339000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>16600</td>
+      <td>2026-04-28 09:40:12.927288+00:00</td>
+      <td>1973-04-23</td>
+      <td>1973</td>
+      <td>1973</td>
+      <td>4</td>
+      <td>23</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>c202f21a-a940-418f-92d6-253598a16dd0</td>
+      <td>POINT (-87.59761 40.10108)</td>
+      <td>1587ac4ee41d4f6b9debe9724e8ddb79</td>
+      <td>USGS-03339000</td>
+      <td>00060</td>
+      <td>ft^3/s</td>
+      <td>19500</td>
+      <td>2026-04-28 09:40:12.927288+00:00</td>
+      <td>1974-06-23</td>
+      <td>1974</td>
+      <td>1974</td>
+      <td>6</td>
+      <td>23</td>
+      <td>NaN</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
 </div>
 <p>All we require for the trend analysis are the peak date (<code class="docutils literal notranslate"><span class="pre">time</span></code>), the monitoring location ID (<code class="docutils literal notranslate"><span class="pre">monitoring_location_id</span></code>), and the peak streamflow (<code class="docutils literal notranslate"><span class="pre">value</span></code>). The Water Data API returns a flat (single-index) data frame with one row per annual peak.</p>
 </section>
@@ -249,32 +359,32 @@
 </div>
 </div>
 <p>To run the analysis for all states since 1970, one would only need to uncomment and run the following lines. However, pulling all that data from the Water Data API takes time and could put a burden on resources.</p>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Warning: these lines download a large dataset from the web and</span>
-<span class="c1"># will take a few minutes to run.</span>
-
-<span class="c1"># start = &quot;1970-01-01&quot;</span>
-<span class="c1"># states = [&quot;Illinois&quot;, &quot;Indiana&quot;, &quot;Ohio&quot;]</span>
-<span class="c1"># final_df = peak_trend_analysis(state_names=states, start_date=start)</span>
-<span class="c1"># final_df.to_csv(&quot;datasets/peak_discharge_trends.csv&quot;)</span>
-</pre></div>
-</div>
-</div>
-<p>Instead, let’s quickly load some pre-generated results bundled with this notebook. (This example dataset was produced by an earlier run of the analysis and retains the column names from that run.)</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">final_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;datasets/peak_discharge_trends.csv&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download peak discharge for every stream gage in Rhode Island and run</span>
+<span class="c1"># the trend regression on each. The async chunker (default concurrency 16)</span>
+<span class="c1"># fans the ``get_peaks`` call across all sites in a single pool; the full</span>
+<span class="c1"># run completes in roughly two seconds.</span>
+<span class="n">start</span> <span class="o">=</span> <span class="s2">&quot;1970-01-01&quot;</span>
+<span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Rhode Island&quot;</span><span class="p">]</span>
+<span class="n">final_df</span> <span class="o">=</span> <span class="n">peak_trend_analysis</span><span class="p">(</span><span class="n">state_names</span><span class="o">=</span><span class="n">states</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="n">start</span><span class="p">)</span>
 <span class="n">final_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: monitoring-locations · 1 page · 350 rows
+Retrieving: peaks · 1 page · 1,308 rows
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -296,137 +406,163 @@
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>Unnamed: 0</th>
-      <th>agency_cd</th>
-      <th>site_no</th>
-      <th>station_nm</th>
-      <th>site_tp_cd</th>
-      <th>dec_lat_va</th>
-      <th>dec_long_va</th>
-      <th>coord_acy_cd</th>
-      <th>dec_coord_datum_cd</th>
-      <th>alt_va</th>
-      <th>alt_acy_va</th>
-      <th>alt_datum_cd</th>
-      <th>huc_cd</th>
+      <th>monitoring_location_id</th>
+      <th>agency_code</th>
+      <th>agency_name</th>
+      <th>monitoring_location_number</th>
+      <th>monitoring_location_name</th>
+      <th>district_code</th>
+      <th>country_code</th>
+      <th>country_name</th>
+      <th>state_code</th>
+      <th>state_name</th>
+      <th>...</th>
+      <th>well_constructed_depth</th>
+      <th>hole_constructed_depth</th>
+      <th>depth_source_code</th>
+      <th>revision_note</th>
+      <th>revision_created</th>
+      <th>revision_modified</th>
+      <th>slope</th>
       <th>intercept</th>
       <th>p_value</th>
-      <th>slope</th>
       <th>std_error</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>0</td>
+      <td>USGS-01114000</td>
       <td>USGS</td>
-      <td>2343275</td>
-      <td>ABBIE CREEK NEAR ABBEVILLE AL</td>
-      <td>ST</td>
-      <td>31.561836</td>
-      <td>-85.204932</td>
-      <td>U</td>
-      <td>NAD83</td>
+      <td>U.S. Geological Survey</td>
+      <td>01114000</td>
+      <td>MOSHASSUCK RIVER AT PROVIDENCE, RI</td>
+      <td>25</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>44</td>
+      <td>Rhode Island</td>
+      <td>...</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>NaN</td>
-      <td>3130004.0</td>
-      <td>-0.641911</td>
-      <td>0.015899</td>
-      <td>0.000231</td>
-      <td>0.000065</td>
+      <td>None</td>
+      <td>WDR MA-RI, water years 1964-1973, annual peak ...</td>
+      <td>2017-11-13T06:00:00+00:00</td>
+      <td>2022-04-07T14:31:13.870000+00:00</td>
+      <td>0.000059</td>
+      <td>-0.588666</td>
+      <td>0.008529</td>
+      <td>0.000022</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>1</td>
+      <td>USGS-01115098</td>
       <td>USGS</td>
-      <td>2360275</td>
-      <td>JUDY CREEK NEAR OZARK AL</td>
-      <td>ST</td>
-      <td>31.463224</td>
-      <td>-85.572159</td>
-      <td>U</td>
-      <td>NAD83</td>
+      <td>U.S. Geological Survey</td>
+      <td>01115098</td>
+      <td>PEEPTOAD BROOK AT ELMDALE RD NR NORTH SCITUATE...</td>
+      <td>25</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>44</td>
+      <td>Rhode Island</td>
+      <td>...</td>
       <td>NaN</td>
       <td>NaN</td>
+      <td>None</td>
+      <td>WDR MA-RI-03-01: Drainage area.</td>
+      <td>2017-11-13T06:00:00+00:00</td>
       <td>NaN</td>
-      <td>3140201.0</td>
-      <td>-0.702569</td>
-      <td>0.004652</td>
-      <td>0.000269</td>
-      <td>0.000069</td>
+      <td>0.000153</td>
+      <td>-0.846482</td>
+      <td>0.003592</td>
+      <td>0.000048</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>2</td>
+      <td>USGS-01115200</td>
       <td>USGS</td>
-      <td>2360500</td>
-      <td>EAST FORK CHOCTAWHATCHEE R NEAR MIDLAND CITY AL</td>
-      <td>ST</td>
-      <td>31.373227</td>
-      <td>-85.477158</td>
-      <td>U</td>
-      <td>NAD83</td>
-      <td>179.1</td>
-      <td>0.01</td>
-      <td>NGVD29</td>
-      <td>3140201.0</td>
-      <td>-1.138552</td>
-      <td>0.007698</td>
-      <td>0.000211</td>
-      <td>0.000003</td>
+      <td>U.S. Geological Survey</td>
+      <td>01115200</td>
+      <td>SHIPPEE BROOK TRIBUTARY AT NORTH FOSTER, RI</td>
+      <td>25</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>44</td>
+      <td>Rhode Island</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>-0.001714</td>
+      <td>1.103788</td>
+      <td>0.000945</td>
+      <td>0.000130</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>3</td>
+      <td>USGS-01115800</td>
       <td>USGS</td>
-      <td>2367400</td>
-      <td>YELLOW RIVER NR SANFORD, ALA</td>
-      <td>ST</td>
-      <td>31.317391</td>
-      <td>-86.355788</td>
-      <td>U</td>
-      <td>NAD83</td>
+      <td>U.S. Geological Survey</td>
+      <td>01115800</td>
+      <td>BIG RIVER NEAR NOOSENECK, RI</td>
+      <td>25</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>44</td>
+      <td>Rhode Island</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>None</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>3140103.0</td>
-      <td>-0.611310</td>
-      <td>0.015836</td>
-      <td>0.000511</td>
-      <td>0.000013</td>
+      <td>-0.002928</td>
+      <td>0.707107</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>4</td>
+      <td>USGS-01117250</td>
       <td>USGS</td>
-      <td>2367500</td>
-      <td>LIGHTWOOD KNOT CREEK AT BABBIE AL</td>
-      <td>ST</td>
-      <td>31.270725</td>
-      <td>-86.313564</td>
-      <td>U</td>
-      <td>NAD83</td>
-      <td>185.0</td>
-      <td>0.01</td>
-      <td>NGVD29</td>
-      <td>3140103.0</td>
-      <td>-0.705676</td>
-      <td>0.015231</td>
-      <td>0.000210</td>
-      <td>0.000052</td>
+      <td>U.S. Geological Survey</td>
+      <td>01117250</td>
+      <td>BROWNS BROOK AT WAKEFIELD, RI</td>
+      <td>25</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>44</td>
+      <td>Rhode Island</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>-0.001486</td>
+      <td>1.175513</td>
+      <td>0.044431</td>
+      <td>0.000445</td>
     </tr>
   </tbody>
 </table>
+<p>5 rows × 47 columns</p>
 </div></div>
 </div>
+<p>Instead, let’s quickly load some pre-generated results bundled with this notebook. (This example dataset was produced by an earlier run of the analysis and retains the column names from that run.)</p>
 <p>Notice how the data has been transformed. In addition to statistics about the peak streamflow trends, the analysis joined monitoring-location metadata to add latitude and longitude for each station.</p>
 </section>
 <section id="Plotting-the-results">
 <h2>Plotting the results<a class="headerlink" href="#Plotting-the-results" title="Link to this heading"></a></h2>
 <p>Finally we’ll use <code class="docutils literal notranslate"><span class="pre">basemap</span></code> and <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>, along with the location information from the Water Data API, to plot the results on a map (shown below). Monitoring locations with increasing peak annual discharge are shown in red, and those with decreasing peaks in blue.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Currently commented out as there isn&#39;t an easy way to install mpl_toolkits</span>
