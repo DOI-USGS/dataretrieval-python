@@ -3,13 +3,9 @@ Installation Guide
 
 Whether you are a user or developer we recommend installing ``dataretrieval``
 in a virtual environment. This can be done using something like ``virtualenv``
-or ``conda``. Package dependencies are listed in the `requirements.txt`_ file,
-a full list of dependencies necessary for development are listed in the
-`requirements-dev.txt`_ file.
-
-.. _requirements.txt: https://github.com/DOI-USGS/dataretrieval-python/blob/main/requirements.txt
-
-.. _requirements-dev.txt: https://github.com/DOI-USGS/dataretrieval-python/blob/main/requirements-dev.txt
+or ``conda``. Package dependencies are declared in ``pyproject.toml``: the core
+runtime dependencies under ``[project.dependencies]``, and optional extras
+(``test``, ``doc``, ``nldi``) under ``[project.optional-dependencies]``.
 
 
 User Installation
@@ -59,8 +55,11 @@ the package for development:
 
 .. code-block:: bash
 
-    $ pip install -r requirements-dev.txt
-    $ pip install -e .
+    $ pip install -e ".[test,doc,nldi]"
+
+This installs ``dataretrieval`` in editable mode along with the development
+extras: ``test`` (test runner), ``doc`` (documentation build), and ``nldi``
+(``geopandas``, required by the NLDI module).
 
 To check your installation you can run the tests with the following commands:
 

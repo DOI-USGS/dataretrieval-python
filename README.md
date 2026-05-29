@@ -125,8 +125,8 @@ Access water quality data from multiple agencies:
 ```python
 from dataretrieval import wqp
 
-# Find water quality monitoring sites
-sites = wqp.what_sites(
+# Find water quality monitoring sites (returns a DataFrame and metadata)
+sites, metadata = wqp.what_sites(
     statecode='US:55',  # Wisconsin
     siteType='Stream'
 )
@@ -134,7 +134,7 @@ sites = wqp.what_sites(
 print(f"Found {len(sites)} stream monitoring sites in Wisconsin")
 
 # Get water quality results
-results = wqp.get_results(
+results, metadata = wqp.get_results(
     siteid='USGS-05427718',
     characteristicName='Temperature, water'
 )
