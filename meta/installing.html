@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation Guide &mdash; dataretrieval 0.1.dev1+gad4e980fa documentation</title>
+  <title>Installation Guide &mdash; dataretrieval 0.1.dev1+g9cf725139 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=766d5bac"></script>
+      <script src="../_static/documentation_options.js?v=3618bd44"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -88,9 +88,9 @@
 <h1>Installation Guide<a class="headerlink" href="#installation-guide" title="Link to this heading"></a></h1>
 <p>Whether you are a user or developer we recommend installing <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code>
 in a virtual environment. This can be done using something like <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code>
-or <code class="docutils literal notranslate"><span class="pre">conda</span></code>. Package dependencies are listed in the <a class="reference external" href="https://github.com/DOI-USGS/dataretrieval-python/blob/main/requirements.txt">requirements.txt</a> file,
-a full list of dependencies necessary for development are listed in the
-<a class="reference external" href="https://github.com/DOI-USGS/dataretrieval-python/blob/main/requirements-dev.txt">requirements-dev.txt</a> file.</p>
+or <code class="docutils literal notranslate"><span class="pre">conda</span></code>. Package dependencies are declared in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>: the core
+runtime dependencies under <code class="docutils literal notranslate"><span class="pre">[project.dependencies]</span></code>, and optional extras
+(<code class="docutils literal notranslate"><span class="pre">test</span></code>, <code class="docutils literal notranslate"><span class="pre">doc</span></code>, <code class="docutils literal notranslate"><span class="pre">nldi</span></code>) under <code class="docutils literal notranslate"><span class="pre">[project.optional-dependencies]</span></code>.</p>
 <section id="user-installation">
 <h2>User Installation<a class="headerlink" href="#user-installation" title="Link to this heading"></a></h2>
 <section id="via-pip">
@@ -123,10 +123,12 @@ the repository.</p>
 <p>Then, set the cloned repository as your current working directory in your
 terminal and run the following commands to get an “editable” installation of
 the package for development:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements-dev.txt
-$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[test,doc,nldi]&quot;</span>
 </pre></div>
 </div>
+<p>This installs <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> in editable mode along with the development
+extras: <code class="docutils literal notranslate"><span class="pre">test</span></code> (test runner), <code class="docutils literal notranslate"><span class="pre">doc</span></code> (documentation build), and <code class="docutils literal notranslate"><span class="pre">nldi</span></code>
+(<code class="docutils literal notranslate"><span class="pre">geopandas</span></code>, required by the NLDI module).</p>
 <p>To check your installation you can run the tests with the following commands:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>tests
 $<span class="w"> </span>pytest
