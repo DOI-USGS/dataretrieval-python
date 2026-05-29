@@ -74,9 +74,17 @@ doc = [
   # bound as the [nldi] extra.
   "geopandas>=0.10",
   "mapclassify",
+  # waterdata_xarray_demo.ipynb imports dataretrieval.waterdata.xarray and
+  # writes a CF netCDF file; nbsphinx executes it at build time, so the doc
+  # environment needs xarray and a netCDF backend.
+  "xarray>=2023.1.0",
+  "netCDF4",
 ]
 nldi = [
   'geopandas>=0.10'
+]
+xarray = [
+  'xarray>=2023.1.0'
 ]
 
 [project.urls]

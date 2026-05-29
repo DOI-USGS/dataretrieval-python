@@ -33,6 +33,18 @@ functions and is executed against the live USGS Water Data API.
     USGS_WaterData_ReferenceLists_Examples
     USGS_NGWMN_Examples
 
+CF-conventions ``xarray`` datasets from the ``waterdata`` module
+----------------------------------------------------------------
+The ``waterdata.xarray`` wrappers return CF-conventions ``xarray.Dataset``
+objects (a ragged array by default, with a ``dense=True`` gridded opt-out).
+This notebook demonstrates the layouts, the time-selection trade-off, and
+writing CF netCDF.
+
+.. toctree::
+    :maxdepth: 1
+
+    waterdata_xarray_demo
+
 Simple uses of the ``dataretrieval`` package
 --------------------------------------------
 
