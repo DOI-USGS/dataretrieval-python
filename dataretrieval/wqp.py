@@ -656,14 +656,28 @@ class WQP_Metadata(BaseMetadata):
 
         self._parameters = parameters
 
-        @property
-        def site_info(self):
-            if "sites" in self._parameters:
-                return what_sites(sites=parameters["sites"])
-            elif "site" in self._parameters:
-                return what_sites(sites=parameters["site"])
-            elif "site_no" in self._parameters:
-                return what_sites(sites=parameters["site_no"])
+    @property
+    def site_info(self) -> tuple[DataFrame, WQP_Metadata] | None:
+        """Site information for the query.
+
+        Populated when the query included ``sites``, ``site`` or
+        ``site_no`` (in that order of preference); ``None`` otherwise.
+
+        Returns
+        -------
+        df : ``pandas.DataFrame``
+            Formatted requested data from calling ``wqp.what_sites``.
+        md : :obj:`dataretrieval.wqp.WQP_Metadata`
+            A WQP_Metadata object.
+        """
+        if "sites" in self._parameters:
+            return what_sites(sites=self._parameters["sites"])
+        elif "site" in self._parameters:
+            return what_sites(sites=self._parameters["site"])
+        elif "site_no" in self._parameters:
+            return what_sites(sites=self._parameters["site_no"])
+        else:
+            return None
 
 
 def _check_kwargs(kwargs):

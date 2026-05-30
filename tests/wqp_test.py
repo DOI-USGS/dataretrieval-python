@@ -1,9 +1,11 @@
 import datetime
+from unittest import mock
 
 import pytest
 from pandas import DataFrame
 
 from dataretrieval.wqp import (
+    WQP_Metadata,
     _check_kwargs,
     get_results,
     what_activities,
@@ -243,3 +245,40 @@ def test_get_results_wqx3_preserves_user_dataProfile(httpx_mock):
     assert isinstance(df, DataFrame)
     sent = httpx_mock.get_requests()[-1]
     assert sent.url.params.get("dataProfile") == "narrow"
+
+
+def _wqp_metadata(**parameters):
+    """Build a ``WQP_Metadata`` from a lightweight mock response."""
+    resp = mock.Mock(
+        url="https://www.waterqualitydata.us/",
+        elapsed=datetime.timedelta(seconds=0.01),
+        headers={},
+    )
+    return WQP_Metadata(resp, **parameters)
+
+
+def test_wqp_metadata_site_info_is_accessible_property():
+    """B2 regression: ``WQP_Metadata.site_info`` was accidentally defined
+    *inside* ``__init__`` (a discarded local function), so the attribute
+    did not exist and accessing it fell through to
+    ``BaseMetadata.site_info``, which raises ``NotImplementedError``. It
+    must now be a real property that returns ``None`` (no site param)
+    without raising."""
+    assert isinstance(type(_wqp_metadata()).site_info, property)
+    assert _wqp_metadata().site_info is None  # must NOT raise
+
+
+def test_wqp_metadata_site_info_routes_to_what_sites(monkeypatch):
+    """When the query carried ``sites`` (or ``site``/``site_no``),
+    ``site_info`` delegates to ``wqp.what_sites`` with that identifier."""
+    import dataretrieval.wqp as wqp_mod
+
+    captured = {}
+
+    def fake_what_sites(**kwargs):
+        captured.update(kwargs)
+        return "SENTINEL"
+
+    monkeypatch.setattr(wqp_mod, "what_sites", fake_what_sites)
+    assert _wqp_metadata(sites="USGS-05427718").site_info == "SENTINEL"
+    assert captured == {"sites": "USGS-05427718"}
