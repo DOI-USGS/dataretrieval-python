@@ -184,7 +184,18 @@ def get_ratings(
         fid = feature["id"]
         try:
             out[fid] = _download_and_parse(feature, file_path, ssl_check)
-        except (httpx.HTTPError, ValueError, OSError) as e:
+        # _download_and_parse can raise the module's typed errors via
+        # _raise_for_non_200 (RateLimited / ServiceUnavailable / RuntimeError —
+        # all RuntimeError subclasses), and a feature missing its data asset
+        # raises LookupError. Catch those too so one bad feature is logged and
+        # skipped rather than aborting the whole multi-site batch.
+        except (
+            httpx.HTTPError,
+            RuntimeError,
+            ValueError,
+            OSError,
+            LookupError,
+        ) as e:
             logger.warning("Failed to download / parse %s: %s", fid, e)
 
     return out
@@ -229,8 +240,13 @@ def _search(
     limit: int,
     ssl_check: bool,
 ) -> list[dict[str, Any]]:
-    """Run a single STAC ``/search`` request and return its features."""
-    params: dict[str, Any] = {"limit": limit}
+    """Run STAC ``/search`` and return ALL matching features.
+
+    ``limit`` is the page size (clamped to the service maximum of 10,000); the
+    STAC ``next`` link is followed until exhausted so a result set larger than
+    one page isn't silently truncated.
+    """
+    params: dict[str, Any] | None = {"limit": min(limit, 10000)}
     if filter_str is not None:
         params["filter"] = filter_str
     if time_str is not None:
@@ -238,15 +254,28 @@ def _search(
     if bbox is not None:
         params["bbox"] = ",".join(map(str, bbox))
 
-    response = httpx.get(
-        f"{STAC_URL}/search",
-        params=params,
-        headers=_default_headers(),
-        verify=ssl_check,
-        **HTTPX_DEFAULTS,
-    )
-    _raise_for_non_200(response)
-    return response.json().get("features", [])
+    url: str | None = f"{STAC_URL}/search"
+    features: list[dict[str, Any]] = []
+    while url is not None:
+        response = httpx.get(
+            url,
+            params=params,
+            headers=_default_headers(),
+            verify=ssl_check,
+            **HTTPX_DEFAULTS,
+        )
+        _raise_for_non_200(response)
+        body = response.json()
+        features.extend(body.get("features", []))
+        # The STAC ``next`` link is a fully-formed GET href carrying the
+        # limit/filter/bbox and a continuation token, so follow it verbatim
+        # (dropping our own params) until the server stops emitting one.
+        url = next(
+            (lnk["href"] for lnk in body.get("links", []) if lnk.get("rel") == "next"),
+            None,
+        )
+        params = None
+    return features
 
 
 def _download_and_parse(
