@@ -29,6 +29,7 @@ from .utils import (
     _check_monitoring_location_id,
     _default_headers,
     _format_api_dates,
+    _raise_for_non_200,
 )
 
 logger = logging.getLogger(__name__)
@@ -248,7 +249,7 @@ def _search(
         verify=ssl_check,
         **HTTPX_DEFAULTS,
     )
-    response.raise_for_status()
+    _raise_for_non_200(response)
     return response.json().get("features", [])
 
 
@@ -262,7 +263,7 @@ def _download_and_parse(
     response = httpx.get(
         url, headers=_default_headers(), verify=ssl_check, **HTTPX_DEFAULTS
     )
-    response.raise_for_status()
+    _raise_for_non_200(response)
 
     if file_path is not None:
         with open(os.path.join(file_path, feature["id"]), "w") as f:
