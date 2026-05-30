@@ -19,8 +19,36 @@ jobs:
         with:
           python-version: "3.13"
           cache: "pip"
+
+      # Cache Sphinx's doctree + intermediate build outputs across CI runs,
+      # keyed on the hash of every source that affects the rendered docs
+      # (notebooks, RST/MD, conf.py, and the Python package — autodoc reads
+      # docstrings). Any source change invalidates the key, forcing a full
+      # rebuild; otherwise Sphinx skips re-parsing unchanged files, which
+      # for nbsphinx (``nbsphinx_execute='auto'``) means unchanged
+      # notebooks aren't re-executed. The HTML output is rebuilt against
+      # whatever doctrees we restore. (A proper jupyter-cache adoption via
+      # MyST-NB is the deeper migration path; this caches the equivalent
+      # via the build dir without the doc-tree rewrite.)
+      - name: Cache Sphinx build outputs
+        uses: actions/cache@v4
+        with:
+          path: docs/build
+          key: sphinx-${{ hashFiles('demos/**/*.ipynb', 'docs/source/**/*.rst', 'docs/source/**/*.md', 'docs/source/conf.py', 'dataretrieval/**/*.py') }}
+          restore-keys: |
+            sphinx-
+
       - name: Install dataretrieval, dependencies, and Sphinx then build docs
         shell: bash -l {0}
+        env:
+          # nbsphinx executes every notebook with no committed outputs
+          # (the project convention; ``nbsphinx_execute`` defaults to
+          # ``'auto'``). Without an API key the doc build hits the
+          # unauthenticated rate limit (~60 req/min); the secret raises
+          # the ceiling so the build is reliable as the demo notebook set
+          # grows. Undefined ``secrets.API_USGS_PAT`` resolves to an
+          # empty string — falling back to unauthenticated, same as today.
+          API_USGS_PAT: ${{ secrets.API_USGS_PAT }}
         run: |
           python -m pip install --upgrade pip
           pip install .[doc,nldi]
