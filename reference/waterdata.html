@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g9cf725139 documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g484a86aa7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=3618bd44"></script>
+      <script src="../_static/documentation_options.js?v=2cd4c98e"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -151,7 +151,8 @@ for the last 36 hours</p></li>
 </div></blockquote>
 </p></li>
 <li><p><strong>channel_name</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The channel name.</p></li>
-<li><p><strong>channel_flow</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The units for channel discharge.</p></li>
+<li><p><strong>channel_flow</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The channel discharge (flow).</p></li>
+<li><p><strong>channel_flow_unit</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The units for channel discharge.</p></li>
 <li><p><strong>channel_width</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The channel width.</p></li>
 <li><p><strong>channel_width_unit</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The units for channel width.</p></li>
 <li><p><strong>channel_area</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The channel area.</p></li>
@@ -166,27 +167,7 @@ for the last 36 hours</p></li>
 <li><p><strong>horizontal_velocity_description</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The horizontal velocity description.</p></li>
 <li><p><strong>vertical_velocity_description</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The vertical velocity description.</p></li>
 <li><p><strong>longitudinal_velocity_description</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The longitudinal velocity description.</p></li>
-<li><p><strong>measurement_type</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – <p>The measurement type.
-The last time a record was refreshed in our database. This may happen
-due to regular operational processes and does not necessarily indicate
-anything about the measurement has changed. You can query this field
-using date-times or intervals, adhering to RFC 3339, or using ISO 8601
-duration objects. Intervals may be bounded or half-bounded (double-dots
-at start or end).
-Examples:</p>
-<blockquote>
-<div><ul>
-<li><p>A date-time: “2018-02-12T23:20:50Z”</p></li>
-<li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
-<li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or
-“../2018-03-18T12:31:12Z”</p></li>
-<li><p>Duration objects: “P1M” for data from the past month or “PT36H” for the
-last 36 hours</p></li>
-</ul>
-</div></blockquote>
-<p>Only features that have a last_modified that intersects the value of
-datetime are selected.</p>
-</p></li>
+<li><p><strong>measurement_type</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The type of channel measurement.</p></li>
 <li><p><strong>skip_geometry</strong> (<em>boolean</em><em>, </em><em>optional</em>) – This option can be used to skip response geometries for each feature.
 The returning object will be a data frame with no spatial information.
 Note that the USGS Water Data APIs use camelCase “skipGeometry” in
