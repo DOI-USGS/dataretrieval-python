@@ -41,6 +41,10 @@ def test_get_results(httpx_mock):
     assert md.header.get("mock_header") == "value"
     assert md.comment is None
     assert df["ActivityStartDateTime"].notna().all()
+    # Regression: the getter must thread the query kwargs into the metadata
+    # (it previously built WQP_Metadata(response), dropping them), so that
+    # md.site_info has a siteid to look up instead of always returning None.
+    assert md._parameters.get("siteid") == "WIDNR_WQX-10032762"
 
 
 def test_get_results_WQX3(httpx_mock):
@@ -269,7 +273,7 @@ def test_wqp_metadata_site_info_is_accessible_property():
 
 
 def test_wqp_metadata_site_info_routes_to_what_sites(monkeypatch):
-    """When the query carried ``sites`` (or ``site``/``site_no``),
+    """When the query carried a ``siteid`` (WQP's site identifier),
     ``site_info`` delegates to ``wqp.what_sites`` with that identifier."""
     import dataretrieval.wqp as wqp_mod
 
@@ -280,5 +284,5 @@ def test_wqp_metadata_site_info_routes_to_what_sites(monkeypatch):
         return "SENTINEL"
 
     monkeypatch.setattr(wqp_mod, "what_sites", fake_what_sites)
-    assert _wqp_metadata(sites="USGS-05427718").site_info == "SENTINEL"
-    assert captured == {"sites": "USGS-05427718"}
+    assert _wqp_metadata(siteid="USGS-05427718").site_info == "SENTINEL"
+    assert captured == {"siteid": "USGS-05427718"}
