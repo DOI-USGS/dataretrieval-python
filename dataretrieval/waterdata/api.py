@@ -1047,8 +1047,6 @@ def get_combined_metadata(
 
     See the OpenAPI reference for the full list of supported fields:
     https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/combined-metadata
-    The R analogue is ``read_waterdata_combined_meta`` in
-    https://github.com/DOI-USGS/dataRetrieval/.
 
     All ~35 location-catalog kwargs are accepted (``agency_code``,
     ``state_name``, ``drainage_area``, ``aquifer_code``, …) but only
@@ -1813,8 +1811,6 @@ def get_field_measurements_metadata(
 
     See the OpenAPI reference for the full list of supported fields:
     https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements-metadata
-    The R analogue is ``read_waterdata_field_meta`` in
-    https://github.com/DOI-USGS/dataRetrieval/.
 
     Parameters
     ----------

@@ -5,9 +5,6 @@ RDB downloads that follow. The STAC endpoint hosts standard NWIS rating
 files (``exsa``, ``base``, ``corr``) for active streamgages — see the
 service overview at https://api.waterdata.usgs.gov/docs/stac/ and the
 WDFN announcement at https://waterdata.usgs.gov/blog/wdfn-rating-curves/.
-
-The R analogue is ``read_waterdata_ratings`` in
-https://github.com/DOI-USGS/dataRetrieval/.
 """
 
 from __future__ import annotations
@@ -65,8 +62,7 @@ def get_ratings(
 
     See https://api.waterdata.usgs.gov/docs/stac/ for the upstream service
     docs and https://waterdata.usgs.gov/blog/wdfn-rating-curves/ for the
-    background announcement. The R analogue is ``read_waterdata_ratings``
-    in https://github.com/DOI-USGS/dataRetrieval/.
+    background announcement.
 
     Parameters
     ----------
