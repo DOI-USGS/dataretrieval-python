@@ -15,6 +15,7 @@ from dataretrieval.waterdata import (
     get_channel,
     get_combined_metadata,
     get_continuous,
+    get_cql,
     get_daily,
     get_field_measurements,
     get_field_measurements_metadata,
@@ -33,6 +34,7 @@ from dataretrieval.waterdata.utils import (
     _check_monitoring_location_id,
     _check_profiles,
     _construct_api_requests,
+    _construct_cql_request,
     _normalize_str_iterable,
 )
 
@@ -199,6 +201,61 @@ def test_construct_api_requests_monitoring_locations_post():
     assert predicate["op"] == "in"
     assert predicate["args"][0] == {"property": "hydrologic_unit_code"}
     assert predicate["args"][1] == ["010802050102", "010802050103"]
+
+
+def test_construct_cql_request_post_verbatim_body():
+    """get_cql's request builder POSTs the CQL2 body verbatim with the
+    right content-type, and puts the OGC knobs on the URL."""
+    body = json.dumps(
+        {"op": "like", "args": [{"property": "hydrologic_unit_code"}, "02070010%"]},
+        separators=(",", ":"),
+    )
+    req = _construct_cql_request(
+        "daily",
+        body,
+        properties=["id", "value"],
+        bbox=[-90.0, 40.0, -89.0, 41.0],
+        limit=10,
+        skip_geometry=True,
+    )
+    assert req.method == "POST"
+    assert req.headers["Content-Type"] == "application/query-cql-json"
+    assert str(req.url).startswith(
+        "https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily/items"
+    )
+    # The body is sent through unchanged, not re-serialized.
+    assert req.content.decode() == body
+    url = str(req.url)
+    assert "skipGeometry=true" in url
+    assert "limit=10" in url
+    assert "bbox=-90.0%2C40.0%2C-89.0%2C41.0" in url
+    assert "properties=id%2Cvalue" in url
+
+
+def test_construct_cql_request_skip_geometry_none_omits_param():
+    """skip_geometry=None leaves skipGeometry unset (server default), so it never
+    reaches the URL — matching get_cql's default."""
+    req = _construct_cql_request("daily", "{}")
+    assert "skipGeometry" not in str(req.url)
+
+
+def test_get_cql_unknown_service_raises():
+    """An unknown service is rejected before any network call."""
+    with pytest.raises(ValueError, match="Unknown service"):
+        get_cql("not-a-service", {"op": "isNull", "args": [{"property": "x"}]})
+
+
+def test_waterdata_services_literal_matches_output_id_map():
+    """The WATERDATA_SERVICES Literal and _OUTPUT_ID_BY_SERVICE must enumerate
+    the same services: get_cql validates against the dict while the Literal
+    types the public signature, so drift would let one accept a service the other
+    rejects."""
+    from typing import get_args
+
+    from dataretrieval.waterdata.types import WATERDATA_SERVICES
+    from dataretrieval.waterdata.utils import _OUTPUT_ID_BY_SERVICE
+
+    assert set(get_args(WATERDATA_SERVICES)) == set(_OUTPUT_ID_BY_SERVICE)
 
 
 def test_construct_api_requests_single_value_stays_get():
@@ -404,6 +461,70 @@ def test_get_monitoring_locations_hucs():
         "010802050102",
         "010802050103",
     }
+
+
+def test_get_cql_compound_and_in():
+    """Generalized CQL2: a compound AND-of-INs routed through get_cql.
+    Confirms the (df, md) shape matches the typed getters — wire ``id`` renamed
+    and ordered last."""
+    cql = {
+        "op": "and",
+        "args": [
+            {"op": "in", "args": [{"property": "parameter_code"}, ["00060", "00065"]]},
+            {
+                "op": "in",
+                "args": [{"property": "monitoring_location_id"}, ["USGS-05427718"]],
+            },
+        ],
+    }
+    df, md = get_cql("latest-daily", cql)
+    assert len(df) >= 1
+    assert "latest_daily_id" in df.columns and "id" not in df.columns
+    assert df.columns[-1] == "latest_daily_id"
+    assert set(df["parameter_code"]).issubset({"00060", "00065"})
+    assert set(df["monitoring_location_id"]) == {"USGS-05427718"}
+    assert hasattr(md, "url")
+    assert hasattr(md, "query_time")
+
+
+def test_get_cql_str_body_matches_dict():
+    """A CQL2 ``str`` body is sent verbatim and yields the same result as the
+    equivalent ``dict``."""
+    cql = {
+        "op": "in",
+        "args": [{"property": "monitoring_location_id"}, ["USGS-05427718"]],
+    }
+    df_dict, _ = get_cql("latest-daily", cql)
+    df_str, _ = get_cql("latest-daily", json.dumps(cql))
+    assert list(df_str.columns) == list(df_dict.columns)
+    assert len(df_str) == len(df_dict)
+
+
+def test_get_cql_properties_id_translation():
+    """``properties=['id', ...]`` resolves ``id`` to the service's output_id
+    column, just like the typed getters, preserving the requested order."""
+    cql = {
+        "op": "in",
+        "args": [{"property": "monitoring_location_id"}, ["USGS-05427718"]],
+    }
+    df, _ = get_cql(
+        "latest-daily",
+        cql,
+        properties=["monitoring_location_id", "id", "parameter_code", "value"],
+    )
+    assert df.columns[1] == "latest_daily_id"
+
+
+def test_get_cql_like_wildcard():
+    """Generalized CQL2 unlocks predicates the typed getters can't express, e.g.
+    a LIKE with a ``%`` wildcard."""
+    cql = {
+        "op": "like",
+        "args": [{"property": "hydrologic_unit_code"}, "020700100101%"],
+    }
+    df, _ = get_cql("monitoring-locations", cql)
+    assert len(df) >= 1
+    assert df["hydrologic_unit_code"].astype(str).str.startswith("020700100101").all()
 
 
 def test_get_latest_continuous():
