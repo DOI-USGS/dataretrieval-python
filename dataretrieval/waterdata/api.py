@@ -2100,7 +2100,7 @@ def get_reference_table(
     )
 
 
-def get_codes(code_service: CODE_SERVICES) -> pd.DataFrame:
+def get_codes(code_service: CODE_SERVICES) -> tuple[pd.DataFrame, BaseMetadata]:
     """Return codes from a Samples code service.
 
     Parameters
@@ -2109,6 +2109,13 @@ def get_codes(code_service: CODE_SERVICES) -> pd.DataFrame:
         One of the following options: "states", "counties", "countries"
         "sitetype", "samplemedia", "characteristicgroup", "characteristics",
         or "observedproperty"
+
+    Returns
+    -------
+    df : ``pandas.DataFrame``
+        The requested code table.
+    md : :obj:`dataretrieval.utils.BaseMetadata`
+        Metadata for the query (URL, query time, response headers).
     """
     valid_code_services = get_args(CODE_SERVICES)
     if code_service not in valid_code_services:
@@ -2128,7 +2135,7 @@ def get_codes(code_service: CODE_SERVICES) -> pd.DataFrame:
 
     df = pd.DataFrame(data_list)
 
-    return df
+    return df, BaseMetadata(response)
 
 
 def _get_samples_csv(
