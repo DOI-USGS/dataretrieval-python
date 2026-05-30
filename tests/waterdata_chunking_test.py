@@ -161,10 +161,30 @@ def test_extract_axes_skips_singletons_and_never_chunk_params():
 
 
 def test_chunk_plan_returns_passthrough_when_no_chunkable_axes():
-    """Scalar args with nothing to chunk → passthrough, even at a
-    URL limit the request technically exceeds (the server may 414,
-    but ``ChunkPlan`` has nothing to split)."""
+    """Scalar args with nothing to chunk and a request within the limit →
+    passthrough (no axes)."""
     args = {"monitoring_location_id": "scalar-only"}
+    plan = ChunkPlan(args, _fake_build, url_limit=1000)
+    assert plan.axes == []
+    assert plan.total == 1
+
+
+def test_chunk_plan_raises_when_unchunkable_request_exceeds_limit():
+    """A request with nothing to chunk that still exceeds the byte limit (e.g.
+    a single large CQL ``IN`` clause with no top-level ``OR``) raises
+    RequestTooLarge instead of being shipped for the server to reject with an
+    opaque HTTP 414."""
+    args = {"monitoring_location_id": "scalar-only"}
+    with pytest.raises(RequestTooLarge):
+        ChunkPlan(args, _fake_build, url_limit=10)
+
+
+def test_chunk_plan_passes_through_unchunkable_cql_json_over_limit():
+    """A cql-json filter is outside the chunker's domain (it splits only
+    cql-text), so an over-budget cql-json request is passed through unchanged
+    instead of raising — the server judges it, not us. Guards against the
+    chunker hijacking the deliberate cql-json passthrough."""
+    args = {"filter": "a OR b OR c", "filter_lang": "cql-json"}
     plan = ChunkPlan(args, _fake_build, url_limit=10)
     assert plan.axes == []
     assert plan.total == 1
