@@ -67,6 +67,25 @@ SAMPLES_URL = f"{BASE_URL}/samples-data"
 STATISTICS_API_VERSION = "v0"
 STATISTICS_API_URL = f"{BASE_URL}/statistics/{STATISTICS_API_VERSION}"
 
+# Maps each OGC waterdata service to its user-facing ``id`` column (the name the
+# typed getters rename the wire ``id`` to, e.g. ``daily`` -> ``daily_id``).
+# ``get_cql`` validates its ``service`` argument against these keys and
+# uses the value as the ``output_id`` for result shaping. Keep in sync with the
+# ``types.WATERDATA_SERVICES`` Literal (same keys).
+_OUTPUT_ID_BY_SERVICE: dict[str, str] = {
+    "channel-measurements": "channel_measurements_id",
+    "combined-metadata": "combined_meta_id",
+    "continuous": "continuous_id",
+    "daily": "daily_id",
+    "field-measurements": "field_measurement_id",
+    "field-measurements-metadata": "field_series_id",
+    "latest-continuous": "latest_continuous_id",
+    "latest-daily": "latest_daily_id",
+    "monitoring-locations": "monitoring_location_id",
+    "peaks": "peak_id",
+    "time-series-metadata": "time_series_id",
+}
+
 
 def _switch_arg_id(ls: dict[str, Any], id_name: str, service: str):
     """
@@ -561,6 +580,36 @@ def _paginated_failure_message(pages_collected: int, cause: BaseException) -> st
     )
 
 
+def _ogc_query_params(
+    params: dict[str, Any],
+    *,
+    properties: list[str] | None,
+    bbox: list[float] | None,
+    limit: int | None,
+    skip_geometry: bool | None,
+) -> dict[str, Any]:
+    """Add the shared OGC query knobs to ``params`` (mutated in place).
+
+    Factors out the ``skipGeometry``/``limit``/``bbox``/``properties`` block
+    common to every OGC request so the typed getters
+    (:func:`_construct_api_requests`) and the generalized CQL2 path
+    (:func:`_construct_cql_request`) build identical URL parameters.
+
+    ``skip_geometry=None`` leaves ``skipGeometry`` unset (the server defaults to
+    including geometry); the typed getters always pass a bool, so their behavior
+    is unchanged.
+    """
+    if skip_geometry is not None:
+        params["skipGeometry"] = skip_geometry
+    params["limit"] = 50000 if limit is None or limit > 50000 else limit
+    # `len()` instead of truthiness: a numpy ndarray would raise on `if bbox:`.
+    if bbox is not None and len(bbox) > 0:
+        params["bbox"] = ",".join(map(str, bbox))
+    if properties:
+        params["properties"] = ",".join(properties)
+    return params
+
+
 def _construct_api_requests(
     service: str,
     properties: list[str] | None = None,
@@ -631,14 +680,13 @@ def _construct_api_requests(
             for k, v in kwargs.items()
         }
 
-    params["skipGeometry"] = skip_geometry
-    params["limit"] = 50000 if limit is None or limit > 50000 else limit
-
-    # `len()` instead of truthiness: a numpy ndarray would raise on `if bbox:`.
-    if bbox is not None and len(bbox) > 0:
-        params["bbox"] = ",".join(map(str, bbox))
-    if properties:
-        params["properties"] = ",".join(properties)
+    _ogc_query_params(
+        params,
+        properties=properties,
+        bbox=bbox,
+        limit=limit,
+        skip_geometry=skip_geometry,
+    )
 
     # Translate CQL filter Python names to the hyphenated URL parameter that
     # the OGC API expects. The Python kwarg is `filter_lang` because hyphens
@@ -661,6 +709,59 @@ def _construct_api_requests(
         method="GET",
         url=service_url,
         headers=headers,
+        params=params,
+    )
+
+
+def _construct_cql_request(
+    service: str,
+    cql_body: str,
+    *,
+    properties: list[str] | None = None,
+    bbox: list[float] | None = None,
+    limit: int | None = None,
+    skip_geometry: bool | None = None,
+) -> httpx.Request:
+    """Build a POST/CQL2 request from a verbatim CQL2 body.
+
+    The OGC-API counterpart to :func:`_construct_api_requests` for the
+    generalized :func:`~dataretrieval.waterdata.api.get_cql` path: the
+    caller supplies an already-serialized CQL2 JSON document (any predicate the
+    grammar allows), sent unchanged as the request body, while
+    ``properties``/``bbox``/``limit``/``skip_geometry`` go on the URL via the
+    shared :func:`_ogc_query_params` — so a generalized query and an equivalent
+    typed getter produce the same URL parameters.
+
+    Parameters
+    ----------
+    service : str
+        OGC collection name (e.g. ``"daily"``).
+    cql_body : str
+        Serialized CQL2 JSON document, sent as the POST body verbatim.
+    properties, bbox, limit, skip_geometry
+        See :func:`_ogc_query_params`. ``properties`` are wire-format
+        (``id``-translated) names.
+
+    Returns
+    -------
+    httpx.Request
+        A POST request with ``Content-Type: application/query-cql-json``.
+    """
+    service_url = f"{OGC_API_URL}/collections/{service}/items"
+    params = _ogc_query_params(
+        {},
+        properties=properties,
+        bbox=bbox,
+        limit=limit,
+        skip_geometry=skip_geometry,
+    )
+    headers = _default_headers()
+    headers["Content-Type"] = "application/query-cql-json"
+    return httpx.Request(
+        method="POST",
+        url=service_url,
+        headers=headers,
+        content=cql_body,
         params=params,
     )
 
@@ -1322,8 +1423,8 @@ def _finalize_ogc(
 
 def get_ogc_data(
     args: dict[str, Any],
-    output_id: str,
     service: str,
+    output_id: str | None = None,
     max_rows: int | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
@@ -1338,11 +1439,13 @@ def get_ogc_data(
     ----------
     args : Dict[str, Any]
         Dictionary of request arguments for the OGC service.
-    output_id : str
-        The name of the output identifier to use in the request.
     service : str
         The OGC API collection name (e.g., ``"daily"``,
         ``"monitoring-locations"``, ``"continuous"``).
+    output_id : str, optional
+        The user-facing id column the wire ``id`` is renamed to. Defaults
+        to ``_OUTPUT_ID_BY_SERVICE[service]``; pass it explicitly only for
+        collections outside that map (e.g. reference-table collections).
     max_rows : int, optional
         Stop paginating once this many rows have been collected and
         truncate the result to exactly ``max_rows``. ``None`` (default)
@@ -1374,6 +1477,13 @@ def get_ogc_data(
         or max_rows < 1
     ):
         raise ValueError(f"max_rows must be a positive integer (got {max_rows!r}).")
+
+    # Each service renames its wire ``id`` to a service-specific column; that
+    # name is derived from ``service`` via the canonical map so the getters
+    # don't each repeat it. Callers for collections outside the map (e.g.
+    # get_reference_table's metadata collections) pass output_id explicitly.
+    if output_id is None:
+        output_id = _OUTPUT_ID_BY_SERVICE[service]
 
     args = args.copy()
     args["service"] = service
@@ -1584,6 +1694,28 @@ def _expand_percentiles(df: pd.DataFrame) -> pd.DataFrame:
         return df
 
 
+def _run_sync(
+    make_coro: Callable[[], Awaitable[tuple[pd.DataFrame, httpx.Response]]],
+    *,
+    service: str,
+) -> tuple[pd.DataFrame, httpx.Response]:
+    """Drive an async OGC fetch to completion from synchronous code.
+
+    Opens the service progress context and runs ``make_coro()`` through a
+    short-lived ``anyio`` blocking portal (a worker thread), so the
+    non-chunked getters work whether or not the caller is already inside an
+    event loop (Jupyter/async apps). The portal copies the calling context,
+    so the active progress reporter still reaches the sub-requests.
+
+    Shared by the non-chunked fetch paths (:func:`get_stats_data`,
+    :func:`get_cql`); the chunked OGC getters drive their own portal
+    inside :meth:`chunking.ChunkedCall.resume`.
+    """
+    with _progress.progress_context(service=service):
+        with start_blocking_portal() as portal:
+            return portal.call(make_coro)
+
+
 def get_stats_data(
     args: dict[str, Any],
     service: str,
@@ -1660,13 +1792,7 @@ def get_stats_data(
             client=client,
         )
 
-    # The stats path opens its own progress context (it doesn't go through
-    # ``multi_value_chunked``); ``_paginate`` reports pages/rate-limit
-    # into it. The portal copies the calling context, so the reporter still
-    # reaches the worker thread.
-    with _progress.progress_context(service=service):
-        with start_blocking_portal() as portal:
-            df, response = portal.call(_run)
+    df, response = _run_sync(_run, service=service)
 
     if expand_percentiles:
         df = _expand_percentiles(df)
@@ -1772,6 +1898,23 @@ def _normalize_str_iterable(
     return values
 
 
+def _as_str_list(
+    value: str | Iterable[str] | None,
+    param_name: str = "value",
+) -> list[str] | None:
+    """Normalize ``value`` to ``list[str]`` (``None`` passes through).
+
+    Wraps a bare ``str`` in a single-element list — so a later
+    ``",".join(...)`` doesn't iterate it character-by-character — and
+    materializes any other iterable via :func:`_normalize_str_iterable`.
+    """
+    return (
+        [value]
+        if isinstance(value, str)
+        else _normalize_str_iterable(value, param_name)
+    )
+
+
 def _check_monitoring_location_id(
     monitoring_location_id: str | Iterable[str] | None,
 ) -> str | list[str] | None:
@@ -1871,8 +2014,7 @@ def _get_args(
         if k == "monitoring_location_id":
             args[k] = _check_monitoring_location_id(v)
         elif k == "properties":
-            # `",".join(properties)` would iterate a bare string as characters.
-            args[k] = [v] if isinstance(v, str) else _normalize_str_iterable(v, k)
+            args[k] = _as_str_list(v, k)
         elif (
             k in _NO_NORMALIZE_PARAMS
             or isinstance(v, str)

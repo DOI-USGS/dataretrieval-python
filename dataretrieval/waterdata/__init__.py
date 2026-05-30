@@ -15,6 +15,7 @@ from .api import (
     get_codes,
     get_combined_metadata,
     get_continuous,
+    get_cql,
     get_daily,
     get_field_measurements,
     get_field_measurements_metadata,
@@ -37,6 +38,7 @@ from .types import (
     PROFILE_LOOKUP,
     PROFILES,
     SERVICES,
+    WATERDATA_SERVICES,
 )
 
 __all__ = [
@@ -45,10 +47,12 @@ __all__ = [
     "PROFILES",
     "PROFILE_LOOKUP",
     "SERVICES",
+    "WATERDATA_SERVICES",
     "get_channel",
     "get_codes",
     "get_combined_metadata",
     "get_continuous",
+    "get_cql",
     "get_daily",
     "get_field_measurements",
     "get_field_measurements_metadata",
