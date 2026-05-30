@@ -60,7 +60,7 @@ def get_sample_watershed():
         from the streamstats JSON object.
 
     """
-    return get_watershed("NY", -74.524, 43.939)
+    return get_watershed("NY", -74.524, 43.939, format="object")
 
 
 def get_watershed(
@@ -135,29 +135,65 @@ def get_watershed(
         return r
 
     if format == "shape":
-        # use Fiona to return a shape object
-        pass
+        # Returning a shapefile/Fiona object isn't implemented; fail
+        # loudly instead of silently falling through to a Watershed.
+        raise NotImplementedError(
+            "format='shape' is not implemented. Use format='geojson' "
+            "(default) for the raw response, or format='object' for a "
+            "parsed Watershed."
+        )
 
-    if format == "object":
-        # return a python object
-        pass
-
+    # format == "object" (and any other value): parse into a Watershed.
     data = json.loads(r.text)
     return Watershed.from_streamstats_json(data)
 
 
 class Watershed:
-    """Class to extract information from the streamstats JSON object."""
+    """Parsed StreamStats watershed result.
 
-    @classmethod
-    def from_streamstats_json(cls, streamstats_json):
-        """Method that creates a Watershed object from a streamstats JSON."""
-        cls.watershed_point = streamstats_json["featurecollection"][0]["feature"]
-        cls.watershed_polygon = streamstats_json["featurecollection"][1]["feature"]
-        cls.parameters = streamstats_json["parameters"]
-        cls._workspaceID = streamstats_json["workspaceID"]
-        return cls
+    Holds the delineated watershed features, the computed basin
+    parameters, and the service ``workspaceID`` extracted from a
+    StreamStats watershed response. Build one from an already-fetched
+    payload with :meth:`from_streamstats_json`, or construct directly
+    from a location to fetch and parse in a single step.
+
+    Attributes
+    ----------
+    watershed_point : dict
+        GeoJSON feature for the delineation (pour) point.
+    watershed_polygon : dict
+        GeoJSON feature for the delineated basin polygon.
+    parameters : list
+        Basin characteristics returned by the service.
+    _workspaceID : str
+        Service workspace id, usable with
+        :obj:`dataretrieval.streamstats.download_workspace`.
+    """
 
     def __init__(self, rcode, xlocation, ylocation):
-        """Init method that calls the :obj:`from_streamstats_json` method."""
-        get_watershed(rcode, xlocation, ylocation)
+        """Delineate the watershed at ``(xlocation, ylocation)`` and
+        parse the response onto this instance."""
+        response = get_watershed(rcode, xlocation, ylocation, format="geojson")
+        self._populate(json.loads(response.text))
+
+    @classmethod
+    def from_streamstats_json(cls, streamstats_json) -> "Watershed":
+        """Create a :class:`Watershed` from an already-parsed StreamStats
+        JSON payload, without issuing a new request.
+
+        Builds a fresh instance (via ``__new__``, so the
+        network-fetching ``__init__`` is bypassed) and populates it; each
+        call returns an independent object rather than mutating shared
+        class state.
+        """
+        self = cls.__new__(cls)
+        self._populate(streamstats_json)
+        return self
+
+    def _populate(self, streamstats_json) -> None:
+        """Extract watershed fields from a StreamStats JSON payload onto
+        this instance."""
+        self.watershed_point = streamstats_json["featurecollection"][0]["feature"]
+        self.watershed_polygon = streamstats_json["featurecollection"][1]["feature"]
+        self.parameters = streamstats_json["parameters"]
+        self._workspaceID = streamstats_json["workspaceID"]
