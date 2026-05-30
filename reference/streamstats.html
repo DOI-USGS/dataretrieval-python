@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+g484a86aa7 documentation</title>
+  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+gcdd533e1e documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=2cd4c98e"></script>
+      <script src="../_static/documentation_options.js?v=b748f937"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -55,8 +55,13 @@
 <li class="toctree-l2"><a class="reference internal" href="nwis.html">dataretrieval.nwis</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.streamstats</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.streamstats.Watershed"><code class="docutils literal notranslate"><span class="pre">Watershed</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.streamstats.Watershed.watershed_point"><code class="docutils literal notranslate"><span class="pre">Watershed.watershed_point</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.streamstats.Watershed.watershed_polygon"><code class="docutils literal notranslate"><span class="pre">Watershed.watershed_polygon</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.streamstats.Watershed.parameters"><code class="docutils literal notranslate"><span class="pre">Watershed.parameters</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.streamstats.Watershed._workspaceID"><code class="docutils literal notranslate"><span class="pre">Watershed._workspaceID</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.streamstats.Watershed.__init__"><code class="docutils literal notranslate"><span class="pre">Watershed.__init__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.streamstats.Watershed.__weakref__"><code class="docutils literal notranslate"><span class="pre">Watershed.__weakref__</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.streamstats.Watershed._populate"><code class="docutils literal notranslate"><span class="pre">Watershed._populate()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.streamstats.Watershed.from_streamstats_json"><code class="docutils literal notranslate"><span class="pre">Watershed.from_streamstats_json()</span></code></a></li>
 </ul>
 </li>
@@ -103,11 +108,62 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="dataretrieval.streamstats.Watershed">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.streamstats.</span></span><span class="sig-name descname"><span class="pre">Watershed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rcode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlocation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylocation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#Watershed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.Watershed" title="Link to this definition"></a></dt>
-<dd><p>Class to extract information from the streamstats JSON object.</p>
+<dd><p>Parsed StreamStats watershed result.</p>
+<p>Holds the delineated watershed features, the computed basin
+parameters, and the service <code class="docutils literal notranslate"><span class="pre">workspaceID</span></code> extracted from a
+StreamStats watershed response. Build one from an already-fetched
+payload with <a class="reference internal" href="#dataretrieval.streamstats.Watershed.from_streamstats_json" title="dataretrieval.streamstats.Watershed.from_streamstats_json"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_streamstats_json()</span></code></a>, or construct directly
+from a location to fetch and parse in a single step.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dataretrieval.streamstats.Watershed.watershed_point">
+<span class="sig-name descname"><span class="pre">watershed_point</span></span><a class="headerlink" href="#dataretrieval.streamstats.Watershed.watershed_point" title="Link to this definition"></a></dt>
+<dd><p>GeoJSON feature for the delineation (pour) point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dataretrieval.streamstats.Watershed.watershed_polygon">
+<span class="sig-name descname"><span class="pre">watershed_polygon</span></span><a class="headerlink" href="#dataretrieval.streamstats.Watershed.watershed_polygon" title="Link to this definition"></a></dt>
+<dd><p>GeoJSON feature for the delineated basin polygon.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dataretrieval.streamstats.Watershed.parameters">
+<span class="sig-name descname"><span class="pre">parameters</span></span><a class="headerlink" href="#dataretrieval.streamstats.Watershed.parameters" title="Link to this definition"></a></dt>
+<dd><p>Basin characteristics returned by the service.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dataretrieval.streamstats.Watershed._workspaceID">
+<span class="sig-name descname"><span class="pre">_workspaceID</span></span><a class="headerlink" href="#dataretrieval.streamstats.Watershed._workspaceID" title="Link to this definition"></a></dt>
+<dd><p>Service workspace id, usable with
+<a class="reference internal" href="#dataretrieval.streamstats.download_workspace" title="dataretrieval.streamstats.download_workspace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.streamstats.download_workspace</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="dataretrieval.streamstats.Watershed.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rcode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlocation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylocation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#Watershed.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.Watershed.__init__" title="Link to this definition"></a></dt>
-<dd><p>Init method that calls the <a class="reference internal" href="#dataretrieval.streamstats.Watershed.from_streamstats_json" title="dataretrieval.streamstats.Watershed.from_streamstats_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_streamstats_json</span></code></a> method.</p>
+<dd><p>Delineate the watershed at <code class="docutils literal notranslate"><span class="pre">(xlocation,</span> <span class="pre">ylocation)</span></code> and
+parse the response onto this instance.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -117,9 +173,21 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.streamstats.Watershed._populate">
+<span class="sig-name descname"><span class="pre">_populate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">streamstats_json</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#Watershed._populate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.Watershed._populate" title="Link to this definition"></a></dt>
+<dd><p>Extract watershed fields from a StreamStats JSON payload onto
+this instance.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="dataretrieval.streamstats.Watershed.from_streamstats_json">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_streamstats_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">streamstats_json</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#Watershed.from_streamstats_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.Watershed.from_streamstats_json" title="Link to this definition"></a></dt>
-<dd><p>Method that creates a Watershed object from a streamstats JSON.</p>
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_streamstats_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">streamstats_json</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#dataretrieval.streamstats.Watershed" title="dataretrieval.streamstats.Watershed"><span class="pre">Watershed</span></a></span></span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#Watershed.from_streamstats_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.Watershed.from_streamstats_json" title="Link to this definition"></a></dt>
+<dd><p>Create a <a class="reference internal" href="#dataretrieval.streamstats.Watershed" title="dataretrieval.streamstats.Watershed"><code class="xref py py-class docutils literal notranslate"><span class="pre">Watershed</span></code></a> from an already-parsed StreamStats
+JSON payload, without issuing a new request.</p>
+<p>Builds a fresh instance (via <code class="docutils literal notranslate"><span class="pre">__new__</span></code>, so the
+network-fetching <code class="docutils literal notranslate"><span class="pre">__init__</span></code> is bypassed) and populates it; each
+call returns an independent object rather than mutating shared
+class state.</p>
 </dd></dl>
 
 </dd></dl>

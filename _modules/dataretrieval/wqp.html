@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g484a86aa7 documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+gcdd533e1e documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2cd4c98e"></script>
+      <script src="../../_static/documentation_options.js?v=b748f937"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -767,17 +767,31 @@
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span> <span class="o">=</span> <span class="n">parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span> <span class="o">=</span> <span class="n">parameters</span></div>
 
-        <span class="nd">@property</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">site_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">if</span> <span class="s2">&quot;sites&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;sites&quot;</span><span class="p">])</span>
-            <span class="k">elif</span> <span class="s2">&quot;site&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;site&quot;</span><span class="p">])</span>
-            <span class="k">elif</span> <span class="s2">&quot;site_no&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;site_no&quot;</span><span class="p">])</span></div>
-</div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">site_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Site information for the query.</span>
+
+<span class="sd">        Populated when the query included ``sites``, ``site`` or</span>
+<span class="sd">        ``site_no`` (in that order of preference); ``None`` otherwise.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        df : ``pandas.DataFrame``</span>
+<span class="sd">            Formatted requested data from calling ``wqp.what_sites``.</span>
+<span class="sd">        md : :obj:`dataretrieval.wqp.WQP_Metadata`</span>
+<span class="sd">            A WQP_Metadata object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;sites&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;sites&quot;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="s2">&quot;site&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;site&quot;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="s2">&quot;site_no&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;site_no&quot;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
 
 
 
