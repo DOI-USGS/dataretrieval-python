@@ -2024,9 +2024,18 @@ def _get_args(
             args[k] = _as_str_list(v, k)
         elif (
             k in _NO_NORMALIZE_PARAMS
-            or isinstance(v, str)
-            or not isinstance(v, Iterable)
+            and isinstance(v, Iterable)
+            and not isinstance(v, str)
         ):
+            # Numeric params (water_year, bbox, thresholds, …) keep their
+            # element types — no string-normalization — but a non-string
+            # iterable (numpy array, pandas Series, generator) is materialized
+            # to a list so the GET comma-join and the chunker, which test
+            # ``list``/``tuple``, handle it instead of str()-ing the whole
+            # array. ``.tolist()`` yields native int/float; ``list()`` covers
+            # generators and other iterables. Scalars/strings fall through.
+            args[k] = v.tolist() if hasattr(v, "tolist") else list(v)
+        elif isinstance(v, str) or not isinstance(v, Iterable):
             args[k] = v
         else:
             args[k] = _normalize_str_iterable(v, k)
