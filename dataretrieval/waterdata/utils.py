@@ -268,8 +268,6 @@ def _format_api_dates(
     """
     if datetime_input is None:
         return None
-    # Get timezone
-    local_timezone = datetime.now().astimezone().tzinfo
 
     # Convert single string to list for uniform processing
     if isinstance(datetime_input, str):
@@ -300,7 +298,9 @@ def _format_api_dates(
             return single
 
     # Half-bounded ranges: NA endpoints render as ".."; any unparseable non-NA
-    # element invalidates the range.
+    # element invalidates the range. Resolve the local tz only now — after the
+    # all-NA / duration / interval guards above have had their chance to return.
+    local_timezone = datetime.now().astimezone().tzinfo
     formatted = [
         _format_one(dt, date=date, local_tz=local_timezone) for dt in datetime_input
     ]

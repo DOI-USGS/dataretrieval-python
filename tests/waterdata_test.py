@@ -129,6 +129,30 @@ def test_get_samples_summary_rejects_list():
         get_samples_summary(monitoringLocationIdentifier=["USGS-04183500"])
 
 
+def test_get_samples_raises_typed_error_on_429(httpx_mock):
+    """Non-200 from the Samples endpoint now raises the module's typed error
+    (RateLimited on 429) — consistent with the OGC/stats path — instead of a
+    bare httpx.HTTPStatusError."""
+    from dataretrieval.waterdata.chunking import RateLimited
+
+    httpx_mock.add_response(status_code=429, headers={"Retry-After": "30"})
+    with pytest.raises(RateLimited):
+        get_samples(
+            service="results",
+            profile="fullphyschem",
+            monitoringLocationIdentifier="USGS-05406500",
+        )
+
+
+def test_get_samples_summary_raises_typed_error_on_5xx(httpx_mock):
+    """A 5xx from the Samples summary endpoint raises ServiceUnavailable."""
+    from dataretrieval.waterdata.chunking import ServiceUnavailable
+
+    httpx_mock.add_response(status_code=503)
+    with pytest.raises(ServiceUnavailable):
+        get_samples_summary(monitoringLocationIdentifier="USGS-04183500")
+
+
 def test_check_profiles():
     """Tests that correct errors are raised for invalid profiles."""
     with pytest.raises(ValueError):

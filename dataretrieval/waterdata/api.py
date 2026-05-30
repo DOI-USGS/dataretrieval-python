@@ -34,6 +34,7 @@ from dataretrieval.waterdata.utils import (
     _check_profiles,
     _default_headers,
     _get_args,
+    _raise_for_non_200,
     get_ogc_data,
     get_stats_data,
 )
@@ -2125,7 +2126,7 @@ def get_codes(code_service: CODE_SERVICES) -> pd.DataFrame:
 
     response = httpx.get(url, headers=_default_headers(), **HTTPX_DEFAULTS)
 
-    response.raise_for_status()
+    _raise_for_non_200(response)
 
     data_dict = json.loads(response.text)
     data_list = data_dict["data"]
@@ -2133,6 +2134,30 @@ def get_codes(code_service: CODE_SERVICES) -> pd.DataFrame:
     df = pd.DataFrame(data_list)
 
     return df
+
+
+def _get_samples_csv(
+    url: str, params: dict, ssl_check: bool
+) -> tuple[pd.DataFrame, httpx.Response]:
+    """Issue a Samples CSV request and parse the body into a DataFrame.
+
+    Shared tail for the Samples getters: sends the GET with the standard
+    headers (including ``X-Api-Key``), raises a typed error on a non-200
+    (consistent with the OGC/stats path) instead of a bare
+    ``HTTPStatusError``, and reads the CSV. The caller wraps the response
+    as metadata and applies any per-getter post-step.
+    """
+    logger.debug("Request: %s", httpx.URL(url).copy_merge_params(params))
+    response = httpx.get(
+        url,
+        params=params,
+        verify=ssl_check,
+        headers=_default_headers(),
+        **HTTPX_DEFAULTS,
+    )
+    _raise_for_non_200(response)
+    df = pd.read_csv(StringIO(response.text), delimiter=",")
+    return df, response
 
 
 def get_samples(
@@ -2349,19 +2374,7 @@ def get_samples(
 
     url = f"{SAMPLES_URL}/{service}/{profile}"
 
-    logger.debug("Request: %s", httpx.URL(url).copy_merge_params(params))
-
-    response = httpx.get(
-        url,
-        params=params,
-        verify=ssl_check,
-        headers=_default_headers(),
-        **HTTPX_DEFAULTS,
-    )
-
-    response.raise_for_status()
-
-    df = pd.read_csv(StringIO(response.text), delimiter=",")
+    df, response = _get_samples_csv(url, params, ssl_check)
     df = _attach_datetime_columns(df)
 
     return df, BaseMetadata(response)
@@ -2423,19 +2436,7 @@ def get_samples_summary(
     url = f"{SAMPLES_URL}/summary/{quote(monitoringLocationIdentifier, safe='')}"
     params = {"mimeType": "text/csv"}
 
-    logger.debug("Request: %s", httpx.URL(url).copy_merge_params(params))
-
-    response = httpx.get(
-        url,
-        params=params,
-        verify=ssl_check,
-        headers=_default_headers(),
-        **HTTPX_DEFAULTS,
-    )
-
-    response.raise_for_status()
-
-    df = pd.read_csv(StringIO(response.text), delimiter=",")
+    df, response = _get_samples_csv(url, params, ssl_check)
 
     return df, BaseMetadata(response)
 
@@ -2767,6 +2768,8 @@ def get_channel(
     channel_name : string or iterable of strings, optional
         The channel name.
     channel_flow : string or iterable of strings, optional
+        The channel discharge (flow).
+    channel_flow_unit : string or iterable of strings, optional
         The units for channel discharge.
     channel_width : string or iterable of strings, optional
         The channel width.
@@ -2797,24 +2800,7 @@ def get_channel(
     longitudinal_velocity_description : string or iterable of strings, optional
         The longitudinal velocity description.
     measurement_type : string or iterable of strings, optional
-        The measurement type.
-        The last time a record was refreshed in our database. This may happen
-        due to regular operational processes and does not necessarily indicate
-        anything about the measurement has changed. You can query this field
-        using date-times or intervals, adhering to RFC 3339, or using ISO 8601
-        duration objects. Intervals may be bounded or half-bounded (double-dots
-        at start or end).
-        Examples:
-
-            * A date-time: "2018-02-12T23:20:50Z"
-            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
-              "../2018-03-18T12:31:12Z"
-            * Duration objects: "P1M" for data from the past month or "PT36H" for the
-              last 36 hours
-
-        Only features that have a last_modified that intersects the value of
-        datetime are selected.
+        The type of channel measurement.
     skip_geometry : boolean, optional
         This option can be used to skip response geometries for each feature.
         The returning object will be a data frame with no spatial information.
