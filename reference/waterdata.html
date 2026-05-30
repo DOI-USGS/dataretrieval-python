@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+gcdd533e1e documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+gf90349134 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=b748f937"></script>
+      <script src="../_static/documentation_options.js?v=bde36a4c"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -240,9 +240,7 @@ drainage area, well-construction depth, …) can be combined with any
 time-series attribute (parameter code, statistic, data type, period
 of record, …) in a single query.</p>
 <p>See the OpenAPI reference for the full list of supported fields:
-<a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/combined-metadata">https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/combined-metadata</a>
-The R analogue is <code class="docutils literal notranslate"><span class="pre">read_waterdata_combined_meta</span></code> in
-<a class="reference external" href="https://github.com/DOI-USGS/dataRetrieval/">https://github.com/DOI-USGS/dataRetrieval/</a>.</p>
+<a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/combined-metadata">https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/combined-metadata</a></p>
 <p>All ~35 location-catalog kwargs are accepted (<code class="docutils literal notranslate"><span class="pre">agency_code</span></code>,
 <code class="docutils literal notranslate"><span class="pre">state_name</span></code>, <code class="docutils literal notranslate"><span class="pre">drainage_area</span></code>, <code class="docutils literal notranslate"><span class="pre">aquifer_code</span></code>, …) but only
 the most-used ones are documented below; see
@@ -951,9 +949,7 @@ series). It’s primarily useful for inventory queries: “what
 field-measurement parameters does this site have, and over what date
 range?”</p>
 <p>See the OpenAPI reference for the full list of supported fields:
-<a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements-metadata">https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements-metadata</a>
-The R analogue is <code class="docutils literal notranslate"><span class="pre">read_waterdata_field_meta</span></code> in
-<a class="reference external" href="https://github.com/DOI-USGS/dataRetrieval/">https://github.com/DOI-USGS/dataRetrieval/</a>.</p>
+<a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements-metadata">https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements-metadata</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1796,8 +1792,7 @@ value); <code class="docutils literal notranslate"><span class="pre">CORRINDEP</
 </ul>
 <p>See <a class="reference external" href="https://api.waterdata.usgs.gov/docs/stac/">https://api.waterdata.usgs.gov/docs/stac/</a> for the upstream service
 docs and <a class="reference external" href="https://waterdata.usgs.gov/blog/wdfn-rating-curves/">https://waterdata.usgs.gov/blog/wdfn-rating-curves/</a> for the
-background announcement. The R analogue is <code class="docutils literal notranslate"><span class="pre">read_waterdata_ratings</span></code>
-in <a class="reference external" href="https://github.com/DOI-USGS/dataRetrieval/">https://github.com/DOI-USGS/dataRetrieval/</a>.</p>
+background announcement.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
