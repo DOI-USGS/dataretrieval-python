@@ -19,6 +19,22 @@ from dataretrieval.wqp import (
 )
 
 
+def test_read_wqp_csv_preserves_leading_zero_codes():
+    """Regression: WQP code columns (HUCs, parameter codes, FIPS) carry
+    significant leading zeros; a bare ``read_csv`` inferred them as int/float
+    and dropped the zeros (``"00060"`` -> ``60``). ``_read_wqp_csv`` reads
+    code/identifier columns as ``str`` while leaving value columns numeric."""
+    from dataretrieval.wqp import _read_wqp_csv
+
+    csv = (
+        "Location_HUCEightDigitCode,USGSpcode,ResultMeasureValue\n07090002,00060,1.5\n"
+    )
+    df = _read_wqp_csv(csv)
+    assert df["Location_HUCEightDigitCode"].iloc[0] == "07090002"
+    assert df["USGSpcode"].iloc[0] == "00060"
+    assert df["ResultMeasureValue"].iloc[0] == 1.5
+
+
 def test_get_results(httpx_mock):
     """Tests water quality portal ratings query"""
     request_url = (
