@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+gf90349134 documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+gee653e534 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=bde36a4c"></script>
+      <script src="../../../_static/documentation_options.js?v=5d8bac10"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -104,13 +104,22 @@
     <span class="n">METADATA_COLLECTIONS</span><span class="p">,</span>
     <span class="n">PROFILES</span><span class="p">,</span>
     <span class="n">SERVICES</span><span class="p">,</span>
+    <span class="n">WATERDATA_SERVICES</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_OUTPUT_ID_BY_SERVICE</span><span class="p">,</span>
+    <span class="n">GEOPANDAS</span><span class="p">,</span>
     <span class="n">SAMPLES_URL</span><span class="p">,</span>
+    <span class="n">_as_str_list</span><span class="p">,</span>
     <span class="n">_check_profiles</span><span class="p">,</span>
+    <span class="n">_construct_cql_request</span><span class="p">,</span>
     <span class="n">_default_headers</span><span class="p">,</span>
+    <span class="n">_finalize_ogc</span><span class="p">,</span>
     <span class="n">_get_args</span><span class="p">,</span>
     <span class="n">_raise_for_non_200</span><span class="p">,</span>
+    <span class="n">_run_sync</span><span class="p">,</span>
+    <span class="n">_switch_properties_id</span><span class="p">,</span>
+    <span class="n">_walk_pages</span><span class="p">,</span>
     <span class="n">get_ogc_data</span><span class="p">,</span>
     <span class="n">get_stats_data</span><span class="p">,</span>
 <span class="p">)</span>
@@ -330,12 +339,11 @@
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;daily&quot;</span>
-    <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;daily_id&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
 
 
@@ -521,12 +529,11 @@
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;continuous&quot;</span>
-    <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;continuous_id&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
 
 
@@ -822,12 +829,11 @@
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;monitoring-locations&quot;</span>
-    <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;monitoring_location_id&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
 
 
@@ -1048,12 +1054,11 @@
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;time-series-metadata&quot;</span>
-    <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;time_series_id&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
 
 
@@ -1282,11 +1287,10 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;combined-metadata&quot;</span>
-    <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;combined_meta_id&quot;</span>
 
     <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
 
 
@@ -1479,12 +1483,11 @@
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;latest-continuous&quot;</span>
-    <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;latest_continuous_id&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
 
 
@@ -1678,12 +1681,11 @@
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;latest-daily&quot;</span>
-    <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;latest_daily_id&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
 
 
@@ -1871,12 +1873,11 @@
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;field-measurements&quot;</span>
-    <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;field_measurement_id&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
 
 
@@ -1990,11 +1991,10 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;field-measurements-metadata&quot;</span>
-    <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;field_series_id&quot;</span>
 
     <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
 
 
@@ -2113,11 +2113,10 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;peaks&quot;</span>
-    <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;peak_id&quot;</span>
 
     <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
 
 
@@ -2968,11 +2967,154 @@
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;channel-measurements&quot;</span>
-    <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;channel_measurements_id&quot;</span>
 
     <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_cql">
+<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_cql">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_cql</span><span class="p">(</span>
+    <span class="n">service</span><span class="p">:</span> <span class="n">WATERDATA_SERVICES</span><span class="p">,</span>
+    <span class="n">cql</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">skip_geometry</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Query a Water Data OGC API collection with an arbitrary CQL2 filter.</span>
+
+<span class="sd">    Sends ``cql`` as a CQL2 filter against ``service`` and returns the matching</span>
+<span class="sd">    features, shaped like the typed getters (``get_daily``, ``get_continuous``,</span>
+<span class="sd">    …): the wire ``id`` renamed to the service&#39;s id column, columns ordered and</span>
+<span class="sd">    sorted, and dtypes coerced. Use it when you need a predicate the typed</span>
+<span class="sd">    getters can&#39;t express — a top-level ``or``, ``like`` with ``%`` wildcards,</span>
+<span class="sd">    comparison operators, nested boolean trees, or a geometry predicate beyond a</span>
+<span class="sd">    bounding box; prefer a typed getter when one covers the query.</span>
+
+<span class="sd">    The request is a single POST with the ``cql`` body sent verbatim, so there</span>
+<span class="sd">    are no multi-value arguments to chunk: narrow a query whose URL or body</span>
+<span class="sd">    would exceed the server&#39;s size cap rather than relying on automatic</span>
+<span class="sd">    chunking.</span>
+
+<span class="sd">    The CQL2 grammar is documented at</span>
+<span class="sd">    https://api.waterdata.usgs.gov/docs/ogcapi/complex-queries/.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    service : str</span>
+<span class="sd">        OGC collection name. Must be one of</span>
+<span class="sd">        :data:`dataretrieval.waterdata.types.WATERDATA_SERVICES`</span>
+<span class="sd">        (e.g. ``&quot;daily&quot;``, ``&quot;monitoring-locations&quot;``).</span>
+<span class="sd">    cql : str or dict</span>
+<span class="sd">        CQL2 query. A ``dict`` is JSON-serialized for transport; a ``str`` is</span>
+<span class="sd">        sent through unchanged. The query goes into the HTTP POST body with</span>
+<span class="sd">        ``Content-Type: application/query-cql-json``.</span>
+<span class="sd">    properties : str or iterable of str, optional</span>
+<span class="sd">        Server-side property whitelist (passed as ``properties=`` on the URL).</span>
+<span class="sd">        Reduces payload size. ``&quot;id&quot;`` resolves to the service&#39;s ``output_id``</span>
+<span class="sd">        (e.g. ``daily_id``) the same way it does in the typed wrappers.</span>
+<span class="sd">    bbox : list of float, optional</span>
+<span class="sd">        Bounding box ``[xmin, ymin, xmax, ymax]`` in CRS 4326. Combines with the</span>
+<span class="sd">        CQL filter as an additional spatial predicate.</span>
+<span class="sd">    limit : int, optional</span>
+<span class="sd">        Page size, clamped server-side to 50,000.</span>
+<span class="sd">    skip_geometry : bool, optional</span>
+<span class="sd">        If True, the server omits geometry from each feature</span>
+<span class="sd">        (``skipGeometry=true``).</span>
+<span class="sd">    convert_type : bool, default True</span>
+<span class="sd">        Coerce date/datetime/numeric columns to typed dtypes after the</span>
+<span class="sd">        DataFrame is built.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : pandas.DataFrame or geopandas.GeoDataFrame</span>
+<span class="sd">        Result of the query. GeoDataFrame when ``geopandas`` is installed and</span>
+<span class="sd">        geometry is present.</span>
+<span class="sd">    md : :class:`dataretrieval.utils.BaseMetadata`</span>
+<span class="sd">        Request metadata (URL, query time, response headers).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; # Daily values for two parameter codes at two sites</span>
+<span class="sd">        &gt;&gt;&gt; # (compound AND-of-INs).</span>
+<span class="sd">        &gt;&gt;&gt; from dataretrieval import waterdata</span>
+<span class="sd">        &gt;&gt;&gt; cql = {</span>
+<span class="sd">        ...     &quot;op&quot;: &quot;and&quot;,</span>
+<span class="sd">        ...     &quot;args&quot;: [</span>
+<span class="sd">        ...         {</span>
+<span class="sd">        ...             &quot;op&quot;: &quot;in&quot;,</span>
+<span class="sd">        ...             &quot;args&quot;: [</span>
+<span class="sd">        ...                 {&quot;property&quot;: &quot;parameter_code&quot;},</span>
+<span class="sd">        ...                 [&quot;00060&quot;, &quot;00065&quot;],</span>
+<span class="sd">        ...             ],</span>
+<span class="sd">        ...         },</span>
+<span class="sd">        ...         {</span>
+<span class="sd">        ...             &quot;op&quot;: &quot;in&quot;,</span>
+<span class="sd">        ...             &quot;args&quot;: [</span>
+<span class="sd">        ...                 {&quot;property&quot;: &quot;monitoring_location_id&quot;},</span>
+<span class="sd">        ...                 [&quot;USGS-07367300&quot;, &quot;USGS-03277200&quot;],</span>
+<span class="sd">        ...             ],</span>
+<span class="sd">        ...         },</span>
+<span class="sd">        ...     ],</span>
+<span class="sd">        ... }</span>
+<span class="sd">        &gt;&gt;&gt; df, md = waterdata.get_cql(service=&quot;daily&quot;, cql=cql)</span>
+
+<span class="sd">        &gt;&gt;&gt; # Monitoring locations whose HUC starts with &quot;02070010&quot;</span>
+<span class="sd">        &gt;&gt;&gt; # (LIKE with the CQL2 ``%`` wildcard).</span>
+<span class="sd">        &gt;&gt;&gt; df, md = waterdata.get_cql(</span>
+<span class="sd">        ...     service=&quot;monitoring-locations&quot;,</span>
+<span class="sd">        ...     cql=&#39;{&quot;op&quot;: &quot;like&quot;, &quot;args&quot;: [&#39;</span>
+<span class="sd">        ...     &#39;{&quot;property&quot;: &quot;hydrologic_unit_code&quot;},&#39;</span>
+<span class="sd">        ...     &#39; &quot;02070010%&quot;]}&#39;,</span>
+<span class="sd">        ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">service</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_OUTPUT_ID_BY_SERVICE</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Unknown service </span><span class="si">{</span><span class="n">service</span><span class="si">!r}</span><span class="s2">. Valid services: &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_OUTPUT_ID_BY_SERVICE</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">output_id</span> <span class="o">=</span> <span class="n">_OUTPUT_ID_BY_SERVICE</span><span class="p">[</span><span class="n">service</span><span class="p">]</span>
+
+    <span class="c1"># ``dict`` is the pythonic input — serialize on the way out. ``str`` is sent</span>
+    <span class="c1"># verbatim so callers who already have a CQL2 doc (e.g. imported from a</span>
+    <span class="c1"># config file) don&#39;t need to re-parse it.</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">cql</span><span class="p">,</span> <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">))</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cql</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="n">cql</span>
+
+    <span class="n">properties_list</span> <span class="o">=</span> <span class="n">_as_str_list</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="s2">&quot;properties&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Translate user-facing names (``daily_id``/``id``) to the wire ``id`` the</span>
+    <span class="c1"># OGC API expects, matching the typed getters.</span>
+    <span class="n">wire_properties</span> <span class="o">=</span> <span class="n">_switch_properties_id</span><span class="p">(</span><span class="n">properties_list</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span>
+
+    <span class="n">req</span> <span class="o">=</span> <span class="n">_construct_cql_request</span><span class="p">(</span>
+        <span class="n">service</span><span class="p">,</span>
+        <span class="n">body</span><span class="p">,</span>
+        <span class="n">properties</span><span class="o">=</span><span class="n">wire_properties</span><span class="p">,</span>
+        <span class="n">bbox</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span>
+        <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+        <span class="n">skip_geometry</span><span class="o">=</span><span class="n">skip_geometry</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_run</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">_walk_pages</span><span class="p">(</span><span class="n">geopd</span><span class="o">=</span><span class="n">GEOPANDAS</span><span class="p">,</span> <span class="n">req</span><span class="o">=</span><span class="n">req</span><span class="p">)</span>
+
+    <span class="n">df</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="n">_run_sync</span><span class="p">(</span><span class="n">_run</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_finalize_ogc</span><span class="p">(</span>
+        <span class="n">df</span><span class="p">,</span>
+        <span class="n">response</span><span class="p">,</span>
+        <span class="n">properties</span><span class="o">=</span><span class="n">properties_list</span><span class="p">,</span>
+        <span class="n">output_id</span><span class="o">=</span><span class="n">output_id</span><span class="p">,</span>
+        <span class="n">convert_type</span><span class="o">=</span><span class="n">convert_type</span><span class="p">,</span>
+        <span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 </pre></div>
 

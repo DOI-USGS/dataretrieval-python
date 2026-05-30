@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+gf90349134 documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+gee653e534 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bde36a4c"></script>
+      <script src="../_static/documentation_options.js?v=5d8bac10"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -60,6 +60,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_codes"><code class="docutils literal notranslate"><span class="pre">get_codes()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_combined_metadata"><code class="docutils literal notranslate"><span class="pre">get_combined_metadata()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_continuous"><code class="docutils literal notranslate"><span class="pre">get_continuous()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_cql"><code class="docutils literal notranslate"><span class="pre">get_cql()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_daily"><code class="docutils literal notranslate"><span class="pre">get_daily()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_field_measurements"><code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_field_measurements_metadata"><code class="docutils literal notranslate"><span class="pre">get_field_measurements_metadata()</span></code></a></li>
@@ -566,6 +567,90 @@ string vector</p></li>
 <span class="gp">... </span>        <span class="s2">&quot;AND time &lt;= &#39;2023-06-15T13:00:00Z&#39;)&quot;</span>
 <span class="gp">... </span>    <span class="p">),</span>
 <span class="gp">... </span>    <span class="n">filter_lang</span><span class="o">=</span><span class="s2">&quot;cql-text&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.waterdata.get_cql">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.waterdata.</span></span><span class="sig-name descname"><span class="pre">get_cql</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'channel-measurements'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'combined-metadata'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'continuous'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'daily'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'field-measurements'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'field-measurements-metadata'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'latest-continuous'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'latest-daily'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'monitoring-locations'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'peaks'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'time-series-metadata'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cql</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_geometry</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/waterdata/api.html#get_cql"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.waterdata.get_cql" title="Link to this definition"></a></dt>
+<dd><p>Query a Water Data OGC API collection with an arbitrary CQL2 filter.</p>
+<p>Sends <code class="docutils literal notranslate"><span class="pre">cql</span></code> as a CQL2 filter against <code class="docutils literal notranslate"><span class="pre">service</span></code> and returns the matching
+features, shaped like the typed getters (<code class="docutils literal notranslate"><span class="pre">get_daily</span></code>, <code class="docutils literal notranslate"><span class="pre">get_continuous</span></code>,
+…): the wire <code class="docutils literal notranslate"><span class="pre">id</span></code> renamed to the service’s id column, columns ordered and
+sorted, and dtypes coerced. Use it when you need a predicate the typed
+getters can’t express — a top-level <code class="docutils literal notranslate"><span class="pre">or</span></code>, <code class="docutils literal notranslate"><span class="pre">like</span></code> with <code class="docutils literal notranslate"><span class="pre">%</span></code> wildcards,
+comparison operators, nested boolean trees, or a geometry predicate beyond a
+bounding box; prefer a typed getter when one covers the query.</p>
+<p>The request is a single POST with the <code class="docutils literal notranslate"><span class="pre">cql</span></code> body sent verbatim, so there
+are no multi-value arguments to chunk: narrow a query whose URL or body
+would exceed the server’s size cap rather than relying on automatic
+chunking.</p>
+<p>The CQL2 grammar is documented at
+<a class="reference external" href="https://api.waterdata.usgs.gov/docs/ogcapi/complex-queries/">https://api.waterdata.usgs.gov/docs/ogcapi/complex-queries/</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>service</strong> (<em>str</em>) – OGC collection name. Must be one of
+<code class="xref py py-data docutils literal notranslate"><span class="pre">dataretrieval.waterdata.types.WATERDATA_SERVICES</span></code>
+(e.g. <code class="docutils literal notranslate"><span class="pre">&quot;daily&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;monitoring-locations&quot;</span></code>).</p></li>
+<li><p><strong>cql</strong> (<em>str</em><em> or </em><em>dict</em>) – CQL2 query. A <code class="docutils literal notranslate"><span class="pre">dict</span></code> is JSON-serialized for transport; a <code class="docutils literal notranslate"><span class="pre">str</span></code> is
+sent through unchanged. The query goes into the HTTP POST body with
+<code class="docutils literal notranslate"><span class="pre">Content-Type:</span> <span class="pre">application/query-cql-json</span></code>.</p></li>
+<li><p><strong>properties</strong> (<em>str</em><em> or </em><em>iterable</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – Server-side property whitelist (passed as <code class="docutils literal notranslate"><span class="pre">properties=</span></code> on the URL).
+Reduces payload size. <code class="docutils literal notranslate"><span class="pre">&quot;id&quot;</span></code> resolves to the service’s <code class="docutils literal notranslate"><span class="pre">output_id</span></code>
+(e.g. <code class="docutils literal notranslate"><span class="pre">daily_id</span></code>) the same way it does in the typed wrappers.</p></li>
+<li><p><strong>bbox</strong> (<em>list</em><em> of </em><em>float</em><em>, </em><em>optional</em>) – Bounding box <code class="docutils literal notranslate"><span class="pre">[xmin,</span> <span class="pre">ymin,</span> <span class="pre">xmax,</span> <span class="pre">ymax]</span></code> in CRS 4326. Combines with the
+CQL filter as an additional spatial predicate.</p></li>
+<li><p><strong>limit</strong> (<em>int</em><em>, </em><em>optional</em>) – Page size, clamped server-side to 50,000.</p></li>
+<li><p><strong>skip_geometry</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the server omits geometry from each feature
+(<code class="docutils literal notranslate"><span class="pre">skipGeometry=true</span></code>).</p></li>
+<li><p><strong>convert_type</strong> (<em>bool</em><em>, </em><em>default True</em>) – Coerce date/datetime/numeric columns to typed dtypes after the
+DataFrame is built.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame or geopandas.GeoDataFrame</em>) – Result of the query. GeoDataFrame when <code class="docutils literal notranslate"><span class="pre">geopandas</span></code> is installed and
+geometry is present.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><code class="xref py py-class docutils literal notranslate"><span class="pre">dataretrieval.utils.BaseMetadata</span></code></a>) – Request metadata (URL, query time, response headers).</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Daily values for two parameter codes at two sites</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># (compound AND-of-INs).</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cql</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s2">&quot;op&quot;</span><span class="p">:</span> <span class="s2">&quot;and&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="gp">... </span>        <span class="p">{</span>
+<span class="gp">... </span>            <span class="s2">&quot;op&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="gp">... </span>                <span class="p">{</span><span class="s2">&quot;property&quot;</span><span class="p">:</span> <span class="s2">&quot;parameter_code&quot;</span><span class="p">},</span>
+<span class="gp">... </span>                <span class="p">[</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="s2">&quot;00065&quot;</span><span class="p">],</span>
+<span class="gp">... </span>            <span class="p">],</span>
+<span class="gp">... </span>        <span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span>
+<span class="gp">... </span>            <span class="s2">&quot;op&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="gp">... </span>                <span class="p">{</span><span class="s2">&quot;property&quot;</span><span class="p">:</span> <span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">},</span>
+<span class="gp">... </span>                <span class="p">[</span><span class="s2">&quot;USGS-07367300&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-03277200&quot;</span><span class="p">],</span>
+<span class="gp">... </span>            <span class="p">],</span>
+<span class="gp">... </span>        <span class="p">},</span>
+<span class="gp">... </span>    <span class="p">],</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_cql</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="s2">&quot;daily&quot;</span><span class="p">,</span> <span class="n">cql</span><span class="o">=</span><span class="n">cql</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Monitoring locations whose HUC starts with &quot;02070010&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># (LIKE with the CQL2 ``%`` wildcard).</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_cql</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">service</span><span class="o">=</span><span class="s2">&quot;monitoring-locations&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">cql</span><span class="o">=</span><span class="s1">&#39;{&quot;op&quot;: &quot;like&quot;, &quot;args&quot;: [&#39;</span>
+<span class="gp">... </span>    <span class="s1">&#39;{&quot;property&quot;: &quot;hydrologic_unit_code&quot;},&#39;</span>
+<span class="gp">... </span>    <span class="s1">&#39; &quot;02070010%&quot;]}&#39;</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
