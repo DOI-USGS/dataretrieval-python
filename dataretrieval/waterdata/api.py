@@ -189,7 +189,7 @@ def get_daily(
         axis (height or depth). Coordinates are assumed to be in crs 4326. The
         expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
         Another way to think of it is c(Western-most longitude, Southern-most
-        latitude, Eastern-most longitude, Northern-most longitude).
+        latitude, Eastern-most longitude, Northern-most latitude).
     limit : numeric, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
@@ -700,7 +700,7 @@ def get_monitoring_locations(
         axis (height or depth). Coordinates are assumed to be in crs 4326. The
         expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
         Another way to think of it is c(Western-most longitude, Southern-most
-        latitude, Eastern-most longitude, Northern-most longitude).
+        latitude, Eastern-most longitude, Northern-most latitude).
     limit : numeric, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
@@ -927,7 +927,7 @@ def get_time_series_metadata(
         axis (height or depth). Coordinates are assumed to be in crs 4326. The
         expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
         Another way to think of it is c(Western-most longitude, Southern-most
-        latitude, Eastern-most longitude, Northern-most longitude).
+        latitude, Eastern-most longitude, Northern-most latitude).
     limit : numeric, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
@@ -1337,7 +1337,7 @@ def get_latest_continuous(
         axis (height or depth). Coordinates are assumed to be in crs 4326. The
         expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
         Another way to think of it is c(Western-most longitude, Southern-most
-        latitude, Eastern-most longitude, Northern-most longitude).
+        latitude, Eastern-most longitude, Northern-most latitude).
     limit : numeric, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
@@ -1533,7 +1533,7 @@ def get_latest_daily(
         axis (height or depth). Coordinates are assumed to be in crs 4326. The
         expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
         Another way to think of it is c(Western-most longitude, Southern-most
-        latitude, Eastern-most longitude, Northern-most longitude).
+        latitude, Eastern-most longitude, Northern-most latitude).
     limit : numeric, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
@@ -1639,10 +1639,11 @@ def get_field_measurements(
         A short code corresponding to the observing procedure for the field
         measurement.
     properties : string or iterable of strings, optional
-        A vector of requested columns to be returned from the query.  Available
-        options are: geometry, id, time_series_id, monitoring_location_id,
-        parameter_code, statistic_id, time, value, unit_of_measure,
-        approval_status, qualifier, last_modified
+        A vector of requested columns to be returned from the query. See the
+        field-measurements schema in the OpenAPI reference for the available
+        columns (e.g. geometry, id, monitoring_location_id, parameter_code,
+        value, unit_of_measure, approval_status, qualifier, last_modified):
+        https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements
     field_visit_id : string or iterable of strings, optional
         A universally unique identifier (UUID) for the field visit.
         Multiple measurements may be made during a single field visit.
@@ -1720,7 +1721,7 @@ def get_field_measurements(
         axis (height or depth). Coordinates are assumed to be in crs 4326. The
         expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
         Another way to think of it is c(Western-most longitude, Southern-most
-        latitude, Eastern-most longitude, Northern-most longitude).
+        latitude, Eastern-most longitude, Northern-most latitude).
     limit : numeric, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
@@ -2257,7 +2258,7 @@ def get_samples(
             * Western-most longitude
             * Southern-most latitude
             * Eastern-most longitude
-            * Northern-most longitude
+            * Northern-most latitude
 
         Example: [-92.8,44.2,-88.9,46.0]
     countryFips : string or iterable of strings, optional

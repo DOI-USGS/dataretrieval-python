@@ -283,7 +283,10 @@ def get_discharge_peaks(
 
     response = query_waterdata("peaks", format="rdb", ssl_check=ssl_check, **kwargs)
 
-    df = _read_rdb(response.text)
+    # Parse raw (read_rdb), not _read_rdb — the latter already runs
+    # format_response, and the explicit format_response(service="peaks") below
+    # does the peaks-specific formatting, so _read_rdb here was a redundant pass.
+    df = read_rdb(response.text, dtypes=_NWIS_RDB_DTYPES)
 
     return format_response(df, service="peaks", **kwargs), NWIS_Metadata(
         response, **kwargs
@@ -383,7 +386,7 @@ def query_waterdata(service: str, ssl_check: bool = True, **kwargs) -> httpx.Res
     request: ``httpx.Response``
         The response object from the API request to the web service
     """
-    major_params = ["site_no", "state_cd"]
+    major_params = ["site_no", "stateCd"]
     bbox_params = [
         "nw_longitude_va",
         "nw_latitude_va",

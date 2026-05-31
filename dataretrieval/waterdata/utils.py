@@ -674,10 +674,13 @@ def _construct_api_requests(
         params = {k: v for k, v in kwargs.items() if k not in post_params}
     else:
         # GET with comma-separated values: join list/tuple values into one string.
+        # Skip empty lists/tuples so they're omitted rather than emitted as a
+        # filterless ``&param=`` (which the server reads as "match empty").
         post_params = {}
         params = {
             k: ",".join(str(x) for x in v) if isinstance(v, (list, tuple)) else v
             for k, v in kwargs.items()
+            if not (isinstance(v, (list, tuple)) and len(v) == 0)
         }
 
     _ogc_query_params(
