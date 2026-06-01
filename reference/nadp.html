@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nadp &mdash; dataretrieval 0.1.dev1+geddcffc6a documentation</title>
+  <title>dataretrieval.nadp &mdash; dataretrieval 0.1.dev1+gb06fbdd62 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=a4eb0644"></script>
+      <script src="../_static/documentation_options.js?v=88c675f9"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -101,11 +101,11 @@
   <section id="module-dataretrieval.nadp">
 <span id="dataretrieval-nadp"></span><span id="nadp"></span><h1>dataretrieval.nadp<a class="headerlink" href="#module-dataretrieval.nadp" title="Link to this heading"></a></h1>
 <p>Tools for retrieving data from the National Atmospheric Deposition Program
-(NADP) including the National Trends Network (NTN), the Mercury Deposition
-Network (MDN).</p>
+(NADP), including the National Trends Network (NTN) and the Mercury
+Deposition Network (MDN).</p>
 <section id="national-trends-network">
 <h2>National Trends Network<a class="headerlink" href="#national-trends-network" title="Link to this heading"></a></h2>
-<p>The  NTN provides long-term records of precipitation chemistry across the
+<p>The NTN provides long-term records of precipitation chemistry across the
 United States. See <a class="reference external" href="https://nadp.slh.wisc.edu/ntn">https://nadp.slh.wisc.edu/ntn</a> for more info.</p>
 </section>
 <section id="mercury-deposition-network">
@@ -148,7 +148,7 @@ the data as a GDAL memory-mapped file when no path is specified.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nadp.get_annual_MDN_map">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nadp.</span></span><span class="sig-name descname"><span class="pre">get_annual_MDN_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">measurement_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nadp.html#get_annual_MDN_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nadp.get_annual_MDN_map" title="Link to this definition"></a></dt>
-<dd><p>Download a MDN map from NDAP.</p>
+<dd><p>Download an MDN map from NADP.</p>
 <p>This function looks for a zip file containing gridded information at:
 <a class="reference external" href="https://nadp.slh.wisc.edu/maps-data/mdn-gradient-maps/">https://nadp.slh.wisc.edu/maps-data/mdn-gradient-maps/</a>.
 The function will download the zip file and extract it, exposing the tif
@@ -181,7 +181,7 @@ either ‘conc’ or ‘dep’ respectively.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nadp.get_annual_NTN_map">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nadp.</span></span><span class="sig-name descname"><span class="pre">get_annual_NTN_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">measurement_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nadp.html#get_annual_NTN_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nadp.get_annual_NTN_map" title="Link to this definition"></a></dt>
-<dd><p>Download a NTN map from NDAP.</p>
+<dd><p>Download an NTN map from NADP.</p>
 <p>This function looks for a zip file containing gridded information at:
 <a class="reference external" href="https://nadp.slh.wisc.edu/maps-data/ntn-gradient-maps/">https://nadp.slh.wisc.edu/maps-data/ntn-gradient-maps/</a>.
 The function will download the zip file and extract it, exposing the tif
@@ -195,9 +195,9 @@ capitalized!</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>measurement</strong> (<em>string</em>) – The measured constituent to return.</p></li>
 <li><p><strong>measurement_type</strong> (<em>string</em>) – The type of measurement, ‘conc’, ‘dep’, or ‘Precip’, which represent
 concentration, deposition, or precipitation respectively.</p></li>
+<li><p><strong>measurement</strong> (<em>string</em>) – The measured constituent to return.</p></li>
 <li><p><strong>year</strong> (<em>string</em>) – Year as a string ‘YYYY’</p></li>
 <li><p><strong>path</strong> (<em>string</em>) – Download directory, defaults to current directory if not specified.</p></li>
 </ul>

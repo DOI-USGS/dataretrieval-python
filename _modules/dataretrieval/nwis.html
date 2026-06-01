@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+geddcffc6a documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+gb06fbdd62 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=a4eb0644"></script>
+      <script src="../../_static/documentation_options.js?v=88c675f9"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -350,8 +350,8 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        Times series data from the NWIS JSON</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">        Time series data from the NWIS JSON</span>
+<span class="sd">    md: :obj:`dataretrieval.nwis.NWIS_Metadata`</span>
 <span class="sd">        A custom metadata object</span>
 
 <span class="sd">    Examples</span>
@@ -436,7 +436,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
 <span class="sd">        Statistics data from the statistics service</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md: :obj:`dataretrieval.nwis.NWIS_Metadata`</span>
 <span class="sd">        A custom metadata object</span>
 
 <span class="sd">    .. todo::</span>
@@ -480,7 +480,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    service: string</span>
-<span class="sd">        Name of the service to query: &#39;site&#39;, &#39;stats&#39;, etc.</span>
+<span class="sd">        Name of the service to query: &#39;peaks&#39; or &#39;ratings&#39;.</span>
 <span class="sd">    ssl_check: bool, optional</span>
 <span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
 <span class="sd">        default is True</span>
@@ -535,10 +535,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    service: string</span>
-<span class="sd">        Name of the service to query: &#39;site&#39;, &#39;stats&#39;, etc.</span>
-<span class="sd">    ssl_check: bool, optional</span>
-<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
-<span class="sd">        default is True</span>
+<span class="sd">        Name of the service to query: &#39;dv&#39;, &#39;iv&#39;, &#39;site&#39;, or &#39;stat&#39;.</span>
 <span class="sd">    ssl_check: bool, optional</span>
 <span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
 <span class="sd">        default is True</span>
@@ -548,7 +545,9 @@
 <span class="sd">    Keyword Arguments</span>
 <span class="sd">    ----------------</span>
 <span class="sd">    bBox: string</span>
-<span class="sd">        7-digit Hydrologic Unit Code (HUC)</span>
+<span class="sd">        Bounding box of decimal latitude and longitude values, given as</span>
+<span class="sd">        west longitude, south latitude, east longitude, north latitude,</span>
+<span class="sd">        separated by commas</span>
 <span class="sd">    startDT: string</span>
 <span class="sd">        Start date (e.g., &#39;2017-12-31&#39;)</span>
 <span class="sd">    endDT: string</span>
@@ -598,7 +597,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get daily values data from NWIS and return it as a ``pandas.DataFrame``.</span>
 
-<span class="sd">    .. note:</span>
+<span class="sd">    .. note::</span>
 
 <span class="sd">        If no start or end date are provided, only the most recent record</span>
 <span class="sd">        is returned.</span>
@@ -625,8 +624,8 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        Times series data from the NWIS JSON</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">        Time series data from the NWIS JSON</span>
+<span class="sd">    md: :obj:`dataretrieval.nwis.NWIS_Metadata`</span>
 <span class="sd">        A custom metadata object</span>
 
 <span class="sd">    Examples</span>
@@ -697,7 +696,7 @@
 <span class="sd">        A contiguous range of decimal latitude and longitude, starting with the</span>
 <span class="sd">        west longitude, then the south latitude, then the east longitude, and</span>
 <span class="sd">        then the north latitude with each value separated by a comma. The</span>
-<span class="sd">        product of the range of latitude range and longitude cannot exceed 25</span>
+<span class="sd">        product of the range of latitude and longitude cannot exceed 25</span>
 <span class="sd">        degrees. Whole or decimal degrees must be specified, up to six digits</span>
 <span class="sd">        of precision. Minutes and seconds are not allowed.</span>
 <span class="sd">    countyCd: string or list of strings</span>
@@ -742,7 +741,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
 <span class="sd">        Site data from the NWIS web service</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md: :obj:`dataretrieval.nwis.NWIS_Metadata`</span>
 <span class="sd">        A custom metadata object</span>
 
 <span class="sd">    Examples</span>
@@ -762,7 +761,7 @@
             <span class="p">(</span>
                 <span class="s2">&quot;WARNING: Starting in March 2024, the NWIS qw data endpoint is &quot;</span>
                 <span class="s2">&quot;retiring and no longer receives updates. For more information, &quot;</span>
-                <span class="s2">&quot;refer to https://waterdata.usgs.gov.nwis/qwdata and &quot;</span>
+                <span class="s2">&quot;refer to https://waterdata.usgs.gov/nwis/qwdata and &quot;</span>
                 <span class="s2">&quot;https://doi-usgs.github.io/dataRetrieval/articles/Status.html &quot;</span>
                 <span class="s2">&quot;or email CompTools@usgs.gov.&quot;</span>
             <span class="p">),</span>
@@ -821,8 +820,8 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        Times series data from the NWIS JSON</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">        Time series data from the NWIS JSON</span>
+<span class="sd">    md: :obj:`dataretrieval.nwis.NWIS_Metadata`</span>
 <span class="sd">        A custom metadata object</span>
 
 <span class="sd">    Examples</span>
@@ -857,7 +856,7 @@
 <div class="viewcode-block" id="get_pmcodes">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_pmcodes">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_pmcodes</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defunct: use ``get_reference_table(collection=&#39;parameter-codes&#39;)``.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defunct: use ``waterdata.get_reference_table(collection=&#39;parameter-codes&#39;)``.&quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
         <span class="s2">&quot;`nwis.get_pmcodes` has been replaced &quot;</span>
         <span class="s2">&quot;with `get_reference_table(collection=&#39;parameter-codes&#39;)`.&quot;</span>
@@ -891,7 +890,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    site: string, optional, default is None</span>
-<span class="sd">        USGS site number.  This is usually an 8 digit number as a string.</span>
+<span class="sd">        USGS site number. This is usually an 8 digit number as a string.</span>
 <span class="sd">        If the nwis parameter site_no is supplied, it will overwrite the site</span>
 <span class="sd">        parameter</span>
 <span class="sd">    file_type: string, default is &quot;base&quot;</span>
@@ -902,11 +901,11 @@
 <span class="sd">    **kwargs: optional</span>
 <span class="sd">        If supplied, will be used as query parameters</span>
 
-<span class="sd">    Return</span>
-<span class="sd">    ------</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
 <span class="sd">        Formatted requested data</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md: :obj:`dataretrieval.nwis.NWIS_Metadata`</span>
 <span class="sd">        A custom metadata object</span>
 
 <span class="sd">    Examples</span>
@@ -951,11 +950,11 @@
 <span class="sd">    **kwargs: optional</span>
 <span class="sd">        Accepts the same parameters as :obj:`dataretrieval.nwis.get_info`</span>
 
-<span class="sd">    Return</span>
-<span class="sd">    ------</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
 <span class="sd">        Formatted requested data</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md: :obj:`dataretrieval.nwis.NWIS_Metadata`</span>
 <span class="sd">        A custom metadata object</span>
 
 <span class="sd">    Examples</span>
@@ -1005,7 +1004,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    sites: string or list of strings, optional, default is None</span>
-<span class="sd">        List or comma delimited string of site.</span>
+<span class="sd">        List or comma delimited string of sites.</span>
 <span class="sd">    start: string, optional, default is None</span>
 <span class="sd">        Starting date of record (YYYY-MM-DD)</span>
 <span class="sd">    end: string, optional, default is None</span>
@@ -1017,7 +1016,7 @@
 <span class="sd">        If True, return data in wide format with multiple samples per row and</span>
 <span class="sd">        one row per time, default is True</span>
 <span class="sd">    datetime_index : bool, optional</span>
-<span class="sd">        If True, create a datetime index. default is True</span>
+<span class="sd">        If True, create a datetime index. Default is True</span>
 <span class="sd">    state: string, optional, default is None</span>
 <span class="sd">        full name, abbreviation or id</span>
 <span class="sd">    service: string, default is &#39;iv&#39;</span>
@@ -1028,7 +1027,7 @@
 <span class="sd">        - &#39;peaks&#39;: discharge peaks</span>
 <span class="sd">        - &#39;gwlevels&#39;: (defunct) use `waterdata.get_continuous`,</span>
 <span class="sd">          `waterdata.get_daily`, or `waterdata.get_field_measurements`</span>
-<span class="sd">        - &#39;pmcodes&#39;: (defunct) use `get_reference_table`</span>
+<span class="sd">        - &#39;pmcodes&#39;: (defunct) use `waterdata.get_reference_table`</span>
 <span class="sd">        - &#39;water_use&#39;: (defunct) no replacement available</span>
 <span class="sd">        - &#39;ratings&#39;: get rating table</span>
 <span class="sd">        - &#39;stat&#39;: get statistics</span>
@@ -1159,9 +1158,7 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        Times series data from the NWIS JSON</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
-<span class="sd">        A custom metadata object</span>
+<span class="sd">        Time series data from the NWIS JSON</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">all_site_dfs</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1171,7 +1168,7 @@
     <span class="p">]</span>
 
     <span class="c1"># create a list of indexes for each change in site no</span>
-    <span class="c1"># for example, [0, 21, 22] would be the first and last indeces</span>
+    <span class="c1"># for example, [0, 21, 22] would be the first and last indices</span>
     <span class="n">index_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">index_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
         <span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">site_list</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">site_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span> <span class="k">if</span> <span class="n">a</span> <span class="o">!=</span> <span class="n">b</span><span class="p">]</span>
@@ -1271,7 +1268,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    url : str</span>
 <span class="sd">        Response url</span>
-<span class="sd">    query_time: datetme.timedelta</span>
+<span class="sd">    query_time: datetime.timedelta</span>
 <span class="sd">        Response elapsed time</span>
 <span class="sd">    header: httpx.Headers</span>
 <span class="sd">        Response headers</span>
@@ -1298,11 +1295,6 @@
 <span class="sd">        parameters: unpacked dictionary</span>
 <span class="sd">            Unpacked dictionary of the parameters supplied in the request</span>
 
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        md: :obj:`dataretrieval.nwis.NWIS_Metadata`</span>
-<span class="sd">            A ``dataretrieval`` custom :obj:`dataretrieval.nwis.NWIS_Metadata` object.</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
@@ -1324,8 +1316,8 @@
 <span class="sd">        ``huc``, ``countyCd`` or ``bBox`` (``site_no`` is preferred over</span>
 <span class="sd">        ``sites`` if both are present); ``None`` otherwise.</span>
 
-<span class="sd">        Return</span>
-<span class="sd">        ------</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
 <span class="sd">        df: ``pandas.DataFrame``</span>
 <span class="sd">            Formatted requested data from calling `nwis.what_sites`</span>
 <span class="sd">        md: :obj:`dataretrieval.nwis.NWIS_Metadata`</span>

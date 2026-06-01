@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+geddcffc6a documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+gb06fbdd62 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=a4eb0644"></script>
+      <script src="../../_static/documentation_options.js?v=88c675f9"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -307,7 +307,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    url : str</span>
 <span class="sd">        Response url</span>
-<span class="sd">    query_time: datetme.timedelta</span>
+<span class="sd">    query_time: datetime.timedelta</span>
 <span class="sd">        Response elapsed time</span>
 <span class="sd">    header: httpx.Headers</span>
 <span class="sd">        Response headers</span>
@@ -321,13 +321,8 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        response: Response</span>
-<span class="sd">            Response object from httpx module</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        md: :obj:`dataretrieval.utils.BaseMetadata`</span>
-<span class="sd">            A ``dataretrieval`` custom :obj:`dataretrieval.utils.BaseMetadata` object.</span>
+<span class="sd">        response: ``httpx.Response``</span>
+<span class="sd">            Response object from the ``httpx`` module.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -411,8 +406,16 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    string: query response</span>
+<span class="sd">    response: ``httpx.Response``</span>
 <span class="sd">        The response from the API query ``httpx.get`` function call.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the service returns a 400, 404, 414, or 5xx status code, or if</span>
+<span class="sd">        ``httpx`` rejects the URL client-side (e.g. it is too long).</span>
+<span class="sd">    NoSitesError</span>
+<span class="sd">        If the response indicates that no sites or data matched the query.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">payload</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -461,7 +464,7 @@
 <div class="viewcode-block" id="NoSitesError">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NoSitesError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom error class used when selection criteria returns no sites/data.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom error class used when selection criteria return no sites/data.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="NoSitesError.__init__">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.NoSitesError.__init__">[docs]</a>

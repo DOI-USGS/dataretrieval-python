@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+geddcffc6a documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+gb06fbdd62 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=a4eb0644"></script>
+      <script src="../../_static/documentation_options.js?v=88c675f9"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -175,8 +175,9 @@
 <span class="sd">    dataProfile : string, optional</span>
 <span class="sd">        Specifies the data fields returned by the query.</span>
 <span class="sd">        WQX3.0 profiles include &#39;fullPhysChem&#39;, &#39;narrow&#39;, and &#39;basicPhysChem&#39;.</span>
-<span class="sd">        Legacy profiles include &#39;resultPhysChem&#39;,&#39;biological&#39;, and</span>
-<span class="sd">        &#39;narrowResult&#39;. Default is &#39;fullPhysChem&#39;.</span>
+<span class="sd">        Legacy profiles include &#39;resultPhysChem&#39;, &#39;biological&#39;, and</span>
+<span class="sd">        &#39;narrowResult&#39;. For WQX3.0 queries (``legacy=False``), defaults to</span>
+<span class="sd">        &#39;fullPhysChem&#39;; legacy queries have no default profile.</span>
 <span class="sd">    siteid : string</span>
 <span class="sd">        Monitoring location identified by agency code, a hyphen, and</span>
 <span class="sd">        identification number (Example: &quot;USGS-05586100&quot;).</span>
@@ -220,7 +221,7 @@
 <span class="sd">        columns are preserved; unrecognized timezone codes yield ``NaT``.</span>
 <span class="sd">        Rows are sorted by ``ActivityStartDateTime`` (or ``Activity_StartDateTime``</span>
 <span class="sd">        for WQX3 responses) when present.</span>
-<span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md : :obj:`dataretrieval.wqp.WQP_Metadata`</span>
 <span class="sd">        Custom ``dataretrieval`` metadata object pertaining to the query.</span>
 
 <span class="sd">    Examples</span>
@@ -302,7 +303,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md : :obj:`dataretrieval.wqp.WQP_Metadata`</span>
 <span class="sd">        Custom metadata object pertaining to the query.</span>
 
 <span class="sd">    Examples</span>
@@ -358,7 +359,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md : :obj:`dataretrieval.wqp.WQP_Metadata`</span>
 <span class="sd">        Custom metadata object pertaining to the query.</span>
 
 <span class="sd">    Examples</span>
@@ -412,7 +413,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md : :obj:`dataretrieval.wqp.WQP_Metadata`</span>
 <span class="sd">        Custom metadata object pertaining to the query.</span>
 
 <span class="sd">    Examples</span>
@@ -466,7 +467,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md : :obj:`dataretrieval.wqp.WQP_Metadata`</span>
 <span class="sd">        Custom metadata object pertaining to the query.</span>
 
 <span class="sd">    Examples</span>
@@ -534,7 +535,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md : :obj:`dataretrieval.wqp.WQP_Metadata`</span>
 <span class="sd">        Custom metadata object pertaining to the query.</span>
 
 <span class="sd">    Examples</span>
@@ -594,7 +595,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md : :obj:`dataretrieval.wqp.WQP_Metadata`</span>
 <span class="sd">        Custom metadata object pertaining to the query.</span>
 
 <span class="sd">    Examples</span>
@@ -648,7 +649,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md : :obj:`dataretrieval.wqp.WQP_Metadata`</span>
 <span class="sd">        Custom metadata object pertaining to the query.</span>
 
 <span class="sd">    Examples</span>
@@ -707,7 +708,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md : :obj:`dataretrieval.wqp.WQP_Metadata`</span>
 <span class="sd">        Custom metadata object pertaining to the query.</span>
 
 <span class="sd">    Examples</span>
@@ -779,7 +780,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    url : str</span>
 <span class="sd">        Response url</span>
-<span class="sd">    query_time : datetme.timedelta</span>
+<span class="sd">    query_time : datetime.timedelta</span>
 <span class="sd">        Response elapsed time</span>
 <span class="sd">    header : httpx.Headers</span>
 <span class="sd">        Response headers</span>
@@ -797,16 +798,11 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        response : Response</span>
-<span class="sd">            Response object from httpx module</span>
+<span class="sd">        response : ``httpx.Response``</span>
+<span class="sd">            Response object from the ``httpx`` module.</span>
 
 <span class="sd">        parameters : dict</span>
 <span class="sd">            Unpacked dictionary of the parameters supplied in the request</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        md : :obj:`dataretrieval.wqp.WQP_Metadata`</span>
-<span class="sd">            A ``dataretrieval`` custom :obj:`dataretrieval.wqp.WQP_Metadata` object.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 

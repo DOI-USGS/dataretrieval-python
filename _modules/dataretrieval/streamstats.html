@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+geddcffc6a documentation</title>
+  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+gb06fbdd62 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=a4eb0644"></script>
+      <script src="../../_static/documentation_options.js?v=88c675f9"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -75,7 +75,7 @@
              
   <h1>Source code for dataretrieval.streamstats</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">This module is a wrapper for the streamstats API (`streamstats documentation`_).</span>
+<span class="sd">This module is a wrapper for the StreamStats API (`streamstats documentation`_).</span>
 
 <span class="sd">.. _streamstats documentation: https://streamstats.usgs.gov/streamstatsservices/#/</span>
 
@@ -94,7 +94,7 @@
 <div class="viewcode-block" id="download_workspace">
 <a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.download_workspace">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">download_workspace</span><span class="p">(</span><span class="n">workspaceID</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Function to download streamstats workspace.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Function to download a StreamStats workspace.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -141,7 +141,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    Watershed: :obj:`dataretrieval.streamstats.Watershed`</span>
 <span class="sd">        Custom object that contains the watershed information as extracted</span>
-<span class="sd">        from the streamstats JSON object.</span>
+<span class="sd">        from the StreamStats JSON object.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">cast</span><span class="p">(</span>
@@ -166,7 +166,7 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span> <span class="o">|</span> <span class="n">Watershed</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get watershed object based on location</span>
 
-<span class="sd">    **Streamstats documentation:**</span>
+<span class="sd">    **StreamStats documentation:**</span>
 <span class="sd">    Returns a watershed object. The request configuration will determine the</span>
 <span class="sd">    overall request response. However all returns will return a watershed</span>
 <span class="sd">    object with at least the workspaceid. The workspace id is the id to the</span>
@@ -186,7 +186,7 @@
 <span class="sd">    ylocation: float</span>
 <span class="sd">        Y location of the most downstream point of desired study area.</span>
 <span class="sd">    crs: integer, string, optional</span>
-<span class="sd">        ESPSG spatial reference code, default is 4326</span>
+<span class="sd">        EPSG spatial reference code, default is 4326</span>
 <span class="sd">    includeparameters: bool, optional</span>
 <span class="sd">        Boolean flag to include parameters in response.</span>
 <span class="sd">    includeflowtypes: bool, string, optional</span>
@@ -197,12 +197,23 @@
 <span class="sd">    simplify: bool, optional</span>
 <span class="sd">        Boolean flag controlling whether or not to simplify the returned</span>
 <span class="sd">        result.</span>
+<span class="sd">    format: string, optional</span>
+<span class="sd">        Controls the return type, default is &#39;geojson&#39;. &#39;geojson&#39; returns</span>
+<span class="sd">        the raw ``httpx.Response``; &#39;object&#39; parses the response into a</span>
+<span class="sd">        :obj:`dataretrieval.streamstats.Watershed`. &#39;shape&#39; is not</span>
+<span class="sd">        implemented and raises ``NotImplementedError``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    Watershed: :obj:`dataretrieval.streamstats.Watershed`</span>
-<span class="sd">        Custom object that contains the watershed information as extracted</span>
-<span class="sd">        from the streamstats JSON object.</span>
+<span class="sd">    r: ``httpx.Response`` or :obj:`dataretrieval.streamstats.Watershed`</span>
+<span class="sd">        The raw response when ``format=&#39;geojson&#39;`` (the default), or a</span>
+<span class="sd">        custom ``Watershed`` object containing the watershed information</span>
+<span class="sd">        extracted from the StreamStats JSON when ``format=&#39;object&#39;``.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    NotImplementedError</span>
+<span class="sd">        If ``format=&#39;shape&#39;``, which is not yet implemented.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">payload</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>

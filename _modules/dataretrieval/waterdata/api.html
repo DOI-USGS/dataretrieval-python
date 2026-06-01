@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+geddcffc6a documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+gb06fbdd62 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=a4eb0644"></script>
+      <script src="../../../_static/documentation_options.js?v=88c675f9"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -183,7 +183,7 @@
 <span class="sd">        A complete list of codes and their descriptions can be found at</span>
 <span class="sd">        https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&amp;fmt=html.</span>
 <span class="sd">    properties : string or iterable of strings, optional</span>
-<span class="sd">        A vector of requested columns to be returned from the query.</span>
+<span class="sd">        A list of requested columns to be returned from the query.</span>
 <span class="sd">        Available options are: geometry, id, time_series_id,</span>
 <span class="sd">        monitoring_location_id, parameter_code, statistic_id, time, value,</span>
 <span class="sd">        unit_of_measure, approval_status, qualifier, last_modified</span>
@@ -222,7 +222,7 @@
 <span class="sd">    last_modified : string, optional</span>
 <span class="sd">        The last time a record was refreshed in our database. This may happen</span>
 <span class="sd">        due to regular operational processes and does not necessarily indicate</span>
-<span class="sd">        anything about the measurement has changed. You can query this field</span>
+<span class="sd">        that anything about the measurement has changed. You can query this field</span>
 <span class="sd">        using date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
 <span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
 <span class="sd">        at start or end).</span>
@@ -265,14 +265,14 @@
 <span class="sd">        selected.  The bounding box is provided as four or six numbers,</span>
 <span class="sd">        depending on whether the coordinate reference system includes a vertical</span>
 <span class="sd">        axis (height or depth). Coordinates are assumed to be in crs 4326. The</span>
-<span class="sd">        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).</span>
-<span class="sd">        Another way to think of it is c(Western-most longitude, Southern-most</span>
-<span class="sd">        latitude, Eastern-most longitude, Northern-most latitude).</span>
-<span class="sd">    limit : numeric, optional</span>
+<span class="sd">        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.</span>
+<span class="sd">        ``[Western-most longitude, Southern-most latitude, Eastern-most</span>
+<span class="sd">        longitude, Northern-most latitude]``.</span>
+<span class="sd">    limit : int, optional</span>
 <span class="sd">        The optional limit parameter is used to control the subset of the</span>
 <span class="sd">        selected features that should be returned in each page. The maximum</span>
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
-<span class="sd">        if your internet connection is spotty. The default (NA) will set the</span>
+<span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
@@ -286,7 +286,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object</span>
 
 <span class="sd">    Examples</span>
@@ -407,7 +407,7 @@
 <span class="sd">        descriptions can be found at</span>
 <span class="sd">        https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&amp;fmt=html.</span>
 <span class="sd">    properties : string or iterable of strings, optional</span>
-<span class="sd">        A vector of requested columns to be returned from the query.</span>
+<span class="sd">        A list of requested columns to be returned from the query.</span>
 <span class="sd">        Available options are: geometry, id, time_series_id,</span>
 <span class="sd">        monitoring_location_id, parameter_code, statistic_id, time, value,</span>
 <span class="sd">        unit_of_measure, approval_status, qualifier, last_modified</span>
@@ -446,7 +446,7 @@
 <span class="sd">    last_modified : string, optional</span>
 <span class="sd">        The last time a record was refreshed in our database. This may happen</span>
 <span class="sd">        due to regular operational processes and does not necessarily indicate</span>
-<span class="sd">        anything about the measurement has changed. You can query this field</span>
+<span class="sd">        that anything about the measurement has changed. You can query this field</span>
 <span class="sd">        using date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
 <span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
 <span class="sd">        at start or end).</span>
@@ -479,11 +479,11 @@
 <span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or</span>
 <span class="sd">                &quot;PT36H&quot; for the last 36 hours</span>
 
-<span class="sd">    limit : numeric, optional</span>
+<span class="sd">    limit : int, optional</span>
 <span class="sd">        The optional limit parameter is used to control the subset of the</span>
 <span class="sd">        selected features that should be returned in each page. The maximum</span>
 <span class="sd">        allowable limit is 10000. It may be beneficial to set this number lower</span>
-<span class="sd">        if your internet connection is spotty. The default (NA) will set the</span>
+<span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
@@ -491,14 +491,13 @@
 <span class="sd">        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,</span>
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
-<span class="sd">        If True, the function will convert the data to dates and qualifier to</span>
-<span class="sd">        string vector</span>
+<span class="sd">        If True, converts columns to appropriate types.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object</span>
 
 <span class="sd">    Examples</span>
@@ -582,7 +581,6 @@
     <span class="n">depth_source_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">properties</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">skip_geometry</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -620,7 +618,7 @@
 <span class="sd">        For well information this can be a district-assigned local number.</span>
 <span class="sd">    district_code : string or iterable of strings, optional</span>
 <span class="sd">        The Water Science Centers (WSCs) across the United States use the FIPS</span>
-<span class="sd">        state code as the district code. In some case, monitoring locations and</span>
+<span class="sd">        state code as the district code. In some cases, monitoring locations and</span>
 <span class="sd">        samples may be managed by a water science center that is adjacent to the</span>
 <span class="sd">        state in which the monitoring location actually resides. For example a</span>
 <span class="sd">        monitoring location may have a district code of 30 which translates to</span>
@@ -656,7 +654,6 @@
 <span class="sd">        county equivalent in which the monitoring location is located.</span>
 <span class="sd">    site_type_code : string or iterable of strings, optional</span>
 <span class="sd">        A code describing the hydrologic setting of the monitoring location.</span>
-<span class="sd">        Example: &quot;US:15:001&quot; (United States: Hawaii, Hawaii County)</span>
 <span class="sd">    site_type : string or iterable of strings, optional</span>
 <span class="sd">        A description of the hydrologic setting of the monitoring location.</span>
 <span class="sd">    hydrologic_unit_code : string or iterable of strings, optional</span>
@@ -683,12 +680,12 @@
 <span class="sd">        entered as one-half of the contour interval.</span>
 <span class="sd">    altitude_method_code : string or iterable of strings, optional</span>
 <span class="sd">        Codes representing the method used to measure altitude.</span>
-<span class="sd">    altitude_method_name : float, optional</span>
-<span class="sd">        The name of the the method used to measure altitude.</span>
-<span class="sd">    vertical_datum : float, optional</span>
+<span class="sd">    altitude_method_name : string or iterable of strings, optional</span>
+<span class="sd">        The name of the method used to measure altitude.</span>
+<span class="sd">    vertical_datum : string or iterable of strings, optional</span>
 <span class="sd">        The datum used to determine altitude and vertical position at the</span>
-<span class="sd">        monitoring location.&#39;</span>
-<span class="sd">    vertical_datum_name : float, optional</span>
+<span class="sd">        monitoring location.</span>
+<span class="sd">    vertical_datum_name : string or iterable of strings, optional</span>
 <span class="sd">        The datum used to determine altitude and vertical position at the</span>
 <span class="sd">        monitoring location.</span>
 <span class="sd">    horizontal_positional_accuracy_code : string or iterable of strings, optional</span>
@@ -717,7 +714,7 @@
 <span class="sd">        if the contributing area is different from the total drainage area. This</span>
 <span class="sd">        situation can occur when part of the drainage area consists of very</span>
 <span class="sd">        porous soil or depressions that either allow all runoff to enter the</span>
-<span class="sd">        groundwater or traps the water in ponds so that rainfall does not</span>
+<span class="sd">        groundwater or trap the water in ponds so that rainfall does not</span>
 <span class="sd">        contribute to runoff.  A transbasin diversion can also affect the total</span>
 <span class="sd">        drainage area.</span>
 <span class="sd">    time_zone_abbreviation : string or iterable of strings, optional</span>
@@ -762,7 +759,7 @@
 <span class="sd">        codes &lt;https://help.waterdata.usgs.gov/code/water_level_src_cd_query?fmt=html&gt;`_</span>
 <span class="sd">        is available.</span>
 <span class="sd">    properties : string or iterable of strings, optional</span>
-<span class="sd">        A vector of requested columns to be returned from the query. Available</span>
+<span class="sd">        A list of requested columns to be returned from the query. Available</span>
 <span class="sd">        options are: geometry, id, agency_code, agency_name,</span>
 <span class="sd">        monitoring_location_number, monitoring_location_name, district_code,</span>
 <span class="sd">        country_code, country_name, state_code, state_name, county_code,</span>
@@ -782,14 +779,14 @@
 <span class="sd">        selected.  The bounding box is provided as four or six numbers,</span>
 <span class="sd">        depending on whether the coordinate reference system includes a vertical</span>
 <span class="sd">        axis (height or depth). Coordinates are assumed to be in crs 4326. The</span>
-<span class="sd">        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).</span>
-<span class="sd">        Another way to think of it is c(Western-most longitude, Southern-most</span>
-<span class="sd">        latitude, Eastern-most longitude, Northern-most latitude).</span>
-<span class="sd">    limit : numeric, optional</span>
+<span class="sd">        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.</span>
+<span class="sd">        ``[Western-most longitude, Southern-most latitude, Eastern-most</span>
+<span class="sd">        longitude, Northern-most latitude]``.</span>
+<span class="sd">    limit : int, optional</span>
 <span class="sd">        The optional limit parameter is used to control the subset of the</span>
 <span class="sd">        selected features that should be returned in each page. The maximum</span>
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
-<span class="sd">        if your internet connection is spotty. The default (NA) will set the</span>
+<span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
 <span class="sd">    skip_geometry : boolean, optional</span>
 <span class="sd">        This option can be used to skip response geometries for each feature.</span>
@@ -808,7 +805,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object</span>
 
 <span class="sd">    Examples</span>
@@ -862,7 +859,6 @@
     <span class="n">time_series_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">web_description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">skip_geometry</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -893,10 +889,13 @@
 <span class="sd">    parameter_name : string or iterable of strings, optional</span>
 <span class="sd">        A human-understandable name corresponding to parameter_code.</span>
 <span class="sd">    properties : string or iterable of strings, optional</span>
-<span class="sd">        A vector of requested columns to be returned from the query.</span>
-<span class="sd">        Available options are: geometry, id, time_series_id,</span>
-<span class="sd">        monitoring_location_id, parameter_code, statistic_id, time, value,</span>
-<span class="sd">        unit_of_measure, approval_status, qualifier, last_modified</span>
+<span class="sd">        A list of requested columns to be returned from the query.</span>
+<span class="sd">        Available options are: begin, begin_utc, computation_identifier,</span>
+<span class="sd">        computation_period_identifier, end, end_utc, geometry,</span>
+<span class="sd">        hydrologic_unit_code, id, last_modified, monitoring_location_id,</span>
+<span class="sd">        parameter_code, parameter_description, parameter_name,</span>
+<span class="sd">        parent_time_series_id, primary, state_name, statistic_id,</span>
+<span class="sd">        sublocation_identifier, thresholds, unit_of_measure, web_description</span>
 <span class="sd">    statistic_id : string or iterable of strings, optional</span>
 <span class="sd">        A code corresponding to the statistic an observation represents.</span>
 <span class="sd">        Example codes include 00001 (max), 00002 (min), and 00003 (mean).</span>
@@ -916,7 +915,7 @@
 <span class="sd">    last_modified : string, optional</span>
 <span class="sd">        The last time a record was refreshed in our database. This may happen</span>
 <span class="sd">        due to regular operational processes and does not necessarily indicate</span>
-<span class="sd">        anything about the measurement has changed. You can query this field</span>
+<span class="sd">        that anything about the measurement has changed. You can query this field</span>
 <span class="sd">        using date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
 <span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
 <span class="sd">        at start or end). Only features that have a last_modified that</span>
@@ -968,7 +967,7 @@
 <span class="sd">        You can query this field using date-times or intervals,</span>
 <span class="sd">        adhering to RFC 3339, or using ISO 8601 duration objects. Intervals</span>
 <span class="sd">        may be bounded or half-bounded (double-dots at start or end). Only</span>
-<span class="sd">        features that have a end that intersects the value of datetime are</span>
+<span class="sd">        features that have an end that intersects the value of datetime are</span>
 <span class="sd">        selected.</span>
 <span class="sd">        Examples:</span>
 
@@ -987,7 +986,7 @@
 <span class="sd">    computation_identifier : string or iterable of strings, optional</span>
 <span class="sd">        Indicates whether the data from this time series represent a specific</span>
 <span class="sd">        statistical computation.</span>
-<span class="sd">    thresholds : numeric or list of numbers, optional</span>
+<span class="sd">    thresholds : number or list of numbers, optional</span>
 <span class="sd">        Thresholds represent known numeric limits for a time series, for example</span>
 <span class="sd">        the historic maximum value for a parameter or a level below which a</span>
 <span class="sd">        sensor is non-operative. These thresholds are sometimes used to</span>
@@ -1012,10 +1011,10 @@
 <span class="sd">        selected.  The bounding box is provided as four or six numbers,</span>
 <span class="sd">        depending on whether the coordinate reference system includes a vertical</span>
 <span class="sd">        axis (height or depth). Coordinates are assumed to be in crs 4326. The</span>
-<span class="sd">        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).</span>
-<span class="sd">        Another way to think of it is c(Western-most longitude, Southern-most</span>
-<span class="sd">        latitude, Eastern-most longitude, Northern-most latitude).</span>
-<span class="sd">    limit : numeric, optional</span>
+<span class="sd">        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.</span>
+<span class="sd">        ``[Western-most longitude, Southern-most latitude, Eastern-most</span>
+<span class="sd">        longitude, Northern-most latitude]``.</span>
+<span class="sd">    limit : int, optional</span>
 <span class="sd">        The optional limit parameter is used to control the subset of the</span>
 <span class="sd">        selected features that should be returned in each page. The maximum</span>
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
@@ -1033,7 +1032,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object</span>
 
 <span class="sd">    Examples</span>
@@ -1177,7 +1176,7 @@
 <span class="sd">    computation_identifier : string or iterable of strings, optional</span>
 <span class="sd">        Indicates whether the data from this time series represent a</span>
 <span class="sd">        specific statistical computation.</span>
-<span class="sd">    thresholds : numeric or list of numbers, optional</span>
+<span class="sd">    thresholds : number or list of numbers, optional</span>
 <span class="sd">        Numeric limits known for a time series (e.g. historic maximum,</span>
 <span class="sd">        below-which-the-sensor-is-non-operative).</span>
 <span class="sd">    sublocation_identifier : string or iterable of strings, optional</span>
@@ -1215,7 +1214,7 @@
 <span class="sd">        Only features whose geometry intersects the bounding box are</span>
 <span class="sd">        selected. Format: ``[xmin, ymin, xmax, ymax]`` in CRS 4326</span>
 <span class="sd">        (longitude/latitude, west-south-east-north).</span>
-<span class="sd">    limit : numeric, optional</span>
+<span class="sd">    limit : int, optional</span>
 <span class="sd">        Page size; the maximum allowable value is 50000. Default</span>
 <span class="sd">        (``None``) requests the maximum allowable limit.</span>
 <span class="sd">    filter, filter_lang : optional</span>
@@ -1230,7 +1229,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md : :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object pertaining to the query.</span>
 
 <span class="sd">    Examples</span>
@@ -1325,7 +1324,7 @@
 <span class="sd">    of data may be delayed if the monitoring location does not have the capacity to</span>
 <span class="sd">    automatically transmit data. Continuous data are described by parameter name</span>
 <span class="sd">    and parameter code. These data might also be referred to as &quot;instantaneous</span>
-<span class="sd">    values&quot; or &quot;IV&quot;</span>
+<span class="sd">    values&quot; or &quot;IV&quot;.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1347,7 +1346,7 @@
 <span class="sd">        A complete list of codes and their descriptions can be found at</span>
 <span class="sd">        https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&amp;fmt=html.</span>
 <span class="sd">    properties : string or iterable of strings, optional</span>
-<span class="sd">        A vector of requested columns to be returned from the query.  Available</span>
+<span class="sd">        A list of requested columns to be returned from the query.  Available</span>
 <span class="sd">        options are: geometry, id, time_series_id, monitoring_location_id,</span>
 <span class="sd">        parameter_code, statistic_id, time, value, unit_of_measure,</span>
 <span class="sd">        approval_status, qualifier, last_modified</span>
@@ -1386,7 +1385,7 @@
 <span class="sd">    last_modified : string, optional</span>
 <span class="sd">        The last time a record was refreshed in our database. This may happen</span>
 <span class="sd">        due to regular operational processes and does not necessarily indicate</span>
-<span class="sd">        anything about the measurement has changed. You can query this field</span>
+<span class="sd">        that anything about the measurement has changed. You can query this field</span>
 <span class="sd">        using date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
 <span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
 <span class="sd">        at start or end). Only features that have a last_modified that</span>
@@ -1428,10 +1427,10 @@
 <span class="sd">        selected.  The bounding box is provided as four or six numbers,</span>
 <span class="sd">        depending on whether the coordinate reference system includes a vertical</span>
 <span class="sd">        axis (height or depth). Coordinates are assumed to be in crs 4326. The</span>
-<span class="sd">        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).</span>
-<span class="sd">        Another way to think of it is c(Western-most longitude, Southern-most</span>
-<span class="sd">        latitude, Eastern-most longitude, Northern-most latitude).</span>
-<span class="sd">    limit : numeric, optional</span>
+<span class="sd">        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.</span>
+<span class="sd">        ``[Western-most longitude, Southern-most latitude, Eastern-most</span>
+<span class="sd">        longitude, Northern-most latitude]``.</span>
+<span class="sd">    limit : int, optional</span>
 <span class="sd">        The optional limit parameter is used to control the subset of the</span>
 <span class="sd">        selected features that should be returned in each page. The maximum</span>
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
@@ -1449,7 +1448,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object</span>
 
 <span class="sd">    Examples</span>
@@ -1546,7 +1545,7 @@
 <span class="sd">        A complete list of codes and their descriptions can be found at</span>
 <span class="sd">        https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&amp;fmt=html.</span>
 <span class="sd">    properties : string or iterable of strings, optional</span>
-<span class="sd">        A vector of requested columns to be returned from the query.  Available</span>
+<span class="sd">        A list of requested columns to be returned from the query.  Available</span>
 <span class="sd">        options are: geometry, id, time_series_id, monitoring_location_id,</span>
 <span class="sd">        parameter_code, statistic_id, time, value, unit_of_measure,</span>
 <span class="sd">        approval_status, qualifier, last_modified</span>
@@ -1585,7 +1584,7 @@
 <span class="sd">    last_modified : string, optional</span>
 <span class="sd">        The last time a record was refreshed in our database. This may happen</span>
 <span class="sd">        due to regular operational processes and does not necessarily indicate</span>
-<span class="sd">        anything about the measurement has changed. You can query this field</span>
+<span class="sd">        that anything about the measurement has changed. You can query this field</span>
 <span class="sd">        using date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
 <span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
 <span class="sd">        at start or end). Only features that have a last_modified that</span>
@@ -1627,10 +1626,10 @@
 <span class="sd">        selected.  The bounding box is provided as four or six numbers,</span>
 <span class="sd">        depending on whether the coordinate reference system includes a vertical</span>
 <span class="sd">        axis (height or depth). Coordinates are assumed to be in crs 4326. The</span>
-<span class="sd">        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).</span>
-<span class="sd">        Another way to think of it is c(Western-most longitude, Southern-most</span>
-<span class="sd">        latitude, Eastern-most longitude, Northern-most latitude).</span>
-<span class="sd">    limit : numeric, optional</span>
+<span class="sd">        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.</span>
+<span class="sd">        ``[Western-most longitude, Southern-most latitude, Eastern-most</span>
+<span class="sd">        longitude, Northern-most latitude]``.</span>
+<span class="sd">    limit : int, optional</span>
 <span class="sd">        The optional limit parameter is used to control the subset of the</span>
 <span class="sd">        selected features that should be returned in each page. The maximum</span>
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
@@ -1648,7 +1647,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object</span>
 
 <span class="sd">    Examples</span>
@@ -1738,7 +1737,7 @@
 <span class="sd">        A short code corresponding to the observing procedure for the field</span>
 <span class="sd">        measurement.</span>
 <span class="sd">    properties : string or iterable of strings, optional</span>
-<span class="sd">        A vector of requested columns to be returned from the query. See the</span>
+<span class="sd">        A list of requested columns to be returned from the query. See the</span>
 <span class="sd">        field-measurements schema in the OpenAPI reference for the available</span>
 <span class="sd">        columns (e.g. geometry, id, monitoring_location_id, parameter_code,</span>
 <span class="sd">        value, unit_of_measure, approval_status, qualifier, last_modified):</span>
@@ -1770,7 +1769,7 @@
 <span class="sd">    last_modified : string, optional</span>
 <span class="sd">        The last time a record was refreshed in our database. This may happen</span>
 <span class="sd">        due to regular operational processes and does not necessarily indicate</span>
-<span class="sd">        anything about the measurement has changed. You can query this field</span>
+<span class="sd">        that anything about the measurement has changed. You can query this field</span>
 <span class="sd">        using date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
 <span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
 <span class="sd">        at start or end). Only features that have a last_modified that</span>
@@ -1818,10 +1817,10 @@
 <span class="sd">        selected.  The bounding box is provided as four or six numbers,</span>
 <span class="sd">        depending on whether the coordinate reference system includes a vertical</span>
 <span class="sd">        axis (height or depth). Coordinates are assumed to be in crs 4326. The</span>
-<span class="sd">        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).</span>
-<span class="sd">        Another way to think of it is c(Western-most longitude, Southern-most</span>
-<span class="sd">        latitude, Eastern-most longitude, Northern-most latitude).</span>
-<span class="sd">    limit : numeric, optional</span>
+<span class="sd">        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.</span>
+<span class="sd">        ``[Western-most longitude, Southern-most latitude, Eastern-most</span>
+<span class="sd">        longitude, Northern-most latitude]``.</span>
+<span class="sd">    limit : int, optional</span>
 <span class="sd">        The optional limit parameter is used to control the subset of the</span>
 <span class="sd">        selected features that should be returned in each page. The maximum</span>
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
@@ -1839,7 +1838,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object</span>
 
 <span class="sd">    Examples</span>
@@ -1942,7 +1941,7 @@
 <span class="sd">        Only features whose geometry intersects the bounding box are</span>
 <span class="sd">        selected. Format: ``[xmin, ymin, xmax, ymax]`` in CRS 4326</span>
 <span class="sd">        (longitude / latitude, west-south-east-north).</span>
-<span class="sd">    limit : numeric, optional</span>
+<span class="sd">    limit : int, optional</span>
 <span class="sd">        Page size; the maximum allowable value is 50000. Default</span>
 <span class="sd">        (``None``) requests the maximum allowable limit.</span>
 <span class="sd">    filter, filter_lang : optional</span>
@@ -1957,7 +1956,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md : :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object pertaining to the query.</span>
 
 <span class="sd">    Examples</span>
@@ -2068,7 +2067,7 @@
 <span class="sd">        Only features whose geometry intersects the bounding box are</span>
 <span class="sd">        selected. Format: ``[xmin, ymin, xmax, ymax]`` in CRS 4326</span>
 <span class="sd">        (longitude / latitude, west-south-east-north).</span>
-<span class="sd">    limit : numeric, optional</span>
+<span class="sd">    limit : int, optional</span>
 <span class="sd">        Page size; the maximum allowable value is 50000. Default</span>
 <span class="sd">        (``None``) requests the maximum allowable limit.</span>
 <span class="sd">    filter, filter_lang : optional</span>
@@ -2083,7 +2082,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md : :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object pertaining to the query.</span>
 
 <span class="sd">    Examples</span>
@@ -2143,14 +2142,14 @@
 <span class="sd">        &quot;hydrologic-unit-codes&quot;, &quot;medium-codes&quot;, &quot;national-aquifer-codes&quot;,</span>
 <span class="sd">        &quot;parameter-codes&quot;, &quot;reliability-codes&quot;, &quot;site-types&quot;, &quot;states&quot;,</span>
 <span class="sd">        &quot;statistic-codes&quot;, &quot;topographic-codes&quot;, &quot;time-zone-codes&quot;</span>
-<span class="sd">    limit : numeric, optional</span>
+<span class="sd">    limit : int, optional</span>
 <span class="sd">        The optional limit parameter is used to control the subset of the</span>
 <span class="sd">        selected features that should be returned in each page. The maximum</span>
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
 <span class="sd">    query: dictionary, optional</span>
-<span class="sd">        The optional args parameter can be used to pass a dictionary of</span>
+<span class="sd">        The optional query parameter can be used to pass a dictionary of</span>
 <span class="sd">        query parameters to the collection API call.</span>
 <span class="sd">    max_rows : int, optional</span>
 <span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
@@ -2168,7 +2167,7 @@
 <span class="sd">        separated by underscores (e.g. the &quot;medium-codes&quot; reference table</span>
 <span class="sd">        has a column called &quot;medium_code&quot;, which contains all possible</span>
 <span class="sd">        medium code values).</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object including the URL request and query time.</span>
 
 <span class="sd">    Examples</span>
@@ -2218,7 +2217,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    code_service : string</span>
-<span class="sd">        One of the following options: &quot;states&quot;, &quot;counties&quot;, &quot;countries&quot;</span>
+<span class="sd">        One of the following options: &quot;states&quot;, &quot;counties&quot;, &quot;countries&quot;,</span>
 <span class="sd">        &quot;sitetype&quot;, &quot;samplemedia&quot;, &quot;characteristicgroup&quot;, &quot;characteristics&quot;,</span>
 <span class="sd">        or &quot;observedproperty&quot;</span>
 
@@ -2367,12 +2366,12 @@
 <span class="sd">    characteristicUserSupplied : string or iterable of strings, optional</span>
 <span class="sd">        A user supplied characteristic name describing one or more results.</span>
 <span class="sd">    boundingBox: list of four floats, optional</span>
-<span class="sd">        Filters on the the associated monitoring location&#39;s point location</span>
+<span class="sd">        Filters on the associated monitoring location&#39;s point location</span>
 <span class="sd">        by checking if it is located within the specified geographic area.</span>
 <span class="sd">        The logic is inclusive, i.e. it will include locations that overlap</span>
 <span class="sd">        with the edge of the bounding box. Values are separated by commas,</span>
 <span class="sd">        expressed in decimal degrees, NAD83, and longitudes west of Greenwich</span>
-<span class="sd">        are negative. The format is a string consisting of:</span>
+<span class="sd">        are negative. The format is a list consisting of:</span>
 
 <span class="sd">            * Western-most longitude</span>
 <span class="sd">            * Southern-most latitude</span>
@@ -2441,7 +2440,7 @@
 <span class="sd">        timezone abbreviation is not recognized resolve to ``NaT``. Rows are</span>
 <span class="sd">        sorted by ``Activity_StartDateTime`` when present (the API&#39;s default</span>
 <span class="sd">        order is unstable).</span>
-<span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md : :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        Custom ``dataretrieval`` metadata object pertaining to the query.</span>
 
 <span class="sd">    Examples</span>
@@ -2528,7 +2527,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md : :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md : :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        Custom ``dataretrieval`` metadata object pertaining to the query.</span>
 
 <span class="sd">    Examples</span>
@@ -2621,7 +2620,7 @@
 <span class="sd">        monitoring location. The default is 1000.</span>
 <span class="sd">    parent_time_series_id: string, optional</span>
 <span class="sd">        The parent_time_series_id returns statistics tied to a</span>
-<span class="sd">        particular datbase entry.</span>
+<span class="sd">        particular database entry.</span>
 <span class="sd">    site_type_code: string, optional</span>
 <span class="sd">        Site type code query parameter.</span>
 <span class="sd">        A list of valid site type codes is available at:</span>
@@ -2652,6 +2651,13 @@
 <span class="sd">        argument will return both the &quot;values&quot; column, containing the list</span>
 <span class="sd">        of percentile threshold values, and a &quot;value&quot; column, containing</span>
 <span class="sd">        the singular summary value for the other statistics.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
+<span class="sd">        Formatted data returned from the API query.</span>
+<span class="sd">    md : :obj:`dataretrieval.utils.BaseMetadata`</span>
+<span class="sd">        A custom metadata object.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -2749,7 +2755,7 @@
 <span class="sd">        monitoring location. The default is 1000.</span>
 <span class="sd">    parent_time_series_id: string, optional</span>
 <span class="sd">        The parent_time_series_id returns statistics tied to a</span>
-<span class="sd">        particular datbase entry.</span>
+<span class="sd">        particular database entry.</span>
 <span class="sd">    site_type_code: string, optional</span>
 <span class="sd">        Site type code query parameter.</span>
 <span class="sd">        You can see a list of valid site type codes here:</span>
@@ -2783,6 +2789,13 @@
 <span class="sd">        argument will return both the &quot;values&quot; column, containing the list</span>
 <span class="sd">        of percentile threshold values, and a &quot;value&quot; column, containing</span>
 <span class="sd">        the singular summary value for the other statistics.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
+<span class="sd">        Formatted data returned from the API query.</span>
+<span class="sd">    md : :obj:`dataretrieval.utils.BaseMetadata`</span>
+<span class="sd">        A custom metadata object.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -2925,6 +2938,23 @@
 <span class="sd">        The longitudinal velocity description.</span>
 <span class="sd">    measurement_type : string or iterable of strings, optional</span>
 <span class="sd">        The type of channel measurement.</span>
+<span class="sd">    last_modified : string, optional</span>
+<span class="sd">        The last time a record was refreshed in our database. This may happen</span>
+<span class="sd">        due to regular operational processes and does not necessarily indicate</span>
+<span class="sd">        that anything about the measurement has changed. You can query this field</span>
+<span class="sd">        using date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
+<span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
+<span class="sd">        at start or end). Only features that have a last_modified that</span>
+<span class="sd">        intersects the value of datetime are selected.</span>
+<span class="sd">        Examples:</span>
+
+<span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
+<span class="sd">            * A bounded interval: &quot;2018-02-12T00:00:00Z/2018-03-18T12:31:12Z&quot;</span>
+<span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or</span>
+<span class="sd">                &quot;../2018-03-18T12:31:12Z&quot;</span>
+<span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or</span>
+<span class="sd">                &quot;PT36H&quot; for the last 36 hours</span>
+
 <span class="sd">    skip_geometry : boolean, optional</span>
 <span class="sd">        This option can be used to skip response geometries for each feature.</span>
 <span class="sd">        The returning object will be a data frame with no spatial information.</span>
@@ -2933,7 +2963,7 @@
 <span class="sd">    channel_measurement_type : string or iterable of strings, optional</span>
 <span class="sd">        The channel measurement type.</span>
 <span class="sd">    properties : string or iterable of strings, optional</span>
-<span class="sd">        A vector of requested columns to be returned from the query. Available</span>
+<span class="sd">        A list of requested columns to be returned from the query. Available</span>
 <span class="sd">        options are: geometry, channel_measurements_id, monitoring_location_id,</span>
 <span class="sd">        field_visit_id, measurement_number, time, channel_name, channel_flow,</span>
 <span class="sd">        channel_flow_unit, channel_width, channel_width_unit, channel_area,</span>
@@ -2941,22 +2971,35 @@
 <span class="sd">        channel_location_distance, channel_location_distance_unit, channel_stability,</span>
 <span class="sd">        channel_material, channel_evenness, horizontal_velocity_description,</span>
 <span class="sd">        vertical_velocity_description, longitudinal_velocity_description,</span>
-<span class="sd">        measurement_type, last_modified, channel_measurement_type. The default (NA) will</span>
-<span class="sd">        return all columns of the data.</span>
+<span class="sd">        measurement_type, last_modified, channel_measurement_type. The default</span>
+<span class="sd">        (None) will return all columns of the data.</span>
+<span class="sd">    bbox : list of numbers, optional</span>
+<span class="sd">        Only features that have a geometry that intersects the bounding box are</span>
+<span class="sd">        selected.  The bounding box is provided as four or six numbers,</span>
+<span class="sd">        depending on whether the coordinate reference system includes a vertical</span>
+<span class="sd">        axis (height or depth). Coordinates are assumed to be in crs 4326. The</span>
+<span class="sd">        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.</span>
+<span class="sd">        ``[Western-most longitude, Southern-most latitude, Eastern-most</span>
+<span class="sd">        longitude, Northern-most latitude]``.</span>
+<span class="sd">    limit : int, optional</span>
+<span class="sd">        The optional limit parameter is used to control the subset of the</span>
+<span class="sd">        selected features that should be returned in each page. The maximum</span>
+<span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
+<span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
+<span class="sd">        limit to the maximum allowable limit for the service.</span>
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
 <span class="sd">        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,</span>
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
-<span class="sd">        If True, the function will convert the data to dates and qualifier to</span>
-<span class="sd">        string vector</span>
+<span class="sd">        If True, converts columns to appropriate types.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
 <span class="sd">        Formatted data returned from the API query.</span>
-<span class="sd">    md: :obj:`dataretrieval.utils.Metadata`</span>
+<span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object</span>
 
 <span class="sd">    Examples</span>

@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+geddcffc6a documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+gb06fbdd62 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=a4eb0644"></script>
+      <script src="../_static/documentation_options.js?v=88c675f9"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -143,7 +143,7 @@
 <dd><p>Response elapsed time</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>datetme.timedelta</p>
+<dd class="field-odd"><p>datetime.timedelta</p>
 </dd>
 </dl>
 </dd></dl>
@@ -189,15 +189,9 @@ metadata for WQP data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>response</strong> (<em>Response</em>) – Response object from httpx module</p></li>
+<li><p><strong>response</strong> (<code class="docutils literal notranslate"><span class="pre">httpx.Response</span></code>) – Response object from the <code class="docutils literal notranslate"><span class="pre">httpx</span></code> module.</p></li>
 <li><p><strong>parameters</strong> (<em>dict</em>) – Unpacked dictionary of the parameters supplied in the request</p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>md</strong> – A <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> custom <a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.WQP_Metadata</span></code></a> object.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.WQP_Metadata</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -277,8 +271,9 @@ or the Swagger documentation at:
 <li><p><strong>legacy</strong> (<em>bool</em><em>, </em><em>optional</em>) – Return the legacy WQX data profile. Default is True.</p></li>
 <li><p><strong>dataProfile</strong> (<em>string</em><em>, </em><em>optional</em>) – Specifies the data fields returned by the query.
 WQX3.0 profiles include ‘fullPhysChem’, ‘narrow’, and ‘basicPhysChem’.
-Legacy profiles include ‘resultPhysChem’,’biological’, and
-‘narrowResult’. Default is ‘fullPhysChem’.</p></li>
+Legacy profiles include ‘resultPhysChem’, ‘biological’, and
+‘narrowResult’. For WQX3.0 queries (<code class="docutils literal notranslate"><span class="pre">legacy=False</span></code>), defaults to
+‘fullPhysChem’; legacy queries have no default profile.</p></li>
 <li><p><strong>siteid</strong> (<em>string</em>) – Monitoring location identified by agency code, a hyphen, and
 identification number (Example: “USGS-05586100”).</p></li>
 <li><p><strong>statecode</strong> (<em>string</em>) – US state FIPS code (Example: Illinois is “US:17”).</p></li>
@@ -309,7 +304,7 @@ column is appended holding a UTC <code class="docutils literal notranslate"><spa
 columns are preserved; unrecognized timezone codes yield <code class="docutils literal notranslate"><span class="pre">NaT</span></code>.
 Rows are sorted by <code class="docutils literal notranslate"><span class="pre">ActivityStartDateTime</span></code> (or <code class="docutils literal notranslate"><span class="pre">Activity_StartDateTime</span></code>
 for WQX3 responses) when present.</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – Custom <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> metadata object pertaining to the query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.WQP_Metadata</span></code></a>) – Custom <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> metadata object pertaining to the query.</p></li>
 </ul>
 </p>
 </dd>
@@ -353,7 +348,7 @@ or the Swagger documentation at:
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – Custom metadata object pertaining to the query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.WQP_Metadata</span></code></a>) – Custom metadata object pertaining to the query.</p></li>
 </ul>
 </p>
 </dd>
@@ -401,7 +396,7 @@ or the Swagger documentation at:
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – Custom metadata object pertaining to the query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.WQP_Metadata</span></code></a>) – Custom metadata object pertaining to the query.</p></li>
 </ul>
 </p>
 </dd>
@@ -441,7 +436,7 @@ or the Swagger documentation at:
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – Custom metadata object pertaining to the query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.WQP_Metadata</span></code></a>) – Custom metadata object pertaining to the query.</p></li>
 </ul>
 </p>
 </dd>
@@ -481,7 +476,7 @@ or the Swagger documentation at:
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – Custom metadata object pertaining to the query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.WQP_Metadata</span></code></a>) – Custom metadata object pertaining to the query.</p></li>
 </ul>
 </p>
 </dd>
@@ -515,7 +510,7 @@ or the Swagger documentation at:
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – Custom metadata object pertaining to the query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.WQP_Metadata</span></code></a>) – Custom metadata object pertaining to the query.</p></li>
 </ul>
 </p>
 </dd>
@@ -549,7 +544,7 @@ or the Swagger documentation at:
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – Custom metadata object pertaining to the query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.WQP_Metadata</span></code></a>) – Custom metadata object pertaining to the query.</p></li>
 </ul>
 </p>
 </dd>
@@ -588,7 +583,7 @@ or the Swagger documentation at:
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – Custom metadata object pertaining to the query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.WQP_Metadata</span></code></a>) – Custom metadata object pertaining to the query.</p></li>
 </ul>
 </p>
 </dd>
@@ -624,7 +619,7 @@ profile, if available. Defaults to True.</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – Custom metadata object pertaining to the query.</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.WQP_Metadata</span></code></a>) – Custom metadata object pertaining to the query.</p></li>
 </ul>
 </p>
 </dd>

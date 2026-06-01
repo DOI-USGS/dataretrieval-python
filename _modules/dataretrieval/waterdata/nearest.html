@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.nearest &mdash; dataretrieval 0.1.dev1+geddcffc6a documentation</title>
+  <title>dataretrieval.waterdata.nearest &mdash; dataretrieval 0.1.dev1+gb06fbdd62 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=a4eb0644"></script>
+      <script src="../../../_static/documentation_options.js?v=88c675f9"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -139,14 +139,14 @@
 
 <span class="sd">        Must be small enough that every target&#39;s window captures</span>
 <span class="sd">        roughly one observation at the service cadence. The default</span>
-<span class="sd">        matches a 15-minute continuous gauge; widen (e.g.</span>
+<span class="sd">        matches a 15-minute continuous gage; widen (e.g.</span>
 <span class="sd">        ``&quot;PT15M&quot;``) for irregular cadences or resilience to data</span>
 <span class="sd">        gaps.</span>
 <span class="sd">    on_tie : {&quot;first&quot;, &quot;last&quot;, &quot;mean&quot;}, default ``&quot;first&quot;``</span>
 <span class="sd">        How to resolve ties when two observations are exactly equidistant</span>
 <span class="sd">        from a target (which happens when the target falls at the midpoint</span>
 <span class="sd">        between grid points — e.g. target ``10:22:30`` for a 15-minute</span>
-<span class="sd">        gauge).</span>
+<span class="sd">        gage).</span>
 
 <span class="sd">        - ``&quot;first&quot;``: keep the earlier observation.</span>
 <span class="sd">        - ``&quot;last&quot;``:  keep the later observation.</span>
@@ -175,9 +175,10 @@
 <span class="sd">    *Window sizing and ties.* When ``window`` is exactly half the service</span>
 <span class="sd">    cadence, most targets&#39; windows contain a single observation and</span>
 <span class="sd">    ``on_tie`` is moot. Ties arise only when a target sits exactly at the</span>
-<span class="sd">    window edge — rare in practice but possible. Setting ``window`` to a</span>
-<span class="sd">    full cadence (or larger) guarantees at least one observation per</span>
-<span class="sd">    target in steady state at the cost of more bytes per response.</span>
+<span class="sd">    midpoint between two grid observations — rare in practice but possible.</span>
+<span class="sd">    Setting ``window`` to a full cadence (or larger) guarantees at least one</span>
+<span class="sd">    observation per target in steady state at the cost of more bytes per</span>
+<span class="sd">    response.</span>
 
 <span class="sd">    *Why windowed CQL rather than sort+limit.* The API&#39;s advertised</span>
 <span class="sd">    ``sortby`` parameter would make this a one-liner per target (``filter``</span>
@@ -206,7 +207,7 @@
 <span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
 <span class="sd">        ... )</span>
 
-<span class="sd">        &gt;&gt;&gt; # Widen the window for an irregular-cadence gauge</span>
+<span class="sd">        &gt;&gt;&gt; # Widen the window for an irregular-cadence gage</span>
 <span class="sd">        &gt;&gt;&gt; df, md = waterdata.get_nearest_continuous(</span>
 <span class="sd">        ...     targets,</span>
 <span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>

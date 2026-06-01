@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+geddcffc6a documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+gb06fbdd62 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=a4eb0644"></script>
+      <script src="../_static/documentation_options.js?v=88c675f9"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -144,7 +144,7 @@
 <dd><p>Response elapsed time</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>datetme.timedelta</p>
+<dd class="field-odd"><p>datetime.timedelta</p>
 </dd>
 </dl>
 </dd></dl>
@@ -185,12 +185,6 @@ metadata for NWIS data.</p>
 <li><p><strong>response</strong> (<em>Response</em>) – Response object from httpx module</p></li>
 <li><p><strong>parameters</strong> (<em>unpacked dictionary</em>) – Unpacked dictionary of the parameters supplied in the request</p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>md</strong> – A <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> custom <a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.nwis.NWIS_Metadata</span></code></a> object.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.nwis.NWIS_Metadata</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -246,11 +240,10 @@ user sees only the outermost call’s warning.</p>
 <dd class="field-odd"><p><strong>json</strong> (<em>dict</em>) – A JSON dictionary response to be parsed into a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
-</ul>
-</p>
+<dd class="field-even"><p><strong>df</strong> – Time series data from the NWIS JSON</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -324,8 +317,8 @@ default is True</p></li>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Time series data from the NWIS JSON</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.nwis.NWIS_Metadata</span></code></a>) – A custom metadata object</p></li>
 </ul>
 </p>
 </dd>
@@ -348,6 +341,11 @@ default is True</p></li>
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_dv">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_dv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata"><span class="pre">NWIS_Metadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_dv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_dv" title="Link to this definition"></a></dt>
 <dd><p>Get daily values data from NWIS and return it as a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If no start or end date are provided, only the most recent record
+is returned.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -365,8 +363,8 @@ default is True</p></li>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Time series data from the NWIS JSON</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.nwis.NWIS_Metadata</span></code></a>) – A custom metadata object</p></li>
 </ul>
 </p>
 </dd>
@@ -420,7 +418,7 @@ HUC has two digits.</p></li>
 <li><p><strong>bBox</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em>) – A contiguous range of decimal latitude and longitude, starting with the
 west longitude, then the south latitude, then the east longitude, and
 then the north latitude with each value separated by a comma. The
-product of the range of latitude range and longitude cannot exceed 25
+product of the range of latitude and longitude cannot exceed 25
 degrees. Whole or decimal degrees must be specified, up to six digits
 of precision. Minutes and seconds are not allowed.</p></li>
 <li><p><strong>countyCd</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em>) – A list of county numbers, in a 5 digit numeric format. The first two
@@ -456,7 +454,7 @@ end dates for a site’s daily mean streamflow.</p></li>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Site data from the NWIS web service</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.nwis.NWIS_Metadata</span></code></a>) – A custom metadata object</p></li>
 </ul>
 </p>
 </dd>
@@ -498,8 +496,8 @@ default is True</p></li>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Times series data from the NWIS JSON</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Time series data from the NWIS JSON</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.nwis.NWIS_Metadata</span></code></a>) – A custom metadata object</p></li>
 </ul>
 </p>
 </dd>
@@ -519,7 +517,7 @@ default is True</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_pmcodes">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_pmcodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">NoReturn</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_pmcodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_pmcodes" title="Link to this definition"></a></dt>
-<dd><p>Defunct: use <code class="docutils literal notranslate"><span class="pre">get_reference_table(collection='parameter-codes')</span></code>.</p>
+<dd><p>Defunct: use <code class="docutils literal notranslate"><span class="pre">waterdata.get_reference_table(collection='parameter-codes')</span></code>.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -537,7 +535,7 @@ Data is retrieved from <a class="reference external" href="https://waterdata.usg
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>site</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default is None</em>) – USGS site number.  This is usually an 8 digit number as a string.
+<li><p><strong>site</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default is None</em>) – USGS site number. This is usually an 8 digit number as a string.
 If the nwis parameter site_no is supplied, it will overwrite the site
 parameter</p></li>
 <li><p><strong>file_type</strong> (<em>string</em><em>, </em><em>default is &quot;base&quot;</em>) – can be “base”, “corr”, or “exsa”</p></li>
@@ -549,7 +547,7 @@ default is True</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted requested data</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.nwis.NWIS_Metadata</span></code></a>) – A custom metadata object</p></li>
 </ul>
 </p>
 </dd>
@@ -573,14 +571,14 @@ returned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sites</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em><em>, </em><em>default is None</em>) – List or comma delimited string of site.</p></li>
+<li><p><strong>sites</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em><em>, </em><em>default is None</em>) – List or comma delimited string of sites.</p></li>
 <li><p><strong>start</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default is None</em>) – Starting date of record (YYYY-MM-DD)</p></li>
 <li><p><strong>end</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default is None</em>) – Ending date of record. (YYYY-MM-DD)</p></li>
 <li><p><strong>multi_index</strong> (<em>bool</em><em>, </em><em>optional</em>) – If False, a dataframe with a single-level index (datetime) is returned,
 default is True</p></li>
 <li><p><strong>wide_format</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, return data in wide format with multiple samples per row and
 one row per time, default is True</p></li>
-<li><p><strong>datetime_index</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, create a datetime index. default is True</p></li>
+<li><p><strong>datetime_index</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, create a datetime index. Default is True</p></li>
 <li><p><strong>state</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default is None</em>) – full name, abbreviation or id</p></li>
 <li><p><strong>service</strong> (<em>string</em><em>, </em><em>default is 'iv'</em>) – <ul>
 <li><p>‘iv’ : instantaneous data</p></li>
@@ -590,7 +588,7 @@ one row per time, default is True</p></li>
 <li><p>’peaks’: discharge peaks</p></li>
 <li><p>’gwlevels’: (defunct) use <cite>waterdata.get_continuous</cite>,
 <cite>waterdata.get_daily</cite>, or <cite>waterdata.get_field_measurements</cite></p></li>
-<li><p>’pmcodes’: (defunct) use <cite>get_reference_table</cite></p></li>
+<li><p>’pmcodes’: (defunct) use <cite>waterdata.get_reference_table</cite></p></li>
 <li><p>’water_use’: (defunct) no replacement available</p></li>
 <li><p>’ratings’: get rating table</p></li>
 <li><p>’stat’: get statistics</p></li>
@@ -656,7 +654,7 @@ default is True</p></li>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Statistics data from the statistics service</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.nwis.NWIS_Metadata</span></code></a>) – A custom metadata object</p></li>
 <li><p><em>.. todo::</em> – fix date parsing</p></li>
 </ul>
 </p>
@@ -707,7 +705,7 @@ default is True</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>service</strong> (<em>string</em>) – Name of the service to query: ‘site’, ‘stats’, etc.</p></li>
+<li><p><strong>service</strong> (<em>string</em>) – Name of the service to query: ‘peaks’ or ‘ratings’.</p></li>
 <li><p><strong>ssl_check</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, check SSL certificates, if False, do not check SSL,
 default is True</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – If supplied, will be used as query parameters</p></li>
@@ -734,17 +732,17 @@ default is True</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>service</strong> (<em>string</em>) – Name of the service to query: ‘site’, ‘stats’, etc.</p></li>
+<li><p><strong>service</strong> (<em>string</em>) – Name of the service to query: ‘dv’, ‘iv’, ‘site’, or ‘stat’.</p></li>
 <li><p><strong>ssl_check</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, check SSL certificates, if False, do not check SSL,
-default is True</p></li>
-<li><p><strong>ssl_check</strong> – If True, check SSL certificates, if False, do not check SSL,
 default is True</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – If supplied, will be used as query parameters</p></li>
 </ul>
 </dd>
 <dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>bBox</strong> (<em>string</em>) – 7-digit Hydrologic Unit Code (HUC)</p></li>
+<li><p><strong>bBox</strong> (<em>string</em>) – Bounding box of decimal latitude and longitude values, given as
+west longitude, south latitude, east longitude, north latitude,
+separated by commas</p></li>
 <li><p><strong>startDT</strong> (<em>string</em>) – Start date (e.g., ‘2017-12-31’)</p></li>
 <li><p><strong>endDT</strong> (<em>string</em>) – End date (e.g., ‘2018-01-01’)</p></li>
 <li><p><strong>modifiedSince</strong> (<em>string</em>) – Used to return only sites where attributes or period of record data
@@ -777,7 +775,7 @@ default is True</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted requested data</p></li>
-<li><p><strong>md</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.Metadata</span></code>) – A custom metadata object</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.nwis.NWIS_Metadata</span></code></a>) – A custom metadata object</p></li>
 </ul>
 </p>
 </dd>

@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+geddcffc6a documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+gb06fbdd62 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=a4eb0644"></script>
+      <script src="../_static/documentation_options.js?v=88c675f9"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -132,7 +132,7 @@
 <dd><p>Response elapsed time</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>datetme.timedelta</p>
+<dd class="field-odd"><p>datetime.timedelta</p>
 </dd>
 </dl>
 </dd></dl>
@@ -154,13 +154,7 @@
 <dd><p>Generates a standard set of metadata informed by the response.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>response</strong> (<em>Response</em>) – Response object from httpx module</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>md</strong> – A <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> custom <a class="reference internal" href="#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.BaseMetadata</span></code></a> object.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.BaseMetadata</span></code></a></p>
+<dd class="field-odd"><p><strong>response</strong> (<code class="docutils literal notranslate"><span class="pre">httpx.Response</span></code>) – Response object from the <code class="docutils literal notranslate"><span class="pre">httpx</span></code> module.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -182,7 +176,7 @@
 <dl class="py exception">
 <dt class="sig sig-object py" id="dataretrieval.utils.NoSitesError">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">NoSitesError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">URL</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/utils.html#NoSitesError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils.NoSitesError" title="Link to this definition"></a></dt>
-<dd><p>Custom error class used when selection criteria returns no sites/data.</p>
+<dd><p>Custom error class used when selection criteria return no sites/data.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dataretrieval.utils.NoSitesError.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">URL</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/utils.html#NoSitesError.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils.NoSitesError.__init__" title="Link to this definition"></a></dt>
@@ -288,10 +282,17 @@ default is True</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>string</strong> – The response from the API query <code class="docutils literal notranslate"><span class="pre">httpx.get</span></code> function call.</p>
+<dd class="field-even"><p><strong>response</strong> – The response from the API query <code class="docutils literal notranslate"><span class="pre">httpx.get</span></code> function call.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>query response</p>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">httpx.Response</span></code></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If the service returns a 400, 404, 414, or 5xx status code, or if
+    <code class="docutils literal notranslate"><span class="pre">httpx</span></code> rejects the URL client-side (e.g. it is too long).</p></li>
+<li><p><a class="reference internal" href="#dataretrieval.utils.NoSitesError" title="dataretrieval.utils.NoSitesError"><strong>NoSitesError</strong></a> – If the response indicates that no sites or data matched the query.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
