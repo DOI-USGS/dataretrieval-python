@@ -681,7 +681,7 @@ def _set_response_url(response: httpx.Response, url: str | httpx.URL) -> None:
     same ``.request``.
     """
     try:
-        response.url = url  # type: ignore[misc]
+        response.url = url  # type: ignore[misc, assignment]
     except AttributeError:
         target = httpx.URL(str(url))
         try:
@@ -800,7 +800,7 @@ def _extract_axes(args: dict[str, Any]) -> list[_Axis]:
             axes.append(_Axis(arg_key=key, atoms=tuple(value), joiner=_LIST_SEP))
 
     filter_expr = args.get("filter")
-    if _is_chunkable(filter_expr, args.get("filter_lang")):
+    if filter_expr is not None and _is_chunkable(filter_expr, args.get("filter_lang")):
         _check_numeric_filter_pitfall(filter_expr)
         clauses = _split_top_level_or(filter_expr)
         if len(clauses) >= 2:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from json import JSONDecodeError
-from typing import Literal
+from typing import Literal, cast
 
 from dataretrieval.utils import query
 
@@ -162,9 +162,12 @@ def get_basin(
         raise ValueError("feature_id is required")
 
     url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}/basin"
-    simplified = str(simplified).lower()
-    split_catchment = str(split_catchment).lower()
-    query_params = {"simplified": simplified, "splitCatchment": split_catchment}
+    simplified_str = str(simplified).lower()
+    split_catchment_str = str(split_catchment).lower()
+    query_params = {
+        "simplified": simplified_str,
+        "splitCatchment": split_catchment_str,
+    }
     err_msg = (
         f"Error getting basin for feature source '{feature_source}' and "
         f"feature_id '{feature_id}'"
@@ -408,7 +411,7 @@ def search(
     if (lat is None) != (long is None):
         raise ValueError("Both lat and long are required")
 
-    find = find.lower()
+    find = cast(Literal["basin", "flowlines", "features"], find.lower())
     if find not in ("basin", "flowlines", "features"):
         raise ValueError(
             f"Invalid value for find: {find} - allowed values are:"
@@ -428,6 +431,10 @@ def search(
         return get_features(lat=lat, long=long, as_json=True)
 
     if find == "basin":
+        if feature_source is None or feature_id is None:
+            raise ValueError(
+                "feature_source and feature_id are required to find a basin"
+            )
         return get_basin(
             feature_source=feature_source, feature_id=feature_id, as_json=True
         )

@@ -2,8 +2,11 @@
 Useful utilities for data munging.
 """
 
+from __future__ import annotations
+
 import warnings
 from collections.abc import Iterable
+from typing import Any
 
 import httpx
 import pandas as pd
@@ -11,7 +14,10 @@ import pandas as pd
 import dataretrieval
 from dataretrieval.codes import tz
 
-HTTPX_DEFAULTS = {
+# Typed as ``dict[str, Any]`` (not the inferred ``dict[str, object]``) so that
+# splatting it as ``**HTTPX_DEFAULTS`` into ``httpx.get`` / ``httpx.AsyncClient``
+# type-checks: the values are a heterogeneous bag of httpx keyword arguments.
+HTTPX_DEFAULTS: dict[str, Any] = {
     "follow_redirects": True,
     "timeout": httpx.Timeout(60.0, connect=10.0),
 }
@@ -190,6 +196,7 @@ def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
         # Concat in one shot — per-column assignment on a wide CSV-derived
         # frame triggers pandas' fragmentation PerformanceWarning.
         df = pd.concat([df, pd.DataFrame(new_columns, index=df.index)], axis=1)
+    sort_key: str | None
     if "Activity_StartDateTime" in df.columns:
         sort_key = "Activity_StartDateTime"
     elif "ActivityStartDateTime" in df.columns:
@@ -234,7 +241,7 @@ class BaseMetadata:
         self.url = str(response.url)
         self.query_time = response.elapsed
         self.header = response.headers
-        self.comment = None
+        self.comment: str | None = None
 
         # # not sure what statistic_info is
         # self.statistic_info = None

@@ -39,6 +39,7 @@ test = [
   "coverage",
   "pytest-httpx",
   "ruff",
+  "mypy<2",  # <2 so it can still target Python 3.9 (the project's floor)
 ]
 doc = [
   "docutils<0.22",
@@ -102,3 +103,13 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 docstring-code-format = true
 docstring-code-line-length = 72
+
+[tool.mypy]
+# Incremental-adoption config. ``check_untyped_defs`` type-checks the bodies of
+# not-yet-annotated functions; what still keeps this short of ``--strict`` is
+# that annotations aren't *required* (``disallow_untyped_defs`` is off) and
+# untyped third-party libs are treated as ``Any`` (``ignore_missing_imports``).
+python_version = "3.9"  # the project's minimum supported version
+files = ["dataretrieval"]
+ignore_missing_imports = true
+check_untyped_defs = true

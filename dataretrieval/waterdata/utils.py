@@ -14,6 +14,7 @@ from collections.abc import (
     Iterable,
     Iterator,
     Mapping,
+    Sequence,
 )
 from contextlib import asynccontextmanager, contextmanager
 from contextvars import ContextVar
@@ -251,7 +252,7 @@ def _format_one(dt, *, date: bool) -> str | None:
 
 
 def _format_api_dates(
-    datetime_input: str | list[str | None] | None, date: bool = False
+    datetime_input: str | Sequence[str | None] | None, date: bool = False
 ) -> str | None:
     """
     Formats date or datetime input(s) for use with an API.
@@ -330,11 +331,13 @@ def _format_api_dates(
         if _DURATION_RE.match(single) or "/" in single:
             return single
 
-    # Half-bounded ranges: NA endpoints render as ".."; any unparseable non-NA
     # element invalidates the range.
-    formatted = [_format_one(dt, date=date) for dt in datetime_input]
-    if any(f is None for f in formatted):
-        return None
+    formatted: list[str] = []
+    for dt in datetime_input:
+        one = _format_one(dt, date=date)
+        if one is None:
+            return None
+        formatted.append(one)
     return "/".join(formatted)
 
 
@@ -823,6 +826,8 @@ def _next_req_url(
         # body might supply. Guarded against mock-shaped ``resp.url``
         # attributes (tests sometimes set strings or ``MagicMock``)
         # by falling open when host extraction isn't reliable.
+        next_host: str | None
+        cur_host: str | None
         try:
             next_host = httpx.URL(href).host
             resp_url = (
@@ -1915,11 +1920,10 @@ def _as_str_list(
     ``",".join(...)`` doesn't iterate it character-by-character — and
     materializes any other iterable via :func:`_normalize_str_iterable`.
     """
-    return (
-        [value]
-        if isinstance(value, str)
-        else _normalize_str_iterable(value, param_name)
-    )
+    normalized = _normalize_str_iterable(value, param_name)
+    if isinstance(normalized, str):
+        return [normalized]
+    return normalized
 
 
 def _check_monitoring_location_id(
