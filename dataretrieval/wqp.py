@@ -13,13 +13,14 @@ from __future__ import annotations
 
 import warnings
 from io import StringIO
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
 from .utils import BaseMetadata, _attach_datetime_columns, query
 
 if TYPE_CHECKING:
+    import httpx
     from pandas import DataFrame
 
 
@@ -67,9 +68,9 @@ def _read_wqp_csv(text: str) -> DataFrame:
 
 
 def get_results(
-    ssl_check=True,
-    legacy=True,
-    **kwargs,
+    ssl_check: bool = True,
+    legacy: bool = True,
+    **kwargs: Any,
 ) -> tuple[DataFrame, WQP_Metadata]:
     """Query the WQP for results.
 
@@ -185,9 +186,9 @@ def get_results(
 
 
 def what_sites(
-    ssl_check=True,
-    legacy=True,
-    **kwargs,
+    ssl_check: bool = True,
+    legacy: bool = True,
+    **kwargs: Any,
 ) -> tuple[DataFrame, WQP_Metadata]:
     """Search WQP for sites within a region with specific data.
 
@@ -240,9 +241,9 @@ def what_sites(
 
 
 def what_organizations(
-    ssl_check=True,
-    legacy=True,
-    **kwargs,
+    ssl_check: bool = True,
+    legacy: bool = True,
+    **kwargs: Any,
 ) -> tuple[DataFrame, WQP_Metadata]:
     """Search WQP for organizations within a region with specific data.
 
@@ -290,7 +291,11 @@ def what_organizations(
     return df, WQP_Metadata(response, **kwargs)
 
 
-def what_projects(ssl_check=True, legacy=True, **kwargs):
+def what_projects(
+    ssl_check: bool = True,
+    legacy: bool = True,
+    **kwargs: Any,
+) -> tuple[DataFrame, WQP_Metadata]:
     """Search WQP for projects within a region with specific data.
 
     Any WQP API parameter can be passed as a keyword argument to this function.
@@ -338,9 +343,9 @@ def what_projects(ssl_check=True, legacy=True, **kwargs):
 
 
 def what_activities(
-    ssl_check=True,
-    legacy=True,
-    **kwargs,
+    ssl_check: bool = True,
+    legacy: bool = True,
+    **kwargs: Any,
 ) -> tuple[DataFrame, WQP_Metadata]:
     """Search WQP for activities within a region with specific data.
 
@@ -402,9 +407,9 @@ def what_activities(
 
 
 def what_detection_limits(
-    ssl_check=True,
-    legacy=True,
-    **kwargs,
+    ssl_check: bool = True,
+    legacy: bool = True,
+    **kwargs: Any,
 ) -> tuple[DataFrame, WQP_Metadata]:
     """Search WQP for result detection limits within a region with specific
     data.
@@ -460,9 +465,9 @@ def what_detection_limits(
 
 
 def what_habitat_metrics(
-    ssl_check=True,
-    legacy=True,
-    **kwargs,
+    ssl_check: bool = True,
+    legacy: bool = True,
+    **kwargs: Any,
 ) -> tuple[DataFrame, WQP_Metadata]:
     """Search WQP for habitat metrics within a region with specific data.
 
@@ -510,7 +515,11 @@ def what_habitat_metrics(
     return df, WQP_Metadata(response, **kwargs)
 
 
-def what_project_weights(ssl_check=True, legacy=True, **kwargs):
+def what_project_weights(
+    ssl_check: bool = True,
+    legacy: bool = True,
+    **kwargs: Any,
+) -> tuple[DataFrame, WQP_Metadata]:
     """Search WQP for project weights within a region with specific data.
 
     Any WQP API parameter can be passed as a keyword argument to this function.
@@ -562,7 +571,11 @@ def what_project_weights(ssl_check=True, legacy=True, **kwargs):
     return df, WQP_Metadata(response, **kwargs)
 
 
-def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
+def what_activity_metrics(
+    ssl_check: bool = True,
+    legacy: bool = True,
+    **kwargs: Any,
+) -> tuple[DataFrame, WQP_Metadata]:
     """Search WQP for activity metrics within a region with specific data.
 
     Any WQP API parameter can be passed as a keyword argument to this function.
@@ -614,7 +627,7 @@ def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
     return df, WQP_Metadata(response, **kwargs)
 
 
-def wqp_url(service):
+def wqp_url(service: str) -> str:
     """Construct the WQP URL for a given service."""
 
     base_url = "https://www.waterqualitydata.us/data/"
@@ -628,7 +641,7 @@ def wqp_url(service):
     return f"{base_url}{service}/Search?"
 
 
-def wqx3_url(service):
+def wqx3_url(service: str) -> str:
     """Construct the WQP URL for a given WQX 3.0 service."""
 
     base_url = "https://www.waterqualitydata.us/wqx3/"
@@ -659,7 +672,7 @@ class WQP_Metadata(BaseMetadata):
         Site information (via ``what_sites``) if the query included a ``siteid``.
     """
 
-    def __init__(self, response, **parameters) -> None:
+    def __init__(self, response: httpx.Response, **parameters: Any) -> None:
         """Generates a standard set of metadata informed by the response with specific
         metadata for WQP data.
 
@@ -703,7 +716,7 @@ class WQP_Metadata(BaseMetadata):
         return what_sites(siteid=siteid)
 
 
-def _check_kwargs(kwargs):
+def _check_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     """Private function to check kwargs for unsupported parameters."""
     mimetype = kwargs.get("mimeType")
     if mimetype == "geojson":
@@ -716,7 +729,7 @@ def _check_kwargs(kwargs):
     return kwargs
 
 
-def _warn_wqx3_use():
+def _warn_wqx3_use() -> None:
     message = (
         "Support for the WQX3.0 profiles is experimental. "
         "Queries may be slow or fail intermittently."
@@ -724,7 +737,7 @@ def _warn_wqx3_use():
     warnings.warn(message, UserWarning, stacklevel=2)
 
 
-def _warn_legacy_use():
+def _warn_legacy_use() -> None:
     message = (
         "This function call will return the legacy WQX format, "
         "which means USGS data have not been updated since March 2024. "
@@ -735,7 +748,7 @@ def _warn_legacy_use():
     warnings.warn(message, DeprecationWarning, stacklevel=2)
 
 
-def _warn_wqx3_unavailable():
+def _warn_wqx3_unavailable() -> None:
     # stacklevel=3: warn -> _warn_wqx3_unavailable -> _legacy_only_url -> what_*
     warnings.warn(
         "WQX3.0 profile not available, returning legacy profile.",

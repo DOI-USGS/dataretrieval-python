@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Literal, get_args
+from typing import Any, Literal, get_args
 
 import pandas as pd
 
@@ -18,13 +18,13 @@ _VALID_ON_TIE: tuple[OnTie, ...] = get_args(OnTie)
 
 
 def get_nearest_continuous(
-    targets,
+    targets: Iterable[Any],
     monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
     *,
     window: str | pd.Timedelta = "PT7M30S",
     on_tie: OnTie = "first",
-    **kwargs,
+    **kwargs: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """For each target timestamp, return the nearest continuous observation.
 
@@ -138,13 +138,13 @@ def get_nearest_continuous(
         ... )
     """
     _check_nearest_kwargs(kwargs, on_tie)
-    targets = pd.DatetimeIndex(pd.to_datetime(targets, utc=True))
+    target_index = pd.DatetimeIndex(pd.to_datetime(targets, utc=True))
     window_td = pd.Timedelta(window)
 
-    if len(targets) == 0:
+    if len(target_index) == 0:
         raise ValueError("targets must contain at least one timestamp")
 
-    filter_expr = _build_window_or_filter(targets, window_td)
+    filter_expr = _build_window_or_filter(target_index, window_td)
     df, md = get_continuous(
         monitoring_location_id=monitoring_location_id,
         parameter_code=parameter_code,
@@ -165,7 +165,7 @@ def get_nearest_continuous(
     selected = [
         row
         for _, site_df in site_groups
-        for target in targets
+        for target in target_index
         if (row := _pick_nearest_row(site_df, target, window_td, on_tie)) is not None
     ]
     if not selected:
@@ -173,7 +173,7 @@ def get_nearest_continuous(
     return pd.DataFrame(selected).reset_index(drop=True), md
 
 
-def _check_nearest_kwargs(kwargs: dict, on_tie: OnTie) -> None:
+def _check_nearest_kwargs(kwargs: dict[str, Any], on_tie: OnTie) -> None:
     """Reject kwargs the helper owns; validate ``on_tie``."""
     for forbidden in ("time", "filter", "filter_lang"):
         if forbidden in kwargs:

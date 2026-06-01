@@ -14,11 +14,12 @@ from collections.abc import (
     Iterable,
     Iterator,
     Mapping,
+    Sequence,
 )
 from contextlib import asynccontextmanager, contextmanager
 from contextvars import ContextVar
 from datetime import datetime, timedelta
-from typing import Any, TypeVar, get_args
+from typing import Any, TypeVar, cast, get_args
 from zoneinfo import ZoneInfo
 
 import httpx
@@ -97,7 +98,7 @@ _EXTRA_ID_COLS = set(_OUTPUT_ID_BY_SERVICE.values()) - {
 }
 
 
-def _switch_arg_id(ls: dict[str, Any], id_name: str, service: str):
+def _switch_arg_id(ls: dict[str, Any], id_name: str, service: str) -> dict[str, Any]:
     """
     Switch argument id from its package-specific identifier to the standardized "id" key
     that the API recognizes.
@@ -142,7 +143,9 @@ def _switch_arg_id(ls: dict[str, Any], id_name: str, service: str):
     return ls
 
 
-def _switch_properties_id(properties: list[str] | None, id_name: str, service: str):
+def _switch_properties_id(
+    properties: list[str] | None, id_name: str, service: str
+) -> list[str]:
     """
     Switch properties id from its package-specific identifier to the
     standardized "id" key that the API recognizes.
@@ -233,7 +236,7 @@ def _parse_datetime(value: str) -> datetime | None:
     return None
 
 
-def _format_one(dt, *, date: bool) -> str | None:
+def _format_one(dt: str | None, *, date: bool) -> str | None:
     """Format a single datetime element for inclusion in the API time arg."""
     if pd.isna(dt) or dt == "" or dt is None:
         return ".."
@@ -251,7 +254,7 @@ def _format_one(dt, *, date: bool) -> str | None:
 
 
 def _format_api_dates(
-    datetime_input: str | list[str | None] | None, date: bool = False
+    datetime_input: str | Sequence[str | None] | None, date: bool = False
 ) -> str | None:
     """
     Formats date or datetime input(s) for use with an API.
@@ -330,11 +333,13 @@ def _format_api_dates(
         if _DURATION_RE.match(single) or "/" in single:
             return single
 
-    # Half-bounded ranges: NA endpoints render as ".."; any unparseable non-NA
     # element invalidates the range.
-    formatted = [_format_one(dt, date=date) for dt in datetime_input]
-    if any(f is None for f in formatted):
-        return None
+    formatted: list[str] = []
+    for dt in datetime_input:
+        one = _format_one(dt, date=date)
+        if one is None:
+            return None
+        formatted.append(one)
     return "/".join(formatted)
 
 
@@ -371,7 +376,7 @@ def _cql2_param(args: dict[str, Any]) -> str:
     return json.dumps(query, separators=(",", ":"))
 
 
-def _default_headers():
+def _default_headers() -> dict[str, str]:
     """
     Generate default HTTP headers for API requests.
 
@@ -394,7 +399,9 @@ def _default_headers():
     return headers
 
 
-def _check_ogc_requests(endpoint: str = "daily", req_type: str = "queryables"):
+def _check_ogc_requests(
+    endpoint: str = "daily", req_type: str = "queryables"
+) -> dict[str, Any]:
     """
     Sends an HTTP GET request to the specified OGC endpoint and request type,
     returning the JSON response.
@@ -426,10 +433,12 @@ def _check_ogc_requests(endpoint: str = "daily", req_type: str = "queryables"):
     url = f"{OGC_API_URL}/collections/{endpoint}/{req_type}"
     resp = httpx.get(url, headers=_default_headers(), **HTTPX_DEFAULTS)
     _raise_for_non_200(resp)
-    return resp.json()
+    # ``Response.json`` is typed ``Any``; the OGC queryables/schema endpoints
+    # return a JSON object, and callers index it as a dict.
+    return cast("dict[str, Any]", resp.json())
 
 
-def _error_body(resp: httpx.Response):
+def _error_body(resp: httpx.Response) -> str:
     """
     Build an informative error message from an HTTP response.
 
@@ -626,7 +635,7 @@ def _construct_api_requests(
     bbox: list[float] | None = None,
     limit: int | None = None,
     skip_geometry: bool = False,
-    **kwargs,
+    **kwargs: Any,
 ) -> httpx.Request:
     """
     Constructs an HTTP request object for the specified water data API service.
@@ -823,6 +832,8 @@ def _next_req_url(
         # body might supply. Guarded against mock-shaped ``resp.url``
         # attributes (tests sometimes set strings or ``MagicMock``)
         # by falling open when host extraction isn't reliable.
+        next_host: str | None
+        cur_host: str | None
         try:
             next_host = httpx.URL(href).host
             resp_url = (
@@ -838,7 +849,10 @@ def _next_req_url(
                 f"Refusing to follow cross-host next-page URL: "
                 f"{next_host} != {cur_host}"
             )
-        return href
+        # ``href`` comes from the JSON ``links`` array (typed ``Any``); the
+        # ``not href`` guard above already excluded empty/None, and it is a
+        # URL string (passed to ``httpx.URL`` above).
+        return cast("str", href)
     return None
 
 
@@ -1915,11 +1929,10 @@ def _as_str_list(
     ``",".join(...)`` doesn't iterate it character-by-character — and
     materializes any other iterable via :func:`_normalize_str_iterable`.
     """
-    return (
-        [value]
-        if isinstance(value, str)
-        else _normalize_str_iterable(value, param_name)
-    )
+    normalized = _normalize_str_iterable(value, param_name)
+    if isinstance(normalized, str):
+        return [normalized]
+    return normalized
 
 
 def _check_monitoring_location_id(

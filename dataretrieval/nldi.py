@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from json import JSONDecodeError
-from typing import Literal
+from typing import Any, Literal, cast
 
 from dataretrieval.utils import query
 
@@ -16,13 +16,17 @@ _CRS = "EPSG:4326"
 _VALID_NAVIGATION_MODES = ("UM", "DM", "UT", "DD")
 
 
-def _query_nldi(url, query_params, error_message):
+def _query_nldi(
+    url: str,
+    query_params: dict[str, str],
+    error_message: str,
+) -> dict[str, Any] | list[Any]:
     # A helper function to query the NLDI API
     response = query(url, payload=query_params)
     if response.status_code != 200:
         raise ValueError(f"{error_message}. Error reason: {response.reason_phrase}")
 
-    response_data = {}
+    response_data: dict[str, Any] | list[Any] = {}
     try:
         response_data = response.json()
     except JSONDecodeError:
@@ -32,7 +36,7 @@ def _query_nldi(url, query_params, error_message):
     return response_data
 
 
-def _features_to_gdf(feature_collection: dict) -> gpd.GeoDataFrame:
+def _features_to_gdf(feature_collection: dict[str, Any]) -> gpd.GeoDataFrame:
     """Build a GeoDataFrame from an NLDI FeatureCollection, tolerating empties.
 
     NLDI can legitimately return no features (e.g. a feature with nothing
@@ -56,7 +60,7 @@ def get_flowlines(
     stop_comid: int | None = None,
     trim_start: bool = False,
     as_json: bool = False,
-) -> gpd.GeoDataFrame | dict:
+) -> gpd.GeoDataFrame | dict[str, Any]:
     """Gets the flowlines for the specified navigation either by comid or feature
     source in WGS84 lat/long coordinates as GeoDataFrame containing a polyline geometry.
 
@@ -116,7 +120,7 @@ def get_flowlines(
     else:
         err_msg = f"Error getting flowlines for comid '{comid}'"
 
-    feature_collection = _query_nldi(url, query_params, err_msg)
+    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params, err_msg))
     if as_json:
         return feature_collection
     gdf = _features_to_gdf(feature_collection)
@@ -129,7 +133,7 @@ def get_basin(
     simplified: bool = True,
     split_catchment: bool = False,
     as_json: bool = False,
-) -> gpd.GeoDataFrame | dict:
+) -> gpd.GeoDataFrame | dict[str, Any]:
     """Gets the aggregated basin for the specified feature in WGS84 lat/lon
     as GeoDataFrame or as JSON conatining a polygon geometry.
 
@@ -162,14 +166,17 @@ def get_basin(
         raise ValueError("feature_id is required")
 
     url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}/basin"
-    simplified = str(simplified).lower()
-    split_catchment = str(split_catchment).lower()
-    query_params = {"simplified": simplified, "splitCatchment": split_catchment}
+    simplified_str = str(simplified).lower()
+    split_catchment_str = str(split_catchment).lower()
+    query_params = {
+        "simplified": simplified_str,
+        "splitCatchment": split_catchment_str,
+    }
     err_msg = (
         f"Error getting basin for feature source '{feature_source}' and "
         f"feature_id '{feature_id}'"
     )
-    feature_collection = _query_nldi(url, query_params, err_msg)
+    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params, err_msg))
     if as_json:
         return feature_collection
     gdf = _features_to_gdf(feature_collection)
@@ -187,7 +194,7 @@ def get_features(
     long: float | None = None,
     stop_comid: int | None = None,
     as_json: bool = False,
-) -> gpd.GeoDataFrame | dict:
+) -> gpd.GeoDataFrame | dict[str, Any]:
     """Gets all features found along the specified navigation either by
     comid or feature source as points in WGS84 lat/long coordinates - a GeoDataFrame
     containing a point geometry.
@@ -285,7 +292,7 @@ def get_features(
             query_params = {}
         err_msg = _features_err_msg(feature_source, feature_id, comid, data_source)
 
-    feature_collection = _query_nldi(url, query_params, err_msg)
+    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params, err_msg))
     if as_json:
         return feature_collection
     gdf = _features_to_gdf(feature_collection)
@@ -321,7 +328,7 @@ def get_features_by_data_source(data_source: str) -> gpd.GeoDataFrame:
     _validate_data_source(data_source)
     url = f"{NLDI_API_BASE_URL}/{data_source}"
     err_msg = f"Error getting features for data source '{data_source}'"
-    feature_collection = _query_nldi(url, {}, err_msg)
+    feature_collection = cast("dict[str, Any]", _query_nldi(url, {}, err_msg))
     gdf = _features_to_gdf(feature_collection)
     return gdf
 
@@ -336,7 +343,7 @@ def search(
     lat: float | None = None,
     long: float | None = None,
     distance: int = 50,
-) -> dict:
+) -> dict[str, Any]:
     """Searches for the specified feature in NLDI and returns the results
     as a dictionary.
 
@@ -408,7 +415,7 @@ def search(
     if (lat is None) != (long is None):
         raise ValueError("Both lat and long are required")
 
-    find = find.lower()
+    find = cast(Literal["basin", "flowlines", "features"], find.lower())
     if find not in ("basin", "flowlines", "features"):
         raise ValueError(
             f"Invalid value for find: {find} - allowed values are:"
@@ -428,6 +435,10 @@ def search(
         return get_features(lat=lat, long=long, as_json=True)
 
     if find == "basin":
+        if feature_source is None or feature_id is None:
+            raise ValueError(
+                "feature_source and feature_id are required to find a basin"
+            )
         return get_basin(
             feature_source=feature_source, feature_id=feature_id, as_json=True
         )
@@ -458,7 +469,7 @@ def search(
     )
 
 
-def _validate_data_source(data_source: str):
+def _validate_data_source(data_source: str) -> None:
     # A helper function to validate user specified data source/feature source
 
     global _AVAILABLE_DATA_SOURCES
@@ -487,7 +498,12 @@ def _validate_data_source(data_source: str):
         raise ValueError(err_msg)
 
 
-def _features_err_msg(feature_source, feature_id, comid, data_source) -> str:
+def _features_err_msg(
+    feature_source: str | None,
+    feature_id: str | None,
+    comid: int | None,
+    data_source: str | None,
+) -> str:
     if feature_source is not None:
         return (
             f"Error getting features for feature source '{feature_source}'"
@@ -512,7 +528,7 @@ def _validate_navigation_mode(navigation_mode: str | None) -> str:
 
 def _validate_feature_source_comid(
     feature_source: str | None, feature_id: str | None, comid: int | None
-):
+) -> None:
     if feature_source is not None and feature_id is None:
         raise ValueError("feature_id is required if feature_source is provided")
     if feature_id is not None and feature_source is None:

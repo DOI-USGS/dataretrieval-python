@@ -5,14 +5,17 @@ This module is a wrapper for the streamstats API (`streamstats documentation`_).
 
 """
 
+from __future__ import annotations
+
 import json
+from typing import Any, cast
 
 import httpx
 
 from dataretrieval.utils import HTTPX_DEFAULTS
 
 
-def download_workspace(workspaceID, format=""):
+def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
     """Function to download streamstats workspace.
 
     Parameters
@@ -46,7 +49,7 @@ def download_workspace(workspaceID, format=""):
     # return
 
 
-def get_sample_watershed():
+def get_sample_watershed() -> Watershed:
     """Sample function to get a watershed object for a location in NY.
 
     Makes the function call :obj:`dataretrieval.streamstats.get_watershed`
@@ -60,20 +63,23 @@ def get_sample_watershed():
         from the streamstats JSON object.
 
     """
-    return get_watershed("NY", -74.524, 43.939, format="object")
+    return cast(
+        "Watershed",
+        get_watershed("NY", -74.524, 43.939, format="object"),
+    )
 
 
 def get_watershed(
-    rcode,
-    xlocation,
-    ylocation,
-    crs=4326,
-    includeparameters=True,
-    includeflowtypes=False,
-    includefeatures=True,
-    simplify=True,
-    format="geojson",
-):
+    rcode: str,
+    xlocation: float,
+    ylocation: float,
+    crs: int | str = 4326,
+    includeparameters: bool = True,
+    includeflowtypes: bool = False,
+    includefeatures: bool = True,
+    simplify: bool = True,
+    format: str = "geojson",
+) -> httpx.Response | Watershed:
     """Get watershed object based on location
 
     **Streamstats documentation:**
@@ -115,7 +121,7 @@ def get_watershed(
         from the streamstats JSON object.
 
     """
-    payload = {
+    payload: dict[str, str | int | float | bool] = {
         "rcode": rcode,
         "xlocation": xlocation,
         "ylocation": ylocation,
@@ -170,14 +176,17 @@ class Watershed:
         :obj:`dataretrieval.streamstats.download_workspace`.
     """
 
-    def __init__(self, rcode, xlocation, ylocation):
+    def __init__(self, rcode: str, xlocation: float, ylocation: float) -> None:
         """Delineate the watershed at ``(xlocation, ylocation)`` and
         parse the response onto this instance."""
-        response = get_watershed(rcode, xlocation, ylocation, format="geojson")
+        response = cast(
+            httpx.Response,
+            get_watershed(rcode, xlocation, ylocation, format="geojson"),
+        )
         self._populate(json.loads(response.text))
 
     @classmethod
-    def from_streamstats_json(cls, streamstats_json) -> "Watershed":
+    def from_streamstats_json(cls, streamstats_json: dict[str, Any]) -> Watershed:
         """Create a :class:`Watershed` from an already-parsed StreamStats
         JSON payload, without issuing a new request.
 
@@ -190,7 +199,7 @@ class Watershed:
         self._populate(streamstats_json)
         return self
 
-    def _populate(self, streamstats_json) -> None:
+    def _populate(self, streamstats_json: dict[str, Any]) -> None:
         """Extract watershed fields from a StreamStats JSON payload onto
         this instance."""
         self.watershed_point = streamstats_json["featurecollection"][0]["feature"]

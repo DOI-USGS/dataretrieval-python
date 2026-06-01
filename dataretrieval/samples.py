@@ -7,9 +7,15 @@ See https://api.waterdata.usgs.gov/samples-data/docs#/ for API reference
 from __future__ import annotations
 
 import warnings
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    import pandas as pd
+
+    from dataretrieval.utils import BaseMetadata
 
 
-def get_usgs_samples(**kwargs):
+def get_usgs_samples(**kwargs: Any) -> tuple[pd.DataFrame, BaseMetadata]:
     """Deprecated: use ``waterdata.get_samples()`` instead.
 
     All keyword arguments are forwarded directly to

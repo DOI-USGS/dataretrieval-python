@@ -246,15 +246,18 @@ def _search(
     STAC ``next`` link is followed until exhausted so a result set larger than
     one page isn't silently truncated.
     """
-    params: dict[str, Any] | None = {"limit": min(limit, 10000)}
+    query_params: dict[str, Any] = {"limit": min(limit, 10000)}
     if filter_str is not None:
-        params["filter"] = filter_str
+        query_params["filter"] = filter_str
     if time_str is not None:
-        params["datetime"] = time_str
+        query_params["datetime"] = time_str
     if bbox is not None:
-        params["bbox"] = ",".join(map(str, bbox))
+        query_params["bbox"] = ",".join(map(str, bbox))
 
     url: str | None = f"{STAC_URL}/search"
+    # ``params`` is sent only on the first request; each STAC ``next`` link
+    # already carries the query, so it is reset to None inside the loop.
+    params: dict[str, Any] | None = query_params
     features: list[dict[str, Any]] = []
     while url is not None:
         response = httpx.get(
