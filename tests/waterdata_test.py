@@ -175,6 +175,16 @@ def test_construct_api_requests_multivalue_get():
     assert "parameter_code=00060%2C00065" in str(req.url)
 
 
+def test_construct_api_requests_omits_empty_list():
+    """An empty list value is omitted from the URL, not emitted as a filterless
+    ``&parameter_code=`` (which the server reads as 'match empty')."""
+    req = _construct_api_requests(
+        "daily", monitoring_location_id="USGS-05427718", parameter_code=[]
+    )
+    assert "parameter_code" not in str(req.url)
+    assert "monitoring_location_id=USGS-05427718" in str(req.url)
+
+
 def test_construct_api_requests_monitoring_locations_post():
     """monitoring-locations uses POST+CQL2 for multi-value params (API limitation)."""
     req = _construct_api_requests(
