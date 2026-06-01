@@ -35,6 +35,7 @@ from dataretrieval.waterdata.utils import (
     _check_profiles,
     _construct_api_requests,
     _construct_cql_request,
+    _get_args,
     _normalize_str_iterable,
 )
 
@@ -292,6 +293,27 @@ def test_construct_api_requests_numeric_list_joins_with_str():
     )
     assert req.method == "GET"
     assert "water_year=2020%2C2021" in str(req.url)
+
+
+def test_get_args_materializes_numpy_and_series_numeric_params():
+    """Regression: numeric (_NO_NORMALIZE_PARAMS) params given as a numpy array
+    or pandas Series must be materialized to a list of native Python scalars so
+    they comma-join in the URL (and stay JSON-serializable) — previously the
+    array/Series repr leaked into the query string."""
+    for value in (np.array([2020, 2021]), pd.Series([2020, 2021])):
+        args = _get_args({"water_year": value})
+        assert args["water_year"] == [2020, 2021]
+        # native Python ints, not numpy scalars (JSON-serializable, no np reprs)
+        assert [type(x) for x in args["water_year"]] == [int, int]
+        req = _construct_api_requests("peaks", **args)
+        assert "water_year=2020%2C2021" in str(req.url)
+
+    # float coordinate arrays (e.g. bbox) likewise materialize to native floats
+    args = _get_args({"bbox": np.array([-92.8, 44.2, -88.9, 46.0])})
+    assert args["bbox"] == [-92.8, 44.2, -88.9, 46.0]
+    assert all(type(x) is float for x in args["bbox"])
+    req = _construct_api_requests("daily", **args)
+    assert "bbox=-92.8%2C44.2%2C-88.9%2C46.0" in str(req.url)
 
 
 def test_construct_api_requests_two_element_date_list_becomes_interval():
