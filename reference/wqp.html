@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+gadb662945 documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g06bf0d0d6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=1b82d054"></script>
+      <script src="../_static/documentation_options.js?v=3313a54a"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -60,7 +60,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata.url"><code class="docutils literal notranslate"><span class="pre">WQP_Metadata.url</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata.query_time"><code class="docutils literal notranslate"><span class="pre">WQP_Metadata.query_time</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata.header"><code class="docutils literal notranslate"><span class="pre">WQP_Metadata.header</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata.comments"><code class="docutils literal notranslate"><span class="pre">WQP_Metadata.comments</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata.comment"><code class="docutils literal notranslate"><span class="pre">WQP_Metadata.comment</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata.site_info"><code class="docutils literal notranslate"><span class="pre">WQP_Metadata.site_info</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata.__init__"><code class="docutils literal notranslate"><span class="pre">WQP_Metadata.__init__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">WQP_Metadata.site_info</span></code></a></li>
@@ -158,9 +158,9 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="dataretrieval.wqp.WQP_Metadata.comments">
-<span class="sig-name descname"><span class="pre">comments</span></span><a class="headerlink" href="#dataretrieval.wqp.WQP_Metadata.comments" title="Link to this definition"></a></dt>
-<dd><p>Metadata comments. WQP does not return comments.</p>
+<dt class="sig sig-object py" id="dataretrieval.wqp.WQP_Metadata.comment">
+<span class="sig-name descname"><span class="pre">comment</span></span><a class="headerlink" href="#dataretrieval.wqp.WQP_Metadata.comment" title="Link to this definition"></a></dt>
+<dd><p>WQP does not return comments.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
@@ -171,10 +171,10 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dataretrieval.wqp.WQP_Metadata.site_info">
 <span class="sig-name descname"><span class="pre">site_info</span></span><a class="headerlink" href="#dataretrieval.wqp.WQP_Metadata.site_info" title="Link to this definition"></a></dt>
-<dd><p>Site information if the query included <cite>sites</cite>, <cite>site</cite> or <cite>site_no</cite>.</p>
+<dd><p>Site information (via <code class="docutils literal notranslate"><span class="pre">what_sites</span></code>) if the query included a <code class="docutils literal notranslate"><span class="pre">siteid</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple[pd.DataFrame, <a class="reference internal" href="nwis.html#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata">NWIS_Metadata</a>] | None</p>
+<dd class="field-odd"><p>tuple[pd.DataFrame, <a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata">WQP_Metadata</a>] | None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -204,12 +204,13 @@ metadata for WQP data.</p>
 <dt class="sig sig-object py" id="id0">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">site_info</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><span class="pre">WQP_Metadata</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
 <dd><p>Site information for the query.</p>
-<p>Populated when the query included <code class="docutils literal notranslate"><span class="pre">sites</span></code>, <code class="docutils literal notranslate"><span class="pre">site</span></code> or
-<code class="docutils literal notranslate"><span class="pre">site_no</span></code> (in that order of preference); <code class="docutils literal notranslate"><span class="pre">None</span></code> otherwise.</p>
+<p>Populated (via <a class="reference internal" href="#dataretrieval.wqp.what_sites" title="dataretrieval.wqp.what_sites"><code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.wqp.what_sites()</span></code></a>) when the query
+included a <code class="docutils literal notranslate"><span class="pre">siteid</span></code> (the WQP site identifier, e.g.
+<code class="docutils literal notranslate"><span class="pre">&quot;USGS-05586100&quot;</span></code>); <code class="docutils literal notranslate"><span class="pre">None</span></code> otherwise.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><ul class="simple">
-<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted requested data from calling <code class="docutils literal notranslate"><span class="pre">wqp.what_sites</span></code>.</p></li>
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Site data returned by <code class="docutils literal notranslate"><span class="pre">wqp.what_sites</span></code>.</p></li>
 <li><p><strong>md</strong> (<a class="reference internal" href="#dataretrieval.wqp.WQP_Metadata" title="dataretrieval.wqp.WQP_Metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.wqp.WQP_Metadata</span></code></a>) – A WQP_Metadata object.</p></li>
 </ul>
 </p>
