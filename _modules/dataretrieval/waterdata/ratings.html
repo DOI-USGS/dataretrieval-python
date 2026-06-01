@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+g33f3f4cfe documentation</title>
+  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+gadb662945 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=fad141d5"></script>
+      <script src="../../../_static/documentation_options.js?v=1b82d054"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -262,7 +262,18 @@
         <span class="n">fid</span> <span class="o">=</span> <span class="n">feature</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">out</span><span class="p">[</span><span class="n">fid</span><span class="p">]</span> <span class="o">=</span> <span class="n">_download_and_parse</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">)</span>
-        <span class="k">except</span> <span class="p">(</span><span class="n">httpx</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># _download_and_parse can raise the module&#39;s typed errors via</span>
+        <span class="c1"># _raise_for_non_200 (RateLimited / ServiceUnavailable / RuntimeError —</span>
+        <span class="c1"># all RuntimeError subclasses), and a feature missing its data asset</span>
+        <span class="c1"># raises LookupError. Catch those too so one bad feature is logged and</span>
+        <span class="c1"># skipped rather than aborting the whole multi-site batch.</span>
+        <span class="k">except</span> <span class="p">(</span>
+            <span class="n">httpx</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">,</span>
+            <span class="ne">RuntimeError</span><span class="p">,</span>
+            <span class="ne">ValueError</span><span class="p">,</span>
+            <span class="ne">OSError</span><span class="p">,</span>
+            <span class="ne">LookupError</span><span class="p">,</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Failed to download / parse </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fid</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">out</span></div>
@@ -308,8 +319,13 @@
     <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a single STAC ``/search`` request and return its features.&quot;&quot;&quot;</span>
-    <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="n">limit</span><span class="p">}</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run STAC ``/search`` and return ALL matching features.</span>
+
+<span class="sd">    ``limit`` is the page size (clamped to the service maximum of 10,000); the</span>
+<span class="sd">    STAC ``next`` link is followed until exhausted so a result set larger than</span>
+<span class="sd">    one page isn&#39;t silently truncated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="nb">min</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)}</span>
     <span class="k">if</span> <span class="n">filter_str</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">params</span><span class="p">[</span><span class="s2">&quot;filter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filter_str</span>
     <span class="k">if</span> <span class="n">time_str</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -317,15 +333,28 @@
     <span class="k">if</span> <span class="n">bbox</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">params</span><span class="p">[</span><span class="s2">&quot;bbox&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">bbox</span><span class="p">))</span>
 
-    <span class="n">response</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">STAC_URL</span><span class="si">}</span><span class="s2">/search&quot;</span><span class="p">,</span>
-        <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
-        <span class="n">headers</span><span class="o">=</span><span class="n">_default_headers</span><span class="p">(),</span>
-        <span class="n">verify</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">HTTPX_DEFAULTS</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">_raise_for_non_200</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;features&quot;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">STAC_URL</span><span class="si">}</span><span class="s2">/search&quot;</span>
+    <span class="n">features</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="n">url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="n">url</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="n">_default_headers</span><span class="p">(),</span>
+            <span class="n">verify</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">HTTPX_DEFAULTS</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">_raise_for_non_200</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">features</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;features&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="c1"># The STAC ``next`` link is a fully-formed GET href carrying the</span>
+        <span class="c1"># limit/filter/bbox and a continuation token, so follow it verbatim</span>
+        <span class="c1"># (dropping our own params) until the server stops emitting one.</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">lnk</span><span class="p">[</span><span class="s2">&quot;href&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">lnk</span> <span class="ow">in</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;links&quot;</span><span class="p">,</span> <span class="p">[])</span> <span class="k">if</span> <span class="n">lnk</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rel&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;next&quot;</span><span class="p">),</span>
+            <span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">features</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_download_and_parse</span><span class="p">(</span>
