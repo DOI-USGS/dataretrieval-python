@@ -711,6 +711,13 @@ class WQP_Metadata(BaseMetadata):
             return None
         return what_sites(siteid=siteid)
 
+    @property
+    def variable_info(self) -> None:
+        """WQP exposes no variable/parameter catalog through metadata, so this
+        is always ``None`` (overriding the :class:`~dataretrieval.utils.BaseMetadata`
+        stub, which would otherwise raise ``NotImplementedError``)."""
+        return None
+
 
 def _check_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     """Private function to check kwargs for unsupported parameters."""

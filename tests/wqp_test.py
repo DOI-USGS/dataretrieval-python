@@ -288,6 +288,13 @@ def test_wqp_metadata_site_info_is_accessible_property():
     assert _wqp_metadata().site_info is None  # must NOT raise
 
 
+def test_wqp_metadata_variable_info_is_none():
+    """Regression: WQP has no variable catalog, so ``variable_info`` must
+    return ``None`` rather than inheriting (and raising) the
+    ``BaseMetadata.variable_info`` NotImplementedError stub."""
+    assert _wqp_metadata().variable_info is None  # must NOT raise
+
+
 def test_wqp_metadata_site_info_routes_to_what_sites(monkeypatch):
     """When the query carried a ``siteid`` (WQP's site identifier),
     ``site_info`` delegates to ``wqp.what_sites`` with that identifier."""
