@@ -32,6 +32,11 @@ packages = ["dataretrieval", "dataretrieval.codes"]
 dataretrieval = ["py.typed"]
 
 [project.optional-dependencies]
+# Minimal set the CI ``type-check`` job installs — just mypy + the package,
+# not the whole test stack.
+type-check = [
+  "mypy<2",  # <2 so it can still target Python 3.9 (the project's floor)
+]
 test = [
   "pytest > 5.0.0",
   "pytest-cov[all]",
@@ -39,7 +44,7 @@ test = [
   "coverage",
   "pytest-httpx",
   "ruff",
-  "mypy<2",  # <2 so it can still target Python 3.9 (the project's floor)
+  "dataretrieval[type-check]",  # mypy, pinned once in the type-check extra
 ]
 doc = [
   "docutils<0.22",
