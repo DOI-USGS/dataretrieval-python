@@ -86,6 +86,16 @@ _OUTPUT_ID_BY_SERVICE: dict[str, str] = {
     "time-series-metadata": "time_series_id",
 }
 
+# Every service's output id EXCEPT the two that are genuinely user-facing
+# (``monitoring_location_id`` and ``time_series_id``). The rest are synthetic
+# per-record ids that ``_arrange_cols`` moves to the end of a result frame.
+# Derived from ``_OUTPUT_ID_BY_SERVICE`` so adding a service can't silently
+# leave a stray id column at the front again.
+_EXTRA_ID_COLS = set(_OUTPUT_ID_BY_SERVICE.values()) - {
+    "monitoring_location_id",
+    "time_series_id",
+}
+
 
 def _switch_arg_id(ls: dict[str, Any], id_name: str, service: str):
     """
@@ -806,7 +816,7 @@ def _next_req_url(
             continue
         href = link.get("href")
         if not href:
-            return href
+            return None
         # Refuse to follow a next-page link to a different host —
         # the request's headers/auth were minted for the original
         # host and shouldn't leak to whatever a poisoned response
@@ -908,7 +918,9 @@ def _get_resp_data(
 
     # Organize json into geodataframe and make sure id column comes along.
     df = gpd.GeoDataFrame.from_features(features)
-    df["id"] = pd.json_normalize(features)["id"].values
+    # Mirror the non-geopandas branch's defensive ``f.get("id")`` so a feature
+    # missing a top-level ``id`` yields None rather than a KeyError.
+    df["id"] = [f.get("id") for f in features]
     df = df[["id"] + [col for col in df.columns if col != "id"]]
 
     # If no geometry present, then return pandas dataframe. A geodataframe
@@ -1295,15 +1307,7 @@ def _arrange_cols(
 
     # Move meaningless-to-user, extra id columns to the end
     # of the dataframe, if they exist
-    extra_id_col = set(df.columns).intersection(
-        {
-            "latest_continuous_id",
-            "latest_daily_id",
-            "daily_id",
-            "continuous_id",
-            "field_measurement_id",
-        }
-    )
+    extra_id_col = set(df.columns).intersection(_EXTRA_ID_COLS)
 
     # If the arbitrary id column is returned (either due to properties
     # being none or NaN), then move it to the end of the dataframe, but
