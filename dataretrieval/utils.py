@@ -217,7 +217,7 @@ class BaseMetadata:
     ----------
     url : str
         Response url
-    query_time: datetme.timedelta
+    query_time: datetime.timedelta
         Response elapsed time
     header: httpx.Headers
         Response headers
@@ -229,13 +229,8 @@ class BaseMetadata:
 
         Parameters
         ----------
-        response: Response
-            Response object from httpx module
-
-        Returns
-        -------
-        md: :obj:`dataretrieval.utils.BaseMetadata`
-            A ``dataretrieval`` custom :obj:`dataretrieval.utils.BaseMetadata` object.
+        response: ``httpx.Response``
+            Response object from the ``httpx`` module.
 
         """
 
@@ -312,8 +307,16 @@ def query(
 
     Returns
     -------
-    string: query response
+    response: ``httpx.Response``
         The response from the API query ``httpx.get`` function call.
+
+    Raises
+    ------
+    ValueError
+        If the service returns a 400, 404, 414, or 5xx status code, or if
+        ``httpx`` rejects the URL client-side (e.g. it is too long).
+    NoSitesError
+        If the response indicates that no sites or data matched the query.
     """
 
     for key, value in payload.items():
@@ -359,7 +362,7 @@ def query(
 
 
 class NoSitesError(Exception):
-    """Custom error class used when selection criteria returns no sites/data."""
+    """Custom error class used when selection criteria return no sites/data."""
 
     def __init__(self, url: httpx.URL) -> None:
         self.url = url

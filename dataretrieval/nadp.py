@@ -1,11 +1,18 @@
 """
 Tools for retrieving data from the National Atmospheric Deposition Program
-(NADP) including the National Trends Network (NTN), the Mercury Deposition
-Network (MDN).
+(NADP), including the National Trends Network (NTN) and the Mercury
+Deposition Network (MDN).
+
+.. deprecated::
+
+    The ``nadp`` module is deprecated and will be removed from
+    ``dataretrieval`` on or after 2026-11-01. NADP is not a USGS data
+    source; please retrieve NADP data directly from
+    https://nadp.slh.wisc.edu/.
 
 National Trends Network
 -----------------------
-The  NTN provides long-term records of precipitation chemistry across the
+The NTN provides long-term records of precipitation chemistry across the
 United States. See https://nadp.slh.wisc.edu/ntn for more info.
 
 Mercury Deposition Network
@@ -89,7 +96,7 @@ class NADP_ZipFile(zipfile.ZipFile):
 
 
 def get_annual_MDN_map(measurement_type: str, year: str, path: str) -> str:
-    """Download a MDN map from NDAP.
+    """Download an MDN map from NADP.
 
     This function looks for a zip file containing gridded information at:
     https://nadp.slh.wisc.edu/maps-data/mdn-gradient-maps/.
@@ -143,7 +150,7 @@ def get_annual_NTN_map(
     year: str | None = None,
     path: str = ".",
 ) -> str:
-    """Download a NTN map from NDAP.
+    """Download an NTN map from NADP.
 
     This function looks for a zip file containing gridded information at:
     https://nadp.slh.wisc.edu/maps-data/ntn-gradient-maps/.
@@ -158,11 +165,11 @@ def get_annual_NTN_map(
 
     Parameters
     ----------
-    measurement : string
-        The measured constituent to return.
     measurement_type : string
         The type of measurement, 'conc', 'dep', or 'Precip', which represent
         concentration, deposition, or precipitation respectively.
+    measurement : string
+        The measured constituent to return.
     year : string
         Year as a string 'YYYY'
     path : string

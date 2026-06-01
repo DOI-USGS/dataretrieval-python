@@ -18,7 +18,7 @@ page/row/rate-limit counts) both update without knowing about each other. Call
 :func:`progress_context` to activate one and :func:`current` to reach it.
 
 By default the line is shown for interactive use — an interactive terminal or a
-Jupyter/IPython kernel (like ``tqdm``) — while redirected logs and CI stay clean.
+Jupyter/IPython kernel, like ``tqdm`` — while redirected logs and CI stay clean.
 ``API_USGS_PROGRESS`` forces it on (``1``/``true``) or off (``0``/``false``).
 """
 

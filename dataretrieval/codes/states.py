@@ -1,4 +1,9 @@
-"""List of 2-digit state codes with commented full names."""
+"""State code lookups keyed by full state name.
+
+``state_codes`` maps each state name to its two-letter postal abbreviation
+(e.g. ``"Alabama": "al"``); ``fips_codes`` maps it to its two-digit FIPS
+code (e.g. ``"Alabama": "01"``).
+"""
 
 state_codes = {
     "Alabama": "al",

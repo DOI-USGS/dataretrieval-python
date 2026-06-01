@@ -1,5 +1,5 @@
 """
-This module is a wrapper for the streamstats API (`streamstats documentation`_).
+This module is a wrapper for the StreamStats API (`streamstats documentation`_).
 
 .. _streamstats documentation: https://streamstats.usgs.gov/streamstatsservices/#/
 
@@ -16,7 +16,7 @@ from dataretrieval.utils import HTTPX_DEFAULTS
 
 
 def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
-    """Function to download streamstats workspace.
+    """Function to download a StreamStats workspace.
 
     Parameters
     ----------
@@ -60,7 +60,7 @@ def get_sample_watershed() -> Watershed:
     -------
     Watershed: :obj:`dataretrieval.streamstats.Watershed`
         Custom object that contains the watershed information as extracted
-        from the streamstats JSON object.
+        from the StreamStats JSON object.
 
     """
     return cast(
@@ -82,7 +82,7 @@ def get_watershed(
 ) -> httpx.Response | Watershed:
     """Get watershed object based on location
 
-    **Streamstats documentation:**
+    **StreamStats documentation:**
     Returns a watershed object. The request configuration will determine the
     overall request response. However all returns will return a watershed
     object with at least the workspaceid. The workspace id is the id to the
@@ -102,7 +102,7 @@ def get_watershed(
     ylocation: float
         Y location of the most downstream point of desired study area.
     crs: integer, string, optional
-        ESPSG spatial reference code, default is 4326
+        EPSG spatial reference code, default is 4326
     includeparameters: bool, optional
         Boolean flag to include parameters in response.
     includeflowtypes: bool, string, optional
@@ -113,12 +113,23 @@ def get_watershed(
     simplify: bool, optional
         Boolean flag controlling whether or not to simplify the returned
         result.
+    format: string, optional
+        Controls the return type, default is 'geojson'. 'geojson' returns
+        the raw ``httpx.Response``; 'object' parses the response into a
+        :obj:`dataretrieval.streamstats.Watershed`. 'shape' is not
+        implemented and raises ``NotImplementedError``.
 
     Returns
     -------
-    Watershed: :obj:`dataretrieval.streamstats.Watershed`
-        Custom object that contains the watershed information as extracted
-        from the streamstats JSON object.
+    r: ``httpx.Response`` or :obj:`dataretrieval.streamstats.Watershed`
+        The raw response when ``format='geojson'`` (the default), or a
+        custom ``Watershed`` object containing the watershed information
+        extracted from the StreamStats JSON when ``format='object'``.
+
+    Raises
+    ------
+    NotImplementedError
+        If ``format='shape'``, which is not yet implemented.
 
     """
     payload: dict[str, str | int | float | bool] = {

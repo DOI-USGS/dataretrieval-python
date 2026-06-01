@@ -1235,12 +1235,12 @@ def _combine_chunk_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
 
     Notes
     -----
-    ``_get_resp_data`` returns a plain ``pd.DataFrame()`` on empty
-    responses; concatenating it with real ``GeoDataFrame``s downgrades
-    the result to plain ``DataFrame`` and strips geometry/CRS, so
-    empties are dropped first. Dedup on the pre-rename feature ``id``
-    keeps overlapping user OR-clauses from producing duplicate rows
-    across chunks.
+    An empty chunk can be a plain ``pd.DataFrame()`` (no geopandas);
+    concatenating it with real ``GeoDataFrame``s downgrades the result
+    to plain ``DataFrame`` and strips geometry/CRS, so empties are
+    dropped first. Dedup on the pre-rename feature ``id`` keeps
+    overlapping user OR-clauses from producing duplicate rows across
+    chunks.
 
     Dedup is restricted to rows whose ``id`` is non-null. ``pandas``
     treats NaN==NaN as a duplicate for ``drop_duplicates``, so a
@@ -1254,8 +1254,8 @@ def _combine_chunk_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
         # input even when every chunk is empty — ``_get_resp_data``
         # returns ``gpd.GeoDataFrame()`` on empty geopd responses, and
         # returning a plain ``pd.DataFrame()`` here would downgrade
-        # the type a downstream ``pd.concat([result, geo_page])`` to a
-        # plain DataFrame and strip geometry/CRS.
+        # the type in a downstream ``pd.concat([result, geo_page])`` to
+        # a plain DataFrame and strip geometry/CRS.
         return frames[0] if frames else pd.DataFrame()
     if len(non_empty) == 1:
         # Single-completed-chunk fast path. Return a copy so callers
