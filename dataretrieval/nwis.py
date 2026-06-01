@@ -24,14 +24,6 @@ try:
 except ImportError:
     gpd = None
 
-# Issue deprecation warning upon import
-warnings.warn(
-    "The 'nwis' services are deprecated and being decommissioned. "
-    "Please use the 'waterdata' module to access the new services.",
-    DeprecationWarning,
-    stacklevel=2,
-)
-
 WATERDATA_BASE_URL = "https://nwis.waterdata.usgs.gov/"
 WATERDATA_URL = WATERDATA_BASE_URL + "nwis/"
 WATERSERVICE_URL = "https://waterservices.usgs.gov/nwis/"
