@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g473a07c2b documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g18090d40f documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=07aa4ea8"></script>
+      <script src="../_static/documentation_options.js?v=5047dc7c"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -779,7 +779,7 @@ depending on whether the coordinate reference system includes a vertical
 axis (height or depth). Coordinates are assumed to be in crs 4326. The
 expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
 Another way to think of it is c(Western-most longitude, Southern-most
-latitude, Eastern-most longitude, Northern-most longitude).</p></li>
+latitude, Eastern-most longitude, Northern-most latitude).</p></li>
 <li><p><strong>limit</strong> (<em>numeric</em><em>, </em><em>optional</em>) – The optional limit parameter is used to control the subset of the
 selected features that should be returned in each page. The maximum
 allowable limit is 50000. It may be beneficial to set this number lower
@@ -877,10 +877,11 @@ and associated groupings can be found at
 <a class="reference external" href="https://help.waterdata.usgs.gov/codes-and-parameters/parameters">https://help.waterdata.usgs.gov/codes-and-parameters/parameters</a>.</p></li>
 <li><p><strong>observing_procedure_code</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A short code corresponding to the observing procedure for the field
 measurement.</p></li>
-<li><p><strong>properties</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A vector of requested columns to be returned from the query.  Available
-options are: geometry, id, time_series_id, monitoring_location_id,
-parameter_code, statistic_id, time, value, unit_of_measure,
-approval_status, qualifier, last_modified</p></li>
+<li><p><strong>properties</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A vector of requested columns to be returned from the query. See the
+field-measurements schema in the OpenAPI reference for the available
+columns (e.g. geometry, id, monitoring_location_id, parameter_code,
+value, unit_of_measure, approval_status, qualifier, last_modified):
+<a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements">https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements</a></p></li>
 <li><p><strong>field_visit_id</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A universally unique identifier (UUID) for the field visit.
 Multiple measurements may be made during a single field visit.</p></li>
 <li><p><strong>approval_status</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Some of the data that you have obtained from this U.S. Geological Survey
@@ -964,7 +965,7 @@ depending on whether the coordinate reference system includes a vertical
 axis (height or depth). Coordinates are assumed to be in crs 4326. The
 expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
 Another way to think of it is c(Western-most longitude, Southern-most
-latitude, Eastern-most longitude, Northern-most longitude).</p></li>
+latitude, Eastern-most longitude, Northern-most latitude).</p></li>
 <li><p><strong>limit</strong> (<em>numeric</em><em>, </em><em>optional</em>) – The optional limit parameter is used to control the subset of the
 selected features that should be returned in each page. The maximum
 allowable limit is 50000. It may be beneficial to set this number lower
@@ -1234,7 +1235,7 @@ depending on whether the coordinate reference system includes a vertical
 axis (height or depth). Coordinates are assumed to be in crs 4326. The
 expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
 Another way to think of it is c(Western-most longitude, Southern-most
-latitude, Eastern-most longitude, Northern-most longitude).</p></li>
+latitude, Eastern-most longitude, Northern-most latitude).</p></li>
 <li><p><strong>limit</strong> (<em>numeric</em><em>, </em><em>optional</em>) – The optional limit parameter is used to control the subset of the
 selected features that should be returned in each page. The maximum
 allowable limit is 50000. It may be beneficial to set this number lower
@@ -1411,7 +1412,7 @@ depending on whether the coordinate reference system includes a vertical
 axis (height or depth). Coordinates are assumed to be in crs 4326. The
 expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
 Another way to think of it is c(Western-most longitude, Southern-most
-latitude, Eastern-most longitude, Northern-most longitude).</p></li>
+latitude, Eastern-most longitude, Northern-most latitude).</p></li>
 <li><p><strong>limit</strong> (<em>numeric</em><em>, </em><em>optional</em>) – The optional limit parameter is used to control the subset of the
 selected features that should be returned in each page. The maximum
 allowable limit is 50000. It may be beneficial to set this number lower
@@ -1619,7 +1620,7 @@ depending on whether the coordinate reference system includes a vertical
 axis (height or depth). Coordinates are assumed to be in crs 4326. The
 expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
 Another way to think of it is c(Western-most longitude, Southern-most
-latitude, Eastern-most longitude, Northern-most longitude).</p></li>
+latitude, Eastern-most longitude, Northern-most latitude).</p></li>
 <li><p><strong>limit</strong> (<em>numeric</em><em>, </em><em>optional</em>) – The optional limit parameter is used to control the subset of the
 selected features that should be returned in each page. The maximum
 allowable limit is 50000. It may be beneficial to set this number lower
@@ -2074,7 +2075,7 @@ are negative. The format is a string consisting of:</p>
 <li><p>Western-most longitude</p></li>
 <li><p>Southern-most latitude</p></li>
 <li><p>Eastern-most longitude</p></li>
-<li><p>Northern-most longitude</p></li>
+<li><p>Northern-most latitude</p></li>
 </ul>
 </div></blockquote>
 <p>Example: [-92.8,44.2,-88.9,46.0]</p>
@@ -2541,7 +2542,7 @@ depending on whether the coordinate reference system includes a vertical
 axis (height or depth). Coordinates are assumed to be in crs 4326. The
 expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
 Another way to think of it is c(Western-most longitude, Southern-most
-latitude, Eastern-most longitude, Northern-most longitude).</p></li>
+latitude, Eastern-most longitude, Northern-most latitude).</p></li>
 <li><p><strong>limit</strong> (<em>numeric</em><em>, </em><em>optional</em>) – The optional limit parameter is used to control the subset of the
 selected features that should be returned in each page. The maximum
 allowable limit is 50000. It may be beneficial to set this number lower

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g473a07c2b documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g18090d40f documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=07aa4ea8"></script>
+      <script src="../../../_static/documentation_options.js?v=5047dc7c"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -267,7 +267,7 @@
 <span class="sd">        axis (height or depth). Coordinates are assumed to be in crs 4326. The</span>
 <span class="sd">        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).</span>
 <span class="sd">        Another way to think of it is c(Western-most longitude, Southern-most</span>
-<span class="sd">        latitude, Eastern-most longitude, Northern-most longitude).</span>
+<span class="sd">        latitude, Eastern-most longitude, Northern-most latitude).</span>
 <span class="sd">    limit : numeric, optional</span>
 <span class="sd">        The optional limit parameter is used to control the subset of the</span>
 <span class="sd">        selected features that should be returned in each page. The maximum</span>
@@ -784,7 +784,7 @@
 <span class="sd">        axis (height or depth). Coordinates are assumed to be in crs 4326. The</span>
 <span class="sd">        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).</span>
 <span class="sd">        Another way to think of it is c(Western-most longitude, Southern-most</span>
-<span class="sd">        latitude, Eastern-most longitude, Northern-most longitude).</span>
+<span class="sd">        latitude, Eastern-most longitude, Northern-most latitude).</span>
 <span class="sd">    limit : numeric, optional</span>
 <span class="sd">        The optional limit parameter is used to control the subset of the</span>
 <span class="sd">        selected features that should be returned in each page. The maximum</span>
@@ -1014,7 +1014,7 @@
 <span class="sd">        axis (height or depth). Coordinates are assumed to be in crs 4326. The</span>
 <span class="sd">        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).</span>
 <span class="sd">        Another way to think of it is c(Western-most longitude, Southern-most</span>
-<span class="sd">        latitude, Eastern-most longitude, Northern-most longitude).</span>
+<span class="sd">        latitude, Eastern-most longitude, Northern-most latitude).</span>
 <span class="sd">    limit : numeric, optional</span>
 <span class="sd">        The optional limit parameter is used to control the subset of the</span>
 <span class="sd">        selected features that should be returned in each page. The maximum</span>
@@ -1430,7 +1430,7 @@
 <span class="sd">        axis (height or depth). Coordinates are assumed to be in crs 4326. The</span>
 <span class="sd">        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).</span>
 <span class="sd">        Another way to think of it is c(Western-most longitude, Southern-most</span>
-<span class="sd">        latitude, Eastern-most longitude, Northern-most longitude).</span>
+<span class="sd">        latitude, Eastern-most longitude, Northern-most latitude).</span>
 <span class="sd">    limit : numeric, optional</span>
 <span class="sd">        The optional limit parameter is used to control the subset of the</span>
 <span class="sd">        selected features that should be returned in each page. The maximum</span>
@@ -1629,7 +1629,7 @@
 <span class="sd">        axis (height or depth). Coordinates are assumed to be in crs 4326. The</span>
 <span class="sd">        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).</span>
 <span class="sd">        Another way to think of it is c(Western-most longitude, Southern-most</span>
-<span class="sd">        latitude, Eastern-most longitude, Northern-most longitude).</span>
+<span class="sd">        latitude, Eastern-most longitude, Northern-most latitude).</span>
 <span class="sd">    limit : numeric, optional</span>
 <span class="sd">        The optional limit parameter is used to control the subset of the</span>
 <span class="sd">        selected features that should be returned in each page. The maximum</span>
@@ -1738,10 +1738,11 @@
 <span class="sd">        A short code corresponding to the observing procedure for the field</span>
 <span class="sd">        measurement.</span>
 <span class="sd">    properties : string or iterable of strings, optional</span>
-<span class="sd">        A vector of requested columns to be returned from the query.  Available</span>
-<span class="sd">        options are: geometry, id, time_series_id, monitoring_location_id,</span>
-<span class="sd">        parameter_code, statistic_id, time, value, unit_of_measure,</span>
-<span class="sd">        approval_status, qualifier, last_modified</span>
+<span class="sd">        A vector of requested columns to be returned from the query. See the</span>
+<span class="sd">        field-measurements schema in the OpenAPI reference for the available</span>
+<span class="sd">        columns (e.g. geometry, id, monitoring_location_id, parameter_code,</span>
+<span class="sd">        value, unit_of_measure, approval_status, qualifier, last_modified):</span>
+<span class="sd">        https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements</span>
 <span class="sd">    field_visit_id : string or iterable of strings, optional</span>
 <span class="sd">        A universally unique identifier (UUID) for the field visit.</span>
 <span class="sd">        Multiple measurements may be made during a single field visit.</span>
@@ -1819,7 +1820,7 @@
 <span class="sd">        axis (height or depth). Coordinates are assumed to be in crs 4326. The</span>
 <span class="sd">        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).</span>
 <span class="sd">        Another way to think of it is c(Western-most longitude, Southern-most</span>
-<span class="sd">        latitude, Eastern-most longitude, Northern-most longitude).</span>
+<span class="sd">        latitude, Eastern-most longitude, Northern-most latitude).</span>
 <span class="sd">    limit : numeric, optional</span>
 <span class="sd">        The optional limit parameter is used to control the subset of the</span>
 <span class="sd">        selected features that should be returned in each page. The maximum</span>
@@ -2369,7 +2370,7 @@
 <span class="sd">            * Western-most longitude</span>
 <span class="sd">            * Southern-most latitude</span>
 <span class="sd">            * Eastern-most longitude</span>
-<span class="sd">            * Northern-most longitude</span>
+<span class="sd">            * Northern-most latitude</span>
 
 <span class="sd">        Example: [-92.8,44.2,-88.9,46.0]</span>
 <span class="sd">    countryFips : string or iterable of strings, optional</span>

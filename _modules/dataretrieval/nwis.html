@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g473a07c2b documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g18090d40f documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=07aa4ea8"></script>
+      <script src="../../_static/documentation_options.js?v=5047dc7c"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -374,7 +374,10 @@
 
     <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterdata</span><span class="p">(</span><span class="s2">&quot;peaks&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;rdb&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+    <span class="c1"># Parse raw (read_rdb), not _read_rdb — the latter already runs</span>
+    <span class="c1"># format_response, and the explicit format_response(service=&quot;peaks&quot;) below</span>
+    <span class="c1"># does the peaks-specific formatting, so _read_rdb here was a redundant pass.</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">dtypes</span><span class="o">=</span><span class="n">_NWIS_RDB_DTYPES</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;peaks&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">NWIS_Metadata</span><span class="p">(</span>
         <span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
@@ -483,7 +486,7 @@
 <span class="sd">    request: ``httpx.Response``</span>
 <span class="sd">        The response object from the API request to the web service</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">major_params</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;site_no&quot;</span><span class="p">,</span> <span class="s2">&quot;state_cd&quot;</span><span class="p">]</span>
+    <span class="n">major_params</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;site_no&quot;</span><span class="p">,</span> <span class="s2">&quot;stateCd&quot;</span><span class="p">]</span>
     <span class="n">bbox_params</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s2">&quot;nw_longitude_va&quot;</span><span class="p">,</span>
         <span class="s2">&quot;nw_latitude_va&quot;</span><span class="p">,</span>
