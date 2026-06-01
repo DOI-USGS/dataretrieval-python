@@ -1,3 +1,22 @@
+"""Discover and retrieve water data from U.S. federal hydrologic web services.
+
+Access each service through its submodule::
+
+    from dataretrieval import waterdata  # modern USGS Water Data API
+
+    df, meta = waterdata.get_daily(monitoring_location_id="USGS-05427718")
+
+    from dataretrieval import nwis  # legacy NWIS services
+
+    df, meta = nwis.get_dv(sites="05427718")
+
+Available service modules: ``waterdata``, ``wqp`` (Water Quality Portal),
+``nldi``, ``samples``, ``streamstats``, ``nadp``, and the deprecated ``nwis``.
+
+``nldi`` requires geopandas (``pip install dataretrieval[nldi]``) and is
+imported on demand: ``from dataretrieval import nldi``.
+"""
+
 from importlib.metadata import PackageNotFoundError, version
 
 try:
@@ -5,10 +24,23 @@ try:
 except PackageNotFoundError:
     __version__ = "version-unknown"
 
-from dataretrieval.nadp import *
-from dataretrieval.nwis import *
-from dataretrieval.samples import *
-from dataretrieval.streamstats import *
-from dataretrieval.utils import *
-from dataretrieval.waterdata import *
-from dataretrieval.wqp import *
+from . import (
+    nadp,
+    nwis,
+    samples,
+    streamstats,
+    utils,
+    waterdata,
+    wqp,
+)
+
+__all__ = [
+    "nadp",
+    "nwis",
+    "samples",
+    "streamstats",
+    "utils",
+    "waterdata",
+    "wqp",
+    "__version__",
+]
