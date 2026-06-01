@@ -202,7 +202,15 @@ def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 class BaseMetadata:
-    """Base class for metadata.
+    """Base class for the metadata returned alongside a service's data.
+
+    A concrete value object holding the response URL, query time, and headers;
+    the modern ``waterdata`` getters return it directly.
+
+    ``site_info`` and ``variable_info`` are legacy hooks: the ``nwis`` / ``wqp``
+    metadata subclasses override them to look up site (or, historically,
+    variable) details for the query. They are not part of the modern
+    ``waterdata`` contract, so on the base they raise ``NotImplementedError``.
 
     Attributes
     ----------
@@ -212,7 +220,6 @@ class BaseMetadata:
         Response elapsed time
     header: httpx.Headers
         Response headers
-
     """
 
     def __init__(self, response) -> None:
