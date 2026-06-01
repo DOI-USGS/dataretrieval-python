@@ -2218,8 +2218,7 @@ def get_samples(
         organizations - "organization", "count"
     activityMediaName : string or iterable of strings, optional
         Name or code indicating environmental medium in which sample was taken.
-        Check the `activityMediaName_lookup()` function in this module for all
-        possible inputs.
+        Call ``get_codes("samplemedia")`` for the valid inputs.
         Example: "Water".
     activityStartDateLower : string, optional
         The start date if using a date range. Takes the format YYYY-MM-DD.
@@ -2236,13 +2235,12 @@ def get_samples(
         Example: "Sample-Routine, regular".
     characteristicGroup : string or iterable of strings, optional
         Characteristic group is a broad category of characteristics
-        describing one or more results. Check the `characteristicGroup_lookup()`
-        function in this module for all possible inputs.
+        describing one or more results. Call ``get_codes("characteristicgroup")``
+        for the valid inputs.
         Example: "Organics, PFAS"
     characteristic : string or iterable of strings, optional
         Characteristic is a specific category describing one or more results.
-        Check the `characteristic_lookup()` function in this module for all
-        possible inputs.
+        Call ``get_codes("characteristics")`` for the valid inputs.
         Example: "Suspended Sediment Discharge"
     characteristicUserSupplied : string or iterable of strings, optional
         A user supplied characteristic name describing one or more results.
@@ -2263,27 +2261,24 @@ def get_samples(
     countryFips : string or iterable of strings, optional
         Example: "US" (United States)
     stateFips : string or iterable of strings, optional
-        Check the `stateFips_lookup()` function in this module for all
-        possible inputs.
+        Call ``get_codes("states")`` for the valid inputs.
         Example: "US:15" (United States: Hawaii)
     countyFips : string or iterable of strings, optional
-        Check the `countyFips_lookup()` function in this module for all
-        possible inputs.
+        Call ``get_codes("counties")`` for the valid inputs.
         Example: "US:15:001" (United States: Hawaii, Hawaii County)
     siteTypeCode : string or iterable of strings, optional
-        An abbreviation for a certain site type. Check the `siteType_lookup()`
-        function in this module for all possible inputs.
+        An abbreviation for a certain site type. Call ``get_codes("sitetype")``
+        for the valid inputs.
         Example: "GW" (Groundwater site)
     siteTypeName : string or iterable of strings, optional
-        A full name for a certain site type. Check the `siteType_lookup()`
-        function in this module for all possible inputs.
+        A full name for a certain site type. Call ``get_codes("sitetype")``
+        for the valid inputs.
         Example: "Well"
     usgsPCode : string or iterable of strings, optional
         5-digit number used in the US Geological Survey computerized
         data system, National Water Information System (NWIS), to
-        uniquely identify a specific constituent. Check the
-        `characteristic_lookup()` function in this module for all possible
-        inputs.
+        uniquely identify a specific constituent (the ``parameterCode`` column
+        of ``get_codes("characteristics")``).
         Example: "00060" (Discharge, cubic feet per second)
     hydrologicUnit : string or iterable of strings, optional
         Max 12-digit number used to describe a hydrologic unit.
