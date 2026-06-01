@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+gd3779def0 documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g316af706e documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=e5f77573"></script>
+      <script src="../_static/documentation_options.js?v=0a6bd097"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -67,7 +67,9 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp._check_kwargs"><code class="docutils literal notranslate"><span class="pre">_check_kwargs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp._is_code_column"><code class="docutils literal notranslate"><span class="pre">_is_code_column()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp._legacy_only_url"><code class="docutils literal notranslate"><span class="pre">_legacy_only_url()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp._read_wqp_csv"><code class="docutils literal notranslate"><span class="pre">_read_wqp_csv()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.get_results"><code class="docutils literal notranslate"><span class="pre">get_results()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.what_activities"><code class="docutils literal notranslate"><span class="pre">what_activities()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wqp.what_activity_metrics"><code class="docutils literal notranslate"><span class="pre">what_activity_metrics()</span></code></a></li>
@@ -227,6 +229,14 @@ included a <code class="docutils literal notranslate"><span class="pre">siteid</
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.wqp._is_code_column">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">_is_code_column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#_is_code_column"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp._is_code_column" title="Link to this definition"></a></dt>
+<dd><p>True if a WQP column name denotes a code/identifier whose leading zeros
+are significant and must be preserved as <code class="docutils literal notranslate"><span class="pre">str</span></code> (HUCs, parameter codes,
+FIPS codes): the name ends with “code” or contains “identifier”/”huc”/”fips”.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.wqp._legacy_only_url">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">_legacy_only_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legacy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#_legacy_only_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp._legacy_only_url" title="Link to this definition"></a></dt>
 <dd><p>URL builder for WQP services that have no WQX3.0 equivalent.</p>
@@ -235,6 +245,18 @@ included a <code class="docutils literal notranslate"><span class="pre">siteid</
 <code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code> that <code class="docutils literal notranslate"><span class="pre">wqp_url</span></code> would otherwise raise — its
 message claims setting <code class="docutils literal notranslate"><span class="pre">legacy=False</span></code> removes the warning, which is
 a lie for endpoints that have no WQX3.0 alternative.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.wqp._read_wqp_csv">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wqp.</span></span><span class="sig-name descname"><span class="pre">_read_wqp_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/dataretrieval/wqp.html#_read_wqp_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wqp._read_wqp_csv" title="Link to this definition"></a></dt>
+<dd><p>Read a WQP CSV, forcing code/identifier columns to <code class="docutils literal notranslate"><span class="pre">str</span></code>.</p>
+<p>WQP returns codes with significant leading zeros — HUCs, parameter codes
+(<code class="docutils literal notranslate"><span class="pre">USGSpcode</span></code>), FIPS state/county codes. A bare <code class="docutils literal notranslate"><span class="pre">read_csv</span></code> infers those
+as int/float and silently drops the zeros (<code class="docutils literal notranslate"><span class="pre">&quot;00060&quot;</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">60</span></code>, HUC8
+<code class="docutils literal notranslate"><span class="pre">&quot;07090002&quot;</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">7090002</span></code>). Read the header first, then re-read with
+<code class="docutils literal notranslate"><span class="pre">dtype=str</span></code> for every column that <a class="reference internal" href="#dataretrieval.wqp._is_code_column" title="dataretrieval.wqp._is_code_column"><code class="xref py py-func docutils literal notranslate"><span class="pre">_is_code_column()</span></code></a> flags, so the
+zeros survive.</p>
 </dd></dl>
 
 <dl class="py function">
