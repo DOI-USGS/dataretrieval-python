@@ -871,13 +871,30 @@ class ChunkPlan:
         self.canonical_url: str | None = None
 
         axes = _extract_axes(args)
-        # No chunkable axes → skip ``build_request`` entirely; the
-        # common Water Data call shape shouldn't pay for an unused
-        # request prep on the passthrough hot path. The fetcher
-        # will run with the user's args verbatim; if that produces
-        # an over-budget URL, the server (or httpx itself) rejects.
         if not axes:
-            return
+            # No chunkable axis: nothing to split. If the single request fits,
+            # run it verbatim (the common passthrough). ``_safe_request_bytes``
+            # treats an un-constructable URL (httpx.InvalidURL, > 64 KB) as over
+            # budget.
+            if _safe_request_bytes(build_request, args, url_limit) <= url_limit:
+                return
+            # Over budget. A filter the chunker doesn't manage — cql-json — is
+            # passed through unchanged (chunking applies only to cql-text); the
+            # server, not us, judges it. Otherwise this is an in-domain shape we
+            # would normally chunk but can't (a single large CQL ``IN`` clause
+            # with no top-level ``OR``, or one oversized value), so raise an
+            # actionable error instead of shipping it for an opaque HTTP 414.
+            filter_expr = args.get("filter")
+            if filter_expr is not None and not _is_chunkable(
+                filter_expr, args.get("filter_lang")
+            ):
+                return
+            raise RequestTooLarge(
+                f"Request exceeds {url_limit} bytes (URL + body) and has no "
+                f"chunkable multi-value argument to split (e.g. a single large "
+                f"CQL `IN` clause, or one oversized value). Narrow the query, "
+                f"simplify the filter, or split the call manually."
+            )
 
         # Constructing the initial request can itself trip
         # ``httpx.InvalidURL`` (URL > 64 KB) — that's the canonical
