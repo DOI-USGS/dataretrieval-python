@@ -61,14 +61,14 @@ def get_nearest_continuous(
 
         Must be small enough that every target's window captures
         roughly one observation at the service cadence. The default
-        matches a 15-minute continuous gauge; widen (e.g.
+        matches a 15-minute continuous gage; widen (e.g.
         ``"PT15M"``) for irregular cadences or resilience to data
         gaps.
     on_tie : {"first", "last", "mean"}, default ``"first"``
         How to resolve ties when two observations are exactly equidistant
         from a target (which happens when the target falls at the midpoint
         between grid points — e.g. target ``10:22:30`` for a 15-minute
-        gauge).
+        gage).
 
         - ``"first"``: keep the earlier observation.
         - ``"last"``:  keep the later observation.
@@ -97,9 +97,10 @@ def get_nearest_continuous(
     *Window sizing and ties.* When ``window`` is exactly half the service
     cadence, most targets' windows contain a single observation and
     ``on_tie`` is moot. Ties arise only when a target sits exactly at the
-    window edge — rare in practice but possible. Setting ``window`` to a
-    full cadence (or larger) guarantees at least one observation per
-    target in steady state at the cost of more bytes per response.
+    midpoint between two grid observations — rare in practice but possible.
+    Setting ``window`` to a full cadence (or larger) guarantees at least one
+    observation per target in steady state at the cost of more bytes per
+    response.
 
     *Why windowed CQL rather than sort+limit.* The API's advertised
     ``sortby`` parameter would make this a one-liner per target (``filter``
@@ -128,7 +129,7 @@ def get_nearest_continuous(
         ...     parameter_code="00060",
         ... )
 
-        >>> # Widen the window for an irregular-cadence gauge
+        >>> # Widen the window for an irregular-cadence gage
         >>> df, md = waterdata.get_nearest_continuous(
         ...     targets,
         ...     monitoring_location_id="USGS-02238500",

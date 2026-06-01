@@ -251,8 +251,8 @@ def get_discharge_peaks(
     Returns
     -------
     df: ``pandas.DataFrame``
-        Times series data from the NWIS JSON
-    md: :obj:`dataretrieval.utils.Metadata`
+        Time series data from the NWIS JSON
+    md: :obj:`dataretrieval.nwis.NWIS_Metadata`
         A custom metadata object
 
     Examples
@@ -331,7 +331,7 @@ def get_stats(
     -------
     df: ``pandas.DataFrame``
         Statistics data from the statistics service
-    md: :obj:`dataretrieval.utils.Metadata`
+    md: :obj:`dataretrieval.nwis.NWIS_Metadata`
         A custom metadata object
 
     .. todo::
@@ -372,7 +372,7 @@ def query_waterdata(
     Parameters
     ----------
     service: string
-        Name of the service to query: 'site', 'stats', etc.
+        Name of the service to query: 'peaks' or 'ratings'.
     ssl_check: bool, optional
         If True, check SSL certificates, if False, do not check SSL,
         default is True
@@ -424,10 +424,7 @@ def query_waterservices(
     Parameters
     ----------
     service: string
-        Name of the service to query: 'site', 'stats', etc.
-    ssl_check: bool, optional
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
+        Name of the service to query: 'dv', 'iv', 'site', or 'stat'.
     ssl_check: bool, optional
         If True, check SSL certificates, if False, do not check SSL,
         default is True
@@ -437,7 +434,9 @@ def query_waterservices(
     Keyword Arguments
     ----------------
     bBox: string
-        7-digit Hydrologic Unit Code (HUC)
+        Bounding box of decimal latitude and longitude values, given as
+        west longitude, south latitude, east longitude, north latitude,
+        separated by commas
     startDT: string
         Start date (e.g., '2017-12-31')
     endDT: string
@@ -484,7 +483,7 @@ def get_dv(
     """
     Get daily values data from NWIS and return it as a ``pandas.DataFrame``.
 
-    .. note:
+    .. note::
 
         If no start or end date are provided, only the most recent record
         is returned.
@@ -511,8 +510,8 @@ def get_dv(
     Returns
     -------
     df: ``pandas.DataFrame``
-        Times series data from the NWIS JSON
-    md: :obj:`dataretrieval.utils.Metadata`
+        Time series data from the NWIS JSON
+    md: :obj:`dataretrieval.nwis.NWIS_Metadata`
         A custom metadata object
 
     Examples
@@ -580,7 +579,7 @@ def get_info(
         A contiguous range of decimal latitude and longitude, starting with the
         west longitude, then the south latitude, then the east longitude, and
         then the north latitude with each value separated by a comma. The
-        product of the range of latitude range and longitude cannot exceed 25
+        product of the range of latitude and longitude cannot exceed 25
         degrees. Whole or decimal degrees must be specified, up to six digits
         of precision. Minutes and seconds are not allowed.
     countyCd: string or list of strings
@@ -625,7 +624,7 @@ def get_info(
     -------
     df: ``pandas.DataFrame``
         Site data from the NWIS web service
-    md: :obj:`dataretrieval.utils.Metadata`
+    md: :obj:`dataretrieval.nwis.NWIS_Metadata`
         A custom metadata object
 
     Examples
@@ -645,7 +644,7 @@ def get_info(
             (
                 "WARNING: Starting in March 2024, the NWIS qw data endpoint is "
                 "retiring and no longer receives updates. For more information, "
-                "refer to https://waterdata.usgs.gov.nwis/qwdata and "
+                "refer to https://waterdata.usgs.gov/nwis/qwdata and "
                 "https://doi-usgs.github.io/dataRetrieval/articles/Status.html "
                 "or email CompTools@usgs.gov."
             ),
@@ -701,8 +700,8 @@ def get_iv(
     Returns
     -------
     df: ``pandas.DataFrame``
-        Times series data from the NWIS JSON
-    md: :obj:`dataretrieval.utils.Metadata`
+        Time series data from the NWIS JSON
+    md: :obj:`dataretrieval.nwis.NWIS_Metadata`
         A custom metadata object
 
     Examples
@@ -734,7 +733,7 @@ def get_iv(
 
 
 def get_pmcodes(**kwargs: Any) -> NoReturn:
-    """Defunct: use ``get_reference_table(collection='parameter-codes')``."""
+    """Defunct: use ``waterdata.get_reference_table(collection='parameter-codes')``."""
     raise NameError(
         "`nwis.get_pmcodes` has been replaced "
         "with `get_reference_table(collection='parameter-codes')`."
@@ -762,7 +761,7 @@ def get_ratings(
     Parameters
     ----------
     site: string, optional, default is None
-        USGS site number.  This is usually an 8 digit number as a string.
+        USGS site number. This is usually an 8 digit number as a string.
         If the nwis parameter site_no is supplied, it will overwrite the site
         parameter
     file_type: string, default is "base"
@@ -773,11 +772,11 @@ def get_ratings(
     **kwargs: optional
         If supplied, will be used as query parameters
 
-    Return
-    ------
+    Returns
+    -------
     df: ``pandas.DataFrame``
         Formatted requested data
-    md: :obj:`dataretrieval.utils.Metadata`
+    md: :obj:`dataretrieval.nwis.NWIS_Metadata`
         A custom metadata object
 
     Examples
@@ -819,11 +818,11 @@ def what_sites(
     **kwargs: optional
         Accepts the same parameters as :obj:`dataretrieval.nwis.get_info`
 
-    Return
-    ------
+    Returns
+    -------
     df: ``pandas.DataFrame``
         Formatted requested data
-    md: :obj:`dataretrieval.utils.Metadata`
+    md: :obj:`dataretrieval.nwis.NWIS_Metadata`
         A custom metadata object
 
     Examples
@@ -870,7 +869,7 @@ def get_record(
     Parameters
     ----------
     sites: string or list of strings, optional, default is None
-        List or comma delimited string of site.
+        List or comma delimited string of sites.
     start: string, optional, default is None
         Starting date of record (YYYY-MM-DD)
     end: string, optional, default is None
@@ -882,7 +881,7 @@ def get_record(
         If True, return data in wide format with multiple samples per row and
         one row per time, default is True
     datetime_index : bool, optional
-        If True, create a datetime index. default is True
+        If True, create a datetime index. Default is True
     state: string, optional, default is None
         full name, abbreviation or id
     service: string, default is 'iv'
@@ -893,7 +892,7 @@ def get_record(
         - 'peaks': discharge peaks
         - 'gwlevels': (defunct) use `waterdata.get_continuous`,
           `waterdata.get_daily`, or `waterdata.get_field_measurements`
-        - 'pmcodes': (defunct) use `get_reference_table`
+        - 'pmcodes': (defunct) use `waterdata.get_reference_table`
         - 'water_use': (defunct) no replacement available
         - 'ratings': get rating table
         - 'stat': get statistics
@@ -1021,9 +1020,7 @@ def _read_json(json: dict[str, Any]) -> pd.DataFrame:
     Returns
     -------
     df: ``pandas.DataFrame``
-        Times series data from the NWIS JSON
-    md: :obj:`dataretrieval.utils.Metadata`
-        A custom metadata object
+        Time series data from the NWIS JSON
 
     """
     all_site_dfs = []
@@ -1033,7 +1030,7 @@ def _read_json(json: dict[str, Any]) -> pd.DataFrame:
     ]
 
     # create a list of indexes for each change in site no
-    # for example, [0, 21, 22] would be the first and last indeces
+    # for example, [0, 21, 22] would be the first and last indices
     index_list = [0]
     index_list.extend(
         [i + 1 for i, (a, b) in enumerate(zip(site_list[:-1], site_list[1:])) if a != b]
@@ -1127,7 +1124,7 @@ class NWIS_Metadata(BaseMetadata):
     ----------
     url : str
         Response url
-    query_time: datetme.timedelta
+    query_time: datetime.timedelta
         Response elapsed time
     header: httpx.Headers
         Response headers
@@ -1152,11 +1149,6 @@ class NWIS_Metadata(BaseMetadata):
         parameters: unpacked dictionary
             Unpacked dictionary of the parameters supplied in the request
 
-        Returns
-        -------
-        md: :obj:`dataretrieval.nwis.NWIS_Metadata`
-            A ``dataretrieval`` custom :obj:`dataretrieval.nwis.NWIS_Metadata` object.
-
         """
         super().__init__(response)
 
@@ -1177,8 +1169,8 @@ class NWIS_Metadata(BaseMetadata):
         ``huc``, ``countyCd`` or ``bBox`` (``site_no`` is preferred over
         ``sites`` if both are present); ``None`` otherwise.
 
-        Return
-        ------
+        Returns
+        -------
         df: ``pandas.DataFrame``
             Formatted requested data from calling `nwis.what_sites`
         md: :obj:`dataretrieval.nwis.NWIS_Metadata`

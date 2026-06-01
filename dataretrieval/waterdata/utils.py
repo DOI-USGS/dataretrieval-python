@@ -103,9 +103,10 @@ def _switch_arg_id(ls: dict[str, Any], id_name: str, service: str) -> dict[str, 
     Switch argument id from its package-specific identifier to the standardized "id" key
     that the API recognizes.
 
-    Sets the "id" key in the provided dictionary `ls`
-    with the value from either the service name or the expected id column name.
-    If neither key exists, "id" will be set to None.
+    If `ls` does not already have an "id" key, sets it from either the
+    service-derived id key or the expected id column name. If neither key
+    exists, "id" is left unset. The original service-specific id keys are
+    removed regardless.
 
     Parameters
     ----------
@@ -148,11 +149,12 @@ def _switch_properties_id(
 ) -> list[str]:
     """
     Switch properties id from its package-specific identifier to the
-    standardized "id" key that the API recognizes.
+    standardized "id" name that the API recognizes.
 
-    Sets the "id" key in the provided dictionary `ls` with the value from either
-    the service name or the expected id column name. If neither key exists, "id"
-    will be set to None.
+    Replaces any service-specific id name in `properties` with "id",
+    normalizes remaining hyphens to underscores, and drops the "geometry"
+    and service-id entries. Returns an empty list when `properties` is empty
+    or None.
 
     Parameters
     ----------
@@ -167,7 +169,7 @@ def _switch_properties_id(
     Returns
     -------
     List[str]
-        The modified list with the "id" key set appropriately.
+        The modified list with id names standardized to "id".
 
     Examples
     --------
@@ -883,17 +885,20 @@ def _get_resp_data(
     gpd.GeoDataFrame or pd.DataFrame
         A ``GeoDataFrame`` when ``geopd`` is True; otherwise a plain
         ``DataFrame`` carrying the feature properties plus an ``id``
-        column and a ``geometry`` column (coordinates list) where the
-        response includes them. Returns an empty ``DataFrame`` when no
-        features are returned.
+        column (always present, possibly all-None) and a ``geometry``
+        column (coordinates list) when at least one feature includes
+        geometry. Returns an empty ``DataFrame`` when no features are
+        returned.
 
     Notes
     -----
     The non-geopandas branch builds the frame directly from each
     feature's ``properties`` dict, plus the top-level ``id`` and
-    ``geometry.coordinates`` columns — but adds the ``id`` and
-    ``geometry`` columns only when at least one feature actually
-    carries them. This skips the GeoJSON envelope entirely, so
+    ``geometry.coordinates`` columns — the ``id`` column is always
+    added (so the downstream rename to the service-specific output id
+    works even on an all-None id), while the ``geometry`` column is
+    added only when at least one feature carries geometry. This skips
+    the GeoJSON envelope entirely, so
     newly-added Feature-level fields (e.g. ``geometry.type`` after
     USGS migrated to full GeoJSON geometry objects) can't leak into
     the result frame; no reactive drop-list needs maintenance every
@@ -1255,8 +1260,8 @@ def _deal_with_empty(
 
     If `return_list` is empty, determines the column names to use:
         - If `properties` is not provided or contains only NaN values,
-            retrieves schema properties from the specified service.
-    - Otherwise, uses the provided `properties` list as column names.
+          retrieves schema properties from the specified service.
+        - Otherwise, uses the provided `properties` list as column names.
 
     Parameters
     ----------
@@ -1587,8 +1592,10 @@ def _handle_stats_nesting(
     :func:`_get_resp_data`: it builds the per-feature outer frame
     directly from each feature's ``properties`` (minus the nested
     ``data`` field, which is unrolled separately below via the
-    ``record_path`` json_normalize), then adds ``id`` and ``geometry``
-    only when present. Skipping the GeoJSON envelope keeps newly-added
+    ``record_path`` json_normalize), then adds ``geometry`` only when
+    present. Unlike :func:`_get_resp_data`, no top-level ``id`` column
+    is added — stats features don't carry one, so this matches the
+    geopandas branch. Skipping the GeoJSON envelope keeps newly-added
     fields like ``geometry.type`` from leaking into the result.
     """
     if body is None:
@@ -1649,9 +1656,9 @@ def _expand_percentiles(df: pd.DataFrame) -> pd.DataFrame:
     """
     Takes percentile value and thresholds columns containing lists
     of values and turns each list element into its own row in the
-    original dataframe. 'nan's are removed from the dataframe. If
+    original dataframe. Exploded ``'nan'`` values are dropped. If
     no percentile data exist, it adds a percentile column and
-    populates column with percentile assigned to min, max, and
+    populates it with the percentile assigned to min, max, and
     median.
 
     Parameters
@@ -1767,7 +1774,7 @@ def get_stats_data(
     expand_percentiles : bool
         Determines whether the percentiles column is expanded so that
         each percentile gets its own row in the returned dataframe. If
-        True and user requests a computation_type other than
+        True and the user requests a computation_type other than
         percentiles, a percentile column is still returned.
     client : httpx.AsyncClient, optional
         Caller-borrowed async client. ``None`` (default) opens a
@@ -2003,13 +2010,18 @@ def _get_args(
     - ``properties`` is materialized to ``list[str]`` (a bare string
       gets wrapped in a single-element list so downstream
       ``",".join(properties)`` doesn't iterate per character).
-    - Any other ``Iterable[str]`` that isn't in ``_NO_NORMALIZE_PARAMS``
+    - A non-string iterable in ``_NO_NORMALIZE_PARAMS`` (numeric params
+      such as ``water_year``, ``bbox``, ``thresholds``) is materialized
+      to a ``list`` with its element types preserved (no string
+      normalization), so the GET comma-join and the chunker — which test
+      ``list``/``tuple`` — handle it instead of ``str()``-ing the whole
+      array.
+    - Any other ``Iterable[str]`` (i.e. not in ``_NO_NORMALIZE_PARAMS``)
       is materialized to ``list[str]`` via
       :func:`_normalize_str_iterable` so downstream code that branches
       on ``isinstance(v, (list, tuple))`` works for ``pandas.Series``,
       ``numpy.ndarray``, generators, etc.
-    - Scalars, strings, and ``_NO_NORMALIZE_PARAMS`` values pass through
-      unchanged.
+    - Scalars and strings pass through unchanged.
 
     Parameters
     ----------

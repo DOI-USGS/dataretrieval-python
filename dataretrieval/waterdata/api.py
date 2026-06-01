@@ -105,7 +105,7 @@ def get_daily(
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
     properties : string or iterable of strings, optional
-        A vector of requested columns to be returned from the query.
+        A list of requested columns to be returned from the query.
         Available options are: geometry, id, time_series_id,
         monitoring_location_id, parameter_code, statistic_id, time, value,
         unit_of_measure, approval_status, qualifier, last_modified
@@ -144,7 +144,7 @@ def get_daily(
     last_modified : string, optional
         The last time a record was refreshed in our database. This may happen
         due to regular operational processes and does not necessarily indicate
-        anything about the measurement has changed. You can query this field
+        that anything about the measurement has changed. You can query this field
         using date-times or intervals, adhering to RFC 3339, or using ISO 8601
         duration objects. Intervals may be bounded or half-bounded (double-dots
         at start or end).
@@ -187,14 +187,14 @@ def get_daily(
         selected.  The bounding box is provided as four or six numbers,
         depending on whether the coordinate reference system includes a vertical
         axis (height or depth). Coordinates are assumed to be in crs 4326. The
-        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
-        Another way to think of it is c(Western-most longitude, Southern-most
-        latitude, Eastern-most longitude, Northern-most latitude).
-    limit : numeric, optional
+        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
+        ``[Western-most longitude, Southern-most latitude, Eastern-most
+        longitude, Northern-most latitude]``.
+    limit : int, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
         allowable limit is 50000. It may be beneficial to set this number lower
-        if your internet connection is spotty. The default (NA) will set the
+        if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
@@ -208,7 +208,7 @@ def get_daily(
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
-    md: :obj:`dataretrieval.utils.Metadata`
+    md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
 
     Examples
@@ -326,7 +326,7 @@ def get_continuous(
         descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
     properties : string or iterable of strings, optional
-        A vector of requested columns to be returned from the query.
+        A list of requested columns to be returned from the query.
         Available options are: geometry, id, time_series_id,
         monitoring_location_id, parameter_code, statistic_id, time, value,
         unit_of_measure, approval_status, qualifier, last_modified
@@ -365,7 +365,7 @@ def get_continuous(
     last_modified : string, optional
         The last time a record was refreshed in our database. This may happen
         due to regular operational processes and does not necessarily indicate
-        anything about the measurement has changed. You can query this field
+        that anything about the measurement has changed. You can query this field
         using date-times or intervals, adhering to RFC 3339, or using ISO 8601
         duration objects. Intervals may be bounded or half-bounded (double-dots
         at start or end).
@@ -398,11 +398,11 @@ def get_continuous(
             * Duration objects: "P1M" for data from the past month or
                 "PT36H" for the last 36 hours
 
-    limit : numeric, optional
+    limit : int, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
         allowable limit is 10000. It may be beneficial to set this number lower
-        if your internet connection is spotty. The default (NA) will set the
+        if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
@@ -410,14 +410,13 @@ def get_continuous(
         :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
-        If True, the function will convert the data to dates and qualifier to
-        string vector
+        If True, converts columns to appropriate types.
 
     Returns
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
-    md: :obj:`dataretrieval.utils.Metadata`
+    md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
 
     Examples
@@ -498,7 +497,6 @@ def get_monitoring_locations(
     depth_source_code: str | Iterable[str] | None = None,
     properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
-    time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -536,7 +534,7 @@ def get_monitoring_locations(
         For well information this can be a district-assigned local number.
     district_code : string or iterable of strings, optional
         The Water Science Centers (WSCs) across the United States use the FIPS
-        state code as the district code. In some case, monitoring locations and
+        state code as the district code. In some cases, monitoring locations and
         samples may be managed by a water science center that is adjacent to the
         state in which the monitoring location actually resides. For example a
         monitoring location may have a district code of 30 which translates to
@@ -572,7 +570,6 @@ def get_monitoring_locations(
         county equivalent in which the monitoring location is located.
     site_type_code : string or iterable of strings, optional
         A code describing the hydrologic setting of the monitoring location.
-        Example: "US:15:001" (United States: Hawaii, Hawaii County)
     site_type : string or iterable of strings, optional
         A description of the hydrologic setting of the monitoring location.
     hydrologic_unit_code : string or iterable of strings, optional
@@ -599,12 +596,12 @@ def get_monitoring_locations(
         entered as one-half of the contour interval.
     altitude_method_code : string or iterable of strings, optional
         Codes representing the method used to measure altitude.
-    altitude_method_name : float, optional
-        The name of the the method used to measure altitude.
-    vertical_datum : float, optional
+    altitude_method_name : string or iterable of strings, optional
+        The name of the method used to measure altitude.
+    vertical_datum : string or iterable of strings, optional
         The datum used to determine altitude and vertical position at the
-        monitoring location.'
-    vertical_datum_name : float, optional
+        monitoring location.
+    vertical_datum_name : string or iterable of strings, optional
         The datum used to determine altitude and vertical position at the
         monitoring location.
     horizontal_positional_accuracy_code : string or iterable of strings, optional
@@ -633,7 +630,7 @@ def get_monitoring_locations(
         if the contributing area is different from the total drainage area. This
         situation can occur when part of the drainage area consists of very
         porous soil or depressions that either allow all runoff to enter the
-        groundwater or traps the water in ponds so that rainfall does not
+        groundwater or trap the water in ponds so that rainfall does not
         contribute to runoff.  A transbasin diversion can also affect the total
         drainage area.
     time_zone_abbreviation : string or iterable of strings, optional
@@ -678,7 +675,7 @@ def get_monitoring_locations(
         codes <https://help.waterdata.usgs.gov/code/water_level_src_cd_query?fmt=html>`_
         is available.
     properties : string or iterable of strings, optional
-        A vector of requested columns to be returned from the query. Available
+        A list of requested columns to be returned from the query. Available
         options are: geometry, id, agency_code, agency_name,
         monitoring_location_number, monitoring_location_name, district_code,
         country_code, country_name, state_code, state_name, county_code,
@@ -698,14 +695,14 @@ def get_monitoring_locations(
         selected.  The bounding box is provided as four or six numbers,
         depending on whether the coordinate reference system includes a vertical
         axis (height or depth). Coordinates are assumed to be in crs 4326. The
-        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
-        Another way to think of it is c(Western-most longitude, Southern-most
-        latitude, Eastern-most longitude, Northern-most latitude).
-    limit : numeric, optional
+        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
+        ``[Western-most longitude, Southern-most latitude, Eastern-most
+        longitude, Northern-most latitude]``.
+    limit : int, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
         allowable limit is 50000. It may be beneficial to set this number lower
-        if your internet connection is spotty. The default (NA) will set the
+        if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
     skip_geometry : boolean, optional
         This option can be used to skip response geometries for each feature.
@@ -724,7 +721,7 @@ def get_monitoring_locations(
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
-    md: :obj:`dataretrieval.utils.Metadata`
+    md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
 
     Examples
@@ -775,7 +772,6 @@ def get_time_series_metadata(
     time_series_id: str | Iterable[str] | None = None,
     web_description: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
-    time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -806,10 +802,13 @@ def get_time_series_metadata(
     parameter_name : string or iterable of strings, optional
         A human-understandable name corresponding to parameter_code.
     properties : string or iterable of strings, optional
-        A vector of requested columns to be returned from the query.
-        Available options are: geometry, id, time_series_id,
-        monitoring_location_id, parameter_code, statistic_id, time, value,
-        unit_of_measure, approval_status, qualifier, last_modified
+        A list of requested columns to be returned from the query.
+        Available options are: begin, begin_utc, computation_identifier,
+        computation_period_identifier, end, end_utc, geometry,
+        hydrologic_unit_code, id, last_modified, monitoring_location_id,
+        parameter_code, parameter_description, parameter_name,
+        parent_time_series_id, primary, state_name, statistic_id,
+        sublocation_identifier, thresholds, unit_of_measure, web_description
     statistic_id : string or iterable of strings, optional
         A code corresponding to the statistic an observation represents.
         Example codes include 00001 (max), 00002 (min), and 00003 (mean).
@@ -829,7 +828,7 @@ def get_time_series_metadata(
     last_modified : string, optional
         The last time a record was refreshed in our database. This may happen
         due to regular operational processes and does not necessarily indicate
-        anything about the measurement has changed. You can query this field
+        that anything about the measurement has changed. You can query this field
         using date-times or intervals, adhering to RFC 3339, or using ISO 8601
         duration objects. Intervals may be bounded or half-bounded (double-dots
         at start or end). Only features that have a last_modified that
@@ -881,7 +880,7 @@ def get_time_series_metadata(
         You can query this field using date-times or intervals,
         adhering to RFC 3339, or using ISO 8601 duration objects. Intervals
         may be bounded or half-bounded (double-dots at start or end). Only
-        features that have a end that intersects the value of datetime are
+        features that have an end that intersects the value of datetime are
         selected.
         Examples:
 
@@ -900,7 +899,7 @@ def get_time_series_metadata(
     computation_identifier : string or iterable of strings, optional
         Indicates whether the data from this time series represent a specific
         statistical computation.
-    thresholds : numeric or list of numbers, optional
+    thresholds : number or list of numbers, optional
         Thresholds represent known numeric limits for a time series, for example
         the historic maximum value for a parameter or a level below which a
         sensor is non-operative. These thresholds are sometimes used to
@@ -925,10 +924,10 @@ def get_time_series_metadata(
         selected.  The bounding box is provided as four or six numbers,
         depending on whether the coordinate reference system includes a vertical
         axis (height or depth). Coordinates are assumed to be in crs 4326. The
-        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
-        Another way to think of it is c(Western-most longitude, Southern-most
-        latitude, Eastern-most longitude, Northern-most latitude).
-    limit : numeric, optional
+        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
+        ``[Western-most longitude, Southern-most latitude, Eastern-most
+        longitude, Northern-most latitude]``.
+    limit : int, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
         allowable limit is 50000. It may be beneficial to set this number lower
@@ -946,7 +945,7 @@ def get_time_series_metadata(
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
-    md: :obj:`dataretrieval.utils.Metadata`
+    md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
 
     Examples
@@ -1087,7 +1086,7 @@ def get_combined_metadata(
     computation_identifier : string or iterable of strings, optional
         Indicates whether the data from this time series represent a
         specific statistical computation.
-    thresholds : numeric or list of numbers, optional
+    thresholds : number or list of numbers, optional
         Numeric limits known for a time series (e.g. historic maximum,
         below-which-the-sensor-is-non-operative).
     sublocation_identifier : string or iterable of strings, optional
@@ -1125,7 +1124,7 @@ site_type_code : string or iterable of strings, optional
         Only features whose geometry intersects the bounding box are
         selected. Format: ``[xmin, ymin, xmax, ymax]`` in CRS 4326
         (longitude/latitude, west-south-east-north).
-    limit : numeric, optional
+    limit : int, optional
         Page size; the maximum allowable value is 50000. Default
         (``None``) requests the maximum allowable limit.
     filter, filter_lang : optional
@@ -1140,7 +1139,7 @@ site_type_code : string or iterable of strings, optional
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
-    md : :obj:`dataretrieval.utils.Metadata`
+    md : :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object pertaining to the query.
 
     Examples
@@ -1232,7 +1231,7 @@ def get_latest_continuous(
     of data may be delayed if the monitoring location does not have the capacity to
     automatically transmit data. Continuous data are described by parameter name
     and parameter code. These data might also be referred to as "instantaneous
-    values" or "IV"
+    values" or "IV".
 
     Parameters
     ----------
@@ -1254,7 +1253,7 @@ def get_latest_continuous(
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
     properties : string or iterable of strings, optional
-        A vector of requested columns to be returned from the query.  Available
+        A list of requested columns to be returned from the query.  Available
         options are: geometry, id, time_series_id, monitoring_location_id,
         parameter_code, statistic_id, time, value, unit_of_measure,
         approval_status, qualifier, last_modified
@@ -1293,7 +1292,7 @@ def get_latest_continuous(
     last_modified : string, optional
         The last time a record was refreshed in our database. This may happen
         due to regular operational processes and does not necessarily indicate
-        anything about the measurement has changed. You can query this field
+        that anything about the measurement has changed. You can query this field
         using date-times or intervals, adhering to RFC 3339, or using ISO 8601
         duration objects. Intervals may be bounded or half-bounded (double-dots
         at start or end). Only features that have a last_modified that
@@ -1335,10 +1334,10 @@ def get_latest_continuous(
         selected.  The bounding box is provided as four or six numbers,
         depending on whether the coordinate reference system includes a vertical
         axis (height or depth). Coordinates are assumed to be in crs 4326. The
-        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
-        Another way to think of it is c(Western-most longitude, Southern-most
-        latitude, Eastern-most longitude, Northern-most latitude).
-    limit : numeric, optional
+        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
+        ``[Western-most longitude, Southern-most latitude, Eastern-most
+        longitude, Northern-most latitude]``.
+    limit : int, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
         allowable limit is 50000. It may be beneficial to set this number lower
@@ -1356,7 +1355,7 @@ def get_latest_continuous(
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
-    md: :obj:`dataretrieval.utils.Metadata`
+    md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
 
     Examples
@@ -1450,7 +1449,7 @@ def get_latest_daily(
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
     properties : string or iterable of strings, optional
-        A vector of requested columns to be returned from the query.  Available
+        A list of requested columns to be returned from the query.  Available
         options are: geometry, id, time_series_id, monitoring_location_id,
         parameter_code, statistic_id, time, value, unit_of_measure,
         approval_status, qualifier, last_modified
@@ -1489,7 +1488,7 @@ def get_latest_daily(
     last_modified : string, optional
         The last time a record was refreshed in our database. This may happen
         due to regular operational processes and does not necessarily indicate
-        anything about the measurement has changed. You can query this field
+        that anything about the measurement has changed. You can query this field
         using date-times or intervals, adhering to RFC 3339, or using ISO 8601
         duration objects. Intervals may be bounded or half-bounded (double-dots
         at start or end). Only features that have a last_modified that
@@ -1531,10 +1530,10 @@ def get_latest_daily(
         selected.  The bounding box is provided as four or six numbers,
         depending on whether the coordinate reference system includes a vertical
         axis (height or depth). Coordinates are assumed to be in crs 4326. The
-        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
-        Another way to think of it is c(Western-most longitude, Southern-most
-        latitude, Eastern-most longitude, Northern-most latitude).
-    limit : numeric, optional
+        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
+        ``[Western-most longitude, Southern-most latitude, Eastern-most
+        longitude, Northern-most latitude]``.
+    limit : int, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
         allowable limit is 50000. It may be beneficial to set this number lower
@@ -1552,7 +1551,7 @@ def get_latest_daily(
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
-    md: :obj:`dataretrieval.utils.Metadata`
+    md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
 
     Examples
@@ -1639,7 +1638,7 @@ def get_field_measurements(
         A short code corresponding to the observing procedure for the field
         measurement.
     properties : string or iterable of strings, optional
-        A vector of requested columns to be returned from the query. See the
+        A list of requested columns to be returned from the query. See the
         field-measurements schema in the OpenAPI reference for the available
         columns (e.g. geometry, id, monitoring_location_id, parameter_code,
         value, unit_of_measure, approval_status, qualifier, last_modified):
@@ -1671,7 +1670,7 @@ def get_field_measurements(
     last_modified : string, optional
         The last time a record was refreshed in our database. This may happen
         due to regular operational processes and does not necessarily indicate
-        anything about the measurement has changed. You can query this field
+        that anything about the measurement has changed. You can query this field
         using date-times or intervals, adhering to RFC 3339, or using ISO 8601
         duration objects. Intervals may be bounded or half-bounded (double-dots
         at start or end). Only features that have a last_modified that
@@ -1719,10 +1718,10 @@ def get_field_measurements(
         selected.  The bounding box is provided as four or six numbers,
         depending on whether the coordinate reference system includes a vertical
         axis (height or depth). Coordinates are assumed to be in crs 4326. The
-        expected format is a numeric vector structured: c(xmin,ymin,xmax,ymax).
-        Another way to think of it is c(Western-most longitude, Southern-most
-        latitude, Eastern-most longitude, Northern-most latitude).
-    limit : numeric, optional
+        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
+        ``[Western-most longitude, Southern-most latitude, Eastern-most
+        longitude, Northern-most latitude]``.
+    limit : int, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
         allowable limit is 50000. It may be beneficial to set this number lower
@@ -1740,7 +1739,7 @@ def get_field_measurements(
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
-    md: :obj:`dataretrieval.utils.Metadata`
+    md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
 
     Examples
@@ -1840,7 +1839,7 @@ def get_field_measurements_metadata(
         Only features whose geometry intersects the bounding box are
         selected. Format: ``[xmin, ymin, xmax, ymax]`` in CRS 4326
         (longitude / latitude, west-south-east-north).
-    limit : numeric, optional
+    limit : int, optional
         Page size; the maximum allowable value is 50000. Default
         (``None``) requests the maximum allowable limit.
     filter, filter_lang : optional
@@ -1855,7 +1854,7 @@ def get_field_measurements_metadata(
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
-    md : :obj:`dataretrieval.utils.Metadata`
+    md : :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object pertaining to the query.
 
     Examples
@@ -1963,7 +1962,7 @@ def get_peaks(
         Only features whose geometry intersects the bounding box are
         selected. Format: ``[xmin, ymin, xmax, ymax]`` in CRS 4326
         (longitude / latitude, west-south-east-north).
-    limit : numeric, optional
+    limit : int, optional
         Page size; the maximum allowable value is 50000. Default
         (``None``) requests the maximum allowable limit.
     filter, filter_lang : optional
@@ -1978,7 +1977,7 @@ def get_peaks(
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
-    md : :obj:`dataretrieval.utils.Metadata`
+    md : :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object pertaining to the query.
 
     Examples
@@ -2035,14 +2034,14 @@ def get_reference_table(
         "hydrologic-unit-codes", "medium-codes", "national-aquifer-codes",
         "parameter-codes", "reliability-codes", "site-types", "states",
         "statistic-codes", "topographic-codes", "time-zone-codes"
-    limit : numeric, optional
+    limit : int, optional
         The optional limit parameter is used to control the subset of the
         selected features that should be returned in each page. The maximum
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
     query: dictionary, optional
-        The optional args parameter can be used to pass a dictionary of
+        The optional query parameter can be used to pass a dictionary of
         query parameters to the collection API call.
     max_rows : int, optional
         Cap the total number of rows returned, stopping pagination early
@@ -2060,7 +2059,7 @@ def get_reference_table(
         separated by underscores (e.g. the "medium-codes" reference table
         has a column called "medium_code", which contains all possible
         medium code values).
-    md: :obj:`dataretrieval.utils.Metadata`
+    md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object including the URL request and query time.
 
     Examples
@@ -2107,7 +2106,7 @@ def get_codes(code_service: CODE_SERVICES) -> tuple[pd.DataFrame, BaseMetadata]:
     Parameters
     ----------
     code_service : string
-        One of the following options: "states", "counties", "countries"
+        One of the following options: "states", "counties", "countries",
         "sitetype", "samplemedia", "characteristicgroup", "characteristics",
         or "observedproperty"
 
@@ -2253,12 +2252,12 @@ def get_samples(
     characteristicUserSupplied : string or iterable of strings, optional
         A user supplied characteristic name describing one or more results.
     boundingBox: list of four floats, optional
-        Filters on the the associated monitoring location's point location
+        Filters on the associated monitoring location's point location
         by checking if it is located within the specified geographic area.
         The logic is inclusive, i.e. it will include locations that overlap
         with the edge of the bounding box. Values are separated by commas,
         expressed in decimal degrees, NAD83, and longitudes west of Greenwich
-        are negative. The format is a string consisting of:
+        are negative. The format is a list consisting of:
 
             * Western-most longitude
             * Southern-most latitude
@@ -2327,7 +2326,7 @@ def get_samples(
         timezone abbreviation is not recognized resolve to ``NaT``. Rows are
         sorted by ``Activity_StartDateTime`` when present (the API's default
         order is unstable).
-    md : :obj:`dataretrieval.utils.Metadata`
+    md : :obj:`dataretrieval.utils.BaseMetadata`
         Custom ``dataretrieval`` metadata object pertaining to the query.
 
     Examples
@@ -2411,7 +2410,7 @@ def get_samples_summary(
     -------
     df : ``pandas.DataFrame``
         Formatted data returned from the API query.
-    md : :obj:`dataretrieval.utils.Metadata`
+    md : :obj:`dataretrieval.utils.BaseMetadata`
         Custom ``dataretrieval`` metadata object pertaining to the query.
 
     Examples
@@ -2501,7 +2500,7 @@ def get_stats_por(
         monitoring location. The default is 1000.
     parent_time_series_id: string, optional
         The parent_time_series_id returns statistics tied to a
-        particular datbase entry.
+        particular database entry.
     site_type_code: string, optional
         Site type code query parameter.
         A list of valid site type codes is available at:
@@ -2532,6 +2531,13 @@ def get_stats_por(
         argument will return both the "values" column, containing the list
         of percentile threshold values, and a "value" column, containing
         the singular summary value for the other statistics.
+
+    Returns
+    -------
+    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
+        Formatted data returned from the API query.
+    md : :obj:`dataretrieval.utils.BaseMetadata`
+        A custom metadata object.
 
     Examples
     --------
@@ -2626,7 +2632,7 @@ def get_stats_date_range(
         monitoring location. The default is 1000.
     parent_time_series_id: string, optional
         The parent_time_series_id returns statistics tied to a
-        particular datbase entry.
+        particular database entry.
     site_type_code: string, optional
         Site type code query parameter.
         You can see a list of valid site type codes here:
@@ -2660,6 +2666,13 @@ def get_stats_date_range(
         argument will return both the "values" column, containing the list
         of percentile threshold values, and a "value" column, containing
         the singular summary value for the other statistics.
+
+    Returns
+    -------
+    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
+        Formatted data returned from the API query.
+    md : :obj:`dataretrieval.utils.BaseMetadata`
+        A custom metadata object.
 
     Examples
     --------
@@ -2799,6 +2812,23 @@ def get_channel(
         The longitudinal velocity description.
     measurement_type : string or iterable of strings, optional
         The type of channel measurement.
+    last_modified : string, optional
+        The last time a record was refreshed in our database. This may happen
+        due to regular operational processes and does not necessarily indicate
+        that anything about the measurement has changed. You can query this field
+        using date-times or intervals, adhering to RFC 3339, or using ISO 8601
+        duration objects. Intervals may be bounded or half-bounded (double-dots
+        at start or end). Only features that have a last_modified that
+        intersects the value of datetime are selected.
+        Examples:
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or
+                "PT36H" for the last 36 hours
+
     skip_geometry : boolean, optional
         This option can be used to skip response geometries for each feature.
         The returning object will be a data frame with no spatial information.
@@ -2807,7 +2837,7 @@ def get_channel(
     channel_measurement_type : string or iterable of strings, optional
         The channel measurement type.
     properties : string or iterable of strings, optional
-        A vector of requested columns to be returned from the query. Available
+        A list of requested columns to be returned from the query. Available
         options are: geometry, channel_measurements_id, monitoring_location_id,
         field_visit_id, measurement_number, time, channel_name, channel_flow,
         channel_flow_unit, channel_width, channel_width_unit, channel_area,
@@ -2815,22 +2845,35 @@ def get_channel(
         channel_location_distance, channel_location_distance_unit, channel_stability,
         channel_material, channel_evenness, horizontal_velocity_description,
         vertical_velocity_description, longitudinal_velocity_description,
-        measurement_type, last_modified, channel_measurement_type. The default (NA) will
-        return all columns of the data.
+        measurement_type, last_modified, channel_measurement_type. The default
+        (None) will return all columns of the data.
+    bbox : list of numbers, optional
+        Only features that have a geometry that intersects the bounding box are
+        selected.  The bounding box is provided as four or six numbers,
+        depending on whether the coordinate reference system includes a vertical
+        axis (height or depth). Coordinates are assumed to be in crs 4326. The
+        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
+        ``[Western-most longitude, Southern-most latitude, Eastern-most
+        longitude, Northern-most latitude]``.
+    limit : int, optional
+        The optional limit parameter is used to control the subset of the
+        selected features that should be returned in each page. The maximum
+        allowable limit is 50000. It may be beneficial to set this number lower
+        if your internet connection is spotty. The default (None) will set the
+        limit to the maximum allowable limit for the service.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
         :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
-        If True, the function will convert the data to dates and qualifier to
-        string vector
+        If True, converts columns to appropriate types.
 
     Returns
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query.
-    md: :obj:`dataretrieval.utils.Metadata`
+    md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
 
     Examples

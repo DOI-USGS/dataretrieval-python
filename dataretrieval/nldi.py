@@ -135,7 +135,7 @@ def get_basin(
     as_json: bool = False,
 ) -> gpd.GeoDataFrame | dict[str, Any]:
     """Gets the aggregated basin for the specified feature in WGS84 lat/lon
-    as GeoDataFrame or as JSON conatining a polygon geometry.
+    as GeoDataFrame or as JSON containing a polygon geometry.
 
     Parameters
     ----------
@@ -143,7 +143,7 @@ def get_basin(
     feature_id: string, identifier of the feature
     simplified: bool, simplified, default is True
     split_catchment: bool, split catchment, default is False
-    as_json: bool, return basin as JSON is set to True, otherwise return
+    as_json: bool, return basin as JSON if set to True, otherwise return
              as GeoDataFrame, default is False
 
     Returns
@@ -299,8 +299,8 @@ def get_features(
     return gdf
 
 
-# TODO: This function can cause timeout error for some data sources
-#  - may be we shouldn't provide this function?
+# TODO: This function can cause a timeout error for some data sources
+#  - maybe we shouldn't provide this function?
 def get_features_by_data_source(data_source: str) -> gpd.GeoDataFrame:
     """Gets all features found for the specified data source as
     points in WGS84 lat/long coordinates as GeoDataFrame containing a point geometry.

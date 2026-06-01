@@ -91,8 +91,9 @@ def get_results(
     dataProfile : string, optional
         Specifies the data fields returned by the query.
         WQX3.0 profiles include 'fullPhysChem', 'narrow', and 'basicPhysChem'.
-        Legacy profiles include 'resultPhysChem','biological', and
-        'narrowResult'. Default is 'fullPhysChem'.
+        Legacy profiles include 'resultPhysChem', 'biological', and
+        'narrowResult'. For WQX3.0 queries (``legacy=False``), defaults to
+        'fullPhysChem'; legacy queries have no default profile.
     siteid : string
         Monitoring location identified by agency code, a hyphen, and
         identification number (Example: "USGS-05586100").
@@ -136,7 +137,7 @@ def get_results(
         columns are preserved; unrecognized timezone codes yield ``NaT``.
         Rows are sorted by ``ActivityStartDateTime`` (or ``Activity_StartDateTime``
         for WQX3 responses) when present.
-    md : :obj:`dataretrieval.utils.Metadata`
+    md : :obj:`dataretrieval.wqp.WQP_Metadata`
         Custom ``dataretrieval`` metadata object pertaining to the query.
 
     Examples
@@ -215,7 +216,7 @@ def what_sites(
     -------
     df : ``pandas.DataFrame``
         Formatted data returned from the API query.
-    md : :obj:`dataretrieval.utils.Metadata`
+    md : :obj:`dataretrieval.wqp.WQP_Metadata`
         Custom metadata object pertaining to the query.
 
     Examples
@@ -268,7 +269,7 @@ def what_organizations(
     -------
     df : ``pandas.DataFrame``
         Formatted data returned from the API query.
-    md : :obj:`dataretrieval.utils.Metadata`
+    md : :obj:`dataretrieval.wqp.WQP_Metadata`
         Custom metadata object pertaining to the query.
 
     Examples
@@ -319,7 +320,7 @@ def what_projects(
     -------
     df : ``pandas.DataFrame``
         Formatted data returned from the API query.
-    md : :obj:`dataretrieval.utils.Metadata`
+    md : :obj:`dataretrieval.wqp.WQP_Metadata`
         Custom metadata object pertaining to the query.
 
     Examples
@@ -370,7 +371,7 @@ def what_activities(
     -------
     df : ``pandas.DataFrame``
         Formatted data returned from the API query.
-    md : :obj:`dataretrieval.utils.Metadata`
+    md : :obj:`dataretrieval.wqp.WQP_Metadata`
         Custom metadata object pertaining to the query.
 
     Examples
@@ -435,7 +436,7 @@ def what_detection_limits(
     -------
     df : ``pandas.DataFrame``
         Formatted data returned from the API query.
-    md : :obj:`dataretrieval.utils.Metadata`
+    md : :obj:`dataretrieval.wqp.WQP_Metadata`
         Custom metadata object pertaining to the query.
 
     Examples
@@ -492,7 +493,7 @@ def what_habitat_metrics(
     -------
     df : ``pandas.DataFrame``
         Formatted data returned from the API query.
-    md : :obj:`dataretrieval.utils.Metadata`
+    md : :obj:`dataretrieval.wqp.WQP_Metadata`
         Custom metadata object pertaining to the query.
 
     Examples
@@ -543,7 +544,7 @@ def what_project_weights(
     -------
     df : ``pandas.DataFrame``
         Formatted data returned from the API query.
-    md : :obj:`dataretrieval.utils.Metadata`
+    md : :obj:`dataretrieval.wqp.WQP_Metadata`
         Custom metadata object pertaining to the query.
 
     Examples
@@ -599,7 +600,7 @@ def what_activity_metrics(
     -------
     df : ``pandas.DataFrame``
         Formatted data returned from the API query.
-    md : :obj:`dataretrieval.utils.Metadata`
+    md : :obj:`dataretrieval.wqp.WQP_Metadata`
         Custom metadata object pertaining to the query.
 
     Examples
@@ -662,7 +663,7 @@ class WQP_Metadata(BaseMetadata):
     ----------
     url : str
         Response url
-    query_time : datetme.timedelta
+    query_time : datetime.timedelta
         Response elapsed time
     header : httpx.Headers
         Response headers
@@ -678,16 +679,11 @@ class WQP_Metadata(BaseMetadata):
 
         Parameters
         ----------
-        response : Response
-            Response object from httpx module
+        response : ``httpx.Response``
+            Response object from the ``httpx`` module.
 
         parameters : dict
             Unpacked dictionary of the parameters supplied in the request
-
-        Returns
-        -------
-        md : :obj:`dataretrieval.wqp.WQP_Metadata`
-            A ``dataretrieval`` custom :obj:`dataretrieval.wqp.WQP_Metadata` object.
 
         """
 
