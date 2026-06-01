@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g06bf0d0d6 documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g473a07c2b documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=3313a54a"></script>
+      <script src="../../../_static/documentation_options.js?v=07aa4ea8"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -2332,8 +2332,7 @@
 <span class="sd">        organizations - &quot;organization&quot;, &quot;count&quot;</span>
 <span class="sd">    activityMediaName : string or iterable of strings, optional</span>
 <span class="sd">        Name or code indicating environmental medium in which sample was taken.</span>
-<span class="sd">        Check the `activityMediaName_lookup()` function in this module for all</span>
-<span class="sd">        possible inputs.</span>
+<span class="sd">        Call ``get_codes(&quot;samplemedia&quot;)`` for the valid inputs.</span>
 <span class="sd">        Example: &quot;Water&quot;.</span>
 <span class="sd">    activityStartDateLower : string, optional</span>
 <span class="sd">        The start date if using a date range. Takes the format YYYY-MM-DD.</span>
@@ -2350,13 +2349,12 @@
 <span class="sd">        Example: &quot;Sample-Routine, regular&quot;.</span>
 <span class="sd">    characteristicGroup : string or iterable of strings, optional</span>
 <span class="sd">        Characteristic group is a broad category of characteristics</span>
-<span class="sd">        describing one or more results. Check the `characteristicGroup_lookup()`</span>
-<span class="sd">        function in this module for all possible inputs.</span>
+<span class="sd">        describing one or more results. Call ``get_codes(&quot;characteristicgroup&quot;)``</span>
+<span class="sd">        for the valid inputs.</span>
 <span class="sd">        Example: &quot;Organics, PFAS&quot;</span>
 <span class="sd">    characteristic : string or iterable of strings, optional</span>
 <span class="sd">        Characteristic is a specific category describing one or more results.</span>
-<span class="sd">        Check the `characteristic_lookup()` function in this module for all</span>
-<span class="sd">        possible inputs.</span>
+<span class="sd">        Call ``get_codes(&quot;characteristics&quot;)`` for the valid inputs.</span>
 <span class="sd">        Example: &quot;Suspended Sediment Discharge&quot;</span>
 <span class="sd">    characteristicUserSupplied : string or iterable of strings, optional</span>
 <span class="sd">        A user supplied characteristic name describing one or more results.</span>
@@ -2377,27 +2375,24 @@
 <span class="sd">    countryFips : string or iterable of strings, optional</span>
 <span class="sd">        Example: &quot;US&quot; (United States)</span>
 <span class="sd">    stateFips : string or iterable of strings, optional</span>
-<span class="sd">        Check the `stateFips_lookup()` function in this module for all</span>
-<span class="sd">        possible inputs.</span>
+<span class="sd">        Call ``get_codes(&quot;states&quot;)`` for the valid inputs.</span>
 <span class="sd">        Example: &quot;US:15&quot; (United States: Hawaii)</span>
 <span class="sd">    countyFips : string or iterable of strings, optional</span>
-<span class="sd">        Check the `countyFips_lookup()` function in this module for all</span>
-<span class="sd">        possible inputs.</span>
+<span class="sd">        Call ``get_codes(&quot;counties&quot;)`` for the valid inputs.</span>
 <span class="sd">        Example: &quot;US:15:001&quot; (United States: Hawaii, Hawaii County)</span>
 <span class="sd">    siteTypeCode : string or iterable of strings, optional</span>
-<span class="sd">        An abbreviation for a certain site type. Check the `siteType_lookup()`</span>
-<span class="sd">        function in this module for all possible inputs.</span>
+<span class="sd">        An abbreviation for a certain site type. Call ``get_codes(&quot;sitetype&quot;)``</span>
+<span class="sd">        for the valid inputs.</span>
 <span class="sd">        Example: &quot;GW&quot; (Groundwater site)</span>
 <span class="sd">    siteTypeName : string or iterable of strings, optional</span>
-<span class="sd">        A full name for a certain site type. Check the `siteType_lookup()`</span>
-<span class="sd">        function in this module for all possible inputs.</span>
+<span class="sd">        A full name for a certain site type. Call ``get_codes(&quot;sitetype&quot;)``</span>
+<span class="sd">        for the valid inputs.</span>
 <span class="sd">        Example: &quot;Well&quot;</span>
 <span class="sd">    usgsPCode : string or iterable of strings, optional</span>
 <span class="sd">        5-digit number used in the US Geological Survey computerized</span>
 <span class="sd">        data system, National Water Information System (NWIS), to</span>
-<span class="sd">        uniquely identify a specific constituent. Check the</span>
-<span class="sd">        `characteristic_lookup()` function in this module for all possible</span>
-<span class="sd">        inputs.</span>
+<span class="sd">        uniquely identify a specific constituent (the ``parameterCode`` column</span>
+<span class="sd">        of ``get_codes(&quot;characteristics&quot;)``).</span>
 <span class="sd">        Example: &quot;00060&quot; (Discharge, cubic feet per second)</span>
 <span class="sd">    hydrologicUnit : string or iterable of strings, optional</span>
 <span class="sd">        Max 12-digit number used to describe a hydrologic unit.</span>

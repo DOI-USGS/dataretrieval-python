@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g06bf0d0d6 documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g473a07c2b documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=3313a54a"></script>
+      <script src="../_static/documentation_options.js?v=07aa4ea8"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -2043,8 +2043,7 @@ activities - “sampact”, “actmetric”,
 projects - “project”, “projectmonitoringlocationweight”
 organizations - “organization”, “count”</p></li>
 <li><p><strong>activityMediaName</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Name or code indicating environmental medium in which sample was taken.
-Check the <cite>activityMediaName_lookup()</cite> function in this module for all
-possible inputs.
+Call <code class="docutils literal notranslate"><span class="pre">get_codes(&quot;samplemedia&quot;)</span></code> for the valid inputs.
 Example: “Water”.</p></li>
 <li><p><strong>activityStartDateLower</strong> (<em>string</em><em>, </em><em>optional</em>) – The start date if using a date range. Takes the format YYYY-MM-DD.
 The logic is inclusive, i.e. it will also return results that
@@ -2057,12 +2056,11 @@ activityStartDateLower up to the most recent available results.</p></li>
 <li><p><strong>activityTypeCode</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Text code that describes type of field activity performed.
 Example: “Sample-Routine, regular”.</p></li>
 <li><p><strong>characteristicGroup</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Characteristic group is a broad category of characteristics
-describing one or more results. Check the <cite>characteristicGroup_lookup()</cite>
-function in this module for all possible inputs.
+describing one or more results. Call <code class="docutils literal notranslate"><span class="pre">get_codes(&quot;characteristicgroup&quot;)</span></code>
+for the valid inputs.
 Example: “Organics, PFAS”</p></li>
 <li><p><strong>characteristic</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Characteristic is a specific category describing one or more results.
-Check the <cite>characteristic_lookup()</cite> function in this module for all
-possible inputs.
+Call <code class="docutils literal notranslate"><span class="pre">get_codes(&quot;characteristics&quot;)</span></code> for the valid inputs.
 Example: “Suspended Sediment Discharge”</p></li>
 <li><p><strong>characteristicUserSupplied</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A user supplied characteristic name describing one or more results.</p></li>
 <li><p><strong>boundingBox</strong> (<em>list</em><em> of </em><em>four floats</em><em>, </em><em>optional</em>) – <p>Filters on the the associated monitoring location’s point location
@@ -2082,23 +2080,20 @@ are negative. The format is a string consisting of:</p>
 <p>Example: [-92.8,44.2,-88.9,46.0]</p>
 </p></li>
 <li><p><strong>countryFips</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Example: “US” (United States)</p></li>
-<li><p><strong>stateFips</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Check the <cite>stateFips_lookup()</cite> function in this module for all
-possible inputs.
+<li><p><strong>stateFips</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Call <code class="docutils literal notranslate"><span class="pre">get_codes(&quot;states&quot;)</span></code> for the valid inputs.
 Example: “US:15” (United States: Hawaii)</p></li>
-<li><p><strong>countyFips</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Check the <cite>countyFips_lookup()</cite> function in this module for all
-possible inputs.
+<li><p><strong>countyFips</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Call <code class="docutils literal notranslate"><span class="pre">get_codes(&quot;counties&quot;)</span></code> for the valid inputs.
 Example: “US:15:001” (United States: Hawaii, Hawaii County)</p></li>
-<li><p><strong>siteTypeCode</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – An abbreviation for a certain site type. Check the <cite>siteType_lookup()</cite>
-function in this module for all possible inputs.
+<li><p><strong>siteTypeCode</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – An abbreviation for a certain site type. Call <code class="docutils literal notranslate"><span class="pre">get_codes(&quot;sitetype&quot;)</span></code>
+for the valid inputs.
 Example: “GW” (Groundwater site)</p></li>
-<li><p><strong>siteTypeName</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A full name for a certain site type. Check the <cite>siteType_lookup()</cite>
-function in this module for all possible inputs.
+<li><p><strong>siteTypeName</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A full name for a certain site type. Call <code class="docutils literal notranslate"><span class="pre">get_codes(&quot;sitetype&quot;)</span></code>
+for the valid inputs.
 Example: “Well”</p></li>
 <li><p><strong>usgsPCode</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – 5-digit number used in the US Geological Survey computerized
 data system, National Water Information System (NWIS), to
-uniquely identify a specific constituent. Check the
-<cite>characteristic_lookup()</cite> function in this module for all possible
-inputs.
+uniquely identify a specific constituent (the <code class="docutils literal notranslate"><span class="pre">parameterCode</span></code> column
+of <code class="docutils literal notranslate"><span class="pre">get_codes(&quot;characteristics&quot;)</span></code>).
 Example: “00060” (Discharge, cubic feet per second)</p></li>
 <li><p><strong>hydrologicUnit</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Max 12-digit number used to describe a hydrologic unit.
 Example: “070900020502”</p></li>
