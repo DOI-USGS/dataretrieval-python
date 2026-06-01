@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.nearest &mdash; dataretrieval 0.1.dev1+gc107fc9f6 documentation</title>
+  <title>dataretrieval.waterdata.nearest &mdash; dataretrieval 0.1.dev1+gdca49a7bc documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=bdbd3255"></script>
+      <script src="../../../_static/documentation_options.js?v=8f9da921"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -82,7 +82,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">get_args</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">get_args</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
@@ -96,13 +96,13 @@
 <div class="viewcode-block" id="get_nearest_continuous">
 <a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_nearest_continuous">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_nearest_continuous</span><span class="p">(</span>
-    <span class="n">targets</span><span class="p">,</span>
+    <span class="n">targets</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
     <span class="n">monitoring_location_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">parameter_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">window</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span> <span class="o">=</span> <span class="s2">&quot;PT7M30S&quot;</span><span class="p">,</span>
     <span class="n">on_tie</span><span class="p">:</span> <span class="n">OnTie</span> <span class="o">=</span> <span class="s2">&quot;first&quot;</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;For each target timestamp, return the nearest continuous observation.</span>
 
@@ -216,13 +216,13 @@
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_check_nearest_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">on_tie</span><span class="p">)</span>
-    <span class="n">targets</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="n">target_index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
     <span class="n">window_td</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_index</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;targets must contain at least one timestamp&quot;</span><span class="p">)</span>
 
-    <span class="n">filter_expr</span> <span class="o">=</span> <span class="n">_build_window_or_filter</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">window_td</span><span class="p">)</span>
+    <span class="n">filter_expr</span> <span class="o">=</span> <span class="n">_build_window_or_filter</span><span class="p">(</span><span class="n">target_index</span><span class="p">,</span> <span class="n">window_td</span><span class="p">)</span>
     <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">get_continuous</span><span class="p">(</span>
         <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">monitoring_location_id</span><span class="p">,</span>
         <span class="n">parameter_code</span><span class="o">=</span><span class="n">parameter_code</span><span class="p">,</span>
@@ -243,7 +243,7 @@
     <span class="n">selected</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">row</span>
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">site_df</span> <span class="ow">in</span> <span class="n">site_groups</span>
-        <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">targets</span>
+        <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">target_index</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">row</span> <span class="o">:=</span> <span class="n">_pick_nearest_row</span><span class="p">(</span><span class="n">site_df</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">window_td</span><span class="p">,</span> <span class="n">on_tie</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
     <span class="p">]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">selected</span><span class="p">:</span>
@@ -252,7 +252,7 @@
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_check_nearest_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">on_tie</span><span class="p">:</span> <span class="n">OnTie</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_nearest_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">on_tie</span><span class="p">:</span> <span class="n">OnTie</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reject kwargs the helper owns; validate ``on_tie``.&quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">forbidden</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;filter&quot;</span><span class="p">,</span> <span class="s2">&quot;filter_lang&quot;</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">forbidden</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>

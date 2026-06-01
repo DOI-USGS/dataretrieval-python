@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+gc107fc9f6 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+gdca49a7bc documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=bdbd3255"></script>
+      <script src="../../_static/documentation_options.js?v=8f9da921"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -85,7 +85,9 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">json</span><span class="w"> </span><span class="kn">import</span> <span class="n">JSONDecodeError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">NoReturn</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">cast</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
@@ -99,6 +101,8 @@
     <span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">gpd</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="n">F</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span>
 
 <span class="n">WATERDATA_BASE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://nwis.waterdata.usgs.gov/&quot;</span>
 <span class="n">WATERDATA_URL</span> <span class="o">=</span> <span class="n">WATERDATA_BASE_URL</span> <span class="o">+</span> <span class="s2">&quot;nwis/&quot;</span>
@@ -156,7 +160,7 @@
 
 <div class="viewcode-block" id="_deprecated">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._deprecated">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">_deprecated</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_deprecated</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">F</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">F</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Mark an nwis function as deprecated.</span>
 
 <span class="sd">    Wrappers like ``get_record`` -&gt; ``get_iv`` -&gt; ``query_waterservices`` would</span>
@@ -170,7 +174,7 @@
         <span class="p">)</span>
 
     <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_deprecation_state</span><span class="p">,</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">_deprecation_state</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="kc">True</span>
@@ -180,7 +184,7 @@
         <span class="k">finally</span><span class="p">:</span>
             <span class="n">_deprecation_state</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="k">return</span> <span class="n">wrapper</span></div>
+    <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">wrapper</span><span class="p">)</span></div>
 
 
 
@@ -210,7 +214,7 @@
 <div class="viewcode-block" id="format_response">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.format_response">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">format_response</span><span class="p">(</span>
-    <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Setup index for response from query.</span>
 
@@ -290,7 +294,7 @@
 
 <div class="viewcode-block" id="get_qwdata">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_qwdata">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_qwdata</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_qwdata</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Defunct: use ``waterdata.get_samples()``.&quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
         <span class="s2">&quot;`nwis.get_qwdata` has been replaced with `waterdata.get_samples()`.&quot;</span>
@@ -300,7 +304,7 @@
 
 <div class="viewcode-block" id="get_discharge_measurements">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_discharge_measurements">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_discharge_measurements</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_discharge_measurements</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Defunct: use ``waterdata.get_field_measurements()``.&quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
         <span class="s2">&quot;`nwis.get_discharge_measurements` has been replaced &quot;</span>
@@ -318,8 +322,8 @@
     <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">multi_index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">NWIS_Metadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get discharge peaks from the waterdata service.</span>
 
@@ -387,7 +391,7 @@
 
 <div class="viewcode-block" id="get_gwlevels">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_gwlevels">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_gwlevels</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_gwlevels</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Defunct: use ``waterdata.get_continuous()``, ``waterdata.get_daily()``,</span>
 <span class="sd">    or ``waterdata.get_field_measurements()``.&quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
@@ -403,8 +407,8 @@
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_stats">[docs]</a>
 <span class="nd">@_deprecated</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_stats</span><span class="p">(</span>
-    <span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+    <span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">NWIS_Metadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Queries water services statistics information.</span>
 
@@ -467,7 +471,9 @@
 <div class="viewcode-block" id="query_waterdata">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.query_waterdata">[docs]</a>
 <span class="nd">@_deprecated</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">query_waterdata</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">query_waterdata</span><span class="p">(</span>
+    <span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Queries waterdata.</span>
 
@@ -515,7 +521,7 @@
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.query_waterservices">[docs]</a>
 <span class="nd">@_deprecated</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">query_waterservices</span><span class="p">(</span>
-    <span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Queries waterservices.usgs.gov</span>
@@ -587,8 +593,8 @@
     <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">multi_index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">NWIS_Metadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get daily values data from NWIS and return it as a ``pandas.DataFrame``.</span>
 
@@ -656,7 +662,9 @@
 <div class="viewcode-block" id="get_info">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_info">[docs]</a>
 <span class="nd">@_deprecated</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_info</span><span class="p">(</span><span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_info</span><span class="p">(</span>
+    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">NWIS_Metadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get site description information from NWIS.</span>
 
@@ -781,8 +789,8 @@
     <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">multi_index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">NWIS_Metadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get instantaneous values data from NWIS and return it as a DataFrame.</span>
 
 <span class="sd">    .. note::</span>
@@ -848,7 +856,7 @@
 
 <div class="viewcode-block" id="get_pmcodes">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_pmcodes">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_pmcodes</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_pmcodes</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Defunct: use ``get_reference_table(collection=&#39;parameter-codes&#39;)``.&quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
         <span class="s2">&quot;`nwis.get_pmcodes` has been replaced &quot;</span>
@@ -859,7 +867,7 @@
 
 <div class="viewcode-block" id="get_water_use">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_water_use">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_water_use</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_water_use</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Defunct: no current replacement.&quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s2">&quot;`nwis.get_water_use` is defunct.&quot;</span><span class="p">)</span></div>
 
@@ -872,8 +880,8 @@
     <span class="n">site</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">file_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;base&quot;</span><span class="p">,</span>
     <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">NWIS_Metadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Rating table for an active USGS streamgage retrieval.</span>
 
@@ -929,7 +937,9 @@
 <div class="viewcode-block" id="what_sites">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.what_sites">[docs]</a>
 <span class="nd">@_deprecated</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">what_sites</span><span class="p">(</span><span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">what_sites</span><span class="p">(</span>
+    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">NWIS_Metadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Search NWIS for sites within a region with specific data.</span>
 
@@ -982,7 +992,7 @@
     <span class="n">state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">service</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;iv&quot;</span><span class="p">,</span>
     <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get data from NWIS and return it as a ``pandas.DataFrame``.</span>
@@ -1120,7 +1130,10 @@
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s2">&quot;ratings&quot;</span><span class="p">:</span>
-        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># the ratings service is single-site; get_ratings takes a scalar site</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_ratings</span><span class="p">(</span>
+            <span class="n">site</span><span class="o">=</span><span class="n">cast</span><span class="p">(</span><span class="s2">&quot;str | None&quot;</span><span class="p">,</span> <span class="n">sites</span><span class="p">),</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="k">elif</span> <span class="n">service</span> <span class="o">==</span> <span class="s2">&quot;stat&quot;</span><span class="p">:</span>
@@ -1134,7 +1147,7 @@
 
 <div class="viewcode-block" id="_read_json">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._read_json">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">_read_json</span><span class="p">(</span><span class="n">json</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_json</span><span class="p">(</span><span class="n">json</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a NWIS Water Services formatted JSON into a ``pandas.DataFrame``.</span>
 
@@ -1233,7 +1246,7 @@
 
 <div class="viewcode-block" id="_read_rdb">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._read_rdb">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">_read_rdb</span><span class="p">(</span><span class="n">rdb</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_rdb</span><span class="p">(</span><span class="n">rdb</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse an NWIS RDB response and apply NWIS-specific post-processing.</span>
 
 <span class="sd">    Thin wrapper around :func:`dataretrieval.rdb.read_rdb` that adds the</span>
@@ -1244,7 +1257,7 @@
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_check_sites_value_types</span><span class="p">(</span><span class="n">sites</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_sites_value_types</span><span class="p">(</span><span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">sites</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;sites must be a string or a list of strings&quot;</span><span class="p">)</span>
 
@@ -1274,7 +1287,7 @@
 
 <div class="viewcode-block" id="NWIS_Metadata.__init__">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.NWIS_Metadata.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a standard set of metadata informed by the response with specific</span>
 <span class="sd">        metadata for NWIS data.</span>
 

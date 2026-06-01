@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+gc107fc9f6 documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+gdca49a7bc documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=bdbd3255"></script>
+      <script src="../../_static/documentation_options.js?v=8f9da921"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -89,13 +89,14 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">StringIO</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span><span class="p">,</span> <span class="n">_attach_datetime_columns</span><span class="p">,</span> <span class="n">query</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
 
 
@@ -151,9 +152,9 @@
 <div class="viewcode-block" id="get_results">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.get_results">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_results</span><span class="p">(</span>
-    <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">legacy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Query the WQP for results.</span>
 
@@ -272,9 +273,9 @@
 <div class="viewcode-block" id="what_sites">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_sites">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">what_sites</span><span class="p">(</span>
-    <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">legacy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for sites within a region with specific data.</span>
 
@@ -330,9 +331,9 @@
 <div class="viewcode-block" id="what_organizations">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_organizations">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">what_organizations</span><span class="p">(</span>
-    <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">legacy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for organizations within a region with specific data.</span>
 
@@ -383,7 +384,11 @@
 
 <div class="viewcode-block" id="what_projects">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_projects">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">what_projects</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">what_projects</span><span class="p">(</span>
+    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for projects within a region with specific data.</span>
 
 <span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
@@ -434,9 +439,9 @@
 <div class="viewcode-block" id="what_activities">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_activities">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">what_activities</span><span class="p">(</span>
-    <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">legacy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for activities within a region with specific data.</span>
 
@@ -501,9 +506,9 @@
 <div class="viewcode-block" id="what_detection_limits">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_detection_limits">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">what_detection_limits</span><span class="p">(</span>
-    <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">legacy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for result detection limits within a region with specific</span>
 <span class="sd">    data.</span>
@@ -562,9 +567,9 @@
 <div class="viewcode-block" id="what_habitat_metrics">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_habitat_metrics">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">what_habitat_metrics</span><span class="p">(</span>
-    <span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">legacy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for habitat metrics within a region with specific data.</span>
 
@@ -615,7 +620,11 @@
 
 <div class="viewcode-block" id="what_project_weights">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_project_weights">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">what_project_weights</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">what_project_weights</span><span class="p">(</span>
+    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for project weights within a region with specific data.</span>
 
 <span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
@@ -670,7 +679,11 @@
 
 <div class="viewcode-block" id="what_activity_metrics">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_activity_metrics">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">what_activity_metrics</span><span class="p">(</span><span class="n">ssl_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">what_activity_metrics</span><span class="p">(</span>
+    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for activity metrics within a region with specific data.</span>
 
 <span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
@@ -725,7 +738,7 @@
 
 <div class="viewcode-block" id="wqp_url">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.wqp_url">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">wqp_url</span><span class="p">(</span><span class="n">service</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">wqp_url</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct the WQP URL for a given service.&quot;&quot;&quot;</span>
 
     <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;https://www.waterqualitydata.us/data/&quot;</span>
@@ -742,7 +755,7 @@
 
 <div class="viewcode-block" id="wqx3_url">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.wqx3_url">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">wqx3_url</span><span class="p">(</span><span class="n">service</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">wqx3_url</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct the WQP URL for a given WQX 3.0 service.&quot;&quot;&quot;</span>
 
     <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;https://www.waterqualitydata.us/wqx3/&quot;</span>
@@ -778,7 +791,7 @@
 
 <div class="viewcode-block" id="WQP_Metadata.__init__">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.WQP_Metadata.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a standard set of metadata informed by the response with specific</span>
 <span class="sd">        metadata for WQP data.</span>
 
@@ -826,7 +839,7 @@
 
 <div class="viewcode-block" id="_check_kwargs">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp._check_kwargs">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Private function to check kwargs for unsupported parameters.&quot;&quot;&quot;</span>
     <span class="n">mimetype</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mimeType&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">mimetype</span> <span class="o">==</span> <span class="s2">&quot;geojson&quot;</span><span class="p">:</span>
@@ -840,7 +853,7 @@
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_warn_wqx3_use</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_warn_wqx3_use</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
         <span class="s2">&quot;Support for the WQX3.0 profiles is experimental. &quot;</span>
         <span class="s2">&quot;Queries may be slow or fail intermittently.&quot;</span>
@@ -848,7 +861,7 @@
     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_warn_legacy_use</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_warn_legacy_use</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
         <span class="s2">&quot;This function call will return the legacy WQX format, &quot;</span>
         <span class="s2">&quot;which means USGS data have not been updated since March 2024. &quot;</span>
@@ -859,7 +872,7 @@
     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_warn_wqx3_unavailable</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_warn_wqx3_unavailable</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="c1"># stacklevel=3: warn -&gt; _warn_wqx3_unavailable -&gt; _legacy_only_url -&gt; what_*</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
         <span class="s2">&quot;WQX3.0 profile not available, returning legacy profile.&quot;</span><span class="p">,</span>
