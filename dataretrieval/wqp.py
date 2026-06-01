@@ -40,6 +40,32 @@ services_legacy = [
 ]
 
 
+def _is_code_column(name: str) -> bool:
+    """True if a WQP column name denotes a code/identifier whose leading zeros
+    are significant and must be preserved as ``str`` (HUCs, parameter codes,
+    FIPS codes): the name ends with "code" or contains "identifier"/"huc"/"fips".
+    """
+    lname = name.lower()
+    return lname.endswith("code") or any(
+        token in lname for token in ("identifier", "huc", "fips")
+    )
+
+
+def _read_wqp_csv(text: str) -> DataFrame:
+    """Read a WQP CSV, forcing code/identifier columns to ``str``.
+
+    WQP returns codes with significant leading zeros — HUCs, parameter codes
+    (``USGSpcode``), FIPS state/county codes. A bare ``read_csv`` infers those
+    as int/float and silently drops the zeros (``"00060"`` -> ``60``, HUC8
+    ``"07090002"`` -> ``7090002``). Read the header first, then re-read with
+    ``dtype=str`` for every column that :func:`_is_code_column` flags, so the
+    zeros survive.
+    """
+    columns = pd.read_csv(StringIO(text), delimiter=",", nrows=0).columns
+    str_cols = {col: str for col in columns if _is_code_column(col)}
+    return pd.read_csv(StringIO(text), delimiter=",", low_memory=False, dtype=str_cols)
+
+
 def get_results(
     ssl_check=True,
     legacy=True,
@@ -153,7 +179,7 @@ def get_results(
 
     response = query(url, kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _read_wqp_csv(response.text)
     df = _attach_datetime_columns(df)
     return df, WQP_Metadata(response, **kwargs)
 
@@ -208,7 +234,7 @@ def what_sites(
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _read_wqp_csv(response.text)
 
     return df, WQP_Metadata(response, **kwargs)
 
@@ -259,7 +285,7 @@ def what_organizations(
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _read_wqp_csv(response.text)
 
     return df, WQP_Metadata(response, **kwargs)
 
@@ -306,7 +332,7 @@ def what_projects(ssl_check=True, legacy=True, **kwargs):
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _read_wqp_csv(response.text)
 
     return df, WQP_Metadata(response, **kwargs)
 
@@ -370,7 +396,7 @@ def what_activities(
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _read_wqp_csv(response.text)
 
     return df, WQP_Metadata(response, **kwargs)
 
@@ -428,7 +454,7 @@ def what_detection_limits(
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _read_wqp_csv(response.text)
 
     return df, WQP_Metadata(response, **kwargs)
 
@@ -479,7 +505,7 @@ def what_habitat_metrics(
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _read_wqp_csv(response.text)
 
     return df, WQP_Metadata(response, **kwargs)
 
@@ -531,7 +557,7 @@ def what_project_weights(ssl_check=True, legacy=True, **kwargs):
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _read_wqp_csv(response.text)
 
     return df, WQP_Metadata(response, **kwargs)
 
@@ -583,7 +609,7 @@ def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
+    df = _read_wqp_csv(response.text)
 
     return df, WQP_Metadata(response, **kwargs)
 
