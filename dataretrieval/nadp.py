@@ -29,6 +29,8 @@ the data as a GDAL memory-mapped file when no path is specified.
 
 """
 
+from __future__ import annotations
+
 import io
 import re
 import warnings
@@ -45,7 +47,7 @@ _DEPRECATION_MESSAGE = (
 )
 
 
-def _warn_deprecated():
+def _warn_deprecated() -> None:
     warnings.warn(_DEPRECATION_MESSAGE, DeprecationWarning, stacklevel=3)
 
 
@@ -74,19 +76,19 @@ NTN_MEAS_TYPE = ["conc", "dep", "precip"]  # concentration or deposition
 class NADP_ZipFile(zipfile.ZipFile):
     """Extend zipfile.ZipFile for working on data from NADP"""
 
-    def tif_name(self):
+    def tif_name(self) -> str:
         """Get the name of the tif file in the zip file."""
         filenames = self.namelist()
         r = re.compile(".*tif$")
         tif_list = list(filter(r.match, filenames))
         return tif_list[0]
 
-    def tif(self):
+    def tif(self) -> bytes:
         """Read the tif file in the zip file."""
         return self.read(self.tif_name())
 
 
-def get_annual_MDN_map(measurement_type, year, path):
+def get_annual_MDN_map(measurement_type: str, year: str, path: str) -> str:
     """Download a MDN map from NDAP.
 
     This function looks for a zip file containing gridded information at:
@@ -135,7 +137,12 @@ def get_annual_MDN_map(measurement_type, year, path):
     return str(path)
 
 
-def get_annual_NTN_map(measurement_type, measurement=None, year=None, path="."):
+def get_annual_NTN_map(
+    measurement_type: str,
+    measurement: str | None = None,
+    year: str | None = None,
+    path: str = ".",
+) -> str:
     """Download a NTN map from NDAP.
 
     This function looks for a zip file containing gridded information at:
@@ -193,7 +200,7 @@ def get_annual_NTN_map(measurement_type, measurement=None, year=None, path="."):
     return str(path)
 
 
-def get_zip(url, filename):
+def get_zip(url: str, filename: str) -> NADP_ZipFile:
     """Gets a ZipFile at url and returns it
 
     Parameters

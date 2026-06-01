@@ -10,7 +10,7 @@ import json
 import logging
 from collections.abc import Iterable
 from io import StringIO
-from typing import get_args
+from typing import Any, get_args
 from urllib.parse import quote
 
 import httpx
@@ -2018,7 +2018,7 @@ def get_peaks(
 def get_reference_table(
     collection: str,
     limit: int | None = None,
-    query: dict | None = None,
+    query: dict[str, Any] | None = None,
     max_rows: int | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get metadata reference tables for the USGS Water Data API.
@@ -2140,7 +2140,7 @@ def get_codes(code_service: CODE_SERVICES) -> tuple[pd.DataFrame, BaseMetadata]:
 
 
 def _get_samples_csv(
-    url: str, params: dict, ssl_check: bool
+    url: str, params: dict[str, Any], ssl_check: bool
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Issue a Samples CSV request and parse the body into a DataFrame.
 
@@ -2852,7 +2852,7 @@ def get_channel(
 
 def get_cql(
     service: WATERDATA_SERVICES,
-    cql: str | dict,
+    cql: str | dict[str, Any],
     *,
     properties: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,

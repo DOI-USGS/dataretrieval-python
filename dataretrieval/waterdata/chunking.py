@@ -59,7 +59,7 @@ from contextlib import contextmanager, suppress
 from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Any, ClassVar
+from typing import Any, ClassVar, cast
 from urllib.parse import quote_plus
 
 import httpx
@@ -1560,7 +1560,12 @@ class ChunkedCall:
         """
         concurrency = _read_concurrency_env()
         with start_blocking_portal() as portal:
-            return portal.call(functools.partial(self._run, concurrency))
+            # ``portal.call`` returns ``Any`` because ``functools.partial``
+            # erases ``_run``'s return type; restore the declared tuple.
+            return cast(
+                "tuple[pd.DataFrame, Any]",
+                portal.call(functools.partial(self._run, concurrency)),
+            )
 
     async def _run(self, max_concurrent: int | None) -> tuple[pd.DataFrame, Any]:
         """

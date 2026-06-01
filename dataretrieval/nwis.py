@@ -9,7 +9,9 @@ from __future__ import annotations
 import functools
 import threading
 import warnings
+from collections.abc import Callable
 from json import JSONDecodeError
+from typing import Any, NoReturn, TypeVar, cast
 
 import httpx
 import pandas as pd
@@ -23,6 +25,8 @@ try:
     import geopandas as gpd
 except ImportError:
     gpd = None
+
+F = TypeVar("F", bound=Callable[..., Any])
 
 WATERDATA_BASE_URL = "https://nwis.waterdata.usgs.gov/"
 WATERDATA_URL = WATERDATA_BASE_URL + "nwis/"
@@ -75,7 +79,7 @@ def _warn_deprecated(func_name: str) -> None:
     )
 
 
-def _deprecated(func):
+def _deprecated(func: F) -> F:
     """Mark an nwis function as deprecated.
 
     Wrappers like ``get_record`` -> ``get_iv`` -> ``query_waterservices`` would
@@ -89,7 +93,7 @@ def _deprecated(func):
         )
 
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         if getattr(_deprecation_state, "active", False):
             return func(*args, **kwargs)
         _deprecation_state.active = True
@@ -99,7 +103,7 @@ def _deprecated(func):
         finally:
             _deprecation_state.active = False
 
-    return wrapper
+    return cast(F, wrapper)
 
 
 def _parse_json_or_raise(response: httpx.Response) -> pd.DataFrame:
@@ -123,7 +127,7 @@ def _parse_json_or_raise(response: httpx.Response) -> pd.DataFrame:
 
 
 def format_response(
-    df: pd.DataFrame, service: str | None = None, **kwargs
+    df: pd.DataFrame, service: str | None = None, **kwargs: Any
 ) -> pd.DataFrame:
     """Setup index for response from query.
 
@@ -197,14 +201,14 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def get_qwdata(**kwargs):
+def get_qwdata(**kwargs: Any) -> NoReturn:
     """Defunct: use ``waterdata.get_samples()``."""
     raise NameError(
         "`nwis.get_qwdata` has been replaced with `waterdata.get_samples()`."
     )
 
 
-def get_discharge_measurements(**kwargs):
+def get_discharge_measurements(**kwargs: Any) -> NoReturn:
     """Defunct: use ``waterdata.get_field_measurements()``."""
     raise NameError(
         "`nwis.get_discharge_measurements` has been replaced "
@@ -219,8 +223,8 @@ def get_discharge_peaks(
     end: str | None = None,
     multi_index: bool = True,
     ssl_check: bool = True,
-    **kwargs,
-) -> tuple[pd.DataFrame, BaseMetadata]:
+    **kwargs: Any,
+) -> tuple[pd.DataFrame, NWIS_Metadata]:
     """
     Get discharge peaks from the waterdata service.
 
@@ -285,7 +289,7 @@ def get_discharge_peaks(
     )
 
 
-def get_gwlevels(**kwargs):
+def get_gwlevels(**kwargs: Any) -> NoReturn:
     """Defunct: use ``waterdata.get_continuous()``, ``waterdata.get_daily()``,
     or ``waterdata.get_field_measurements()``."""
     raise NameError(
@@ -298,8 +302,8 @@ def get_gwlevels(**kwargs):
 
 @_deprecated
 def get_stats(
-    sites: list[str] | str | None = None, ssl_check: bool = True, **kwargs
-) -> tuple[pd.DataFrame, BaseMetadata]:
+    sites: list[str] | str | None = None, ssl_check: bool = True, **kwargs: Any
+) -> tuple[pd.DataFrame, NWIS_Metadata]:
     """
     Queries water services statistics information.
 
@@ -359,7 +363,9 @@ def get_stats(
 
 
 @_deprecated
-def query_waterdata(service: str, ssl_check: bool = True, **kwargs) -> httpx.Response:
+def query_waterdata(
+    service: str, ssl_check: bool = True, **kwargs: Any
+) -> httpx.Response:
     """
     Queries waterdata.
 
@@ -404,7 +410,7 @@ def query_waterdata(service: str, ssl_check: bool = True, **kwargs) -> httpx.Res
 
 @_deprecated
 def query_waterservices(
-    service: str, ssl_check: bool = True, **kwargs
+    service: str, ssl_check: bool = True, **kwargs: Any
 ) -> httpx.Response:
     """
     Queries waterservices.usgs.gov
@@ -473,8 +479,8 @@ def get_dv(
     end: str | None = None,
     multi_index: bool = True,
     ssl_check: bool = True,
-    **kwargs,
-) -> tuple[pd.DataFrame, BaseMetadata]:
+    **kwargs: Any,
+) -> tuple[pd.DataFrame, NWIS_Metadata]:
     """
     Get daily values data from NWIS and return it as a ``pandas.DataFrame``.
 
@@ -539,7 +545,9 @@ def get_dv(
 
 
 @_deprecated
-def get_info(ssl_check: bool = True, **kwargs) -> tuple[pd.DataFrame, BaseMetadata]:
+def get_info(
+    ssl_check: bool = True, **kwargs: Any
+) -> tuple[pd.DataFrame, NWIS_Metadata]:
     """
     Get site description information from NWIS.
 
@@ -661,8 +669,8 @@ def get_iv(
     end: str | None = None,
     multi_index: bool = True,
     ssl_check: bool = True,
-    **kwargs,
-) -> tuple[pd.DataFrame, BaseMetadata]:
+    **kwargs: Any,
+) -> tuple[pd.DataFrame, NWIS_Metadata]:
     """Get instantaneous values data from NWIS and return it as a DataFrame.
 
     .. note::
@@ -725,7 +733,7 @@ def get_iv(
     return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
 
 
-def get_pmcodes(**kwargs):
+def get_pmcodes(**kwargs: Any) -> NoReturn:
     """Defunct: use ``get_reference_table(collection='parameter-codes')``."""
     raise NameError(
         "`nwis.get_pmcodes` has been replaced "
@@ -733,7 +741,7 @@ def get_pmcodes(**kwargs):
     )
 
 
-def get_water_use(**kwargs):
+def get_water_use(**kwargs: Any) -> NoReturn:
     """Defunct: no current replacement."""
     raise NameError("`nwis.get_water_use` is defunct.")
 
@@ -743,8 +751,8 @@ def get_ratings(
     site: str | None = None,
     file_type: str = "base",
     ssl_check: bool = True,
-    **kwargs,
-) -> tuple[pd.DataFrame, BaseMetadata]:
+    **kwargs: Any,
+) -> tuple[pd.DataFrame, NWIS_Metadata]:
     """
     Rating table for an active USGS streamgage retrieval.
 
@@ -797,7 +805,9 @@ def get_ratings(
 
 
 @_deprecated
-def what_sites(ssl_check: bool = True, **kwargs) -> tuple[pd.DataFrame, BaseMetadata]:
+def what_sites(
+    ssl_check: bool = True, **kwargs: Any
+) -> tuple[pd.DataFrame, NWIS_Metadata]:
     """
     Search NWIS for sites within a region with specific data.
 
@@ -847,7 +857,7 @@ def get_record(
     state: str | None = None,
     service: str = "iv",
     ssl_check: bool = True,
-    **kwargs,
+    **kwargs: Any,
 ) -> pd.DataFrame:
     """
     Get data from NWIS and return it as a ``pandas.DataFrame``.
@@ -985,7 +995,10 @@ def get_record(
         return df
 
     elif service == "ratings":
-        df, _ = get_ratings(site=sites, ssl_check=ssl_check, **kwargs)
+        # the ratings service is single-site; get_ratings takes a scalar site
+        df, _ = get_ratings(
+            site=cast("str | None", sites), ssl_check=ssl_check, **kwargs
+        )
         return df
 
     elif service == "stat":
@@ -996,7 +1009,7 @@ def get_record(
         raise TypeError(f"{service} service not yet implemented")
 
 
-def _read_json(json):
+def _read_json(json: dict[str, Any]) -> pd.DataFrame:
     """
     Reads a NWIS Water Services formatted JSON into a ``pandas.DataFrame``.
 
@@ -1092,7 +1105,7 @@ def _read_json(json):
     return merged_df
 
 
-def _read_rdb(rdb):
+def _read_rdb(rdb: str) -> pd.DataFrame:
     """Parse an NWIS RDB response and apply NWIS-specific post-processing.
 
     Thin wrapper around :func:`dataretrieval.rdb.read_rdb` that adds the
@@ -1102,7 +1115,7 @@ def _read_rdb(rdb):
     return format_response(read_rdb(rdb, dtypes=_NWIS_RDB_DTYPES))
 
 
-def _check_sites_value_types(sites):
+def _check_sites_value_types(sites: list[str] | str | None) -> None:
     if sites and not isinstance(sites, list) and not isinstance(sites, str):
         raise TypeError("sites must be a string or a list of strings")
 
@@ -1128,7 +1141,7 @@ class NWIS_Metadata(BaseMetadata):
 
     """
 
-    def __init__(self, response, **parameters) -> None:
+    def __init__(self, response: httpx.Response, **parameters: Any) -> None:
         """Generates a standard set of metadata informed by the response with specific
         metadata for NWIS data.
 

@@ -23,7 +23,7 @@ HTTPX_DEFAULTS: dict[str, Any] = {
 }
 
 
-def to_str(listlike, delimiter=","):
+def to_str(listlike: object, delimiter: str = ",") -> str | None:
     """Translates list-like objects into strings.
 
     Parameters
@@ -60,7 +60,9 @@ def to_str(listlike, delimiter=","):
     return None
 
 
-def format_datetime(df, date_field, time_field, tz_field):
+def format_datetime(
+    df: pd.DataFrame, date_field: str, time_field: str, tz_field: str
+) -> pd.DataFrame:
     """Creates a datetime field from separate date, time, and
     time zone fields.
 
@@ -222,7 +224,7 @@ class BaseMetadata:
 
     """
 
-    def __init__(self, response) -> None:
+    def __init__(self, response: httpx.Response) -> None:
         """Generates a standard set of metadata informed by the response.
 
         Parameters
@@ -251,13 +253,13 @@ class BaseMetadata:
 
     # These properties are to be set by `nwis` or `wqp`-specific metadata classes.
     @property
-    def site_info(self):
+    def site_info(self) -> Any:
         raise NotImplementedError(
             "site_info must be implemented by utils.BaseMetadata children"
         )
 
     @property
-    def variable_info(self):
+    def variable_info(self) -> Any:
         raise NotImplementedError(
             "variable_info must be implemented by utils.BaseMetadata children"
         )
@@ -285,7 +287,12 @@ def _url_too_long_error(detail: str) -> ValueError:
     )
 
 
-def query(url, payload, delimiter=",", ssl_check=True):
+def query(
+    url: str,
+    payload: dict[str, Any],
+    delimiter: str = ",",
+    ssl_check: bool = True,
+) -> httpx.Response:
     """Send a query.
 
     Wrapper for httpx.get that handles errors, converts listed
@@ -354,10 +361,10 @@ def query(url, payload, delimiter=",", ssl_check=True):
 class NoSitesError(Exception):
     """Custom error class used when selection criteria returns no sites/data."""
 
-    def __init__(self, url):
+    def __init__(self, url: httpx.URL) -> None:
         self.url = url
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             "No sites/data found using the selection criteria specified in "
             f"url: {self.url}"
