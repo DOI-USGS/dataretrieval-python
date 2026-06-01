@@ -155,7 +155,7 @@ def get_results(
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
     df = _attach_datetime_columns(df)
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def what_sites(
@@ -210,7 +210,7 @@ def what_sites(
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def what_organizations(
@@ -261,7 +261,7 @@ def what_organizations(
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def what_projects(ssl_check=True, legacy=True, **kwargs):
@@ -308,7 +308,7 @@ def what_projects(ssl_check=True, legacy=True, **kwargs):
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def what_activities(
@@ -372,7 +372,7 @@ def what_activities(
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def what_detection_limits(
@@ -430,7 +430,7 @@ def what_detection_limits(
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def what_habitat_metrics(
@@ -481,7 +481,7 @@ def what_habitat_metrics(
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def what_project_weights(ssl_check=True, legacy=True, **kwargs):
@@ -533,7 +533,7 @@ def what_project_weights(ssl_check=True, legacy=True, **kwargs):
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
@@ -585,7 +585,7 @@ def what_activity_metrics(ssl_check=True, legacy=True, **kwargs):
 
     df = pd.read_csv(StringIO(response.text), delimiter=",", low_memory=False)
 
-    return df, WQP_Metadata(response)
+    return df, WQP_Metadata(response, **kwargs)
 
 
 def wqp_url(service):
@@ -627,10 +627,10 @@ class WQP_Metadata(BaseMetadata):
         Response elapsed time
     header : httpx.Headers
         Response headers
-    comments : None
-        Metadata comments. WQP does not return comments.
-    site_info : tuple[pd.DataFrame, NWIS_Metadata] | None
-        Site information if the query included `sites`, `site` or `site_no`.
+    comment : None
+        WQP does not return comments.
+    site_info : tuple[pd.DataFrame, WQP_Metadata] | None
+        Site information (via ``what_sites``) if the query included a ``siteid``.
     """
 
     def __init__(self, response, **parameters) -> None:
@@ -660,24 +660,21 @@ class WQP_Metadata(BaseMetadata):
     def site_info(self) -> tuple[DataFrame, WQP_Metadata] | None:
         """Site information for the query.
 
-        Populated when the query included ``sites``, ``site`` or
-        ``site_no`` (in that order of preference); ``None`` otherwise.
+        Populated (via :func:`dataretrieval.wqp.what_sites`) when the query
+        included a ``siteid`` (the WQP site identifier, e.g.
+        ``"USGS-05586100"``); ``None`` otherwise.
 
         Returns
         -------
         df : ``pandas.DataFrame``
-            Formatted requested data from calling ``wqp.what_sites``.
+            Site data returned by ``wqp.what_sites``.
         md : :obj:`dataretrieval.wqp.WQP_Metadata`
             A WQP_Metadata object.
         """
-        if "sites" in self._parameters:
-            return what_sites(sites=self._parameters["sites"])
-        elif "site" in self._parameters:
-            return what_sites(sites=self._parameters["site"])
-        elif "site_no" in self._parameters:
-            return what_sites(sites=self._parameters["site_no"])
-        else:
+        siteid = self._parameters.get("siteid")
+        if siteid is None:
             return None
+        return what_sites(siteid=siteid)
 
 
 def _check_kwargs(kwargs):
