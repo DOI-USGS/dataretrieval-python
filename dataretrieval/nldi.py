@@ -32,6 +32,21 @@ def _query_nldi(url, query_params, error_message):
     return response_data
 
 
+def _features_to_gdf(feature_collection: dict) -> gpd.GeoDataFrame:
+    """Build a GeoDataFrame from an NLDI FeatureCollection, tolerating empties.
+
+    NLDI can legitimately return no features (e.g. a feature with nothing
+    upstream), and :func:`_query_nldi` returns ``{}`` when a 200 response
+    carries no JSON body. ``GeoDataFrame.from_features`` raises on those
+    (there's no geometry column to attach the CRS to), so return an empty
+    GeoDataFrame with the correct CRS instead of crashing.
+    """
+    features = feature_collection.get("features") if feature_collection else None
+    if not features:
+        return gpd.GeoDataFrame(geometry=[], crs=_CRS)
+    return gpd.GeoDataFrame.from_features(feature_collection, crs=_CRS)
+
+
 def get_flowlines(
     navigation_mode: str,
     distance: int = 5,
@@ -104,7 +119,7 @@ def get_flowlines(
     feature_collection = _query_nldi(url, query_params, err_msg)
     if as_json:
         return feature_collection
-    gdf = gpd.GeoDataFrame.from_features(feature_collection, crs=_CRS)
+    gdf = _features_to_gdf(feature_collection)
     return gdf
 
 
@@ -157,7 +172,7 @@ def get_basin(
     feature_collection = _query_nldi(url, query_params, err_msg)
     if as_json:
         return feature_collection
-    gdf = gpd.GeoDataFrame.from_features(feature_collection, crs=_CRS)
+    gdf = _features_to_gdf(feature_collection)
     return gdf
 
 
@@ -273,7 +288,7 @@ def get_features(
     feature_collection = _query_nldi(url, query_params, err_msg)
     if as_json:
         return feature_collection
-    gdf = gpd.GeoDataFrame.from_features(feature_collection, crs=_CRS)
+    gdf = _features_to_gdf(feature_collection)
     return gdf
 
 
@@ -307,7 +322,7 @@ def get_features_by_data_source(data_source: str) -> gpd.GeoDataFrame:
     url = f"{NLDI_API_BASE_URL}/{data_source}"
     err_msg = f"Error getting features for data source '{data_source}'"
     feature_collection = _query_nldi(url, {}, err_msg)
-    gdf = gpd.GeoDataFrame.from_features(feature_collection, crs=_CRS)
+    gdf = _features_to_gdf(feature_collection)
     return gdf
 
 
