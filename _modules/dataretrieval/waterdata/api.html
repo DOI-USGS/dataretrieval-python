@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+gb375f19c6 documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+gd3779def0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=39c68b89"></script>
+      <script src="../../../_static/documentation_options.js?v=e5f77573"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -2212,7 +2212,7 @@
 
 <div class="viewcode-block" id="get_codes">
 <a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_codes">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_codes</span><span class="p">(</span><span class="n">code_service</span><span class="p">:</span> <span class="n">CODE_SERVICES</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_codes</span><span class="p">(</span><span class="n">code_service</span><span class="p">:</span> <span class="n">CODE_SERVICES</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return codes from a Samples code service.</span>
 
 <span class="sd">    Parameters</span>
@@ -2221,6 +2221,13 @@
 <span class="sd">        One of the following options: &quot;states&quot;, &quot;counties&quot;, &quot;countries&quot;</span>
 <span class="sd">        &quot;sitetype&quot;, &quot;samplemedia&quot;, &quot;characteristicgroup&quot;, &quot;characteristics&quot;,</span>
 <span class="sd">        or &quot;observedproperty&quot;</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame``</span>
+<span class="sd">        The requested code table.</span>
+<span class="sd">    md : :obj:`dataretrieval.utils.BaseMetadata`</span>
+<span class="sd">        Metadata for the query (URL, query time, response headers).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">valid_code_services</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">CODE_SERVICES</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">code_service</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_code_services</span><span class="p">:</span>
@@ -2240,7 +2247,7 @@
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data_list</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">df</span></div>
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
 
 
 

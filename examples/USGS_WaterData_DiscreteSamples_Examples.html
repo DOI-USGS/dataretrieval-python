@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Discrete water-quality samples: get_samples &mdash; dataretrieval 0.1.dev1+gb375f19c6 documentation</title>
+  <title>Discrete water-quality samples: get_samples &mdash; dataretrieval 0.1.dev1+gd3779def0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=39c68b89"></script>
+      <script src="../_static/documentation_options.js?v=e5f77573"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -621,86 +621,18 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
-</pre></div>
+<div class="prompt empty docutils container">
 </div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">TypeError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[12]</span><span class="ansi-green-fg">, line 2</span>
+<span class="ansi-green-fg">      1</span> site_type_info = waterdata.get_codes(code_service=<span class="ansi-yellow-fg">&#34;sitetype&#34;</span>)
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> site_type_info[[<span class="ansi-yellow-fg">&#34;typeCode&#34;</span>, <span class="ansi-yellow-fg">&#34;typeLongName&#34;</span>]].head(<span class="ansi-green-fg">10</span>)
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>typeCode</th>
-      <th>typeLongName</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>GL</td>
-      <td>Glacier</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>WE</td>
-      <td>Wetland</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>LA</td>
-      <td>Land</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>LA-EX</td>
-      <td>Excavation</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>LA-OU</td>
-      <td>Outcrop</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>LA-PLY</td>
-      <td>Playa</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>LA-SNK</td>
-      <td>Sinkhole</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>LA-SH</td>
-      <td>Soil hole</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>LA-SR</td>
-      <td>Shore</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>LA-VOL</td>
-      <td>Volcanic vent</td>
-    </tr>
-  </tbody>
-</table>
-</div></div>
+<span class="ansi-red-fg">TypeError</span>: tuple indices must be integers or slices, not list
+</pre></div></div>
 </div>
 </section>
 <section id="activityMediaName">
@@ -715,12 +647,16 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
-</pre></div>
+<div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-[&#39;Air&#39;, &#39;Biological tissue&#39;, &#39;Other&#39;, &#39;Sediment&#39;, &#39;Soil&#39;, &#39;Water&#39;, nan]
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">TypeError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[13]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> waterdata.get_codes(code_service=<span class="ansi-yellow-fg">&#34;samplemedia&#34;</span>)[<span class="ansi-yellow-fg">&#34;activityMedia&#34;</span>].tolist()
+
+<span class="ansi-red-fg">TypeError</span>: tuple indices must be integers or slices, not str
 </pre></div></div>
 </div>
 </section>
@@ -736,29 +672,16 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
-</pre></div>
+<div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-[&#39;Biological&#39;,
- &#39;Information&#39;,
- &#39;Inorganics, Major, Metals&#39;,
- &#39;Inorganics, Major, Non-metals&#39;,
- &#39;Inorganics, Minor, Metals&#39;,
- &#39;Inorganics, Minor, Non-metals&#39;,
- &#39;Microbiological&#39;,
- &#39;Nutrient&#39;,
- &#39;Organics, Other&#39;,
- &#39;Organics, PCBs&#39;,
- &#39;Organics, Pesticide&#39;,
- &#39;Organics, PFAS&#39;,
- &#39;Physical&#39;,
- &#39;Population/Community&#39;,
- &#39;Radiochemical&#39;,
- &#39;Sediment&#39;,
- &#39;Stable Isotopes&#39;,
- &#39;Toxicity&#39;]
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">TypeError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[14]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> waterdata.get_codes(code_service=<span class="ansi-yellow-fg">&#34;characteristicgroup&#34;</span>)[<span class="ansi-yellow-fg">&#34;characteristicGroup&#34;</span>].tolist()
+
+<span class="ansi-red-fg">TypeError</span>: tuple indices must be integers or slices, not str
 </pre></div></div>
 </div>
 </section>
@@ -777,16 +700,29 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
+<div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 unique characteristic names:
-[&#39;Hydroxy-amitriptyline, 10-&#39;, &#39;1,1,1,2-Tetrachloroethane&#39;, &#39;1,1,1-Trichloro-2-propanone&#39;, &#39;1,1,1-Trichloroethane&#39;, &#39;1,1,2,2-Tetrachloroethane&#39;]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">TypeError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[15]</span><span class="ansi-green-fg">, line 3</span>
+<span class="ansi-green-fg">      1</span> characteristic_info = waterdata.get_codes(code_service=<span class="ansi-yellow-fg">&#34;characteristics&#34;</span>)
+<span class="ansi-green-fg">      2</span> print(<span class="ansi-yellow-fg">&#34;unique characteristic names:&#34;</span>)
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">3</span> print(characteristic_info[<span class="ansi-yellow-fg">&#34;characteristicName&#34;</span>].drop_duplicates().head().tolist())
+<span class="ansi-green-fg">      4</span> print(<span class="ansi-yellow-fg">&#34;\nexample USGS parameter codes:&#34;</span>)
+<span class="ansi-green-fg">      5</span> print(characteristic_info[<span class="ansi-yellow-fg">&#34;parameterCode&#34;</span>].dropna().drop_duplicates().head().tolist())
 
-example USGS parameter codes:
-[&#39;67995&#39;, &#39;52417&#39;, &#39;30089&#39;, &#39;62235&#39;, &#39;77562&#39;]
+<span class="ansi-red-fg">TypeError</span>: tuple indices must be integers or slices, not str
 </pre></div></div>
 </div>
 </section>
@@ -802,16 +738,16 @@ example USGS parameter codes:
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
-</pre></div>
+<div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-[&#39;10-Hydroxy-amitriptyline, water, filtered, recoverable&#39;,
- &#39;1,1,1,2-Tetrachloroethane, bed sediment (dry mass basis), recoverable&#39;,
- &#39;1,1,1,2-Tetrachloroethane, soil (dry mass basis), recoverable&#39;,
- &#39;1,1,1,2-Tetrachloroethane, water, unfiltered, recoverable&#39;,
- &#39;1,1,1-Trichloro-2-propanone, water, filtered, recoverable&#39;]
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">TypeError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[16]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> waterdata.get_codes(code_service=<span class="ansi-yellow-fg">&#34;observedproperty&#34;</span>)[<span class="ansi-yellow-fg">&#34;observedProperty&#34;</span>].head().tolist()
+
+<span class="ansi-red-fg">TypeError</span>: tuple indices must be integers or slices, not str
 </pre></div></div>
 </div>
 <p>Other filters worth knowing about: <code class="docutils literal notranslate"><span class="pre">projectIdentifier</span></code> (needs prior project info), <code class="docutils literal notranslate"><span class="pre">recordIdentifierUserSupplied</span></code> (needs the supplier’s record id), and <code class="docutils literal notranslate"><span class="pre">activityStartDateLower</span></code> / <code class="docutils literal notranslate"><span class="pre">activityStartDateUpper</span></code> for date ranges (used above).</p>
