@@ -233,7 +233,7 @@ def _parse_datetime(value: str) -> datetime | None:
     return None
 
 
-def _format_one(dt, *, date: bool, local_tz) -> str | None:
+def _format_one(dt, *, date: bool) -> str | None:
     """Format a single datetime element for inclusion in the API time arg."""
     if pd.isna(dt) or dt == "" or dt is None:
         return ".."
@@ -242,7 +242,11 @@ def _format_one(dt, *, date: bool, local_tz) -> str | None:
         return None
     if date:
         return parsed.strftime("%Y-%m-%d")
-    aware = parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=local_tz)
+    # Naive inputs are interpreted in the system local zone (for backwards
+    # compatibility). Use ``.astimezone()`` rather than a fixed offset so each
+    # value is resolved against the DST rules for ITS OWN date — a frozen
+    # ``datetime.now()`` offset shifted off-season inputs by an hour.
+    aware = parsed if parsed.tzinfo is not None else parsed.astimezone()
     return aware.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
@@ -327,12 +331,8 @@ def _format_api_dates(
             return single
 
     # Half-bounded ranges: NA endpoints render as ".."; any unparseable non-NA
-    # element invalidates the range. Resolve the local tz only now — after the
-    # all-NA / duration / interval guards above have had their chance to return.
-    local_timezone = datetime.now().astimezone().tzinfo
-    formatted = [
-        _format_one(dt, date=date, local_tz=local_timezone) for dt in datetime_input
-    ]
+    # element invalidates the range.
+    formatted = [_format_one(dt, date=date) for dt in datetime_input]
     if any(f is None for f in formatted):
         return None
     return "/".join(formatted)
