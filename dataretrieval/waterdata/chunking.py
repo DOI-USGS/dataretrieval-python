@@ -66,6 +66,13 @@ import httpx
 import pandas as pd
 from anyio.from_thread import start_blocking_portal
 
+from dataretrieval.exceptions import (
+    DataRetrievalError,
+    RateLimited,
+    ServiceUnavailable,
+    TransientError,
+    Unchunkable,
+)
 from dataretrieval.utils import HTTPX_DEFAULTS
 
 from . import _progress
@@ -383,70 +390,7 @@ def _passthrough_result(
     return frame, response
 
 
-class _RetryableTransportError(RuntimeError):
-    """
-    Base for typed HTTP transport failures the chunker recognizes as
-    transient.
-
-    Raised by :func:`dataretrieval.waterdata.utils._raise_for_non_200`
-    and walked by :func:`_classify_chunk_error`. One subclass per
-    recoverable HTTP status family (429 → :class:`RateLimited`,
-    5xx → :class:`ServiceUnavailable`); ``ChunkedCall`` wraps them as
-    resumable :class:`ChunkInterrupted` subclasses.
-
-    Parameters
-    ----------
-    message : str
-        Human-readable error message.
-    retry_after : float, optional
-        Seconds to wait before retrying, parsed from the
-        ``Retry-After`` response header.
-
-    Attributes
-    ----------
-    retry_after : float or None
-        Seconds to wait before retrying, parsed from the
-        ``Retry-After`` response header. ``None`` when the header was
-        absent or unparseable.
-    """
-
-    def __init__(self, message: str, *, retry_after: float | None = None) -> None:
-        super().__init__(message)
-        self.retry_after = retry_after
-
-
-class RateLimited(_RetryableTransportError):
-    """
-    A USGS Water Data API request was rejected with HTTP 429.
-
-    Exposed as a typed exception so callers (notably the multi-value
-    chunker) can detect rate-limit failures via ``isinstance`` instead
-    of string-matching error messages.
-    """
-
-
-class ServiceUnavailable(_RetryableTransportError):
-    """
-    A USGS Water Data API request was rejected with HTTP 5xx.
-
-    Surfaced as a typed exception (parallel to :class:`RateLimited`)
-    so ``ChunkedCall`` can treat transient server failures as
-    resumable interruptions rather than fatal programmer errors.
-    """
-
-
-class RequestTooLarge(ValueError):
-    """
-    No chunking plan fits the URL byte limit.
-
-    Raised when even the smallest reducible plan (every list axis at
-    singleton chunks and the filter at one clause per sub-request)
-    still exceeds the server's byte limit. Shrink the input lists,
-    simplify the filter, or split the call manually.
-    """
-
-
-class ChunkInterrupted(RuntimeError):
+class ChunkInterrupted(DataRetrievalError, RuntimeError):
     """
     Base class for mid-stream chunk failures whose completed work is
     preserved and resumable.
@@ -854,7 +798,7 @@ class ChunkPlan:
 
     Raises
     ------
-    RequestTooLarge
+    Unchunkable
         If the request needs chunking but even the singleton plan
         doesn't fit ``url_limit``.
     """
@@ -889,7 +833,7 @@ class ChunkPlan:
                 filter_expr, args.get("filter_lang")
             ):
                 return
-            raise RequestTooLarge(
+            raise Unchunkable(
                 f"Request exceeds {url_limit} bytes (URL + body) and has no "
                 f"chunkable multi-value argument to split (e.g. a single large "
                 f"CQL `IN` clause, or one oversized value). Narrow the query, "
@@ -940,7 +884,7 @@ class ChunkPlan:
 
         Raises
         ------
-        RequestTooLarge
+        Unchunkable
             If even the singleton plan (every axis at one atom per
             chunk) still exceeds ``url_limit``.
         """
@@ -961,7 +905,7 @@ class ChunkPlan:
                         biggest_axis, biggest_idx, biggest_size = axis, idx, size
 
             if biggest_axis is None:
-                raise RequestTooLarge(
+                raise Unchunkable(
                     f"Request exceeds {url_limit} bytes (URL + body) at the "
                     f"smallest reducible plan (every axis at one atom per "
                     f"sub-request). Reduce input sizes, shorten or simplify "
@@ -1136,7 +1080,7 @@ def _retryable(exc: BaseException) -> tuple[bool, float | None]:
         ``(retryable, retry_after)`` — the server ``Retry-After`` hint
         (seconds) when the transient carried one, else ``None``.
     """
-    if isinstance(exc, (RateLimited, ServiceUnavailable)):
+    if isinstance(exc, TransientError):
         return True, exc.retry_after
     if isinstance(exc, httpx.TransportError):
         return True, None
@@ -1730,7 +1674,7 @@ def multi_value_chunked(
 
     Raises
     ------
-    RequestTooLarge
+    Unchunkable
         If no plan can fit ``url_limit``.
     ChunkInterrupted
         On a mid-execution transient — 429, 5xx, or a bare transport
