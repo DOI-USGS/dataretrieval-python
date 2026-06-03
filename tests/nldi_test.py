@@ -373,15 +373,16 @@ def test_validate_data_source_rejects_malformed_catalog(httpx_mock, monkeypatch)
         nldi._validate_data_source("WQP")
 
 
-def test_query_504_raises_value_error(httpx_mock):
-    """``utils.query`` must classify 504 Gateway Timeout as a 5xx
-    failure. Pre-fix: the membership check ``[500, 502, 503]`` missed
-    504 and returned the response unchanged, leading downstream
-    callers (e.g. ``_query_nldi``) to silently swallow the failure as
-    an empty dict via JSONDecodeError."""
+def test_query_504_raises_service_unavailable(httpx_mock):
+    """``utils.query`` must classify 504 Gateway Timeout as a 5xx failure
+    (the transient ``ServiceUnavailable``). Pre-fix: the membership check
+    ``[500, 502, 503]`` missed 504 and returned the response unchanged,
+    leading downstream callers (e.g. ``_query_nldi``) to silently swallow
+    the failure as an empty dict via JSONDecodeError."""
+    from dataretrieval.exceptions import ServiceUnavailable
     from dataretrieval.utils import query
 
     url = "https://example.invalid/x"
     httpx_mock.add_response(method="GET", url=f"{url}?a=1", status_code=504)
-    with pytest.raises(ValueError, match="Service Unavailable: 504"):
+    with pytest.raises(ServiceUnavailable, match="Service Unavailable: 504"):
         query(url, {"a": "1"})

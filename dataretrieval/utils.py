@@ -13,6 +13,13 @@ import pandas as pd
 
 import dataretrieval
 from dataretrieval.codes import tz
+from dataretrieval.exceptions import (
+    BadRequestError,
+    NoSitesError,
+    NotFoundError,
+    ServiceUnavailable,
+    URLTooLong,
+)
 
 # Typed as ``dict[str, Any]`` (not the inferred ``dict[str, object]``) so that
 # splatting it as ``**HTTPX_DEFAULTS`` into ``httpx.get`` / ``httpx.AsyncClient``
@@ -274,12 +281,40 @@ _URL_TOO_LONG_EXAMPLE = """
                         data_list.append(data)  # append results to list"""
 
 
-def _url_too_long_error(detail: str) -> ValueError:
-    return ValueError(
+def _url_too_long_error(detail: str) -> URLTooLong:
+    return URLTooLong(
         "Request URL too long. Modify your query to use fewer sites. "
         f"{detail}. Pseudo-code example of how to split your query: "
         f"\n {_URL_TOO_LONG_EXAMPLE}"
     )
+
+
+def _raise_for_status(response: httpx.Response) -> None:
+    """Map an unsuccessful HTTP status to a typed :class:`DataRetrievalError`;
+    return ``None`` on success.
+
+    Shared by the legacy :func:`query` path. The 4xx types stay
+    :class:`ValueError`-compatible (this path's historical contract), but a 5xx
+    raises the transient :class:`ServiceUnavailable` (a :class:`RuntimeError`),
+    since a server failure is retryable rather than a bad request.
+    """
+    status = response.status_code
+    if status == 400:
+        raise BadRequestError(
+            f"Bad Request, check that your parameters are correct. URL: {response.url}"
+        )
+    elif status == 404:
+        raise NotFoundError(
+            "Page Not Found Error. May be the result of an empty query. "
+            f"URL: {response.url}"
+        )
+    elif status == 414:
+        raise _url_too_long_error(f"API response reason: {response.reason_phrase}")
+    elif 500 <= status < 600:
+        raise ServiceUnavailable(
+            f"Service Unavailable: {status} {response.reason_phrase}. "
+            f"The service at {response.url} may be down or experiencing issues."
+        )
 
 
 def query(
@@ -312,11 +347,14 @@ def query(
 
     Raises
     ------
-    ValueError
-        If the service returns a 400, 404, 414, or 5xx status code, or if
-        ``httpx`` rejects the URL client-side (e.g. it is too long).
-    NoSitesError
-        If the response indicates that no sites or data matched the query.
+    DataRetrievalError
+        On failure: :class:`~dataretrieval.exceptions.BadRequestError` (400),
+        :class:`~dataretrieval.exceptions.NotFoundError` (404),
+        :class:`~dataretrieval.exceptions.URLTooLong` (414 or a client-side
+        over-long URL), :class:`~dataretrieval.exceptions.ServiceUnavailable`
+        (5xx), or :class:`~dataretrieval.exceptions.NoSitesError` (no sites/data
+        matched). The 4xx types are also :class:`ValueError`;
+        ``ServiceUnavailable`` is a :class:`RuntimeError`.
     """
 
     for key, value in payload.items():
@@ -338,37 +376,9 @@ def query(
     except httpx.InvalidURL as exc:
         raise _url_too_long_error(f"httpx rejected the URL client-side: {exc}") from exc
 
-    if response.status_code == 400:
-        raise ValueError(
-            f"Bad Request, check that your parameters are correct. URL: {response.url}"
-        )
-    elif response.status_code == 404:
-        raise ValueError(
-            "Page Not Found Error. May be the result of an empty query. "
-            + f"URL: {response.url}"
-        )
-    elif response.status_code == 414:
-        raise _url_too_long_error(f"API response reason: {response.reason_phrase}")
-    elif 500 <= response.status_code < 600:
-        raise ValueError(
-            f"Service Unavailable: {response.status_code} {response.reason_phrase}. "
-            + f"The service at {response.url} may be down or experiencing issues."
-        )
+    _raise_for_status(response)
 
     if response.text.startswith("No sites/data"):
         raise NoSitesError(response.url)
 
     return response
-
-
-class NoSitesError(Exception):
-    """Custom error class used when selection criteria return no sites/data."""
-
-    def __init__(self, url: httpx.URL) -> None:
-        self.url = url
-
-    def __str__(self) -> str:
-        return (
-            "No sites/data found using the selection criteria specified in "
-            f"url: {self.url}"
-        )

@@ -5,7 +5,7 @@ from unittest import mock
 import pandas as pd
 import pytest
 
-from dataretrieval import nwis, utils
+from dataretrieval import exceptions, nwis, utils
 
 
 class Test_query:
@@ -40,6 +40,80 @@ class Test_query:
         response = utils.query(url, payload)
         assert response.status_code == 200  # GET was successful
         assert "user-agent" in response.request.headers
+
+
+class Test_error_taxonomy:
+    """The unified request-error hierarchy.
+
+    Every module's request failures are catchable as ``DataRetrievalError``,
+    while remaining backward-compatible with the built-in type each path
+    historically raised (``ValueError`` for the legacy ``query`` path,
+    ``RuntimeError`` for the waterdata retryable types).
+    """
+
+    @pytest.mark.parametrize(
+        "status, exc_name, match, builtin",
+        [
+            (400, "BadRequestError", "Bad Request", ValueError),
+            (404, "NotFoundError", "Page Not Found", ValueError),
+            (414, "URLTooLong", "Request URL too long", ValueError),
+            (503, "ServiceUnavailable", "Service Unavailable: 503", RuntimeError),
+        ],
+    )
+    def test_query_maps_status_to_typed_error(
+        self, httpx_mock, status, exc_name, match, builtin
+    ):
+        """``query`` maps each HTTP status family to a typed error that is both a
+        ``DataRetrievalError`` (new, unified) and the built-in this path
+        historically raised for that kind of failure -- ``ValueError`` for a bad
+        request, ``RuntimeError`` for a transient 5xx -- with the message kept."""
+        exc_cls = getattr(exceptions, exc_name)
+        url = "https://example.invalid/x"
+        httpx_mock.add_response(method="GET", url=f"{url}?a=1", status_code=status)
+        with pytest.raises(exc_cls, match=match) as excinfo:
+            utils.query(url, {"a": "1"})
+        assert isinstance(excinfo.value, exceptions.DataRetrievalError)
+        assert isinstance(excinfo.value, builtin)  # backward compatibility
+
+    def test_query_failure_catchable_as_base(self, httpx_mock):
+        """A bare ``except DataRetrievalError`` catches a legacy query failure."""
+        url = "https://example.invalid/y"
+        httpx_mock.add_response(method="GET", url=f"{url}?a=1", status_code=400)
+        with pytest.raises(exceptions.DataRetrievalError):
+            utils.query(url, {"a": "1"})
+
+    def test_no_sites_error_is_data_retrieval_error(self):
+        """``NoSitesError`` joins the root (was a bare ``Exception``)."""
+        assert issubclass(exceptions.NoSitesError, exceptions.DataRetrievalError)
+        assert not issubclass(exceptions.NoSitesError, ValueError)  # unchanged
+
+    def test_waterdata_exceptions_share_the_root(self):
+        """waterdata's typed exceptions are ``DataRetrievalError`` too, so one
+        ``except`` clause spans the legacy and waterdata subsystems — while
+        keeping their historical ``RuntimeError`` / ``ValueError`` bases and the
+        shared family bases (``TransientError``, ``RequestTooLarge``)."""
+        from dataretrieval.waterdata.chunking import (
+            ChunkInterrupted,
+            RateLimited,
+            ServiceUnavailable,
+            Unchunkable,
+        )
+
+        for cls in (RateLimited, ServiceUnavailable, Unchunkable, ChunkInterrupted):
+            assert issubclass(cls, exceptions.DataRetrievalError)
+        # Transient transport failures: RuntimeError, under TransientError.
+        assert issubclass(RateLimited, exceptions.TransientError)
+        assert issubclass(ServiceUnavailable, exceptions.TransientError)
+        assert issubclass(ServiceUnavailable, RuntimeError)
+        # "Too large" failures: ValueError, under RequestTooLarge.
+        assert issubclass(Unchunkable, exceptions.RequestTooLarge)
+        assert issubclass(Unchunkable, ValueError)
+
+    def test_base_exported_at_top_level(self):
+        """Users can write ``except dataretrieval.DataRetrievalError``."""
+        import dataretrieval
+
+        assert dataretrieval.DataRetrievalError is exceptions.DataRetrievalError
 
 
 class Test_BaseMetadata:

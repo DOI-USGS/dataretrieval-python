@@ -27,12 +27,11 @@ import pandas as pd
 from anyio.from_thread import start_blocking_portal
 
 from dataretrieval import __version__
+from dataretrieval.exceptions import RateLimited, ServiceUnavailable
 from dataretrieval.utils import HTTPX_DEFAULTS, BaseMetadata
 from dataretrieval.waterdata import _progress, chunking
 from dataretrieval.waterdata.chunking import (
     _QUOTA_HEADER,
-    RateLimited,
-    ServiceUnavailable,
     _safe_elapsed,
     get_active_client,
 )
@@ -1104,8 +1103,8 @@ async def _paginate(
     ------
     RuntimeError
         On a non-200 initial response (typed
-        :class:`~dataretrieval.waterdata.chunking.RateLimited` /
-        :class:`~dataretrieval.waterdata.chunking.ServiceUnavailable`
+        :class:`~dataretrieval.exceptions.RateLimited` /
+        :class:`~dataretrieval.exceptions.ServiceUnavailable`
         for 429/5xx, otherwise plain ``RuntimeError`` from
         :func:`_error_body`), on an initial-page parse failure
         (wrapped via :func:`_paginated_failure_message` with the

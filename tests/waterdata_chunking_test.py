@@ -42,10 +42,10 @@ from dataretrieval.waterdata.chunking import (
     ChunkPlan,
     QuotaExhausted,
     RateLimited,
-    RequestTooLarge,
     RetryPolicy,
     ServiceInterrupted,
     ServiceUnavailable,
+    Unchunkable,
     _chunked_client,
     _combine_chunk_frames,
     _combine_chunk_responses,
@@ -172,10 +172,10 @@ def test_chunk_plan_returns_passthrough_when_no_chunkable_axes():
 def test_chunk_plan_raises_when_unchunkable_request_exceeds_limit():
     """A request with nothing to chunk that still exceeds the byte limit (e.g.
     a single large CQL ``IN`` clause with no top-level ``OR``) raises
-    RequestTooLarge instead of being shipped for the server to reject with an
+    Unchunkable instead of being shipped for the server to reject with an
     opaque HTTP 414."""
     args = {"monitoring_location_id": "scalar-only"}
-    with pytest.raises(RequestTooLarge):
+    with pytest.raises(Unchunkable):
         ChunkPlan(args, _fake_build, url_limit=10)
 
 
@@ -205,11 +205,11 @@ def test_chunk_plan_greedy_halving_targets_largest_axis_chunk():
 
 
 def test_chunk_plan_raises_request_too_large_at_singleton_floor():
-    """Limit below the singleton-per-axis floor → ``RequestTooLarge``;
+    """Limit below the singleton-per-axis floor → ``Unchunkable``;
     there's nothing left to shrink."""
     args = {"monitoring_location_id": ["A", "B"]}
     # base=200 alone exceeds limit=100; chunking can't help.
-    with pytest.raises(RequestTooLarge, match="smallest reducible"):
+    with pytest.raises(Unchunkable, match="smallest reducible"):
         ChunkPlan(args, _fake_build, url_limit=100)
 
 
@@ -250,14 +250,14 @@ def test_chunk_plan_minimizes_total_sub_requests():
 def test_chunk_plan_raises_when_smallest_plan_doesnt_fit():
     """If even the most aggressive joint plan (singleton lists +
     singleton filter clauses) still exceeds the limit, surface
-    RequestTooLarge — there's nothing left to shrink."""
+    Unchunkable — there's nothing left to shrink."""
     args = {
         "monitoring_location_id": ["A" * 10, "B" * 10],
         "filter": "x='12345' OR x='67890'",  # min clause is 9 chars
     }
     # Base 200 + singleton site (10) + singleton clause (9) = 219; limit
     # below 219 → no joint plan can fit.
-    with pytest.raises(RequestTooLarge):
+    with pytest.raises(Unchunkable):
         ChunkPlan(args, _fake_build, url_limit=210)
 
 
