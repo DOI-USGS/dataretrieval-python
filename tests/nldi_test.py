@@ -341,12 +341,11 @@ def test_validate_navigation_mode_normalizes_lowercase():
     assert _validate_navigation_mode("um") == "UM"
 
 
-def test_query_nldi_non_200_surfaces_reason_phrase(httpx_mock):
-    """``_query_nldi`` must include the response's reason phrase in
-    the raised ``ValueError``. Pre-fix this crashed with
-    ``AttributeError: 'Response' object has no attribute 'reason'``
-    because the migration to httpx renamed ``.reason`` →
-    ``.reason_phrase`` but missed this call site."""
+def test_query_nldi_non_200_raises_typed_error(httpx_mock):
+    """A non-200 NLDI response surfaces a typed ``DataRetrievalError`` (here a
+    429 → ``RateLimited``, raised by the shared ``query`` path)."""
+    from dataretrieval.exceptions import RateLimited
+
     httpx_mock.add_response(
         method="GET",
         url=f"{NLDI_API_BASE_URL}/WQP/USGS-MISSING/basin"
@@ -354,7 +353,7 @@ def test_query_nldi_non_200_surfaces_reason_phrase(httpx_mock):
         status_code=429,
     )
     mock_request_data_sources(httpx_mock)
-    with pytest.raises(ValueError, match="Error reason:"):
+    with pytest.raises(RateLimited, match="429"):
         nldi.get_basin(feature_source="WQP", feature_id="USGS-MISSING")
 
 
@@ -374,15 +373,15 @@ def test_validate_data_source_rejects_malformed_catalog(httpx_mock, monkeypatch)
 
 
 def test_query_504_raises_service_unavailable(httpx_mock):
-    """``utils.query`` must classify 504 Gateway Timeout as a 5xx failure
-    (the transient ``ServiceUnavailable``). Pre-fix: the membership check
-    ``[500, 502, 503]`` missed 504 and returned the response unchanged,
-    leading downstream callers (e.g. ``_query_nldi``) to silently swallow
-    the failure as an empty dict via JSONDecodeError."""
+    """``utils.query`` classifies any 5xx (here 504 Gateway Timeout) as the
+    transient ``ServiceUnavailable`` -- the whole 5xx range, not an enumerated
+    subset of codes."""
     from dataretrieval.exceptions import ServiceUnavailable
     from dataretrieval.utils import query
 
     url = "https://example.invalid/x"
     httpx_mock.add_response(method="GET", url=f"{url}?a=1", status_code=504)
-    with pytest.raises(ServiceUnavailable, match="Service Unavailable: 504"):
+    # Match on the status number — robust against the exact message, which the
+    # legacy query path renders verbatim as "HTTP 504 <reason> (URL: ...)".
+    with pytest.raises(ServiceUnavailable, match="504"):
         query(url, {"a": "1"})

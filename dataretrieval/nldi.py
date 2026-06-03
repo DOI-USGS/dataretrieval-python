@@ -19,13 +19,11 @@ _VALID_NAVIGATION_MODES = ("UM", "DM", "UT", "DD")
 def _query_nldi(
     url: str,
     query_params: dict[str, str],
-    error_message: str,
 ) -> dict[str, Any] | list[Any]:
-    # A helper function to query the NLDI API
+    # A helper function to query the NLDI API. ``query()`` already raises a
+    # typed ``DataRetrievalError`` for any HTTP error response, so a returned
+    # response is a success that we only need to parse.
     response = query(url, payload=query_params)
-    if response.status_code != 200:
-        raise ValueError(f"{error_message}. Error reason: {response.reason_phrase}")
-
     response_data: dict[str, Any] | list[Any] = {}
     try:
         response_data = response.json()
@@ -112,15 +110,7 @@ def get_flowlines(
     if stop_comid is not None:
         query_params["stopComid"] = str(stop_comid)
 
-    if feature_source:
-        err_msg = (
-            f"Error getting flowlines for feature source '{feature_source}'"
-            f" and feature_id '{feature_id}'"
-        )
-    else:
-        err_msg = f"Error getting flowlines for comid '{comid}'"
-
-    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params, err_msg))
+    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params))
     if as_json:
         return feature_collection
     gdf = _features_to_gdf(feature_collection)
@@ -172,11 +162,7 @@ def get_basin(
         "simplified": simplified_str,
         "splitCatchment": split_catchment_str,
     }
-    err_msg = (
-        f"Error getting basin for feature source '{feature_source}' and "
-        f"feature_id '{feature_id}'"
-    )
-    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params, err_msg))
+    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params))
     if as_json:
         return feature_collection
     gdf = _features_to_gdf(feature_collection)
@@ -266,7 +252,6 @@ def get_features(
             )
         url = f"{NLDI_API_BASE_URL}/comid/position"
         query_params = {"coords": f"POINT({long} {lat})"}
-        err_msg = f"Error getting features for lat '{lat}' and long '{long}'"
     else:
         if (comid is not None or data_source is not None) and navigation_mode is None:
             raise ValueError(
@@ -290,9 +275,8 @@ def get_features(
         else:
             url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}"
             query_params = {}
-        err_msg = _features_err_msg(feature_source, feature_id, comid, data_source)
 
-    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params, err_msg))
+    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params))
     if as_json:
         return feature_collection
     gdf = _features_to_gdf(feature_collection)
@@ -327,8 +311,7 @@ def get_features_by_data_source(data_source: str) -> gpd.GeoDataFrame:
     # validate the data source
     _validate_data_source(data_source)
     url = f"{NLDI_API_BASE_URL}/{data_source}"
-    err_msg = f"Error getting features for data source '{data_source}'"
-    feature_collection = cast("dict[str, Any]", _query_nldi(url, {}, err_msg))
+    feature_collection = cast("dict[str, Any]", _query_nldi(url, {}))
     gdf = _features_to_gdf(feature_collection)
     return gdf
 
@@ -477,9 +460,7 @@ def _validate_data_source(data_source: str) -> None:
     # get the available data/feature sources - if not already cached
     if _AVAILABLE_DATA_SOURCES is None:
         url = f"{NLDI_API_BASE_URL}/"
-        available_data_sources = _query_nldi(
-            url, {}, "Error getting available data sources"
-        )
+        available_data_sources = _query_nldi(url, {})
         if not isinstance(available_data_sources, list) or not all(
             isinstance(ds, dict) and "source" in ds for ds in available_data_sources
         ):
@@ -496,20 +477,6 @@ def _validate_data_source(data_source: str) -> None:
             f" Available data sources are: {_AVAILABLE_DATA_SOURCES}"
         )
         raise ValueError(err_msg)
-
-
-def _features_err_msg(
-    feature_source: str | None,
-    feature_id: str | None,
-    comid: int | None,
-    data_source: str | None,
-) -> str:
-    if feature_source is not None:
-        return (
-            f"Error getting features for feature source '{feature_source}'"
-            f" and feature_id '{feature_id}', and data source '{data_source}'"
-        )
-    return f"Error getting features for comid '{comid}' and data source '{data_source}'"
 
 
 def _validate_navigation_mode(navigation_mode: str | None) -> str:

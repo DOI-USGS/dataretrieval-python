@@ -15,16 +15,14 @@ class Test_query:
         """Test to confirm error when query URL too long.
 
         Test based on GitHub Issue #64.
-        The server may respond with a 414 (converted to ValueError by query())
-        or abruptly close the connection (ConnectionError). Both are valid
-        responses to an excessively long URL.
+        The server may respond with a 414 (converted to URLTooLong by query())
+        or abruptly close the connection (a transport error, now wrapped as
+        NetworkError). Both are valid responses to an excessively long URL.
         """
-        import httpx
-
         # all sites in MD
         sites, _ = nwis.what_sites(stateCd="MD")
         # raise error by trying to query them all, so URL is way too long
-        with pytest.raises((ValueError, httpx.ConnectError)):
+        with pytest.raises((exceptions.URLTooLong, exceptions.NetworkError)):
             nwis.get_iv(sites=sites.site_no.values.tolist())
 
     def test_header(self):
@@ -45,35 +43,62 @@ class Test_query:
 class Test_error_taxonomy:
     """The unified request-error hierarchy.
 
-    Every module's request failures are catchable as ``DataRetrievalError``,
-    while remaining backward-compatible with the built-in type each path
-    historically raised (``ValueError`` for the legacy ``query`` path,
-    ``RuntimeError`` for the waterdata retryable types).
+    Every module's request failure is catchable as ``DataRetrievalError``.
+    A status error is an ``HTTPError`` carrying ``.status_code`` (the retryable
+    429 / 5xx subset is ``TransientError``); a connection failure is a
+    ``NetworkError``. The sole base is ``DataRetrievalError`` -- no builtin
+    (``ValueError`` / ``RuntimeError``) mixins.
     """
 
     @pytest.mark.parametrize(
-        "status, exc_name, match, builtin",
+        "status, exc_name",
         [
-            (400, "BadRequestError", "Bad Request", ValueError),
-            (404, "NotFoundError", "Page Not Found", ValueError),
-            (414, "URLTooLong", "Request URL too long", ValueError),
-            (503, "ServiceUnavailable", "Service Unavailable: 503", RuntimeError),
+            (400, "HTTPError"),
+            (403, "HTTPError"),
+            (404, "HTTPError"),
+            (429, "RateLimited"),
+            (503, "ServiceUnavailable"),
         ],
     )
-    def test_query_maps_status_to_typed_error(
-        self, httpx_mock, status, exc_name, match, builtin
-    ):
-        """``query`` maps each HTTP status family to a typed error that is both a
-        ``DataRetrievalError`` (new, unified) and the built-in this path
-        historically raised for that kind of failure -- ``ValueError`` for a bad
-        request, ``RuntimeError`` for a transient 5xx -- with the message kept."""
+    def test_query_maps_status_to_typed_error(self, httpx_mock, status, exc_name):
+        """``query`` maps each HTTP status to the right typed ``DataRetrievalError``:
+        a generic ``HTTPError`` (carrying ``.status_code``) for a fatal 4xx, and
+        the transient ``RateLimited`` / ``ServiceUnavailable`` for 429 / 5xx. The
+        too-long-URL statuses (413 / 414) are covered separately because their
+        message is the actionable remediation, not the bare status number."""
         exc_cls = getattr(exceptions, exc_name)
         url = "https://example.invalid/x"
         httpx_mock.add_response(method="GET", url=f"{url}?a=1", status_code=status)
-        with pytest.raises(exc_cls, match=match) as excinfo:
+        with pytest.raises(exc_cls, match=str(status)) as excinfo:
             utils.query(url, {"a": "1"})
         assert isinstance(excinfo.value, exceptions.DataRetrievalError)
-        assert isinstance(excinfo.value, builtin)  # backward compatibility
+        if isinstance(excinfo.value, exceptions.HTTPError):
+            assert excinfo.value.status_code == status
+
+    @pytest.mark.parametrize("status", [413, 414])
+    def test_query_too_long_url_gives_actionable_message(self, httpx_mock, status):
+        """A server 413 / 414 surfaces as ``URLTooLong`` carrying the actionable
+        "Modify your query" remediation (the same message as the client-side
+        over-long-URL path), not a bare ``HTTP 414`` status line."""
+        url = "https://example.invalid/x"
+        httpx_mock.add_response(method="GET", url=f"{url}?a=1", status_code=status)
+        with pytest.raises(exceptions.URLTooLong, match="Modify your query") as excinfo:
+            utils.query(url, {"a": "1"})
+        assert isinstance(excinfo.value, exceptions.RequestTooLarge)
+
+    def test_transport_error_wrapped_as_network_error(self, httpx_mock):
+        """A connection-level failure (no HTTP response) surfaces as the typed
+        ``NetworkError`` -- catchable via ``except DataRetrievalError`` like the
+        response-based errors, with the original ``httpx`` exception on
+        ``__cause__`` -- rather than leaking a raw ``httpx`` exception."""
+        import httpx
+
+        httpx_mock.add_exception(httpx.ConnectError("name resolution failed"))
+        with pytest.raises(exceptions.NetworkError) as excinfo:
+            utils.query("https://example.invalid/x", {"a": "1"})
+        assert isinstance(excinfo.value, exceptions.DataRetrievalError)
+        assert not isinstance(excinfo.value, exceptions.HTTPError)  # no status
+        assert isinstance(excinfo.value.__cause__, httpx.ConnectError)
 
     def test_query_failure_catchable_as_base(self, httpx_mock):
         """A bare ``except DataRetrievalError`` catches a legacy query failure."""
@@ -82,16 +107,72 @@ class Test_error_taxonomy:
         with pytest.raises(exceptions.DataRetrievalError):
             utils.query(url, {"a": "1"})
 
+    def test_uniform_retry_attributes_readable_on_every_error(self):
+        """Every error exposes ``.status_code`` / ``.retry_after`` / ``.retryable``
+        so a base ``except DataRetrievalError as e`` can branch and retry without
+        an ``AttributeError`` on the types that lack a status (URLTooLong,
+        NetworkError, NoSitesError, ...). ``.retryable`` marks the 429/5xx and
+        connection failures."""
+        import httpx
+
+        # (error, status_code, retry_after, retryable)
+        cases = [
+            (exceptions.error_for_status(404, "x"), 404, None, False),
+            (exceptions.error_for_status(429, "x", retry_after=5.0), 429, 5.0, True),
+            (exceptions.error_for_status(503, "x"), 503, None, True),
+            (exceptions.error_for_status(414, "x"), None, None, False),  # URLTooLong
+            (exceptions.NetworkError("x"), None, None, True),
+            (exceptions.NoSitesError(httpx.URL("https://x/y")), None, None, False),
+            (exceptions.Unchunkable("x"), None, None, False),
+        ]
+        for err, status, retry_after, retryable in cases:
+            assert err.status_code == status, err
+            assert err.retry_after == retry_after, err
+            assert err.retryable is retryable, err
+
     def test_no_sites_error_is_data_retrieval_error(self):
-        """``NoSitesError`` joins the root (was a bare ``Exception``)."""
+        """``NoSitesError`` (the legacy nwis no-data signal) roots at
+        ``DataRetrievalError`` and is not a builtin ``ValueError``, so it is
+        caught by the unified ``except dataretrieval.DataRetrievalError``."""
         assert issubclass(exceptions.NoSitesError, exceptions.DataRetrievalError)
-        assert not issubclass(exceptions.NoSitesError, ValueError)  # unchanged
+        assert not issubclass(exceptions.NoSitesError, ValueError)
+        import dataretrieval
+
+        assert dataretrieval.NoSitesError is exceptions.NoSitesError
+
+    def test_typed_errors_survive_pickle_and_deepcopy(self):
+        """Typed errors round-trip through pickle/deepcopy -- they get pickled
+        back from multiprocessing / lithops workers, and their constructor fields
+        (status_code, retry_after, url) must survive the trip."""
+        import copy
+        import pickle
+
+        import httpx
+
+        samples = [
+            exceptions.error_for_status(404, "not found"),  # bare HTTPError
+            exceptions.error_for_status(429, "slow down", retry_after=5.0),
+            exceptions.error_for_status(503, "down"),
+            exceptions.TransientError("boom", status_code=502, retry_after=1.5),
+            exceptions.NoSitesError(httpx.URL("https://example.invalid/x?a=1")),
+            exceptions.NetworkError("could not reach the service"),
+        ]
+        for err in samples:
+            for revived in (pickle.loads(pickle.dumps(err)), copy.deepcopy(err)):
+                assert type(revived) is type(err)
+                assert str(revived) == str(err)
+                if isinstance(err, exceptions.HTTPError):
+                    assert revived.status_code == err.status_code
+                if isinstance(err, exceptions.TransientError):
+                    assert revived.retry_after == err.retry_after
+                if isinstance(err, exceptions.NoSitesError):
+                    assert revived.url == err.url
 
     def test_waterdata_exceptions_share_the_root(self):
         """waterdata's typed exceptions are ``DataRetrievalError`` too, so one
-        ``except`` clause spans the legacy and waterdata subsystems — while
-        keeping their historical ``RuntimeError`` / ``ValueError`` bases and the
-        shared family bases (``TransientError``, ``RequestTooLarge``)."""
+        ``except`` clause spans the legacy and waterdata subsystems, and they
+        slot under the shared family bases (``HTTPError`` / ``TransientError`` /
+        ``RequestTooLarge``)."""
         from dataretrieval.waterdata.chunking import (
             ChunkInterrupted,
             RateLimited,
@@ -101,13 +182,12 @@ class Test_error_taxonomy:
 
         for cls in (RateLimited, ServiceUnavailable, Unchunkable, ChunkInterrupted):
             assert issubclass(cls, exceptions.DataRetrievalError)
-        # Transient transport failures: RuntimeError, under TransientError.
+        # Transient 429/5xx: an HTTPError-with-status, under TransientError.
         assert issubclass(RateLimited, exceptions.TransientError)
         assert issubclass(ServiceUnavailable, exceptions.TransientError)
-        assert issubclass(ServiceUnavailable, RuntimeError)
-        # "Too large" failures: ValueError, under RequestTooLarge.
+        assert issubclass(ServiceUnavailable, exceptions.HTTPError)
+        # "Too large" failures slot under RequestTooLarge.
         assert issubclass(Unchunkable, exceptions.RequestTooLarge)
-        assert issubclass(Unchunkable, ValueError)
 
     def test_base_exported_at_top_level(self):
         """Users can write ``except dataretrieval.DataRetrievalError``."""

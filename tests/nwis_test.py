@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.nwis import (
     NWIS_Metadata,
     _read_rdb,
@@ -73,8 +74,9 @@ def test_nwis_service_live():
     try:
         # Minimal query: just most recent record
         get_iv(sites=site)
-    except ValueError as e:
-        # Catch known transient service failures surfaced as ValueError
+    except (DataRetrievalError, ValueError) as e:
+        # Catch known transient service failures: a typed DataRetrievalError
+        # (e.g. ServiceUnavailable on a 5xx, a RuntimeError) or a legacy ValueError
         error_text = str(e)
         if any(
             err in error_text

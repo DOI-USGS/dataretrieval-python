@@ -31,6 +31,7 @@ import pytest
 if sys.version_info < (3, 10):
     pytest.skip("Skip entire module on Python < 3.10", allow_module_level=True)
 
+from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.waterdata import chunking as _chunking
 from dataretrieval.waterdata import utils as _utils
 from dataretrieval.waterdata.chunking import (
@@ -38,6 +39,7 @@ from dataretrieval.waterdata.chunking import (
     _NEVER_CHUNK,
     _OR_SEP,
     _QUOTA_HEADER,
+    ChunkedCall,
     ChunkInterrupted,
     ChunkPlan,
     QuotaExhausted,
@@ -455,11 +457,11 @@ def test_quota_exhausted_on_mid_call_429():
         state["i"] += 1
         if i == 2:
             # Match _walk_pages's wrapping: a generic mid-pagination
-            # RuntimeError with the typed RateLimited as __cause__.
+            # DataRetrievalError with the typed RateLimited as __cause__.
             try:
                 raise RateLimited("429: Too many requests made.")
             except RateLimited as cause:
-                raise RuntimeError(
+                raise DataRetrievalError(
                     "Paginated request failed after collecting 0 page(s): "
                     "429: Too many requests made."
                 ) from cause
@@ -687,7 +689,7 @@ def test_chunker_wraps_service_unavailable_as_resumable():
             try:
                 raise ServiceUnavailable("503: Service unavailable.")
             except ServiceUnavailable as cause:
-                raise RuntimeError(str(cause)) from cause
+                raise DataRetrievalError(str(cause)) from cause
         return (
             pd.DataFrame({"sites": list(args["sites"])}),
             _quota_response(500),
@@ -717,10 +719,72 @@ def test_chunk_interrupted_base_class_catches_both():
     and ``ServiceInterrupted`` must both subclass it."""
     assert issubclass(QuotaExhausted, ChunkInterrupted)
     assert issubclass(ServiceInterrupted, ChunkInterrupted)
-    # Sanity: ``ChunkInterrupted`` is itself a ``RuntimeError`` so
-    # bare ``except RuntimeError`` callers don't suddenly miss the
-    # wrapped failures after this refactor.
-    assert issubclass(ChunkInterrupted, RuntimeError)
+    # ``ChunkInterrupted`` roots at ``DataRetrievalError`` like the rest of the
+    # taxonomy (no ``RuntimeError`` mixin), so one ``except DataRetrievalError``
+    # spans chunked and single-shot failures alike.
+    assert issubclass(ChunkInterrupted, DataRetrievalError)
+    assert not issubclass(ChunkInterrupted, RuntimeError)
+
+
+def test_chunk_interrupted_pickles_as_degraded_across_process_boundary():
+    """A real ChunkInterrupted carries a live ChunkedCall whose ``fetch`` is not
+    stdlib-picklable, so a worker raising it inside a multiprocessing /
+    ProcessPoolExecutor pool could not ship it back. ``__getstate__`` drops
+    ``.call`` and pickles the documented degraded ``call=None`` state -- counts
+    and retry hint preserved, ``.resume()`` gone (un-resumable cross-process)."""
+    import pickle
+
+    plan = ChunkPlan(
+        {"monitoring_location_id": ["A", "B", "C"]}, _fake_build, url_limit=8000
+    )
+    # A local function isn't picklable by reference -- mirrors production, where
+    # ChunkedCall.fetch is the undecorated _fetch_once shadowed by its wrapper.
+    call = ChunkedCall(plan, lambda args: (pd.DataFrame(), None))
+    exc = call.wrap_failure(RateLimited("429: too many requests", retry_after=12.0))
+    assert isinstance(exc, QuotaExhausted) and exc.call is call
+    # the live fetch handle alone can't pickle (the whole point of the override)
+    with pytest.raises((pickle.PicklingError, AttributeError)):
+        pickle.dumps(exc.call.fetch)
+
+    revived = pickle.loads(pickle.dumps(exc))
+    assert isinstance(revived, QuotaExhausted)
+    assert revived.call is None  # degraded: no cross-process resume handle
+    assert revived.completed_chunks == exc.completed_chunks
+    assert revived.total_chunks == exc.total_chunks
+    assert revived.retry_after == 12.0
+    assert str(revived) == str(exc)
+
+
+def test_chunk_interrupted_with_partial_data_pickles_intact():
+    """The degrade drops only the live ``.call``; the captured *partial work*
+    must still cross the boundary so a worker can report what it salvaged.
+    Exercises the path the no-completed-chunks case above doesn't: a real
+    ``partial_frame`` (rows) and ``partial_response`` (a live ``httpx.Response``,
+    which must itself remain picklable)."""
+    import pickle
+
+    plan = ChunkPlan(
+        {"monitoring_location_id": ["A", "B", "C"]}, _fake_build, url_limit=8000
+    )
+    call = ChunkedCall(plan, lambda args: (pd.DataFrame(), None))
+    # One sub-request completed before the failure: a real frame + response.
+    call._chunks[0] = (
+        pd.DataFrame({"id": ["A"]}),
+        httpx.Response(
+            200,
+            request=httpx.Request("GET", "https://example.invalid/a"),
+            json={"features": []},
+        ),
+    )
+    exc = call.wrap_failure(ServiceUnavailable("503: down"))
+    assert exc.completed_chunks == 1
+    assert not exc.partial_frame.empty and exc.partial_response is not None
+
+    revived = pickle.loads(pickle.dumps(exc))
+    assert revived.call is None
+    assert revived.partial_frame["id"].tolist() == ["A"]
+    assert isinstance(revived.partial_response, httpx.Response)
+    assert revived.partial_response.status_code == 200
 
 
 def test_connection_error_wrapped_as_service_interrupted():
@@ -810,7 +874,7 @@ def test_service_interrupted_exposes_partial_frame_and_response():
             try:
                 raise ServiceUnavailable("503: Service unavailable.")
             except ServiceUnavailable as cause:
-                raise RuntimeError(str(cause)) from cause
+                raise DataRetrievalError(str(cause)) from cause
         return (
             pd.DataFrame({"sites": list(args["sites"])}),
             _quota_response(500),
@@ -1000,7 +1064,7 @@ def test_retry_after_surfaces_on_quota_exhausted():
             try:
                 raise RateLimited("429: Too many requests.", retry_after=42.0)
             except RateLimited as cause:
-                raise RuntimeError(str(cause)) from cause
+                raise DataRetrievalError(str(cause)) from cause
         return (
             pd.DataFrame({"sites": list(args["sites"])}),
             _quota_response(500),
@@ -1525,12 +1589,12 @@ def test_combine_chunk_responses_does_not_mutate_input_urls():
 
 
 def _wrap_cause(transport_exc):
-    """Wrap ``transport_exc`` the way ``_walk_pages`` does — a
-    ``RuntimeError`` with the typed transport error on ``__cause__`` — so
+    """Wrap ``transport_exc`` the way ``_walk_pages`` does — a base
+    ``DataRetrievalError`` with the typed transport error on ``__cause__`` — so
     chain-walking is exercised realistically."""
     try:
-        raise RuntimeError("Paginated request failed") from transport_exc
-    except RuntimeError as wrapped:
+        raise DataRetrievalError("Paginated request failed") from transport_exc
+    except DataRetrievalError as wrapped:
         return wrapped
 
 
@@ -1603,18 +1667,23 @@ def test_retry_policy_from_env_honors_monkeypatched_constants(monkeypatch):
 
 
 def test_retryable_taxonomy():
+    from dataretrieval.exceptions import HTTPError
+
     assert _retryable(RateLimited("429", retry_after=5.0)) == (True, 5.0)
     assert _retryable(ServiceUnavailable("503")) == (True, None)
     assert _retryable(httpx.ReadTimeout("slow")) == (True, None)
     assert _retryable(httpx.ConnectError("down")) == (True, None)
     # InvalidURL is resumable but NOT retryable (a too-long cursor won't fix).
     assert _retryable(httpx.InvalidURL("too long")) == (False, None)
-    # Plain non-transient (e.g. a 4xx programmer error wrapped as RuntimeError).
+    # A fatal HTTP error (a plain HTTPError, not a TransientError) is never
+    # retried; nor is a bare RuntimeError.
+    assert _retryable(HTTPError("400", status_code=400)) == (False, None)
+    assert _retryable(HTTPError("403", status_code=403)) == (False, None)
     assert _retryable(RuntimeError("400")) == (False, None)
 
 
 def test_retryable_skips_wrapped_midpagination_transient():
-    # A transient surfaced mid-pagination is re-wrapped as RuntimeError by
+    # A transient surfaced mid-pagination is re-wrapped as DataRetrievalError by
     # _paginate; it must NOT be auto-retried (re-walking from page 1
     # would re-spend quota) — it escalates to the resumable handle instead.
     # Only the raw, top-level (initial-request) transient is retryable.

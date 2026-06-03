@@ -9,6 +9,7 @@ import pandas as pd
 import pytest
 
 import dataretrieval.waterdata.utils as _utils_module
+from dataretrieval.exceptions import DataRetrievalError, HTTPError, TransientError
 from dataretrieval.waterdata.chunking import RateLimited, ServiceUnavailable
 from dataretrieval.waterdata.utils import (
     OGC_API_URL,
@@ -240,7 +241,7 @@ def test_walk_pages_raises_on_connection_error_mid_pagination():
     """A connection error mid-pagination must raise with the upstream cause
     chained, and the wrapper message must include recovery guidance that
     is NOT rate-limit-specific (no quota window involved)."""
-    with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
+    with pytest.raises(DataRetrievalError, match="Paginated request failed") as excinfo:
         _walk_pages_with_failure(httpx.ConnectError("boom"))
 
     msg = str(excinfo.value)
@@ -254,7 +255,7 @@ def test_walk_pages_raises_with_class_name_when_cause_stringifies_empty():
     """Some ``httpx`` exceptions (e.g. ``TimeoutException("")``)
     stringify to ``""``. The wrapper must still produce an informative
     message — fall back to the exception class name."""
-    with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
+    with pytest.raises(DataRetrievalError, match="Paginated request failed") as excinfo:
         _walk_pages_with_failure(httpx.TimeoutException(""))
 
     msg = str(excinfo.value)
@@ -276,7 +277,7 @@ def test_walk_pages_raises_on_5xx_mid_pagination():
     }
     page2_503.url = "https://example.com/page2"
 
-    with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
+    with pytest.raises(DataRetrievalError, match="Paginated request failed") as excinfo:
         _walk_pages_with_failure(page2_503)
 
     msg = str(excinfo.value)
@@ -291,7 +292,7 @@ def test_walk_pages_raises_on_mid_pagination_429():
     page2_429.status_code = 429
     page2_429.url = "https://example.com/page2"
 
-    with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
+    with pytest.raises(DataRetrievalError, match="Paginated request failed") as excinfo:
         _walk_pages_with_failure(page2_429)
 
     msg = str(excinfo.value)
@@ -320,7 +321,7 @@ def test_walk_pages_wraps_initial_page_parse_error():
     mock_req.headers = {}
     mock_req.url = "https://example.com/page1"
 
-    with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
+    with pytest.raises(DataRetrievalError, match="Paginated request failed") as excinfo:
         _run_walk_pages(geopd=False, req=mock_req, client=mock_client)
 
     # The JSONDecodeError causing it is on __cause__ so callers can drill in.
@@ -445,7 +446,7 @@ def test_get_stats_data_raises_on_mid_pagination_failure(monkeypatch):
     exercised by the ``_walk_pages`` triplet above. This single
     ``get_stats_data`` mid-pagination case proves the stats-specific
     follow-up callback is wired into ``_paginate`` correctly."""
-    with pytest.raises(RuntimeError, match="Paginated request failed") as excinfo:
+    with pytest.raises(DataRetrievalError, match="Paginated request failed") as excinfo:
         _run_get_stats_data_with_failure(
             httpx.ConnectError("stats-boom"),
             monkeypatch,
@@ -468,7 +469,7 @@ def test_get_stats_data_warning_includes_next_token(caplog, monkeypatch):
         "description": "upstream timeout",
     }
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(DataRetrievalError):
         _run_get_stats_data_with_failure(page2_503, monkeypatch)
 
     warnings_ = [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING]
@@ -791,9 +792,9 @@ def test_parse_retry_after_returns_none_for_unparseable():
 
 
 def test_raise_for_non_200_raises_service_unavailable_for_5xx():
-    """5xx must surface as the typed ``ServiceUnavailable`` (not bare
-    ``RuntimeError``) so the chunker can wrap it as a resumable
-    ``ServiceInterrupted`` rather than treating it as a fatal error."""
+    """5xx must surface as the typed ``ServiceUnavailable`` so the chunker can
+    wrap it as a resumable ``ServiceInterrupted`` rather than treating it as a
+    fatal error."""
     resp = _make_response(503, "", reason="Service Unavailable")
     resp.headers["Retry-After"] = "120"
     with pytest.raises(ServiceUnavailable) as excinfo:
@@ -812,22 +813,22 @@ def test_raise_for_non_200_attaches_retry_after_to_rate_limited():
     assert excinfo.value.retry_after == 60.0
 
 
-def test_raise_for_non_200_still_raises_bare_runtimeerror_for_other_4xx():
-    """4xx other than 429 (e.g. 400 Bad Request) is a programmer error
-    that retry won't fix. Must remain bare ``RuntimeError`` so the
-    chunker's classifier doesn't wrap it as resumable."""
+def test_raise_for_non_200_400_raises_http_error():
+    """400 raises a fatal ``HTTPError`` (status_code=400) the chunker won't
+    resume. It must NOT be a ``TransientError`` so the chunker's classifier
+    treats it as fatal rather than wrapping it as resumable."""
     resp = _make_response(
         400,
         '{"code": "BadRequest", "description": "missing parameter"}',
         reason="Bad Request",
         content_type="application/json",
     )
-    with pytest.raises(RuntimeError) as excinfo:
+    with pytest.raises(HTTPError) as excinfo:
         _raise_for_non_200(resp)
-    # Must be exactly RuntimeError — not RateLimited, not
-    # ServiceUnavailable. Both subclass RuntimeError, so a plain
-    # ``pytest.raises(RuntimeError)`` would match either.
-    assert type(excinfo.value) is RuntimeError
+    assert excinfo.value.status_code == 400
+    # Fatal, not transient: the chunker keys off ``isinstance(_, TransientError)``
+    # to decide whether to wrap a failure as a resumable ChunkInterrupted.
+    assert not isinstance(excinfo.value, TransientError)
 
 
 def test_next_req_url_rejects_cross_host():
@@ -848,11 +849,9 @@ def test_next_req_url_rejects_cross_host():
 
 
 def test_check_ogc_requests_raises_typed_on_5xx(httpx_mock):
-    """``_check_ogc_requests`` previously called ``resp.raise_for_status()``,
-    which leaks raw ``httpx.HTTPStatusError``. Now routes through
-    ``_raise_for_non_200`` so callers see ``ServiceUnavailable`` /
-    ``RateLimited`` / ``RuntimeError`` — the same typed contract as
-    the main data path."""
+    """``_check_ogc_requests`` routes a non-200 through ``_raise_for_non_200``,
+    so a 5xx surfaces as the typed ``ServiceUnavailable`` — the same typed
+    contract as the main data path, not a raw ``httpx`` error."""
     httpx_mock.add_response(
         method="GET",
         url=f"{OGC_API_URL}/collections/daily/schema",

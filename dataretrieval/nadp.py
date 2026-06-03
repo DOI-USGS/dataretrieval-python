@@ -43,9 +43,7 @@ import re
 import warnings
 import zipfile
 
-import httpx
-
-from dataretrieval.utils import HTTPX_DEFAULTS
+from dataretrieval.utils import HTTPX_DEFAULTS, _get, _raise_for_status
 
 _DEPRECATION_MESSAGE = (
     "The `nadp` module is deprecated and will be removed from `dataretrieval` "
@@ -229,8 +227,8 @@ def get_zip(url: str, filename: str) -> NADP_ZipFile:
     """
     _warn_deprecated()
 
-    req = httpx.get(url + filename, **HTTPX_DEFAULTS)
-    req.raise_for_status()
+    req = _get(url + filename, **HTTPX_DEFAULTS)
+    _raise_for_status(req)
 
     # z = zipfile.ZipFile(io.BytesIO(req.content))
     z = NADP_ZipFile(io.BytesIO(req.content))

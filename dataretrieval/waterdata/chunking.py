@@ -390,7 +390,7 @@ def _passthrough_result(
     return frame, response
 
 
-class ChunkInterrupted(DataRetrievalError, RuntimeError):
+class ChunkInterrupted(DataRetrievalError):
     """
     Base class for mid-stream chunk failures whose completed work is
     preserved and resumable.
@@ -495,6 +495,15 @@ class ChunkInterrupted(DataRetrievalError, RuntimeError):
         else:
             self.partial_frame = call.partial_frame.copy()
             self.partial_response = call.partial_response
+
+    def __getstate__(self) -> dict[str, Any]:
+        # Drop the live ChunkedCall before pickling: its ``.fetch`` is an
+        # undecorated module function pickle can't reference by name, so the
+        # interruption can't cross a process boundary with ``.call`` attached.
+        # The degraded ``call=None`` form keeps the counts, retry hint, and
+        # partial frame / response; only ``.resume()`` is lost (cross-process
+        # resume was never possible anyway).
+        return {**super().__getstate__(), "call": None}
 
 
 class QuotaExhausted(ChunkInterrupted):
@@ -1034,18 +1043,18 @@ def _classify_chunk_error(
 
     Notes
     -----
-    ``_walk_pages`` re-wraps mid-pagination failures as
-    ``RuntimeError`` with the typed transport exception linked as
+    ``_walk_pages`` re-wraps mid-pagination failures as a base
+    ``DataRetrievalError`` with the typed transport exception linked as
     ``__cause__``, so this function must walk the chain rather than
     just ``isinstance`` the top-level exception.
 
     Bare ``httpx.HTTPError`` (``ConnectError``, ``TimeoutException``,
     etc.) and ``httpx.InvalidURL`` (server-supplied cursor URL too
     long, oversize follow-up) are also treated as transport failures
-    and wrapped as :class:`ServiceInterrupted` — these don't inherit
-    from ``RuntimeError`` (and ``InvalidURL`` doesn't even inherit
-    from ``HTTPError``), so without explicit handling they would
-    escape the chunker's catch with no resumable handle.
+    and wrapped as :class:`ServiceInterrupted` — they aren't one of the
+    typed status errors above (and ``InvalidURL`` doesn't even inherit
+    from ``httpx.HTTPError``), so without explicit handling they would
+    escape classification with no resumable handle.
     """
     cur: BaseException | None = exc
     while cur is not None:
@@ -1067,8 +1076,8 @@ def _retryable(exc: BaseException) -> tuple[bool, float | None]:
     :func:`_classify_chunk_error`, which walks the ``__cause__`` chain.
     The distinction matters because ``_paginate`` raises an
     initial-request transient (429 / 5xx / :class:`httpx.TransportError`)
-    *raw*, but wraps a mid-pagination failure as a ``RuntimeError``. So a
-    raw transient means a sub-request that made no progress and is cheap to
+    *raw*, but wraps a mid-pagination failure as a base ``DataRetrievalError``.
+    So a raw transient means a sub-request that made no progress and is cheap to
     re-issue, whereas a mid-pagination failure is left to escalate to a
     resumable :class:`ChunkInterrupted` rather than re-walked from page 1
     (which would re-spend the quota just exhausted). ``httpx.InvalidURL``

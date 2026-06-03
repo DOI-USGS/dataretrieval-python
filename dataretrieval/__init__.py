@@ -17,8 +17,9 @@ Available service modules: ``waterdata``, ``wqp`` (Water Quality Portal),
 ``nldi`` requires geopandas (``pip install dataretrieval[nldi]``) and is
 imported on demand: ``from dataretrieval import nldi``.
 
-Every request failure raises a subclass of :class:`dataretrieval.DataRetrievalError`;
-the taxonomy lives in ``dataretrieval.exceptions``.
+A failed request raises a subclass of :class:`dataretrieval.DataRetrievalError`
+(the taxonomy lives in ``dataretrieval.exceptions``); connection-level failures
+(timeouts, DNS) are wrapped as :class:`dataretrieval.NetworkError`.
 """
 
 from importlib.metadata import PackageNotFoundError, version
@@ -29,10 +30,10 @@ except PackageNotFoundError:
     __version__ = "version-unknown"
 
 from dataretrieval.exceptions import (
-    BadRequestError,
     DataRetrievalError,
+    HTTPError,
+    NetworkError,
     NoSitesError,
-    NotFoundError,
     RateLimited,
     RequestTooLarge,
     ServiceUnavailable,
@@ -64,10 +65,10 @@ __all__ = [
     # error taxonomy (canonical home: ``dataretrieval.exceptions``), re-exported
     # so callers can ``except dataretrieval.DataRetrievalError``
     "exceptions",
-    "BadRequestError",
     "DataRetrievalError",
+    "HTTPError",
+    "NetworkError",
     "NoSitesError",
-    "NotFoundError",
     "RateLimited",
     "RequestTooLarge",
     "ServiceUnavailable",

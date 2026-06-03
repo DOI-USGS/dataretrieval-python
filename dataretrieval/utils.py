@@ -14,11 +14,10 @@ import pandas as pd
 import dataretrieval
 from dataretrieval.codes import tz
 from dataretrieval.exceptions import (
-    BadRequestError,
+    NetworkError,
     NoSitesError,
-    NotFoundError,
-    ServiceUnavailable,
     URLTooLong,
+    error_for_status,
 )
 
 # Typed as ``dict[str, Any]`` (not the inferred ``dict[str, object]``) so that
@@ -289,32 +288,45 @@ def _url_too_long_error(detail: str) -> URLTooLong:
     )
 
 
+def _network_error(url: str | httpx.URL, exc: httpx.TransportError) -> NetworkError:
+    """Build the :class:`~dataretrieval.exceptions.NetworkError` for a failed
+    round-trip ``exc`` (no HTTP response: timeout, DNS, refused connection)."""
+    # Some httpx transport errors stringify empty (e.g. ``ConnectTimeout()``);
+    # fall back to the class name so the message is always informative.
+    detail = str(exc) or type(exc).__name__
+    return NetworkError(f"Could not reach the service at {url}: {detail}")
+
+
+def _get(url: str | httpx.URL, **kwargs: Any) -> httpx.Response:
+    """``httpx.get`` for the single-shot paths, surfacing a transport failure as
+    a typed :class:`~dataretrieval.exceptions.NetworkError` (the chunker wraps its
+    own as resumable interruptions, so it stays off this wrapper)."""
+    try:
+        return httpx.get(url, **kwargs)
+    except httpx.TransportError as exc:
+        raise _network_error(url, exc) from exc
+
+
 def _raise_for_status(response: httpx.Response) -> None:
-    """Map an unsuccessful HTTP status to a typed :class:`DataRetrievalError`;
+    """Raise the typed :class:`DataRetrievalError` for an HTTP error response;
     return ``None`` on success.
 
-    Shared by the legacy :func:`query` path. The 4xx types stay
-    :class:`ValueError`-compatible (this path's historical contract), but a 5xx
-    raises the transient :class:`ServiceUnavailable` (a :class:`RuntimeError`),
-    since a server failure is retryable rather than a bad request.
+    Shared by the legacy :func:`query` path (and ``nadp`` / ``streamstats``).
+    Delegates the status-to-type mapping to
+    :func:`dataretrieval.exceptions.error_for_status`, except a too-long-URL
+    status (413 / 414): that gets the same actionable "split your query"
+    remediation as the client-side over-long-URL case below, rather than a bare
+    ``HTTP 414`` (both still raise :class:`~dataretrieval.exceptions.URLTooLong`).
     """
     status = response.status_code
-    if status == 400:
-        raise BadRequestError(
-            f"Bad Request, check that your parameters are correct. URL: {response.url}"
-        )
-    elif status == 404:
-        raise NotFoundError(
-            "Page Not Found Error. May be the result of an empty query. "
-            f"URL: {response.url}"
-        )
-    elif status == 414:
+    if status < 400:
+        return
+    if status in (413, 414):
         raise _url_too_long_error(f"API response reason: {response.reason_phrase}")
-    elif 500 <= status < 600:
-        raise ServiceUnavailable(
-            f"Service Unavailable: {status} {response.reason_phrase}. "
-            f"The service at {response.url} may be down or experiencing issues."
-        )
+    raise error_for_status(
+        status,
+        f"HTTP {status} {response.reason_phrase}".rstrip() + f" (URL: {response.url})",
+    )
 
 
 def query(
@@ -348,13 +360,12 @@ def query(
     Raises
     ------
     DataRetrievalError
-        On failure: :class:`~dataretrieval.exceptions.BadRequestError` (400),
-        :class:`~dataretrieval.exceptions.NotFoundError` (404),
-        :class:`~dataretrieval.exceptions.URLTooLong` (414 or a client-side
-        over-long URL), :class:`~dataretrieval.exceptions.ServiceUnavailable`
-        (5xx), or :class:`~dataretrieval.exceptions.NoSitesError` (no sites/data
-        matched). The 4xx types are also :class:`ValueError`;
-        ``ServiceUnavailable`` is a :class:`RuntimeError`.
+        On an HTTP error response, the typed subclass for the status (see
+        :func:`dataretrieval.exceptions.error_for_status` for the mapping); or
+        :class:`~dataretrieval.exceptions.NoSitesError` when a 200 response
+        reports no data matched; or :class:`~dataretrieval.exceptions.NetworkError`
+        on a connection-level failure (timeout, DNS), with the underlying
+        ``httpx`` exception on ``__cause__``.
     """
 
     for key, value in payload.items():
@@ -366,7 +377,7 @@ def query(
     user_agent = {"user-agent": f"python-dataretrieval/{dataretrieval.__version__}"}
 
     try:
-        response = httpx.get(
+        response = _get(
             url,
             params=payload,
             headers=user_agent,
@@ -378,6 +389,8 @@ def query(
 
     _raise_for_status(response)
 
+    # USGS waterservices signals an empty result with a 200 whose body starts
+    # "No sites/data ..." (its legacy wording); surface it as NoSitesError.
     if response.text.startswith("No sites/data"):
         raise NoSitesError(response.url)
 
