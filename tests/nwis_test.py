@@ -13,12 +13,15 @@ from dataretrieval.nwis import (
     NWIS_Metadata,
     _read_rdb,
     get_discharge_measurements,
+    get_discharge_peaks,
+    get_dv,
     get_gwlevels,
     get_info,
     get_iv,
     get_pmcodes,
     get_qwdata,
     get_record,
+    get_stats,
     get_water_use,
     preformat_peaks_response,
     what_sites,
@@ -118,6 +121,113 @@ def test_preformat_peaks_response():
 
 
 # Removed defunct gwlevels tests.
+
+
+def test_get_dv_requires_major_filter():
+    """Regression: get_dv() with no major filter must raise the documented
+    TypeError. The getters injected ``kwargs["sites"] = kwargs.pop("sites",
+    sites)``, which always set the key (None when absent) and so defeated
+    query_waterservices' filter check, yielding a confusing Bad Request."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(TypeError, match="major filter"):
+            get_dv()
+
+
+def test_get_dv_rejects_non_json_format():
+    """Regression: get_dv passed format= explicitly alongside **kwargs, so
+    get_dv(..., format="rdb") raised 'multiple values for format'. It now
+    rejects a non-json format with a clear ValueError (it parses JSON)."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(ValueError, match="JSON"):
+            get_dv(sites="01646500", format="rdb")
+
+
+def test_get_record_forwards_state_as_statecd(monkeypatch):
+    """Regression: get_record's documented `state` arg was accepted but never
+    forwarded. It now reaches the request as the NWIS `stateCd` major filter."""
+    import dataretrieval.nwis as nwis_mod
+
+    captured: dict = {}
+
+    def fake_query_waterservices(service, format=None, ssl_check=True, **kw):
+        captured.update(kw)
+        raise RuntimeError("stop before network")
+
+    monkeypatch.setattr(nwis_mod, "query_waterservices", fake_query_waterservices)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(RuntimeError, match="stop"):
+            get_record(state="OH", service="dv")
+    assert captured.get("stateCd") == "OH"
+
+
+def test_get_stats_requires_major_filter():
+    """Regression: get_stats passed ``sites=sites`` explicitly, so the key was
+    always present (None when absent) and defeated query_waterservices' filter
+    check -- get_stats() reached the network and returned a confusing Bad
+    Request instead of the documented TypeError."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(TypeError, match="major filter"):
+            get_stats()
+
+
+@pytest.mark.parametrize("service", ["stat", "site"])
+def test_get_record_requires_major_filter(service):
+    """Regression: get_record(service="stat"/"site") forwarded sites=None into
+    get_stats/get_info, defeating the major-filter check. With no filter it must
+    raise the documented TypeError rather than reach the network."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(TypeError, match="major filter"):
+            get_record(service=service)
+
+
+def test_get_discharge_peaks_rejects_format():
+    """Regression: get_discharge_peaks passed format="rdb" explicitly alongside
+    **kwargs, so any caller-supplied format raised 'multiple values for format'.
+    A non-native format is now rejected with a clear ValueError (it parses RDB)."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(ValueError, match="RDB"):
+            get_discharge_peaks(sites="01491000", format="json")
+
+
+def test_get_discharge_peaks_accepts_native_format(monkeypatch):
+    """The reported collision was that even the *native* format="rdb" raised
+    'multiple values for format'. Popping it first resolves the collision, so
+    format="rdb" now reaches the request rather than crashing."""
+    import dataretrieval.nwis as nwis_mod
+
+    def fake_query_waterdata(service, format=None, ssl_check=True, **kw):
+        raise RuntimeError("stop before network")
+
+    monkeypatch.setattr(nwis_mod, "query_waterdata", fake_query_waterdata)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(RuntimeError, match="stop"):
+            get_discharge_peaks(sites="01491000", format="rdb")
+
+
+def test_get_stats_rejects_non_rdb_format():
+    """get_stats parses RDB; a caller-supplied non-RDB format would be requested
+    and then mis-parsed. It is now rejected with a clear ValueError."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(ValueError, match="RDB"):
+            get_stats(sites="01646500", format="json")
+
+
+def test_get_ratings_requires_site():
+    """The ratings endpoint is per-site; get_ratings() / get_record(
+    service="ratings") with no site previously issued a request that returned an
+    unhelpful error page. It now fails fast with a clear TypeError."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(TypeError, match="requires a `site`"):
+            get_record(service="ratings")
 
 
 class TestDeprecationWarnings:
