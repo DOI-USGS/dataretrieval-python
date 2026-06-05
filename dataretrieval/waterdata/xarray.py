@@ -4,24 +4,25 @@ Each public function here mirrors the same-named function in
 :mod:`dataretrieval.waterdata`, but returns a CF-conventions
 :class:`xarray.Dataset` instead of a :class:`pandas.DataFrame`.
 
-By default the data is returned as a CF *contiguous ragged array*
-(``featureType = "timeSeries"``): every observation is concatenated along a
-single ``obs`` dimension, and each (monitoring location, parameter,
-statistic) series is one instance along a ``timeseries`` dimension whose
-``row_size`` records how many observations it contributes. This stores only
-real observations -- no NaN fill -- so it scales to large, very ragged
-multi-site pulls where record lengths differ by decades. Parameter,
-statistic, unit, and location identity become per-instance metadata, and
-``time`` is a 1-D coordinate along ``obs``. The trade-off is that ``time``
-is no longer a dimension you can index directly: to select by time you
-first regroup the flat ``obs`` back into per-series views (e.g. with
-``cf-xarray``, or via the offsets implied by ``row_size``).
+By default the data is returned on a CF ``(monitoring_location_id, time)``
+grid (``featureType = "timeSeries"``): one named data variable per parameter
+(``discharge``, ``temperature_water``, ...), NaN where a series has no
+observation. This is the ergonomic layout -- ``ds["discharge"].sel(
+monitoring_location_id=..., time=...)`` just works -- and
+``monitoring_location_id`` is the instance dimension carrying
+``cf_role = "timeseries_id"``. The cost is the union time axis and NaN fill,
+which grow for large, very ragged multi-site collections.
 
-Pass ``dense=True`` for the alternative gridded layout: one named data
-variable per parameter on a ``(monitoring_location_id, time)`` grid, NaN
-where a series has no observation. This is ergonomic for a few overlapping
-series (``ds["discharge"].sel(time=...)`` just works) but the union time
-axis and NaN fill make it memory-costly for large ragged collections.
+Pass ``dense=False`` for the alternative CF *contiguous ragged array*: every
+observation is concatenated along a single ``obs`` dimension, and each
+(monitoring location, parameter, statistic) series is one instance along a
+``timeseries`` dimension whose ``row_size`` records how many observations it
+contributes. This stores only real observations -- no NaN fill -- so it
+scales to large multi-site pulls where record lengths differ by decades.
+Parameter, statistic, unit, and location identity become per-instance
+metadata and ``time`` is a 1-D coordinate along ``obs``, so to select one
+series use :func:`select_series` (or regroup the flat ``obs`` via the offsets
+implied by ``row_size``, e.g. with ``cf-xarray``).
 
 Either way the CF metadata is derived from columns the getter already
 returns (``unit_of_measure`` -> ``units``, ``statistic_id`` ->
@@ -60,6 +61,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from functools import wraps as _wraps
 
+import numpy as _np
 import pandas as _pd
 
 try:
@@ -81,6 +83,7 @@ from .types import (
 
 __all__ = [
     "clear_metadata_cache",
+    "select_series",
     "get_continuous",
     "get_daily",
     "get_field_measurements",
@@ -139,20 +142,41 @@ def _slug(name) -> str:
     return s or "value"
 
 
-def _first(series):
-    """First non-null value of a column, or None."""
-    nonnull = series.dropna()
-    return nonnull.iloc[0] if len(nonnull) else None
-
-
 def _first_present(frame, col):
     """First non-null value of ``col`` if the column is present, else None."""
-    return _first(frame[col]) if col in frame else None
+    if col not in frame:
+        return None
+    nonnull = frame[col].dropna()
+    return nonnull.iloc[0] if len(nonnull) else None
 
 
 def _unique_present(frame, col):
     """Distinct non-null values of ``col`` if present, else an empty list."""
     return frame[col].dropna().unique() if col in frame else []
+
+
+def _none_if_nan(value):
+    """Collapse a pandas NaN to None.
+
+    A NaN is *truthy*, so ``meta.get(col) or fallback`` keeps the NaN instead of
+    falling back. Metadata frames yield NaN for a column that is present but null
+    for a given parameter, so normalize it to None before any such ``or`` chain.
+    """
+    return value if _pd.notna(value) else None
+
+
+def _scalarize(cell):
+    """Collapse a list-valued flag cell into a single string; pass scalars through.
+
+    The Water Data API returns some ancillary (flag) columns -- notably
+    ``qualifier`` -- as a *list* of codes per observation. xarray/netCDF cannot
+    encode an object array whose elements are lists, so join the codes into one
+    space-separated string (an empty list becomes None).
+    """
+    if isinstance(cell, (list, tuple)):
+        parts = [str(v) for v in cell if v is not None and _pd.notna(v)]
+        return " ".join(parts) if parts else None
+    return cell
 
 
 def _sites(df):
@@ -203,10 +227,10 @@ def _point_coords(df, site):
     if geo.empty:
         return None
     lon, lat = {}, {}
-    for _, row in geo.iterrows():
-        xy = _lonlat(row["geometry"])
+    for site_id, geom in zip(geo[site].to_numpy(), geo["geometry"].to_numpy()):
+        xy = _lonlat(geom)
         if xy is not None:
-            lon[row[site]], lat[row[site]] = xy
+            lon[site_id], lat[site_id] = xy
     if not lon:
         return None  # no point geometry; skip rather than guess
     return lon, lat
@@ -241,6 +265,11 @@ def _prepare_values(df, group_cols, ancillary_cols):
         work["time"], format="ISO8601", errors="coerce", utc=True
     ).dt.tz_localize(None)
     work["value"] = _pd.to_numeric(work["value"], errors="coerce")
+    # Flatten any list-valued flag cells (e.g. ``qualifier``) to strings so the
+    # ancillary variables stay netCDF-encodable (``_scalarize`` passes scalars
+    # through unchanged).
+    for c in ancillary:
+        work[c] = work[c].map(_scalarize)
     n_before = len(work)
     work = work[work["time"].notna()]
     dropped = n_before - len(work)
@@ -266,8 +295,10 @@ def _var_attrs(desc, *, unit, pcode, stat, default_cell_method):
     names follow the (layout-specific) data-variable name.
     """
     attrs: dict[str, str] = {}
-    long_name = desc.get("parameter_description") or desc.get("parameter_name")
-    if long_name and _pd.notna(long_name):
+    long_name = _none_if_nan(desc.get("parameter_description")) or _none_if_nan(
+        desc.get("parameter_name")
+    )
+    if long_name:
         attrs["long_name"] = str(long_name)
 
     if unit is not None and _pd.notna(unit):
@@ -294,28 +325,36 @@ def _var_attrs(desc, *, unit, pcode, stat, default_cell_method):
     return attrs
 
 
-def _dataset_attrs(service, base_meta):
-    """Dataset-level provenance (CF + ACDD) attributes."""
+def _dataset_attrs(service, base_meta, *, feature_type):
+    """Dataset-level provenance (CF + ACDD) attributes.
+
+    ``feature_type`` is the CF discrete-sampling ``featureType`` to advertise, or
+    None to omit it (sourced from the builder's ``feature_type`` class attr).
+    The series layouts are genuine ``timeSeries`` geometries; the preliminary
+    flat stats table is not a DSG at all, so it passes None rather than mislabel
+    itself.
+    """
     attrs = {
         "Conventions": "CF-1.11",
         "institution": "U.S. Geological Survey",
         "source": f"USGS Water Data API ({service})",
-        "featureType": "timeSeries",
         "history": (
             f"{_dt.datetime.now(_dt.timezone.utc).isoformat(timespec='seconds')} "
             "created by dataretrieval.waterdata.xarray"
         ),
     }
+    if feature_type:
+        attrs["featureType"] = feature_type
     url = getattr(base_meta, "url", None)
     if url:
         attrs["references"] = str(url)
     return attrs
 
 
-def _empty_dataset(service, base_meta):
+def _empty_dataset(service, base_meta, *, feature_type):
     """An attribute-only Dataset for an empty / unconvertible response."""
     ds = _xr.Dataset()
-    ds.attrs = _dataset_attrs(service, base_meta)
+    ds.attrs = _dataset_attrs(service, base_meta, feature_type=feature_type)
     return ds
 
 
@@ -434,6 +473,63 @@ def clear_metadata_cache():
     _FIELD_CACHE.clear()
 
 
+def select_series(ds, **keys):
+    """Extract one time series from a ragged-layout Dataset by label.
+
+    The ragged layout (``dense=False``) stores each series as a contiguous block
+    along ``obs`` located by ``row_size``, so ``time`` is a flat ``obs`` axis and
+    a single series is addressed by its per-series coordinates --
+    ``parameter_code``, ``monitoring_location_id``, ``statistic_id`` (or, for
+    samples, ``characteristic`` / ``sample_fraction``) -- rather than a named
+    variable::
+
+        ds = wdx.get_daily(
+            monitoring_location_id=[...], parameter_code=[...], dense=False
+        )
+        q = select_series(
+            ds, monitoring_location_id="USGS-05407000", parameter_code="00060"
+        )
+        q["value"].sel(time="2023-07")  # time is now a real dimension
+
+    This is the ragged-layout counterpart to ``ds[name].sel(...)`` on the default
+    dense Dataset. It selects the one matching instance and returns its
+    observations as a 1-D, time-indexed ``xarray.Dataset`` (``value`` plus any
+    ancillary flag variables), with the series' identity carried as scalar
+    coordinates. Raises ``KeyError`` if no instance matches and ``ValueError``
+    if more than one does (add keys to disambiguate).
+    """
+    if "row_size" not in ds.variables or "obs" not in ds.dims:
+        raise ValueError(
+            "select_series expects a ragged Dataset (from dense=False); the "
+            "default dense Dataset already exposes one variable per parameter, "
+            "so select by name instead, e.g. "
+            "ds[variable].sel(monitoring_location_id=...)."
+        )
+    inst_coords = [c for c in ds.coords if ds[c].dims == ("timeseries",)]
+    mask = _np.ones(ds.sizes["timeseries"], dtype=bool)
+    for key, value in keys.items():
+        if key not in inst_coords:
+            raise KeyError(
+                f"{key!r} is not a per-series coordinate; choose from {inst_coords}."
+            )
+        mask &= ds[key].to_numpy() == value
+    matches = _np.flatnonzero(mask)
+    if matches.size == 0:
+        raise KeyError(f"no time series matches {keys}.")
+    if matches.size > 1:
+        raise ValueError(
+            f"{matches.size} time series match {keys}; add more of "
+            f"{inst_coords} to select exactly one."
+        )
+    i = int(matches[0])
+    # Slice this instance's contiguous obs block (the CF sample_dimension link),
+    # then promote time from an obs coordinate to the dimension.
+    starts = _np.concatenate([[0], _np.cumsum(ds["row_size"].to_numpy())])
+    block = slice(int(starts[i]), int(starts[i + 1]))
+    series = ds.isel(timeseries=i, obs=block).swap_dims(obs="time")
+    return series.drop_vars("row_size", errors="ignore")
+
+
 # === column schemas ========================================================
 
 # Water-quality samples (Samples DB / WQX) speak a different column vocabulary
@@ -516,6 +612,10 @@ class _DatasetBuilder:
     :func:`_build_stats` helpers rather than directly.
     """
 
+    # The CF ``featureType`` this layout produces (None to omit it). The series
+    # layouts are timeSeries DSGs; the flat stats table overrides this to None.
+    feature_type = "timeSeries"
+
     def __init__(self, df, base_meta, *, service):
         self.df = df
         self.base_meta = base_meta
@@ -528,11 +628,15 @@ class _DatasetBuilder:
         return self.df is None or len(self.df) == 0
 
     def _empty(self):
-        return _empty_dataset(self.service, self.base_meta)
+        return _empty_dataset(
+            self.service, self.base_meta, feature_type=self.feature_type
+        )
 
     def _apply_provenance(self, ds):
         """Set the dataset-level CF/ACDD attributes and ``date_modified``."""
-        ds.attrs = _dataset_attrs(self.service, self.base_meta)
+        ds.attrs = _dataset_attrs(
+            self.service, self.base_meta, feature_type=self.feature_type
+        )
         dm = _date_modified(self.df)
         if dm:
             ds.attrs["date_modified"] = dm
@@ -593,9 +697,12 @@ class _SeriesBuilder(_DatasetBuilder):
         coords = _point_coords(self.df, _SITE)
         if coords is not None:
             lon, lat = coords
+            # Fill sites lacking point geometry with NaN (not None) so the
+            # coordinate stays a numeric float array -- a CF longitude/latitude
+            # coord must be numeric; an object array with None is CF-invalid.
             ds = ds.assign_coords(
-                longitude=(dim, [lon.get(k) for k in order]),
-                latitude=(dim, [lat.get(k) for k in order]),
+                longitude=(dim, [lon.get(k, _np.nan) for k in order]),
+                latitude=(dim, [lat.get(k, _np.nan) for k in order]),
             )
             ds["longitude"].attrs = {
                 "standard_name": "longitude",
@@ -617,7 +724,7 @@ class _SeriesBuilder(_DatasetBuilder):
 
 
 class _RaggedBuilder(_SeriesBuilder):
-    """CF *contiguous ragged array* layout (the default).
+    """CF *contiguous ragged array* layout (the ``dense=False`` opt-in).
 
     All observations are concatenated into one ``obs`` dimension; each series (a
     ``schema.group_cols`` combination at a site) is an instance along
@@ -734,10 +841,15 @@ class _RaggedBuilder(_SeriesBuilder):
         }
         # Join the instance keys into a cf_role id, skipping null parts so a
         # missing key (e.g. a characteristic with no sample fraction) doesn't
-        # render as a literal "nan" token.
-        ts_id = inst_frame.apply(
-            lambda r: ":".join(str(x) for x in r if _pd.notna(x)), axis=1
-        ).to_numpy()
+        # render as a literal "nan" token. Iterating the row arrays avoids the
+        # per-instance Series boxing of ``apply(axis=1)``.
+        ts_id = _np.array(
+            [
+                ":".join(str(x) for x in row if _pd.notna(x))
+                for row in inst_frame.to_numpy()
+            ],
+            dtype=object,
+        )
         ds = ds.assign_coords(timeseries_id=("timeseries", ts_id))
         ds["timeseries_id"].attrs["cf_role"] = "timeseries_id"
         ds[_SITE].attrs.setdefault("long_name", "monitoring location identifier")
@@ -745,10 +857,10 @@ class _RaggedBuilder(_SeriesBuilder):
 
 
 class _DenseBuilder(_SeriesBuilder):
-    """Dense ``(monitoring_location_id, time)`` grid: one named variable per
-    parameter, NaN where a series has no observation. Ergonomic for a few
-    overlapping series but memory-costly for large ragged collections; see
-    :class:`_RaggedBuilder` for the default.
+    """Dense ``(monitoring_location_id, time)`` grid (the default): one named
+    variable per parameter, NaN where a series has no observation. Ergonomic for
+    a few overlapping series but memory-costly for large ragged collections; see
+    :class:`_RaggedBuilder` for the ``dense=False`` scaling layout.
     """
 
     def _build_series(self, work, group_cols, ancillary, has_unit):
@@ -793,10 +905,13 @@ class _DenseBuilder(_SeriesBuilder):
             if not sub.index.is_unique:
                 _warnings.warn(
                     f"'{name}' has multiple values per (site, time) -- two series "
-                    "share this (site, parameter, statistic); keeping the first. "
-                    "Filter the query to separate them.",
+                    "share this (site, parameter, statistic); keeping the smallest "
+                    "value. Filter the query to separate them.",
                     stacklevel=3,
                 )
+                # Sort by value first so the retained value is deterministic
+                # rather than dependent on the upstream response row order.
+                sub = sub.sort_values("value")
                 sub = sub[~sub.index.duplicated(keep="first")]
             ds_g = sub.to_xarray().rename(
                 {"value": name, **{c: f"{name}_{c}" for c in ancillary}}
@@ -818,7 +933,7 @@ class _DenseBuilder(_SeriesBuilder):
     @staticmethod
     def _variable_name(desc, pcode, stat, used):
         """A unique slug for a variable; disambiguate same-parameter series."""
-        name = _slug(desc.get("parameter_name") or pcode or "value")
+        name = _slug(_none_if_nan(desc.get("parameter_name")) or pcode or "value")
         if name in used:  # same parameter, different statistic -> distinct var
             op = CF_CELL_METHODS.get(str(stat)) or (str(stat) if stat else None)
             name = f"{name}_{_slug(op)}" if op else name
@@ -835,6 +950,10 @@ class _StatsBuilder(_DatasetBuilder):
     variable per column over an ``index`` dimension) with dataset-level
     provenance only. A richer percentile / day-of-year layout is future work.
     """
+
+    # Not a CF discrete-sampling geometry: a flat percentile table has no
+    # obs/time/cf_role/sample_dimension, so it must not claim a ``featureType``.
+    feature_type = None
 
     def build(self):
         if self._is_empty():
@@ -896,9 +1015,10 @@ def _xr_doc(func, *, cf_metadata=True, allow_dense=True):
         )
     elif allow_dense:
         returns = (
-            "a CF-conventions ``xarray.Dataset`` as a contiguous ragged array "
-            "(pass ``dense=True`` for the NaN-filled (site, time) grid with one "
-            "named variable per parameter)"
+            "a CF-conventions ``xarray.Dataset`` on a (site, time) grid with one "
+            "named variable per parameter (pass ``dense=False`` for the "
+            "contiguous ragged array that stores only real observations and "
+            "scales to large, very ragged multi-site pulls)"
         )
     else:
         returns = (
@@ -924,9 +1044,10 @@ def _public_signature(wrapped, *, has_dense):
     """The signature ``help()`` / IDEs should show for a wrapper.
 
     Keeps the wrapped getter's own parameters (so its real arguments stay
-    discoverable), adds the keyword-only ``dense`` toggle where the layout
-    offers it, and declares the ``xarray.Dataset`` return -- correcting the
-    DataFrame signature that ``functools.wraps`` would otherwise carry over.
+    discoverable), adds the keyword-only ``dense`` toggle (default ``True``;
+    pass ``dense=False`` for the ragged layout) where the layout offers it, and
+    declares the ``xarray.Dataset`` return -- correcting the DataFrame signature
+    that ``functools.wraps`` would otherwise carry over.
     """
     sig = _inspect.signature(wrapped)
     params = list(sig.parameters.values())
@@ -944,7 +1065,7 @@ def _public_signature(wrapped, *, has_dense):
             _inspect.Parameter(
                 "dense",
                 _inspect.Parameter.KEYWORD_ONLY,
-                default=False,
+                default=True,
                 annotation="bool",
             ),
         )
@@ -974,10 +1095,14 @@ class _Service:
 def _make_getter(spec):
     """Build the public getter for one ``_Service`` spec (Factory)."""
 
-    has_dense = spec.layout != "stats" and spec.allow_dense
+    is_stats = spec.layout == "stats"
+    has_dense = not is_stats and spec.allow_dense
 
+    # The (site, time) grid is the default where it is offered; ``dense=False``
+    # opts into the ragged array. Services without a grid (samples, stats)
+    # default to their only layout, so a plain call never trips the warning.
     @_wraps(spec.getter)  # carry __name__/__wrapped__ through to help()/IDEs
-    def getter(*args, dense=False, **kwargs):
+    def getter(*args, dense=has_dense, **kwargs):
         if dense and not has_dense:
             _warnings.warn(
                 f"{spec.getter.__name__} has no dense layout; ignoring dense=True.",
@@ -985,7 +1110,7 @@ def _make_getter(spec):
             )
             dense = False
         df, base_meta = _fetch(spec.getter, args, kwargs)
-        if spec.layout == "stats":
+        if is_stats:
             return _build_stats(df, base_meta, spec.service)
         if spec.metadata_cache is not None:
             series_meta, site_meta = spec.metadata_cache.lookup(_sites(df))
@@ -1009,7 +1134,7 @@ def _make_getter(spec):
     # returning an ``xarray.Dataset``.
     getter.__doc__ = _xr_doc(
         spec.getter,
-        cf_metadata=(spec.layout != "stats"),
+        cf_metadata=not is_stats,
         allow_dense=spec.allow_dense,
     )
     getter.__signature__ = _public_signature(spec.getter, has_dense=has_dense)
