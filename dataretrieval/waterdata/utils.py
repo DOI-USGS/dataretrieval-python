@@ -27,8 +27,8 @@ import pandas as pd
 from anyio.from_thread import start_blocking_portal
 
 from dataretrieval import __version__
-from dataretrieval.exceptions import RateLimited, ServiceUnavailable
-from dataretrieval.utils import HTTPX_DEFAULTS, BaseMetadata
+from dataretrieval.exceptions import DataRetrievalError, RateLimited, error_for_status
+from dataretrieval.utils import HTTPX_DEFAULTS, BaseMetadata, _get, _network_error
 from dataretrieval.waterdata import _progress, chunking
 from dataretrieval.waterdata.chunking import (
     _QUOTA_HEADER,
@@ -424,15 +424,15 @@ def _check_ogc_requests(
     ------
     ValueError
         If req_type is not "queryables" or "schema".
-    RateLimited, ServiceUnavailable, RuntimeError
-        From :func:`_raise_for_non_200` on any non-200 — same typed
-        contract as the main data path so callers can use one
-        ``except`` clause everywhere.
+    DataRetrievalError
+        From :func:`_raise_for_non_200` on any non-200 (the typed subclass for
+        the status) — same typed contract as the main data path so callers can
+        use one ``except`` clause everywhere.
     """
     if req_type not in ("queryables", "schema"):
         raise ValueError(f"req_type must be 'queryables' or 'schema', got {req_type!r}")
     url = f"{OGC_API_URL}/collections/{endpoint}/{req_type}"
-    resp = httpx.get(url, headers=_default_headers(), **HTTPX_DEFAULTS)
+    resp = _get(url, headers=_default_headers(), **HTTPX_DEFAULTS)
     _raise_for_non_200(resp)
     # ``Response.json`` is typed ``Any``; the OGC queryables/schema endpoints
     # return a JSON object, and callers index it as a dict.
@@ -537,26 +537,24 @@ def _raise_for_non_200(resp: httpx.Response) -> None:
 
     Raises
     ------
-    RateLimited
-        On HTTP 429 — typed so ``ChunkedCall`` can wrap as a resumable
-        :class:`~dataretrieval.waterdata.chunking.QuotaExhausted`.
-    ServiceUnavailable
-        On HTTP 5xx — typed so ``ChunkedCall`` can wrap as a resumable
-        :class:`~dataretrieval.waterdata.chunking.ServiceInterrupted`.
-    RuntimeError
-        On any other non-200 (4xx other than 429) — these are
-        programmer errors that retry won't fix.
+    DataRetrievalError
+        The typed subclass for the status (see
+        :func:`dataretrieval.exceptions.error_for_status` for the mapping). The
+        transient types (:class:`~dataretrieval.exceptions.TransientError`) are
+        distinguished so ``ChunkedCall`` can wrap them as a resumable
+        :class:`~dataretrieval.waterdata.chunking.QuotaExhausted` /
+        :class:`~dataretrieval.waterdata.chunking.ServiceInterrupted`; a fatal
+        :class:`~dataretrieval.exceptions.HTTPError` (not a ``TransientError``)
+        the chunker won't resume.
     """
     status = resp.status_code
-    if status == 200:
+    if status < 400:
         return
-    body = _error_body(resp)
-    retry_after = _parse_retry_after(resp.headers.get("Retry-After"))
-    if status == 429:
-        raise RateLimited(body, retry_after=retry_after)
-    if 500 <= status < 600:
-        raise ServiceUnavailable(body, retry_after=retry_after)
-    raise RuntimeError(body)
+    raise error_for_status(
+        status,
+        _error_body(resp),
+        retry_after=_parse_retry_after(resp.headers.get("Retry-After")),
+    )
 
 
 def _paginated_failure_message(pages_collected: int, cause: BaseException) -> str:
@@ -578,7 +576,7 @@ def _paginated_failure_message(pages_collected: int, cause: BaseException) -> st
     Returns
     -------
     str
-        A message suitable for the ``RuntimeError`` that
+        A message suitable for the ``DataRetrievalError`` that
         ``_walk_pages`` and ``get_stats_data`` raise from the
         original exception.
     """
@@ -1066,7 +1064,7 @@ async def _paginate(
     :func:`get_stats_data`: send the initial request, then loop calling
     ``follow_up`` until ``parse_response`` reports a ``None`` cursor,
     accumulating frames and elapsed time. Any mid-pagination failure
-    raises ``RuntimeError`` wrapping the cause — the API exposes no
+    raises ``DataRetrievalError`` wrapping the cause — the API exposes no
     resume cursor, so the caller's only recovery is to retry the whole
     call. Issuing HTTP asynchronously lets the multiple sub-requests of a
     chunked call run concurrently under
@@ -1101,15 +1099,14 @@ async def _paginate(
 
     Raises
     ------
-    RuntimeError
-        On a non-200 initial response (typed
-        :class:`~dataretrieval.exceptions.RateLimited` /
-        :class:`~dataretrieval.exceptions.ServiceUnavailable`
-        for 429/5xx, otherwise plain ``RuntimeError`` from
-        :func:`_error_body`), on an initial-page parse failure
-        (wrapped via :func:`_paginated_failure_message` with the
-        original exception on ``__cause__``), or any failure on a
-        subsequent page (same wrapping).
+    DataRetrievalError
+        On a non-200 initial response, the typed subclass for the status from
+        :func:`_raise_for_non_200` (a
+        :class:`~dataretrieval.exceptions.TransientError` for a retryable
+        429 / 5xx, otherwise a fatal :class:`~dataretrieval.exceptions.HTTPError`);
+        or, on an initial-page parse failure or any subsequent-page failure, a
+        base ``DataRetrievalError`` wrapping the cause (built by
+        :func:`_paginated_failure_message`, original exception on ``__cause__``).
     httpx.HTTPError
         Network-level failures on the *initial* request (e.g.
         ``ConnectError``, ``TimeoutException``) propagate unmodified
@@ -1132,7 +1129,7 @@ async def _paginate(
             # treatment as follow-up failures so callers see a consistent
             # diagnostic regardless of which page broke.
             logger.warning("Initial response parse failed.")
-            raise RuntimeError(_paginated_failure_message(0, e)) from e
+            raise DataRetrievalError(_paginated_failure_message(0, e)) from e
         dfs = [df]
         # Stop following ``next`` links once the optional row cap is reached
         # (see :func:`_row_cap`); ``None`` means uncapped. The concatenation
@@ -1164,7 +1161,7 @@ async def _paginate(
                     "Request failed at cursor %r. Data download interrupted.",
                     cursor,
                 )
-                raise RuntimeError(_paginated_failure_message(len(dfs), e)) from e
+                raise DataRetrievalError(_paginated_failure_message(len(dfs), e)) from e
 
         # Aggregate headers / elapsed onto a COPY of the initial
         # response so the user's caller never sees an in-place
@@ -1231,7 +1228,7 @@ async def _walk_pages(
 
     Raises
     ------
-    RuntimeError
+    DataRetrievalError
         See :func:`_paginate`.
     httpx.HTTPError
         See :func:`_paginate`.
@@ -1740,7 +1737,12 @@ def _run_sync(
     """
     with _progress.progress_context(service=service):
         with start_blocking_portal() as portal:
-            return portal.call(make_coro)
+            try:
+                return portal.call(make_coro)
+            except httpx.TransportError as exc:
+                # The initial-request connection failure ``_paginate`` lets
+                # through raw; mid-pagination failures are already typed.
+                raise _network_error(OGC_API_URL, exc) from exc
 
 
 def get_stats_data(
@@ -1785,6 +1787,14 @@ def get_stats_data(
         A DataFrame containing the retrieved and processed statistical data.
     BaseMetadata
         A metadata object containing request information including URL and query time.
+
+    Raises
+    ------
+    DataRetrievalError
+        The typed subclass for an HTTP error response (see :func:`_paginate`);
+        or :class:`~dataretrieval.exceptions.NetworkError` if the initial request
+        can't reach the service (timeout / DNS), the ``httpx`` exception chained
+        on ``__cause__``.
     """
 
     url = f"{STATISTICS_API_URL}/{service}"

@@ -17,8 +17,9 @@ from typing import Any, Literal, get_args
 import httpx
 import pandas as pd
 
+from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.rdb import extract_rdb_comment, read_rdb
-from dataretrieval.utils import HTTPX_DEFAULTS
+from dataretrieval.utils import HTTPX_DEFAULTS, _get
 
 from .utils import (
     _DURATION_RE,
@@ -184,17 +185,16 @@ def get_ratings(
         fid = feature["id"]
         try:
             out[fid] = _download_and_parse(feature, file_path, ssl_check)
-        # _download_and_parse can raise the module's typed errors via
-        # _raise_for_non_200 (RateLimited / ServiceUnavailable / RuntimeError —
-        # all RuntimeError subclasses), and a feature missing its data asset
-        # raises LookupError. Catch those too so one bad feature is logged and
-        # skipped rather than aborting the whole multi-site batch.
+        # One bad feature shouldn't abort the batch: log and skip the module's
+        # typed errors (DataRetrievalError, e.g. an HTTPError from
+        # _raise_for_non_200) plus the transport / parse / file / missing-asset
+        # errors a single download can raise.
         except (
+            DataRetrievalError,
             httpx.HTTPError,
-            RuntimeError,
-            ValueError,
-            OSError,
             LookupError,
+            OSError,
+            ValueError,
         ) as e:
             logger.warning("Failed to download / parse %s: %s", fid, e)
 
@@ -260,7 +260,7 @@ def _search(
     params: dict[str, Any] | None = query_params
     features: list[dict[str, Any]] = []
     while url is not None:
-        response = httpx.get(
+        response = _get(
             url,
             params=params,
             headers=_default_headers(),
@@ -288,9 +288,7 @@ def _download_and_parse(
 ) -> pd.DataFrame:
     """Fetch the feature's data asset, parse RDB, optionally persist to disk."""
     url = feature["assets"]["data"]["href"]
-    response = httpx.get(
-        url, headers=_default_headers(), verify=ssl_check, **HTTPX_DEFAULTS
-    )
+    response = _get(url, headers=_default_headers(), verify=ssl_check, **HTTPX_DEFAULTS)
     _raise_for_non_200(response)
 
     if file_path is not None:

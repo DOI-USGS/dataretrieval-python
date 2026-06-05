@@ -3,6 +3,7 @@ import datetime
 import pytest
 from pandas import DataFrame
 
+from dataretrieval.exceptions import HTTPError, NoSitesError
 from dataretrieval.nwis import (
     get_discharge_peaks,
     get_dv,
@@ -15,7 +16,6 @@ from dataretrieval.nwis import (
     query_waterservices,
     what_sites,
 )
-from dataretrieval.utils import NoSitesError
 
 try:
     import geopandas as gpd
@@ -62,7 +62,7 @@ def test_query_validation(httpx_mock):
         "https://waterservices.usgs.gov/nwis/stat?sites=bad_site_id&format=rdb"
     )
     httpx_mock.add_response(method="GET", url=request_url, status_code=400)
-    with pytest.raises(ValueError) as type_error:
+    with pytest.raises(HTTPError) as type_error:
         get_stats(sites="bad_site_id")
     assert request_url in str(type_error)
 

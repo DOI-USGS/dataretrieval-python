@@ -20,6 +20,7 @@ from dataretrieval.utils import (
     HTTPX_DEFAULTS,
     BaseMetadata,
     _attach_datetime_columns,
+    _get,
     to_str,
 )
 from dataretrieval.waterdata.filters import FILTER_LANG
@@ -2126,7 +2127,7 @@ def get_codes(code_service: CODE_SERVICES) -> tuple[pd.DataFrame, BaseMetadata]:
 
     url = f"{SAMPLES_URL}/codeservice/{code_service}?mimeType=application%2Fjson"
 
-    response = httpx.get(url, headers=_default_headers(), **HTTPX_DEFAULTS)
+    response = _get(url, headers=_default_headers(), **HTTPX_DEFAULTS)
 
     _raise_for_non_200(response)
 
@@ -2150,7 +2151,7 @@ def _get_samples_csv(
     as metadata and applies any per-getter post-step.
     """
     logger.debug("Request: %s", httpx.URL(url).copy_merge_params(params))
-    response = httpx.get(
+    response = _get(
         url,
         params=params,
         verify=ssl_check,
