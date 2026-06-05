@@ -655,6 +655,41 @@ def test_select_series_returns_time_indexed_single_series():
     assert s["value"].sel(time="2024-06-01").item() == 100
 
 
+def test_dense_same_parameter_two_statistics_no_bare_name():
+    # 00060 under both 00001 (max) and 00003 (mean): the bare 'discharge' name is
+    # ambiguous, so BOTH variables are disambiguated by their cell method -- no
+    # order-dependent bare 'discharge' that silently means one of them.
+    mx = _daily_frame(values=(500,), times=("2024-06-01",))
+    mx["statistic_id"] = "00001"
+    mn = _daily_frame(values=(100,), times=("2024-06-01",))
+    ds = wdx._build_dense(
+        pd.concat([mx, mn]), _meta(), service="daily", series_meta=_DISCHARGE_META
+    )
+    assert "discharge" not in ds.data_vars  # no bare (ambiguous) name
+    assert {"discharge_maximum", "discharge_mean"} <= set(ds.data_vars)
+    assert ds["discharge_maximum"].attrs["cell_methods"] == "time: maximum"
+    assert ds["discharge_mean"].attrs["cell_methods"] == "time: mean"
+
+
+def test_dense_single_statistic_keeps_bare_name():
+    # The common single-statistic case keeps the clean bare name.
+    ds = wdx._build_dense(
+        _daily_frame(), _meta(), service="daily", series_meta=_DISCHARGE_META
+    )
+    assert "discharge" in ds.data_vars
+
+
+def test_select_series_matches_nan_instance_key():
+    # An instance whose key is null (samples with no sample_fraction) must be
+    # selectable by passing None, since `== NaN` never matches.
+    df = _samples_frame()
+    df["Result_SampleFraction"] = None
+    ds = _samples_ds(df)
+    s = wdx.select_series(ds, characteristic="Temperature, water", sample_fraction=None)
+    assert set(s.sizes) == {"time"}
+    assert "value" in s.data_vars
+
+
 def test_select_series_ambiguous_raises():
     # selecting by site alone matches both instances -> ask for more keys
     ds = _two_instance_ragged()
@@ -670,8 +705,11 @@ def test_select_series_no_match_raises():
 
 def test_select_series_unknown_key_raises():
     ds = _two_instance_ragged()
-    with pytest.raises(KeyError, match="not a per-series coordinate"):
+    with pytest.raises(KeyError, match="not a per-series identity coordinate"):
         wdx.select_series(ds, bogus="x")
+    # descriptor coords (lon/lat/unit/HUC/state) are not selectable identity keys
+    with pytest.raises(KeyError, match="not a per-series identity coordinate"):
+        wdx.select_series(ds, unit_of_measure="ft^3/s")
 
 
 def test_select_series_on_dense_raises_helpful_error():
@@ -758,6 +796,20 @@ def _samples_ds(frame):
         schema=wdx._SAMPLES,
         default_cell_method="point",
     )
+
+
+def test_samples_surface_lonlat_from_location_columns():
+    # Samples carry position as Location_Latitude/Location_Longitude (no OGC
+    # geometry); the dataset must still get numeric longitude/latitude coords.
+    frame = _samples_frame()
+    frame["Location_Longitude"] = [-90.44]
+    frame["Location_Latitude"] = [43.19]
+    ds = _samples_ds(frame)
+    assert "longitude" in ds.coords and "latitude" in ds.coords
+    assert ds["longitude"].dtype.kind == "f"
+    assert float(ds["longitude"].values[0]) == -90.44
+    assert float(ds["latitude"].values[0]) == 43.19
+    assert ds["longitude"].attrs["units"] == "degrees_east"
 
 
 def test_build_samples_single_characteristic():
@@ -988,3 +1040,57 @@ def test_metadata_cache_bounded_and_clearable():
     wdx._FIELD_CACHE._entries["Y"] = {"params": {}, "site": {}}
     wdx.clear_metadata_cache()
     assert len(wdx._TS_CACHE) == 0 and len(wdx._FIELD_CACHE) == 0
+
+
+def test_metadata_missing_site_is_not_negatively_cached():
+    # A site the metadata endpoint returns nothing for must NOT be cached as an
+    # empty entry (which would never be retried); a later call re-fetches it.
+    calls = []
+
+    def fake(monitoring_location_id):
+        calls.append(list(monitoring_location_id))
+        # respond only for S1, never for S2
+        rows = [
+            {
+                "monitoring_location_id": s,
+                "parameter_code": "00060",
+                "parameter_name": s,
+            }
+            for s in monitoring_location_id
+            if s == "S1"
+        ]
+        return pd.DataFrame(rows), SimpleNamespace(url=None)
+
+    cache = wdx._MetadataCache(fake)
+    cache.lookup(["S1", "S2"])
+    cache.lookup(["S1", "S2"])
+    # S1 cached (hit, not re-fetched); S2 never cached, so it is re-requested.
+    assert calls[0] == ["S1", "S2"]
+    assert calls[1] == ["S2"]  # only the still-uncached S2
+    assert "S1" in cache._entries and "S2" not in cache._entries
+
+
+def test_metadata_lookup_survives_within_batch_eviction():
+    # A single pull whose site count exceeds maxsize must still return metadata
+    # for every requested site, even though the bounded cache can't hold them all.
+    sites = ["S0", "S1", "S2", "S3", "S4"]
+
+    def fake(monitoring_location_id):
+        rows = [
+            {
+                "monitoring_location_id": s,
+                "parameter_code": f"p{s}",  # distinct per site
+                "parameter_name": f"name-{s}",
+                "hydrologic_unit_code": f"huc-{s}",
+            }
+            for s in monitoring_location_id
+        ]
+        return pd.DataFrame(rows), SimpleNamespace(url=None)
+
+    cache = wdx._MetadataCache(fake, maxsize=2)
+    param_meta, site_meta = cache.lookup(sites)
+    # every requested site's metadata is in the result even though the bounded
+    # cache evicted most of the just-fetched batch.
+    assert {f"p{s}" for s in sites} <= set(param_meta)
+    assert set(site_meta) == set(sites)
+    assert len(cache) <= 2  # cache stayed bounded

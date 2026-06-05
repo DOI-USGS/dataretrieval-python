@@ -232,7 +232,27 @@ def _lonlat(geom):
 
 
 def _point_coords(df, site):
-    """lon/lat dicts keyed by site from point geometry, or None."""
+    """lon/lat dicts keyed by site, or None.
+
+    Reads either a ``geometry`` column (the time-series getters' OGC response) or
+    explicit ``longitude`` / ``latitude`` columns (the Samples profile, mapped via
+    :data:`_SAMPLES_RENAME`) -- so every service surfaces station coordinates.
+    """
+    if {"longitude", "latitude"}.issubset(df.columns):
+        geo = df.dropna(subset=["longitude", "latitude"]).drop_duplicates(site)
+        if geo.empty:
+            return None
+        lon, lat = {}, {}
+        for site_id, x, y in zip(
+            geo[site].to_numpy(),
+            geo["longitude"].to_numpy(),
+            geo["latitude"].to_numpy(),
+        ):
+            try:
+                lon[site_id], lat[site_id] = float(x), float(y)
+            except (TypeError, ValueError):
+                continue
+        return (lon, lat) if lon else None
     if "geometry" not in df.columns:
         return None
     geo = df.dropna(subset=["geometry"]).drop_duplicates(site)
@@ -408,8 +428,9 @@ class _MetadataCache:
         """
         sites = sorted({str(s) for s in site_ids if _pd.notna(s)})
         # Racy read of the keys is fine: a concurrent miss just re-fetches (the
-        # fetch is idempotent); only the writes in _ingest take the lock.
+        # fetch is idempotent); only the writes in _store take the lock.
         todo = [s for s in sites if s not in self._entries]
+        fresh: dict[str, dict] = {}
         if todo:
             try:
                 meta, _ = self._getter(monitoring_location_id=todo)
@@ -420,12 +441,17 @@ class _MetadataCache:
                     stacklevel=2,
                 )
             else:
-                self._ingest(meta, todo)
+                fresh = self._parse(meta, todo)
+                self._store(fresh)
         param_meta: dict[str, dict] = {}
         site_meta: dict[str, dict] = {}
         with self._lock:
             for s in sites:
-                entry = self._entries.get(s, {})
+                # Prefer this call's freshly-parsed entry over the cache: the
+                # bounded cache may have already evicted just-fetched sites when a
+                # single pull's ``todo`` exceeds maxsize, but the current call
+                # must still see every site it fetched.
+                entry = fresh.get(s) or self._entries.get(s, {})
                 param_meta.update(entry.get("params", {}))
                 if entry.get("site"):
                     site_meta[s] = entry["site"]
@@ -439,12 +465,8 @@ class _MetadataCache:
     def __len__(self):
         return len(self._entries)
 
-    def _ingest(self, meta, todo):
-        """Parse ``meta`` into per-site entries, then merge + evict under lock.
-
-        The parsing runs lock-free on a local dict; only the (cheap) merge into
-        the shared cache and the FIFO eviction past ``maxsize`` hold the lock.
-        """
+    def _parse(self, meta, todo):
+        """Parse ``meta`` into per-site ``{params, site}`` entries (lock-free)."""
         fresh = {s: {"params": {}, "site": {}} for s in todo}
         if not meta.empty:
             name_cols = [c for c in _NAME_DESCRIPTORS if c in meta.columns]
@@ -470,8 +492,20 @@ class _MetadataCache:
                     }
                     if desc:
                         fresh[site]["site"] = desc
+        return fresh
+
+    def _store(self, fresh):
+        """Merge non-empty entries into the bounded cache (FIFO eviction).
+
+        Sites that came back with no metadata are *not* cached, so a later call
+        retries them rather than being stuck with a sticky empty result; the
+        current call still sees them via the freshly-parsed ``fresh`` dict.
+        """
+        keep = {s: e for s, e in fresh.items() if e["params"] or e["site"]}
+        if not keep:
+            return
         with self._lock:
-            self._entries.update(fresh)
+            self._entries.update(keep)
             while len(self._entries) > self._maxsize:
                 self._entries.pop(next(iter(self._entries)))
 
@@ -524,14 +558,24 @@ def select_series(ds, **keys):
             "so select by name instead, e.g. "
             "ds[variable].sel(monitoring_location_id=...)."
         )
-    inst_coords = [c for c in ds.coords if ds[c].dims == ("timeseries",)]
+    # Selectable keys are the series *identity* coordinates only -- exclude the
+    # per-series descriptors (lon/lat are a float-equality footgun; unit/HUC/state
+    # are not series identifiers).
+    descriptors = {"longitude", "latitude", "unit_of_measure", *_SITE_DESCRIPTORS}
+    inst_coords = [
+        c for c in ds.coords if ds[c].dims == ("timeseries",) and c not in descriptors
+    ]
     mask = _np.ones(ds.sizes["timeseries"], dtype=bool)
     for key, value in keys.items():
         if key not in inst_coords:
             raise KeyError(
-                f"{key!r} is not a per-series coordinate; choose from {inst_coords}."
+                f"{key!r} is not a per-series identity coordinate; choose from "
+                f"{inst_coords}."
             )
-        mask &= ds[key].to_numpy() == value
+        arr = ds[key].to_numpy()
+        # NaN never equals anything, so match a missing instance key (e.g. a
+        # characteristic with no sample fraction) by null-ness instead.
+        mask &= _pd.isna(arr) if _is_missing(value) else (arr == value)
     matches = _np.flatnonzero(mask)
     if matches.size == 0:
         raise KeyError(f"no time series matches {keys}.")
@@ -563,6 +607,10 @@ _SAMPLES_RENAME = {
     "Result_SampleFraction": "sample_fraction",
     "Result_ResultDetectionCondition": "detection_condition",
     "Result_MeasureStatusIdentifier": "status",
+    # Samples carry position as explicit columns (no OGC ``geometry``); map them
+    # to the canonical names so _point_coords surfaces station lon/lat.
+    "Location_Longitude": "longitude",
+    "Location_Latitude": "latitude",
 }
 _CANONICAL_COORD_ATTRS = {
     "parameter_code": {"long_name": "USGS parameter code"},
@@ -786,7 +834,9 @@ class _RaggedBuilder(_SeriesBuilder):
         )
         data_vars = {
             "value": ("obs", work["value"].to_numpy()),
-            "row_size": ("timeseries", row_size.to_numpy().astype("int32")),
+            # int64 (not int32): a single long, high-frequency series can exceed
+            # 2^31 observations, and the select_series cumsum must not overflow.
+            "row_size": ("timeseries", row_size.to_numpy().astype("int64")),
         }
         for c in ancillary:
             data_vars[c] = ("obs", work[c].to_numpy())
@@ -899,16 +949,25 @@ class _DenseBuilder(_SeriesBuilder):
 
     def _variable_datasets(self, work, group_cols, ancillary, has_unit):
         """One pivoted ``(site, time)`` Dataset per (parameter, statistic)."""
-        datasets, used = [], set()
+        # First pass: gather each group's identity and base name, so naming can
+        # see the whole set (a bare name is only used when it is unambiguous).
+        specs = []
         for _, group in work.groupby(group_cols, dropna=False):
             pcode = _first_present(group, "parameter_code")
             stat = _first_present(group, "statistic_id")
-            group_units = group["unit_of_measure"].dropna().unique() if has_unit else ()
-            unit = group_units[0] if len(group_units) else None
             desc = self.series_meta.get(str(pcode), {}) if pcode is not None else {}
+            base = _slug(_none_if_nan(desc.get("parameter_name")) or pcode or "value")
+            specs.append((group, pcode, stat, desc, base))
+        names = self._disambiguate([s[4] for s in specs], [(s[1], s[2]) for s in specs])
 
-            name = self._variable_name(desc, pcode, stat, used)
-            used.add(name)
+        datasets = []
+        for (group, pcode, stat, desc, _base), name in zip(specs, names):
+            # Sort the units so the chosen label is deterministic across pulls
+            # (values are not converted either way; see the multi-unit warning).
+            group_units = (
+                sorted(group["unit_of_measure"].dropna().unique()) if has_unit else []
+            )
+            unit = group_units[0] if group_units else None
 
             if len(group_units) > 1:
                 # One variable can carry only one ``units`` attr; surface the
@@ -951,15 +1010,34 @@ class _DenseBuilder(_SeriesBuilder):
         return datasets
 
     @staticmethod
-    def _variable_name(desc, pcode, stat, used):
-        """A unique slug for a variable; disambiguate same-parameter series."""
-        name = _slug(_none_if_nan(desc.get("parameter_name")) or pcode or "value")
-        if name in used:  # same parameter, different statistic -> distinct var
-            op = CF_CELL_METHODS.get(str(stat)) or (str(stat) if stat else None)
-            name = f"{name}_{_slug(op)}" if op else name
-        while name in used:
-            name += "_x"
-        return name
+    def _disambiguate(bases, keys):
+        """Map per-group base slugs to unique, deterministic variable names.
+
+        ``keys[i]`` is the group's ``(parameter_code, statistic_id)``. A base used
+        by exactly one group stays bare (e.g. ``discharge``); a base shared by
+        several groups is disambiguated for *all* of them -- by the statistic's
+        cell-method operator (``discharge_maximum`` / ``discharge_mean``), falling
+        back to the statistic id then the parameter code -- so a bare name never
+        silently refers to an arbitrary one of several same-named series.
+        """
+        counts: dict[str, int] = {}
+        for b in bases:
+            counts[b] = counts.get(b, 0) + 1
+        names, used = [], set()
+        for base, (pcode, stat) in zip(bases, keys):
+            if counts[base] == 1:
+                name = base
+            else:
+                op = CF_CELL_METHODS.get(str(stat)) if stat is not None else None
+                suffix = op or (str(stat) if stat is not None else None)
+                name = f"{base}_{_slug(suffix)}" if suffix else base
+                if name == base or name in used:  # statistic didn't separate them
+                    name = f"{base}_{_slug(pcode)}" if pcode is not None else base
+            while name in used:
+                name += "_x"
+            used.add(name)
+            names.append(name)
+        return names
 
 
 class _StatsBuilder(_DatasetBuilder):
