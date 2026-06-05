@@ -109,6 +109,20 @@ def test_ancillary_variables_linked():
     )
 
 
+def test_list_valued_qualifier_is_flattened_to_string():
+    # The API returns ``qualifier`` as a list of codes per observation; the
+    # ancillary variable must be flattened to a netCDF-encodable string (object
+    # arrays of lists can't be written), empty lists -> missing.
+    df = _daily_frame()
+    df["qualifier"] = [["A", "e"], []]  # multi-code list, then empty list
+    for build in (wdx._build_ragged, wdx._build_dense):
+        ds = build(df, _meta(), service="daily", series_meta=_DISCHARGE_META)
+        qual = ds["qualifier"] if "qualifier" in ds else ds["discharge_qualifier"]
+        flat = qual.values.ravel().tolist()
+        assert not any(isinstance(v, (list, tuple)) for v in flat)  # no list cells
+        assert "A e" in flat  # multi-code list joined with a space
+
+
 def test_unknown_unit_passes_through_verbatim():
     df = _daily_frame()
     df["unit_of_measure"] = "widgets/s"  # units are read from the frame
@@ -197,6 +211,22 @@ def test_build_stats_flat_dataset():
     assert isinstance(ds, xr.Dataset)
     assert "p50_va" in ds.data_vars
     assert ds.attrs["Conventions"] == "CF-1.11"
+    # A flat percentile table is not a CF discrete-sampling geometry, so it must
+    # NOT advertise featureType=timeSeries (which would mislead cf-xarray/CF
+    # tooling into treating it as a timeseries DSG).
+    assert "featureType" not in ds.attrs
+
+
+def test_stats_empty_omits_feature_type():
+    # The empty-stats path must also stay free of the timeSeries featureType.
+    ds = wdx._build_stats(pd.DataFrame(), _meta(), "statistics")
+    assert list(ds.data_vars) == []
+    assert "featureType" not in ds.attrs
+    # the series builders still advertise the DSG featureType
+    series = wdx._build_ragged(
+        _daily_frame(), _meta(), service="daily", series_meta=_DISCHARGE_META
+    )
+    assert series.attrs["featureType"] == "timeSeries"
 
 
 def test_build_stats_drops_hash_columns():
@@ -578,33 +608,95 @@ def test_ragged_field_schema_without_statistic():
     assert ds["value"].attrs["long_name"] == "Discharge, cubic feet per second"
 
 
-# --- dense opt-out wiring ---------------------------------------------------
+# --- select_series (label-based selection on the ragged layout) -------------
 
 
-def test_wrapper_defaults_to_ragged_and_dense_opt_out(monkeypatch):
-    # Default wrapper output is ragged; dense=True returns the gridded layout.
+def _two_instance_ragged():
+    """Ragged Dataset with two instances at one site: 00060 and 00010."""
+    meta = {**_DISCHARGE_META, **_TEMP_META}
+    return wdx._build_ragged(
+        pd.concat([_daily_frame(), _temp_frame()]),
+        _meta(),
+        service="continuous",
+        series_meta=meta,
+    )
+
+
+def test_select_series_returns_time_indexed_single_series():
+    ds = _two_instance_ragged()
+    s = wdx.select_series(ds, monitoring_location_id="USGS-1", parameter_code="00060")
+    # time is now a real dimension (not the flat obs axis)
+    assert set(s.sizes) == {"time"}
+    assert s["value"].dims == ("time",)
+    assert list(s["value"].values) == [100, 110]
+    # the series identity rides along as scalar coordinates
+    assert str(s["parameter_code"].values) == "00060"
+    assert str(s["unit_of_measure"].values) == "ft^3/s"
+    # ancillary flags follow the series; row_size is dropped
+    assert "approval_status" in s.data_vars
+    assert "row_size" not in s.variables
+    # .sel(time=...) works now that time is the dimension
+    assert s["value"].sel(time="2024-06-01").item() == 100
+
+
+def test_select_series_ambiguous_raises():
+    # selecting by site alone matches both instances -> ask for more keys
+    ds = _two_instance_ragged()
+    with pytest.raises(ValueError, match="2 time series match"):
+        wdx.select_series(ds, monitoring_location_id="USGS-1")
+
+
+def test_select_series_no_match_raises():
+    ds = _two_instance_ragged()
+    with pytest.raises(KeyError, match="no time series matches"):
+        wdx.select_series(ds, parameter_code="99999")
+
+
+def test_select_series_unknown_key_raises():
+    ds = _two_instance_ragged()
+    with pytest.raises(KeyError, match="not a per-series coordinate"):
+        wdx.select_series(ds, bogus="x")
+
+
+def test_select_series_on_dense_raises_helpful_error():
+    # On a dense Dataset, parameters are named variables; select_series points
+    # the user at ds[name].sel(...) instead of failing cryptically.
+    dense = wdx._build_dense(
+        _daily_frame(), _meta(), service="daily", series_meta=_DISCHARGE_META
+    )
+    with pytest.raises(ValueError, match="expects a ragged Dataset"):
+        wdx.select_series(dense, monitoring_location_id="USGS-1")
+
+
+# --- ragged opt-out wiring --------------------------------------------------
+
+
+def test_wrapper_defaults_to_dense_and_ragged_opt_out(monkeypatch):
+    # Default wrapper output is the (site, time) grid; dense=False opts into the
+    # ragged array.
     monkeypatch.setattr(wdx, "_fetch", lambda func, a, k: (_daily_frame(), _meta()))
     monkeypatch.setattr(wdx._TS_CACHE, "lookup", lambda site_ids: (_DISCHARGE_META, {}))
 
-    ragged = wdx.get_daily(monitoring_location_id="USGS-1")
-    assert "obs" in ragged.sizes and "value" in ragged.data_vars
-    assert "discharge" not in ragged.data_vars
-
-    dense = wdx.get_daily(monitoring_location_id="USGS-1", dense=True)
+    dense = wdx.get_daily(monitoring_location_id="USGS-1")
     assert "discharge" in dense.data_vars
     assert "obs" not in dense.sizes
+
+    ragged = wdx.get_daily(monitoring_location_id="USGS-1", dense=False)
+    assert "obs" in ragged.sizes and "value" in ragged.data_vars
+    assert "discharge" not in ragged.data_vars
 
 
 def test_series_wrapper_signature_advertises_dense_and_dataset_return():
     # functools.wraps would otherwise carry over the getter's DataFrame
     # signature and hide ``dense``; _make_getter publishes an accurate one.
+    # dense defaults to True (the grid is the default; dense=False -> ragged).
     import inspect
 
     sig = inspect.signature(wdx.get_daily)
     assert "monitoring_location_id" in sig.parameters  # real args stay visible
     dense = sig.parameters["dense"]
     assert dense.kind is inspect.Parameter.KEYWORD_ONLY
-    assert dense.default is False
+    assert dense.default is True
     assert "Dataset" in str(sig.return_annotation)
     assert wdx.get_daily.__annotations__["return"] == "xarray.Dataset"
 
@@ -755,8 +847,10 @@ def test_metadata_lookup_failure_degrades_with_warning():
 
 
 def test_wrapper_survives_metadata_failure(monkeypatch):
-    # End to end: a failing metadata endpoint still yields a CF dataset built
-    # from the data; only the metadata-sourced long_name is missing.
+    # End to end on the DEFAULT (dense) layout: a failing metadata endpoint still
+    # yields a CF dataset built from the data. With no metadata name the variable
+    # falls back to the parameter code -- never the literal "nan" -- and only the
+    # metadata-sourced long_name is missing.
     monkeypatch.setattr(wdx, "_fetch", lambda func, a, k: (_daily_frame(), _meta()))
 
     def boom(monitoring_location_id):
@@ -765,11 +859,66 @@ def test_wrapper_survives_metadata_failure(monkeypatch):
     monkeypatch.setattr(wdx._TS_CACHE, "_getter", boom)
     wdx._TS_CACHE.clear()
     with pytest.warns(UserWarning, match="metadata lookup failed"):
-        ds = wdx.get_daily(monitoring_location_id="USGS-1")
-    assert "value" in ds.data_vars  # observations survived
-    # standard_name/units come from the frame; long_name (metadata) is absent
-    assert "long_name" not in ds["value"].attrs
-    assert ds["value"].attrs["units"] == "ft3 s-1"
+        ds = wdx.get_daily(monitoring_location_id="USGS-1")  # default (dense)
+    assert "00060" in ds.data_vars  # observations survived under the code name
+    assert "nan" not in ds.data_vars  # never a literal "nan" variable
+    v = ds["00060"]
+    assert "long_name" not in v.attrs  # name comes from metadata, which failed
+    assert v.attrs["units"] == "ft3 s-1"  # units come from the frame
+
+
+def test_nan_parameter_description_falls_back_to_name():
+    # A present-but-null parameter_description (NaN is truthy) must not mask the
+    # valid parameter_name; long_name falls back to the name.
+    meta = {
+        "00060": {"parameter_name": "Discharge", "parameter_description": float("nan")}
+    }
+    ds = wdx._build_dense(_daily_frame(), _meta(), service="daily", series_meta=meta)
+    assert ds["discharge"].attrs["long_name"] == "Discharge"
+
+
+def test_nan_parameter_name_uses_code_not_literal_nan():
+    # A present-but-null parameter_name must fall back to the parameter code,
+    # never produce a variable literally named "nan".
+    meta = {"00060": {"parameter_name": float("nan")}}
+    ds = wdx._build_dense(_daily_frame(), _meta(), service="daily", series_meta=meta)
+    assert "nan" not in ds.data_vars
+    assert "00060" in ds.data_vars
+
+
+def test_dense_collision_dedup_is_order_independent():
+    # Colliding (site, time) values must dedup deterministically (smallest),
+    # independent of the upstream row order.
+    a = _daily_frame(values=(100,), times=("2024-06-01",))
+    b = _daily_frame(values=(200,), times=("2024-06-01",))
+    kept = []
+    for frame in (pd.concat([a, b]), pd.concat([b, a])):
+        with pytest.warns(UserWarning, match="multiple values per"):
+            ds = wdx._build_dense(
+                frame, _meta(), service="daily", series_meta=_DISCHARGE_META
+            )
+        kept.append(
+            ds["discharge"]
+            .sel(monitoring_location_id="USGS-1", time="2024-06-01")
+            .item()
+        )
+    assert kept == [100, 100]  # smallest value, both input orders
+
+
+def test_partial_geometry_keeps_numeric_lonlat_coord():
+    # When only some sites have point geometry, the lon/lat coordinate must stay
+    # numeric (float, NaN-filled) -- not an object array with None, which is a
+    # CF-invalid spatial coordinate.
+    a = _daily_frame(site="USGS-A", values=(1, 2), times=("2024-06-01", "2024-06-02"))
+    b = _daily_frame(site="USGS-B", values=(3, 4), times=("2024-06-01", "2024-06-02"))
+    a["geometry"] = [[-90.44, 43.19]] * len(a)
+    b["geometry"] = [None] * len(b)  # this site carries no point geometry
+    ds = wdx._build_dense(
+        pd.concat([a, b]), _meta(), service="daily", series_meta=_DISCHARGE_META
+    )
+    assert ds["longitude"].dtype.kind == "f"  # float, not object
+    assert ds["longitude"].sel(monitoring_location_id="USGS-A").item() == -90.44
+    assert pd.isna(ds["longitude"].sel(monitoring_location_id="USGS-B").item())
 
 
 def test_metadata_cache_bounded_and_clearable():
