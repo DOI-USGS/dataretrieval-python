@@ -748,15 +748,15 @@ def test_to_awkward_converts_ragged_to_jagged_records():
     ds = _two_instance_ragged()  # two series at USGS-1: 00060 and 00010
     arr = wdx.to_awkward(ds)
     assert len(arr) == ds.sizes["timeseries"]  # one record per series
-    # scalar identity fields + jagged observation fields
-    assert {"monitoring_location_id", "parameter_code", "value", "time"} <= set(
-        arr.fields
-    )
+    # per-series identity is scalar fields; observations are nested under ``obs``
+    assert {"monitoring_location_id", "parameter_code", "obs"} <= set(arr.fields)
+    assert {"time", "value"} <= set(arr.obs.fields)
+    assert "value" not in arr.fields  # not a parallel top-level series
     # faithful: per-series lengths == row_size, total obs preserved, no fill
-    assert ak.num(arr.value).tolist() == ds["row_size"].values.tolist()
-    assert int(ak.sum(ak.num(arr.value))) == ds.sizes["obs"]
+    assert ak.num(arr.obs.value).tolist() == ds["row_size"].values.tolist()
+    assert int(ak.sum(ak.num(arr.obs.value))) == ds.sizes["obs"]
     # per-series reductions vectorize across all series at once
-    means = ak.mean(arr.value, axis=1)
+    means = ak.mean(arr.obs.value, axis=1)
     assert len(means) == len(arr)
 
 
