@@ -1,0 +1,218 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Handling errors &mdash; dataretrieval 0.1.dev1+gff8f5354d documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a29fbe9c"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Datetime Information" href="timeconventions.html" />
+    <link rel="prev" title="User Guide" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">User Guide</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#contents">Contents</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Handling errors</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#branch-without-knowing-the-concrete-type">Branch without knowing the concrete type</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#retry-transient-failures-with-backoff">Retry transient failures with backoff</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#resume-a-large-water-data-request">Resume a large Water Data request</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#the-full-taxonomy">The full taxonomy</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="timeconventions.html">Datetime Information</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dataportals.html">Data Portals</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">User Guide</a></li>
+      <li class="breadcrumb-item active">Handling errors</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/userguide/errors.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="handling-errors">
+<span id="id1"></span><h1>Handling errors<a class="headerlink" href="#handling-errors" title="Link to this heading"></a></h1>
+<p>Every failed request raises a subclass of
+<a class="reference internal" href="../reference/exceptions.html#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a>, so a single <code class="docutils literal notranslate"><span class="pre">except</span></code>
+clause handles any failure regardless of which service you called:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
+        <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05427718&quot;</span>
+    <span class="p">)</span>
+<span class="k">except</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">DataRetrievalError</span><span class="p">:</span>
+    <span class="o">...</span>  <span class="c1"># any request failure: error status, connection loss, too-large, ...</span>
+</pre></div>
+</div>
+<p>Connection-level failures (timeouts, DNS, refused connections) are wrapped as
+<a class="reference internal" href="../reference/exceptions.html#dataretrieval.exceptions.NetworkError" title="dataretrieval.exceptions.NetworkError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkError</span></code></a>, so the clause above covers them
+too – you never have to catch an <code class="docutils literal notranslate"><span class="pre">httpx</span></code> exception. A <em>no-data</em> result is <strong>not</strong> an
+error: the modern getters return an empty <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> when nothing matches, so
+check <code class="docutils literal notranslate"><span class="pre">df.empty</span></code> rather than catching anything.</p>
+<section id="branch-without-knowing-the-concrete-type">
+<h2>Branch without knowing the concrete type<a class="headerlink" href="#branch-without-knowing-the-concrete-type" title="Link to this heading"></a></h2>
+<p>Every <a class="reference internal" href="../reference/exceptions.html#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a> exposes three
+read-anywhere fields, so you rarely need to import the specific subclasses:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">.status_code</span></code> – the HTTP status, or <code class="docutils literal notranslate"><span class="pre">None</span></code> when the failure carried no
+response (a connection error, an over-long URL, …).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.retry_after</span></code> – seconds the server asked you to wait (its <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code>
+header), or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.retryable</span></code> – <code class="docutils literal notranslate"><span class="pre">True</span></code> when re-issuing the same request might succeed (a
+429 / 5xx, or a connection failure); <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">except</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">DataRetrievalError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
+        <span class="o">...</span>            <span class="c1"># not found</span>
+    <span class="k">elif</span> <span class="n">e</span><span class="o">.</span><span class="n">retryable</span><span class="p">:</span>
+        <span class="o">...</span>            <span class="c1"># transient -- see the retry recipe below</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span>
+</pre></div>
+</div>
+</section>
+<section id="retry-transient-failures-with-backoff">
+<h2>Retry transient failures with backoff<a class="headerlink" href="#retry-transient-failures-with-backoff" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">.retryable</span></code> and <code class="docutils literal notranslate"><span class="pre">.retry_after</span></code> make a backoff loop type-agnostic – it
+covers rate limits (429), server errors (5xx), and connection failures alike,
+honoring the server’s <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> hint when present:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval</span>
+
+<span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span>
+            <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">sites</span>
+        <span class="p">)</span>
+        <span class="k">break</span>
+    <span class="k">except</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">DataRetrievalError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">e</span><span class="o">.</span><span class="n">retryable</span> <span class="ow">or</span> <span class="n">attempt</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">raise</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">retry_after</span> <span class="ow">or</span> <span class="mi">2</span> <span class="o">**</span> <span class="n">attempt</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="resume-a-large-water-data-request">
+<h2>Resume a large Water Data request<a class="headerlink" href="#resume-a-large-water-data-request" title="Link to this heading"></a></h2>
+<p>The Water Data getters transparently split an over-large request into chunks.
+When a transient failure interrupts one mid-stream, the work already completed
+is preserved: catch <code class="docutils literal notranslate"><span class="pre">ChunkInterrupted</span></code> and call <code class="docutils literal notranslate"><span class="pre">exc.call.resume()</span></code> once the
+condition clears – only the unfinished sub-requests are re-issued.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_daily</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.chunking</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkInterrupted</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">long_list_of_sites</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">ChunkInterrupted</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">exc</span><span class="o">.</span><span class="n">retry_after</span> <span class="ow">or</span> <span class="mi">5</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">exc</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
+            <span class="k">break</span>
+        <span class="k">except</span> <span class="n">ChunkInterrupted</span> <span class="k">as</span> <span class="n">again</span><span class="p">:</span>
+            <span class="n">exc</span> <span class="o">=</span> <span class="n">again</span>
+</pre></div>
+</div>
+</section>
+<section id="the-full-taxonomy">
+<h2>The full taxonomy<a class="headerlink" href="#the-full-taxonomy" title="Link to this heading"></a></h2>
+<p>See <a class="reference internal" href="../reference/exceptions.html"><span class="doc">dataretrieval.exceptions</span></a> for the complete class tree and per-type
+details.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="User Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="timeconventions.html" class="btn btn-neutral float-right" title="Datetime Information" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+gecf2833e6 documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+gff8f5354d documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=12eacb3a"></script>
+      <script src="../../_static/documentation_options.js?v=a29fbe9c"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -90,11 +90,10 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.codes</span><span class="w"> </span><span class="kn">import</span> <span class="n">tz</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">BadRequestError</span><span class="p">,</span>
+    <span class="n">NetworkError</span><span class="p">,</span>
     <span class="n">NoSitesError</span><span class="p">,</span>
-    <span class="n">NotFoundError</span><span class="p">,</span>
-    <span class="n">ServiceUnavailable</span><span class="p">,</span>
     <span class="n">URLTooLong</span><span class="p">,</span>
+    <span class="n">error_for_status</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="c1"># Typed as ``dict[str, Any]`` (not the inferred ``dict[str, object]``) so that</span>
@@ -386,34 +385,53 @@
     <span class="p">)</span>
 
 
+<div class="viewcode-block" id="_network_error">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils._network_error">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_network_error</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">httpx</span><span class="o">.</span><span class="n">URL</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">TransportError</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NetworkError</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build the :class:`~dataretrieval.exceptions.NetworkError` for a failed</span>
+<span class="sd">    round-trip ``exc`` (no HTTP response: timeout, DNS, refused connection).&quot;&quot;&quot;</span>
+    <span class="c1"># Some httpx transport errors stringify empty (e.g. ``ConnectTimeout()``);</span>
+    <span class="c1"># fall back to the class name so the message is always informative.</span>
+    <span class="n">detail</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+    <span class="k">return</span> <span class="n">NetworkError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not reach the service at </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">detail</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_get">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils._get">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_get</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">httpx</span><span class="o">.</span><span class="n">URL</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``httpx.get`` for the single-shot paths, surfacing a transport failure as</span>
+<span class="sd">    a typed :class:`~dataretrieval.exceptions.NetworkError` (the chunker wraps its</span>
+<span class="sd">    own as resumable interruptions, so it stays off this wrapper).&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">httpx</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">httpx</span><span class="o">.</span><span class="n">TransportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">_network_error</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span></div>
+
+
+
 <div class="viewcode-block" id="_raise_for_status">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils._raise_for_status">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_raise_for_status</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Map an unsuccessful HTTP status to a typed :class:`DataRetrievalError`;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raise the typed :class:`DataRetrievalError` for an HTTP error response;</span>
 <span class="sd">    return ``None`` on success.</span>
 
-<span class="sd">    Shared by the legacy :func:`query` path. The 4xx types stay</span>
-<span class="sd">    :class:`ValueError`-compatible (this path&#39;s historical contract), but a 5xx</span>
-<span class="sd">    raises the transient :class:`ServiceUnavailable` (a :class:`RuntimeError`),</span>
-<span class="sd">    since a server failure is retryable rather than a bad request.</span>
+<span class="sd">    Shared by the legacy :func:`query` path (and ``nadp`` / ``streamstats``).</span>
+<span class="sd">    Delegates the status-to-type mapping to</span>
+<span class="sd">    :func:`dataretrieval.exceptions.error_for_status`, except a too-long-URL</span>
+<span class="sd">    status (413 / 414): that gets the same actionable &quot;split your query&quot;</span>
+<span class="sd">    remediation as the client-side over-long-URL case below, rather than a bare</span>
+<span class="sd">    ``HTTP 414`` (both still raise :class:`~dataretrieval.exceptions.URLTooLong`).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">status</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span>
-    <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="mi">400</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">BadRequestError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Bad Request, check that your parameters are correct. URL: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="p">)</span>
-    <span class="k">elif</span> <span class="n">status</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">NotFoundError</span><span class="p">(</span>
-            <span class="s2">&quot;Page Not Found Error. May be the result of an empty query. &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;URL: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="p">)</span>
-    <span class="k">elif</span> <span class="n">status</span> <span class="o">==</span> <span class="mi">414</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">status</span> <span class="o">&lt;</span> <span class="mi">400</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">413</span><span class="p">,</span> <span class="mi">414</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">_url_too_long_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;API response reason: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">reason_phrase</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="mi">500</span> <span class="o">&lt;=</span> <span class="n">status</span> <span class="o">&lt;</span> <span class="mi">600</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">ServiceUnavailable</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Service Unavailable: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">reason_phrase</span><span class="si">}</span><span class="s2">. &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;The service at </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2"> may be down or experiencing issues.&quot;</span>
-        <span class="p">)</span></div>
+    <span class="k">raise</span> <span class="n">error_for_status</span><span class="p">(</span>
+        <span class="n">status</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;HTTP </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">reason_phrase</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot; (URL: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 
 
@@ -450,13 +468,12 @@
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    DataRetrievalError</span>
-<span class="sd">        On failure: :class:`~dataretrieval.exceptions.BadRequestError` (400),</span>
-<span class="sd">        :class:`~dataretrieval.exceptions.NotFoundError` (404),</span>
-<span class="sd">        :class:`~dataretrieval.exceptions.URLTooLong` (414 or a client-side</span>
-<span class="sd">        over-long URL), :class:`~dataretrieval.exceptions.ServiceUnavailable`</span>
-<span class="sd">        (5xx), or :class:`~dataretrieval.exceptions.NoSitesError` (no sites/data</span>
-<span class="sd">        matched). The 4xx types are also :class:`ValueError`;</span>
-<span class="sd">        ``ServiceUnavailable`` is a :class:`RuntimeError`.</span>
+<span class="sd">        On an HTTP error response, the typed subclass for the status (see</span>
+<span class="sd">        :func:`dataretrieval.exceptions.error_for_status` for the mapping); or</span>
+<span class="sd">        :class:`~dataretrieval.exceptions.NoSitesError` when a 200 response</span>
+<span class="sd">        reports no data matched; or :class:`~dataretrieval.exceptions.NetworkError`</span>
+<span class="sd">        on a connection-level failure (timeout, DNS), with the underlying</span>
+<span class="sd">        ``httpx`` exception on ``__cause__``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">payload</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -468,7 +485,7 @@
     <span class="n">user_agent</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;user-agent&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;python-dataretrieval/</span><span class="si">{</span><span class="n">dataretrieval</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}</span>
 
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span>
             <span class="n">url</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
             <span class="n">headers</span><span class="o">=</span><span class="n">user_agent</span><span class="p">,</span>
@@ -480,6 +497,8 @@
 
     <span class="n">_raise_for_status</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
+    <span class="c1"># USGS waterservices signals an empty result with a 200 whose body starts</span>
+    <span class="c1"># &quot;No sites/data ...&quot; (its legacy wording); surface it as NoSitesError.</span>
     <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;No sites/data&quot;</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">NoSitesError</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
 

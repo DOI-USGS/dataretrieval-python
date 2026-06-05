@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; dataretrieval 0.1.dev1+gecf2833e6 documentation</title>
+  <title>Index &mdash; dataretrieval 0.1.dev1+gff8f5354d documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=12eacb3a"></script>
+      <script src="_static/documentation_options.js?v=a29fbe9c"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -80,6 +80,7 @@
  | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
@@ -87,6 +88,7 @@
  | <a href="#N"><strong>N</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#Q"><strong>Q</strong></a>
+ | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
@@ -121,15 +123,27 @@
 </li>
       <li><a href="reference/wqp.html#dataretrieval.wqp._check_kwargs">_check_kwargs() (in module dataretrieval.wqp)</a>
 </li>
-      <li><a href="reference/nwis.html#dataretrieval.nwis._deprecated">_deprecated() (in module dataretrieval.nwis)</a>
+      <li><a href="reference/exceptions.html#dataretrieval.exceptions.RateLimited._DEFAULT_STATUS">_DEFAULT_STATUS (dataretrieval.exceptions.RateLimited attribute)</a>
+
+      <ul>
+        <li><a href="reference/exceptions.html#dataretrieval.exceptions.ServiceUnavailable._DEFAULT_STATUS">(dataretrieval.exceptions.ServiceUnavailable attribute)</a>
 </li>
+        <li><a href="reference/exceptions.html#dataretrieval.exceptions.TransientError._DEFAULT_STATUS">(dataretrieval.exceptions.TransientError attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/nwis.html#dataretrieval.nwis._deprecated">_deprecated() (in module dataretrieval.nwis)</a>
+</li>
       <li><a href="reference/nldi.html#dataretrieval.nldi._features_to_gdf">_features_to_gdf() (in module dataretrieval.nldi)</a>
+</li>
+      <li><a href="reference/utils.html#dataretrieval.utils._get">_get() (in module dataretrieval.utils)</a>
 </li>
       <li><a href="reference/wqp.html#dataretrieval.wqp._is_code_column">_is_code_column() (in module dataretrieval.wqp)</a>
 </li>
       <li><a href="reference/wqp.html#dataretrieval.wqp._legacy_only_url">_legacy_only_url() (in module dataretrieval.wqp)</a>
+</li>
+      <li><a href="reference/utils.html#dataretrieval.utils._network_error">_network_error() (in module dataretrieval.utils)</a>
 </li>
       <li><a href="reference/nwis.html#dataretrieval.nwis._parse_json_or_raise">_parse_json_or_raise() (in module dataretrieval.nwis)</a>
 </li>
@@ -173,6 +187,13 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    dataretrieval.exceptions
+
+      <ul>
+        <li><a href="reference/exceptions.html#module-dataretrieval.exceptions">module</a>
+</li>
+      </ul></li>
       <li>
     dataretrieval.nadp
 
@@ -224,7 +245,17 @@
         <li><a href="reference/wqp.html#module-dataretrieval.wqp">module</a>
 </li>
       </ul></li>
+      <li><a href="reference/exceptions.html#dataretrieval.exceptions.DataRetrievalError">DataRetrievalError</a>
+</li>
       <li><a href="reference/streamstats.html#dataretrieval.streamstats.download_workspace">download_workspace() (in module dataretrieval.streamstats)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/exceptions.html#dataretrieval.exceptions.error_for_status">error_for_status() (in module dataretrieval.exceptions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -349,6 +380,10 @@
 </li>
       </ul></li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/exceptions.html#dataretrieval.exceptions.HTTPError">HTTPError</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="M">M</h2>
@@ -358,6 +393,8 @@
     module
 
       <ul>
+        <li><a href="reference/exceptions.html#module-dataretrieval.exceptions">dataretrieval.exceptions</a>
+</li>
         <li><a href="reference/nadp.html#module-dataretrieval.nadp">dataretrieval.nadp</a>
 </li>
         <li><a href="reference/nldi.html#module-dataretrieval.nldi">dataretrieval.nldi</a>
@@ -381,8 +418,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/nadp.html#dataretrieval.nadp.NADP_ZipFile">NADP_ZipFile (class in dataretrieval.nadp)</a>
 </li>
+      <li><a href="reference/exceptions.html#dataretrieval.exceptions.NetworkError">NetworkError</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/exceptions.html#dataretrieval.exceptions.NoSitesError">NoSitesError</a>
+</li>
       <li><a href="reference/nwis.html#dataretrieval.nwis.NWIS_Metadata">NWIS_Metadata (class in dataretrieval.nwis)</a>
 </li>
   </ul></td>
@@ -422,10 +463,34 @@
   </ul></td>
 </tr></table>
 
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/exceptions.html#dataretrieval.exceptions.RateLimited">RateLimited</a>
+</li>
+      <li><a href="reference/exceptions.html#dataretrieval.exceptions.RequestTooLarge">RequestTooLarge</a>
+</li>
+      <li><a href="reference/exceptions.html#dataretrieval.exceptions.DataRetrievalError.retry_after">retry_after (dataretrieval.exceptions.DataRetrievalError attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/exceptions.html#dataretrieval.exceptions.DataRetrievalError.retryable">retryable (dataretrieval.exceptions.DataRetrievalError attribute)</a>
+
+      <ul>
+        <li><a href="reference/exceptions.html#dataretrieval.exceptions.NetworkError.retryable">(dataretrieval.exceptions.NetworkError attribute)</a>
+</li>
+        <li><a href="reference/exceptions.html#dataretrieval.exceptions.TransientError.retryable">(dataretrieval.exceptions.TransientError attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/nldi.html#dataretrieval.nldi.search">search() (in module dataretrieval.nldi)</a>
+</li>
+      <li><a href="reference/exceptions.html#dataretrieval.exceptions.ServiceUnavailable">ServiceUnavailable</a>
 </li>
       <li><a href="reference/nwis.html#dataretrieval.nwis.NWIS_Metadata.site_info">site_info (dataretrieval.nwis.NWIS_Metadata property)</a>
 
@@ -436,6 +501,10 @@
 </li>
       </ul></li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/exceptions.html#dataretrieval.exceptions.DataRetrievalError.status_code">status_code (dataretrieval.exceptions.DataRetrievalError attribute)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="T">T</h2>
@@ -443,11 +512,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/nadp.html#dataretrieval.nadp.NADP_ZipFile.tif">tif() (dataretrieval.nadp.NADP_ZipFile method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/nadp.html#dataretrieval.nadp.NADP_ZipFile.tif_name">tif_name() (dataretrieval.nadp.NADP_ZipFile method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/utils.html#dataretrieval.utils.to_str">to_str() (in module dataretrieval.utils)</a>
+</li>
+      <li><a href="reference/exceptions.html#dataretrieval.exceptions.TransientError">TransientError</a>
 </li>
   </ul></td>
 </tr></table>
@@ -455,6 +526,8 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/exceptions.html#dataretrieval.exceptions.Unchunkable">Unchunkable</a>
+</li>
       <li><a href="reference/nwis.html#dataretrieval.nwis.NWIS_Metadata.url">url (dataretrieval.nwis.NWIS_Metadata attribute)</a>
 
       <ul>
@@ -463,6 +536,10 @@
         <li><a href="reference/wqp.html#dataretrieval.wqp.WQP_Metadata.url">(dataretrieval.wqp.WQP_Metadata attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/exceptions.html#dataretrieval.exceptions.URLTooLong">URLTooLong</a>
+</li>
   </ul></td>
 </tr></table>
 
