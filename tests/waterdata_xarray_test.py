@@ -722,6 +722,53 @@ def test_select_series_on_dense_raises_helpful_error():
         wdx.select_series(dense, monitoring_location_id="USGS-1")
 
 
+def test_to_awkward_missing_dependency_raises_informative(monkeypatch):
+    # awkward is NOT a dependency; calling to_awkward without it must raise a
+    # clear, actionable error rather than a bare ImportError. (Simulated so the
+    # test holds whether or not awkward happens to be installed.)
+    import builtins
+
+    real_import = builtins.__import__
+
+    def fake_import(name, *args, **kwargs):
+        if name == "awkward":
+            raise ModuleNotFoundError("No module named 'awkward'")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+    ds = wdx._build_ragged(
+        _daily_frame(), _meta(), service="daily", series_meta=_DISCHARGE_META
+    )
+    with pytest.raises(ModuleNotFoundError, match="pip install awkward"):
+        wdx.to_awkward(ds)
+
+
+def test_to_awkward_converts_ragged_to_jagged_records():
+    ak = pytest.importorskip("awkward")
+    ds = _two_instance_ragged()  # two series at USGS-1: 00060 and 00010
+    arr = wdx.to_awkward(ds)
+    assert len(arr) == ds.sizes["timeseries"]  # one record per series
+    # scalar identity fields + jagged observation fields
+    assert {"monitoring_location_id", "parameter_code", "value", "time"} <= set(
+        arr.fields
+    )
+    # faithful: per-series lengths == row_size, total obs preserved, no fill
+    assert ak.num(arr.value).tolist() == ds["row_size"].values.tolist()
+    assert int(ak.sum(ak.num(arr.value))) == ds.sizes["obs"]
+    # per-series reductions vectorize across all series at once
+    means = ak.mean(arr.value, axis=1)
+    assert len(means) == len(arr)
+
+
+def test_to_awkward_on_dense_raises():
+    pytest.importorskip("awkward")
+    dense = wdx._build_dense(
+        _daily_frame(), _meta(), service="daily", series_meta=_DISCHARGE_META
+    )
+    with pytest.raises(ValueError, match="expects a ragged Dataset"):
+        wdx.to_awkward(dense)
+
+
 # --- ragged opt-out wiring --------------------------------------------------
 
 

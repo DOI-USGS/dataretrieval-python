@@ -84,6 +84,7 @@ from .types import (
 __all__ = [
     "clear_metadata_cache",
     "select_series",
+    "to_awkward",
     "get_continuous",
     "get_daily",
     "get_field_measurements",
@@ -591,6 +592,63 @@ def select_series(ds, **keys):
     block = slice(int(starts[i]), int(starts[i + 1]))
     series = ds.isel(timeseries=i, obs=block).swap_dims(obs="time")
     return series.drop_vars("row_size", errors="ignore")
+
+
+def to_awkward(ds):
+    """Convert a ragged (``dense=False``) Dataset to a per-series ``awkward.Array``.
+
+    The CF contiguous-ragged layout (``row_size`` offsets + a flat ``obs``
+    dimension) is structurally identical to awkward's jagged ``ListOffsetArray``,
+    so this is a near-zero-copy re-view: each timeseries instance becomes one
+    record carrying its per-series identity/metadata (scalar fields such as
+    ``monitoring_location_id`` / ``parameter_code`` / ``longitude``) plus its
+    observations as variable-length jagged fields (``time`` / ``value`` / flags).
+    No NaN fill, each series on its own time axis -- per-series operations then
+    vectorize across every series at once, e.g. ``ak.mean(arr.value, axis=1)``::
+
+        ds = wdx.get_daily(..., dense=False)
+        arr = wdx.to_awkward(ds)
+        ak.mean(arr.value, axis=1)  # per-series means
+        arr[arr.parameter_code == "00060"]  # filter series by metadata
+
+    ``awkward`` is an optional dependency that is *not* installed with
+    ``dataretrieval``; install it separately (``pip install awkward``).
+    """
+    try:
+        import awkward as ak
+    except ModuleNotFoundError as exc:  # pragma: no cover - exercised only sans awkward
+        raise ModuleNotFoundError(
+            "to_awkward requires the optional 'awkward' dependency, which is not "
+            "installed with dataretrieval. Install it with:  pip install awkward"
+        ) from exc
+    if "row_size" not in ds.variables or "obs" not in ds.dims:
+        raise ValueError(
+            "to_awkward expects a ragged Dataset (from dense=False); the default "
+            "dense Dataset is already a (monitoring_location_id, time) grid."
+        )
+    counts = ds["row_size"].to_numpy()
+
+    def _content(values):
+        # awkward rejects numpy object dtype; route string/None columns through
+        # from_iter (normalizing NaN -> missing), and keep numeric/datetime
+        # content as numpy -- that part is the zero-copy re-view.
+        if values.dtype == object:
+            return ak.from_iter([_none_if_nan(v) for v in values.tolist()])
+        return values
+
+    # Per-series (timeseries-dim) coords -> scalar record fields; obs-dim
+    # variables/coords -> jagged fields (unflattened by row_size). ``row_size``
+    # itself is the offsets, already encoded in the jagged structure.
+    record = {}
+    for name in (*ds.data_vars, *ds.coords):
+        if name == "row_size":
+            continue
+        da = ds[name]
+        if da.dims == ("timeseries",):
+            record[name] = _content(da.to_numpy())
+        elif da.dims == ("obs",):
+            record[name] = ak.unflatten(_content(da.to_numpy()), counts)
+    return ak.zip(record, depth_limit=1)
 
 
 # === column schemas ========================================================
