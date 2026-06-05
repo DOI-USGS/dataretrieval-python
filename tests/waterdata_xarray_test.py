@@ -109,6 +109,20 @@ def test_ancillary_variables_linked():
     )
 
 
+def test_scalarize_handles_list_array_nested_and_scalar():
+    import numpy as np
+
+    assert wdx._scalarize(["A", "e"]) == "A e"
+    assert wdx._scalarize(("A", "e")) == "A e"
+    assert wdx._scalarize(np.array(["A", "e"])) == "A e"  # numpy array, not list
+    assert wdx._scalarize([]) is None  # empty -> missing
+    assert wdx._scalarize(["A", None]) == "A"  # missing element dropped
+    assert wdx._scalarize("A") == "A"  # scalar passes through
+    assert wdx._scalarize(None) is None
+    # a nested element must not raise (array-truth pitfall); it is stringified
+    assert isinstance(wdx._scalarize([["A", "e"], "z"]), str)
+
+
 def test_list_valued_qualifier_is_flattened_to_string():
     # The API returns ``qualifier`` as a list of codes per observation; the
     # ancillary variable must be flattened to a netCDF-encodable string (object
@@ -176,7 +190,9 @@ def test_multiple_parameters_outer_join_on_time():
 
 def test_collision_dedups_with_warning():
     # two values for the same (site, parameter, statistic, time) are ambiguous
-    # without the hash key -> keep the first and warn; site stays the dim.
+    # without the hash key -> keep the smallest (deterministically) and warn;
+    # site stays the dim. (test_dense_collision_dedup_is_order_independent pins
+    # the order-independence; here 100 is both the first and the smallest.)
     a = _daily_frame(values=(100,), times=("2024-06-01",))
     b = _daily_frame(values=(200,), times=("2024-06-01",))
     with pytest.warns(UserWarning, match="multiple values per"):
@@ -903,6 +919,28 @@ def test_dense_collision_dedup_is_order_independent():
             .item()
         )
     assert kept == [100, 100]  # smallest value, both input orders
+
+
+def test_dense_collision_kept_ancillary_is_order_independent():
+    # Two rows collide on (site, time) with the SAME value but different
+    # qualifiers; the retained flag must be deterministic (stable sort on value
+    # then ancillary), not dependent on upstream row order.
+    a = _daily_frame(values=(100,), times=("2024-06-01",))
+    b = _daily_frame(values=(100,), times=("2024-06-01",))
+    a["qualifier"] = ["X"]
+    b["qualifier"] = ["Y"]
+    kept = []
+    for frame in (pd.concat([a, b]), pd.concat([b, a])):
+        with pytest.warns(UserWarning, match="multiple values per"):
+            ds = wdx._build_dense(
+                frame, _meta(), service="daily", series_meta=_DISCHARGE_META
+            )
+        kept.append(
+            ds["discharge_qualifier"]
+            .sel(monitoring_location_id="USGS-1", time="2024-06-01")
+            .item()
+        )
+    assert kept == ["X", "X"]  # smaller flag kept, both input orders
 
 
 def test_partial_geometry_keeps_numeric_lonlat_coord():

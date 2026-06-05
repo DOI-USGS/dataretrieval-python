@@ -155,6 +155,16 @@ def _unique_present(frame, col):
     return frame[col].dropna().unique() if col in frame else []
 
 
+def _is_missing(value):
+    """True for None / a *scalar* NaN; False for any non-scalar (list, array).
+
+    ``_pd.notna`` raises on a list/array (it returns an element-wise mask), so
+    guard with ``is_scalar`` before testing -- callers pass cells that may be
+    sequences.
+    """
+    return value is None or (_pd.api.types.is_scalar(value) and _pd.isna(value))
+
+
 def _none_if_nan(value):
     """Collapse a pandas NaN to None.
 
@@ -162,19 +172,21 @@ def _none_if_nan(value):
     falling back. Metadata frames yield NaN for a column that is present but null
     for a given parameter, so normalize it to None before any such ``or`` chain.
     """
-    return value if _pd.notna(value) else None
+    return None if _is_missing(value) else value
 
 
 def _scalarize(cell):
-    """Collapse a list-valued flag cell into a single string; pass scalars through.
+    """Collapse a sequence-valued flag cell into a single string; pass scalars through.
 
     The Water Data API returns some ancillary (flag) columns -- notably
     ``qualifier`` -- as a *list* of codes per observation. xarray/netCDF cannot
-    encode an object array whose elements are lists, so join the codes into one
-    space-separated string (an empty list becomes None).
+    encode an object array whose elements are sequences, so join the codes into
+    one space-separated string (an empty/all-missing sequence becomes None).
+    Handles lists, tuples, and numpy arrays; missing elements are dropped
+    element-by-element without assuming the element is scalar.
     """
-    if isinstance(cell, (list, tuple)):
-        parts = [str(v) for v in cell if v is not None and _pd.notna(v)]
+    if isinstance(cell, (list, tuple, _np.ndarray)):
+        parts = [str(v) for v in cell if not _is_missing(v)]
         return " ".join(parts) if parts else None
     return cell
 
@@ -265,11 +277,14 @@ def _prepare_values(df, group_cols, ancillary_cols):
         work["time"], format="ISO8601", errors="coerce", utc=True
     ).dt.tz_localize(None)
     work["value"] = _pd.to_numeric(work["value"], errors="coerce")
-    # Flatten any list-valued flag cells (e.g. ``qualifier``) to strings so the
-    # ancillary variables stay netCDF-encodable (``_scalarize`` passes scalars
-    # through unchanged).
+    # Flatten any sequence-valued flag cells (e.g. ``qualifier``) to strings so
+    # the ancillary variables stay netCDF-encodable. Only the columns that are
+    # actually sequence-valued pay the per-row map -- a flag column is uniformly
+    # typed, so the first non-null cell decides (skips the common scalar case).
     for c in ancillary:
-        work[c] = work[c].map(_scalarize)
+        nonnull = work[c].dropna()
+        if len(nonnull) and isinstance(nonnull.iloc[0], (list, tuple, _np.ndarray)):
+            work[c] = work[c].map(_scalarize)
     n_before = len(work)
     work = work[work["time"].notna()]
     dropped = n_before - len(work)
@@ -443,12 +458,16 @@ class _MetadataCache:
                     continue
                 if has_pcode:
                     pcode = row.get("parameter_code")
-                    if _pd.notna(pcode):
+                    if not _is_missing(pcode):
+                        # Normalize NaN -> None at the source so every consumer of
+                        # the name descriptors gets a clean ``or``-able value.
                         fresh[site]["params"][str(pcode)] = {
-                            c: row.get(c) for c in name_cols
+                            c: _none_if_nan(row.get(c)) for c in name_cols
                         }
                 if not fresh[site]["site"]:
-                    desc = {c: row.get(c) for c in site_cols if _pd.notna(row.get(c))}
+                    desc = {
+                        c: row.get(c) for c in site_cols if not _is_missing(row.get(c))
+                    }
                     if desc:
                         fresh[site]["site"] = desc
         with self._lock:
@@ -909,9 +928,10 @@ class _DenseBuilder(_SeriesBuilder):
                     "value. Filter the query to separate them.",
                     stacklevel=3,
                 )
-                # Sort by value first so the retained value is deterministic
-                # rather than dependent on the upstream response row order.
-                sub = sub.sort_values("value")
+                # Sort by value then the flag columns, with a stable sort, so the
+                # whole retained row (value *and* its ancillary flags) is
+                # deterministic rather than dependent on the upstream row order.
+                sub = sub.sort_values(["value", *ancillary], kind="stable")
                 sub = sub[~sub.index.duplicated(keep="first")]
             ds_g = sub.to_xarray().rename(
                 {"value": name, **{c: f"{name}_{c}" for c in ancillary}}
