@@ -57,6 +57,7 @@ import inspect as _inspect
 import re as _re
 import threading as _threading
 import warnings as _warnings
+from collections import Counter as _Counter
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from functools import wraps as _wraps
@@ -239,34 +240,31 @@ def _point_coords(df, site):
     explicit ``longitude`` / ``latitude`` columns (the Samples profile, mapped via
     :data:`_SAMPLES_RENAME`) -- so every service surfaces station coordinates.
     """
+    # Both sources reduce to a per-row "lonlat-able" value that _lonlat decodes
+    # (a (lon, lat) tuple for the explicit columns, the geometry object
+    # otherwise), so the dedup/loop/coercion scaffolding is shared.
     if {"longitude", "latitude"}.issubset(df.columns):
-        geo = df.dropna(subset=["longitude", "latitude"]).drop_duplicates(site)
-        if geo.empty:
-            return None
-        lon, lat = {}, {}
-        for site_id, x, y in zip(
-            geo[site].to_numpy(),
-            geo["longitude"].to_numpy(),
-            geo["latitude"].to_numpy(),
-        ):
-            try:
-                lon[site_id], lat[site_id] = float(x), float(y)
-            except (TypeError, ValueError):
-                continue
-        return (lon, lat) if lon else None
-    if "geometry" not in df.columns:
+        subset = ["longitude", "latitude"]
+
+        def _geoms(g):
+            return list(zip(g["longitude"].to_numpy(), g["latitude"].to_numpy()))
+    elif "geometry" in df.columns:
+        subset = ["geometry"]
+
+        def _geoms(g):
+            return g["geometry"].to_numpy()
+    else:
         return None
-    geo = df.dropna(subset=["geometry"]).drop_duplicates(site)
+
+    geo = df.dropna(subset=subset).drop_duplicates(site)
     if geo.empty:
         return None
     lon, lat = {}, {}
-    for site_id, geom in zip(geo[site].to_numpy(), geo["geometry"].to_numpy()):
-        xy = _lonlat(geom)
+    for site_id, geom in zip(geo[site].to_numpy(), _geoms(geo)):
+        xy = _lonlat(geom)  # skips non-point / unparseable rather than guessing
         if xy is not None:
             lon[site_id], lat[site_id] = xy
-    if not lon:
-        return None  # no point geometry; skip rather than guess
-    return lon, lat
+    return (lon, lat) if lon else None
 
 
 def _prepare_values(df, group_cols, ancillary_cols):
@@ -1087,20 +1085,20 @@ class _DenseBuilder(_SeriesBuilder):
         back to the statistic id then the parameter code -- so a bare name never
         silently refers to an arbitrary one of several same-named series.
         """
-        counts: dict[str, int] = {}
-        for b in bases:
-            counts[b] = counts.get(b, 0) + 1
+        counts = _Counter(bases)
         names, used = [], set()
         for base, (pcode, stat) in zip(bases, keys):
             if counts[base] == 1:
                 name = base
             else:
+                # statistic cell-method (or raw id); if that doesn't yield a
+                # fresh name, fall back to the parameter code.
                 op = CF_CELL_METHODS.get(str(stat)) if stat is not None else None
                 suffix = op or (str(stat) if stat is not None else None)
                 name = f"{base}_{_slug(suffix)}" if suffix else base
-                if name == base or name in used:  # statistic didn't separate them
+                if name in used or suffix is None:
                     name = f"{base}_{_slug(pcode)}" if pcode is not None else base
-            while name in used:
+            while name in used:  # final guard: append until unique
                 name += "_x"
             used.add(name)
             names.append(name)
