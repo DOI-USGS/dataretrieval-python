@@ -599,16 +599,19 @@ def to_awkward(ds):
 
     The CF contiguous-ragged layout (``row_size`` offsets + a flat ``obs``
     dimension) is structurally identical to awkward's jagged ``ListOffsetArray``,
-    so this is a near-zero-copy re-view: each timeseries instance becomes one
-    record carrying its per-series identity/metadata (scalar fields such as
-    ``monitoring_location_id`` / ``parameter_code`` / ``longitude``) plus its
-    observations as variable-length jagged fields (``time`` / ``value`` / flags).
-    No NaN fill, each series on its own time axis -- per-series operations then
-    vectorize across every series at once, e.g. ``ak.mean(arr.value, axis=1)``::
+    so this is a near-zero-copy re-view. Each timeseries instance becomes one
+    record: its per-series identity/metadata as scalar fields
+    (``monitoring_location_id`` / ``parameter_code`` / ``longitude`` / ...) plus
+    a single ``obs`` field holding that series' observations as a
+    variable-length list of ``{time, value, <flags>}`` records. No NaN fill, each
+    series on its own time axis -- per-series operations then vectorize across
+    every series at once, e.g. ``ak.mean(arr.obs.value, axis=1)``::
 
         ds = wdx.get_daily(..., dense=False)
         arr = wdx.to_awkward(ds)
-        ak.mean(arr.value, axis=1)  # per-series means
+        arr[0].monitoring_location_id  # one series' metadata
+        arr.obs.value  # jagged values, all series
+        ak.mean(arr.obs.value, axis=1)  # per-series means
         arr[arr.parameter_code == "00060"]  # filter series by metadata
 
     ``awkward`` is an optional dependency that is *not* installed with
@@ -636,19 +639,25 @@ def to_awkward(ds):
             return ak.from_iter([_none_if_nan(v) for v in values.tolist()])
         return values
 
-    # Per-series (timeseries-dim) coords -> scalar record fields; obs-dim
-    # variables/coords -> jagged fields (unflattened by row_size). ``row_size``
-    # itself is the offsets, already encoded in the jagged structure.
-    record = {}
+    # Per-series (timeseries-dim) coords -> scalar identity fields. Obs-dim
+    # variables/coords -> a single jagged ``obs`` field whose elements are the
+    # observation records, so each series is "metadata + a list of observations"
+    # rather than several parallel jagged fields. ``row_size`` is the offsets,
+    # already encoded by the unflatten.
+    scalars, obs_fields = {}, {}
     for name in (*ds.data_vars, *ds.coords):
         if name == "row_size":
             continue
         da = ds[name]
         if da.dims == ("timeseries",):
-            record[name] = _content(da.to_numpy())
+            scalars[name] = _content(da.to_numpy())
         elif da.dims == ("obs",):
-            record[name] = ak.unflatten(_content(da.to_numpy()), counts)
-    return ak.zip(record, depth_limit=1)
+            obs_fields[name] = ak.unflatten(_content(da.to_numpy()), counts)
+    # time first, then value, then any flags, for a readable observation record.
+    order = [n for n in ("time", "value") if n in obs_fields]
+    order += [n for n in obs_fields if n not in order]
+    obs = ak.zip({n: obs_fields[n] for n in order})
+    return ak.zip({**scalars, "obs": obs}, depth_limit=1)
 
 
 # === column schemas ========================================================
