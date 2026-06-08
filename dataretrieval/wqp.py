@@ -186,6 +186,33 @@ def get_results(
     return df, WQP_Metadata(response, **kwargs)
 
 
+def _what(
+    service: str,
+    *,
+    ssl_check: bool,
+    legacy: bool,
+    **kwargs: Any,
+) -> tuple[DataFrame, WQP_Metadata]:
+    """Shared implementation for the ``what_*`` metadata search functions.
+
+    ``service`` is the WQP service name (e.g. ``"Station"``). Services with a
+    WQX3.0 equivalent (those in :data:`services_wqx3`) use :func:`wqx3_url`
+    when ``legacy=False`` and :func:`wqp_url` otherwise; legacy-only services
+    route through :func:`_legacy_only_url`, which warns and falls back to the
+    legacy profile. The CSV response is parsed via :func:`_read_wqp_csv`.
+    """
+    kwargs = _check_kwargs(kwargs)
+
+    if service in services_wqx3:
+        url = wqp_url(service) if legacy else wqx3_url(service)
+    else:
+        url = _legacy_only_url(service, legacy=legacy)
+
+    response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
+    df = _read_wqp_csv(response.text)
+    return df, WQP_Metadata(response, **kwargs)
+
+
 def what_sites(
     ssl_check: bool = True,
     legacy: bool = True,
@@ -230,15 +257,7 @@ def what_sites(
 
     """
 
-    kwargs = _check_kwargs(kwargs)
-
-    url = wqp_url("Station") if legacy is True else wqx3_url("Station")
-
-    response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
-
-    df = _read_wqp_csv(response.text)
-
-    return df, WQP_Metadata(response, **kwargs)
+    return _what("Station", ssl_check=ssl_check, legacy=legacy, **kwargs)
 
 
 def what_organizations(
@@ -281,15 +300,7 @@ def what_organizations(
 
     """
 
-    kwargs = _check_kwargs(kwargs)
-
-    url = _legacy_only_url("Organization", legacy=legacy)
-
-    response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
-
-    df = _read_wqp_csv(response.text)
-
-    return df, WQP_Metadata(response, **kwargs)
+    return _what("Organization", ssl_check=ssl_check, legacy=legacy, **kwargs)
 
 
 def what_projects(
@@ -332,15 +343,7 @@ def what_projects(
 
     """
 
-    kwargs = _check_kwargs(kwargs)
-
-    url = _legacy_only_url("Project", legacy=legacy)
-
-    response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
-
-    df = _read_wqp_csv(response.text)
-
-    return df, WQP_Metadata(response, **kwargs)
+    return _what("Project", ssl_check=ssl_check, legacy=legacy, **kwargs)
 
 
 def what_activities(
@@ -396,15 +399,7 @@ def what_activities(
         ... )
     """
 
-    kwargs = _check_kwargs(kwargs)
-
-    url = wqp_url("Activity") if legacy is True else wqx3_url("Activity")
-
-    response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
-
-    df = _read_wqp_csv(response.text)
-
-    return df, WQP_Metadata(response, **kwargs)
+    return _what("Activity", ssl_check=ssl_check, legacy=legacy, **kwargs)
 
 
 def what_detection_limits(
@@ -454,15 +449,12 @@ def what_detection_limits(
 
     """
 
-    kwargs = _check_kwargs(kwargs)
-
-    url = _legacy_only_url("ResultDetectionQuantitationLimit", legacy=legacy)
-
-    response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
-
-    df = _read_wqp_csv(response.text)
-
-    return df, WQP_Metadata(response, **kwargs)
+    return _what(
+        "ResultDetectionQuantitationLimit",
+        ssl_check=ssl_check,
+        legacy=legacy,
+        **kwargs,
+    )
 
 
 def what_habitat_metrics(
@@ -505,15 +497,7 @@ def what_habitat_metrics(
 
     """
 
-    kwargs = _check_kwargs(kwargs)
-
-    url = _legacy_only_url("BiologicalMetric", legacy=legacy)
-
-    response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
-
-    df = _read_wqp_csv(response.text)
-
-    return df, WQP_Metadata(response, **kwargs)
+    return _what("BiologicalMetric", ssl_check=ssl_check, legacy=legacy, **kwargs)
 
 
 def what_project_weights(
@@ -561,15 +545,12 @@ def what_project_weights(
 
     """
 
-    kwargs = _check_kwargs(kwargs)
-
-    url = _legacy_only_url("ProjectMonitoringLocationWeighting", legacy=legacy)
-
-    response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
-
-    df = _read_wqp_csv(response.text)
-
-    return df, WQP_Metadata(response, **kwargs)
+    return _what(
+        "ProjectMonitoringLocationWeighting",
+        ssl_check=ssl_check,
+        legacy=legacy,
+        **kwargs,
+    )
 
 
 def what_activity_metrics(
@@ -617,15 +598,7 @@ def what_activity_metrics(
 
     """
 
-    kwargs = _check_kwargs(kwargs)
-
-    url = _legacy_only_url("ActivityMetric", legacy=legacy)
-
-    response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
-
-    df = _read_wqp_csv(response.text)
-
-    return df, WQP_Metadata(response, **kwargs)
+    return _what("ActivityMetric", ssl_check=ssl_check, legacy=legacy, **kwargs)
 
 
 def wqp_url(service: str) -> str:
@@ -745,11 +718,12 @@ def _warn_legacy_use() -> None:
 
 
 def _warn_wqx3_unavailable() -> None:
-    # stacklevel=3: warn -> _warn_wqx3_unavailable -> _legacy_only_url -> what_*
+    # stacklevel=4: warn -> _warn_wqx3_unavailable -> _legacy_only_url -> _what
+    # -> what_*, so the warning is attributed to the public ``what_*`` call.
     warnings.warn(
         "WQX3.0 profile not available, returning legacy profile.",
         UserWarning,
-        stacklevel=3,
+        stacklevel=4,
     )
 
 
