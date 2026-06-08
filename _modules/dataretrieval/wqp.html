@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+gff8f5354d documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+gbe0f0725c documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=a29fbe9c"></script>
+      <script src="../../_static/documentation_options.js?v=5f2846a3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -271,6 +271,36 @@
 
 
 
+<div class="viewcode-block" id="_what">
+<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp._what">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_what</span><span class="p">(</span>
+    <span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shared implementation for the ``what_*`` metadata search functions.</span>
+
+<span class="sd">    ``service`` is the WQP service name (e.g. ``&quot;Station&quot;``). Services with a</span>
+<span class="sd">    WQX3.0 equivalent (those in :data:`services_wqx3`) use :func:`wqx3_url`</span>
+<span class="sd">    when ``legacy=False`` and :func:`wqp_url` otherwise; legacy-only services</span>
+<span class="sd">    route through :func:`_legacy_only_url`, which warns and falls back to the</span>
+<span class="sd">    legacy profile. The CSV response is parsed via :func:`_read_wqp_csv`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">service</span> <span class="ow">in</span> <span class="n">services_wqx3</span><span class="p">:</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">wqp_url</span><span class="p">(</span><span class="n">service</span><span class="p">)</span> <span class="k">if</span> <span class="n">legacy</span> <span class="k">else</span> <span class="n">wqx3_url</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">_legacy_only_url</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">)</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="what_sites">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.what_sites">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">what_sites</span><span class="p">(</span>
@@ -317,15 +347,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="n">url</span> <span class="o">=</span> <span class="n">wqp_url</span><span class="p">(</span><span class="s2">&quot;Station&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">legacy</span> <span class="ow">is</span> <span class="kc">True</span> <span class="k">else</span> <span class="n">wqx3_url</span><span class="p">(</span><span class="s2">&quot;Station&quot;</span><span class="p">)</span>
-
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
-
-    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">&quot;Station&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
@@ -371,15 +393,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="n">url</span> <span class="o">=</span> <span class="n">_legacy_only_url</span><span class="p">(</span><span class="s2">&quot;Organization&quot;</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">)</span>
-
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
-
-    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">&quot;Organization&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
@@ -425,15 +439,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="n">url</span> <span class="o">=</span> <span class="n">_legacy_only_url</span><span class="p">(</span><span class="s2">&quot;Project&quot;</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">)</span>
-
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
-
-    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">&quot;Project&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
@@ -492,15 +498,7 @@
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="n">url</span> <span class="o">=</span> <span class="n">wqp_url</span><span class="p">(</span><span class="s2">&quot;Activity&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">legacy</span> <span class="ow">is</span> <span class="kc">True</span> <span class="k">else</span> <span class="n">wqx3_url</span><span class="p">(</span><span class="s2">&quot;Activity&quot;</span><span class="p">)</span>
-
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
-
-    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">&quot;Activity&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
@@ -553,15 +551,12 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="n">url</span> <span class="o">=</span> <span class="n">_legacy_only_url</span><span class="p">(</span><span class="s2">&quot;ResultDetectionQuantitationLimit&quot;</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">)</span>
-
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
-
-    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span>
+        <span class="s2">&quot;ResultDetectionQuantitationLimit&quot;</span><span class="p">,</span>
+        <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
+        <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 
 
@@ -607,15 +602,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="n">url</span> <span class="o">=</span> <span class="n">_legacy_only_url</span><span class="p">(</span><span class="s2">&quot;BiologicalMetric&quot;</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">)</span>
-
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
-
-    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">&quot;BiologicalMetric&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
@@ -666,15 +653,12 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="n">url</span> <span class="o">=</span> <span class="n">_legacy_only_url</span><span class="p">(</span><span class="s2">&quot;ProjectMonitoringLocationWeighting&quot;</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">)</span>
-
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
-
-    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span>
+        <span class="s2">&quot;ProjectMonitoringLocationWeighting&quot;</span><span class="p">,</span>
+        <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
+        <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 
 
@@ -725,15 +709,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="n">url</span> <span class="o">=</span> <span class="n">_legacy_only_url</span><span class="p">(</span><span class="s2">&quot;ActivityMetric&quot;</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">)</span>
-
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
-
-    <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">&quot;ActivityMetric&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
@@ -869,11 +845,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_warn_wqx3_unavailable</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="c1"># stacklevel=3: warn -&gt; _warn_wqx3_unavailable -&gt; _legacy_only_url -&gt; what_*</span>
+    <span class="c1"># stacklevel=4: warn -&gt; _warn_wqx3_unavailable -&gt; _legacy_only_url -&gt; _what</span>
+    <span class="c1"># -&gt; what_*, so the warning is attributed to the public ``what_*`` call.</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
         <span class="s2">&quot;WQX3.0 profile not available, returning legacy profile.&quot;</span><span class="p">,</span>
         <span class="ne">UserWarning</span><span class="p">,</span>
-        <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">stacklevel</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
     <span class="p">)</span>
 
 
