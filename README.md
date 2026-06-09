@@ -118,6 +118,32 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 ```
 
+#### Returning xarray Datasets
+
+The Water Data time-series, peaks, field-measurement, statistics, and samples
+getters have [xarray](https://docs.xarray.dev/) counterparts in
+`dataretrieval.waterdata.xarray` that return a CF-conventions
+`xarray.Dataset` instead of a DataFrame — ready to write to netCDF or hand to
+the CF-aware scientific Python stack. Install the optional dependency with
+`pip install dataretrieval[xarray]`:
+
+```python
+from dataretrieval.waterdata import xarray as wdx
+
+# Same arguments as waterdata.get_daily, but returns a CF Dataset
+ds = wdx.get_daily(
+    monitoring_location_id='USGS-01646500',
+    parameter_code='00060',  # Discharge
+    time='2024-10-01/2025-09-30',
+)
+```
+
+See the
+[xarray demo notebook](https://github.com/DOI-USGS/dataretrieval-python/blob/main/demos/waterdata_xarray_demo.ipynb)
+for a walkthrough of the default dense `(site, time)` grid and the
+`dense=False` contiguous-ragged layout for large multi-site pulls, the CF
+metadata, and writing to netCDF.
+
 ### Water Quality Portal (WQP)
 
 Access water quality data from multiple agencies:
