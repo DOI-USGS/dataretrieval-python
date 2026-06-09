@@ -36,7 +36,7 @@ however writing code is not the only way to contribute.
 
 ### Reporting Bugs
 
-Report bugs at https://github.com/USGS-python/dataretrieval/issues.
+Report bugs at https://github.com/DOI-USGS/dataretrieval-python/issues.
 
 When reporting a bug, please include:
 
@@ -49,7 +49,7 @@ When reporting a bug, please include:
 
 ### Fixing Bugs
 
-Look through the GitHub [issues](https://github.com/USGS-python/dataretrieval/issues)
+Look through the GitHub [issues](https://github.com/DOI-USGS/dataretrieval-python/issues)
 for known and unresolved bugs. Any issues labeled "bug" that are unassigned,
 are open for resolution. You are welcome to comment in the relevant issue to
 state your intention to resolve the bug, which will help ensure there is no
@@ -68,7 +68,7 @@ your fork, to the original upstream repository.
 
 ### Implementing Features
 
-Look through the GitHub [issues](https://github.com/USGS-python/dataretrieval/issues)
+Look through the GitHub [issues](https://github.com/DOI-USGS/dataretrieval-python/issues)
 for outstanding feature requests. Anything tagged with "enhancement"
 and "please-help" is open to whomever wants to implement it.
 
@@ -83,8 +83,8 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds or modifies functionality, the documentation should
    be updated. To do so, either add or modify a functions docstring which will
    automatically become part of the API documentation
-3. The pull request should work for Python 3.7, 3.8, 3.9, 3.10 - refer to the
-   [python-package.yml file](https://github.com/USGS-python/dataretrieval/blob/master/.github/workflows/python-package.yml)
+3. The pull request should work for Python 3.9 and later - refer to the
+   [python-package.yml file](https://github.com/DOI-USGS/dataretrieval-python/blob/main/.github/workflows/python-package.yml)
    for the latest versions of Python being tested by the continuous integration
    pipelines. This will be checked automatically by the CI pipelines once the
    pull request is opened.
@@ -98,7 +98,7 @@ via any automated processes or pipelines.
 #### Style
 
 * Attempt to write code following the [PEP8 style guidelines](https://peps.python.org/pep-0008/) as much as possible
-* The public interace should emphasize functions over classes; however, classes
+* The public interface should emphasize functions over classes; however, classes
   can and should be used internally and in tests
 * Functions for downloading data from a specific web portal must be grouped
   within their own submodule
@@ -202,7 +202,7 @@ will need to do the following (in a separate branch of the repository):
 ### Submitting Feedback
 
 The best way to send feedback is to open an issue at
-https://github.com/USGS-python/dataretrieval/issues.
+https://github.com/DOI-USGS/dataretrieval-python/issues.
 
 Please be as clear as possible in your feedback, if you are reporting a bug
 refer to [Reporting Bugs](#reporting-bugs).
@@ -211,7 +211,7 @@ refer to [Reporting Bugs](#reporting-bugs).
 ### Feature Requests
 
 To request or propose a new feature, open an issue at
-https://github.com/USGS-python/dataretrieval/issues.
+https://github.com/DOI-USGS/dataretrieval-python/issues.
 
 Please be sure to:
 * Explain in detail how it would work, possibly with pseudo-code or an example
