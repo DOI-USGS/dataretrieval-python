@@ -30,7 +30,7 @@ To install the latest stable release of ``dataretrieval`` from the
 
 .. code-block:: bash
 
-    $ conda -c conda-forge install dataretrieval
+    $ conda install -c conda-forge dataretrieval
 
 .. _conda-forge channel: https://anaconda.org/conda-forge/dataretrieval
 
