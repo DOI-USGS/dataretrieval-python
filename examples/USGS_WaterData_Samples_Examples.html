@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_samples() Examples &mdash; dataretrieval 0.1.dev1+gbe0f0725c documentation</title>
+  <title>USGS dataretrieval Python Package get_samples() Examples &mdash; dataretrieval 0.1.dev1+g4b7464fe5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=5f2846a3"></script>
+      <script src="../_static/documentation_options.js?v=76177908"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -55,8 +55,8 @@
 <li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DailyValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Measurements_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package Groundwater-Level <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Measurements_Examples.html">USGS dataretrieval Python Package Surface-Water <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ParameterCodes_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_reference_table()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Peaks_Examples.html">USGS dataretrieval Python Package Peak Streamflow Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Ratings_Examples.html">USGS dataretrieval Python Package Rating Curve Examples</a></li>
@@ -127,7 +127,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+gbe0f0725c)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g4b7464fe5)
 Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
 Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.6)
@@ -154,26 +154,26 @@ Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.
 </section>
 <section id="Basic-Usage">
 <h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Link to this heading"></a></h2>
-<p>The dataretrieval package has several functions that allow you to retrieve data from different web services. This example uses the <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> function to retrieve water quality sample data for USGS monitoring locations from Samples. The following arguments are supported:</p>
+<p>The dataretrieval package has several functions that allow you to retrieve data from different web services. This example uses the <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> function to retrieve water quality sample data for USGS monitoring locations from Samples. The allowable values for the categorical arguments below come from <code class="docutils literal notranslate"><span class="pre">waterdata.get_codes()</span></code> (see the <em>Discrete water-quality samples</em> notebook). The following arguments are supported:</p>
 <ul class="simple">
 <li><p><strong>ssl_check</strong> : boolean, optional Check the SSL certificate.</p></li>
 <li><p><strong>service</strong> : string One of the available Samples services: “results”, “locations”, “activities”, “projects”, or “organizations”. Defaults to “results”.</p></li>
 <li><p><strong>profile</strong> : string One of the available profiles associated with a service. Options for each service are: results - “fullphyschem”, “basicphyschem”, “fullbio”, “basicbio”, “narrow”, “resultdetectionquantitationlimit”, “labsampleprep”, “count” locations - “site”, “count” activities - “sampact”, “actmetric”, “actgroup”, “count” projects - “project”, “projectmonitoringlocationweight” organizations - “organization”, “count”</p></li>
-<li><p><strong>activityMediaName</strong> : string or list of strings, optional Name or code indicating environmental medium in which sample was taken. Check the <code class="docutils literal notranslate"><span class="pre">activityMediaName_lookup()</span></code> function in this module for all possible inputs. Example: “Water”.</p></li>
+<li><p><strong>activityMediaName</strong> : string or list of strings, optional Name or code indicating environmental medium in which sample was taken. Use <code class="docutils literal notranslate"><span class="pre">get_codes(code_service=&quot;samplemedia&quot;)</span></code> for all possible inputs. Example: “Water”.</p></li>
 <li><p><strong>activityStartDateLower</strong> : string, optional The start date if using a date range. Takes the format YYYY-MM-DD. The logic is inclusive, i.e. it will also return results that match the date. If left as None, will pull all data on or before activityStartDateUpper, if populated.</p></li>
 <li><p><strong>activityStartDateUpper</strong> : string, optional The end date if using a date range. Takes the format YYYY-MM-DD. The logic is inclusive, i.e. it will also return results that match the date. If left as None, will pull all data after activityStartDateLower up to the most recent available results.</p></li>
 <li><p><strong>activityTypeCode</strong> : string or list of strings, optional Text code that describes type of field activity performed. Example: “Sample-Routine, regular”.</p></li>
-<li><p><strong>characteristicGroup</strong> : string or list of strings, optional Characteristic group is a broad category of characteristics describing one or more results. Check the <code class="docutils literal notranslate"><span class="pre">characteristicGroup_lookup()</span></code> function in this module for all possible inputs. Example: “Organics, PFAS”</p></li>
-<li><p><strong>characteristic</strong> : string or list of strings, optional Characteristic is a specific category describing one or more results. Check the <code class="docutils literal notranslate"><span class="pre">characteristic_lookup()</span></code> function in this module for all possible inputs. Example: “Suspended Sediment Discharge”</p></li>
-<li><p><strong>characteristicUserSupplied</strong> : string or list of strings, optional A user supplied characteristic name describing one or more results.</p></li>
+<li><p><strong>characteristicGroup</strong> : string or list of strings, optional Characteristic group is a broad category of characteristics describing one or more results. Use <code class="docutils literal notranslate"><span class="pre">get_codes(code_service=&quot;characteristicgroup&quot;)</span></code> for all possible inputs. Example: “Organics, PFAS”</p></li>
+<li><p><strong>characteristic</strong> : string or list of strings, optional Characteristic is a specific category describing one or more results. Use <code class="docutils literal notranslate"><span class="pre">get_codes(code_service=&quot;characteristics&quot;)</span></code> for all possible inputs. Example: “Suspended Sediment Discharge”</p></li>
+<li><p><strong>characteristicUserSupplied</strong> : string or list of strings, optional A user supplied characteristic name describing one or more results. Use <code class="docutils literal notranslate"><span class="pre">get_codes(code_service=&quot;observedproperty&quot;)</span></code> for all possible inputs.</p></li>
 <li><p><strong>boundingBox</strong>: list of four floats, optional Filters on the the associated monitoring location’s point location by checking if it is located within the specified geographic area. The logic is inclusive, i.e. it will include locations that overlap with the edge of the bounding box. Values are separated by commas, expressed in decimal degrees, NAD83, and longitudes west of Greenwich are negative. The format is a string consisting of: - Western-most longitude - Southern-most latitude -
 Eastern-most longitude - Northern-most longitude Example: [-92.8,44.2,-88.9,46.0]</p></li>
 <li><p><strong>countryFips</strong> : string or list of strings, optional Example: “US” (United States)</p></li>
-<li><p><strong>stateFips</strong> : string or list of strings, optional Check the <code class="docutils literal notranslate"><span class="pre">stateFips_lookup()</span></code> function in this module for all possible inputs. Example: “US:15” (United States: Hawaii)</p></li>
-<li><p><strong>countyFips</strong> : string or list of strings, optional Check the <code class="docutils literal notranslate"><span class="pre">countyFips_lookup()</span></code> function in this module for all possible inputs. Example: “US:15:001” (United States: Hawaii, Hawaii County)</p></li>
-<li><p><strong>siteTypeCode</strong> : string or list of strings, optional An abbreviation for a certain site type. Check the <code class="docutils literal notranslate"><span class="pre">siteType_lookup()</span></code> function in this module for all possible inputs. Example: “GW” (Groundwater site)</p></li>
-<li><p><strong>siteTypeName</strong> : string or list of strings, optional A full name for a certain site type. Check the <code class="docutils literal notranslate"><span class="pre">siteType_lookup()</span></code> function in this module for all possible inputs. Example: “Well”</p></li>
-<li><p><strong>usgsPCode</strong> : string or list of strings, optional 5-digit number used in the US Geological Survey computerized data system, National Water Information System (NWIS), to uniquely identify a specific constituent. Check the <code class="docutils literal notranslate"><span class="pre">characteristic_lookup()</span></code> function in this module for all possible inputs. Example: “00060” (Discharge, cubic feet per second)</p></li>
+<li><p><strong>stateFips</strong> : string or list of strings, optional Example: “US:15” (United States: Hawaii)</p></li>
+<li><p><strong>countyFips</strong> : string or list of strings, optional Example: “US:15:001” (United States: Hawaii, Hawaii County)</p></li>
+<li><p><strong>siteTypeCode</strong> : string or list of strings, optional An abbreviation for a certain site type. Use <code class="docutils literal notranslate"><span class="pre">get_codes(code_service=&quot;sitetype&quot;)</span></code> for all possible inputs. Example: “GW” (Groundwater site)</p></li>
+<li><p><strong>siteTypeName</strong> : string or list of strings, optional A full name for a certain site type. Use <code class="docutils literal notranslate"><span class="pre">get_codes(code_service=&quot;sitetype&quot;)</span></code> for all possible inputs. Example: “Well”</p></li>
+<li><p><strong>usgsPCode</strong> : string or list of strings, optional 5-digit number used in the US Geological Survey computerized data system, National Water Information System (NWIS), to uniquely identify a specific constituent. Use <code class="docutils literal notranslate"><span class="pre">get_codes(code_service=&quot;characteristics&quot;)</span></code> for all possible inputs. Example: “00060” (Discharge, cubic feet per second)</p></li>
 <li><p><strong>hydrologicUnit</strong> : string or list of strings, optional Max 12-digit number used to describe a hydrologic unit. Example: “070900020502”</p></li>
 <li><p><strong>monitoringLocationIdentifier</strong> : string or list of strings, optional A monitoring location identifier has two parts: the agency code and the location number, separated by a dash (-). Example: “USGS-040851385”</p></li>
 <li><p><strong>organizationIdentifier</strong> : string or list of strings, optional Designator used to uniquely identify a specific organization. Currently only accepting the organization “USGS”.</p></li>
@@ -1268,7 +1268,7 @@ Retrieved data for 152 samples.
 </section>
 <section id="Example-4:-Retrieve-water-quality-sample-data-for-one-site-and-convert-to-a-wide-format">
 <h3>Example 4: Retrieve water quality sample data for one site and convert to a wide format<a class="headerlink" href="#Example-4:-Retrieve-water-quality-sample-data-for-one-site-and-convert-to-a-wide-format" title="Link to this heading"></a></h3>
-<p>Note that the USGS Samples database returns multiple parameters in a “long” format: each row in the resulting table represents a single observation of a single parameter. Furthermore, every observation has 181 fields of metadata. However, if you wanted to place your water quality data into a “wide” format, where each column represents a water quality parameter code, the code below details one solution.</p>
+<p>Note that the USGS Samples database returns multiple parameters in a “long” format: each row in the resulting table represents a single observation of a single parameter. Furthermore, every observation comes with more than 180 fields of metadata (the default <code class="docutils literal notranslate"><span class="pre">fullphyschem</span></code> profile returns 187 columns). However, if you wanted to place your water quality data into a “wide” format, where each column represents a water quality parameter code, the code below details one solution.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
@@ -1303,7 +1303,7 @@ Retrieved data for 2404 sample results.
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_7720/1863275440.py:5: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+/tmp/ipykernel_7864/1863275440.py:5: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
   wq_data[&#34;characteristic_unit&#34;] = (
 </pre></div></div>
 </div>

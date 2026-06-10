@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_field_measurements() Examples &mdash; dataretrieval 0.1.dev1+gbe0f0725c documentation</title>
+  <title>USGS dataretrieval Python Package Surface-Water get_field_measurements() Examples &mdash; dataretrieval 0.1.dev1+g4b7464fe5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=5f2846a3"></script>
+      <script src="../_static/documentation_options.js?v=76177908"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -24,7 +24,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="USGS dataretrieval Python Package get_reference_table() Examples" href="USGS_WaterData_ParameterCodes_Examples.html" />
-    <link rel="prev" title="USGS dataretrieval Python Package get_field_measurements() Examples" href="USGS_WaterData_GroundwaterLevels_Examples.html" /> 
+    <link rel="prev" title="USGS dataretrieval Python Package Groundwater-Level get_field_measurements() Examples" href="USGS_WaterData_GroundwaterLevels_Examples.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -55,8 +55,8 @@
 <li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DailyValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package Groundwater-Level <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">USGS dataretrieval Python Package Surface-Water <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#Install-the-Package">Install the Package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#Basic-Usage">Basic Usage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#Interpreting-the-Result">Interpreting the Result</a></li>
@@ -98,7 +98,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
-      <li class="breadcrumb-item active">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</li>
+      <li class="breadcrumb-item active">USGS dataretrieval Python Package Surface-Water <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/examples/USGS_WaterData_Measurements_Examples.nblink.txt" rel="nofollow"> View page source</a>
       </li>
@@ -108,8 +108,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="USGS-dataretrieval-Python-Package-get_field_measurements()-Examples">
-<h1>USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-get_field_measurements()-Examples" title="Link to this heading"></a></h1>
+  <section id="USGS-dataretrieval-Python-Package-Surface-Water-get_field_measurements()-Examples">
+<h1>USGS dataretrieval Python Package Surface-Water <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-Surface-Water-get_field_measurements()-Examples" title="Link to this heading"></a></h1>
 <p>This notebook provides examples of using the Python dataretrieval package to retrieve surface water field measurement data for a United States Geological Survey (USGS) monitoring location. The dataretrieval package provides a collection of functions to get data from the USGS Water Data API and other online sources of hydrology and water quality data.</p>
 <section id="Install-the-Package">
 <h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Link to this heading"></a></h2>
@@ -127,7 +127,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+gbe0f0725c)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g4b7464fe5)
 Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
 Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.6)
@@ -1065,28 +1065,7 @@ Retrieved 976 data values.
     <tr>
       <th>0</th>
       <td>POINT (-76.69369 38.95592)</td>
-      <td>61b6cb68-e338-4dfd-9618-d64e9bdc64be</td>
-      <td>53fb2a20-7b79-4148-e053-0100007f46df</td>
-      <td>00065</td>
-      <td>USGS-01594440</td>
-      <td>Z</td>
-      <td>None</td>
-      <td>3.11</td>
-      <td>ft</td>
-      <td>1955-04-07 19:05:00+00:00</td>
-      <td>None</td>
-      <td>None</td>
-      <td>Approved</td>
-      <td>USGS</td>
-      <td>2026-05-22 11:05:41.715713+00:00</td>
-      <td>Clear</td>
-      <td>Good</td>
-      <td>4b1b4d58-f507-48e9-a4ba-77f6e722d8bb</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>POINT (-76.69369 38.95592)</td>
-      <td>c296b625-80d8-4ee8-a14b-f9bdaf158468</td>
+      <td>af34921e-31ca-46f0-afad-731e7ab10cae</td>
       <td>53fb2a20-7b79-4148-e053-0100007f46df</td>
       <td>00060</td>
       <td>USGS-01594440</td>
@@ -1099,15 +1078,36 @@ Retrieved 976 data values.
       <td>None</td>
       <td>Approved</td>
       <td>USGS</td>
-      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>2026-06-10 10:55:31.033760+00:00</td>
       <td>Clear</td>
       <td>Good</td>
-      <td>845573db-b7cb-4db6-b0fb-1ea3667d89d8</td>
+      <td>744a00db-f353-498a-b5e3-7f45a44ab027</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>10f75368-e5d4-4b6a-a4a7-ec3f00f906b7</td>
+      <td>53fb2a20-7b79-4148-e053-0100007f46df</td>
+      <td>00065</td>
+      <td>USGS-01594440</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>3.11</td>
+      <td>ft</td>
+      <td>1955-04-07 19:05:00+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Approved</td>
+      <td>USGS</td>
+      <td>2026-06-10 10:55:31.033760+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>dd7c8d21-54c4-41cd-a2c8-848cf966d6b4</td>
     </tr>
     <tr>
       <th>2</th>
       <td>POINT (-76.69369 38.95592)</td>
-      <td>61b6cb68-e338-4dfd-9618-d64e9bdc64be</td>
+      <td>10f75368-e5d4-4b6a-a4a7-ec3f00f906b7</td>
       <td>53fb2518-fafa-3f15-e053-0100007fbbce</td>
       <td>00065</td>
       <td>USGS-01594440</td>
@@ -1120,15 +1120,15 @@ Retrieved 976 data values.
       <td>None</td>
       <td>Approved</td>
       <td>USGS</td>
-      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>2026-06-10 10:55:31.033760+00:00</td>
       <td>Clear</td>
       <td>Fair</td>
-      <td>62218c9c-82a5-46c2-91e1-443fb88cd76b</td>
+      <td>129f6da2-a345-4f16-bd74-6ccf0fb1f820</td>
     </tr>
     <tr>
       <th>3</th>
       <td>POINT (-76.69369 38.95592)</td>
-      <td>c296b625-80d8-4ee8-a14b-f9bdaf158468</td>
+      <td>af34921e-31ca-46f0-afad-731e7ab10cae</td>
       <td>53fb2518-fafa-3f15-e053-0100007fbbce</td>
       <td>00060</td>
       <td>USGS-01594440</td>
@@ -1141,31 +1141,31 @@ Retrieved 976 data values.
       <td>None</td>
       <td>Approved</td>
       <td>USGS</td>
-      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>2026-06-10 10:55:31.033760+00:00</td>
       <td>Clear</td>
       <td>Fair</td>
-      <td>b752e796-671e-4791-bd57-1bf8a2e8d27b</td>
+      <td>8c772627-3dac-4e2e-9969-8eaf7dc94d81</td>
     </tr>
     <tr>
       <th>4</th>
       <td>POINT (-76.69369 38.95592)</td>
-      <td>61b6cb68-e338-4dfd-9618-d64e9bdc64be</td>
+      <td>af34921e-31ca-46f0-afad-731e7ab10cae</td>
       <td>53fb2a2a-6d26-3f11-e053-0100007f0ef5</td>
-      <td>00065</td>
+      <td>00060</td>
       <td>USGS-01594440</td>
       <td>Z</td>
-      <td>None</td>
-      <td>4.26</td>
-      <td>ft</td>
+      <td>Unspecified</td>
+      <td>310.00</td>
+      <td>ft^3/s</td>
       <td>1955-06-10 13:35:00+00:00</td>
       <td>None</td>
       <td>None</td>
       <td>Approved</td>
       <td>USGS</td>
-      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>2026-06-10 10:55:31.033760+00:00</td>
       <td>Clear</td>
       <td>Good</td>
-      <td>d6f4cbc0-bd8f-4a3a-8129-3adc73f99e7c</td>
+      <td>714a2e7e-3569-4bbe-abfc-ea36172a47fa</td>
     </tr>
     <tr>
       <th>...</th>
@@ -1191,28 +1191,28 @@ Retrieved 976 data values.
     <tr>
       <th>971</th>
       <td>POINT (-76.69369 38.95592)</td>
-      <td>61b6cb68-e338-4dfd-9618-d64e9bdc64be</td>
+      <td>af34921e-31ca-46f0-afad-731e7ab10cae</td>
       <td>25d5d229-9953-4096-8c53-7f62965975a8</td>
-      <td>00065</td>
+      <td>00060</td>
       <td>USGS-01594440</td>
       <td>Z</td>
-      <td>None</td>
-      <td>4.36</td>
-      <td>ft</td>
+      <td>Acoustic Doppler Current Profiler</td>
+      <td>122.00</td>
+      <td>ft^3/s</td>
       <td>2026-01-07 16:40:27+00:00</td>
       <td>None</td>
       <td>None</td>
       <td>Approved</td>
       <td>USGS</td>
-      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>2026-06-10 10:55:31.033760+00:00</td>
       <td>Clear</td>
       <td>Fair</td>
-      <td>d771ccbd-3df7-4abb-905a-f16925c61879</td>
+      <td>d50d09d2-0cbe-402d-8c9c-c96384f2f139</td>
     </tr>
     <tr>
       <th>972</th>
       <td>POINT (-76.69369 38.95592)</td>
-      <td>c296b625-80d8-4ee8-a14b-f9bdaf158468</td>
+      <td>af34921e-31ca-46f0-afad-731e7ab10cae</td>
       <td>1cef619c-e54c-4d50-8f72-8a7067de4e15</td>
       <td>00060</td>
       <td>USGS-01594440</td>
@@ -1225,15 +1225,15 @@ Retrieved 976 data values.
       <td>None</td>
       <td>Provisional</td>
       <td>USGS</td>
-      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>2026-06-10 10:55:31.033760+00:00</td>
       <td>Debris - Light</td>
       <td>Fair</td>
-      <td>681c20fe-eb51-4ad1-9990-62494ec0e43a</td>
+      <td>6ce8eabe-2ac7-46c0-9b6f-fe5ccdc1b37b</td>
     </tr>
     <tr>
       <th>973</th>
       <td>POINT (-76.69369 38.95592)</td>
-      <td>61b6cb68-e338-4dfd-9618-d64e9bdc64be</td>
+      <td>10f75368-e5d4-4b6a-a4a7-ec3f00f906b7</td>
       <td>1cef619c-e54c-4d50-8f72-8a7067de4e15</td>
       <td>00065</td>
       <td>USGS-01594440</td>
@@ -1246,36 +1246,15 @@ Retrieved 976 data values.
       <td>None</td>
       <td>Provisional</td>
       <td>USGS</td>
-      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>2026-06-10 10:55:31.033760+00:00</td>
       <td>Debris - Light</td>
       <td>Fair</td>
-      <td>f7ef53bd-e01c-4705-8d39-95a1e6eeffde</td>
+      <td>7b3e320e-36c6-4201-bdb5-a871012f82f6</td>
     </tr>
     <tr>
       <th>974</th>
       <td>POINT (-76.69369 38.95592)</td>
-      <td>c296b625-80d8-4ee8-a14b-f9bdaf158468</td>
-      <td>53cd995f-745d-4342-bbb8-2c3a294fc56a</td>
-      <td>00060</td>
-      <td>USGS-01594440</td>
-      <td>Z</td>
-      <td>Acoustic Doppler Current Profiler</td>
-      <td>121.00</td>
-      <td>ft^3/s</td>
-      <td>2026-05-20 15:33:18+00:00</td>
-      <td>None</td>
-      <td>None</td>
-      <td>Provisional</td>
-      <td>USGS</td>
-      <td>2026-05-22 11:05:41.715713+00:00</td>
-      <td>Clear</td>
-      <td>Fair</td>
-      <td>0411981d-bf8f-4c57-9aea-9b9e537ebbee</td>
-    </tr>
-    <tr>
-      <th>975</th>
-      <td>POINT (-76.69369 38.95592)</td>
-      <td>61b6cb68-e338-4dfd-9618-d64e9bdc64be</td>
+      <td>10f75368-e5d4-4b6a-a4a7-ec3f00f906b7</td>
       <td>53cd995f-745d-4342-bbb8-2c3a294fc56a</td>
       <td>00065</td>
       <td>USGS-01594440</td>
@@ -1288,10 +1267,31 @@ Retrieved 976 data values.
       <td>None</td>
       <td>Provisional</td>
       <td>USGS</td>
-      <td>2026-05-22 11:05:41.715713+00:00</td>
+      <td>2026-06-10 10:55:31.033760+00:00</td>
       <td>Clear</td>
       <td>Fair</td>
-      <td>74e911ed-5c5f-4441-8124-19c27af210c3</td>
+      <td>11c4edcc-ee8e-41b1-a7a0-27ef11428901</td>
+    </tr>
+    <tr>
+      <th>975</th>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>af34921e-31ca-46f0-afad-731e7ab10cae</td>
+      <td>53cd995f-745d-4342-bbb8-2c3a294fc56a</td>
+      <td>00060</td>
+      <td>USGS-01594440</td>
+      <td>Z</td>
+      <td>Acoustic Doppler Current Profiler</td>
+      <td>121.00</td>
+      <td>ft^3/s</td>
+      <td>2026-05-20 15:33:18+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Provisional</td>
+      <td>USGS</td>
+      <td>2026-06-10 10:55:31.033760+00:00</td>
+      <td>Clear</td>
+      <td>Fair</td>
+      <td>76ac5d17-9b3b-499e-af4e-0cc1426f1a1e</td>
     </tr>
   </tbody>
 </table>
@@ -1305,7 +1305,7 @@ Retrieved 976 data values.
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="USGS_WaterData_GroundwaterLevels_Examples.html" class="btn btn-neutral float-left" title="USGS dataretrieval Python Package get_field_measurements() Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="USGS_WaterData_GroundwaterLevels_Examples.html" class="btn btn-neutral float-left" title="USGS dataretrieval Python Package Groundwater-Level get_field_measurements() Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="USGS_WaterData_ParameterCodes_Examples.html" class="btn btn-neutral float-right" title="USGS dataretrieval Python Package get_reference_table() Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

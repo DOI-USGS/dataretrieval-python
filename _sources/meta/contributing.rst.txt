@@ -64,12 +64,12 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.md.
-3. The pull request should work for Python 3.6, 3.7, 3.8, and pass the GitHub
+3. The pull request should work for Python 3.9 and later, and pass the GitHub
    Actions continuous integration pipelines.
 
 
 Updating Package Version:
-^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Follow semantic versioning as best as possible. This means that changing the
 first digit of the version indicates a breaking change. Any smaller changes
@@ -77,11 +77,12 @@ should attempt to maintain backwards-compatibility with previous code and
 issue deprecation warnings for features or functionality that will be removed
 or no longer be backwards-compatible in future releases.
 
-When updating the package version, there are currently two places where this
-must be done:
-
-1. In the `setup.py` file the version field should be updated
-2. In the `conf.py` file both the version and release fields can be updated
+The package version is derived automatically from Git tags by
+``setuptools_scm`` (see ``[tool.setuptools_scm]`` in ``pyproject.toml``), so
+there is no version string to edit by hand. To cut a release, tag the commit
+(for example, ``git tag v1.2.3``) and push the tag; both the installed package
+version and the documentation's ``version`` and ``release`` values (read via
+``importlib.metadata`` in ``docs/source/conf.py``) follow from it.
 
 
 Coding Standards

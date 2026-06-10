@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_continuous() Examples &mdash; dataretrieval 0.1.dev1+gbe0f0725c documentation</title>
+  <title>USGS dataretrieval Python Package get_continuous() Examples &mdash; dataretrieval 0.1.dev1+g4b7464fe5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=5f2846a3"></script>
+      <script src="../_static/documentation_options.js?v=76177908"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -55,8 +55,8 @@
 <li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DailyValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Measurements_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package Groundwater-Level <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Measurements_Examples.html">USGS dataretrieval Python Package Surface-Water <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ParameterCodes_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_reference_table()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Peaks_Examples.html">USGS dataretrieval Python Package Peak Streamflow Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Ratings_Examples.html">USGS dataretrieval Python Package Rating Curve Examples</a></li>
@@ -127,7 +127,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+gbe0f0725c)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g4b7464fe5)
 Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
 Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.6)
@@ -558,7 +558,7 @@ The query URL used to retrieve the data from the Water Data API was: https://api
 <h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Link to this heading"></a></h2>
 <section id="Example-2:-Get-unit-values-for-an-individual-monitoring-location-and-parameter-between-a-start-and-end-date.">
 <h3>Example 2: Get unit values for an individual monitoring location and parameter between a start and end date.<a class="headerlink" href="#Example-2:-Get-unit-values-for-an-individual-monitoring-location-and-parameter-between-a-start-and-end-date." title="Link to this heading"></a></h3>
-<p>NOTE: By default, start and end date are evaluated as local time, and the result is returned with the timestamps in the local time of the monitoring location.</p>
+<p>NOTE: By default, the start and end dates are interpreted in the monitoring location’s local time. Regardless of the input time zone, the returned <code class="docutils literal notranslate"><span class="pre">time</span></code> column is tz-aware UTC (see Example 4 for supplying UTC input explicitly).</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
@@ -666,7 +666,7 @@ Retrieved 1 data values.
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-Retrieving: continuous · 1 page
+Retrieving: continuous · 1 page · 1 rows
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -674,7 +674,7 @@ Retrieving: continuous · 1 page
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 0 data values.
+Retrieved 1 data values.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -699,7 +699,6 @@ Retrieved 0 data values.
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>geometry</th>
       <th>time_series_id</th>
       <th>monitoring_location_id</th>
       <th>parameter_code</th>
@@ -714,6 +713,20 @@ Retrieved 0 data values.
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <th>0</th>
+      <td>987c2d767a5a4981acffd51fa253b63b</td>
+      <td>USGS-05114000</td>
+      <td>00060</td>
+      <td>00011</td>
+      <td>2026-06-10 00:00:00+00:00</td>
+      <td>144</td>
+      <td>ft^3/s</td>
+      <td>Provisional</td>
+      <td>None</td>
+      <td>2026-06-10 00:15:21.937078+00:00</td>
+      <td>527c053f-7a30-4ba9-8c09-5293d395ea18</td>
+    </tr>
   </tbody>
 </table>
 </div></div>
@@ -721,7 +734,7 @@ Retrieved 0 data values.
 </section>
 <section id="Example-4:-Retrieve-data-using-UTC-times">
 <h3>Example 4: Retrieve data using UTC times<a class="headerlink" href="#Example-4:-Retrieve-data-using-UTC-times" title="Link to this heading"></a></h3>
-<p>NOTE: Adding ‘Z’ to the input time parameters indicates that they are in UTC rather than local time. The time stamps associated with the data returned are still in the local time of the USGS monitoring location.</p>
+<p>NOTE: Adding ‘Z’ to the input time parameters indicates that they are in UTC rather than local time. The returned timestamps are tz-aware UTC in either case.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
@@ -958,106 +971,6 @@ Retrieved 96 data values.
     <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USGS-04024430&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-04024000&quot;</span><span class="p">],</span>
     <span class="n">parameter_code</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span>
     <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2013-10-01/2013-10-01&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge_multisite</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">discharge_multisite</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-Retrieving: continuous · 1 page · 2 rows
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Retrieved 2 data values.
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>time_series_id</th>
-      <th>monitoring_location_id</th>
-      <th>parameter_code</th>
-      <th>statistic_id</th>
-      <th>time</th>
-      <th>value</th>
-      <th>unit_of_measure</th>
-      <th>approval_status</th>
-      <th>qualifier</th>
-      <th>last_modified</th>
-      <th>continuous_id</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>38100b0bedd043a8b2c8dfb7cde830d3</td>
-      <td>USGS-04024000</td>
-      <td>00060</td>
-      <td>00011</td>
-      <td>2013-10-01 00:00:00+00:00</td>
-      <td>567.0</td>
-      <td>ft^3/s</td>
-      <td>Approved</td>
-      <td>None</td>
-      <td>2025-08-27 16:02:26.026729+00:00</td>
-      <td>86d87afb-0c3c-4e64-b759-4a1e7ae3d374</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>24dfcb980fb24aa1b44e129b67b11a73</td>
-      <td>USGS-04024430</td>
-      <td>00060</td>
-      <td>00011</td>
-      <td>2013-10-01 00:00:00+00:00</td>
-      <td>63.0</td>
-      <td>ft^3/s</td>
-      <td>Approved</td>
-      <td>None</td>
-      <td>2025-08-21 19:19:27.898360+00:00</td>
-      <td>50e6a614-b358-4b01-83e0-8c7ac21a8730</td>
-    </tr>
-  </tbody>
-</table>
-</div></div>
-</div>
-<p>The following example requests the same two-location data as the previous example.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">discharge_multisite</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span>
-    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USGS-04024430&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-04024000&quot;</span><span class="p">],</span>
-    <span class="n">parameter_code</span><span class="o">=</span><span class="n">parameterCode</span><span class="p">,</span>
-    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2013-10-01/2013-10-01&quot;</span><span class="p">,</span>
-
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">discharge_multisite</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; data values.&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">discharge_multisite</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>

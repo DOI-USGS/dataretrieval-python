@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Contributing &mdash; dataretrieval 0.1.dev1+gbe0f0725c documentation</title>
+  <title>Contributing &mdash; dataretrieval 0.1.dev1+g4b7464fe5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=5f2846a3"></script>
+      <script src="../_static/documentation_options.js?v=76177908"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -151,7 +151,7 @@ no tests is preferable to no contribution at all.</p></li>
 <li><p>If the pull request adds functionality, the docs should be updated. Put
 your new functionality into a function with a docstring, and add the
 feature to the list in README.md.</p></li>
-<li><p>The pull request should work for Python 3.6, 3.7, 3.8, and pass the GitHub
+<li><p>The pull request should work for Python 3.9 and later, and pass the GitHub
 Actions continuous integration pipelines.</p></li>
 </ol>
 </section>
@@ -162,12 +162,12 @@ first digit of the version indicates a breaking change. Any smaller changes
 should attempt to maintain backwards-compatibility with previous code and
 issue deprecation warnings for features or functionality that will be removed
 or no longer be backwards-compatible in future releases.</p>
-<p>When updating the package version, there are currently two places where this
-must be done:</p>
-<ol class="arabic simple">
-<li><p>In the <cite>setup.py</cite> file the version field should be updated</p></li>
-<li><p>In the <cite>conf.py</cite> file both the version and release fields can be updated</p></li>
-</ol>
+<p>The package version is derived automatically from Git tags by
+<code class="docutils literal notranslate"><span class="pre">setuptools_scm</span></code> (see <code class="docutils literal notranslate"><span class="pre">[tool.setuptools_scm]</span></code> in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>), so
+there is no version string to edit by hand. To cut a release, tag the commit
+(for example, <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">tag</span> <span class="pre">v1.2.3</span></code>) and push the tag; both the installed package
+version and the documentation’s <code class="docutils literal notranslate"><span class="pre">version</span></code> and <code class="docutils literal notranslate"><span class="pre">release</span></code> values (read via
+<code class="docutils literal notranslate"><span class="pre">importlib.metadata</span></code> in <code class="docutils literal notranslate"><span class="pre">docs/source/conf.py</span></code>) follow from it.</p>
 </section>
 </section>
 <section id="coding-standards">

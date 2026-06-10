@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_monitoring_locations() Examples &mdash; dataretrieval 0.1.dev1+gbe0f0725c documentation</title>
+  <title>USGS dataretrieval Python Package get_monitoring_locations() Examples &mdash; dataretrieval 0.1.dev1+g4b7464fe5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=5f2846a3"></script>
+      <script src="../_static/documentation_options.js?v=76177908"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -55,8 +55,8 @@
 <li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DailyValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Measurements_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package Groundwater-Level <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Measurements_Examples.html">USGS dataretrieval Python Package Surface-Water <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ParameterCodes_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_reference_table()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Peaks_Examples.html">USGS dataretrieval Python Package Peak Streamflow Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Ratings_Examples.html">USGS dataretrieval Python Package Rating Curve Examples</a></li>
@@ -128,7 +128,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+gbe0f0725c)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g4b7464fe5)
 Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
 Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.6)
@@ -488,8 +488,9 @@ Retrieving: monitoring-locations · 1 page · 2 rows
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get the site information for a state</span>
-<span class="n">siteINFO_state</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span><span class="n">state_code</span><span class="o">=</span><span class="s2">&quot;UT&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get the site information for a state. state_code is a two-digit ANSI code;</span>
+<span class="c1"># 49 is Utah. (The postal abbreviation &quot;UT&quot; returns no results.)</span>
+<span class="n">siteINFO_state</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span><span class="n">state_code</span><span class="o">=</span><span class="s2">&quot;49&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">siteINFO_state</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -499,7 +500,7 @@ Retrieving: monitoring-locations · 1 page · 2 rows
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-Retrieving: monitoring-locations · 1 page
+Retrieving: monitoring-locations · 1 page · 32,827 rows
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -524,8 +525,8 @@ Retrieving: monitoring-locations · 1 page
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>geometry</th>
       <th>monitoring_location_id</th>
+      <th>geometry</th>
       <th>agency_code</th>
       <th>agency_name</th>
       <th>monitoring_location_number</th>
@@ -548,9 +549,273 @@ Retrieving: monitoring-locations · 1 page
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <th>0</th>
+      <td>USBLM-09337800</td>
+      <td>POINT (-111.4185 37.77554)</td>
+      <td>USBLM</td>
+      <td>U.S. Bureau of Land Management</td>
+      <td>09337800</td>
+      <td>Escalante River above Calf Creek, near Boulder</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>USBLM-09337810</td>
+      <td>POINT (-111.41517 37.6261)</td>
+      <td>USBLM</td>
+      <td>U.S. Bureau of Land Management</td>
+      <td>09337810</td>
+      <td>Calf Creek at BLM campground</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>USEPA-370150112583201</td>
+      <td>POINT (-112.97633 37.03054)</td>
+      <td>USEPA</td>
+      <td>U.S. Environmental Protection Agency</td>
+      <td>370150112583201</td>
+      <td>(C-43-21)10cbd-1</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>USEPA-370427111405201</td>
+      <td>POINT (-111.68111 37.07417)</td>
+      <td>USEPA</td>
+      <td>U.S. Environmental Protection Agency</td>
+      <td>370427111405201</td>
+      <td>(D-43-15) 2bad-1</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>USEPA-370511111410001</td>
+      <td>POINT (-111.68333 37.08639)</td>
+      <td>USEPA</td>
+      <td>U.S. Environmental Protection Agency</td>
+      <td>370511111410001</td>
+      <td>(D-43-10) 2bdc-1</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>32822</th>
+      <td>USGS-415956112532501</td>
+      <td>POINT (-112.8911 41.99881)</td>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>415956112532501</td>
+      <td>(B-15- 9)29dbc- 1</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>1966-01-01</td>
+      <td>100VLFL</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>480.0</td>
+      <td>NaN</td>
+      <td>O</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>32823</th>
+      <td>USGS-415957112411001</td>
+      <td>POINT (-112.68692 41.99909)</td>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>415957112411001</td>
+      <td>(B-15- 7)30cbc- 1</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>1936-01-01</td>
+      <td>100VLFL</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>228.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>32824</th>
+      <td>USGS-415958111242901</td>
+      <td>POINT (-111.40882 41.99938)</td>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>415958111242901</td>
+      <td>(A-15- 5)32dbb- 1</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>1975-06-12</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>191.0</td>
+      <td>191.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>32825</th>
+      <td>USGS-415958112390301</td>
+      <td>POINT (-112.65164 41.99936)</td>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>415958112390301</td>
+      <td>(B-15- 7)29dac- 1</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>1966-01-01</td>
+      <td>100VLFL</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>175.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>32826</th>
+      <td>USGS-88101353</td>
+      <td>POINT (-112.07028 40.70222)</td>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
+      <td>88101353</td>
+      <td>Carla Bartholoma Test Site at Magna, Utah</td>
+      <td>49</td>
+      <td>US</td>
+      <td>United States of America</td>
+      <td>49</td>
+      <td>...</td>
+      <td>NaT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
   </tbody>
 </table>
-<p>0 rows × 44 columns</p>
+<p>32827 rows × 44 columns</p>
 </div></div>
 </div>
 </section>
