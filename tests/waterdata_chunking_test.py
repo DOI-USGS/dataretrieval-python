@@ -18,7 +18,10 @@ and then fail in production.
 import asyncio
 import concurrent.futures
 import datetime
+import http.server
 import sys
+import threading
+import time
 import warnings
 from unittest import mock
 from urllib.parse import quote_plus
@@ -32,6 +35,7 @@ if sys.version_info < (3, 10):
     pytest.skip("Skip entire module on Python < 3.10", allow_module_level=True)
 
 from dataretrieval.exceptions import DataRetrievalError
+from dataretrieval.utils import HTTPX_DEFAULTS
 from dataretrieval.waterdata import chunking as _chunking
 from dataretrieval.waterdata import utils as _utils
 from dataretrieval.waterdata.chunking import (
@@ -56,6 +60,7 @@ from dataretrieval.waterdata.chunking import (
     _retry,
     _retryable,
     _safe_request_bytes,
+    get_active_client,
     multi_value_chunked,
 )
 from dataretrieval.waterdata.utils import _DATE_RANGE_PARAMS, _construct_api_requests
@@ -1314,13 +1319,15 @@ def test_iter_sub_args_passthrough_yields_a_copy():
 # --- async fan-out path ----------------------------------------------------
 #
 # Every sub-request is gathered over one ``httpx.AsyncClient`` and
-# concurrency is bounded purely by that client's connection pool, sized
-# from ``API_USGS_CONCURRENT``. The conftest's ``_pin_chunker_env``
-# autouse pins ``API_USGS_CONCURRENT=1`` (a single connection) for the
-# whole suite; each test below raises it so the gather can dispatch
-# sub-requests under a wider pool. The decorated async fetcher is the
-# SAME one used on both first-run and resume. No real ``httpx.AsyncClient``
-# round-trip occurs (the fakes return mock data), even though
+# concurrency is bounded by an ``asyncio.Semaphore`` sized from
+# ``API_USGS_CONCURRENT`` (the client's connection pool is sized to
+# match, but the semaphore is the throttle — see ``ChunkedCall._run``).
+# The conftest's ``_pin_chunker_env`` autouse pins
+# ``API_USGS_CONCURRENT=1`` (sequential dispatch) for the whole suite;
+# each test below raises it so the gather can dispatch sub-requests
+# under a wider cap. The decorated async fetcher is the SAME one used on
+# both first-run and resume. No real ``httpx.AsyncClient`` round-trip
+# occurs (the fakes return mock data), even though
 # :meth:`ChunkedCall._run` opens one for pool management.
 
 
@@ -1487,6 +1494,121 @@ def test_wide_concurrency_uses_async_fetcher_with_no_warning(monkeypatch):
 
     assert len(calls) > 1  # the gather fanned out across every sub-request
     assert len(df) == len(calls)
+
+
+# Eight 20-char sites against ``url_limit=240`` (base 200): any two atoms
+# joined overflow the 40-byte budget, so the planner lands on eight
+# singleton sub-requests — enough fan-out to observe the concurrency gate.
+_EIGHT_SINGLETON_SITES = [f"S{i}" * 10 for i in range(8)]
+
+
+def _concurrency_probe(in_flight):
+    """An async fetch that records the high-water mark of simultaneous
+    invocations in ``in_flight`` (keys ``now``/``max``). The ``sleep(0)``
+    yields to the loop while "in flight", so overlap is observable."""
+
+    async def fetch_async(args):
+        in_flight["now"] += 1
+        in_flight["max"] = max(in_flight["max"], in_flight["now"])
+        await asyncio.sleep(0)
+        in_flight["now"] -= 1
+        return pd.DataFrame({"id": [_atom_id(args)]}), _ok_response()
+
+    return fetch_async
+
+
+@pytest.mark.parametrize(
+    ("cap", "expected_high_water"),
+    [
+        pytest.param(2, 2, id="capped"),
+        pytest.param("unbounded", len(_EIGHT_SINGLETON_SITES), id="unbounded"),
+    ],
+)
+def test_fan_out_in_flight_high_water_mark_is_the_cap(
+    monkeypatch, cap, expected_high_water
+):
+    """The fetch-level high-water mark of simultaneous sub-requests IS the
+    ``API_USGS_CONCURRENT`` cap — genuine parallelism up to it, never past
+    it — and ``unbounded`` degenerates to every sub-request at once.
+
+    Regression: the cap used to be enforced only by the shared client's
+    connection-pool size, so sub-requests beyond it queued on connection
+    *acquisition*, subject to the client's pool-acquire timeout (see
+    ``ChunkedCall._run``). The semaphore parks excess sub-requests before
+    they touch the pool.
+    """
+    in_flight = {"now": 0, "max": 0}
+    fetch = _async_chunked_fetch(
+        monkeypatch, _concurrency_probe(in_flight), max_concurrent=cap
+    )
+
+    df, _ = fetch({"sites": list(_EIGHT_SINGLETON_SITES)})
+
+    assert len(df) == len(_EIGHT_SINGLETON_SITES)  # all sub-requests completed
+    assert in_flight["max"] == expected_high_water
+
+
+def test_fan_out_outlives_pool_timeout_on_real_transport(monkeypatch):
+    """End-to-end regression for the pool-timeout starvation bug: the
+    fan-out must survive every pooled connection staying busy past the
+    client's pool-acquire timeout (the stall mechanism is documented on
+    ``ChunkedCall._run``; at production scale think a batch of large,
+    slowly-streaming pages).
+
+    Sub-requests here send real HTTP to a slow localhost server through
+    the chunker's shared client — fakes can't catch this, since
+    ``MockTransport`` bypasses the connection pool. With the pool as the
+    only throttle, 2 connections busy for 0.35 s each and the 0.2 s pool
+    timeout pinned below, the 2 queued sub-requests sat out the full
+    timeout with no completion to reset their clocks →
+    ``httpx.PoolTimeout`` → (retries exhausted, ``API_USGS_RETRIES=0``)
+    a spurious resumable ``ServiceInterrupted``. Gated by the semaphore,
+    queued sub-requests never touch the pool and the call completes.
+    """
+
+    class _SlowHandler(http.server.BaseHTTPRequestHandler):
+        protocol_version = "HTTP/1.1"  # keepalive, so pooled connections reuse
+
+        def do_GET(self):
+            time.sleep(0.35)  # hold the connection busy past the pool timeout
+            body = b'{"ok": true}'
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *args):  # keep pytest output clean
+            pass
+
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _SlowHandler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    # Everything past the thread start is in the try, so any setup failure
+    # (monkeypatch, decorator construction) still tears the server down.
+    try:
+        url = f"http://127.0.0.1:{server.server_address[1]}/"
+
+        # Scale the production pool timeout (see ``HTTPX_DEFAULTS``) down to
+        # 0.2 s so the pre-semaphore failure mode reproduces in test time.
+        monkeypatch.setitem(
+            HTTPX_DEFAULTS, "timeout", httpx.Timeout(5.0, connect=1.0, pool=0.2)
+        )
+
+        async def fetch_async(args):
+            client = get_active_client()
+            assert client is not None, "sub-request must use the shared client"
+            resp = await client.get(url)
+            assert resp.status_code == 200
+            return pd.DataFrame({"id": [_atom_id(args)]}), resp
+
+        sites = _EIGHT_SINGLETON_SITES[:4]  # 2 in flight + 2 queued, 2 waves
+        fetch = _async_chunked_fetch(monkeypatch, fetch_async, max_concurrent=2)
+        df, _ = fetch({"sites": sites})
+        assert len(df) == len(sites)
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
 
 
 def test_async_fan_out_runs_inside_running_event_loop(monkeypatch):
