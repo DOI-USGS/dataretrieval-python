@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package Surface-Water get_field_measurements() Examples &mdash; dataretrieval 0.1.dev1+g4b7464fe5 documentation</title>
+  <title>USGS dataretrieval Python Package Surface-Water get_field_measurements() Examples &mdash; dataretrieval 0.1.dev1+g3e56b62b1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=76177908"></script>
+      <script src="../_static/documentation_options.js?v=83dbc336"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -127,7 +127,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g4b7464fe5)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g3e56b62b1)
 Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
 Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.6)
@@ -228,6 +228,7 @@ Retrieved 1918 data values.
       <th></th>
       <th>geometry</th>
       <th>field_measurements_series_id</th>
+      <th>reading_type</th>
       <th>field_visit_id</th>
       <th>parameter_code</th>
       <th>monitoring_location_id</th>
@@ -235,14 +236,16 @@ Retrieved 1918 data values.
       <th>observing_procedure</th>
       <th>value</th>
       <th>unit_of_measure</th>
-      <th>time</th>
-      <th>qualifier</th>
-      <th>vertical_datum</th>
+      <th>...</th>
       <th>approval_status</th>
       <th>measuring_agency</th>
       <th>last_modified</th>
       <th>control_condition</th>
       <th>measurement_rated</th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>time_of_day</th>
       <th>field_measurement_id</th>
     </tr>
   </thead>
@@ -251,6 +254,7 @@ Retrieved 1918 data values.
       <th>0</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
+      <td>Discharge</td>
       <td>4cd21ba9-8644-ebfc-e053-0100007fd6db</td>
       <td>00060</td>
       <td>USGS-10109000</td>
@@ -258,20 +262,23 @@ Retrieved 1918 data values.
       <td>Unspecified</td>
       <td>17.00</td>
       <td>ft^3/s</td>
-      <td>1951-09-06 16:40:00+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Excellent</td>
+      <td>1951</td>
+      <td>9</td>
+      <td>6</td>
+      <td>16:40:00+00:00</td>
       <td>171d94e4-8989-4948-9ebd-42037d03e464</td>
     </tr>
     <tr>
       <th>1</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
       <td>4cd21ba9-8644-ebfc-e053-0100007fd6db</td>
       <td>00065</td>
       <td>USGS-10109000</td>
@@ -279,20 +286,23 @@ Retrieved 1918 data values.
       <td>None</td>
       <td>0.94</td>
       <td>ft</td>
-      <td>1951-09-06 16:40:00+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Excellent</td>
+      <td>1951</td>
+      <td>9</td>
+      <td>6</td>
+      <td>16:40:00+00:00</td>
       <td>a6764889-4d58-4f83-8e20-d6fde4a5e4e5</td>
     </tr>
     <tr>
       <th>2</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
+      <td>Discharge</td>
       <td>4cd21977-d55d-efa9-e053-0100007fcc60</td>
       <td>00060</td>
       <td>USGS-10109000</td>
@@ -300,20 +310,23 @@ Retrieved 1918 data values.
       <td>Unspecified</td>
       <td>12.50</td>
       <td>ft^3/s</td>
-      <td>1951-12-13 19:10:00+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Unspecified</td>
+      <td>1951</td>
+      <td>12</td>
+      <td>13</td>
+      <td>19:10:00+00:00</td>
       <td>28b847e8-45ac-4643-a4ff-55931b008de4</td>
     </tr>
     <tr>
       <th>3</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
       <td>4cd21977-d55d-efa9-e053-0100007fcc60</td>
       <td>00065</td>
       <td>USGS-10109000</td>
@@ -321,20 +334,23 @@ Retrieved 1918 data values.
       <td>None</td>
       <td>0.88</td>
       <td>ft</td>
-      <td>1951-12-13 19:10:00+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Unspecified</td>
+      <td>1951</td>
+      <td>12</td>
+      <td>13</td>
+      <td>19:10:00+00:00</td>
       <td>891e4d38-b26b-4bd9-a664-8446c916f6b4</td>
     </tr>
     <tr>
       <th>4</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
       <td>4cd21ba9-8645-ebfc-e053-0100007fd6db</td>
       <td>00065</td>
       <td>USGS-10109000</td>
@@ -342,18 +358,23 @@ Retrieved 1918 data values.
       <td>None</td>
       <td>1.80</td>
       <td>ft</td>
-      <td>1952-04-23 17:25:00+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Good</td>
+      <td>1952</td>
+      <td>4</td>
+      <td>23</td>
+      <td>17:25:00+00:00</td>
       <td>8803ac0a-5a2e-4538-ac50-8a23b3867e42</td>
     </tr>
     <tr>
       <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
       <td>...</td>
       <td>...</td>
       <td>...</td>
@@ -377,6 +398,7 @@ Retrieved 1918 data values.
       <th>1913</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
       <td>98c59f70-ce2c-4a4d-9acf-18a179a96c78</td>
       <td>00065</td>
       <td>USGS-10109000</td>
@@ -384,20 +406,23 @@ Retrieved 1918 data values.
       <td>None</td>
       <td>3.11</td>
       <td>ft</td>
-      <td>2026-04-20 16:31:59+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Good</td>
+      <td>2026</td>
+      <td>4</td>
+      <td>20</td>
+      <td>16:31:59+00:00</td>
       <td>54242802-9af6-41bb-9959-967334b06e20</td>
     </tr>
     <tr>
       <th>1914</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
+      <td>Discharge</td>
       <td>6e48b7b6-152b-4a98-a974-87adf3d0ddc8</td>
       <td>00060</td>
       <td>USGS-10109000</td>
@@ -405,20 +430,23 @@ Retrieved 1918 data values.
       <td>Acoustic Doppler Current Profiler</td>
       <td>354.00</td>
       <td>ft^3/s</td>
-      <td>2026-05-12 20:07:07+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Fair</td>
+      <td>2026</td>
+      <td>5</td>
+      <td>12</td>
+      <td>20:07:07+00:00</td>
       <td>d9997123-e13c-4281-8578-8e5b012d3461</td>
     </tr>
     <tr>
       <th>1915</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
       <td>6e48b7b6-152b-4a98-a974-87adf3d0ddc8</td>
       <td>00065</td>
       <td>USGS-10109000</td>
@@ -426,20 +454,23 @@ Retrieved 1918 data values.
       <td>None</td>
       <td>3.38</td>
       <td>ft</td>
-      <td>2026-05-12 20:07:07+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Fair</td>
+      <td>2026</td>
+      <td>5</td>
+      <td>12</td>
+      <td>20:07:07+00:00</td>
       <td>f27dc6d2-0962-472e-a1e6-eff975dde0f5</td>
     </tr>
     <tr>
       <th>1916</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
       <td>20adb970-eb0a-4892-b5f2-92e7d1678b73</td>
       <td>00065</td>
       <td>USGS-10109000</td>
@@ -447,20 +478,23 @@ Retrieved 1918 data values.
       <td>None</td>
       <td>3.28</td>
       <td>ft</td>
-      <td>2026-05-26 23:39:33+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Good</td>
+      <td>2026</td>
+      <td>5</td>
+      <td>26</td>
+      <td>23:39:33+00:00</td>
       <td>4f1c3cdd-7012-4420-8389-d56dab84c507</td>
     </tr>
     <tr>
       <th>1917</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
+      <td>Discharge</td>
       <td>20adb970-eb0a-4892-b5f2-92e7d1678b73</td>
       <td>00060</td>
       <td>USGS-10109000</td>
@@ -468,19 +502,21 @@ Retrieved 1918 data values.
       <td>Acoustic Doppler Current Profiler</td>
       <td>321.00</td>
       <td>ft^3/s</td>
-      <td>2026-05-26 23:39:33+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Good</td>
+      <td>2026</td>
+      <td>5</td>
+      <td>26</td>
+      <td>23:39:33+00:00</td>
       <td>d81ddc27-7142-4241-9452-c306700edd13</td>
     </tr>
   </tbody>
 </table>
-<p>1918 rows × 18 columns</p>
+<p>1918 rows × 23 columns</p>
 </div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
@@ -499,6 +535,7 @@ Retrieved 1918 data values.
 <div class="highlight"><pre>
 geometry                                   geometry
 field_measurements_series_id                    str
+reading_type                                    str
 field_visit_id                                  str
 parameter_code                                  str
 monitoring_location_id                          str
@@ -514,6 +551,10 @@ measuring_agency                                str
 last_modified                   datetime64[us, UTC]
 control_condition                               str
 measurement_rated                               str
+year                                          int64
+month                                         int64
+day                                           int64
+time_of_day                                     str
 field_measurement_id                            str
 dtype: object
 </pre></div></div>
@@ -591,6 +632,7 @@ Retrieved 18 data values.
       <th></th>
       <th>geometry</th>
       <th>field_measurements_series_id</th>
+      <th>reading_type</th>
       <th>field_visit_id</th>
       <th>parameter_code</th>
       <th>monitoring_location_id</th>
@@ -598,14 +640,16 @@ Retrieved 18 data values.
       <th>observing_procedure</th>
       <th>value</th>
       <th>unit_of_measure</th>
-      <th>time</th>
-      <th>qualifier</th>
-      <th>vertical_datum</th>
+      <th>...</th>
       <th>approval_status</th>
       <th>measuring_agency</th>
       <th>last_modified</th>
       <th>control_condition</th>
       <th>measurement_rated</th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>time_of_day</th>
       <th>field_measurement_id</th>
     </tr>
   </thead>
@@ -614,6 +658,7 @@ Retrieved 18 data values.
       <th>0</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
       <td>80a47f55-5d75-9c33-e053-0100007fa04d</td>
       <td>00065</td>
       <td>USGS-10109000</td>
@@ -621,20 +666,23 @@ Retrieved 18 data values.
       <td>None</td>
       <td>2.43</td>
       <td>ft</td>
-      <td>2019-01-29 19:57:30+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>1</td>
+      <td>29</td>
+      <td>19:57:30+00:00</td>
       <td>6bdeaecd-a7aa-4be0-bff2-e6c5ef2df404</td>
     </tr>
     <tr>
       <th>1</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
+      <td>Discharge</td>
       <td>80a47f55-5d75-9c33-e053-0100007fa04d</td>
       <td>00060</td>
       <td>USGS-10109000</td>
@@ -642,20 +690,23 @@ Retrieved 18 data values.
       <td>Mid-section</td>
       <td>83.80</td>
       <td>ft^3/s</td>
-      <td>2019-01-29 19:57:30+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>1</td>
+      <td>29</td>
+      <td>19:57:30+00:00</td>
       <td>ca56f390-44e2-4ac9-a038-f7427f1310f3</td>
     </tr>
     <tr>
       <th>2</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
       <td>83ebd5c5-373c-5a52-e053-0100007f5e38</td>
       <td>00065</td>
       <td>USGS-10109000</td>
@@ -663,20 +714,23 @@ Retrieved 18 data values.
       <td>None</td>
       <td>2.46</td>
       <td>ft</td>
-      <td>2019-03-11 19:29:30+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>3</td>
+      <td>11</td>
+      <td>19:29:30+00:00</td>
       <td>78cb7375-25e4-4ac6-8e9a-c8c1a55844f0</td>
     </tr>
     <tr>
       <th>3</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
+      <td>Discharge</td>
       <td>83ebd5c5-373c-5a52-e053-0100007f5e38</td>
       <td>00060</td>
       <td>USGS-10109000</td>
@@ -684,20 +738,23 @@ Retrieved 18 data values.
       <td>Mid-section</td>
       <td>94.20</td>
       <td>ft^3/s</td>
-      <td>2019-03-11 19:29:30+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>3</td>
+      <td>11</td>
+      <td>19:29:30+00:00</td>
       <td>a498deb9-40a0-4a8e-a5e8-86dce988995d</td>
     </tr>
     <tr>
       <th>4</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
       <td>873f3a85-f698-41b8-e053-0100007fc351</td>
       <td>00065</td>
       <td>USGS-10109000</td>
@@ -705,20 +762,23 @@ Retrieved 18 data values.
       <td>None</td>
       <td>3.29</td>
       <td>ft</td>
-      <td>2019-04-23 21:39:16+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>4</td>
+      <td>23</td>
+      <td>21:39:16+00:00</td>
       <td>631ffc3c-d80c-4704-b126-8729e63c906c</td>
     </tr>
     <tr>
       <th>5</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
+      <td>Discharge</td>
       <td>873f3a85-f698-41b8-e053-0100007fc351</td>
       <td>00060</td>
       <td>USGS-10109000</td>
@@ -726,20 +786,23 @@ Retrieved 18 data values.
       <td>Acoustic Doppler Current Profiler</td>
       <td>337.00</td>
       <td>ft^3/s</td>
-      <td>2019-04-23 21:39:16+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>4</td>
+      <td>23</td>
+      <td>21:39:16+00:00</td>
       <td>71cede54-6330-4413-9a10-380cd8f2ee78</td>
     </tr>
     <tr>
       <th>6</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
+      <td>Discharge</td>
       <td>8b3913bf-9253-4f4f-e053-0100007f3ec4</td>
       <td>00060</td>
       <td>USGS-10109000</td>
@@ -747,20 +810,23 @@ Retrieved 18 data values.
       <td>Mid-section</td>
       <td>709.00</td>
       <td>ft^3/s</td>
-      <td>2019-06-12 14:02:56+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>6</td>
+      <td>12</td>
+      <td>14:02:56+00:00</td>
       <td>98d24fbd-2c9f-4f1a-a3be-571d27e9a441</td>
     </tr>
     <tr>
       <th>7</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
       <td>8b3913bf-9253-4f4f-e053-0100007f3ec4</td>
       <td>00065</td>
       <td>USGS-10109000</td>
@@ -768,20 +834,23 @@ Retrieved 18 data values.
       <td>None</td>
       <td>4.09</td>
       <td>ft</td>
-      <td>2019-06-12 14:02:56+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>6</td>
+      <td>12</td>
+      <td>14:02:56+00:00</td>
       <td>ef5d6df8-8081-4e39-930e-40cc190aa9b6</td>
     </tr>
     <tr>
       <th>8</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
       <td>8ef1af85-190d-3d4c-e053-0100007f711a</td>
       <td>00065</td>
       <td>USGS-10109000</td>
@@ -789,20 +858,23 @@ Retrieved 18 data values.
       <td>None</td>
       <td>2.84</td>
       <td>ft</td>
-      <td>2019-07-30 17:57:17+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Vegetation - Light</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>7</td>
+      <td>30</td>
+      <td>17:57:17+00:00</td>
       <td>2d379146-bd65-4a8c-a868-665a10c933be</td>
     </tr>
     <tr>
       <th>9</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
+      <td>Discharge</td>
       <td>8ef1af85-190d-3d4c-e053-0100007f711a</td>
       <td>00060</td>
       <td>USGS-10109000</td>
@@ -810,20 +882,23 @@ Retrieved 18 data values.
       <td>Mid-section</td>
       <td>167.00</td>
       <td>ft^3/s</td>
-      <td>2019-07-30 17:57:17+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Vegetation - Light</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>7</td>
+      <td>30</td>
+      <td>17:57:17+00:00</td>
       <td>41ef994d-6896-4fd9-b31c-d7284e4e32eb</td>
     </tr>
     <tr>
       <th>10</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
+      <td>Discharge</td>
       <td>8ef1af85-190d-3d4c-e053-0100007f711a</td>
       <td>00060</td>
       <td>USGS-10109000</td>
@@ -831,20 +906,23 @@ Retrieved 18 data values.
       <td>Mid-section</td>
       <td>162.00</td>
       <td>ft^3/s</td>
-      <td>2019-07-30 18:06:00+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Vegetation - Light</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>7</td>
+      <td>30</td>
+      <td>18:06:00+00:00</td>
       <td>44659028-4656-4d92-a89a-aa44e2f0ea78</td>
     </tr>
     <tr>
       <th>11</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
       <td>8ef1af85-190d-3d4c-e053-0100007f711a</td>
       <td>00065</td>
       <td>USGS-10109000</td>
@@ -852,20 +930,23 @@ Retrieved 18 data values.
       <td>None</td>
       <td>2.84</td>
       <td>ft</td>
-      <td>2019-07-30 18:06:00+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Vegetation - Light</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>7</td>
+      <td>30</td>
+      <td>18:06:00+00:00</td>
       <td>4f7bb602-4112-4249-9ccf-5dc49e52428f</td>
     </tr>
     <tr>
       <th>12</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
+      <td>Discharge</td>
       <td>92d627a0-a0f4-3689-e053-0100007f10f2</td>
       <td>00060</td>
       <td>USGS-10109000</td>
@@ -873,20 +954,23 @@ Retrieved 18 data values.
       <td>Mid-section</td>
       <td>126.00</td>
       <td>ft^3/s</td>
-      <td>2019-09-16 16:59:19+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Vegetation - Light</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>9</td>
+      <td>16</td>
+      <td>16:59:19+00:00</td>
       <td>17b797f6-7135-4c19-a1a1-78272482ba38</td>
     </tr>
     <tr>
       <th>13</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
       <td>92d627a0-a0f4-3689-e053-0100007f10f2</td>
       <td>00065</td>
       <td>USGS-10109000</td>
@@ -894,20 +978,23 @@ Retrieved 18 data values.
       <td>None</td>
       <td>2.64</td>
       <td>ft</td>
-      <td>2019-09-16 16:59:19+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Vegetation - Light</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>9</td>
+      <td>16</td>
+      <td>16:59:19+00:00</td>
       <td>e5b5f085-a98e-489a-87e1-36024bb9dca6</td>
     </tr>
     <tr>
       <th>14</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
+      <td>Discharge</td>
       <td>9603d708-a28c-04b1-e053-0100007f2a41</td>
       <td>00060</td>
       <td>USGS-10109000</td>
@@ -915,20 +1002,23 @@ Retrieved 18 data values.
       <td>Mid-section</td>
       <td>133.00</td>
       <td>ft^3/s</td>
-      <td>2019-10-28 19:06:42+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>10</td>
+      <td>28</td>
+      <td>19:06:42+00:00</td>
       <td>5fab5973-e8eb-4ef9-a65c-31d2c5898198</td>
     </tr>
     <tr>
       <th>15</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
       <td>9603d708-a28c-04b1-e053-0100007f2a41</td>
       <td>00065</td>
       <td>USGS-10109000</td>
@@ -936,20 +1026,23 @@ Retrieved 18 data values.
       <td>None</td>
       <td>2.64</td>
       <td>ft</td>
-      <td>2019-10-28 19:06:42+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>10</td>
+      <td>28</td>
+      <td>19:06:42+00:00</td>
       <td>a93eecf4-982b-4c7e-9ad0-22278bb9030f</td>
     </tr>
     <tr>
       <th>16</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
+      <td>Discharge</td>
       <td>92b3d616-e8fb-4f7f-862d-632f6ad1c26b</td>
       <td>00060</td>
       <td>USGS-10109000</td>
@@ -957,20 +1050,23 @@ Retrieved 18 data values.
       <td>Mid-section</td>
       <td>122.00</td>
       <td>ft^3/s</td>
-      <td>2019-12-03 20:53:15+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>12</td>
+      <td>3</td>
+      <td>20:53:15+00:00</td>
       <td>329fff59-5f9d-4567-afc8-96dbbde2e885</td>
     </tr>
     <tr>
       <th>17</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
       <td>92b3d616-e8fb-4f7f-862d-632f6ad1c26b</td>
       <td>00065</td>
       <td>USGS-10109000</td>
@@ -978,18 +1074,21 @@ Retrieved 18 data values.
       <td>None</td>
       <td>2.60</td>
       <td>ft</td>
-      <td>2019-12-03 20:53:15+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-06-03 22:25:57.846799+00:00</td>
       <td>Clear</td>
       <td>Good</td>
+      <td>2019</td>
+      <td>12</td>
+      <td>3</td>
+      <td>20:53:15+00:00</td>
       <td>6f5f04d1-5473-4e44-bba3-3c90c8e6c591</td>
     </tr>
   </tbody>
 </table>
+<p>18 rows × 23 columns</p>
 </div></div>
 </div>
 <p>Example 3: Get all of the field measurements for multiple monitoring locations</p>
@@ -1008,7 +1107,7 @@ Retrieved 18 data values.
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-Retrieving: field-measurements · 1 page · 976 rows
+Retrieving: field-measurements · 1 page · 980 rows
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1016,7 +1115,7 @@ Retrieving: field-measurements · 1 page · 976 rows
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved 976 data values.
+Retrieved 980 data values.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -1043,6 +1142,7 @@ Retrieved 976 data values.
       <th></th>
       <th>geometry</th>
       <th>field_measurements_series_id</th>
+      <th>reading_type</th>
       <th>field_visit_id</th>
       <th>parameter_code</th>
       <th>monitoring_location_id</th>
@@ -1050,14 +1150,16 @@ Retrieved 976 data values.
       <th>observing_procedure</th>
       <th>value</th>
       <th>unit_of_measure</th>
-      <th>time</th>
-      <th>qualifier</th>
-      <th>vertical_datum</th>
+      <th>...</th>
       <th>approval_status</th>
       <th>measuring_agency</th>
       <th>last_modified</th>
       <th>control_condition</th>
       <th>measurement_rated</th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>time_of_day</th>
       <th>field_measurement_id</th>
     </tr>
   </thead>
@@ -1066,6 +1168,7 @@ Retrieved 976 data values.
       <th>0</th>
       <td>POINT (-76.69369 38.95592)</td>
       <td>af34921e-31ca-46f0-afad-731e7ab10cae</td>
+      <td>Discharge</td>
       <td>53fb2a20-7b79-4148-e053-0100007f46df</td>
       <td>00060</td>
       <td>USGS-01594440</td>
@@ -1073,20 +1176,23 @@ Retrieved 976 data values.
       <td>Unspecified</td>
       <td>152.00</td>
       <td>ft^3/s</td>
-      <td>1955-04-07 19:05:00+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
-      <td>2026-06-10 10:55:31.033760+00:00</td>
+      <td>2026-06-11 12:25:29.250421+00:00</td>
       <td>Clear</td>
       <td>Good</td>
-      <td>744a00db-f353-498a-b5e3-7f45a44ab027</td>
+      <td>1955</td>
+      <td>4</td>
+      <td>7</td>
+      <td>19:05:00+00:00</td>
+      <td>4e550f30-3da4-4729-b36b-788ae2cf9680</td>
     </tr>
     <tr>
       <th>1</th>
       <td>POINT (-76.69369 38.95592)</td>
       <td>10f75368-e5d4-4b6a-a4a7-ec3f00f906b7</td>
+      <td>MeanGageHeight</td>
       <td>53fb2a20-7b79-4148-e053-0100007f46df</td>
       <td>00065</td>
       <td>USGS-01594440</td>
@@ -1094,20 +1200,23 @@ Retrieved 976 data values.
       <td>None</td>
       <td>3.11</td>
       <td>ft</td>
-      <td>1955-04-07 19:05:00+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
-      <td>2026-06-10 10:55:31.033760+00:00</td>
+      <td>2026-06-11 12:25:29.250421+00:00</td>
       <td>Clear</td>
       <td>Good</td>
-      <td>dd7c8d21-54c4-41cd-a2c8-848cf966d6b4</td>
+      <td>1955</td>
+      <td>4</td>
+      <td>7</td>
+      <td>19:05:00+00:00</td>
+      <td>93aee83d-c391-4422-be34-b6e4144b525c</td>
     </tr>
     <tr>
       <th>2</th>
       <td>POINT (-76.69369 38.95592)</td>
       <td>10f75368-e5d4-4b6a-a4a7-ec3f00f906b7</td>
+      <td>MeanGageHeight</td>
       <td>53fb2518-fafa-3f15-e053-0100007fbbce</td>
       <td>00065</td>
       <td>USGS-01594440</td>
@@ -1115,20 +1224,23 @@ Retrieved 976 data values.
       <td>None</td>
       <td>2.76</td>
       <td>ft</td>
-      <td>1955-05-04 21:05:00+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
-      <td>2026-06-10 10:55:31.033760+00:00</td>
+      <td>2026-06-11 12:25:29.250421+00:00</td>
       <td>Clear</td>
       <td>Fair</td>
-      <td>129f6da2-a345-4f16-bd74-6ccf0fb1f820</td>
+      <td>1955</td>
+      <td>5</td>
+      <td>4</td>
+      <td>21:05:00+00:00</td>
+      <td>2a13de67-5ffe-4923-a183-4a67741b1bd4</td>
     </tr>
     <tr>
       <th>3</th>
       <td>POINT (-76.69369 38.95592)</td>
       <td>af34921e-31ca-46f0-afad-731e7ab10cae</td>
+      <td>Discharge</td>
       <td>53fb2518-fafa-3f15-e053-0100007fbbce</td>
       <td>00060</td>
       <td>USGS-01594440</td>
@@ -1136,20 +1248,23 @@ Retrieved 976 data values.
       <td>Unspecified</td>
       <td>127.00</td>
       <td>ft^3/s</td>
-      <td>1955-05-04 21:05:00+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
-      <td>2026-06-10 10:55:31.033760+00:00</td>
+      <td>2026-06-11 12:25:29.250421+00:00</td>
       <td>Clear</td>
       <td>Fair</td>
-      <td>8c772627-3dac-4e2e-9969-8eaf7dc94d81</td>
+      <td>1955</td>
+      <td>5</td>
+      <td>4</td>
+      <td>21:05:00+00:00</td>
+      <td>73321d7b-a26f-46cc-9392-e79fad41a36c</td>
     </tr>
     <tr>
       <th>4</th>
       <td>POINT (-76.69369 38.95592)</td>
       <td>af34921e-31ca-46f0-afad-731e7ab10cae</td>
+      <td>Discharge</td>
       <td>53fb2a2a-6d26-3f11-e053-0100007f0ef5</td>
       <td>00060</td>
       <td>USGS-01594440</td>
@@ -1157,15 +1272,17 @@ Retrieved 976 data values.
       <td>Unspecified</td>
       <td>310.00</td>
       <td>ft^3/s</td>
-      <td>1955-06-10 13:35:00+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
-      <td>2026-06-10 10:55:31.033760+00:00</td>
+      <td>2026-06-11 12:25:29.250421+00:00</td>
       <td>Clear</td>
       <td>Good</td>
-      <td>714a2e7e-3569-4bbe-abfc-ea36172a47fa</td>
+      <td>1955</td>
+      <td>6</td>
+      <td>10</td>
+      <td>13:35:00+00:00</td>
+      <td>080b011e-91b9-4c77-af83-c49c59a48562</td>
     </tr>
     <tr>
       <th>...</th>
@@ -1187,95 +1304,15 @@ Retrieved 976 data values.
       <td>...</td>
       <td>...</td>
       <td>...</td>
-    </tr>
-    <tr>
-      <th>971</th>
-      <td>POINT (-76.69369 38.95592)</td>
-      <td>af34921e-31ca-46f0-afad-731e7ab10cae</td>
-      <td>25d5d229-9953-4096-8c53-7f62965975a8</td>
-      <td>00060</td>
-      <td>USGS-01594440</td>
-      <td>Z</td>
-      <td>Acoustic Doppler Current Profiler</td>
-      <td>122.00</td>
-      <td>ft^3/s</td>
-      <td>2026-01-07 16:40:27+00:00</td>
-      <td>None</td>
-      <td>None</td>
-      <td>Approved</td>
-      <td>USGS</td>
-      <td>2026-06-10 10:55:31.033760+00:00</td>
-      <td>Clear</td>
-      <td>Fair</td>
-      <td>d50d09d2-0cbe-402d-8c9c-c96384f2f139</td>
-    </tr>
-    <tr>
-      <th>972</th>
-      <td>POINT (-76.69369 38.95592)</td>
-      <td>af34921e-31ca-46f0-afad-731e7ab10cae</td>
-      <td>1cef619c-e54c-4d50-8f72-8a7067de4e15</td>
-      <td>00060</td>
-      <td>USGS-01594440</td>
-      <td>Z</td>
-      <td>Acoustic Doppler Current Profiler</td>
-      <td>219.00</td>
-      <td>ft^3/s</td>
-      <td>2026-03-23 15:23:18+00:00</td>
-      <td>None</td>
-      <td>None</td>
-      <td>Provisional</td>
-      <td>USGS</td>
-      <td>2026-06-10 10:55:31.033760+00:00</td>
-      <td>Debris - Light</td>
-      <td>Fair</td>
-      <td>6ce8eabe-2ac7-46c0-9b6f-fe5ccdc1b37b</td>
-    </tr>
-    <tr>
-      <th>973</th>
-      <td>POINT (-76.69369 38.95592)</td>
-      <td>10f75368-e5d4-4b6a-a4a7-ec3f00f906b7</td>
-      <td>1cef619c-e54c-4d50-8f72-8a7067de4e15</td>
-      <td>00065</td>
-      <td>USGS-01594440</td>
-      <td>Z</td>
-      <td>None</td>
-      <td>4.99</td>
-      <td>ft</td>
-      <td>2026-03-23 15:23:18+00:00</td>
-      <td>None</td>
-      <td>None</td>
-      <td>Provisional</td>
-      <td>USGS</td>
-      <td>2026-06-10 10:55:31.033760+00:00</td>
-      <td>Debris - Light</td>
-      <td>Fair</td>
-      <td>7b3e320e-36c6-4201-bdb5-a871012f82f6</td>
-    </tr>
-    <tr>
-      <th>974</th>
-      <td>POINT (-76.69369 38.95592)</td>
-      <td>10f75368-e5d4-4b6a-a4a7-ec3f00f906b7</td>
-      <td>53cd995f-745d-4342-bbb8-2c3a294fc56a</td>
-      <td>00065</td>
-      <td>USGS-01594440</td>
-      <td>Z</td>
-      <td>None</td>
-      <td>4.24</td>
-      <td>ft</td>
-      <td>2026-05-20 15:33:18+00:00</td>
-      <td>None</td>
-      <td>None</td>
-      <td>Provisional</td>
-      <td>USGS</td>
-      <td>2026-06-10 10:55:31.033760+00:00</td>
-      <td>Clear</td>
-      <td>Fair</td>
-      <td>11c4edcc-ee8e-41b1-a7a0-27ef11428901</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
     </tr>
     <tr>
       <th>975</th>
       <td>POINT (-76.69369 38.95592)</td>
       <td>af34921e-31ca-46f0-afad-731e7ab10cae</td>
+      <td>Discharge</td>
       <td>53cd995f-745d-4342-bbb8-2c3a294fc56a</td>
       <td>00060</td>
       <td>USGS-01594440</td>
@@ -1283,19 +1320,117 @@ Retrieved 976 data values.
       <td>Acoustic Doppler Current Profiler</td>
       <td>121.00</td>
       <td>ft^3/s</td>
-      <td>2026-05-20 15:33:18+00:00</td>
-      <td>None</td>
-      <td>None</td>
+      <td>...</td>
       <td>Provisional</td>
       <td>USGS</td>
-      <td>2026-06-10 10:55:31.033760+00:00</td>
+      <td>2026-06-11 12:25:29.250421+00:00</td>
       <td>Clear</td>
       <td>Fair</td>
-      <td>76ac5d17-9b3b-499e-af4e-0cc1426f1a1e</td>
+      <td>2026</td>
+      <td>5</td>
+      <td>20</td>
+      <td>15:33:18+00:00</td>
+      <td>b155341c-9eb0-4d89-a82c-7a825769eb5c</td>
+    </tr>
+    <tr>
+      <th>976</th>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>10f75368-e5d4-4b6a-a4a7-ec3f00f906b7</td>
+      <td>MeanGageHeight</td>
+      <td>0f32679d-5358-4d28-9ed9-6900c09f1b81</td>
+      <td>00065</td>
+      <td>USGS-01594440</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>4.23</td>
+      <td>ft</td>
+      <td>...</td>
+      <td>Provisional</td>
+      <td>USGS</td>
+      <td>2026-06-11 12:25:29.250421+00:00</td>
+      <td>Clear</td>
+      <td>Fair</td>
+      <td>2026</td>
+      <td>6</td>
+      <td>10</td>
+      <td>17:19:17+00:00</td>
+      <td>0a7a8ee3-3606-4075-9599-210f899afacb</td>
+    </tr>
+    <tr>
+      <th>977</th>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>af34921e-31ca-46f0-afad-731e7ab10cae</td>
+      <td>Discharge</td>
+      <td>0f32679d-5358-4d28-9ed9-6900c09f1b81</td>
+      <td>00060</td>
+      <td>USGS-01594440</td>
+      <td>Z</td>
+      <td>Acoustic Doppler Current Profiler</td>
+      <td>124.00</td>
+      <td>ft^3/s</td>
+      <td>...</td>
+      <td>Provisional</td>
+      <td>USGS</td>
+      <td>2026-06-11 12:25:29.250421+00:00</td>
+      <td>Clear</td>
+      <td>Fair</td>
+      <td>2026</td>
+      <td>6</td>
+      <td>10</td>
+      <td>17:19:17+00:00</td>
+      <td>888d6076-ae7b-496d-b4bb-edfb3a091d63</td>
+    </tr>
+    <tr>
+      <th>978</th>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>af34921e-31ca-46f0-afad-731e7ab10cae</td>
+      <td>Discharge</td>
+      <td>0f32679d-5358-4d28-9ed9-6900c09f1b81</td>
+      <td>00060</td>
+      <td>USGS-01594440</td>
+      <td>Z</td>
+      <td>Acoustic Doppler Current Profiler</td>
+      <td>124.00</td>
+      <td>ft^3/s</td>
+      <td>...</td>
+      <td>Provisional</td>
+      <td>USGS</td>
+      <td>2026-06-11 12:25:29.250421+00:00</td>
+      <td>Clear</td>
+      <td>Fair</td>
+      <td>2026</td>
+      <td>6</td>
+      <td>10</td>
+      <td>18:18:21+00:00</td>
+      <td>5d6e6e9b-4eaa-42ef-b9ba-4535d012d8a9</td>
+    </tr>
+    <tr>
+      <th>979</th>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>10f75368-e5d4-4b6a-a4a7-ec3f00f906b7</td>
+      <td>MeanGageHeight</td>
+      <td>0f32679d-5358-4d28-9ed9-6900c09f1b81</td>
+      <td>00065</td>
+      <td>USGS-01594440</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>4.25</td>
+      <td>ft</td>
+      <td>...</td>
+      <td>Provisional</td>
+      <td>USGS</td>
+      <td>2026-06-11 12:25:29.250421+00:00</td>
+      <td>Clear</td>
+      <td>Fair</td>
+      <td>2026</td>
+      <td>6</td>
+      <td>10</td>
+      <td>18:18:21+00:00</td>
+      <td>e6a81b16-42cf-498d-bc06-53ac5e52fb55</td>
     </tr>
   </tbody>
 </table>
-<p>976 rows × 18 columns</p>
+<p>980 rows × 23 columns</p>
 </div></div>
 </div>
 </section>

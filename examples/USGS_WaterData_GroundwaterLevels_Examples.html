@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package Groundwater-Level get_field_measurements() Examples &mdash; dataretrieval 0.1.dev1+g4b7464fe5 documentation</title>
+  <title>USGS dataretrieval Python Package Groundwater-Level get_field_measurements() Examples &mdash; dataretrieval 0.1.dev1+g3e56b62b1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=76177908"></script>
+      <script src="../_static/documentation_options.js?v=83dbc336"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -127,7 +127,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g4b7464fe5)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (0.1.dev1+g3e56b62b1)
 Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
 Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.3)
 Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.4.6)
@@ -230,6 +230,7 @@ Retrieved 744 data values.
       <th></th>
       <th>geometry</th>
       <th>field_measurements_series_id</th>
+      <th>reading_type</th>
       <th>field_visit_id</th>
       <th>parameter_code</th>
       <th>monitoring_location_id</th>
@@ -237,14 +238,16 @@ Retrieved 744 data values.
       <th>observing_procedure</th>
       <th>value</th>
       <th>unit_of_measure</th>
-      <th>time</th>
-      <th>qualifier</th>
-      <th>vertical_datum</th>
+      <th>...</th>
       <th>approval_status</th>
       <th>measuring_agency</th>
       <th>last_modified</th>
       <th>control_condition</th>
       <th>measurement_rated</th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>time_of_day</th>
       <th>field_measurement_id</th>
     </tr>
   </thead>
@@ -253,6 +256,7 @@ Retrieved 744 data values.
       <th>0</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>df253a1c-d93c-4c08-ac49-6cbdc309712a</td>
+      <td>ReferencePrimary</td>
       <td>c722cb49-bca8-446f-9b4d-3b152729bb39</td>
       <td>62610</td>
       <td>USGS-434400121275801</td>
@@ -260,20 +264,23 @@ Retrieved 744 data values.
       <td>GW level, estim, report, observ</td>
       <td>4192.65</td>
       <td>ft</td>
-      <td>1945-10-12 22:35:00+00:00</td>
-      <td>[Static]</td>
-      <td>NGVD29</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>1945</td>
+      <td>10</td>
+      <td>12</td>
+      <td>22:35:00+00:00</td>
       <td>1c77fe40-58ac-4923-a4db-05f6d0ebb147</td>
     </tr>
     <tr>
       <th>1</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>7e4dd765-b0ea-485b-915c-b89eeb86c83e</td>
+      <td>ReferencePrimary</td>
       <td>c722cb49-bca8-446f-9b4d-3b152729bb39</td>
       <td>62611</td>
       <td>USGS-434400121275801</td>
@@ -281,20 +288,23 @@ Retrieved 744 data values.
       <td>GW level, estim, report, observ</td>
       <td>4196.67</td>
       <td>ft</td>
-      <td>1945-10-12 22:35:00+00:00</td>
-      <td>[Static]</td>
-      <td>NAVD88</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>1945</td>
+      <td>10</td>
+      <td>12</td>
+      <td>22:35:00+00:00</td>
       <td>2980c321-aeff-442b-a665-8358a8fc0496</td>
     </tr>
     <tr>
       <th>2</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>f997334d-2dc4-49ff-8fab-2e6d2d7c501e</td>
+      <td>ReferencePrimary</td>
       <td>c722cb49-bca8-446f-9b4d-3b152729bb39</td>
       <td>72019</td>
       <td>USGS-434400121275801</td>
@@ -302,20 +312,23 @@ Retrieved 744 data values.
       <td>GW level, estim, report, observ</td>
       <td>27.35</td>
       <td>ft</td>
-      <td>1945-10-12 22:35:00+00:00</td>
-      <td>[Static]</td>
-      <td>Local Assumed Datum</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>1945</td>
+      <td>10</td>
+      <td>12</td>
+      <td>22:35:00+00:00</td>
       <td>46bf0d00-0b47-4e4d-adcf-9ce1073c5cfc</td>
     </tr>
     <tr>
       <th>3</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>7e4dd765-b0ea-485b-915c-b89eeb86c83e</td>
+      <td>ReferencePrimary</td>
       <td>0217fd12-a22a-4f4f-a43c-3b9907e2fcc3</td>
       <td>62611</td>
       <td>USGS-434400121275801</td>
@@ -323,20 +336,23 @@ Retrieved 744 data values.
       <td>GW level, estim, report, observ</td>
       <td>4194.34</td>
       <td>ft</td>
-      <td>1946-07-12 12:00:00+00:00</td>
-      <td>[Static]</td>
-      <td>NAVD88</td>
+      <td>...</td>
       <td>Approved</td>
       <td>OR004</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>1946</td>
+      <td>7</td>
+      <td>12</td>
+      <td>NaN</td>
       <td>92f8aaef-b563-4f7f-9b84-9796e26b2c7f</td>
     </tr>
     <tr>
       <th>4</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>df253a1c-d93c-4c08-ac49-6cbdc309712a</td>
+      <td>ReferencePrimary</td>
       <td>0217fd12-a22a-4f4f-a43c-3b9907e2fcc3</td>
       <td>62610</td>
       <td>USGS-434400121275801</td>
@@ -344,18 +360,23 @@ Retrieved 744 data values.
       <td>GW level, estim, report, observ</td>
       <td>4190.32</td>
       <td>ft</td>
-      <td>1946-07-12 12:00:00+00:00</td>
-      <td>[Static]</td>
-      <td>NGVD29</td>
+      <td>...</td>
       <td>Approved</td>
       <td>OR004</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>1946</td>
+      <td>7</td>
+      <td>12</td>
+      <td>NaN</td>
       <td>ddd35e5d-4815-4f8d-a1d2-29cd1d9bdca3</td>
     </tr>
     <tr>
       <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
       <td>...</td>
       <td>...</td>
       <td>...</td>
@@ -379,6 +400,7 @@ Retrieved 744 data values.
       <th>739</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>7e4dd765-b0ea-485b-915c-b89eeb86c83e</td>
+      <td>ReferencePrimary</td>
       <td>065dc2e2-2e2d-4f40-8d50-3cb3afd914fe</td>
       <td>62611</td>
       <td>USGS-434400121275801</td>
@@ -386,20 +408,23 @@ Retrieved 744 data values.
       <td>GW level, steel tape</td>
       <td>4195.89</td>
       <td>ft</td>
-      <td>2015-10-22 17:52:00+00:00</td>
-      <td>[Static]</td>
-      <td>NAVD88</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>2015</td>
+      <td>10</td>
+      <td>22</td>
+      <td>17:52:00+00:00</td>
       <td>bc2c0947-4aea-4bae-a345-ba11445533a6</td>
     </tr>
     <tr>
       <th>740</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>f997334d-2dc4-49ff-8fab-2e6d2d7c501e</td>
+      <td>ReferencePrimary</td>
       <td>065dc2e2-2e2d-4f40-8d50-3cb3afd914fe</td>
       <td>72019</td>
       <td>USGS-434400121275801</td>
@@ -407,20 +432,23 @@ Retrieved 744 data values.
       <td>GW level, steel tape</td>
       <td>28.13</td>
       <td>ft</td>
-      <td>2015-10-22 17:52:00+00:00</td>
-      <td>[Static]</td>
-      <td>Local Assumed Datum</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>2015</td>
+      <td>10</td>
+      <td>22</td>
+      <td>17:52:00+00:00</td>
       <td>dcfd8883-a8e7-4f5f-adbd-a5080b0c96ee</td>
     </tr>
     <tr>
       <th>741</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>f997334d-2dc4-49ff-8fab-2e6d2d7c501e</td>
+      <td>ReferencePrimary</td>
       <td>7b45dc93-704a-4b0d-9772-692a09abc95a</td>
       <td>72019</td>
       <td>USGS-434400121275801</td>
@@ -428,20 +456,23 @@ Retrieved 744 data values.
       <td>GW level, steel tape</td>
       <td>28.33</td>
       <td>ft</td>
-      <td>2016-10-26 16:22:00+00:00</td>
-      <td>[Static]</td>
-      <td>Local Assumed Datum</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>2016</td>
+      <td>10</td>
+      <td>26</td>
+      <td>16:22:00+00:00</td>
       <td>8bf92ece-bf8d-44b0-8a50-0bbb9fb2badc</td>
     </tr>
     <tr>
       <th>742</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>df253a1c-d93c-4c08-ac49-6cbdc309712a</td>
+      <td>ReferencePrimary</td>
       <td>7b45dc93-704a-4b0d-9772-692a09abc95a</td>
       <td>62610</td>
       <td>USGS-434400121275801</td>
@@ -449,20 +480,23 @@ Retrieved 744 data values.
       <td>GW level, steel tape</td>
       <td>4191.67</td>
       <td>ft</td>
-      <td>2016-10-26 16:22:00+00:00</td>
-      <td>[Static]</td>
-      <td>NGVD29</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>2016</td>
+      <td>10</td>
+      <td>26</td>
+      <td>16:22:00+00:00</td>
       <td>8cb0f8e4-642e-49db-acea-a724bcf13e7f</td>
     </tr>
     <tr>
       <th>743</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>7e4dd765-b0ea-485b-915c-b89eeb86c83e</td>
+      <td>ReferencePrimary</td>
       <td>7b45dc93-704a-4b0d-9772-692a09abc95a</td>
       <td>62611</td>
       <td>USGS-434400121275801</td>
@@ -470,19 +504,21 @@ Retrieved 744 data values.
       <td>GW level, steel tape</td>
       <td>4195.69</td>
       <td>ft</td>
-      <td>2016-10-26 16:22:00+00:00</td>
-      <td>[Static]</td>
-      <td>NAVD88</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>2016</td>
+      <td>10</td>
+      <td>26</td>
+      <td>16:22:00+00:00</td>
       <td>c70d9c80-1048-4b12-ba30-e43ef77d4dad</td>
     </tr>
   </tbody>
 </table>
-<p>744 rows × 18 columns</p>
+<p>744 rows × 23 columns</p>
 </div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
@@ -501,6 +537,7 @@ Retrieved 744 data values.
 <div class="highlight"><pre>
 geometry                                   geometry
 field_measurements_series_id                    str
+reading_type                                    str
 field_visit_id                                  str
 parameter_code                                  str
 monitoring_location_id                          str
@@ -516,6 +553,10 @@ measuring_agency                                str
 last_modified                   datetime64[us, UTC]
 control_condition                            object
 measurement_rated                            object
+year                                          int64
+month                                         int64
+day                                           int64
+time_of_day                                     str
 field_measurement_id                            str
 dtype: object
 </pre></div></div>
@@ -648,6 +689,7 @@ Retrieved 933 data values.
       <th></th>
       <th>geometry</th>
       <th>field_measurements_series_id</th>
+      <th>reading_type</th>
       <th>field_visit_id</th>
       <th>parameter_code</th>
       <th>monitoring_location_id</th>
@@ -655,14 +697,16 @@ Retrieved 933 data values.
       <th>observing_procedure</th>
       <th>value</th>
       <th>unit_of_measure</th>
-      <th>time</th>
-      <th>qualifier</th>
-      <th>vertical_datum</th>
+      <th>...</th>
       <th>approval_status</th>
       <th>measuring_agency</th>
       <th>last_modified</th>
       <th>control_condition</th>
       <th>measurement_rated</th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>time_of_day</th>
       <th>field_measurement_id</th>
     </tr>
   </thead>
@@ -671,6 +715,7 @@ Retrieved 933 data values.
       <th>0</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>df253a1c-d93c-4c08-ac49-6cbdc309712a</td>
+      <td>ReferencePrimary</td>
       <td>c722cb49-bca8-446f-9b4d-3b152729bb39</td>
       <td>62610</td>
       <td>USGS-434400121275801</td>
@@ -678,20 +723,23 @@ Retrieved 933 data values.
       <td>GW level, estim, report, observ</td>
       <td>4192.65</td>
       <td>ft</td>
-      <td>1945-10-12 22:35:00+00:00</td>
-      <td>[Static]</td>
-      <td>NGVD29</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>1945</td>
+      <td>10</td>
+      <td>12</td>
+      <td>22:35:00+00:00</td>
       <td>1c77fe40-58ac-4923-a4db-05f6d0ebb147</td>
     </tr>
     <tr>
       <th>1</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>7e4dd765-b0ea-485b-915c-b89eeb86c83e</td>
+      <td>ReferencePrimary</td>
       <td>c722cb49-bca8-446f-9b4d-3b152729bb39</td>
       <td>62611</td>
       <td>USGS-434400121275801</td>
@@ -699,20 +747,23 @@ Retrieved 933 data values.
       <td>GW level, estim, report, observ</td>
       <td>4196.67</td>
       <td>ft</td>
-      <td>1945-10-12 22:35:00+00:00</td>
-      <td>[Static]</td>
-      <td>NAVD88</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>1945</td>
+      <td>10</td>
+      <td>12</td>
+      <td>22:35:00+00:00</td>
       <td>2980c321-aeff-442b-a665-8358a8fc0496</td>
     </tr>
     <tr>
       <th>2</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>f997334d-2dc4-49ff-8fab-2e6d2d7c501e</td>
+      <td>ReferencePrimary</td>
       <td>c722cb49-bca8-446f-9b4d-3b152729bb39</td>
       <td>72019</td>
       <td>USGS-434400121275801</td>
@@ -720,20 +771,23 @@ Retrieved 933 data values.
       <td>GW level, estim, report, observ</td>
       <td>27.35</td>
       <td>ft</td>
-      <td>1945-10-12 22:35:00+00:00</td>
-      <td>[Static]</td>
-      <td>Local Assumed Datum</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>1945</td>
+      <td>10</td>
+      <td>12</td>
+      <td>22:35:00+00:00</td>
       <td>46bf0d00-0b47-4e4d-adcf-9ce1073c5cfc</td>
     </tr>
     <tr>
       <th>3</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>7e4dd765-b0ea-485b-915c-b89eeb86c83e</td>
+      <td>ReferencePrimary</td>
       <td>0217fd12-a22a-4f4f-a43c-3b9907e2fcc3</td>
       <td>62611</td>
       <td>USGS-434400121275801</td>
@@ -741,20 +795,23 @@ Retrieved 933 data values.
       <td>GW level, estim, report, observ</td>
       <td>4194.34</td>
       <td>ft</td>
-      <td>1946-07-12 12:00:00+00:00</td>
-      <td>[Static]</td>
-      <td>NAVD88</td>
+      <td>...</td>
       <td>Approved</td>
       <td>OR004</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>1946</td>
+      <td>7</td>
+      <td>12</td>
+      <td>NaN</td>
       <td>92f8aaef-b563-4f7f-9b84-9796e26b2c7f</td>
     </tr>
     <tr>
       <th>4</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>df253a1c-d93c-4c08-ac49-6cbdc309712a</td>
+      <td>ReferencePrimary</td>
       <td>0217fd12-a22a-4f4f-a43c-3b9907e2fcc3</td>
       <td>62610</td>
       <td>USGS-434400121275801</td>
@@ -762,18 +819,23 @@ Retrieved 933 data values.
       <td>GW level, estim, report, observ</td>
       <td>4190.32</td>
       <td>ft</td>
-      <td>1946-07-12 12:00:00+00:00</td>
-      <td>[Static]</td>
-      <td>NGVD29</td>
+      <td>...</td>
       <td>Approved</td>
       <td>OR004</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>1946</td>
+      <td>7</td>
+      <td>12</td>
+      <td>NaN</td>
       <td>ddd35e5d-4815-4f8d-a1d2-29cd1d9bdca3</td>
     </tr>
     <tr>
       <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
       <td>...</td>
       <td>...</td>
       <td>...</td>
@@ -797,6 +859,7 @@ Retrieved 933 data values.
       <th>928</th>
       <td>POINT (-91.72294 37.98615)</td>
       <td>ca0f3961-1a5e-4961-bf55-fd6ac787c98d</td>
+      <td>ReferencePrimary</td>
       <td>48bfbbaa-5db8-4ba2-9e90-742166552bec</td>
       <td>72019</td>
       <td>USGS-375907091432201</td>
@@ -804,20 +867,23 @@ Retrieved 933 data values.
       <td>GW level, calib electric tape</td>
       <td>310.46</td>
       <td>ft</td>
-      <td>2020-06-19 16:04:00+00:00</td>
-      <td>[Static]</td>
-      <td>Local Assumed Datum</td>
+      <td>...</td>
       <td>Approved</td>
       <td>MO005</td>
       <td>2026-05-24 03:45:01.382842+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>2020</td>
+      <td>6</td>
+      <td>19</td>
+      <td>16:04:00+00:00</td>
       <td>86a25600-2327-4ded-802e-49da0cda3f0f</td>
     </tr>
     <tr>
       <th>929</th>
       <td>POINT (-91.72294 37.98615)</td>
       <td>a2831c0f-120e-4d81-85e0-2a075f3efe93</td>
+      <td>ReferencePrimary</td>
       <td>48bfbbaa-5db8-4ba2-9e90-742166552bec</td>
       <td>62610</td>
       <td>USGS-375907091432201</td>
@@ -825,20 +891,23 @@ Retrieved 933 data values.
       <td>GW level, calib electric tape</td>
       <td>878.54</td>
       <td>ft</td>
-      <td>2020-06-19 16:04:00+00:00</td>
-      <td>[Static]</td>
-      <td>NGVD29</td>
+      <td>...</td>
       <td>Approved</td>
       <td>MO005</td>
       <td>2026-05-24 03:45:01.382842+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>2020</td>
+      <td>6</td>
+      <td>19</td>
+      <td>16:04:00+00:00</td>
       <td>a4c2a304-dcdd-4dc7-abca-84327b0c9f6b</td>
     </tr>
     <tr>
       <th>930</th>
       <td>POINT (-91.72294 37.98615)</td>
       <td>ca0f3961-1a5e-4961-bf55-fd6ac787c98d</td>
+      <td>ReferencePrimary</td>
       <td>68eeb933-ea4d-4e8c-be48-605c06cb36fc</td>
       <td>72019</td>
       <td>USGS-375907091432201</td>
@@ -846,20 +915,23 @@ Retrieved 933 data values.
       <td>GW level, calib electric tape</td>
       <td>313.48</td>
       <td>ft</td>
-      <td>2020-08-31 13:00:00+00:00</td>
-      <td>[Static]</td>
-      <td>Local Assumed Datum</td>
+      <td>...</td>
       <td>Approved</td>
       <td>MO005</td>
       <td>2026-05-24 03:45:01.382842+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>2020</td>
+      <td>8</td>
+      <td>31</td>
+      <td>13:00:00+00:00</td>
       <td>6b812ee5-8821-44fb-93cc-2884257c99bb</td>
     </tr>
     <tr>
       <th>931</th>
       <td>POINT (-91.72294 37.98615)</td>
       <td>4313fc31-8700-42b7-99fd-87076c30d305</td>
+      <td>ReferencePrimary</td>
       <td>68eeb933-ea4d-4e8c-be48-605c06cb36fc</td>
       <td>62611</td>
       <td>USGS-375907091432201</td>
@@ -867,20 +939,23 @@ Retrieved 933 data values.
       <td>GW level, calib electric tape</td>
       <td>875.66</td>
       <td>ft</td>
-      <td>2020-08-31 13:00:00+00:00</td>
-      <td>[Static]</td>
-      <td>NAVD88</td>
+      <td>...</td>
       <td>Approved</td>
       <td>MO005</td>
       <td>2026-05-24 03:45:01.382842+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>2020</td>
+      <td>8</td>
+      <td>31</td>
+      <td>13:00:00+00:00</td>
       <td>7bbcdb45-2154-4fe3-aee7-c3e2bba2bb9b</td>
     </tr>
     <tr>
       <th>932</th>
       <td>POINT (-91.72294 37.98615)</td>
       <td>a2831c0f-120e-4d81-85e0-2a075f3efe93</td>
+      <td>ReferencePrimary</td>
       <td>68eeb933-ea4d-4e8c-be48-605c06cb36fc</td>
       <td>62610</td>
       <td>USGS-375907091432201</td>
@@ -888,19 +963,21 @@ Retrieved 933 data values.
       <td>GW level, calib electric tape</td>
       <td>875.52</td>
       <td>ft</td>
-      <td>2020-08-31 13:00:00+00:00</td>
-      <td>[Static]</td>
-      <td>NGVD29</td>
+      <td>...</td>
       <td>Approved</td>
       <td>MO005</td>
       <td>2026-05-24 03:45:01.382842+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>2020</td>
+      <td>8</td>
+      <td>31</td>
+      <td>13:00:00+00:00</td>
       <td>83f31c13-a956-4b43-aa3a-e9cdfe7d674d</td>
     </tr>
   </tbody>
 </table>
-<p>933 rows × 18 columns</p>
+<p>933 rows × 23 columns</p>
 </div></div>
 </div>
 <p>The following example requests the same data as the previous example, again passing the monitoring location ids as a list of strings.</p>
@@ -955,6 +1032,7 @@ Retrieved 933 data values.
       <th></th>
       <th>geometry</th>
       <th>field_measurements_series_id</th>
+      <th>reading_type</th>
       <th>field_visit_id</th>
       <th>parameter_code</th>
       <th>monitoring_location_id</th>
@@ -962,14 +1040,16 @@ Retrieved 933 data values.
       <th>observing_procedure</th>
       <th>value</th>
       <th>unit_of_measure</th>
-      <th>time</th>
-      <th>qualifier</th>
-      <th>vertical_datum</th>
+      <th>...</th>
       <th>approval_status</th>
       <th>measuring_agency</th>
       <th>last_modified</th>
       <th>control_condition</th>
       <th>measurement_rated</th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>time_of_day</th>
       <th>field_measurement_id</th>
     </tr>
   </thead>
@@ -978,6 +1058,7 @@ Retrieved 933 data values.
       <th>0</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>df253a1c-d93c-4c08-ac49-6cbdc309712a</td>
+      <td>ReferencePrimary</td>
       <td>c722cb49-bca8-446f-9b4d-3b152729bb39</td>
       <td>62610</td>
       <td>USGS-434400121275801</td>
@@ -985,20 +1066,23 @@ Retrieved 933 data values.
       <td>GW level, estim, report, observ</td>
       <td>4192.65</td>
       <td>ft</td>
-      <td>1945-10-12 22:35:00+00:00</td>
-      <td>[Static]</td>
-      <td>NGVD29</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>1945</td>
+      <td>10</td>
+      <td>12</td>
+      <td>22:35:00+00:00</td>
       <td>1c77fe40-58ac-4923-a4db-05f6d0ebb147</td>
     </tr>
     <tr>
       <th>1</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>7e4dd765-b0ea-485b-915c-b89eeb86c83e</td>
+      <td>ReferencePrimary</td>
       <td>c722cb49-bca8-446f-9b4d-3b152729bb39</td>
       <td>62611</td>
       <td>USGS-434400121275801</td>
@@ -1006,20 +1090,23 @@ Retrieved 933 data values.
       <td>GW level, estim, report, observ</td>
       <td>4196.67</td>
       <td>ft</td>
-      <td>1945-10-12 22:35:00+00:00</td>
-      <td>[Static]</td>
-      <td>NAVD88</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>1945</td>
+      <td>10</td>
+      <td>12</td>
+      <td>22:35:00+00:00</td>
       <td>2980c321-aeff-442b-a665-8358a8fc0496</td>
     </tr>
     <tr>
       <th>2</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>f997334d-2dc4-49ff-8fab-2e6d2d7c501e</td>
+      <td>ReferencePrimary</td>
       <td>c722cb49-bca8-446f-9b4d-3b152729bb39</td>
       <td>72019</td>
       <td>USGS-434400121275801</td>
@@ -1027,20 +1114,23 @@ Retrieved 933 data values.
       <td>GW level, estim, report, observ</td>
       <td>27.35</td>
       <td>ft</td>
-      <td>1945-10-12 22:35:00+00:00</td>
-      <td>[Static]</td>
-      <td>Local Assumed Datum</td>
+      <td>...</td>
       <td>Approved</td>
       <td>USGS</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>1945</td>
+      <td>10</td>
+      <td>12</td>
+      <td>22:35:00+00:00</td>
       <td>46bf0d00-0b47-4e4d-adcf-9ce1073c5cfc</td>
     </tr>
     <tr>
       <th>3</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>7e4dd765-b0ea-485b-915c-b89eeb86c83e</td>
+      <td>ReferencePrimary</td>
       <td>0217fd12-a22a-4f4f-a43c-3b9907e2fcc3</td>
       <td>62611</td>
       <td>USGS-434400121275801</td>
@@ -1048,20 +1138,23 @@ Retrieved 933 data values.
       <td>GW level, estim, report, observ</td>
       <td>4194.34</td>
       <td>ft</td>
-      <td>1946-07-12 12:00:00+00:00</td>
-      <td>[Static]</td>
-      <td>NAVD88</td>
+      <td>...</td>
       <td>Approved</td>
       <td>OR004</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>1946</td>
+      <td>7</td>
+      <td>12</td>
+      <td>NaN</td>
       <td>92f8aaef-b563-4f7f-9b84-9796e26b2c7f</td>
     </tr>
     <tr>
       <th>4</th>
       <td>POINT (-121.46711 43.73345)</td>
       <td>df253a1c-d93c-4c08-ac49-6cbdc309712a</td>
+      <td>ReferencePrimary</td>
       <td>0217fd12-a22a-4f4f-a43c-3b9907e2fcc3</td>
       <td>62610</td>
       <td>USGS-434400121275801</td>
@@ -1069,18 +1162,23 @@ Retrieved 933 data values.
       <td>GW level, estim, report, observ</td>
       <td>4190.32</td>
       <td>ft</td>
-      <td>1946-07-12 12:00:00+00:00</td>
-      <td>[Static]</td>
-      <td>NGVD29</td>
+      <td>...</td>
       <td>Approved</td>
       <td>OR004</td>
       <td>2026-05-09 02:57:58.983507+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>1946</td>
+      <td>7</td>
+      <td>12</td>
+      <td>NaN</td>
       <td>ddd35e5d-4815-4f8d-a1d2-29cd1d9bdca3</td>
     </tr>
     <tr>
       <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
       <td>...</td>
       <td>...</td>
       <td>...</td>
@@ -1104,6 +1202,7 @@ Retrieved 933 data values.
       <th>928</th>
       <td>POINT (-91.72294 37.98615)</td>
       <td>ca0f3961-1a5e-4961-bf55-fd6ac787c98d</td>
+      <td>ReferencePrimary</td>
       <td>48bfbbaa-5db8-4ba2-9e90-742166552bec</td>
       <td>72019</td>
       <td>USGS-375907091432201</td>
@@ -1111,20 +1210,23 @@ Retrieved 933 data values.
       <td>GW level, calib electric tape</td>
       <td>310.46</td>
       <td>ft</td>
-      <td>2020-06-19 16:04:00+00:00</td>
-      <td>[Static]</td>
-      <td>Local Assumed Datum</td>
+      <td>...</td>
       <td>Approved</td>
       <td>MO005</td>
       <td>2026-05-24 03:45:01.382842+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>2020</td>
+      <td>6</td>
+      <td>19</td>
+      <td>16:04:00+00:00</td>
       <td>86a25600-2327-4ded-802e-49da0cda3f0f</td>
     </tr>
     <tr>
       <th>929</th>
       <td>POINT (-91.72294 37.98615)</td>
       <td>a2831c0f-120e-4d81-85e0-2a075f3efe93</td>
+      <td>ReferencePrimary</td>
       <td>48bfbbaa-5db8-4ba2-9e90-742166552bec</td>
       <td>62610</td>
       <td>USGS-375907091432201</td>
@@ -1132,20 +1234,23 @@ Retrieved 933 data values.
       <td>GW level, calib electric tape</td>
       <td>878.54</td>
       <td>ft</td>
-      <td>2020-06-19 16:04:00+00:00</td>
-      <td>[Static]</td>
-      <td>NGVD29</td>
+      <td>...</td>
       <td>Approved</td>
       <td>MO005</td>
       <td>2026-05-24 03:45:01.382842+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>2020</td>
+      <td>6</td>
+      <td>19</td>
+      <td>16:04:00+00:00</td>
       <td>a4c2a304-dcdd-4dc7-abca-84327b0c9f6b</td>
     </tr>
     <tr>
       <th>930</th>
       <td>POINT (-91.72294 37.98615)</td>
       <td>ca0f3961-1a5e-4961-bf55-fd6ac787c98d</td>
+      <td>ReferencePrimary</td>
       <td>68eeb933-ea4d-4e8c-be48-605c06cb36fc</td>
       <td>72019</td>
       <td>USGS-375907091432201</td>
@@ -1153,20 +1258,23 @@ Retrieved 933 data values.
       <td>GW level, calib electric tape</td>
       <td>313.48</td>
       <td>ft</td>
-      <td>2020-08-31 13:00:00+00:00</td>
-      <td>[Static]</td>
-      <td>Local Assumed Datum</td>
+      <td>...</td>
       <td>Approved</td>
       <td>MO005</td>
       <td>2026-05-24 03:45:01.382842+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>2020</td>
+      <td>8</td>
+      <td>31</td>
+      <td>13:00:00+00:00</td>
       <td>6b812ee5-8821-44fb-93cc-2884257c99bb</td>
     </tr>
     <tr>
       <th>931</th>
       <td>POINT (-91.72294 37.98615)</td>
       <td>4313fc31-8700-42b7-99fd-87076c30d305</td>
+      <td>ReferencePrimary</td>
       <td>68eeb933-ea4d-4e8c-be48-605c06cb36fc</td>
       <td>62611</td>
       <td>USGS-375907091432201</td>
@@ -1174,20 +1282,23 @@ Retrieved 933 data values.
       <td>GW level, calib electric tape</td>
       <td>875.66</td>
       <td>ft</td>
-      <td>2020-08-31 13:00:00+00:00</td>
-      <td>[Static]</td>
-      <td>NAVD88</td>
+      <td>...</td>
       <td>Approved</td>
       <td>MO005</td>
       <td>2026-05-24 03:45:01.382842+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>2020</td>
+      <td>8</td>
+      <td>31</td>
+      <td>13:00:00+00:00</td>
       <td>7bbcdb45-2154-4fe3-aee7-c3e2bba2bb9b</td>
     </tr>
     <tr>
       <th>932</th>
       <td>POINT (-91.72294 37.98615)</td>
       <td>a2831c0f-120e-4d81-85e0-2a075f3efe93</td>
+      <td>ReferencePrimary</td>
       <td>68eeb933-ea4d-4e8c-be48-605c06cb36fc</td>
       <td>62610</td>
       <td>USGS-375907091432201</td>
@@ -1195,19 +1306,21 @@ Retrieved 933 data values.
       <td>GW level, calib electric tape</td>
       <td>875.52</td>
       <td>ft</td>
-      <td>2020-08-31 13:00:00+00:00</td>
-      <td>[Static]</td>
-      <td>NGVD29</td>
+      <td>...</td>
       <td>Approved</td>
       <td>MO005</td>
       <td>2026-05-24 03:45:01.382842+00:00</td>
       <td>None</td>
       <td>None</td>
+      <td>2020</td>
+      <td>8</td>
+      <td>31</td>
+      <td>13:00:00+00:00</td>
       <td>83f31c13-a956-4b43-aa3a-e9cdfe7d674d</td>
     </tr>
   </tbody>
 </table>
-<p>933 rows × 18 columns</p>
+<p>933 rows × 23 columns</p>
 </div></div>
 </div>
 <p>Some groundwater level data have dates that include only a year or a month and year, but no day.</p>
