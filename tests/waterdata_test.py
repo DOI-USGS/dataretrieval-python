@@ -470,7 +470,8 @@ def test_get_continuous():
         time="2025-01-01/2025-12-31",
     )
     assert isinstance(df, DataFrame)
-    assert "geometry" not in df.columns
+    # ``skip_geometry`` is unset, so the server includes geometry by default.
+    assert "geometry" in df.columns
     assert (
         df["time"].dtype.name.startswith("datetime64[")
         and "UTC" in df["time"].dtype.name
