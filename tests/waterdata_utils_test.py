@@ -8,9 +8,10 @@ import httpx
 import pandas as pd
 import pytest
 
+import dataretrieval.ogc.engine as _engine_module
 import dataretrieval.waterdata.utils as _utils_module
 from dataretrieval.exceptions import DataRetrievalError, HTTPError, TransientError
-from dataretrieval.waterdata.chunking import RateLimited, ServiceUnavailable
+from dataretrieval.ogc.chunking import RateLimited, ServiceUnavailable
 from dataretrieval.waterdata.utils import (
     OGC_API_URL,
     _arrange_cols,
@@ -25,6 +26,7 @@ from dataretrieval.waterdata.utils import (
     _parse_retry_after,
     _raise_for_non_200,
     _row_cap,
+    _to_snake_case,
     _walk_pages,
     get_stats_data,
 )
@@ -551,7 +553,9 @@ def test_get_resp_data_empty_preserves_geopd_type():
 
     resp = mock.MagicMock()
     resp.json.return_value = {"numberReturned": 0, "features": [], "links": []}
-    with mock.patch.object(_utils_module, "gpd", fake_gpd, create=True):
+    # ``_get_resp_data`` lives in the engine module now, so it resolves
+    # ``gpd`` from the engine namespace — patch there, not in ``utils``.
+    with mock.patch.object(_engine_module, "gpd", fake_gpd, create=True):
         result = _get_resp_data(resp, geopd=True)
     assert isinstance(result, _Sentinel)
 
@@ -860,3 +864,21 @@ def test_check_ogc_requests_raises_typed_on_5xx(httpx_mock):
     )
     with pytest.raises(ServiceUnavailable):
         _check_ogc_requests(endpoint="daily", req_type="schema")
+
+
+@pytest.mark.parametrize(
+    "name, expected",
+    [
+        ("waterLevelObs", "water_level_obs"),  # camelCase -> snake_case
+        ("monitoring_location_id", "monitoring_location_id"),  # already snake
+        ("value", "value"),  # all-lowercase unchanged
+        ("navd88", "navd88"),  # letter/digit boundary NOT split
+        ("someField", "some_field"),  # simple camelCase
+        ("PascalCase", "pascal_case"),  # leading capital
+        # Runs of capitals are best-effort: only the lower->Upper boundary
+        # before the run is split, so the acronym stays glued to the next word.
+        ("someXMLField", "some_xmlfield"),
+    ],
+)
+def test_to_snake_case(name, expected):
+    assert _to_snake_case(name) == expected

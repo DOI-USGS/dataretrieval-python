@@ -1,4 +1,4 @@
-"""Tests for ``dataretrieval.waterdata.chunking``.
+"""Tests for ``dataretrieval.ogc.chunking``.
 
 These tests exercise the joint planner with a fake ``build_request``
 whose URL byte length is a deterministic function of its inputs:
@@ -32,9 +32,8 @@ if sys.version_info < (3, 10):
     pytest.skip("Skip entire module on Python < 3.10", allow_module_level=True)
 
 from dataretrieval.exceptions import DataRetrievalError
-from dataretrieval.waterdata import chunking as _chunking
-from dataretrieval.waterdata import utils as _utils
-from dataretrieval.waterdata.chunking import (
+from dataretrieval.ogc import chunking as _chunking
+from dataretrieval.ogc.chunking import (
     _LIST_SEP,
     _NEVER_CHUNK,
     _OR_SEP,
@@ -58,6 +57,7 @@ from dataretrieval.waterdata.chunking import (
     _safe_request_bytes,
     multi_value_chunked,
 )
+from dataretrieval.waterdata import utils as _utils
 from dataretrieval.waterdata.utils import _DATE_RANGE_PARAMS, _construct_api_requests
 
 

@@ -45,6 +45,7 @@ from dataretrieval.exceptions import (
 from . import (
     exceptions,
     nadp,
+    ngwmn,
     nwis,
     samples,
     streamstats,
@@ -55,6 +56,7 @@ from . import (
 
 __all__ = [
     # service modules
+    "ngwmn",
     "nadp",
     "nwis",
     "samples",

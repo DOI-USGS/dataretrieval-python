@@ -16,6 +16,7 @@ from urllib.parse import quote
 import httpx
 import pandas as pd
 
+from dataretrieval.ogc.filters import FILTER_LANG
 from dataretrieval.utils import (
     HTTPX_DEFAULTS,
     BaseMetadata,
@@ -23,7 +24,6 @@ from dataretrieval.utils import (
     _get,
     to_str,
 )
-from dataretrieval.waterdata.filters import FILTER_LANG
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,
     METADATA_COLLECTIONS,
@@ -200,7 +200,7 @@ def get_daily(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -408,7 +408,7 @@ def get_continuous(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -433,7 +433,7 @@ def get_continuous(
         ... )
 
         >>> # Pull several disjoint time windows in one call via a CQL
-        >>> # ``filter``. See ``dataretrieval.waterdata.filters`` for the
+        >>> # ``filter``. See ``dataretrieval.ogc.filters`` for the
         >>> # full grammar, auto-chunking, and pitfalls.
         >>> df, md = dataretrieval.waterdata.get_continuous(
         ...     monitoring_location_id="USGS-02238500",
@@ -713,7 +713,7 @@ def get_monitoring_locations(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -937,7 +937,7 @@ def get_time_series_metadata(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -1131,7 +1131,7 @@ site_type_code : string or iterable of strings, optional
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -1347,7 +1347,7 @@ def get_latest_continuous(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -1543,7 +1543,7 @@ def get_latest_daily(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -1731,7 +1731,7 @@ def get_field_measurements(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -1846,7 +1846,7 @@ def get_field_measurements_metadata(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -1969,7 +1969,7 @@ def get_peaks(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -2865,7 +2865,7 @@ def get_channel(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.

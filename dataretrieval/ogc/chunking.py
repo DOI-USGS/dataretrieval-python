@@ -75,7 +75,7 @@ from dataretrieval.exceptions import (
 )
 from dataretrieval.utils import HTTPX_DEFAULTS
 
-from . import _progress
+from . import progress as _progress
 from .filters import (
     _check_numeric_filter_pitfall,
     _is_chunkable,
@@ -352,7 +352,7 @@ def get_active_client() -> httpx.AsyncClient | None:
     Return the chunker's currently-published client, or ``None``.
 
     Used by the paginated-loop helpers (e.g.
-    :func:`dataretrieval.waterdata.utils._client_for`) to reuse the
+    :func:`dataretrieval.ogc.engine._client_for`) to reuse the
     per-call connection pool.
 
     Returns
@@ -444,7 +444,7 @@ class ChunkInterrupted(DataRetrievalError):
 
         import time
         from dataretrieval.waterdata import get_daily
-        from dataretrieval.waterdata.chunking import ChunkInterrupted
+        from dataretrieval.ogc.chunking import ChunkInterrupted
 
         try:
             df, md = get_daily(monitoring_location_id=long_list_of_sites)

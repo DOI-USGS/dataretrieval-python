@@ -173,7 +173,7 @@ class Test_error_taxonomy:
         ``except`` clause spans the legacy and waterdata subsystems, and they
         slot under the shared family bases (``HTTPError`` / ``TransientError`` /
         ``RequestTooLarge``)."""
-        from dataretrieval.waterdata.chunking import (
+        from dataretrieval.ogc.chunking import (
             ChunkInterrupted,
             RateLimited,
             ServiceUnavailable,

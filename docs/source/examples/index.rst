@@ -31,6 +31,8 @@ functions and is executed against the live USGS Water Data API.
     USGS_WaterData_DailyStatistics_Examples
     USGS_WaterData_ContinuousData_Examples
     USGS_WaterData_ReferenceLists_Examples
+    USGS_NGWMN_Examples
+    USGS_NGWMN_Examples
 
 Simple uses of the ``dataretrieval`` package
 --------------------------------------------
