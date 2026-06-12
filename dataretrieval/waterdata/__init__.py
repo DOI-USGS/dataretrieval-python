@@ -32,6 +32,13 @@ from .api import (
 )
 from .filters import FILTER_LANG
 from .nearest import get_nearest_continuous
+from .ngwmn import (
+    get_ngwmn_lithology,
+    get_ngwmn_providers,
+    get_ngwmn_sites,
+    get_ngwmn_water_level,
+    get_ngwmn_well_construction,
+)
 from .ratings import get_ratings
 from .types import (
     CODE_SERVICES,
@@ -60,6 +67,11 @@ __all__ = [
     "get_latest_daily",
     "get_monitoring_locations",
     "get_nearest_continuous",
+    "get_ngwmn_lithology",
+    "get_ngwmn_providers",
+    "get_ngwmn_sites",
+    "get_ngwmn_water_level",
+    "get_ngwmn_well_construction",
     "get_peaks",
     "get_ratings",
     "get_reference_table",
