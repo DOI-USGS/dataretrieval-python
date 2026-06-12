@@ -63,6 +63,12 @@ if not GEOPANDAS:
 BASE_URL = "https://api.waterdata.usgs.gov"
 OGC_API_VERSION = "v0"
 OGC_API_URL = f"{BASE_URL}/ogcapi/{OGC_API_VERSION}"
+# The National Ground-Water Monitoring Network (NGWMN) exposes its own OGC API
+# at a separate, unversioned base. ``get_ogc_data`` targets it by passing
+# ``base_url=NGWMN_OGC_API_URL``; the shared request builder reads the active
+# base from the ``_ogc_base_url_var`` context variable (defined with the other
+# ambient request helpers below).
+NGWMN_OGC_API_URL = f"{BASE_URL}/ngwmn/ogcapi"
 SAMPLES_URL = f"{BASE_URL}/samples-data"
 STATISTICS_API_VERSION = "v0"
 STATISTICS_API_URL = f"{BASE_URL}/statistics/{STATISTICS_API_VERSION}"
@@ -431,7 +437,7 @@ def _check_ogc_requests(
     """
     if req_type not in ("queryables", "schema"):
         raise ValueError(f"req_type must be 'queryables' or 'schema', got {req_type!r}")
-    url = f"{OGC_API_URL}/collections/{endpoint}/{req_type}"
+    url = f"{_ogc_base_url_var.get()}/collections/{endpoint}/{req_type}"
     resp = _get(url, headers=_default_headers(), **HTTPX_DEFAULTS)
     _raise_for_non_200(resp)
     # ``Response.json`` is typed ``Any``; the OGC queryables/schema endpoints
@@ -670,7 +676,7 @@ def _construct_api_requests(
     -----
     - Date/time parameters are automatically formatted to ISO8601.
     """
-    service_url = f"{OGC_API_URL}/collections/{service}/items"
+    service_url = f"{_ogc_base_url_var.get()}/collections/{service}/items"
 
     # Format date/time parameters to ISO8601 first — both routing paths need it.
     for key in _DATE_RANGE_PARAMS:
@@ -768,7 +774,7 @@ def _construct_cql_request(
     httpx.Request
         A POST request with ``Content-Type: application/query-cql-json``.
     """
-    service_url = f"{OGC_API_URL}/collections/{service}/items"
+    service_url = f"{_ogc_base_url_var.get()}/collections/{service}/items"
     params = _ogc_query_params(
         {},
         properties=properties,
@@ -903,18 +909,17 @@ def _get_resp_data(
     """
     if body is None:
         body = resp.json()
-    if not body.get("numberReturned"):
-        # Preserve the GeoDataFrame type on empty short-circuit so a
-        # downstream ``pd.concat([empty_page, geo_page])`` doesn't
-        # downgrade the geopd-installed user's result to a plain
-        # DataFrame (stripping geometry/CRS).
-        return gpd.GeoDataFrame() if geopd else pd.DataFrame()
-
-    # Defensive: a 200 with ``numberReturned > 0`` but missing
-    # ``features`` is a real schema-drift shape (mirrors the guard in
-    # ``_handle_stats_nesting``). Treat as empty rather than crash with
-    # ``KeyError`` — the wrapped failure would otherwise look like a
-    # transient transport error to ``_paginate``'s exception handler.
+    # Key the empty-result short-circuit off ``features`` rather than
+    # ``numberReturned``: the main Water Data API reports ``numberReturned``,
+    # but the NGWMN OGC API omits it, so trusting it would discard pages that
+    # actually carry features. An absent/empty ``features`` is also the real
+    # schema-drift shape (a 200 with no features; mirrors the guard in
+    # ``_handle_stats_nesting``) — treat it as empty rather than crash with a
+    # ``KeyError`` downstream, which ``_paginate`` would mistake for a
+    # transient transport error. Preserve the GeoDataFrame type on the
+    # short-circuit so a downstream ``pd.concat([empty_page, geo_page])``
+    # doesn't downgrade a geopd-installed user's result to a plain DataFrame
+    # (stripping geometry/CRS).
     features = body.get("features") or []
     if not features:
         return gpd.GeoDataFrame() if geopd else pd.DataFrame()
@@ -933,7 +938,14 @@ def _get_resp_data(
         return df
 
     # Organize json into geodataframe and make sure id column comes along.
-    df = gpd.GeoDataFrame.from_features(features)
+    # NGWMN observation collections (water levels, lithology, …) return
+    # features with no ``geometry`` key at all, which
+    # ``GeoDataFrame.from_features`` can't handle (it indexes
+    # ``feature["geometry"]`` directly). Default the key to ``None`` so the
+    # call is safe; the all-null check below then yields a plain DataFrame.
+    df = gpd.GeoDataFrame.from_features(
+        [{**f, "geometry": f.get("geometry")} for f in features]
+    )
     # Mirror the non-geopandas branch's defensive ``f.get("id")`` so a feature
     # missing a top-level ``id`` yields None rather than a KeyError.
     df["id"] = [f.get("id") for f in features]
@@ -1047,6 +1059,28 @@ def _row_cap(max_rows: int | None) -> Iterator[None]:
         yield
     finally:
         _row_cap_var.reset(token)
+
+
+# OGC base URL for the active request. ``get_ogc_data`` sets it per call so the
+# shared request builder (:func:`_construct_api_requests`) can target either the
+# main Water Data API or the NGWMN sub-API without threading the value through
+# the generic chunker; this mirrors the ``_row_cap`` ambient pattern. The
+# default is the main API, so every existing getter is unaffected.
+_ogc_base_url_var: ContextVar[str] = ContextVar(
+    "waterdata_ogc_base_url", default=OGC_API_URL
+)
+
+
+@contextmanager
+def _ogc_base_url(base_url: str) -> Iterator[None]:
+    """Point :func:`_construct_api_requests` (and the chunk planner that calls
+    it) at ``base_url`` for the duration of the block. Used by
+    :func:`get_ogc_data` to serve NGWMN collections from their own OGC base."""
+    token = _ogc_base_url_var.set(base_url)
+    try:
+        yield
+    finally:
+        _ogc_base_url_var.reset(token)
 
 
 async def _paginate(
@@ -1448,6 +1482,7 @@ def get_ogc_data(
     service: str,
     output_id: str | None = None,
     max_rows: int | None = None,
+    base_url: str = OGC_API_URL,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Retrieves OGC (Open Geospatial Consortium) data from a specified
@@ -1535,7 +1570,8 @@ def get_ogc_data(
         max_rows=max_rows,
     )
     with _progress.progress_context(service=service), _row_cap(max_rows):
-        return _fetch_once(args, finalize=finalize)
+        with _ogc_base_url(base_url):
+            return _fetch_once(args, finalize=finalize)
 
 
 @chunking.multi_value_chunked(build_request=_construct_api_requests)
