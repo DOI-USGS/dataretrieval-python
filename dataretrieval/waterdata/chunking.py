@@ -10,17 +10,23 @@ cartesian product of chunks. Requests that already fit get a trivial
 single-step plan — ``ChunkedCall`` has one code path either way.
 
 Concurrency: ``multi_value_chunked`` fans every pending sub-request out
-under one ``asyncio.gather`` sharing a single ``httpx.AsyncClient``;
-concurrency is bounded purely by the client's connection pool
-(``httpx.Limits(max_connections=N, max_keepalive_connections=N)``), so
-the pool throttles. ``API_USGS_CONCURRENT`` resolves
-``N``: an integer N > 1 caps connections at N; ``1`` pins a single
-connection (one request at a time); the literal ``unbounded`` removes
-the cap (``N=None``). The default (16) is the server-friendly sweet
-spot; higher values can trip USGS burst-protection 5xx in practice. The
-fan-out runs in a short-lived worker thread (an ``anyio`` blocking
-portal), so it works whether or not the caller is already inside an
-event loop (Jupyter / IPython / async apps).
+under one ``asyncio.gather`` sharing a single ``httpx.AsyncClient``. An
+``asyncio.Semaphore`` — not the client's connection pool, which is
+merely sized to match — caps the sub-requests in flight at ``N``; see
+:meth:`ChunkedCall._run` for why the gate must be the semaphore rather
+than the pool. ``API_USGS_CONCURRENT`` resolves ``N``: an integer N > 1
+allows N sub-requests in flight; ``1`` forces sequential dispatch (one
+request at a time); the literal ``unbounded`` lifts the cap. ``N``
+bounds only how many of a chunked query's sub-requests are in flight at
+once — a client-side trade-off between open connections and fan-out
+latency. It does not affect the API rate limit: a chunked call issues
+the same number of sub-requests regardless of ``N``, so ``N`` changes
+their timing, not the total request volume. The USGS API rate-limits by
+volume over time (HTTP 429), not by simultaneity; set ``API_USGS_PAT``
+to raise that quota. The default of 32 is a conservative cap that keeps
+connection use modest. The fan-out runs in a short-lived worker thread
+(an ``anyio`` blocking portal), so it works whether or not the caller is
+already inside an event loop (Jupyter / IPython / async apps).
 
 Retries: each sub-request is retried on a transient failure (429,
 5xx, connect/read timeout) with exponential backoff + full jitter,
@@ -119,7 +125,7 @@ _QUOTA_HEADER = "x-ratelimit-remaining"
 # ``monkeypatch.setenv`` applies. Value grammar in :func:`_read_concurrency_env`;
 # the concurrency model is in the module docstring.
 _CONCURRENCY_ENV = "API_USGS_CONCURRENT"
-_CONCURRENCY_DEFAULT = 16
+_CONCURRENCY_DEFAULT = 32
 _CONCURRENCY_UNBOUNDED = "unbounded"
 
 
@@ -130,10 +136,10 @@ def _read_concurrency_env() -> int | None:
     Returns
     -------
     int or None
-        ``1`` for a single connection; an integer >1 for bounded
-        concurrency; ``None`` to disable the per-call cap entirely
-        (``unbounded`` keyword). Unset → default of
-        ``_CONCURRENCY_DEFAULT``.
+        ``1`` for sequential dispatch (one sub-request at a time); an
+        integer >1 for bounded concurrency; ``None`` to disable the
+        per-call cap entirely (``unbounded`` keyword). Unset → default
+        of ``_CONCURRENCY_DEFAULT``.
     """
     raw = os.environ.get(_CONCURRENCY_ENV)
     if raw is None:
@@ -1307,9 +1313,9 @@ class ChunkedCall:
     :class:`httpx.AsyncClient`, applies the failure-precedence rules, and
     combines; :meth:`resume` drives it through an ``anyio`` blocking
     portal so it works whether or not the caller is already inside an
-    event loop. Concurrency is bounded purely by the client's connection
-    pool, so a single connection (``API_USGS_CONCURRENT=1``) is just a
-    degenerate gather.
+    event loop. Concurrency is bounded by a per-run ``asyncio.Semaphore``
+    (see :meth:`_run`), so sequential dispatch
+    (``API_USGS_CONCURRENT=1``) is just a degenerate gather.
 
     A ``ChunkedCall`` is created internally when a :class:`ChunkPlan`
     executes; callers reach it via :attr:`ChunkInterrupted.call` on
@@ -1551,20 +1557,33 @@ class ChunkedCall:
         ``.call``; ``exc.call.resume()`` then re-issues only the unfinished
         indices through this same runner.
 
-        Concurrency is bounded by the client's connection pool —
-        ``httpx.Limits(max_connections=N, max_keepalive_connections=N)``
-        where ``N = max_concurrent`` (``None`` for unbounded). The gather
-        dispatches *every* pending sub-request and the pool throttles, so
-        ``N=1`` is just a single-connection gather (one request at a time)
-        and ``total <= 1`` is just a one-element gather.
+        The gather dispatches *every* pending sub-request at once, but an
+        ``asyncio.Semaphore`` caps the number of concurrent fetches at
+        ``N = max_concurrent`` — ``None`` lifts the cap, ``N=1`` runs them
+        one at a time. The connection pool is sized to the same ``N``
+        (``httpx.Limits(max_connections=N, max_keepalive_connections=N)``)
+        so the in-flight fetches reuse keepalive connections.
+
+        The semaphore, not the pool, is deliberately the throttle. If the
+        pool throttled instead, the excess sub-requests would queue
+        *inside* httpx waiting for a connection, and that wait counts
+        against the pool-acquire timeout (60 s, from ``HTTPX_DEFAULTS``).
+        A batch of slow pages that keeps every connection busy past that
+        window would then trip ``httpx.PoolTimeout`` on the queued tail —
+        a purely client-side failure that consumes the retry budget and
+        surfaces as a spurious resumable ``ServiceInterrupted``. Holding
+        sub-requests at the semaphore keeps them out of the pool until a
+        slot frees, so the pool timeout only fires for a genuinely stuck
+        connection.
+
         The shared client is published on :data:`_chunked_client` so
         the paginated-loop helpers reuse its connection pool.
 
         Parameters
         ----------
         max_concurrent : int or None
-            Maximum simultaneous connections (the pool cap). ``None``
-            disables the cap.
+            Maximum sub-requests in flight (the semaphore value, and the
+            connection-pool size). ``None`` lifts the cap entirely.
 
         Returns
         -------
@@ -1583,12 +1602,18 @@ class ChunkedCall:
             holding the sparse completed sub-requests; ``.call.resume()``
             re-issues the unfinished ones.
         """
-        # ``httpx.Limits()`` defaults to ``max_connections=100`` — at higher
-        # concurrency the pool would silently bottleneck the fan-out behind
-        # that cap. Set it to the resolved concurrency so the pool *is* the
-        # throttle (``None`` for truly unbounded).
+        # The semaphore is the throttle; the pool is merely sized to match
+        # it. Left at httpx's default client limits (``max_connections=100``,
+        # keepalive 20) the pool would bottleneck a wider cap or churn
+        # connections by keeping too few alive. See the method docstring for
+        # why the gate can't be the pool itself. ``unbounded``
+        # (``max_concurrent=None``) is a degenerate cap at the plan total — a
+        # semaphore that can never block — so gated is the only code path.
         limits = httpx.Limits(
             max_connections=max_concurrent, max_keepalive_connections=max_concurrent
+        )
+        semaphore = asyncio.Semaphore(
+            self.plan.total if max_concurrent is None else max_concurrent
         )
 
         async with httpx.AsyncClient(limits=limits, **HTTPX_DEFAULTS) as client:
@@ -1597,11 +1622,25 @@ class ChunkedCall:
                 if reporter is not None:
                     reporter.set_chunks(self.plan.total)
 
+                async def fetch_gated(
+                    args: dict[str, Any],
+                ) -> tuple[pd.DataFrame, httpx.Response]:
+                    """One fetch attempt under the concurrency gate.
+
+                    The slot is held for the attempt's full duration —
+                    every page of a paginated sub-request — but acquired
+                    per *attempt* (this is what ``_retry`` re-invokes), so
+                    a sub-request sleeping off a retry backoff isn't
+                    holding a slot while it isn't touching the server.
+                    """
+                    async with semaphore:
+                        return await self.fetch(args)
+
                 async def track(
                     index: int, args: dict[str, Any]
                 ) -> tuple[pd.DataFrame, httpx.Response]:
                     """One sub-request (with retry) + result-store + progress tick."""
-                    result = await _retry(lambda: self.fetch(args), self.retry_policy)
+                    result = await _retry(lambda: fetch_gated(args), self.retry_policy)
                     self._chunks[index] = result
                     if reporter is not None:
                         # Chunks finish out of order under gather, so tick the
@@ -1610,7 +1649,7 @@ class ChunkedCall:
                     return result
 
                 # Dispatch every pending sub-request concurrently; the
-                # connection pool (``limits``) is the only throttle.
+                # semaphore (via ``fetch_gated``) is the only throttle.
                 # ``return_exceptions`` keeps completed pairs after a sibling
                 # fails, so partial state stays recoverable via :meth:`resume`.
                 # Failure precedence, in order:
@@ -1706,8 +1745,8 @@ def multi_value_chunked(
             limit = _WATERDATA_URL_BYTE_LIMIT if url_limit is None else url_limit
             plan = ChunkPlan(args, build_request, limit)
             retry_policy = RetryPolicy.from_env()
-            # The connection-pool cap is resolved inside ``resume()`` from
-            # ``API_USGS_CONCURRENT``; ``1`` is a single-connection gather,
+            # The concurrency cap is resolved inside ``resume()`` from
+            # ``API_USGS_CONCURRENT``; ``1`` is a sequential gather,
             # ``total <= 1`` a one-element gather — no special branch.
             return plan.execute(fetch, retry_policy, finalize)
 

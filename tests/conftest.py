@@ -38,7 +38,7 @@ def non_mocked_hosts() -> list[str]:
 def _pin_chunker_env(monkeypatch):
     """Pin every test to one connection and no retries.
 
-    Production defaults ``API_USGS_CONCURRENT`` to 16 and
+    Production defaults ``API_USGS_CONCURRENT`` to 32 and
     ``API_USGS_RETRIES`` to 4. Pinning ``API_USGS_CONCURRENT=1`` keeps
     sub-request dispatch deterministic for the mocked suite, and
     ``API_USGS_RETRIES=0`` makes a single transient surface immediately

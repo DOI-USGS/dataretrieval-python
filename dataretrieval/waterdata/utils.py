@@ -1551,7 +1551,7 @@ async def _fetch_once(
     and iterates the cartesian product. With no chunkable inputs the
     decorator passes args through unchanged. The decorator gathers every
     sub-request over one shared :class:`httpx.AsyncClient` (concurrency
-    bounded by the connection pool, sized from ``API_USGS_CONCURRENT``)
+    bounded by a semaphore, sized from ``API_USGS_CONCURRENT``)
     and returns a *synchronous* wrapper, so ``get_ogc_data`` keeps calling
     ``_fetch_once(args, finalize=...)`` synchronously. The return shape is
     ``(frame, response)``.
