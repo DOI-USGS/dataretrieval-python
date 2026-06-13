@@ -1,6 +1,6 @@
-"""Joint URL-byte chunking for the Water Data OGC getters.
+"""Joint URL-byte chunking for the OGC getters.
 
-A Water Data query has several chunkable axes: every multi-value list
+An OGC query has several chunkable axes: every multi-value list
 parameter (sites, parameter codes, …) plus the cql-text ``filter``,
 which splits along its top-level OR clauses. Any of them can fan the
 URL past the server's ~8 KB byte limit. ``ChunkPlan`` picks a fan-out
@@ -16,8 +16,8 @@ concurrency is bounded purely by the client's connection pool
 the pool throttles. ``API_USGS_CONCURRENT`` resolves
 ``N``: an integer N > 1 caps connections at N; ``1`` pins a single
 connection (one request at a time); the literal ``unbounded`` removes
-the cap (``N=None``). The default (16) is the server-friendly sweet
-spot; higher values can trip USGS burst-protection 5xx in practice. The
+the cap (``N=None``). The default (16) is a conservative cap; higher
+values can trip USGS rate-limiting (HTTP 429) in practice. The
 fan-out runs in a short-lived worker thread (an ``anyio`` blocking
 portal), so it works whether or not the caller is already inside an
 event loop (Jupyter / IPython / async apps).
@@ -85,7 +85,7 @@ from .filters import (
 # Empirically the API replies HTTP 414 above ~8200 bytes of full URL —
 # matches nginx's default ``large_client_header_buffers`` of 8 KB. 8000
 # leaves ~200 bytes for request-line framing and proxy variance.
-_WATERDATA_URL_BYTE_LIMIT = 8000
+_OGC_URL_BYTE_LIMIT = 8000
 
 # Any list-shaped kwarg with >1 element is chunked (comma-joined per
 # sub-list in the URL); ~90 OGC params qualify, so we denylist the few
@@ -443,11 +443,12 @@ class ChunkInterrupted(DataRetrievalError):
     .. code-block:: python
 
         import time
-        from dataretrieval.waterdata import get_daily
         from dataretrieval.ogc.chunking import ChunkInterrupted
 
+        # ``getter`` is any chunked OGC getter — e.g.
+        # ``waterdata.get_daily`` or ``ngwmn.get_water_level``.
         try:
-            df, md = get_daily(monitoring_location_id=long_list_of_sites)
+            df, md = getter(monitoring_location_id=long_list_of_sites)
         except ChunkInterrupted as exc:
             while True:
                 time.sleep(exc.retry_after or 5 * 60)
@@ -1690,7 +1691,7 @@ def multi_value_chunked(
         measure each candidate plan.
     url_limit : int, optional
         Byte budget for the request (URL + body). When ``None``
-        (default), the module-level ``_WATERDATA_URL_BYTE_LIMIT`` is
+        (default), the module-level ``_OGC_URL_BYTE_LIMIT`` is
         resolved at call time so test patches via
         ``monkeypatch.setattr`` take effect.
 
@@ -1723,7 +1724,7 @@ def multi_value_chunked(
             *,
             finalize: _Finalize = _passthrough_result,
         ) -> tuple[pd.DataFrame, Any]:
-            limit = _WATERDATA_URL_BYTE_LIMIT if url_limit is None else url_limit
+            limit = _OGC_URL_BYTE_LIMIT if url_limit is None else url_limit
             plan = ChunkPlan(args, build_request, limit)
             retry_policy = RetryPolicy.from_env()
             # The connection-pool cap is resolved inside ``resume()`` from

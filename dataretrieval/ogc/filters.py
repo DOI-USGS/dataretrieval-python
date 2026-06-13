@@ -1,4 +1,4 @@
-"""CQL ``filter`` support for the Water Data OGC getters.
+"""CQL ``filter`` support for the OGC getters.
 
 Public:
 

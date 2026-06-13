@@ -346,7 +346,7 @@ def test_multi_value_chunked_emits_3d_cartesian_product():
 
 
 def test_multi_value_chunked_lazy_url_limit(monkeypatch):
-    """``url_limit=None`` → resolve chunking._WATERDATA_URL_BYTE_LIMIT at call
+    """``url_limit=None`` → resolve chunking._OGC_URL_BYTE_LIMIT at call
     time, so tests that patch the constant affect this decorator too."""
     calls = []
 
@@ -357,7 +357,7 @@ def test_multi_value_chunked_lazy_url_limit(monkeypatch):
             elapsed=datetime.timedelta(seconds=0.1), headers={}
         )
 
-    monkeypatch.setattr(_chunking, "_WATERDATA_URL_BYTE_LIMIT", 240)
+    monkeypatch.setattr(_chunking, "_OGC_URL_BYTE_LIMIT", 240)
     # 4 sites of 10 chars → exceeds 240 → planner splits.
     fetch({"sites": ["S" * 10 + str(i) for i in range(4)]})
     assert len(calls) > 1, "patched constant should drive chunking"
@@ -1039,7 +1039,7 @@ def test_combine_chunk_responses_returns_independent_headers():
 
 def test_paginate_terminates_on_empty_string_cursor():
     """``_paginate``'s loop predicate is ``while cursor is not None``.
-    Parse-response wrappers in ``_walk_pages`` / ``get_stats_data``
+    Parse-response wrappers in ``_walk_pages`` / ``stats.get_data``
     coerce falsy non-None values to None so an empty-string next-
     cursor (a real-but-unusual end-of-stream sentinel some pagination
     APIs use) doesn't trap us in an infinite ``follow_up('')`` loop."""

@@ -1,9 +1,9 @@
-"""A single self-updating status line for paginated / chunked Water Data queries.
+"""A single self-updating status line for paginated / chunked OGC queries.
 
-Water Data getters fan out two ways the caller can't see: large multi-value
+OGC getters fan out two ways the caller can't see: large multi-value
 requests are split into URL-length-safe *chunks* (``chunking`` module), and each
 request follows ``next`` links across an unknown number of *pages*
-(``utils._paginate``). This module surfaces that work as one line on stderr,
+(``engine._paginate``). This module surfaces that work as one line on stderr,
 rewritten in place as data arrives::
 
     Retrieving: daily · 6 pages · 2,881 rows · 995/1,000 requests remaining
