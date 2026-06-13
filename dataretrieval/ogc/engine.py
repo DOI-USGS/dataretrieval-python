@@ -593,9 +593,8 @@ def _paginated_failure_message(pages_collected: int, cause: BaseException) -> st
     Returns
     -------
     str
-        A message suitable for the ``DataRetrievalError`` that
-        ``_walk_pages`` and ``get_stats_data`` raise from the
-        original exception.
+        A message suitable for the ``DataRetrievalError`` that the
+        paginated fetch paths raise from the original exception.
     """
     cause_str = str(cause).removesuffix(".")
     # Some ``httpx`` exceptions (e.g. ``TimeoutException()`` with no args)
@@ -878,6 +877,28 @@ def _next_req_url(
     return None
 
 
+def _empty_feature_frame(geopd: bool) -> pd.DataFrame:
+    """Empty result frame for a page that carries no features.
+
+    Returns a ``GeoDataFrame`` when geopandas is available so a downstream
+    ``pd.concat([empty_page, geo_page])`` doesn't downgrade a geopandas
+    user's result to a plain ``DataFrame`` (stripping geometry/CRS). The
+    single home for this empty-page contract, shared by
+    :func:`_get_resp_data` and the stats result parser.
+    """
+    return gpd.GeoDataFrame() if geopd else pd.DataFrame()
+
+
+def _attach_coordinates(df: pd.DataFrame, features: list[dict[str, Any]]) -> None:
+    """Attach a ``geometry`` column of raw coordinate lists (in place) when
+    any feature carries geometry. Shared by the non-geopandas frame builders
+    in :func:`_get_resp_data` and the stats result parser.
+    """
+    geoms = [(f.get("geometry") or {}).get("coordinates") for f in features]
+    if any(g is not None for g in geoms):
+        df["geometry"] = geoms
+
+
 def _get_resp_data(
     resp: httpx.Response,
     geopd: bool,
@@ -930,16 +951,13 @@ def _get_resp_data(
     # ``numberReturned``: the main Water Data API reports ``numberReturned``,
     # but the NGWMN OGC API omits it, so trusting it would discard pages that
     # actually carry features. An absent/empty ``features`` is also the real
-    # schema-drift shape (a 200 with no features; mirrors the guard in
-    # ``_handle_stats_nesting``) — treat it as empty rather than crash with a
-    # ``KeyError`` downstream, which ``_paginate`` would mistake for a
-    # transient transport error. Preserve the GeoDataFrame type on the
-    # short-circuit so a downstream ``pd.concat([empty_page, geo_page])``
-    # doesn't downgrade a geopd-installed user's result to a plain DataFrame
-    # (stripping geometry/CRS).
+    # schema-drift shape (a 200 with no features) — treat it as empty rather
+    # than crash with a ``KeyError`` downstream, which ``_paginate`` would
+    # mistake for a transient transport error. ``_empty_feature_frame``
+    # preserves the GeoDataFrame type on the short-circuit (see its docstring).
     features = body.get("features") or []
     if not features:
-        return gpd.GeoDataFrame() if geopd else pd.DataFrame()
+        return _empty_feature_frame(geopd)
 
     if not geopd:
         df = pd.json_normalize([f.get("properties") or {} for f in features], sep="_")
@@ -949,9 +967,7 @@ def _get_resp_data(
         # (daily_id, channel_measurements_id, …) even if the upstream
         # response carried no feature-level id.
         df["id"] = [f.get("id") for f in features]
-        geoms = [(f.get("geometry") or {}).get("coordinates") for f in features]
-        if any(g is not None for g in geoms):
-            df["geometry"] = geoms
+        _attach_coordinates(df, features)
         return df
 
     # Organize json into geodataframe and make sure id column comes along.
@@ -1133,8 +1149,8 @@ async def _paginate(
     Drive a paginated request to completion over an
     :class:`httpx.AsyncClient`.
 
-    The common shape behind :func:`_walk_pages` and
-    :func:`get_stats_data`: send the initial request, then loop calling
+    The common shape behind the paginated fetch paths (e.g.
+    :func:`_walk_pages`): send the initial request, then loop calling
     ``follow_up`` until ``parse_response`` reports a ``None`` cursor,
     accumulating frames and elapsed time. Any mid-pagination failure
     raises ``DataRetrievalError`` wrapping the cause — the API exposes no
@@ -1693,8 +1709,8 @@ def _run_sync(
     event loop (Jupyter/async apps). The portal copies the calling context,
     so the active progress reporter still reaches the sub-requests.
 
-    Shared by the non-chunked fetch paths (:func:`get_stats_data`,
-    :func:`get_cql`); the chunked OGC getters drive their own portal
+    Shared by the non-chunked fetch paths; the chunked OGC getters
+    drive their own portal
     inside :meth:`chunking.ChunkedCall.resume`.
     """
     with _progress.progress_context(service=service):

@@ -24,6 +24,7 @@ from dataretrieval.utils import (
     _get,
     to_str,
 )
+from dataretrieval.waterdata import stats
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,
     METADATA_COLLECTIONS,
@@ -46,7 +47,6 @@ from dataretrieval.waterdata.utils import (
     _switch_properties_id,
     _walk_pages,
     get_ogc_data,
-    get_stats_data,
 )
 
 # Set up logger for this module
@@ -2565,7 +2565,7 @@ def get_stats_por(
     # Build argument dictionary, omitting None values
     params = _get_args(locals(), exclude={"expand_percentiles"})
 
-    return get_stats_data(
+    return stats.get_data(
         args=params, service="observationNormals", expand_percentiles=expand_percentiles
     )
 
@@ -2701,7 +2701,7 @@ def get_stats_date_range(
     # Build argument dictionary, omitting None values
     params = _get_args(locals(), exclude={"expand_percentiles"})
 
-    return get_stats_data(
+    return stats.get_data(
         args=params,
         service="observationIntervals",
         expand_percentiles=expand_percentiles,

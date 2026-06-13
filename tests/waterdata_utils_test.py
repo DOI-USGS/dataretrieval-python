@@ -9,9 +9,11 @@ import pandas as pd
 import pytest
 
 import dataretrieval.ogc.engine as _engine_module
+import dataretrieval.waterdata.stats as _stats_module
 import dataretrieval.waterdata.utils as _utils_module
 from dataretrieval.exceptions import DataRetrievalError, HTTPError, TransientError
 from dataretrieval.ogc.chunking import RateLimited, ServiceUnavailable
+from dataretrieval.waterdata.stats import _handle_nesting, get_data
 from dataretrieval.waterdata.utils import (
     OGC_API_URL,
     _arrange_cols,
@@ -21,14 +23,12 @@ from dataretrieval.waterdata.utils import (
     _format_api_dates,
     _get_args,
     _get_resp_data,
-    _handle_stats_nesting,
     _next_req_url,
     _parse_retry_after,
     _raise_for_non_200,
     _row_cap,
     _to_snake_case,
     _walk_pages,
-    get_stats_data,
 )
 
 _LOGGER_NAME = _utils_module.__name__
@@ -334,7 +334,7 @@ def test_get_resp_data_handles_missing_features_key():
     """Regression: a 200 with ``numberReturned > 0`` but no
     ``features`` key (real schema-drift shape) used to crash
     ``_get_resp_data`` with ``KeyError`` — wrapped downstream by
-    ``_paginate`` as a generic transport error. ``_handle_stats_nesting``
+    ``_paginate`` as a generic transport error. ``_handle_nesting``
     was already hardened against this; ``_get_resp_data`` now mirrors
     that defensiveness and returns an empty frame instead."""
     resp = mock.Mock()
@@ -441,15 +441,15 @@ def _stats_initial_ok():
     return resp
 
 
-def _run_get_stats_data_with_failure(failure_resp_or_exc, monkeypatch):
-    """Exercise get_stats_data where the initial response succeeds and the
+def _run_get_data_with_failure(failure_resp_or_exc, monkeypatch):
+    """Exercise get_data where the initial response succeeds and the
     paginated follow-up fails as given. Mirrors _walk_pages_with_failure.
-    `monkeypatch` stubs ``_handle_stats_nesting`` so the synthetic minimal
+    `monkeypatch` stubs ``_handle_nesting`` so the synthetic minimal
     response body doesn't need to parse — these tests only assert on the
     pagination loop's error surfacing."""
     monkeypatch.setattr(
-        _utils_module,
-        "_handle_stats_nesting",
+        _stats_module,
+        "_handle_nesting",
         mock.MagicMock(return_value=pd.DataFrame()),
     )
 
@@ -460,7 +460,7 @@ def _run_get_stats_data_with_failure(failure_resp_or_exc, monkeypatch):
     else:
         mock_client.request.return_value = failure_resp_or_exc
 
-    return get_stats_data(
+    return get_data(
         args={"monitoring_location_id": "USGS-1"},
         service="observationNormals",
         expand_percentiles=False,
@@ -468,14 +468,14 @@ def _run_get_stats_data_with_failure(failure_resp_or_exc, monkeypatch):
     )
 
 
-def test_get_stats_data_raises_on_mid_pagination_failure(monkeypatch):
-    """Wiring smoke: ``get_stats_data`` and ``_walk_pages`` share the
+def test_get_data_raises_on_mid_pagination_failure(monkeypatch):
+    """Wiring smoke: ``get_data`` and ``_walk_pages`` share the
     same ``_paginate`` strategy helper, so error-routing behaviour is
     exercised by the ``_walk_pages`` triplet above. This single
-    ``get_stats_data`` mid-pagination case proves the stats-specific
+    ``get_data`` mid-pagination case proves the stats-specific
     follow-up callback is wired into ``_paginate`` correctly."""
     with pytest.raises(DataRetrievalError, match="Paginated request failed") as excinfo:
-        _run_get_stats_data_with_failure(
+        _run_get_data_with_failure(
             httpx.ConnectError("stats-boom"),
             monkeypatch,
         )
@@ -484,7 +484,7 @@ def test_get_stats_data_raises_on_mid_pagination_failure(monkeypatch):
     assert "stats-boom" in str(excinfo.value)
 
 
-def test_get_stats_data_warning_includes_next_token(caplog, monkeypatch):
+def test_get_data_warning_includes_next_token(caplog, monkeypatch):
     """The pagination-failure warning includes the next_token so operators
     can identify which page in the sequence failed. (Addresses Copilot's
     PR #273 review note: the base URL alone drops cursor context.)"""
@@ -498,14 +498,14 @@ def test_get_stats_data_warning_includes_next_token(caplog, monkeypatch):
     }
 
     with pytest.raises(DataRetrievalError):
-        _run_get_stats_data_with_failure(page2_503, monkeypatch)
+        _run_get_data_with_failure(page2_503, monkeypatch)
 
     warnings_ = [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING]
     # The initial response from _stats_initial_ok carries next=tok2.
     assert any("tok2" in m for m in warnings_), warnings_
 
 
-def test_handle_stats_nesting_tolerates_missing_drop_columns():
+def test_handle_nesting_tolerates_missing_drop_columns():
     """If the upstream stats response shape ever changes such that one of
     the columns we try to drop ("type", "properties.data") is absent, the
     function should still return a DataFrame instead of raising KeyError.
@@ -529,38 +529,40 @@ def test_handle_stats_nesting_tolerates_missing_drop_columns():
         ],
     }
 
-    df = _handle_stats_nesting(body, geopd=False)
+    df = _handle_nesting(body, geopd=False)
 
     assert len(df) == 1
     assert df["monitoring_location_id"].iloc[0] == "USGS-12345"
 
 
-def test_handle_stats_nesting_returns_empty_on_empty_features():
+def test_handle_nesting_returns_empty_on_empty_features():
     """A mid-pagination empty page ({\"features\": [], \"next\": <tok>})
     must not crash the downstream merge with
     ``KeyError: 'monitoring_location_id'``. The function short-
     circuits to an empty DataFrame so pagination can continue."""
-    df = _handle_stats_nesting({"features": [], "next": None}, geopd=False)
+    df = _handle_nesting({"features": [], "next": None}, geopd=False)
     assert df.empty
 
 
-def test_handle_stats_nesting_empty_preserves_geopd_type():
+def test_handle_nesting_empty_preserves_geopd_type():
     """When geopandas is available, the empty-features short-circuit
     must return a ``GeoDataFrame`` rather than a plain ``DataFrame``.
     Otherwise a subsequent ``pd.concat([empty, geo_page])`` downgrades
     the final result to a plain ``DataFrame`` and strips geometry/CRS
     — a real regression for geopd-installed users on stats queries
     that hit an empty intermediate page."""
-    # Monkeypatch a stub gpd into the utils module so the test runs
-    # whether or not geopandas is actually installed.
+    # Monkeypatch a stub gpd so the test runs whether or not geopandas is
+    # installed. The empty-page short-circuit delegates to the shared
+    # ``engine._empty_feature_frame``, which resolves ``gpd`` from the engine
+    # namespace — so patch it there, not in the stats module.
     fake_gpd = mock.MagicMock()
 
     class _Sentinel:
         pass
 
     fake_gpd.GeoDataFrame = lambda *a, **kw: _Sentinel()
-    with mock.patch.object(_utils_module, "gpd", fake_gpd, create=True):
-        result = _handle_stats_nesting({"features": []}, geopd=True)
+    with mock.patch.object(_engine_module, "gpd", fake_gpd, create=True):
+        result = _handle_nesting({"features": []}, geopd=True)
     assert isinstance(result, _Sentinel)
 
 
@@ -586,12 +588,12 @@ def test_get_resp_data_empty_preserves_geopd_type():
     assert isinstance(result, _Sentinel)
 
 
-def test_handle_stats_nesting_tolerates_missing_features_key():
+def test_handle_nesting_tolerates_missing_features_key():
     """A 200 response with a body that doesn't carry ``features`` at
     all (rare but seen in error envelopes) must also short-circuit
     rather than KeyError before the schema-aware extraction even
     runs."""
-    df = _handle_stats_nesting({}, geopd=False)
+    df = _handle_nesting({}, geopd=False)
     assert df.empty
 
 
