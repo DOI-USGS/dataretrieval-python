@@ -56,7 +56,7 @@ import os
 import random
 from collections.abc import Awaitable, Callable, Iterator
 from contextlib import contextmanager, suppress
-from contextvars import ContextVar
+from contextvars import ContextVar, copy_context
 from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any, ClassVar, cast
@@ -1361,6 +1361,15 @@ class ChunkedCall:
         self.fetch = fetch
         self.retry_policy = retry_policy
         self.finalize = finalize
+        # Snapshot the ambient context at construction time — i.e. inside the
+        # caller's ``with`` blocks (base URL, dialect, row cap, progress
+        # reporter). :meth:`resume` runs every drive inside this snapshot, so
+        # a *later* ``exc.call.resume()`` — which fires after those ``with``
+        # blocks have exited and reset their ContextVars — still rebuilds
+        # sub-requests against the original API's base URL/dialect rather than
+        # the process defaults. ``build_request`` reads those ContextVars when
+        # it reconstructs each sub-request, so the snapshot must outlive them.
+        self._ctx = copy_context()
         # Completed (frame, response) pairs keyed by sub-args index; sparse
         # (gathered sub-requests complete out of order — see class docstring).
         # ``_run``'s ``track`` closure is the only writer, so ``dict`` insertion
@@ -1528,6 +1537,17 @@ class ChunkedCall:
             handle is on ``exc.call`` — wait for the underlying
             condition to clear and call ``exc.call.resume()`` again.
         """
+        # Drive inside the snapshot taken at construction (see ``__init__``).
+        # ``start_blocking_portal`` copies the *calling* context into its
+        # worker thread, and running here means that calling context is the
+        # snapshot — so the base URL / dialect / row cap / progress reporter
+        # active when the call was created reach the rebuilt sub-requests,
+        # even when this is a resume fired long after the original ``with``
+        # blocks exited.
+        return self._ctx.run(self._resume_in_context)
+
+    def _resume_in_context(self) -> tuple[pd.DataFrame, Any]:
+        """Body of :meth:`resume`, run inside the captured context."""
         concurrency = _read_concurrency_env()
         with start_blocking_portal() as portal:
             # ``portal.call`` returns ``Any`` because ``functools.partial``

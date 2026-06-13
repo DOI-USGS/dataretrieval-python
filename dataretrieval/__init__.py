@@ -56,8 +56,8 @@ from . import (
 
 __all__ = [
     # service modules
-    "ngwmn",
     "nadp",
+    "ngwmn",
     "nwis",
     "samples",
     "streamstats",

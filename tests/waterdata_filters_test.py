@@ -8,6 +8,7 @@ import pytest
 
 from dataretrieval.ogc.filters import (
     _check_numeric_filter_pitfall,
+    _quote_cql_str,
     _split_top_level_or,
 )
 from dataretrieval.waterdata import get_continuous
@@ -30,6 +31,14 @@ def _fake_response(url="https://example.test", elapsed_ms=1):
         elapsed=timedelta(milliseconds=elapsed_ms),
         headers={},
     )
+
+
+def test_quote_cql_str_doubles_embedded_quotes():
+    """The shared CQL-text escaper doubles ``'`` and leaves other input
+    untouched (the contract ``waterdata.ratings._build_filter`` relies on)."""
+    assert _quote_cql_str("O'Brien") == "O''Brien"
+    assert _quote_cql_str("USGS-01646500") == "USGS-01646500"
+    assert _quote_cql_str("a'b'c") == "a''b''c"
 
 
 def test_construct_filter_passthrough():

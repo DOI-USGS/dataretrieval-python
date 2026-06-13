@@ -1,4 +1,4 @@
-"""Live tests for the NGWMN OGC getters (``dataretrieval.waterdata.ngwmn``).
+"""Live tests for the NGWMN OGC getters (``dataretrieval.ngwmn``).
 
 These hit the live NGWMN OGC API (``api.waterdata.usgs.gov/ngwmn/ogcapi``),
 mirroring the integration-test style of ``waterdata_test.py``. The

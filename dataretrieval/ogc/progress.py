@@ -47,7 +47,7 @@ def _group_int(value: str) -> str:
 # state. (It does not give concurrent queries sharing one stderr separate
 # lines — they would still interleave.)
 _active: contextvars.ContextVar[ProgressReporter | None] = contextvars.ContextVar(
-    "waterdata_progress", default=None
+    "ogc_progress", default=None
 )
 
 # Where to register for an API key. Surfaced once when a query runs without an

@@ -17,6 +17,7 @@ and then fail in production.
 
 import asyncio
 import concurrent.futures
+import contextvars
 import datetime
 import sys
 import warnings
@@ -652,6 +653,55 @@ def test_resume_produces_dataset_identical_to_uninterrupted_run():
 
     # And every original site must be present exactly once.
     assert sorted(df_a["id"].tolist()) == sorted(sites)
+
+
+def test_resume_rebuilds_in_captured_context():
+    """Regression: sub-requests are rebuilt by reading ambient ContextVars
+    (the engine threads base URL / dialect / row cap that way). A
+    ``call.resume()`` fired AFTER the originating ``with`` block exits —
+    the documented recovery for a mid-stream 429 — must still observe the
+    values active when the call was *created*, not the process defaults.
+    ``ChunkedCall`` snapshots the context at construction and runs every
+    drive inside it; without that snapshot a resumed NGWMN call would
+    rebuild its sub-requests against the wrong (default Water Data) base."""
+    var = contextvars.ContextVar("ctx_probe", default="DEFAULT")
+    observed: list[str] = []
+
+    state = {"calls": 0, "tripped": False}
+
+    async def fetch(args):
+        state["calls"] += 1
+        # The value visible at (re)build time — what _construct_api_requests
+        # would read from _ogc_base_url_var / _dialect_var in production.
+        observed.append(var.get())
+        if state["calls"] == 3 and not state["tripped"]:
+            state["tripped"] = True
+            raise RateLimited("429: Too many requests made.")
+        sites = list(args["sites"])
+        return (pd.DataFrame({"id": sites}), _quota_response(500))
+
+    sites = ["S" * 10 + str(i) for i in range(16)]
+    decorated = multi_value_chunked(build_request=_fake_build, url_limit=240)(fetch)
+
+    # Create + drive the call INSIDE the context, so the snapshot captures "IN".
+    token = var.set("IN")
+    try:
+        with pytest.raises(QuotaExhausted) as excinfo:
+            decorated({"sites": sites})
+    finally:
+        var.reset(token)
+
+    # The originating context has exited — the bare var is back to default.
+    assert var.get() == "DEFAULT"
+    assert 0 < excinfo.value.completed_chunks < excinfo.value.total_chunks
+
+    # Resume OUTSIDE the context. Every rebuilt sub-request must still see
+    # "IN" (the captured snapshot), never the leaked "DEFAULT".
+    observed.clear()
+    df, _ = excinfo.value.call.resume()
+    assert observed, "resume issued no sub-requests"
+    assert set(observed) == {"IN"}, observed
+    assert sorted(df["id"].tolist()) == sorted(sites)
 
 
 def test_chunker_passes_through_non_429_runtime_error():

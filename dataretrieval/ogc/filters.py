@@ -8,6 +8,8 @@ Internal helpers used by ``chunking.multi_value_chunked``'s joint
 planner: ``_split_top_level_or`` (clause partitioning),
 ``_is_chunkable`` (filter-language gate), and
 ``_check_numeric_filter_pitfall`` (the lexicographic-comparison guard).
+``_quote_cql_str`` escapes a single CQL-text string literal, shared by any
+getter that *builds* a CQL filter (e.g. ``waterdata.ratings``).
 
 Other CQL shapes (``AND``, ``NOT``, ``LIKE``, spatial/temporal
 predicates, function calls) are forwarded verbatim — only top-level
@@ -47,6 +49,18 @@ _BETWEEN_NUMERIC_RE = re.compile(
     re.IGNORECASE,
 )
 _QUOTED_STR_RE = re.compile(r"'[^']*'")
+
+
+def _quote_cql_str(value: str) -> str:
+    """Escape a single-quoted CQL2-text literal by doubling embedded quotes.
+
+    CQL2 text escapes a ``'`` inside a string literal by doubling it, so
+    ``O'Brien`` becomes ``O''Brien`` (wrap the result in ``'…'`` at the call
+    site). Defends against malformed filters / injection on arbitrary user
+    input. Shared by every getter that builds a CQL-text literal (e.g. the
+    STAC ``/search`` filter in ``waterdata.ratings``).
+    """
+    return value.replace("'", "''")
 
 
 def _split_top_level_or(expr: str) -> list[str]:

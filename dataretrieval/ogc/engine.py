@@ -95,10 +95,23 @@ class OgcDialect:
         (``YYYY-MM-DD``) rather than as a full UTC datetime. The
         ``last_modified`` parameter is always rendered as a full datetime
         regardless of this set.
+    time_cols : frozenset[str]
+        Result columns to coerce to datetime when ``convert_type`` is set.
+        Empty by default, so the generic engine carries no API-specific
+        column knowledge; each API supplies its own.
+    numerical_cols : frozenset[str]
+        Result columns to coerce to numeric when ``convert_type`` is set.
+    sort_cols : tuple[str, ...]
+        Columns to sort the combined result by, in priority order. Sorting
+        is applied only when the first (primary) column is present; any
+        later columns also present are added as secondary keys.
     """
 
     cql2_services: frozenset[str] = field(default_factory=frozenset)
     date_only_services: frozenset[str] = field(default_factory=frozenset)
+    time_cols: frozenset[str] = field(default_factory=frozenset)
+    numerical_cols: frozenset[str] = field(default_factory=frozenset)
+    sort_cols: tuple[str, ...] = field(default_factory=tuple)
 
 
 # Default dialect: a plain OGC API with no CQL2-only collections and no
@@ -406,17 +419,15 @@ def _default_headers() -> dict[str, str]:
     return headers
 
 
-def _check_ogc_requests(
-    endpoint: str = "daily", req_type: str = "queryables"
-) -> dict[str, Any]:
+def _check_ogc_requests(endpoint: str, req_type: str = "queryables") -> dict[str, Any]:
     """
     Sends an HTTP GET request to the specified OGC endpoint and request type,
     returning the JSON response.
 
     Parameters
     ----------
-    endpoint : str, optional
-        The OGC collection endpoint to query (default is "daily").
+    endpoint : str
+        The OGC collection endpoint to query (e.g. the service/collection id).
     req_type : str, optional
         The type of request to make. Must be either "queryables" or "schema"
         (default is "queryables").
@@ -824,7 +835,12 @@ def _next_req_url(
     """
     if body is None:
         body = resp.json()
-    if not body.get("numberReturned"):
+    # Stop paging when the response carries no features. Key off ``features``
+    # rather than ``numberReturned``: the main Water Data API reports
+    # ``numberReturned`` but the NGWMN OGC API omits it, so trusting it would
+    # refuse to follow a ``next`` link on a page that actually carries
+    # features (mirrors the same guard in :func:`_get_resp_data`).
+    if not (body.get("features") or []):
         return None
     for link in body.get("links", []):
         if link.get("rel") != "next":
@@ -942,10 +958,12 @@ def _get_resp_data(
     # NGWMN observation collections (water levels, lithology, …) return
     # features with no ``geometry`` key at all, which
     # ``GeoDataFrame.from_features`` can't handle (it indexes
-    # ``feature["geometry"]`` directly). Default the key to ``None`` so the
-    # call is safe; the all-null check below then yields a plain DataFrame.
+    # ``feature["geometry"]`` directly). Default the key to ``None`` for only
+    # those features so the call is safe; the all-null check below then yields
+    # a plain DataFrame. Features that already carry geometry (the common
+    # sites case) are passed through without a per-feature dict copy.
     df = gpd.GeoDataFrame.from_features(
-        [{**f, "geometry": f.get("geometry")} for f in features]
+        [f if "geometry" in f else {**f, "geometry": None} for f in features]
     )
     # Mirror the non-geopandas branch's defensive ``f.get("id")`` so a feature
     # missing a top-level ``id`` yields None rather than a KeyError.
@@ -1047,7 +1065,7 @@ _Cursor = TypeVar("_Cursor")
 # means "no cap — fetch the whole series". Set via :func:`_row_cap` so the deep
 # ``_paginate`` loop can honor it without threading the value through the
 # generic chunker; this mirrors the ``_progress`` ambient-reporter pattern.
-_row_cap_var: ContextVar[int | None] = ContextVar("waterdata_row_cap", default=None)
+_row_cap_var: ContextVar[int | None] = ContextVar("ogc_row_cap", default=None)
 
 
 @contextmanager
@@ -1067,9 +1085,7 @@ def _row_cap(max_rows: int | None) -> Iterator[None]:
 # main Water Data API or the NGWMN sub-API without threading the value through
 # the generic chunker; this mirrors the ``_row_cap`` ambient pattern. The
 # default is the main API, so every existing getter is unaffected.
-_ogc_base_url_var: ContextVar[str] = ContextVar(
-    "waterdata_ogc_base_url", default=OGC_API_URL
-)
+_ogc_base_url_var: ContextVar[str] = ContextVar("ogc_base_url", default=OGC_API_URL)
 
 
 @contextmanager
@@ -1090,7 +1106,7 @@ def _ogc_base_url(base_url: str) -> Iterator[None]:
 # threading the value through the generic chunker; this mirrors the
 # ``_ogc_base_url`` ambient pattern. The default is a plain OGC API.
 _dialect_var: ContextVar[OgcDialect] = ContextVar(
-    "waterdata_ogc_dialect", default=_DEFAULT_DIALECT
+    "ogc_dialect", default=_DEFAULT_DIALECT
 )
 
 
@@ -1400,14 +1416,18 @@ def _arrange_cols(
     return df
 
 
-def _type_cols(df: pd.DataFrame) -> pd.DataFrame:
+def _type_cols(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
     """
-    Casts columns into appropriate types.
+    Casts columns into appropriate types per the API ``dialect``.
 
     Parameters
     ----------
     df : pd.DataFrame
-        The input DataFrame containing water data.
+        The input DataFrame.
+    dialect : OgcDialect
+        Supplies ``time_cols`` / ``numerical_cols`` — which columns to
+        coerce to datetime/numeric. The engine itself holds no
+        API-specific column knowledge.
 
     Returns
     -------
@@ -1416,56 +1436,42 @@ def _type_cols(df: pd.DataFrame) -> pd.DataFrame:
 
     """
     cols = set(df.columns)
-    numerical_cols = [
-        "altitude",
-        "altitude_accuracy",
-        "contributing_drainage_area",
-        "drainage_area",
-        "hole_constructed_depth",
-        "value",
-        "well_constructed_depth",
-    ]
-    time_cols = [
-        "begin",
-        "begin_utc",
-        "construction_date",
-        "end",
-        "end_utc",
-        "last_modified",
-        "time",
-    ]
-
-    for col in cols.intersection(time_cols):
+    for col in cols.intersection(dialect.time_cols):
         df[col] = pd.to_datetime(df[col], errors="coerce")
 
-    for col in cols.intersection(numerical_cols):
+    for col in cols.intersection(dialect.numerical_cols):
         df[col] = pd.to_numeric(df[col], errors="coerce")
 
     return df
 
 
-def _sort_rows(df: pd.DataFrame) -> pd.DataFrame:
+def _sort_rows(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
     """
-    Sorts rows by 'time' and 'monitoring_location_id' columns if they
-    exist.
+    Sorts rows by the API ``dialect``'s ``sort_cols`` (in priority order).
+
+    Sorting is applied only when the primary (first) sort column is
+    present; any later sort columns also present become secondary keys.
+    This mirrors the historical Water Data behavior (sort by ``time``,
+    then ``monitoring_location_id``) while letting other APIs key off
+    their own columns (e.g. NGWMN's ``sample_time``).
 
     Parameters
     ----------
     df : pd.DataFrame
-        The input DataFrame containing water data.
+        The input DataFrame.
+    dialect : OgcDialect
+        Supplies ``sort_cols``.
 
     Returns
     -------
     pd.DataFrame
-        The DataFrame with rows ordered by time and site.
+        The DataFrame with rows ordered per the dialect.
 
     """
-    if "time" in df.columns and "monitoring_location_id" in df.columns:
-        df = df.sort_values(by=["time", "monitoring_location_id"], ignore_index=True)
-    elif "time" in df.columns:
-        df = df.sort_values(by="time", ignore_index=True)
-
-    return df
+    if not dialect.sort_cols or dialect.sort_cols[0] not in df.columns:
+        return df
+    present = [c for c in dialect.sort_cols if c in df.columns]
+    return df.sort_values(by=present, ignore_index=True)
 
 
 # Matches a lowercase letter or digit immediately followed by an uppercase
@@ -1504,14 +1510,15 @@ def _finalize_ogc(
     service: str,
     max_rows: int | None = None,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
+    dialect: OgcDialect = _DEFAULT_DIALECT,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Shape a combined OGC result into the user-facing ``(df, md)``.
 
     The single home for the OGC getters' result shaping: empties
-    normalized, types coerced (when ``convert_type``), the wire ``id``
-    renamed and columns ordered, rows sorted, non-snake_case column names
-    normalized to snake_case, optionally truncated to ``max_rows``, and the
-    response wrapped as :class:`~dataretrieval.utils.BaseMetadata`.
+    normalized, column names normalized to snake_case, types coerced (when
+    ``convert_type``), the wire ``id`` renamed and columns ordered, rows
+    sorted, optionally truncated to ``max_rows``, and the response wrapped
+    as :class:`~dataretrieval.utils.BaseMetadata`.
 
     Injected into the chunker as its ``finalize`` hook (see
     :data:`~dataretrieval.ogc.chunking._Finalize`) so the
@@ -1525,21 +1532,22 @@ def _finalize_ogc(
     per-``_paginate`` ``_row_cap`` is only an early-stop download bound.
     """
     frame = _deal_with_empty(frame, properties, service)
-    if convert_type:
-        frame = _type_cols(frame)
-    frame = _arrange_cols(frame, properties, output_id, extra_id_cols)
-    frame = _sort_rows(frame)
-    # Enforce PEP-8 snake_case column names regardless of what the API
-    # returns. Today every column is already snake_case so this is a no-op,
-    # but it keeps the convention in one place if a future collection ever
-    # returns a camelCase field.
+    # Normalize to PEP-8 snake_case column names *first*, so the dialect's
+    # ``time_cols``/``numerical_cols``/``sort_cols`` (all snake_case) match
+    # regardless of whether the API returns snake_case (Water Data, where
+    # this is a no-op) or camelCase (a sibling OGC API). Doing it before
+    # type coercion is what makes ``convert_type`` reach a camelCase field.
     renames = {
-        col: _to_snake_case(col)
+        col: snake
         for col in frame.columns
-        if isinstance(col, str) and _to_snake_case(col) != col
+        if isinstance(col, str) and (snake := _to_snake_case(col)) != col
     }
     if renames:
         frame = frame.rename(columns=renames)
+    if convert_type:
+        frame = _type_cols(frame, dialect)
+    frame = _arrange_cols(frame, properties, output_id, extra_id_cols)
+    frame = _sort_rows(frame, dialect)
     if max_rows is not None:
         frame = frame.head(max_rows)
     return frame, BaseMetadata(response)
@@ -1643,6 +1651,7 @@ def get_ogc_data(
         service=service,
         max_rows=max_rows,
         extra_id_cols=extra_id_cols,
+        dialect=dialect,
     )
     with _progress.progress_context(service=service), _row_cap(max_rows):
         with _ogc_base_url(base_url), _dialect(dialect):
@@ -1695,10 +1704,16 @@ def _run_sync(
             except httpx.TransportError as exc:
                 # The initial-request connection failure ``_paginate`` lets
                 # through raw; mid-pagination failures are already typed.
-                raise _network_error(OGC_API_URL, exc) from exc
+                # Report the base URL actually targeted (NGWMN/sibling APIs
+                # set their own via ``_ogc_base_url``), not a hardcoded host.
+                raise _network_error(_ogc_base_url_var.get(), exc) from exc
 
 
-_MONITORING_LOCATION_ID_RE = re.compile(r"[^-\s]+-[^-\s]+")
+# ``AGENCY-ID``: a hyphen-separated agency prefix and local id. The local id
+# may itself contain hyphens (``\S+`` after the first separator) — NGWMN
+# aggregates many non-USGS agencies whose local ids aren't bare digits, so
+# only the agency prefix is constrained to be hyphen/space-free.
+_MONITORING_LOCATION_ID_RE = re.compile(r"[^-\s]+-\S+")
 
 # Default set of iterable-shaped params that ``_get_args`` must NOT push
 # through ``_normalize_str_iterable`` (date-range params may carry

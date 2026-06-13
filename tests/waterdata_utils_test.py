@@ -344,6 +344,32 @@ def test_get_resp_data_handles_missing_features_key():
     assert isinstance(df, pd.DataFrame)
 
 
+def test_next_req_url_follows_link_without_number_returned():
+    """Regression: the NGWMN OGC API omits ``numberReturned`` from its
+    page envelope. ``_next_req_url`` used to gate the ``next`` link on that
+    field, so NGWMN pagination stopped after page 1 and every multi-page
+    result was silently truncated. It now keys off ``features`` (mirroring
+    ``_get_resp_data``), so a page that carries features still follows its
+    ``next`` link even when ``numberReturned`` is absent."""
+    resp = mock.MagicMock()
+    resp.url = httpx.URL("https://example.com/page1")
+    body = {
+        # NGWMN shape: features present, NO numberReturned key.
+        "features": [{"id": "1"}],
+        "links": [{"rel": "next", "href": "https://example.com/page2"}],
+    }
+    assert _next_req_url(resp, body=body) == "https://example.com/page2"
+
+
+def test_next_req_url_stops_when_no_features():
+    """A page with no features ends pagination regardless of any stray
+    ``next`` link (and regardless of ``numberReturned``)."""
+    resp = mock.MagicMock()
+    resp.url = httpx.URL("https://example.com/page1")
+    body = {"features": [], "links": [{"rel": "next", "href": "https://x/2"}]}
+    assert _next_req_url(resp, body=body) is None
+
+
 def test_walk_pages_does_not_mutate_initial_response():
     """The aggregated response returned from ``_walk_pages`` is built
     via ``_aggregate_paginated_response``, which returns a fresh copy.

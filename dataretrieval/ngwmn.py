@@ -19,10 +19,11 @@ See https://api.waterdata.usgs.gov/ngwmn/ogcapi for the API reference.
 from __future__ import annotations
 
 from collections.abc import Iterable
+from typing import Any
 
 import pandas as pd
 
-from dataretrieval.ogc.engine import BASE_URL, _get_args, get_ogc_data
+from dataretrieval.ogc.engine import BASE_URL, OgcDialect, _get_args, get_ogc_data
 from dataretrieval.utils import BaseMetadata
 
 # The National Ground-Water Monitoring Network exposes its own OGC API at a
@@ -32,6 +33,38 @@ NGWMN_OGC_API_URL = f"{BASE_URL}/ngwmn/ogcapi"
 # The NGWMN OGC API exposes the feature id under the generic ``id`` column
 # (there is no service-specific id name as there is for the main collections).
 _NGWMN_OUTPUT_ID = "id"
+
+# NGWMN's request shape matches the generic OGC default (no CQL2-only or
+# date-only collections), but its result columns need their own coercion and
+# sort vocabulary: water-level observations are timestamped by ``sample_time``
+# (not the Water Data ``time``) and report depths/levels in feet.
+NGWMN_DIALECT = OgcDialect(
+    time_cols=frozenset({"sample_time"}),
+    numerical_cols=frozenset(
+        {
+            "water_depth_below_land_surface_ft",
+            "water_level_above_site_datum_ft",
+            "water_level_above_navd88_ft",
+        }
+    ),
+    sort_cols=("sample_time", "monitoring_location_id"),
+)
+
+
+def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMetadata]:
+    """Marshal a getter's arguments and dispatch to the shared OGC engine.
+
+    Every NGWMN getter ends with this same call; centralizing it keeps the
+    NGWMN base URL, output id, and dialect wired up in exactly one place.
+    """
+    args = _get_args(local_vars)
+    return get_ogc_data(
+        args,
+        service,
+        output_id=_NGWMN_OUTPUT_ID,
+        base_url=NGWMN_OGC_API_URL,
+        dialect=NGWMN_DIALECT,
+    )
 
 
 def get_sites(
@@ -132,11 +165,7 @@ def get_sites(
         ...     skip_geometry=True,
         ... )
     """
-    service = "sites"
-    args = _get_args(locals())
-    return get_ogc_data(
-        args, service, output_id=_NGWMN_OUTPUT_ID, base_url=NGWMN_OGC_API_URL
-    )
+    return _get("sites", locals())
 
 
 def get_water_level(
@@ -210,11 +239,7 @@ def get_water_level(
         ...     monitoring_location_id=["USGS-272838082142201", "MBMG-702934"]
         ... )
     """
-    service = "waterLevelObs"
-    args = _get_args(locals())
-    return get_ogc_data(
-        args, service, output_id=_NGWMN_OUTPUT_ID, base_url=NGWMN_OGC_API_URL
-    )
+    return _get("waterLevelObs", locals())
 
 
 def get_lithology(
@@ -257,11 +282,7 @@ def get_lithology(
         ...     monitoring_location_id="AKDNR-535134236016630"
         ... )
     """
-    service = "lithologyObs"
-    args = _get_args(locals())
-    return get_ogc_data(
-        args, service, output_id=_NGWMN_OUTPUT_ID, base_url=NGWMN_OGC_API_URL
-    )
+    return _get("lithologyObs", locals())
 
 
 def get_well_construction(
@@ -308,11 +329,7 @@ def get_well_construction(
         ...     monitoring_location_id="USGS-272838082142201"
         ... )
     """
-    service = "constructionObs"
-    args = _get_args(locals())
-    return get_ogc_data(
-        args, service, output_id=_NGWMN_OUTPUT_ID, base_url=NGWMN_OGC_API_URL
-    )
+    return _get("constructionObs", locals())
 
 
 def get_providers(
@@ -362,8 +379,4 @@ def get_providers(
         ...     organization_type="NWIS", state="WI"
         ... )
     """
-    service = "providers"
-    args = _get_args(locals())
-    return get_ogc_data(
-        args, service, output_id=_NGWMN_OUTPUT_ID, base_url=NGWMN_OGC_API_URL
-    )
+    return _get("providers", locals())

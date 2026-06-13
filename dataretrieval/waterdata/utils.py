@@ -22,7 +22,6 @@ from dataretrieval.ogc import engine
 from dataretrieval.ogc.engine import (
     _DATE_RANGE_PARAMS,
     _DURATION_RE,
-    _MONITORING_LOCATION_ID_RE,
     BASE_URL,
     GEOPANDAS,
     OGC_API_URL,
@@ -41,18 +40,14 @@ from dataretrieval.ogc.engine import (
     _get_resp_data,
     _next_req_url,
     _normalize_str_iterable,
-    _ogc_base_url,
     _paginate,
     _paginated_failure_message,
     _parse_retry_after,
     _raise_for_non_200,
     _row_cap,
     _run_sync,
-    _sort_rows,
-    _switch_arg_id,
     _switch_properties_id,
     _to_snake_case,
-    _type_cols,
     _walk_pages,
 )
 from dataretrieval.ogc.engine import (
@@ -112,11 +107,36 @@ _EXTRA_ID_COLS = frozenset(
 )
 
 # The Water Data API dialect: ``monitoring-locations`` doesn't accept
-# comma-separated multi-value GET params (so it must POST CQL2 JSON), and
-# ``daily`` renders its time arguments date-only (``YYYY-MM-DD``).
+# comma-separated multi-value GET params (so it must POST CQL2 JSON),
+# ``daily`` renders its time arguments date-only (``YYYY-MM-DD``), and the
+# ``time_cols``/``numerical_cols``/``sort_cols`` are the Water-Data column
+# vocabulary the generic engine used to hardcode.
 WATERDATA_DIALECT = OgcDialect(
     cql2_services=frozenset({"monitoring-locations"}),
     date_only_services=frozenset({"daily"}),
+    time_cols=frozenset(
+        {
+            "begin",
+            "begin_utc",
+            "construction_date",
+            "end",
+            "end_utc",
+            "last_modified",
+            "time",
+        }
+    ),
+    numerical_cols=frozenset(
+        {
+            "altitude",
+            "altitude_accuracy",
+            "contributing_drainage_area",
+            "drainage_area",
+            "hole_constructed_depth",
+            "value",
+            "well_constructed_depth",
+        }
+    ),
+    sort_cols=("time", "monitoring_location_id"),
 )
 
 # Iterable-shaped params that ``_get_args`` must NOT push through
@@ -212,10 +232,10 @@ def _finalize_ogc(
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Water-Data wrapper over :func:`engine._finalize_ogc`.
 
-    Injects the Water Data ``extra_id_cols`` so a direct call (e.g. from
-    ``get_cql``) orders synthetic id columns identically to the typed
-    getters. See :func:`engine._finalize_ogc` for the full result-shaping
-    contract.
+    Injects the Water Data ``extra_id_cols`` and ``dialect`` so a direct
+    call (e.g. from ``get_cql``) orders synthetic id columns and coerces/
+    sorts result columns identically to the typed getters. See
+    :func:`engine._finalize_ogc` for the full result-shaping contract.
     """
     return engine._finalize_ogc(
         frame,
@@ -226,6 +246,7 @@ def _finalize_ogc(
         service=service,
         max_rows=max_rows,
         extra_id_cols=_EXTRA_ID_COLS,
+        dialect=WATERDATA_DIALECT,
     )
 
 
@@ -519,7 +540,6 @@ __all__ = [
     "_DATE_RANGE_PARAMS",
     "_DURATION_RE",
     "_EXTRA_ID_COLS",
-    "_MONITORING_LOCATION_ID_RE",
     "_NO_NORMALIZE_PARAMS",
     "_OUTPUT_ID_BY_SERVICE",
     "_arrange_cols",
@@ -541,18 +561,14 @@ __all__ = [
     "_handle_stats_nesting",
     "_next_req_url",
     "_normalize_str_iterable",
-    "_ogc_base_url",
     "_paginate",
     "_paginated_failure_message",
     "_parse_retry_after",
     "_raise_for_non_200",
     "_row_cap",
     "_run_sync",
-    "_sort_rows",
-    "_switch_arg_id",
     "_switch_properties_id",
     "_to_snake_case",
-    "_type_cols",
     "_walk_pages",
     "get_ogc_data",
     "get_stats_data",
