@@ -1,15 +1,12 @@
-"""A single self-updating status line for paginated / chunked Water Data queries.
+"""A single self-updating status line for paginated / chunked OGC queries.
 
-Water Data getters fan out two ways the caller can't see: large multi-value
+OGC getters fan out two ways the caller can't see: large multi-value
 requests are split into URL-length-safe *chunks* (``chunking`` module), and each
 request follows ``next`` links across an unknown number of *pages*
-(``utils._paginate``). This module surfaces that work as one line on stderr,
+(``engine._paginate``). This module surfaces that work as one line on stderr,
 rewritten in place as data arrives::
 
     Retrieving: daily · 6 pages · 2,881 rows · 995/1,000 requests remaining
-
-It replaces the per-page ``logger.info`` calls that previously narrated the same
-events one line at a time.
 
 The active reporter lives in a :class:`~contextvars.ContextVar` rather than being
 threaded through every signature: progress is a cross-cutting concern that the
@@ -47,7 +44,7 @@ def _group_int(value: str) -> str:
 # state. (It does not give concurrent queries sharing one stderr separate
 # lines — they would still interleave.)
 _active: contextvars.ContextVar[ProgressReporter | None] = contextvars.ContextVar(
-    "waterdata_progress", default=None
+    "ogc_progress", default=None
 )
 
 # Where to register for an API key. Surfaced once when a query runs without an

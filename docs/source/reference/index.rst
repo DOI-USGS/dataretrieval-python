@@ -9,6 +9,7 @@ API reference
 
     exceptions
     nadp
+    ngwmn
     nldi
     nwis
     streamstats

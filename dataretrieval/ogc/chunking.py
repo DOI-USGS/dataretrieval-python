@@ -1,6 +1,6 @@
-"""Joint URL-byte chunking for the Water Data OGC getters.
+"""Joint URL-byte chunking for the OGC getters.
 
-A Water Data query has several chunkable axes: every multi-value list
+An OGC query has several chunkable axes: every multi-value list
 parameter (sites, parameter codes, …) plus the cql-text ``filter``,
 which splits along its top-level OR clauses. Any of them can fan the
 URL past the server's ~8 KB byte limit. ``ChunkPlan`` picks a fan-out
@@ -62,7 +62,7 @@ import os
 import random
 from collections.abc import Awaitable, Callable, Iterator
 from contextlib import contextmanager, suppress
-from contextvars import ContextVar
+from contextvars import ContextVar, copy_context
 from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any, ClassVar, cast
@@ -81,7 +81,7 @@ from dataretrieval.exceptions import (
 )
 from dataretrieval.utils import HTTPX_DEFAULTS
 
-from . import _progress
+from . import progress as _progress
 from .filters import (
     _check_numeric_filter_pitfall,
     _is_chunkable,
@@ -91,7 +91,7 @@ from .filters import (
 # Empirically the API replies HTTP 414 above ~8200 bytes of full URL —
 # matches nginx's default ``large_client_header_buffers`` of 8 KB. 8000
 # leaves ~200 bytes for request-line framing and proxy variance.
-_WATERDATA_URL_BYTE_LIMIT = 8000
+_OGC_URL_BYTE_LIMIT = 8000
 
 # Any list-shaped kwarg with >1 element is chunked (comma-joined per
 # sub-list in the URL); ~90 OGC params qualify, so we denylist the few
@@ -358,7 +358,7 @@ def get_active_client() -> httpx.AsyncClient | None:
     Return the chunker's currently-published client, or ``None``.
 
     Used by the paginated-loop helpers (e.g.
-    :func:`dataretrieval.waterdata.utils._client_for`) to reuse the
+    :func:`dataretrieval.ogc.engine._client_for`) to reuse the
     per-call connection pool.
 
     Returns
@@ -449,11 +449,12 @@ class ChunkInterrupted(DataRetrievalError):
     .. code-block:: python
 
         import time
-        from dataretrieval.waterdata import get_daily
-        from dataretrieval.waterdata.chunking import ChunkInterrupted
+        from dataretrieval import ChunkInterrupted
 
+        # ``getter`` is any chunked OGC getter — e.g.
+        # ``waterdata.get_daily`` or ``ngwmn.get_water_level``.
         try:
-            df, md = get_daily(monitoring_location_id=long_list_of_sites)
+            df, md = getter(monitoring_location_id=long_list_of_sites)
         except ChunkInterrupted as exc:
             while True:
                 time.sleep(exc.retry_after or 5 * 60)
@@ -1367,6 +1368,15 @@ class ChunkedCall:
         self.fetch = fetch
         self.retry_policy = retry_policy
         self.finalize = finalize
+        # Snapshot the ambient context at construction time — i.e. inside the
+        # caller's ``with`` blocks (base URL, dialect, row cap, progress
+        # reporter). :meth:`resume` runs every drive inside this snapshot, so
+        # a *later* ``exc.call.resume()`` — which fires after those ``with``
+        # blocks have exited and reset their ContextVars — still rebuilds
+        # sub-requests against the original API's base URL/dialect rather than
+        # the process defaults. ``build_request`` reads those ContextVars when
+        # it reconstructs each sub-request, so the snapshot must outlive them.
+        self._ctx = copy_context()
         # Completed (frame, response) pairs keyed by sub-args index; sparse
         # (gathered sub-requests complete out of order — see class docstring).
         # ``_run``'s ``track`` closure is the only writer, so ``dict`` insertion
@@ -1534,6 +1544,17 @@ class ChunkedCall:
             handle is on ``exc.call`` — wait for the underlying
             condition to clear and call ``exc.call.resume()`` again.
         """
+        # Drive inside the snapshot taken at construction (see ``__init__``).
+        # ``start_blocking_portal`` copies the *calling* context into its
+        # worker thread, and running here means that calling context is the
+        # snapshot — so the base URL / dialect / row cap / progress reporter
+        # active when the call was created reach the rebuilt sub-requests,
+        # even when this is a resume fired long after the original ``with``
+        # blocks exited.
+        return self._ctx.run(self._resume_in_context)
+
+    def _resume_in_context(self) -> tuple[pd.DataFrame, Any]:
+        """Body of :meth:`resume`, run inside the captured context."""
         concurrency = _read_concurrency_env()
         with start_blocking_portal() as portal:
             # ``portal.call`` returns ``Any`` because ``functools.partial``
@@ -1709,7 +1730,7 @@ def multi_value_chunked(
         measure each candidate plan.
     url_limit : int, optional
         Byte budget for the request (URL + body). When ``None``
-        (default), the module-level ``_WATERDATA_URL_BYTE_LIMIT`` is
+        (default), the module-level ``_OGC_URL_BYTE_LIMIT`` is
         resolved at call time so test patches via
         ``monkeypatch.setattr`` take effect.
 
@@ -1742,7 +1763,7 @@ def multi_value_chunked(
             *,
             finalize: _Finalize = _passthrough_result,
         ) -> tuple[pd.DataFrame, Any]:
-            limit = _WATERDATA_URL_BYTE_LIMIT if url_limit is None else url_limit
+            limit = _OGC_URL_BYTE_LIMIT if url_limit is None else url_limit
             plan = ChunkPlan(args, build_request, limit)
             retry_policy = RetryPolicy.from_env()
             # The concurrency cap is resolved inside ``resume()`` from
