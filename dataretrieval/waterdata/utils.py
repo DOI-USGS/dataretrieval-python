@@ -147,13 +147,19 @@ def _switch_properties_id(
     properties: list[str] | None, id_name: str, service: str
 ) -> list[str]:
     """
-    Switch properties id from its package-specific identifier to the
-    standardized "id" name that the API recognizes.
+    Build the wire ``properties`` list, dropping every id alias and
+    ``geometry``.
 
-    Replaces any service-specific id name in `properties` with "id",
-    normalizes remaining hyphens to underscores, and drops the "geometry"
-    and service-id entries. Returns an empty list when `properties` is empty
-    or None.
+    The feature ``id`` is always returned and is renamed to the
+    service-specific id column (e.g. ``daily_id``) in post-processing, so
+    it must not be requested as a property: several collections (e.g.
+    ``daily``, ``continuous``) reject ``id`` in ``properties`` with an
+    HTTP 400. ``geometry`` is likewise excluded because it is controlled
+    by ``skip_geometry``. Any service-specific id name (``daily_id``,
+    ``monitoring_location_id``, …) and the bare ``id`` are dropped, and
+    remaining hyphens are normalized to underscores. Returns an empty
+    list when `properties` is empty or None — the URL then omits the
+    ``properties`` filter and the result is shaped by :func:`_arrange_cols`.
 
     Parameters
     ----------
@@ -161,34 +167,34 @@ def _switch_properties_id(
         A list containing the properties or column names to be pulled from the
         service, or None.
     id_name : str
-        The name of the specific identifier key to look for.
+        The service-specific id column name to drop (e.g. ``daily_id``).
     service : str
         The service name.
 
     Returns
     -------
     List[str]
-        The modified list with id names standardized to "id".
+        The wire ``properties`` with id aliases and ``geometry`` removed
+        and hyphens normalized.
 
     Examples
     --------
-    For service "monitoring-locations", it will look for
-    "monitoring_location_id" and change
-    it to "id".
+    For service "daily" with ``properties=["daily_id", "value", "geometry"]``,
+    returns ``["value"]`` — ``daily_id`` and ``geometry`` are dropped, while
+    the ``daily_id`` column still appears in the result, renamed from the
+    always-returned feature ``id``.
     """
     if not properties:
         return []
     service_id = service.replace("-", "_") + "_id"
-    last_letter = service[-1]
-    service_id_singular = ""
-    if last_letter == "s":
-        service_singular = service[:-1]
-        service_id_singular = service_singular.replace("-", "_") + "_id"
-    # Replace id fields with "id"
-    id_fields = [service_id, service_id_singular, id_name]
-    properties = ["id" if p in id_fields else p.replace("-", "_") for p in properties]
-    # Remove unwanted fields
-    return [p for p in properties if p not in ["geometry", service_id]]
+    # The feature ``id`` always comes back (renamed to the service id
+    # downstream) and several collections reject it as a selectable
+    # property; ``geometry`` is controlled by ``skip_geometry``. Drop both,
+    # plus the service-specific id column (``id_name``) and the name derived
+    # straight from the service (``service_id``).
+    drop = {"id", "geometry", id_name, service_id}
+    normalized = (p.replace("-", "_") for p in properties)
+    return [p for p in normalized if p not in drop]
 
 
 _DATETIME_FORMATS = (

@@ -3007,8 +3007,9 @@ def get_cql(
 
     properties_list = _as_str_list(properties, "properties")
 
-    # Translate user-facing names (``daily_id``/``id``) to the wire ``id`` the
-    # OGC API expects, matching the typed getters.
+    # Drop id aliases (``daily_id``/``id``) and ``geometry`` from the wire
+    # ``properties`` (the feature ``id`` is always returned and renamed
+    # downstream), matching the typed getters.
     wire_properties = _switch_properties_id(properties_list, output_id, service)
 
     req = _construct_cql_request(
