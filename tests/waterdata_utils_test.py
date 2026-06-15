@@ -8,6 +8,7 @@ import httpx
 import pandas as pd
 import pytest
 
+import dataretrieval.ogc._responses as _responses_module
 import dataretrieval.ogc.engine as _engine_module
 import dataretrieval.waterdata.stats as _stats_module
 import dataretrieval.waterdata.utils as _utils_module
@@ -555,15 +556,15 @@ def test_handle_nesting_empty_preserves_geopd_type():
     that hit an empty intermediate page."""
     # Monkeypatch a stub gpd so the test runs whether or not geopandas is
     # installed. The empty-page short-circuit delegates to the shared
-    # ``engine._empty_feature_frame``, which resolves ``gpd`` from the engine
-    # namespace — so patch it there, not in the stats module.
+    # ``_responses._empty_feature_frame``, which resolves ``gpd`` from the
+    # ``_responses`` namespace — so patch it there, not in the stats module.
     fake_gpd = mock.MagicMock()
 
     class _Sentinel:
         pass
 
     fake_gpd.GeoDataFrame = lambda *a, **kw: _Sentinel()
-    with mock.patch.object(_engine_module, "gpd", fake_gpd, create=True):
+    with mock.patch.object(_responses_module, "gpd", fake_gpd, create=True):
         result = _handle_nesting({"features": []}, geopd=True)
     assert isinstance(result, _Sentinel)
 
@@ -583,9 +584,9 @@ def test_get_resp_data_empty_preserves_geopd_type():
 
     resp = mock.MagicMock()
     resp.json.return_value = {"numberReturned": 0, "features": [], "links": []}
-    # ``_get_resp_data`` resolves ``gpd`` from the engine namespace -- patch
-    # it there, not in ``utils``.
-    with mock.patch.object(_engine_module, "gpd", fake_gpd, create=True):
+    # ``_get_resp_data`` resolves ``gpd`` from the ``_responses`` namespace --
+    # patch it there, not in ``utils``.
+    with mock.patch.object(_responses_module, "gpd", fake_gpd, create=True):
         result = _get_resp_data(resp, geopd=True)
     assert isinstance(result, _Sentinel)
 

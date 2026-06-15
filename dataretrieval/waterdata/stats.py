@@ -31,9 +31,10 @@ from dataretrieval.utils import BaseMetadata
 # directly, so this module needs its own bound ``gpd`` name. Import it under the
 # same guard the engine uses; when geopandas is absent ``gpd`` is left unbound
 # (``GEOPANDAS`` is ``False``, so the stats path never touches it). The
-# empty-page short-circuit instead delegates to ``engine._empty_feature_frame``,
-# which resolves the engine's ``gpd`` — so an empty-page test patches
-# ``engine.gpd`` while the populated geopandas branch uses ``stats.gpd``.
+# empty-page short-circuit instead delegates to
+# ``dataretrieval.ogc._responses._empty_feature_frame``, which resolves
+# ``_responses.gpd`` — so an empty-page test patches ``_responses.gpd`` while
+# the populated geopandas branch uses ``stats.gpd``.
 try:
     import geopandas as gpd
 except ImportError:  # pragma: no cover - exercised only without geopandas
