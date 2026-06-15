@@ -187,14 +187,12 @@ def _switch_properties_id(
     if not properties:
         return []
     service_id = service.replace("-", "_") + "_id"
-    service_id_singular = ""
-    if service.endswith("s"):
-        service_id_singular = service[:-1].replace("-", "_") + "_id"
     # The feature ``id`` always comes back (renamed to the service id
-    # downstream) and several collections now reject it as a selectable
+    # downstream) and several collections reject it as a selectable
     # property; ``geometry`` is controlled by ``skip_geometry``. Drop both,
-    # plus every service-specific id alias.
-    drop = {"id", "geometry", id_name, service_id, service_id_singular}
+    # plus the service-specific id column (``id_name``) and the name derived
+    # straight from the service (``service_id``).
+    drop = {"id", "geometry", id_name, service_id}
     normalized = (p.replace("-", "_") for p in properties)
     return [p for p in normalized if p not in drop]
 
