@@ -53,7 +53,14 @@ pytestmark = pytest.mark.flaky(
     reruns=2,
     reruns_delay=5,
     only_rerun=[
-        r"(?:RateLimited|RuntimeError):\s*(?:429|5\d\d):",  # _raise_for_non_200 output
+        # Transient HTTP errors (429 / 5xx) on the direct path: RateLimited /
+        # ServiceUnavailable carry a "<status>: ..." message (the RuntimeError
+        # shape is kept for any legacy call site).
+        r"(?:RateLimited|ServiceUnavailable|RuntimeError):\s*(?:429|5\d\d):",
+        # The chunked fan-out wraps a transient sub-request as a ChunkInterrupted
+        # subclass (QuotaExhausted for 429, ServiceInterrupted for 5xx), whose
+        # message has no leading status token.
+        r"(?:QuotaExhausted|ServiceInterrupted):",
         r"Connect(ion)?Error",  # requests' ConnectionError + httpx' ConnectError
         r"ReadTimeout|ConnectTimeout|Timeout",
     ],
