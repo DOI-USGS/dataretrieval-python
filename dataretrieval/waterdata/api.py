@@ -213,6 +213,13 @@ def get_daily(
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
 
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
+
     Examples
     --------
     .. code::
@@ -420,6 +427,13 @@ def get_continuous(
         Formatted data returned from the API query.
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
 
     Examples
     --------
@@ -731,6 +745,13 @@ def get_monitoring_locations(
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
 
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
+
     Examples
     --------
     .. code::
@@ -961,6 +982,13 @@ def get_time_series_metadata(
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
 
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
+
     Examples
     --------
     .. code::
@@ -1160,6 +1188,13 @@ site_type_code : string or iterable of strings, optional
         Formatted data returned from the API query.
     md : :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object pertaining to the query.
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
 
     Examples
     --------
@@ -1378,6 +1413,13 @@ def get_latest_continuous(
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
 
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
+
     Examples
     --------
     .. code::
@@ -1574,6 +1616,13 @@ def get_latest_daily(
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
 
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
+
     Examples
     --------
     .. code::
@@ -1762,6 +1811,13 @@ def get_field_measurements(
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
 
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
+
     Examples
     --------
     .. code::
@@ -1876,6 +1932,13 @@ def get_field_measurements_metadata(
         Formatted data returned from the API query.
     md : :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object pertaining to the query.
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
 
     Examples
     --------
@@ -2000,6 +2063,13 @@ def get_peaks(
     md : :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object pertaining to the query.
 
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
+
     Examples
     --------
     .. code::
@@ -2081,6 +2151,13 @@ def get_reference_table(
         medium code values).
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object including the URL request and query time.
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
 
     Examples
     --------
@@ -2921,6 +2998,13 @@ def get_channel(
         Formatted data returned from the API query.
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
 
     Examples
     --------
