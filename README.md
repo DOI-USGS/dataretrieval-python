@@ -105,18 +105,6 @@ df, metadata = waterdata.get_continuous(
 print(f"Retrieved {len(df)} continuous gage height measurements")
 ```
 
-Rating curves come back as a `dict` of rating tables (one per rating file),
-keyed by rating id — unlike the other getters, which return a
-`(DataFrame, metadata)` pair:
-
-```python
-# Get stage-discharge rating curves for a streamgage
-ratings = waterdata.get_ratings(monitoring_location_id='USGS-01646500')
-
-for rating_id, table in ratings.items():
-    print(f"{rating_id}: {len(table)} rating points")
-```
-
 Visit the
 [API Reference](https://doi-usgs.github.io/dataretrieval-python/reference/waterdata.html)
 for more information and examples on available services and input parameters.
