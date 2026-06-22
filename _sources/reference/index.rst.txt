@@ -12,6 +12,7 @@ API reference
     ngwmn
     nldi
     nwis
+    samples
     streamstats
     utils
     waterdata

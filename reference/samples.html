@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API reference &mdash; dataretrieval 0.1.dev1+ga7d7f5587 documentation</title>
+  <title>dataretrieval.samples &mdash; dataretrieval 0.1.dev1+ga7d7f5587 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
@@ -20,8 +20,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="dataretrieval.exceptions" href="exceptions.html" />
-    <link rel="prev" title="License and Disclaimer" href="../meta/license.html" /> 
+    <link rel="next" title="dataretrieval.streamstats" href="streamstats.html" />
+    <link rel="prev" title="dataretrieval.nwis" href="nwis.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -49,13 +49,16 @@
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">API reference</a><ul>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="exceptions.html">dataretrieval.exceptions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nadp.html">dataretrieval.nadp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ngwmn.html">dataretrieval.ngwmn</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nldi.html">dataretrieval.nldi</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nwis.html">dataretrieval.nwis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="samples.html">dataretrieval.samples</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.samples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.samples.get_usgs_samples"><code class="docutils literal notranslate"><span class="pre">get_usgs_samples()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="streamstats.html">dataretrieval.streamstats</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html">dataretrieval.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="waterdata.html">dataretrieval.waterdata</a></li>
@@ -78,9 +81,10 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">API reference</li>
+          <li class="breadcrumb-item"><a href="index.html">API reference</a></li>
+      <li class="breadcrumb-item active">dataretrieval.samples</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/reference/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/reference/samples.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -88,30 +92,27 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="api-reference">
-<h1>API reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="exceptions.html">dataretrieval.exceptions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="nadp.html">dataretrieval.nadp</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ngwmn.html">dataretrieval.ngwmn</a></li>
-<li class="toctree-l1"><a class="reference internal" href="nldi.html">dataretrieval.nldi</a></li>
-<li class="toctree-l1"><a class="reference internal" href="nwis.html">dataretrieval.nwis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="samples.html">dataretrieval.samples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="streamstats.html">dataretrieval.streamstats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="utils.html">dataretrieval.utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="waterdata.html">dataretrieval.waterdata</a></li>
-<li class="toctree-l1"><a class="reference internal" href="wqp.html">dataretrieval.wqp</a></li>
-</ul>
-</div>
+  <section id="module-dataretrieval.samples">
+<span id="dataretrieval-samples"></span><span id="samples"></span><h1>dataretrieval.samples<a class="headerlink" href="#module-dataretrieval.samples" title="Link to this heading"></a></h1>
+<p>Functions for downloading data from the USGS Aquarius Samples database
+(<a class="reference external" href="https://waterdata.usgs.gov/download-samples/">https://waterdata.usgs.gov/download-samples/</a>).</p>
+<p>See <a class="reference external" href="https://api.waterdata.usgs.gov/samples-data/docs#/">https://api.waterdata.usgs.gov/samples-data/docs#/</a> for API reference</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.samples.get_usgs_samples">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.samples.</span></span><span class="sig-name descname"><span class="pre">get_usgs_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">pd.DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/samples.html#get_usgs_samples"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.samples.get_usgs_samples" title="Link to this definition"></a></dt>
+<dd><p>Deprecated: use <code class="docutils literal notranslate"><span class="pre">waterdata.get_samples()</span></code> instead.</p>
+<p>All keyword arguments are forwarded directly to
+<a class="reference internal" href="waterdata.html#dataretrieval.waterdata.get_samples" title="dataretrieval.waterdata.get_samples"><code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.waterdata.get_samples()</span></code></a>.</p>
+</dd></dl>
+
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../meta/license.html" class="btn btn-neutral float-left" title="License and Disclaimer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="exceptions.html" class="btn btn-neutral float-right" title="dataretrieval.exceptions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="nwis.html" class="btn btn-neutral float-left" title="dataretrieval.nwis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="streamstats.html" class="btn btn-neutral float-right" title="dataretrieval.streamstats" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
