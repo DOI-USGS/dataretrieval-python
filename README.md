@@ -133,8 +133,8 @@ logging.basicConfig(level=logging.DEBUG)
 ### National Ground-Water Monitoring Network (NGWMN)
 
 Access groundwater data aggregated from many state, federal, and local
-agencies. NGWMN is a sibling of the Water Data API built on the same engine,
-so chunking, pagination, and result shaping behave the same way:
+agencies. NGWMN uses the same OGC engine as the Water Data API,
+so chunking and pagination behave the same way:
 
 ```python
 from dataretrieval import ngwmn
