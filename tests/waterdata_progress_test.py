@@ -17,13 +17,14 @@ import httpx
 import pandas as pd
 import pytest
 
-from dataretrieval.waterdata import _progress
-from dataretrieval.waterdata._progress import (
+from dataretrieval.ogc import progress as _progress
+from dataretrieval.ogc.chunking import ChunkedCall
+from dataretrieval.ogc.planning import ChunkPlan
+from dataretrieval.ogc.progress import (
     ProgressReporter,
     current,
     progress_context,
 )
-from dataretrieval.waterdata.chunking import ChunkedCall, ChunkPlan
 from dataretrieval.waterdata.utils import _paginate, _walk_pages
 
 

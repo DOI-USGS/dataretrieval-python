@@ -173,12 +173,12 @@ class Test_error_taxonomy:
         ``except`` clause spans the legacy and waterdata subsystems, and they
         slot under the shared family bases (``HTTPError`` / ``TransientError`` /
         ``RequestTooLarge``)."""
-        from dataretrieval.waterdata.chunking import (
-            ChunkInterrupted,
+        from dataretrieval.exceptions import (
             RateLimited,
             ServiceUnavailable,
             Unchunkable,
         )
+        from dataretrieval.ogc.interruptions import ChunkInterrupted
 
         for cls in (RateLimited, ServiceUnavailable, Unchunkable, ChunkInterrupted):
             assert issubclass(cls, exceptions.DataRetrievalError)
@@ -194,6 +194,25 @@ class Test_error_taxonomy:
         import dataretrieval
 
         assert dataretrieval.DataRetrievalError is exceptions.DataRetrievalError
+
+    def test_chunk_interruptions_exported_at_top_level(self):
+        """The resumable chunk-interruption exceptions are reachable from the
+        top level (``from dataretrieval import ChunkInterrupted``) instead of
+        only the internal ``dataretrieval.ogc.interruptions`` module, and
+        resolve to the same classes."""
+        import dataretrieval
+        from dataretrieval.ogc import interruptions
+
+        for name in ("ChunkInterrupted", "QuotaExhausted", "ServiceInterrupted"):
+            assert getattr(dataretrieval, name) is getattr(interruptions, name)
+            assert name in dataretrieval.__all__
+        assert issubclass(dataretrieval.QuotaExhausted, dataretrieval.ChunkInterrupted)
+        assert issubclass(
+            dataretrieval.ServiceInterrupted, dataretrieval.ChunkInterrupted
+        )
+        assert issubclass(
+            dataretrieval.ChunkInterrupted, dataretrieval.DataRetrievalError
+        )
 
 
 class Test_BaseMetadata:
@@ -309,3 +328,53 @@ class Test_attach_datetime_columns:
         )
         df = utils._attach_datetime_columns(df)
         assert df["Activity_StartDateTime"].tolist() == ["preexisting"]
+
+
+class Test_to_state:
+    """Tests of the shared state normalizer in ``codes.states``."""
+
+    def test_accepts_every_encoding(self):
+        from dataretrieval.codes.states import to_state
+
+        # name (any case), postal (any case), bare FIPS, and prefixed FIPS all
+        # resolve to the same canonical full name.
+        for value in ("Wisconsin", "wisconsin", "WI", "wi", "55", "US:55"):
+            assert to_state(value) == "Wisconsin"
+
+    def test_converts_to_each_representation(self):
+        from dataretrieval.codes.states import to_state
+
+        assert to_state("WI", "name") == "Wisconsin"
+        assert to_state("Wisconsin", "postal") == "WI"
+        assert to_state("Wisconsin", "fips") == "55"
+        assert to_state("Wisconsin", "fips_us") == "US:55"
+        # Conversion is independent of the input encoding.
+        assert to_state("55", "postal") == "WI"
+        assert to_state("wi", "fips_us") == "US:55"
+
+    def test_rejects_unrecognized_state(self):
+        from dataretrieval.codes.states import to_state
+
+        for bad in ("XX", "99", "US:99", "Wisconson"):
+            with pytest.raises(ValueError, match="not a recognized US state"):
+                to_state(bad)
+
+    def test_rejects_unknown_target(self):
+        from dataretrieval.codes.states import to_state
+
+        with pytest.raises(ValueError, match="to must be"):
+            to_state("WI", "zipcode")
+
+    def test_resolves_an_iterable_element_wise(self):
+        from dataretrieval.codes.states import to_state
+
+        # An iterable of mixed encodings returns a list, converted element-wise.
+        assert to_state(["WI", "Minnesota", "39"]) == [
+            "Wisconsin",
+            "Minnesota",
+            "Ohio",
+        ]
+        assert to_state(["WI", "CA"], "fips_us") == ["US:55", "US:06"]
+        # A bad element fails the whole call (fail-fast).
+        with pytest.raises(ValueError, match="not a recognized US state"):
+            to_state(["WI", "XX"])

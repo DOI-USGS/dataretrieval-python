@@ -1,4 +1,4 @@
-"""Tests for ``dataretrieval.waterdata.chunking``.
+"""Tests for ``dataretrieval.ogc.chunking``.
 
 These tests exercise the joint planner with a fake ``build_request``
 whose URL byte length is a deterministic function of its inputs:
@@ -17,6 +17,7 @@ and then fail in production.
 
 import asyncio
 import concurrent.futures
+import contextvars
 import datetime
 import http.server
 import sys
@@ -34,35 +35,45 @@ import pytest
 if sys.version_info < (3, 10):
     pytest.skip("Skip entire module on Python < 3.10", allow_module_level=True)
 
-from dataretrieval.exceptions import DataRetrievalError
-from dataretrieval.utils import HTTPX_DEFAULTS
-from dataretrieval.waterdata import chunking as _chunking
-from dataretrieval.waterdata import utils as _utils
-from dataretrieval.waterdata.chunking import (
+from dataretrieval.exceptions import (
+    DataRetrievalError,
+    RateLimited,
+    ServiceUnavailable,
+    Unchunkable,
+)
+from dataretrieval.ogc import chunking as _chunking
+from dataretrieval.ogc import retry as _retry_mod
+from dataretrieval.ogc.chunking import (
+    _QUOTA_HEADER,
+    ChunkedCall,
+    _chunked_client,
+    get_active_client,
+    multi_value_chunked,
+)
+from dataretrieval.ogc.interruptions import (
+    ChunkInterrupted,
+    QuotaExhausted,
+    ServiceInterrupted,
+)
+from dataretrieval.ogc.planning import (
     _LIST_SEP,
     _NEVER_CHUNK,
     _OR_SEP,
-    _QUOTA_HEADER,
-    ChunkedCall,
-    ChunkInterrupted,
     ChunkPlan,
-    QuotaExhausted,
-    RateLimited,
-    RetryPolicy,
-    ServiceInterrupted,
-    ServiceUnavailable,
-    Unchunkable,
-    _chunked_client,
     _combine_chunk_frames,
     _combine_chunk_responses,
     _extract_axes,
     _request_bytes,
+    _safe_request_bytes,
+)
+from dataretrieval.ogc.retry import (
+    _RETRIES_DEFAULT,
+    RetryPolicy,
     _retry,
     _retryable,
-    _safe_request_bytes,
-    get_active_client,
-    multi_value_chunked,
 )
+from dataretrieval.utils import HTTPX_DEFAULTS
+from dataretrieval.waterdata import utils as _utils
 from dataretrieval.waterdata.utils import _DATE_RANGE_PARAMS, _construct_api_requests
 
 
@@ -132,7 +143,7 @@ def test_never_chunk_covers_all_date_range_params():
     missing = _DATE_RANGE_PARAMS - _NEVER_CHUNK
     assert not missing, (
         f"_DATE_RANGE_PARAMS contains entries not in _NEVER_CHUNK: "
-        f"{sorted(missing)}. Add them to chunking._NEVER_CHUNK."
+        f"{sorted(missing)}. Add them to planning._NEVER_CHUNK."
     )
 
 
@@ -350,7 +361,7 @@ def test_multi_value_chunked_emits_3d_cartesian_product():
 
 
 def test_multi_value_chunked_lazy_url_limit(monkeypatch):
-    """``url_limit=None`` → resolve chunking._WATERDATA_URL_BYTE_LIMIT at call
+    """``url_limit=None`` → resolve chunking._OGC_URL_BYTE_LIMIT at call
     time, so tests that patch the constant affect this decorator too."""
     calls = []
 
@@ -361,7 +372,7 @@ def test_multi_value_chunked_lazy_url_limit(monkeypatch):
             elapsed=datetime.timedelta(seconds=0.1), headers={}
         )
 
-    monkeypatch.setattr(_chunking, "_WATERDATA_URL_BYTE_LIMIT", 240)
+    monkeypatch.setattr(_chunking, "_OGC_URL_BYTE_LIMIT", 240)
     # 4 sites of 10 chars → exceeds 240 → planner splits.
     fetch({"sites": ["S" * 10 + str(i) for i in range(4)]})
     assert len(calls) > 1, "patched constant should drive chunking"
@@ -657,6 +668,55 @@ def test_resume_produces_dataset_identical_to_uninterrupted_run():
 
     # And every original site must be present exactly once.
     assert sorted(df_a["id"].tolist()) == sorted(sites)
+
+
+def test_resume_rebuilds_in_captured_context():
+    """Regression: sub-requests are rebuilt by reading ambient ContextVars
+    (the engine threads base URL / dialect / row cap that way). A
+    ``call.resume()`` fired AFTER the originating ``with`` block exits —
+    the documented recovery for a mid-stream 429 — must still observe the
+    values active when the call was *created*, not the process defaults.
+    ``ChunkedCall`` snapshots the context at construction and runs every
+    drive inside it; without that snapshot a resumed NGWMN call would
+    rebuild its sub-requests against the wrong (default Water Data) base."""
+    var = contextvars.ContextVar("ctx_probe", default="DEFAULT")
+    observed: list[str] = []
+
+    state = {"calls": 0, "tripped": False}
+
+    async def fetch(args):
+        state["calls"] += 1
+        # The value visible at (re)build time — what _construct_api_requests
+        # would read from _ogc_base_url_var / _dialect_var in production.
+        observed.append(var.get())
+        if state["calls"] == 3 and not state["tripped"]:
+            state["tripped"] = True
+            raise RateLimited("429: Too many requests made.")
+        sites = list(args["sites"])
+        return (pd.DataFrame({"id": sites}), _quota_response(500))
+
+    sites = ["S" * 10 + str(i) for i in range(16)]
+    decorated = multi_value_chunked(build_request=_fake_build, url_limit=240)(fetch)
+
+    # Create + drive the call INSIDE the context, so the snapshot captures "IN".
+    token = var.set("IN")
+    try:
+        with pytest.raises(QuotaExhausted) as excinfo:
+            decorated({"sites": sites})
+    finally:
+        var.reset(token)
+
+    # The originating context has exited — the bare var is back to default.
+    assert var.get() == "DEFAULT"
+    assert 0 < excinfo.value.completed_chunks < excinfo.value.total_chunks
+
+    # Resume OUTSIDE the context. Every rebuilt sub-request must still see
+    # "IN" (the captured snapshot), never the leaked "DEFAULT".
+    observed.clear()
+    df, _ = excinfo.value.call.resume()
+    assert observed, "resume issued no sub-requests"
+    assert set(observed) == {"IN"}, observed
+    assert sorted(df["id"].tolist()) == sorted(sites)
 
 
 def test_chunker_passes_through_non_429_runtime_error():
@@ -994,7 +1054,7 @@ def test_combine_chunk_responses_returns_independent_headers():
 
 def test_paginate_terminates_on_empty_string_cursor():
     """``_paginate``'s loop predicate is ``while cursor is not None``.
-    Parse-response wrappers in ``_walk_pages`` / ``get_stats_data``
+    Parse-response wrappers in ``_walk_pages`` / ``stats.get_data``
     coerce falsy non-None values to None so an empty-string next-
     cursor (a real-but-unusual end-of-stream sentinel some pagination
     APIs use) doesn't trap us in an infinite ``follow_up('')`` loop."""
@@ -1758,7 +1818,7 @@ def test_retry_policy_from_env(monkeypatch):
     monkeypatch.setenv("API_USGS_RETRIES", "0")
     assert RetryPolicy.from_env().max_retries == 0
     monkeypatch.delenv("API_USGS_RETRIES", raising=False)
-    assert RetryPolicy.from_env().max_retries == _chunking._RETRIES_DEFAULT
+    assert RetryPolicy.from_env().max_retries == _RETRIES_DEFAULT
     monkeypatch.setenv("API_USGS_RETRIES", "-1")
     with pytest.raises(ValueError):
         RetryPolicy.from_env()
@@ -1779,8 +1839,8 @@ def test_retry_policy_rejects_invalid_settings():
 def test_retry_policy_from_env_honors_monkeypatched_constants(monkeypatch):
     # The timing knobs are read from the module constants at call time, so
     # monkeypatching them (as the module comment promises) takes effect.
-    monkeypatch.setattr(_chunking, "_RETRY_MAX_BACKOFF", 0.0)
-    monkeypatch.setattr(_chunking, "_RETRY_BASE_BACKOFF", 0.0)
+    monkeypatch.setattr(_retry_mod, "_RETRY_MAX_BACKOFF", 0.0)
+    monkeypatch.setattr(_retry_mod, "_RETRY_BASE_BACKOFF", 0.0)
     policy = RetryPolicy.from_env()
     assert policy.max_backoff == 0.0 and policy.base_backoff == 0.0
 

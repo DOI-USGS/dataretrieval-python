@@ -6,11 +6,12 @@ from urllib.parse import parse_qs, urlsplit
 import pandas as pd
 import pytest
 
-from dataretrieval.waterdata import get_continuous
-from dataretrieval.waterdata.filters import (
+from dataretrieval.ogc.filters import (
     _check_numeric_filter_pitfall,
+    _quote_cql_str,
     _split_top_level_or,
 )
+from dataretrieval.waterdata import get_continuous
 from dataretrieval.waterdata.utils import _construct_api_requests
 
 
@@ -30,6 +31,14 @@ def _fake_response(url="https://example.test", elapsed_ms=1):
         elapsed=timedelta(milliseconds=elapsed_ms),
         headers={},
     )
+
+
+def test_quote_cql_str_doubles_embedded_quotes():
+    """The shared CQL-text escaper doubles ``'`` and leaves other input
+    untouched (the contract ``waterdata.ratings._build_filter`` relies on)."""
+    assert _quote_cql_str("O'Brien") == "O''Brien"
+    assert _quote_cql_str("USGS-01646500") == "USGS-01646500"
+    assert _quote_cql_str("a'b'c") == "a''b''c"
 
 
 def test_construct_filter_passthrough():
@@ -163,11 +172,11 @@ def test_long_filter_fans_out_into_multiple_requests():
 
     with (
         mock.patch(
-            "dataretrieval.waterdata.utils._construct_api_requests",
+            "dataretrieval.ogc.engine._construct_api_requests",
             side_effect=_filter_size_aware_build,
         ),
         mock.patch(
-            "dataretrieval.waterdata.utils._walk_pages",
+            "dataretrieval.ogc.engine._walk_pages",
             side_effect=fake_walk_pages,
         ),
     ):
@@ -202,11 +211,11 @@ def test_long_filter_deduplicates_cross_chunk_overlap():
 
     with (
         mock.patch(
-            "dataretrieval.waterdata.utils._construct_api_requests",
+            "dataretrieval.ogc.engine._construct_api_requests",
             side_effect=_filter_size_aware_build,
         ),
         mock.patch(
-            "dataretrieval.waterdata.utils._walk_pages",
+            "dataretrieval.ogc.engine._walk_pages",
             side_effect=fake_walk_pages,
         ),
     ):
@@ -249,11 +258,11 @@ def test_empty_chunks_do_not_downgrade_geodataframe():
 
     with (
         mock.patch(
-            "dataretrieval.waterdata.utils._construct_api_requests",
+            "dataretrieval.ogc.engine._construct_api_requests",
             side_effect=_filter_size_aware_build,
         ),
         mock.patch(
-            "dataretrieval.waterdata.utils._walk_pages",
+            "dataretrieval.ogc.engine._walk_pages",
             side_effect=fake_walk_pages,
         ),
     ):
@@ -281,11 +290,11 @@ def test_cql_json_filter_is_not_chunked():
 
     with (
         mock.patch(
-            "dataretrieval.waterdata.utils._construct_api_requests",
+            "dataretrieval.ogc.engine._construct_api_requests",
             side_effect=fake_construct_api_requests,
         ),
         mock.patch(
-            "dataretrieval.waterdata.utils._walk_pages",
+            "dataretrieval.ogc.engine._walk_pages",
             new=mock.AsyncMock(
                 return_value=(
                     pd.DataFrame({"id": ["row-1"], "value": [1]}),
@@ -426,7 +435,7 @@ def test_get_continuous_surfaces_pitfall_to_caller():
     """End-to-end: the check runs at the ``get_continuous`` boundary,
     not as a deep internal-only protection, so callers see the error
     before any HTTP traffic."""
-    with mock.patch("dataretrieval.waterdata.utils._construct_api_requests") as build:
+    with mock.patch("dataretrieval.ogc.engine._construct_api_requests") as build:
         with pytest.raises(ValueError, match="lexicographic"):
             get_continuous(
                 monitoring_location_id="USGS-02238500",

@@ -16,6 +16,7 @@ from urllib.parse import quote
 import httpx
 import pandas as pd
 
+from dataretrieval.ogc.filters import FILTER_LANG
 from dataretrieval.utils import (
     HTTPX_DEFAULTS,
     BaseMetadata,
@@ -23,7 +24,7 @@ from dataretrieval.utils import (
     _get,
     to_str,
 )
-from dataretrieval.waterdata.filters import FILTER_LANG
+from dataretrieval.waterdata import stats
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,
     METADATA_COLLECTIONS,
@@ -45,8 +46,8 @@ from dataretrieval.waterdata.utils import (
     _run_sync,
     _switch_properties_id,
     _walk_pages,
+    _with_state,
     get_ogc_data,
-    get_stats_data,
 )
 
 # Set up logger for this module
@@ -200,7 +201,7 @@ def get_daily(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -211,6 +212,13 @@ def get_daily(
         Formatted data returned from the API query.
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
 
     Examples
     --------
@@ -252,7 +260,7 @@ def get_daily(
         >>> # multiple sub-requests so the URL stays under the server's byte
         >>> # limit. Combined output looks like a single query.
         >>> sites_df, _ = dataretrieval.waterdata.get_monitoring_locations(
-        ...     state_name="Ohio",
+        ...     state="Ohio",
         ...     site_type="Stream",
         ... )
         >>> df, md = dataretrieval.waterdata.get_daily(
@@ -408,7 +416,7 @@ def get_continuous(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -419,6 +427,13 @@ def get_continuous(
         Formatted data returned from the API query.
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
 
     Examples
     --------
@@ -433,7 +448,7 @@ def get_continuous(
         ... )
 
         >>> # Pull several disjoint time windows in one call via a CQL
-        >>> # ``filter``. See ``dataretrieval.waterdata.filters`` for the
+        >>> # ``filter``. See ``dataretrieval.ogc.filters`` for the
         >>> # full grammar, auto-chunking, and pitfalls.
         >>> df, md = dataretrieval.waterdata.get_continuous(
         ...     monitoring_location_id="USGS-02238500",
@@ -464,6 +479,7 @@ def get_monitoring_locations(
     district_code: str | Iterable[str] | None = None,
     country_code: str | Iterable[str] | None = None,
     country_name: str | Iterable[str] | None = None,
+    state: str | Iterable[str] | None = None,
     state_code: str | Iterable[str] | None = None,
     state_name: str | Iterable[str] | None = None,
     county_code: str | Iterable[str] | None = None,
@@ -545,6 +561,10 @@ def get_monitoring_locations(
         The code for the country in which the monitoring location is located.
     country_name : string or iterable of strings, optional
         The name of the country in which the monitoring location is located.
+    state : string or iterable of strings, optional
+        State/territory filter (the recommended parameter). Accepts a full name
+        (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a two-digit
+        ANSI/FIPS code (``"55"``).
     state_code : string or iterable of strings, optional
         State code. A two-digit ANSI code (formerly FIPS code) as defined by
         the American National Standards Institute, to define States and
@@ -713,7 +733,7 @@ def get_monitoring_locations(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -724,6 +744,13 @@ def get_monitoring_locations(
         Formatted data returned from the API query.
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
 
     Examples
     --------
@@ -744,8 +771,9 @@ def get_monitoring_locations(
     """
     service = "monitoring-locations"
 
-    # Build argument dictionary, omitting None values
-    args = _get_args(locals())
+    # Build argument dictionary, omitting None values (resolving the unified
+    # `state` argument into the OGC `state_name` queryable).
+    args = _get_args(_with_state(locals(), to="name", into="state_name"))
 
     return get_ogc_data(args, service)
 
@@ -757,6 +785,7 @@ def get_time_series_metadata(
     properties: str | Iterable[str] | None = None,
     statistic_id: str | Iterable[str] | None = None,
     hydrologic_unit_code: str | Iterable[str] | None = None,
+    state: str | Iterable[str] | None = None,
     state_name: str | Iterable[str] | None = None,
     last_modified: str | Iterable[str] | None = None,
     begin: str | Iterable[str] | None = None,
@@ -823,6 +852,10 @@ def get_time_series_metadata(
         to the largest (regions). Each hydrologic unit is identified by a unique
         hydrologic unit code (HUC) consisting of two to eight digits based on the
         four levels of classification in the hydrologic unit system.
+    state : string or iterable of strings, optional
+        State/territory filter (the recommended parameter). Accepts a full name
+        (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a two-digit
+        ANSI/FIPS code (``"55"``).
     state_name : string or iterable of strings, optional
         The name of the state or state equivalent in which the monitoring location
         is located.
@@ -937,7 +970,7 @@ def get_time_series_metadata(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -948,6 +981,13 @@ def get_time_series_metadata(
         Formatted data returned from the API query.
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
 
     Examples
     --------
@@ -968,8 +1008,9 @@ def get_time_series_metadata(
     """
     service = "time-series-metadata"
 
-    # Build argument dictionary, omitting None values
-    args = _get_args(locals())
+    # Build argument dictionary, omitting None values (resolving the unified
+    # `state` argument into the OGC `state_name` queryable).
+    args = _get_args(_with_state(locals(), to="name", into="state_name"))
 
     return get_ogc_data(args, service)
 
@@ -998,6 +1039,7 @@ def get_combined_metadata(
     district_code: str | Iterable[str] | None = None,
     country_code: str | Iterable[str] | None = None,
     country_name: str | Iterable[str] | None = None,
+    state: str | Iterable[str] | None = None,
     state_code: str | Iterable[str] | None = None,
     state_name: str | Iterable[str] | None = None,
     county_code: str | Iterable[str] | None = None,
@@ -1106,6 +1148,10 @@ def get_combined_metadata(
         interval (``"start/end"``, optionally half-bounded with ``..``),
         or an ISO 8601 duration (e.g. ``"P1M"``, ``"PT36H"``). See
         :func:`get_time_series_metadata` for the full grammar.
+    state : string or iterable of strings, optional
+        State/territory filter (the recommended parameter). Accepts a full
+        name (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a
+        two-digit ANSI/FIPS code (``"55"``).
     state_name, county_name, hydrologic_unit_code, site_type, \
 site_type_code : string or iterable of strings, optional
         Common location-catalog filters carried over from the
@@ -1131,7 +1177,7 @@ site_type_code : string or iterable of strings, optional
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -1142,6 +1188,13 @@ site_type_code : string or iterable of strings, optional
         Formatted data returned from the API query.
     md : :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object pertaining to the query.
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
 
     Examples
     --------
@@ -1160,7 +1213,7 @@ site_type_code : string or iterable of strings, optional
 
         >>> # Every series in a single county, useful for area-of-interest workflows
         >>> df, md = dataretrieval.waterdata.get_combined_metadata(
-        ...     state_name="Wisconsin", county_name="Dane County"
+        ...     state="Wisconsin", county_name="Dane County"
         ... )
 
         >>> # Inventory across multiple HUCs, restricted to streams and springs
@@ -1198,7 +1251,8 @@ site_type_code : string or iterable of strings, optional
     """
     service = "combined-metadata"
 
-    args = _get_args(locals())
+    # Resolve the unified `state` argument into the OGC `state_name` queryable.
+    args = _get_args(_with_state(locals(), to="name", into="state_name"))
 
     return get_ogc_data(args, service)
 
@@ -1347,7 +1401,7 @@ def get_latest_continuous(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -1358,6 +1412,13 @@ def get_latest_continuous(
         Formatted data returned from the API query.
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
 
     Examples
     --------
@@ -1543,7 +1604,7 @@ def get_latest_daily(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -1554,6 +1615,13 @@ def get_latest_daily(
         Formatted data returned from the API query.
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
 
     Examples
     --------
@@ -1731,7 +1799,7 @@ def get_field_measurements(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -1742,6 +1810,13 @@ def get_field_measurements(
         Formatted data returned from the API query.
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
 
     Examples
     --------
@@ -1846,7 +1921,7 @@ def get_field_measurements_metadata(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -1857,6 +1932,13 @@ def get_field_measurements_metadata(
         Formatted data returned from the API query.
     md : :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object pertaining to the query.
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
 
     Examples
     --------
@@ -1969,7 +2051,7 @@ def get_peaks(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -1980,6 +2062,13 @@ def get_peaks(
         Formatted data returned from the API query.
     md : :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object pertaining to the query.
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
 
     Examples
     --------
@@ -2063,6 +2152,13 @@ def get_reference_table(
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object including the URL request and query time.
 
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
+
     Examples
     --------
     .. code::
@@ -2085,13 +2181,13 @@ def get_reference_table(
             f"Valid options are: {valid_code_services}."
         )
 
-    # Give ID column the collection name with underscores
-    if collection.endswith("s") and collection != "counties":
-        output_id = f"{collection[:-1].replace('-', '_')}"
-    elif collection == "counties":
+    # Give the ID column the collection name, singularized and underscored.
+    if collection == "counties":
         output_id = "county"
+    elif collection.endswith("s"):
+        output_id = collection[:-1].replace("-", "_")
     else:
-        output_id = f"{collection.replace('-', '_')}"
+        output_id = collection.replace("-", "_")
 
     query_args = dict(query) if query else {}
     if limit is not None:
@@ -2443,6 +2539,7 @@ def get_stats_por(
     approval_status: str | None = None,
     computation_type: str | Iterable[str] | None = None,
     country_code: str | Iterable[str] | None = None,
+    state: str | Iterable[str] | None = None,
     state_code: str | Iterable[str] | None = None,
     county_code: str | Iterable[str] | None = None,
     start_date: str | None = None,
@@ -2453,6 +2550,7 @@ def get_stats_por(
     site_type_code: str | Iterable[str] | None = None,
     site_type_name: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
+    normal_type: str | None = None,
     expand_percentiles: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get day-of-year and month-of-year water data statistics from the
@@ -2478,6 +2576,10 @@ def get_stats_por(
         arithmetic_mean, maximum, median, minimum, percentile.
     country_code: string, optional
         Country query parameter. API defaults to "US".
+    state: string or iterable of strings, optional
+        State/territory filter (the recommended parameter). Accepts a full name
+        ("Wisconsin"), a two-letter postal code ("WI"), or a two-digit
+        ANSI/FIPS code ("55").
     state_code: string, optional
         State query parameter. Takes the format "US:XX", where XX is
         the two-digit state code. API defaults to "US:42" (Pennsylvania).
@@ -2514,6 +2616,10 @@ def get_stats_por(
         measured and the units of measure. A complete list of parameter codes
         and associated groupings can be found at
         https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+    normal_type : string, optional
+        Filter the returned normals to a single period. If unspecified
+        (default), all matching data are returned. Available values:
+        "DOY" (day-of-year) and "MOY" (month-of-year).
     expand_percentiles : boolean
         Percentile data for a given day of year or month of year by default
         are returned from the service as lists of string values and percentile
@@ -2563,9 +2669,12 @@ def get_stats_por(
         ... )
     """
     # Build argument dictionary, omitting None values
-    params = _get_args(locals(), exclude={"expand_percentiles"})
+    params = _get_args(
+        _with_state(locals(), to="fips_us", into="state_code"),
+        exclude={"expand_percentiles"},
+    )
 
-    return get_stats_data(
+    return stats.get_data(
         args=params, service="observationNormals", expand_percentiles=expand_percentiles
     )
 
@@ -2574,6 +2683,7 @@ def get_stats_date_range(
     approval_status: str | None = None,
     computation_type: str | Iterable[str] | None = None,
     country_code: str | Iterable[str] | None = None,
+    state: str | Iterable[str] | None = None,
     state_code: str | Iterable[str] | None = None,
     county_code: str | Iterable[str] | None = None,
     start_date: str | None = None,
@@ -2584,6 +2694,7 @@ def get_stats_date_range(
     site_type_code: str | Iterable[str] | None = None,
     site_type_name: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
+    interval_type: str | Iterable[str] | None = None,
     expand_percentiles: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get monthly and annual water data statistics from the USGS Water Data API.
@@ -2608,6 +2719,10 @@ def get_stats_date_range(
         arithmetic_mean, maximum, median, minimum, percentile.
     country_code: string, optional
         Country query parameter. API defaults to "US".
+    state: string or iterable of strings, optional
+        State/territory filter (the recommended parameter). Accepts a full name
+        ("Wisconsin"), a two-letter postal code ("WI"), or a two-digit
+        ANSI/FIPS code ("55").
     state_code: string, optional
         State query parameter. Takes the format "US:XX", where XX is
         the two-digit state code. API defaults to "US:42" (Pennsylvania).
@@ -2649,6 +2764,10 @@ def get_stats_date_range(
         measured and the units of measure. A complete list of parameter codes
         and associated groupings can be found at
         https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+    interval_type : string or iterable of strings, optional
+        Filter the returned intervals to one or more periods. If unspecified
+        (default), all matching data are returned. Available values:
+        "M" (month), "CY" (calendar year), and "WY" (water year).
     expand_percentiles : boolean
         Percentile data for a given day of year or month of year by default
         are returned from the service as lists of string values and percentile
@@ -2682,7 +2801,7 @@ def get_stats_date_range(
         >>> # Get monthly and yearly medians for streamflow at streams in Rhode Island
         >>> # from calendar year 2024.
         >>> df, md = dataretrieval.waterdata.get_stats_date_range(
-        ...     state_code="US:44",  # State code for Rhode Island
+        ...     state="RI",  # Rhode Island (postal code, name, or FIPS all work)
         ...     parameter_code="00060",
         ...     site_type_code="ST",
         ...     start_date="2024-01-01",
@@ -2699,9 +2818,12 @@ def get_stats_date_range(
         ... )
     """
     # Build argument dictionary, omitting None values
-    params = _get_args(locals(), exclude={"expand_percentiles"})
+    params = _get_args(
+        _with_state(locals(), to="fips_us", into="state_code"),
+        exclude={"expand_percentiles"},
+    )
 
-    return get_stats_data(
+    return stats.get_data(
         args=params,
         service="observationIntervals",
         expand_percentiles=expand_percentiles,
@@ -2865,7 +2987,7 @@ def get_channel(
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
-        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
@@ -2876,6 +2998,13 @@ def get_channel(
         Formatted data returned from the API query.
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
 
     Examples
     --------
