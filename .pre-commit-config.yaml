@@ -27,6 +27,17 @@ repos:
         args: [--fix]
       - id: ruff-format
 
+  # Type-check with mypy --strict (config lives in pyproject [tool.mypy]).
+  # Pinned to the same major as CI's `mypy<2`. httpx/anyio are installed into
+  # the isolated hook env so their types resolve — without them mypy falls back
+  # to `Any` and mis-reports (the runtime deps aren't in the hook's venv).
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.20.2
+    hooks:
+      - id: mypy
+        pass_filenames: false
+        additional_dependencies: [httpx, anyio]
+
   # Strip cell outputs + execution_count from notebooks on commit so the
   # diff is the source, not the rendered run. Demos still execute fine
   # locally; clean commits keep PRs reviewable and avoid quota/timestamp

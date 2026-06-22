@@ -18,6 +18,7 @@ import httpx
 import pandas as pd
 
 from dataretrieval.exceptions import DataRetrievalError
+from dataretrieval.ogc.filters import _quote_cql_str
 from dataretrieval.rdb import extract_rdb_comment, read_rdb
 from dataretrieval.utils import HTTPX_DEFAULTS, _get
 
@@ -204,15 +205,6 @@ def get_ratings(
 def _as_list(x: str | Iterable[str]) -> list[str]:
     """Normalize a string or iterable-of-strings to a list."""
     return [x] if isinstance(x, str) else list(x)
-
-
-def _quote_cql_str(value: str) -> str:
-    """Escape a single-quoted CQL literal by doubling embedded quotes.
-
-    Defends against malformed filters / injection on arbitrary user input,
-    even though valid USGS monitoring-location IDs cannot contain a quote.
-    """
-    return value.replace("'", "''")
 
 
 def _build_filter(

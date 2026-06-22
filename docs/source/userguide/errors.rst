@@ -82,8 +82,8 @@ condition clears -- only the unfinished sub-requests are re-issued.
 .. code-block:: python
 
     import time
+    from dataretrieval import ChunkInterrupted
     from dataretrieval.waterdata import get_daily
-    from dataretrieval.waterdata.chunking import ChunkInterrupted
 
     try:
         df, md = get_daily(monitoring_location_id=long_list_of_sites)

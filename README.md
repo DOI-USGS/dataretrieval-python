@@ -10,8 +10,8 @@
 Like the original R version
 [`dataRetrieval`](https://github.com/DOI-USGS/dataRetrieval), it retrieves major
 U.S. Geological Survey (USGS) hydrology data types available on the Web, as well
-as data from the Water Quality Portal (WQP) and Network Linked Data Index
-(NLDI).
+as data from the Water Quality Portal (WQP), the National Ground-Water
+Monitoring Network (NGWMN), and the Network Linked Data Index (NLDI).
 
 Check the [NEWS](NEWS.md) for all updates and announcements.
 
@@ -85,7 +85,7 @@ stream sites in Maryland:
 ```python
 # Get monitoring location information
 df, metadata = waterdata.get_monitoring_locations(
-    state_name='Maryland',
+    state='Maryland',  # full name, postal code ('MD'), or FIPS ('24')
     site_type_code='ST'  # Stream sites
 )
 

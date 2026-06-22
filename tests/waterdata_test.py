@@ -11,6 +11,7 @@ from pandas import DataFrame
 if sys.version_info < (3, 10):
     pytest.skip("Skip entire module on Python < 3.10", allow_module_level=True)
 
+from dataretrieval.ogc.engine import _dialect
 from dataretrieval.waterdata import (
     get_channel,
     get_combined_metadata,
@@ -31,6 +32,7 @@ from dataretrieval.waterdata import (
     get_time_series_metadata,
 )
 from dataretrieval.waterdata.utils import (
+    WATERDATA_DIALECT,
     _check_monitoring_location_id,
     _check_profiles,
     _construct_api_requests,
@@ -58,6 +60,19 @@ pytestmark = pytest.mark.flaky(
         r"ReadTimeout|ConnectTimeout|Timeout",
     ],
 )
+
+
+@pytest.fixture(autouse=True)
+def _activate_waterdata_dialect():
+    """Make the Water Data OGC dialect ambient for this module.
+
+    The dialect (monitoring-locations -> POST/CQL2; daily -> date-only time
+    args) is normally set by ``get_ogc_data`` per call. The direct
+    ``_construct_api_requests`` unit tests here bypass it, so activate the
+    dialect module-wide so they exercise the real Water Data behavior.
+    """
+    with _dialect(WATERDATA_DIALECT):
+        yield
 
 
 def mock_request(httpx_mock, request_url, file_path):
@@ -136,7 +151,7 @@ def test_get_samples_raises_typed_error_on_429(httpx_mock):
     """Non-200 from the Samples endpoint now raises the module's typed error
     (RateLimited on 429) — consistent with the OGC/stats path — instead of a
     bare httpx.HTTPStatusError."""
-    from dataretrieval.waterdata.chunking import RateLimited
+    from dataretrieval.exceptions import RateLimited
 
     httpx_mock.add_response(status_code=429, headers={"Retry-After": "30"})
     with pytest.raises(RateLimited):
@@ -149,7 +164,7 @@ def test_get_samples_raises_typed_error_on_429(httpx_mock):
 
 def test_get_samples_summary_raises_typed_error_on_5xx(httpx_mock):
     """A 5xx from the Samples summary endpoint raises ServiceUnavailable."""
-    from dataretrieval.waterdata.chunking import ServiceUnavailable
+    from dataretrieval.exceptions import ServiceUnavailable
 
     httpx_mock.add_response(status_code=503)
     with pytest.raises(ServiceUnavailable):
