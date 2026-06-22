@@ -1,0 +1,312 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dataretrieval.ogc.interruptions &mdash; dataretrieval 0.1.dev1+g963eb2809 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=bd326dbe"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dataretrieval.ogc.interruptions</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dataretrieval.ogc.interruptions</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Resumable chunk-interruption exceptions — the public resume contract.</span>
+
+<span class="sd">When a transparently-chunked request fails mid-stream (a 429, a 5xx, or a</span>
+<span class="sd">bare transport error), the work already completed is preserved and the call</span>
+<span class="sd">is resumable: the raised exception carries a ``.call`` handle whose</span>
+<span class="sd">``resume()`` re-issues only the still-pending sub-requests. These exception</span>
+<span class="sd">types are that contract, re-exported at the top level</span>
+<span class="sd">(``from dataretrieval import ChunkInterrupted``). The execution machinery</span>
+<span class="sd">that raises and resumes them lives in :mod:`dataretrieval.ogc.chunking`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataRetrievalError</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.chunking</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkedCall</span>
+
+
+<span class="c1"># ``_Fetch`` is the per-sub-request fetcher the decorator wraps and</span>
+<span class="c1"># ``ChunkedCall`` drives: an ``async def fetch(args) -&gt; (df, response)``.</span>
+<span class="n">_Fetch</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]]]</span>
+
+
+<span class="c1"># Caller-supplied transform applied to the combined chunk result, so a</span>
+<span class="c1"># resumed call returns the same shape as an un-interrupted one rather than</span>
+<span class="c1"># the chunker&#39;s raw ``(frame, httpx.Response)``. This keeps the chunker</span>
+<span class="c1"># generic: the OGC getters inject their post-processing (type coercion,</span>
+<span class="c1"># column arrangement, ``BaseMetadata``) through ``utils._finalize_ogc``.</span>
+<span class="c1"># The default is identity, so direct ``ChunkedCall`` use is unaffected.</span>
+<span class="n">_Finalize</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_passthrough_result</span><span class="p">(</span>
+    <span class="n">frame</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Default :data:`_Finalize`: return the raw combined pair unchanged.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">frame</span><span class="p">,</span> <span class="n">response</span>
+
+
+<div class="viewcode-block" id="ChunkInterrupted">
+<a class="viewcode-back" href="../../../reference/exceptions.html#dataretrieval.ChunkInterrupted">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ChunkInterrupted</span><span class="p">(</span><span class="n">DataRetrievalError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for mid-stream chunk failures whose completed work is</span>
+<span class="sd">    preserved and resumable.</span>
+
+<span class="sd">    A ``ChunkInterrupted`` subclass means: a sub-request failed, but</span>
+<span class="sd">    ``ChunkedCall`` still owns whatever completed successfully before</span>
+<span class="sd">    the failure. Call ``self.call.resume()`` to pick up where the</span>
+<span class="sd">    failure stopped you — only still-pending sub-requests are</span>
+<span class="sd">    re-issued.</span>
+
+<span class="sd">    Subclasses describe *why* ``ChunkedCall`` stopped so callers can</span>
+<span class="sd">    pick a retry policy: :class:`QuotaExhausted` for 429 (wait for the</span>
+<span class="sd">    rate-limit window), :class:`ServiceInterrupted` for 5xx (wait for</span>
+<span class="sd">    the upstream to recover). The ``.call`` handle is the same object</span>
+<span class="sd">    across every interruption of a single chunked call — frames</span>
+<span class="sd">    accumulate across retries.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    call : ChunkedCall or None</span>
+<span class="sd">        Resumable handle into the ``ChunkedCall`` that raised this</span>
+<span class="sd">        exception. ``None`` only on hand-constructed exceptions (test</span>
+<span class="sd">        fixtures), where ``.call``-derived accessors degrade to</span>
+<span class="sd">        empty/``None``.</span>
+<span class="sd">    retry_after : float or None</span>
+<span class="sd">        Seconds the server suggested waiting (``Retry-After`` header).</span>
+<span class="sd">        ``None`` when the server gave no hint.</span>
+<span class="sd">    completed_chunks : int</span>
+<span class="sd">        Number of sub-requests successfully completed before the failure.</span>
+<span class="sd">    total_chunks : int</span>
+<span class="sd">        Total sub-requests in the plan.</span>
+<span class="sd">    partial_frame : pandas.DataFrame</span>
+<span class="sd">        Combined frame of work completed by the moment this exception</span>
+<span class="sd">        was raised. Snapshot at raise time — does NOT advance on a</span>
+<span class="sd">        later ``call.resume()`` (use ``exc.call.partial_frame`` for</span>
+<span class="sd">        the live view).</span>
+<span class="sd">    partial_response : httpx.Response or None</span>
+<span class="sd">        Raw aggregate response covering the completed sub-requests at</span>
+<span class="sd">        raise time; ``None`` if nothing had completed yet. Same snapshot</span>
+<span class="sd">        semantics as ``partial_frame``. (Raw, not finalized — use</span>
+<span class="sd">        ``exc.call.resume()`` for the finalized ``(df, metadata)`` result.)</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Retry on any transient interruption, honoring the server&#39;s</span>
+<span class="sd">    ``Retry-After`` hint when present and falling back to a fixed wait</span>
+<span class="sd">    otherwise. Each new interruption keeps the already-completed work</span>
+<span class="sd">    intact — only the still-pending sub-requests are re-issued.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import time</span>
+<span class="sd">        from dataretrieval import ChunkInterrupted</span>
+
+<span class="sd">        # ``getter`` is any chunked OGC getter — e.g.</span>
+<span class="sd">        # ``waterdata.get_daily`` or ``ngwmn.get_water_level``.</span>
+<span class="sd">        try:</span>
+<span class="sd">            df, md = getter(monitoring_location_id=long_list_of_sites)</span>
+<span class="sd">        except ChunkInterrupted as exc:</span>
+<span class="sd">            while True:</span>
+<span class="sd">                time.sleep(exc.retry_after or 5 * 60)</span>
+<span class="sd">                try:</span>
+<span class="sd">                    df, md = exc.call.resume()</span>
+<span class="sd">                    break</span>
+<span class="sd">                except ChunkInterrupted as next_exc:</span>
+<span class="sd">                    exc = next_exc</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Subclasses override with a ``str.format`` template; the format</span>
+    <span class="c1"># call sees ``completed_chunks`` and ``total_chunks`` as kwargs.</span>
+    <span class="n">_MESSAGE_TEMPLATE</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;Chunked request interrupted after </span><span class="si">{completed_chunks}</span><span class="s2">/&quot;</span>
+        <span class="s2">&quot;</span><span class="si">{total_chunks}</span><span class="s2"> sub-requests; call .call.resume() to continue.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">completed_chunks</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">total_chunks</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">call</span><span class="p">:</span> <span class="n">ChunkedCall</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">retry_after</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cause</span><span class="p">:</span> <span class="ne">BaseException</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_MESSAGE_TEMPLATE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">completed_chunks</span><span class="o">=</span><span class="n">completed_chunks</span><span class="p">,</span> <span class="n">total_chunks</span><span class="o">=</span><span class="n">total_chunks</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">cause</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cause_msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cause</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">cause</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2"> Cause: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">cause</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">cause_msg</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">completed_chunks</span> <span class="o">=</span> <span class="n">completed_chunks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_chunks</span> <span class="o">=</span> <span class="n">total_chunks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">call</span> <span class="o">=</span> <span class="n">call</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">retry_after</span> <span class="o">=</span> <span class="n">retry_after</span>
+        <span class="c1"># Snapshot partial state at raise time so the exception&#39;s view stays</span>
+        <span class="c1"># stable across later ``call.resume()`` advances (the live view is on</span>
+        <span class="c1"># ``call.partial_frame`` / ``.partial_response``). ``.copy()`` guards</span>
+        <span class="c1"># the single-chunk fast path, where the frame may be returned verbatim.</span>
+        <span class="k">if</span> <span class="n">call</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">partial_frame</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">partial_response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">partial_frame</span> <span class="o">=</span> <span class="n">call</span><span class="o">.</span><span class="n">partial_frame</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">partial_response</span> <span class="o">=</span> <span class="n">call</span><span class="o">.</span><span class="n">partial_response</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="c1"># Drop the live ChunkedCall before pickling: its ``.fetch`` is an</span>
+        <span class="c1"># undecorated module function pickle can&#39;t reference by name, so the</span>
+        <span class="c1"># interruption can&#39;t cross a process boundary with ``.call`` attached.</span>
+        <span class="c1"># The degraded ``call=None`` form keeps the counts, retry hint, and</span>
+        <span class="c1"># partial frame / response; only ``.resume()`` is lost (cross-process</span>
+        <span class="c1"># resume was never possible anyway).</span>
+        <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__getstate__</span><span class="p">(),</span> <span class="s2">&quot;call&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="QuotaExhausted">
+<a class="viewcode-back" href="../../../reference/exceptions.html#dataretrieval.QuotaExhausted">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">QuotaExhausted</span><span class="p">(</span><span class="n">ChunkInterrupted</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A sub-request returned HTTP 429 — the per-key rate-limit window</span>
+<span class="sd">    is exhausted. Subclass of :class:`ChunkInterrupted`.</span>
+
+<span class="sd">    The completed sub-requests are preserved on ``.call``; once the</span>
+<span class="sd">    rate-limit window resets, ``.call.resume()`` re-issues only the</span>
+<span class="sd">    still-pending work. ``partial_frame`` holds what completed</span>
+<span class="sd">    before the 429.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_MESSAGE_TEMPLATE</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;HTTP 429 after </span><span class="si">{completed_chunks}</span><span class="s2">/</span><span class="si">{total_chunks}</span><span class="s2"> sub-requests; &quot;</span>
+        <span class="s2">&quot;catch QuotaExhausted (or ChunkInterrupted) to access &quot;</span>
+        <span class="s2">&quot;.partial_frame or .call.resume() once the rate-limit &quot;</span>
+        <span class="s2">&quot;window has rolled over.&quot;</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ServiceInterrupted">
+<a class="viewcode-back" href="../../../reference/exceptions.html#dataretrieval.ServiceInterrupted">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ServiceInterrupted</span><span class="p">(</span><span class="n">ChunkInterrupted</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A sub-request returned HTTP 5xx — the upstream service failed</span>
+<span class="sd">    transiently. Subclass of :class:`ChunkInterrupted`.</span>
+
+<span class="sd">    The completed sub-requests are preserved on ``.call``; once the</span>
+<span class="sd">    upstream recovers, ``.call.resume()`` resumes only the</span>
+<span class="sd">    still-pending work.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_MESSAGE_TEMPLATE</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;Service error after </span><span class="si">{completed_chunks}</span><span class="s2">/</span><span class="si">{total_chunks}</span><span class="s2"> &quot;</span>
+        <span class="s2">&quot;sub-requests; catch ServiceInterrupted (or ChunkInterrupted) &quot;</span>
+        <span class="s2">&quot;and call .call.resume() once the upstream service recovers.&quot;</span>
+    <span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

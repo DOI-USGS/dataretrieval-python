@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Continuous Data &mdash; dataretrieval 0.1.dev1+gdff162cbd documentation</title>
+  <title>Continuous Data &mdash; dataretrieval 0.1.dev1+g963eb2809 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=286bfb09"></script>
+      <script src="../_static/documentation_options.js?v=bd326dbe"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -64,6 +64,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ReferenceLists_Examples.html">USGS Reference Lists</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_NGWMN_Examples.html">National Ground-Water Monitoring Network (NGWMN)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
@@ -178,49 +179,49 @@ No API key detected — register for higher rate limits at https://api.waterdata
       <td>00010</td>
       <td>Temperature, water</td>
       <td>2012-09-21 08:00:00+00:00</td>
-      <td>2026-06-15 12:15:00+00:00</td>
+      <td>2026-06-22 10:15:00+00:00</td>
     </tr>
     <tr>
       <th>1</th>
       <td>00062</td>
       <td>Reservoir elevation</td>
       <td>2013-10-01 09:00:00+00:00</td>
-      <td>2026-06-15 14:15:00+00:00</td>
+      <td>2026-06-22 12:15:00+00:00</td>
     </tr>
     <tr>
       <th>2</th>
       <td>00095</td>
       <td>Specific cond at 25C</td>
       <td>2012-09-21 08:00:00+00:00</td>
-      <td>2026-06-15 12:15:00+00:00</td>
+      <td>2026-06-22 10:15:00+00:00</td>
     </tr>
     <tr>
       <th>3</th>
       <td>00300</td>
       <td>Dissolved oxygen</td>
       <td>2012-09-21 08:00:00+00:00</td>
-      <td>2026-06-15 12:15:00+00:00</td>
+      <td>2026-06-22 10:15:00+00:00</td>
     </tr>
     <tr>
       <th>4</th>
       <td>00400</td>
       <td>pH</td>
       <td>2012-09-21 08:00:00+00:00</td>
-      <td>2026-06-15 14:15:00+00:00</td>
+      <td>2026-06-22 12:15:00+00:00</td>
     </tr>
     <tr>
       <th>5</th>
       <td>00480</td>
       <td>Salinity</td>
       <td>2012-09-21 08:00:00+00:00</td>
-      <td>2026-06-15 12:15:00+00:00</td>
+      <td>2026-06-22 10:15:00+00:00</td>
     </tr>
     <tr>
       <th>6</th>
       <td>62615</td>
       <td>Elevation, lake/res, NAVD88</td>
       <td>2013-10-01 09:00:00+00:00</td>
-      <td>2026-06-15 12:15:00+00:00</td>
+      <td>2026-06-22 10:15:00+00:00</td>
     </tr>
     <tr>
       <th>7</th>
@@ -327,7 +328,7 @@ Retrieving: continuous · 1 page · 194 rows
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.chunking</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkInterrupted</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkInterrupted</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="n">sensor_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span>
@@ -611,7 +612,7 @@ Retrieving: continuous · 1 page · 8,637 rows
 <h2>More help<a class="headerlink" href="#More-help" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>Documentation: <a class="reference external" href="https://doi-usgs.github.io/dataretrieval-python/">https://doi-usgs.github.io/dataretrieval-python/</a></p></li>
-<li><p>Chunking and resume internals: <code class="docutils literal notranslate"><span class="pre">dataretrieval.waterdata.chunking</span></code></p></li>
+<li><p>Chunking and resume internals: <code class="docutils literal notranslate"><span class="pre">dataretrieval.ogc.chunking</span></code></p></li>
 <li><p>Issues / questions: <a class="reference external" href="https://github.com/DOI-USGS/dataretrieval-python/issues">https://github.com/DOI-USGS/dataretrieval-python/issues</a></p></li>
 <li><p>Equivalent R article: <a class="reference external" href="https://doi-usgs.github.io/dataRetrieval/articles/continuous_pr.html">Continuous Data</a></p></li>
 </ul>

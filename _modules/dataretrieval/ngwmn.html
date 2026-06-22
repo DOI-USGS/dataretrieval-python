@@ -1,0 +1,535 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+g963eb2809 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=bd326dbe"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dataretrieval.ngwmn</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dataretrieval.ngwmn</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;National Ground-Water Monitoring Network (NGWMN) getters.</span>
+
+<span class="sd">The NGWMN exposes its data through a dedicated OGC API</span>
+<span class="sd">(``https://api.waterdata.usgs.gov/ngwmn/ogcapi``) with five collections:</span>
+<span class="sd">``sites``, ``waterLevelObs``, ``lithologyObs``, ``constructionObs``, and</span>
+<span class="sd">``providers``. Each getter below delegates to the shared OGC engine</span>
+<span class="sd">(:func:`~dataretrieval.ogc.engine.get_ogc_data`) with</span>
+<span class="sd">``base_url=NGWMN_OGC_API_URL``, so multi-value chunking, pagination,</span>
+<span class="sd">retry/resume, and result shaping all behave exactly as they do for the main</span>
+<span class="sd">Water Data getters.</span>
+
+<span class="sd">Unlike the main Water Data collections, NGWMN aggregates monitoring locations</span>
+<span class="sd">from many agencies, so ``monitoring_location_id`` values use other agency</span>
+<span class="sd">prefixes besides ``USGS-`` (e.g. ``MBMG-702934``, ``AKDNR-535134236016630``).</span>
+
+<span class="sd">See https://api.waterdata.usgs.gov/ngwmn/ogcapi for the API reference.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.codes.states</span><span class="w"> </span><span class="kn">import</span> <span class="n">apply_state</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">BASE_URL</span><span class="p">,</span> <span class="n">OgcDialect</span><span class="p">,</span> <span class="n">_get_args</span><span class="p">,</span> <span class="n">get_ogc_data</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
+
+<span class="c1"># The National Ground-Water Monitoring Network exposes its own OGC API at a</span>
+<span class="c1"># separate, unversioned base.</span>
+<span class="n">NGWMN_OGC_API_URL</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">BASE_URL</span><span class="si">}</span><span class="s2">/ngwmn/ogcapi&quot;</span>
+
+<span class="c1"># --- state-filter shim -------------------------------------------------------</span>
+<span class="c1"># NGWMN&#39;s collections expose DIFFERENT state queryables: ``sites`` filters on</span>
+<span class="c1"># the full ``state_name`` (e.g. &quot;Wisconsin&quot;), while ``providers`` filters on the</span>
+<span class="c1"># two-letter postal ``state`` (uppercase, e.g. &quot;WI&quot;). The state-aware getters</span>
+<span class="c1"># take a single ``state`` parameter accepting any US-state encoding (full name,</span>
+<span class="c1"># postal code, or FIPS code); ``_get`` resolves it into the one queryable each</span>
+<span class="c1"># collection wants via the shared ``codes.states.apply_state``, keyed by</span>
+<span class="c1"># ``_STATE_QUERYABLE`` below.</span>
+<span class="c1">#</span>
+<span class="c1"># This shim exists only to smooth over that upstream asymmetry.</span>
+<span class="c1"># ``tests/ngwmn_test.py::test_state_queryables_still_diverge_upstream`` fails --</span>
+<span class="c1"># the signal to remove it -- if the API ever unifies the two queryables.</span>
+<span class="n">_STATE_QUERYABLE</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># service -&gt; ``apply_state`` kwargs (destination queryable + to_state format)</span>
+    <span class="s2">&quot;sites&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;into&quot;</span><span class="p">:</span> <span class="s2">&quot;state_name&quot;</span><span class="p">,</span> <span class="s2">&quot;to&quot;</span><span class="p">:</span> <span class="s2">&quot;name&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;providers&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;into&quot;</span><span class="p">:</span> <span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="s2">&quot;to&quot;</span><span class="p">:</span> <span class="s2">&quot;postal&quot;</span><span class="p">},</span>
+<span class="p">}</span>
+
+
+<span class="c1"># The NGWMN OGC API exposes the feature id under the generic ``id`` column</span>
+<span class="c1"># (there is no service-specific id name as there is for the main collections).</span>
+<span class="n">_NGWMN_OUTPUT_ID</span> <span class="o">=</span> <span class="s2">&quot;id&quot;</span>
+
+<span class="c1"># NGWMN&#39;s request shape matches the generic OGC default (no CQL2-only or</span>
+<span class="c1"># date-only collections), but its result columns need their own coercion and</span>
+<span class="c1"># sort vocabulary: water-level observations are timestamped by ``sample_time``</span>
+<span class="c1"># (not the Water Data ``time``) and report depths/levels in feet.</span>
+<span class="n">NGWMN_DIALECT</span> <span class="o">=</span> <span class="n">OgcDialect</span><span class="p">(</span>
+    <span class="n">time_cols</span><span class="o">=</span><span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;sample_time&quot;</span><span class="p">}),</span>
+    <span class="n">numerical_cols</span><span class="o">=</span><span class="nb">frozenset</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;water_depth_below_land_surface_ft&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;water_level_above_site_datum_ft&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;water_level_above_navd88_ft&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">),</span>
+    <span class="n">sort_cols</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;sample_time&quot;</span><span class="p">,</span> <span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="_get">
+<a class="viewcode-back" href="../../reference/ngwmn.html#dataretrieval.ngwmn._get">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_get</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">local_vars</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Marshal a getter&#39;s arguments and dispatch to the shared OGC engine.</span>
+
+<span class="sd">    Every NGWMN getter ends with this same call; centralizing it keeps the</span>
+<span class="sd">    NGWMN base URL, output id, and dialect wired up in exactly one place.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">queryable</span> <span class="o">=</span> <span class="n">_STATE_QUERYABLE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">queryable</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">apply_state</span><span class="p">(</span><span class="n">local_vars</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="n">queryable</span><span class="p">[</span><span class="s2">&quot;to&quot;</span><span class="p">],</span> <span class="n">into</span><span class="o">=</span><span class="n">queryable</span><span class="p">[</span><span class="s2">&quot;into&quot;</span><span class="p">])</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="n">local_vars</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span>
+        <span class="n">args</span><span class="p">,</span>
+        <span class="n">service</span><span class="p">,</span>
+        <span class="n">output_id</span><span class="o">=</span><span class="n">_NGWMN_OUTPUT_ID</span><span class="p">,</span>
+        <span class="n">base_url</span><span class="o">=</span><span class="n">NGWMN_OGC_API_URL</span><span class="p">,</span>
+        <span class="n">dialect</span><span class="o">=</span><span class="n">NGWMN_DIALECT</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_sites">
+<a class="viewcode-back" href="../../reference/ngwmn.html#dataretrieval.ngwmn.get_sites">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_sites</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">agency_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">monitoring_location_number</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">altitude</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">national_aquifer_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">national_aquifer_description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">country_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">country_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">county_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">aquifer_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">site_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">aquifer_type_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">qw_sys_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">qw_sn_flag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">qw_baseline_flag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">qw_well_chars</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">qw_well_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">qw_well_purpose</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wl_sys_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wl_sn_flag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wl_baseline_flag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wl_well_chars</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wl_well_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wl_well_purpose</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">skip_geometry</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get NGWMN monitoring-location (site) metadata.</span>
+
+<span class="sd">    Site records describe each NGWMN monitoring location — its identifier,</span>
+<span class="sd">    responsible agency, location, aquifer, and whether it participates in the</span>
+<span class="sd">    network&#39;s water-quality (``qw_*``) and water-level (``wl_*``) sub-networks.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    monitoring_location_id : str or iterable of str, optional</span>
+<span class="sd">        One or more agency-qualified site identifiers in ``AGENCY-ID`` form</span>
+<span class="sd">        (e.g. ``&quot;USGS-423114090161101&quot;``, ``&quot;MBMG-702934&quot;``).</span>
+<span class="sd">    agency_code : str or iterable of str, optional</span>
+<span class="sd">        Code of the agency that manages the site.</span>
+<span class="sd">    monitoring_location_number : str or iterable of str, optional</span>
+<span class="sd">        Agency-assigned site number.</span>
+<span class="sd">    altitude : str or iterable of str, optional</span>
+<span class="sd">        Land-surface altitude at the site.</span>
+<span class="sd">    national_aquifer_code, national_aquifer_description : str or iterable, optional</span>
+<span class="sd">        National aquifer code / description.</span>
+<span class="sd">    country_code, country_name : str or iterable, optional</span>
+<span class="sd">        Country filters.</span>
+<span class="sd">    state : str or iterable of str, optional</span>
+<span class="sd">        State/territory filter. Accepts a full name (``&quot;Wisconsin&quot;``), a</span>
+<span class="sd">        two-letter postal code (``&quot;WI&quot;``), or a two-digit ANSI/FIPS code</span>
+<span class="sd">        (``&quot;55&quot;``).</span>
+<span class="sd">    county_name : str or iterable of str, optional</span>
+<span class="sd">        County name filter.</span>
+<span class="sd">    aquifer_name, site_type, aquifer_type_code : str or iterable, optional</span>
+<span class="sd">        Aquifer name, site type, and aquifer-type code.</span>
+<span class="sd">    qw_sys_name, qw_sn_flag, qw_baseline_flag : str or iterable, optional</span>
+<span class="sd">        Water-quality sub-network membership flags.</span>
+<span class="sd">    qw_well_chars, qw_well_type, qw_well_purpose : str or iterable, optional</span>
+<span class="sd">        Water-quality well characteristics, type, and purpose.</span>
+<span class="sd">    wl_sys_name, wl_sn_flag, wl_baseline_flag : str or iterable, optional</span>
+<span class="sd">        Water-level sub-network membership flags.</span>
+<span class="sd">    wl_well_chars, wl_well_type, wl_well_purpose : str or iterable, optional</span>
+<span class="sd">        Water-level well characteristics, type, and purpose.</span>
+<span class="sd">    properties : str or iterable of str, optional</span>
+<span class="sd">        Subset of columns to return. ``None`` (default) returns all columns.</span>
+<span class="sd">    skip_geometry : bool, optional</span>
+<span class="sd">        When ``True``, omit the geometry column. ``None`` (default) leaves the</span>
+<span class="sd">        server default (geometry included).</span>
+<span class="sd">    bbox : list of float, optional</span>
+<span class="sd">        Bounding box ``[minx, miny, maxx, maxy]`` (CRS 4326) to spatially</span>
+<span class="sd">        filter sites.</span>
+<span class="sd">    limit : int, optional</span>
+<span class="sd">        Per-page size; pagination still follows ``next`` links to completion.</span>
+<span class="sd">    convert_type : bool, optional</span>
+<span class="sd">        Whether to coerce column dtypes (default ``True``).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame or geopandas.GeoDataFrame</span>
+<span class="sd">        Site metadata, one row per monitoring location.</span>
+<span class="sd">    BaseMetadata</span>
+<span class="sd">        Metadata object with the request URL and query time.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; # All NGWMN sites in Wisconsin</span>
+<span class="sd">        &gt;&gt;&gt; # state accepts a full name, postal code (&quot;WI&quot;), or FIPS (&quot;55&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.ngwmn.get_sites(state=&quot;Wisconsin&quot;)</span>
+
+<span class="sd">        &gt;&gt;&gt; # Specific sites, geometry omitted</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.ngwmn.get_sites(</span>
+<span class="sd">        ...     monitoring_location_id=[&quot;USGS-423114090161101&quot;, &quot;MBMG-702934&quot;],</span>
+<span class="sd">        ...     skip_geometry=True,</span>
+<span class="sd">        ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_get</span><span class="p">(</span><span class="s2">&quot;sites&quot;</span><span class="p">,</span> <span class="nb">locals</span><span class="p">())</span></div>
+
+
+
+<div class="viewcode-block" id="get_water_level">
+<a class="viewcode-back" href="../../reference/ngwmn.html#dataretrieval.ngwmn.get_water_level">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_water_level</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">monitoring_location_obs_number</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sample_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">data_provided_by</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">water_depth_below_land_surface_ft</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">water_level_above_site_datum_ft</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">monitoring_location_vertical_datum</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">water_level_above_navd88_ft</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">datetime</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get NGWMN water-level observations.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    monitoring_location_id : str or iterable of str, optional</span>
+<span class="sd">        One or more agency-qualified site identifiers (``AGENCY-ID`` form).</span>
+<span class="sd">    monitoring_location_obs_number : str or iterable of str, optional</span>
+<span class="sd">        Per-site observation number; use to subset a site&#39;s observations.</span>
+<span class="sd">    sample_time : str or iterable of str, optional</span>
+<span class="sd">        Exact sample-time value(s) to match. For a time *range*, use</span>
+<span class="sd">        ``datetime`` instead.</span>
+<span class="sd">    data_provided_by : str or iterable of str, optional</span>
+<span class="sd">        Source organization for the observation.</span>
+<span class="sd">    water_depth_below_land_surface_ft : str or iterable, optional</span>
+<span class="sd">        Depth-to-water value filter (feet below land surface).</span>
+<span class="sd">    water_level_above_site_datum_ft : str or iterable, optional</span>
+<span class="sd">        Water-level value filter (feet above the site datum).</span>
+<span class="sd">    water_level_above_navd88_ft : str or iterable, optional</span>
+<span class="sd">        Water-level value filter (feet above NAVD 88).</span>
+<span class="sd">    monitoring_location_vertical_datum : str or iterable of str, optional</span>
+<span class="sd">        Vertical datum of the reported water level.</span>
+<span class="sd">    datetime : str or iterable of str, optional</span>
+<span class="sd">        Temporal filter — a single instant or a two-element ``[start, end]``</span>
+<span class="sd">        range (ISO-8601 dates/datetimes); ``&quot;..&quot;`` denotes an open end.</span>
+<span class="sd">    properties : str or iterable of str, optional</span>
+<span class="sd">        Subset of columns to return. ``None`` (default) returns all columns.</span>
+<span class="sd">    limit : int, optional</span>
+<span class="sd">        Per-page size; pagination still follows ``next`` links to completion.</span>
+<span class="sd">    convert_type : bool, optional</span>
+<span class="sd">        Whether to coerce column dtypes (default ``True``).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame</span>
+<span class="sd">        Water-level observations, one row per measurement.</span>
+<span class="sd">    BaseMetadata</span>
+<span class="sd">        Metadata object with the request URL and query time.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; site = &quot;USGS-272838082142201&quot;</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.ngwmn.get_water_level(</span>
+<span class="sd">        ...     monitoring_location_id=site</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Restrict to a date range</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.ngwmn.get_water_level(</span>
+<span class="sd">        ...     monitoring_location_id=site, datetime=[&quot;2022-01-01&quot;, &quot;2024-01-01&quot;]</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Multiple sites across agencies</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.ngwmn.get_water_level(</span>
+<span class="sd">        ...     monitoring_location_id=[&quot;USGS-272838082142201&quot;, &quot;MBMG-702934&quot;]</span>
+<span class="sd">        ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_get</span><span class="p">(</span><span class="s2">&quot;waterLevelObs&quot;</span><span class="p">,</span> <span class="nb">locals</span><span class="p">())</span></div>
+
+
+
+<div class="viewcode-block" id="get_lithology">
+<a class="viewcode-back" href="../../reference/ngwmn.html#dataretrieval.ngwmn.get_lithology">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_lithology</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">monitoring_location_obs_number</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get NGWMN lithology observations.</span>
+
+<span class="sd">    Lithology records describe the geologic materials logged at a monitoring</span>
+<span class="sd">    location, with depth intervals and controlled lithology concepts.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    monitoring_location_id : str or iterable of str, optional</span>
+<span class="sd">        One or more agency-qualified site identifiers (``AGENCY-ID`` form).</span>
+<span class="sd">    monitoring_location_obs_number : str or iterable of str, optional</span>
+<span class="sd">        Per-site observation number; use to subset a site&#39;s records.</span>
+<span class="sd">    properties : str or iterable of str, optional</span>
+<span class="sd">        Subset of columns to return. ``None`` (default) returns all columns.</span>
+<span class="sd">    limit : int, optional</span>
+<span class="sd">        Per-page size; pagination still follows ``next`` links to completion.</span>
+<span class="sd">    convert_type : bool, optional</span>
+<span class="sd">        Whether to coerce column dtypes (default ``True``).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame</span>
+<span class="sd">        Lithology observations, one row per logged interval.</span>
+<span class="sd">    BaseMetadata</span>
+<span class="sd">        Metadata object with the request URL and query time.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.ngwmn.get_lithology(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;AKDNR-535134236016630&quot;</span>
+<span class="sd">        ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_get</span><span class="p">(</span><span class="s2">&quot;lithologyObs&quot;</span><span class="p">,</span> <span class="nb">locals</span><span class="p">())</span></div>
+
+
+
+<div class="viewcode-block" id="get_well_construction">
+<a class="viewcode-back" href="../../reference/ngwmn.html#dataretrieval.ngwmn.get_well_construction">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_well_construction</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">monitoring_location_obs_number</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">material</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get NGWMN well-construction observations.</span>
+
+<span class="sd">    Construction records describe a well&#39;s physical build-out — casing,</span>
+<span class="sd">    screens, and similar elements — with depth intervals, materials, and</span>
+<span class="sd">    diameters.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    monitoring_location_id : str or iterable of str, optional</span>
+<span class="sd">        One or more agency-qualified site identifiers (``AGENCY-ID`` form).</span>
+<span class="sd">    monitoring_location_obs_number : str or iterable of str, optional</span>
+<span class="sd">        Per-site observation number; use to subset a site&#39;s records.</span>
+<span class="sd">    material : str or iterable of str, optional</span>
+<span class="sd">        Construction-material filter.</span>
+<span class="sd">    properties : str or iterable of str, optional</span>
+<span class="sd">        Subset of columns to return. ``None`` (default) returns all columns.</span>
+<span class="sd">    limit : int, optional</span>
+<span class="sd">        Per-page size; pagination still follows ``next`` links to completion.</span>
+<span class="sd">    convert_type : bool, optional</span>
+<span class="sd">        Whether to coerce column dtypes (default ``True``).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame</span>
+<span class="sd">        Well-construction observations, one row per construction element.</span>
+<span class="sd">    BaseMetadata</span>
+<span class="sd">        Metadata object with the request URL and query time.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.ngwmn.get_well_construction(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-272838082142201&quot;</span>
+<span class="sd">        ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_get</span><span class="p">(</span><span class="s2">&quot;constructionObs&quot;</span><span class="p">,</span> <span class="nb">locals</span><span class="p">())</span></div>
+
+
+
+<div class="viewcode-block" id="get_providers">
+<a class="viewcode-back" href="../../reference/ngwmn.html#dataretrieval.ngwmn.get_providers">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_providers</span><span class="p">(</span>
+    <span class="n">state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">agency_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">organization_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get NGWMN data-provider records.</span>
+
+<span class="sd">    Providers are the organizations that contribute data to the network.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    state : str or iterable of str, optional</span>
+<span class="sd">        State/territory filter. Accepts a full name (``&quot;Wisconsin&quot;``), a</span>
+<span class="sd">        two-letter postal code (``&quot;WI&quot;``), or a two-digit ANSI/FIPS code</span>
+<span class="sd">        (``&quot;55&quot;``). Only one state at a time — a multi-value state filter</span>
+<span class="sd">        returns no records for this collection.</span>
+<span class="sd">    agency_code : str or iterable of str, optional</span>
+<span class="sd">        Provider agency code.</span>
+<span class="sd">    organization_type : str or iterable of str, optional</span>
+<span class="sd">        Provider organization type, e.g. ``&quot;NWIS&quot;``.</span>
+<span class="sd">    properties : str or iterable of str, optional</span>
+<span class="sd">        Subset of columns to return. ``None`` (default) returns all columns.</span>
+<span class="sd">    limit : int, optional</span>
+<span class="sd">        Per-page size; pagination still follows ``next`` links to completion.</span>
+<span class="sd">    convert_type : bool, optional</span>
+<span class="sd">        Whether to coerce column dtypes (default ``True``).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame</span>
+<span class="sd">        Provider records, one row per provider.</span>
+<span class="sd">    BaseMetadata</span>
+<span class="sd">        Metadata object with the request URL and query time.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.ngwmn.get_providers(state=&quot;WI&quot;)</span>
+
+<span class="sd">        &gt;&gt;&gt; # a full name (or FIPS code) works too</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.ngwmn.get_providers(</span>
+<span class="sd">        ...     organization_type=&quot;NWIS&quot;, state=&quot;Wisconsin&quot;</span>
+<span class="sd">        ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_get</span><span class="p">(</span><span class="s2">&quot;providers&quot;</span><span class="p">,</span> <span class="nb">locals</span><span class="p">())</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

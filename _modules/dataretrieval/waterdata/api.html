@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+gdff162cbd documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g963eb2809 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=286bfb09"></script>
+      <script src="../../../_static/documentation_options.js?v=bd326dbe"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,6 +92,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.filters</span><span class="w"> </span><span class="kn">import</span> <span class="n">FILTER_LANG</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">HTTPX_DEFAULTS</span><span class="p">,</span>
     <span class="n">BaseMetadata</span><span class="p">,</span>
@@ -99,7 +100,7 @@
     <span class="n">_get</span><span class="p">,</span>
     <span class="n">to_str</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.filters</span><span class="w"> </span><span class="kn">import</span> <span class="n">FILTER_LANG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.types</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">CODE_SERVICES</span><span class="p">,</span>
     <span class="n">METADATA_COLLECTIONS</span><span class="p">,</span>
@@ -121,8 +122,8 @@
     <span class="n">_run_sync</span><span class="p">,</span>
     <span class="n">_switch_properties_id</span><span class="p">,</span>
     <span class="n">_walk_pages</span><span class="p">,</span>
+    <span class="n">_with_state</span><span class="p">,</span>
     <span class="n">get_ogc_data</span><span class="p">,</span>
-    <span class="n">get_stats_data</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="c1"># Set up logger for this module</span>
@@ -278,7 +279,7 @@
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
-<span class="sd">        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,</span>
+<span class="sd">        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,</span>
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
@@ -289,6 +290,13 @@
 <span class="sd">        Formatted data returned from the API query.</span>
 <span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ChunkInterrupted</span>
+<span class="sd">        A transient failure (429 / 5xx / timeout) interrupted the request</span>
+<span class="sd">        after the built-in retries. Completed work is preserved; resume</span>
+<span class="sd">        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -330,7 +338,7 @@
 <span class="sd">        &gt;&gt;&gt; # multiple sub-requests so the URL stays under the server&#39;s byte</span>
 <span class="sd">        &gt;&gt;&gt; # limit. Combined output looks like a single query.</span>
 <span class="sd">        &gt;&gt;&gt; sites_df, _ = dataretrieval.waterdata.get_monitoring_locations(</span>
-<span class="sd">        ...     state_name=&quot;Ohio&quot;,</span>
+<span class="sd">        ...     state=&quot;Ohio&quot;,</span>
 <span class="sd">        ...     site_type=&quot;Stream&quot;,</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_daily(</span>
@@ -489,7 +497,7 @@
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
-<span class="sd">        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,</span>
+<span class="sd">        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,</span>
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
@@ -500,6 +508,13 @@
 <span class="sd">        Formatted data returned from the API query.</span>
 <span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ChunkInterrupted</span>
+<span class="sd">        A transient failure (429 / 5xx / timeout) interrupted the request</span>
+<span class="sd">        after the built-in retries. Completed work is preserved; resume</span>
+<span class="sd">        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -514,7 +529,7 @@
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Pull several disjoint time windows in one call via a CQL</span>
-<span class="sd">        &gt;&gt;&gt; # ``filter``. See ``dataretrieval.waterdata.filters`` for the</span>
+<span class="sd">        &gt;&gt;&gt; # ``filter``. See ``dataretrieval.ogc.filters`` for the</span>
 <span class="sd">        &gt;&gt;&gt; # full grammar, auto-chunking, and pitfalls.</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_continuous(</span>
 <span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
@@ -548,6 +563,7 @@
     <span class="n">district_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">country_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">country_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">state_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">state_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">county_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -629,6 +645,10 @@
 <span class="sd">        The code for the country in which the monitoring location is located.</span>
 <span class="sd">    country_name : string or iterable of strings, optional</span>
 <span class="sd">        The name of the country in which the monitoring location is located.</span>
+<span class="sd">    state : string or iterable of strings, optional</span>
+<span class="sd">        State/territory filter (the recommended parameter). Accepts a full name</span>
+<span class="sd">        (``&quot;Wisconsin&quot;``), a two-letter postal code (``&quot;WI&quot;``), or a two-digit</span>
+<span class="sd">        ANSI/FIPS code (``&quot;55&quot;``).</span>
 <span class="sd">    state_code : string or iterable of strings, optional</span>
 <span class="sd">        State code. A two-digit ANSI code (formerly FIPS code) as defined by</span>
 <span class="sd">        the American National Standards Institute, to define States and</span>
@@ -797,7 +817,7 @@
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
-<span class="sd">        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,</span>
+<span class="sd">        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,</span>
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
@@ -808,6 +828,13 @@
 <span class="sd">        Formatted data returned from the API query.</span>
 <span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ChunkInterrupted</span>
+<span class="sd">        A transient failure (429 / 5xx / timeout) interrupted the request</span>
+<span class="sd">        after the built-in retries. Completed work is preserved; resume</span>
+<span class="sd">        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -828,8 +855,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;monitoring-locations&quot;</span>
 
-    <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+    <span class="c1"># Build argument dictionary, omitting None values (resolving the unified</span>
+    <span class="c1"># `state` argument into the OGC `state_name` queryable).</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="n">_with_state</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">to</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s2">&quot;state_name&quot;</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
@@ -844,6 +872,7 @@
     <span class="n">properties</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">statistic_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">hydrologic_unit_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">state_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">last_modified</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">begin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -910,6 +939,10 @@
 <span class="sd">        to the largest (regions). Each hydrologic unit is identified by a unique</span>
 <span class="sd">        hydrologic unit code (HUC) consisting of two to eight digits based on the</span>
 <span class="sd">        four levels of classification in the hydrologic unit system.</span>
+<span class="sd">    state : string or iterable of strings, optional</span>
+<span class="sd">        State/territory filter (the recommended parameter). Accepts a full name</span>
+<span class="sd">        (``&quot;Wisconsin&quot;``), a two-letter postal code (``&quot;WI&quot;``), or a two-digit</span>
+<span class="sd">        ANSI/FIPS code (``&quot;55&quot;``).</span>
 <span class="sd">    state_name : string or iterable of strings, optional</span>
 <span class="sd">        The name of the state or state equivalent in which the monitoring location</span>
 <span class="sd">        is located.</span>
@@ -1024,7 +1057,7 @@
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
-<span class="sd">        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,</span>
+<span class="sd">        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,</span>
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
@@ -1035,6 +1068,13 @@
 <span class="sd">        Formatted data returned from the API query.</span>
 <span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ChunkInterrupted</span>
+<span class="sd">        A transient failure (429 / 5xx / timeout) interrupted the request</span>
+<span class="sd">        after the built-in retries. Completed work is preserved; resume</span>
+<span class="sd">        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -1055,8 +1095,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;time-series-metadata&quot;</span>
 
-    <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+    <span class="c1"># Build argument dictionary, omitting None values (resolving the unified</span>
+    <span class="c1"># `state` argument into the OGC `state_name` queryable).</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="n">_with_state</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">to</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s2">&quot;state_name&quot;</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
@@ -1088,6 +1129,7 @@
     <span class="n">district_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">country_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">country_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">state_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">state_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">county_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1196,6 +1238,10 @@
 <span class="sd">        interval (``&quot;start/end&quot;``, optionally half-bounded with ``..``),</span>
 <span class="sd">        or an ISO 8601 duration (e.g. ``&quot;P1M&quot;``, ``&quot;PT36H&quot;``). See</span>
 <span class="sd">        :func:`get_time_series_metadata` for the full grammar.</span>
+<span class="sd">    state : string or iterable of strings, optional</span>
+<span class="sd">        State/territory filter (the recommended parameter). Accepts a full</span>
+<span class="sd">        name (``&quot;Wisconsin&quot;``), a two-letter postal code (``&quot;WI&quot;``), or a</span>
+<span class="sd">        two-digit ANSI/FIPS code (``&quot;55&quot;``).</span>
 <span class="sd">    state_name, county_name, hydrologic_unit_code, site_type, \</span>
 <span class="sd">site_type_code : string or iterable of strings, optional</span>
 <span class="sd">        Common location-catalog filters carried over from the</span>
@@ -1221,7 +1267,7 @@
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
-<span class="sd">        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,</span>
+<span class="sd">        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,</span>
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
@@ -1232,6 +1278,13 @@
 <span class="sd">        Formatted data returned from the API query.</span>
 <span class="sd">    md : :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object pertaining to the query.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ChunkInterrupted</span>
+<span class="sd">        A transient failure (429 / 5xx / timeout) interrupted the request</span>
+<span class="sd">        after the built-in retries. Completed work is preserved; resume</span>
+<span class="sd">        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -1250,7 +1303,7 @@
 
 <span class="sd">        &gt;&gt;&gt; # Every series in a single county, useful for area-of-interest workflows</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_combined_metadata(</span>
-<span class="sd">        ...     state_name=&quot;Wisconsin&quot;, county_name=&quot;Dane County&quot;</span>
+<span class="sd">        ...     state=&quot;Wisconsin&quot;, county_name=&quot;Dane County&quot;</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Inventory across multiple HUCs, restricted to streams and springs</span>
@@ -1288,7 +1341,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;combined-metadata&quot;</span>
 
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+    <span class="c1"># Resolve the unified `state` argument into the OGC `state_name` queryable.</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="n">_with_state</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">to</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s2">&quot;state_name&quot;</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
 
@@ -1440,7 +1494,7 @@
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
-<span class="sd">        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,</span>
+<span class="sd">        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,</span>
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
@@ -1451,6 +1505,13 @@
 <span class="sd">        Formatted data returned from the API query.</span>
 <span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ChunkInterrupted</span>
+<span class="sd">        A transient failure (429 / 5xx / timeout) interrupted the request</span>
+<span class="sd">        after the built-in retries. Completed work is preserved; resume</span>
+<span class="sd">        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -1639,7 +1700,7 @@
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
-<span class="sd">        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,</span>
+<span class="sd">        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,</span>
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
@@ -1650,6 +1711,13 @@
 <span class="sd">        Formatted data returned from the API query.</span>
 <span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ChunkInterrupted</span>
+<span class="sd">        A transient failure (429 / 5xx / timeout) interrupted the request</span>
+<span class="sd">        after the built-in retries. Completed work is preserved; resume</span>
+<span class="sd">        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -1830,7 +1898,7 @@
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
-<span class="sd">        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,</span>
+<span class="sd">        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,</span>
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
@@ -1841,6 +1909,13 @@
 <span class="sd">        Formatted data returned from the API query.</span>
 <span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ChunkInterrupted</span>
+<span class="sd">        A transient failure (429 / 5xx / timeout) interrupted the request</span>
+<span class="sd">        after the built-in retries. Completed work is preserved; resume</span>
+<span class="sd">        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -1948,7 +2023,7 @@
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
-<span class="sd">        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,</span>
+<span class="sd">        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,</span>
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
@@ -1959,6 +2034,13 @@
 <span class="sd">        Formatted data returned from the API query.</span>
 <span class="sd">    md : :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object pertaining to the query.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ChunkInterrupted</span>
+<span class="sd">        A transient failure (429 / 5xx / timeout) interrupted the request</span>
+<span class="sd">        after the built-in retries. Completed work is preserved; resume</span>
+<span class="sd">        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -2074,7 +2156,7 @@
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
-<span class="sd">        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,</span>
+<span class="sd">        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,</span>
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
@@ -2085,6 +2167,13 @@
 <span class="sd">        Formatted data returned from the API query.</span>
 <span class="sd">    md : :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object pertaining to the query.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ChunkInterrupted</span>
+<span class="sd">        A transient failure (429 / 5xx / timeout) interrupted the request</span>
+<span class="sd">        after the built-in retries. Completed work is preserved; resume</span>
+<span class="sd">        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -2171,6 +2260,13 @@
 <span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object including the URL request and query time.</span>
 
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ChunkInterrupted</span>
+<span class="sd">        A transient failure (429 / 5xx / timeout) interrupted the request</span>
+<span class="sd">        after the built-in retries. Completed work is preserved; resume</span>
+<span class="sd">        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).</span>
+
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    .. code::</span>
@@ -2193,13 +2289,13 @@
             <span class="sa">f</span><span class="s2">&quot;Valid options are: </span><span class="si">{</span><span class="n">valid_code_services</span><span class="si">}</span><span class="s2">.&quot;</span>
         <span class="p">)</span>
 
-    <span class="c1"># Give ID column the collection name with underscores</span>
-    <span class="k">if</span> <span class="n">collection</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">collection</span> <span class="o">!=</span> <span class="s2">&quot;counties&quot;</span><span class="p">:</span>
-        <span class="n">output_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">collection</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="k">elif</span> <span class="n">collection</span> <span class="o">==</span> <span class="s2">&quot;counties&quot;</span><span class="p">:</span>
+    <span class="c1"># Give the ID column the collection name, singularized and underscored.</span>
+    <span class="k">if</span> <span class="n">collection</span> <span class="o">==</span> <span class="s2">&quot;counties&quot;</span><span class="p">:</span>
         <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;county&quot;</span>
+    <span class="k">elif</span> <span class="n">collection</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">):</span>
+        <span class="n">output_id</span> <span class="o">=</span> <span class="n">collection</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">output_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">collection</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">output_id</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
 
     <span class="n">query_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">)</span> <span class="k">if</span> <span class="n">query</span> <span class="k">else</span> <span class="p">{}</span>
     <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -2563,6 +2659,7 @@
     <span class="n">approval_status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">computation_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">country_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">state_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">county_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2573,6 +2670,7 @@
     <span class="n">site_type_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">site_type_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">parameter_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">normal_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">expand_percentiles</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get day-of-year and month-of-year water data statistics from the</span>
@@ -2598,6 +2696,10 @@
 <span class="sd">        arithmetic_mean, maximum, median, minimum, percentile.</span>
 <span class="sd">    country_code: string, optional</span>
 <span class="sd">        Country query parameter. API defaults to &quot;US&quot;.</span>
+<span class="sd">    state: string or iterable of strings, optional</span>
+<span class="sd">        State/territory filter (the recommended parameter). Accepts a full name</span>
+<span class="sd">        (&quot;Wisconsin&quot;), a two-letter postal code (&quot;WI&quot;), or a two-digit</span>
+<span class="sd">        ANSI/FIPS code (&quot;55&quot;).</span>
 <span class="sd">    state_code: string, optional</span>
 <span class="sd">        State query parameter. Takes the format &quot;US:XX&quot;, where XX is</span>
 <span class="sd">        the two-digit state code. API defaults to &quot;US:42&quot; (Pennsylvania).</span>
@@ -2634,6 +2736,10 @@
 <span class="sd">        measured and the units of measure. A complete list of parameter codes</span>
 <span class="sd">        and associated groupings can be found at</span>
 <span class="sd">        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.</span>
+<span class="sd">    normal_type : string, optional</span>
+<span class="sd">        Filter the returned normals to a single period. If unspecified</span>
+<span class="sd">        (default), all matching data are returned. Available values:</span>
+<span class="sd">        &quot;DOY&quot; (day-of-year) and &quot;MOY&quot; (month-of-year).</span>
 <span class="sd">    expand_percentiles : boolean</span>
 <span class="sd">        Percentile data for a given day of year or month of year by default</span>
 <span class="sd">        are returned from the service as lists of string values and percentile</span>
@@ -2683,9 +2789,12 @@
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">params</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;expand_percentiles&quot;</span><span class="p">})</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span>
+        <span class="n">_with_state</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">to</span><span class="o">=</span><span class="s2">&quot;fips_us&quot;</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s2">&quot;state_code&quot;</span><span class="p">),</span>
+        <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;expand_percentiles&quot;</span><span class="p">},</span>
+    <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">get_stats_data</span><span class="p">(</span>
+    <span class="k">return</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span>
         <span class="n">args</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;observationNormals&quot;</span><span class="p">,</span> <span class="n">expand_percentiles</span><span class="o">=</span><span class="n">expand_percentiles</span>
     <span class="p">)</span></div>
 
@@ -2697,6 +2806,7 @@
     <span class="n">approval_status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">computation_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">country_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">state_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">county_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2707,6 +2817,7 @@
     <span class="n">site_type_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">site_type_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">parameter_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">interval_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">expand_percentiles</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get monthly and annual water data statistics from the USGS Water Data API.</span>
@@ -2731,6 +2842,10 @@
 <span class="sd">        arithmetic_mean, maximum, median, minimum, percentile.</span>
 <span class="sd">    country_code: string, optional</span>
 <span class="sd">        Country query parameter. API defaults to &quot;US&quot;.</span>
+<span class="sd">    state: string or iterable of strings, optional</span>
+<span class="sd">        State/territory filter (the recommended parameter). Accepts a full name</span>
+<span class="sd">        (&quot;Wisconsin&quot;), a two-letter postal code (&quot;WI&quot;), or a two-digit</span>
+<span class="sd">        ANSI/FIPS code (&quot;55&quot;).</span>
 <span class="sd">    state_code: string, optional</span>
 <span class="sd">        State query parameter. Takes the format &quot;US:XX&quot;, where XX is</span>
 <span class="sd">        the two-digit state code. API defaults to &quot;US:42&quot; (Pennsylvania).</span>
@@ -2772,6 +2887,10 @@
 <span class="sd">        measured and the units of measure. A complete list of parameter codes</span>
 <span class="sd">        and associated groupings can be found at</span>
 <span class="sd">        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.</span>
+<span class="sd">    interval_type : string or iterable of strings, optional</span>
+<span class="sd">        Filter the returned intervals to one or more periods. If unspecified</span>
+<span class="sd">        (default), all matching data are returned. Available values:</span>
+<span class="sd">        &quot;M&quot; (month), &quot;CY&quot; (calendar year), and &quot;WY&quot; (water year).</span>
 <span class="sd">    expand_percentiles : boolean</span>
 <span class="sd">        Percentile data for a given day of year or month of year by default</span>
 <span class="sd">        are returned from the service as lists of string values and percentile</span>
@@ -2805,7 +2924,7 @@
 <span class="sd">        &gt;&gt;&gt; # Get monthly and yearly medians for streamflow at streams in Rhode Island</span>
 <span class="sd">        &gt;&gt;&gt; # from calendar year 2024.</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_stats_date_range(</span>
-<span class="sd">        ...     state_code=&quot;US:44&quot;,  # State code for Rhode Island</span>
+<span class="sd">        ...     state=&quot;RI&quot;,  # Rhode Island (postal code, name, or FIPS all work)</span>
 <span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
 <span class="sd">        ...     site_type_code=&quot;ST&quot;,</span>
 <span class="sd">        ...     start_date=&quot;2024-01-01&quot;,</span>
@@ -2822,9 +2941,12 @@
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">params</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;expand_percentiles&quot;</span><span class="p">})</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span>
+        <span class="n">_with_state</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">to</span><span class="o">=</span><span class="s2">&quot;fips_us&quot;</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s2">&quot;state_code&quot;</span><span class="p">),</span>
+        <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;expand_percentiles&quot;</span><span class="p">},</span>
+    <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">get_stats_data</span><span class="p">(</span>
+    <span class="k">return</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span>
         <span class="n">args</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
         <span class="n">service</span><span class="o">=</span><span class="s2">&quot;observationIntervals&quot;</span><span class="p">,</span>
         <span class="n">expand_percentiles</span><span class="o">=</span><span class="n">expand_percentiles</span><span class="p">,</span>
@@ -2991,7 +3113,7 @@
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
-<span class="sd">        :mod:`dataretrieval.waterdata.filters` for syntax, auto-chunking,</span>
+<span class="sd">        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,</span>
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
@@ -3002,6 +3124,13 @@
 <span class="sd">        Formatted data returned from the API query.</span>
 <span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        A custom metadata object</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ChunkInterrupted</span>
+<span class="sd">        A transient failure (429 / 5xx / timeout) interrupted the request</span>
+<span class="sd">        after the built-in retries. Completed work is preserved; resume</span>
+<span class="sd">        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
