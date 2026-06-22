@@ -204,7 +204,7 @@ print(f"Found {len(flowlines)} upstream tributaries within 50km")
 - `get_latest_continuous`: Most recent high-frequency value
 - `get_stats_por` / `get_stats_date_range`: Daily, monthly, and annual statistics
 - `get_samples`: Discrete USGS water-quality samples
-- `get_ratings`: Stage-discharge rating curves (returns a `dict` of rating tables, not `(df, metadata)`)
+- `get_ratings`: Stage-discharge rating curves
 
 ### National Ground-Water Monitoring Network (NGWMN) — `dataretrieval.ngwmn`
 - `get_sites`: Groundwater monitoring-location metadata across many agencies
