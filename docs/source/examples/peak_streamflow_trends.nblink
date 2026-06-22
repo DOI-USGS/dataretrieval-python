@@ -1,6 +1,3 @@
 {
-    "path": "../../../demos/peak_streamflow_trends.ipynb",
-    "extra-media": [
-        "../../../demos/datasets"
-    ]
+    "path": "../../../demos/peak_streamflow_trends.ipynb"
 }

@@ -118,6 +118,30 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 ```
 
+### National Ground-Water Monitoring Network (NGWMN)
+
+Access groundwater data aggregated from many state, federal, and local
+agencies. NGWMN uses the same OGC engine as the Water Data API,
+so chunking and pagination behave the same way:
+
+```python
+from dataretrieval import ngwmn
+
+# Find the groundwater monitoring sites in a state
+# (state accepts a full name, a postal code like 'WI', or a FIPS code like '55')
+sites, metadata = ngwmn.get_sites(state='Wisconsin')
+
+print(f"Found {len(sites)} NGWMN sites in Wisconsin")
+
+# Pull water levels from the first twenty sites over a time window. 
+water_levels, metadata = ngwmn.get_water_level(
+    monitoring_location_id=sites['monitoring_location_id'][:20],
+    datetime=['2022-01-01', '2024-01-01']
+)
+
+print(f"Retrieved {len(water_levels)} water-level observations")
+```
+
 ### Water Quality Portal (WQP)
 
 Access water quality data from multiple agencies:
@@ -170,35 +194,43 @@ print(f"Found {len(flowlines)} upstream tributaries within 50km")
 
 ## Available Data Services
 
-### Modern USGS Water Data APIs (Recommended)
-- **Daily values**: Daily statistical summaries (mean, min, max)
-- **Instantaneous values**: High-frequency continuous data
-- **Field measurements**: Discrete measurements from field visits
-- **Monitoring locations**: Site information and metadata
-- **Time series metadata**: Information about available data parameters
-- **Latest daily values**: Most recent daily statistical summary data
-- **Latest instantaneous values**: Most recent high-frequency continuous data
-- **Daily, monthly, and annual statistics**: Median, maximum, minimum, arithmetic mean, and percentile statistics
-- **Samples data**: Discrete USGS water quality data
+### Modern USGS Water Data APIs (Recommended) — `dataretrieval.waterdata`
+- `get_daily`: Daily statistical summaries (mean, min, max)
+- `get_continuous`: High-frequency continuous (instantaneous) values
+- `get_field_measurements`: Discrete measurements from field visits
+- `get_monitoring_locations`: Site information and metadata
+- `get_time_series_metadata`: A location's available data parameters
+- `get_latest_daily`: Most recent daily statistical summary
+- `get_latest_continuous`: Most recent high-frequency value
+- `get_stats_por` / `get_stats_date_range`: Daily, monthly, and annual statistics
+- `get_samples`: Discrete USGS water-quality samples
+- `get_ratings`: Stage-discharge rating curves
 
-### Legacy NWIS Services (Deprecated)
-- **Daily values (dv)**: Legacy daily statistical data
-- **Instantaneous values (iv)**: Legacy continuous data
-- **Site info (site)**: Basic site information
-- **Statistics (stat)**: Statistical summaries
-- **Discharge peaks (peaks)**: Annual peak discharge events
+### National Ground-Water Monitoring Network (NGWMN) — `dataretrieval.ngwmn`
+- `get_sites`: Groundwater monitoring-location metadata across many agencies
+- `get_water_level`: Depth-to-water and water-level observations
+- `get_lithology`: Geologic-material logs by depth interval
+- `get_well_construction`: Casing, screen, and build-out records
+- `get_providers`: Contributing data-provider organizations
 
-### Water Quality Portal
-- **Results**: Water quality analytical results from USGS, EPA, and other agencies
-- **Sites**: Monitoring location information
-- **Organizations**: Data provider information
-- **Projects**: Sampling project details
+### Legacy NWIS Services (Deprecated) — `dataretrieval.nwis`
+- `get_dv`: Legacy daily statistical data
+- `get_iv`: Legacy continuous (instantaneous) data
+- `get_info`: Basic site information
+- `get_stats`: Statistical summaries
+- `get_discharge_peaks`: Annual peak discharge events
 
-### Network Linked Data Index (NLDI)
-- **Basin delineation**: Watershed boundaries for any point
-- **Flow navigation**: Upstream/downstream network traversal
-- **Feature discovery**: Find monitoring sites, dams, and other features
-- **Hydrologic connectivity**: Link data across the stream network
+### Water Quality Portal — `dataretrieval.wqp`
+- `get_results`: Water-quality analytical results from USGS, EPA, and other agencies
+- `what_sites`: Monitoring-location information
+- `what_organizations`: Data-provider information
+- `what_projects`: Sampling-project details
+
+### Network Linked Data Index (NLDI) — `dataretrieval.nldi`
+- `get_basin`: Watershed boundary for a point or feature
+- `get_flowlines`: Upstream/downstream flowline navigation
+- `get_features`: Find monitoring sites, dams, and other features along the network
+- `get_features_by_data_source`: Features from a specific data source
 
 ## More Examples
 

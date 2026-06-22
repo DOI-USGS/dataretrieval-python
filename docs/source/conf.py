@@ -39,8 +39,8 @@ templates_path = ["_templates"]
 # suffix of source documents
 source_suffix = ".rst"
 
-# The main toctree document.
-main_doc = "index"
+# The root toctree document.
+root_doc = "index"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
