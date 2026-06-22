@@ -145,12 +145,9 @@ sites, metadata = ngwmn.get_sites(state='Wisconsin')
 
 print(f"Found {len(sites)} NGWMN sites in Wisconsin")
 
-# Pull water levels for those sites over a time window. The [:20] keeps this
-# example small; drop it to pull the whole state — a multi-site request is
-# split into URL-safe chunks automatically.
-site_ids = sites['monitoring_location_id'][:20]
+# Pull water levels from the first twenty sites over a time window. 
 water_levels, metadata = ngwmn.get_water_level(
-    monitoring_location_id=site_ids,
+    monitoring_location_id=sites['monitoring_location_id'][:20],
     datetime=['2022-01-01', '2024-01-01']
 )
 
