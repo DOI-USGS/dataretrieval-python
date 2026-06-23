@@ -1,15 +1,11 @@
 import datetime
 import json
-import sys
 from unittest import mock
 
 import numpy as np
 import pandas as pd
 import pytest
 from pandas import DataFrame
-
-if sys.version_info < (3, 10):
-    pytest.skip("Skip entire module on Python < 3.10", allow_module_level=True)
 
 from dataretrieval.ogc.engine import _dialect
 from dataretrieval.waterdata import (

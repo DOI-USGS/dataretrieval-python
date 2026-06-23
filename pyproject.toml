@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "dataretrieval"
 description = "Discover and retrieve water data from U.S. federal hydrologic web services."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 keywords = ["USGS", "water data"]
 license = "CC0-1.0"
 license-files = ["LICENSE.md"]
@@ -17,11 +17,22 @@ maintainers = [
   {name = "Elise Hinman", email = "ehinman@usgs.gov"},
 ]
 classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Hydrology",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
     "httpx",
     "pandas>=2.0.0,<4.0.0",
+    # Directly imported by ``waterdata`` (``anyio.from_thread.start_blocking_portal``),
+    # so declared here rather than relied on transitively via httpx.
+    "anyio>=4.0",
 ]
 dynamic = ["version"]
 
@@ -35,7 +46,7 @@ dataretrieval = ["py.typed"]
 # Minimal set the CI ``type-check`` job installs — just mypy + the package,
 # not the whole test stack.
 type-check = [
-  "mypy<2",  # <2 so it can still target Python 3.9 (the project's floor)
+  "mypy",
 ]
 test = [
   "pytest > 5.0.0",
@@ -77,7 +88,7 @@ repository = "https://github.com/DOI-USGS/dataretrieval-python.git"
 write_to = "dataretrieval/_version.py"
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 extend-exclude = ["demos"]
 
 [tool.ruff.lint]
@@ -115,7 +126,7 @@ docstring-code-line-length = 72
 # libraries (pandas, geopandas) are treated as ``Any`` instead of
 # requiring stub packages. Dropping that — via pandas-stubs/types-requests and
 # per-module overrides — can follow.
-python_version = "3.9"  # the project's minimum supported version
+python_version = "3.10"  # the project's minimum supported version
 files = ["dataretrieval"]
 strict = true
 ignore_missing_imports = true

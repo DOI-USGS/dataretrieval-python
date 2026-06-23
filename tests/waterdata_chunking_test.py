@@ -20,7 +20,6 @@ import concurrent.futures
 import contextvars
 import datetime
 import http.server
-import sys
 import threading
 import time
 import warnings
@@ -31,9 +30,6 @@ import httpx
 import numpy as np
 import pandas as pd
 import pytest
-
-if sys.version_info < (3, 10):
-    pytest.skip("Skip entire module on Python < 3.10", allow_module_level=True)
 
 from dataretrieval.exceptions import (
     DataRetrievalError,

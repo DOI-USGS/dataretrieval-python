@@ -1,12 +1,8 @@
 import re
-import sys
 from urllib.parse import parse_qs, urlsplit
 
 import pandas as pd
 import pytest
-
-if sys.version_info < (3, 10):
-    pytest.skip("Skip entire module on Python < 3.10", allow_module_level=True)
 
 from dataretrieval.waterdata import get_ratings
 from dataretrieval.waterdata.ratings import _build_filter

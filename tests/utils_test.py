@@ -231,9 +231,9 @@ class Test_BaseMetadata:
         assert md.query_time is not None
         assert md.header is not None
 
-        # Test NotImplementedError parameters
+        # site_info is abstract on BaseMetadata; only nwis/wqp implement it.
         with pytest.raises(NotImplementedError):
-            _ = md.variable_info
+            _ = md.site_info
 
 
 class Test_to_str:
