@@ -13,10 +13,6 @@ provided below.
 +===================================+===============================================================+
 | National Water Information System | https://waterdata.usgs.gov/nwis                               |
 +-----------------------------------+---------------------------------------------------------------+
-| National Trends Network           | https://nadp.slh.wisc.edu/networks/national-trends-network    |
-+-----------------------------------+---------------------------------------------------------------+
-| Mercury Deposition Network        | https://nadp.slh.wisc.edu/networks/mercury-deposition-network |
-+-----------------------------------+---------------------------------------------------------------+
 | USGS Samples                      | https://waterdata.usgs.gov/download-samples/                  |
 +-----------------------------------+---------------------------------------------------------------+
 | Streamstats                       | https://streamstats.usgs.gov                                  |

@@ -22,7 +22,6 @@
 ## Testing Gotchas
 - Tests mock HTTP with `pytest-httpx`'s `httpx_mock` fixture and fixtures under `tests/data/`; keep new API tests offline. `tests/conftest.py` relaxes the fixture's strict-mode defaults (unused mocks and unmocked requests are tolerated) so rerun-on-failure works.
 - `tests/nwis_test.py::test_nwis_service_live` hits live NWIS.
-- `tests/nadp_test.py` is module-skipped (NADP deprecated).
 - `tests/waterdata_test.py` and `tests/waterdata_ratings_test.py` skip on Python <3.10, so a 3.9 run does not cover them.
 
 ## Implementation Notes
