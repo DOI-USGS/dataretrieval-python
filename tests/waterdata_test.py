@@ -84,10 +84,10 @@ def test_mock_get_samples(httpx_mock):
     df, md = get_samples(
         service="results",
         profile="fullphyschem",
-        activityMediaName="Water",
-        activityStartDateLower="2020-01-01",
-        activityStartDateUpper="2024-12-31",
-        monitoringLocationIdentifier="USGS-05406500",
+        activity_media_name="Water",
+        activity_start_date_lower="2020-01-01",
+        activity_start_date_upper="2024-12-31",
+        monitoring_location_id="USGS-05406500",
     )
     assert type(df) is DataFrame
     # 181 source columns + 6 derived <prefix>DateTime columns
@@ -107,7 +107,7 @@ def test_mock_get_samples_summary(httpx_mock):
     )
     response_file_path = "tests/data/samples_summary.txt"
     mock_request(httpx_mock, request_url, response_file_path)
-    df, md = get_samples_summary(monitoringLocationIdentifier="USGS-04183500")
+    df, md = get_samples_summary(monitoring_location_id="USGS-04183500")
     assert type(df) is DataFrame
     expected_columns = {
         "monitoringLocationIdentifier",
@@ -130,7 +130,7 @@ def test_mock_get_samples_summary(httpx_mock):
 def test_get_samples_summary_rejects_list():
     """The summary endpoint accepts only one site; a list must raise TypeError."""
     with pytest.raises(TypeError, match="exactly one monitoring location"):
-        get_samples_summary(monitoringLocationIdentifier=["USGS-04183500"])
+        get_samples_summary(monitoring_location_id=["USGS-04183500"])
 
 
 def test_get_samples_raises_typed_error_on_429(httpx_mock):
@@ -144,7 +144,7 @@ def test_get_samples_raises_typed_error_on_429(httpx_mock):
         get_samples(
             service="results",
             profile="fullphyschem",
-            monitoringLocationIdentifier="USGS-05406500",
+            monitoring_location_id="USGS-05406500",
         )
 
 
@@ -154,7 +154,69 @@ def test_get_samples_summary_raises_typed_error_on_5xx(httpx_mock):
 
     httpx_mock.add_response(status_code=503)
     with pytest.raises(ServiceUnavailable):
-        get_samples_summary(monitoringLocationIdentifier="USGS-04183500")
+        get_samples_summary(monitoring_location_id="USGS-04183500")
+
+
+def test_get_samples_legacy_camelcase_kwargs_warn(httpx_mock):
+    """Legacy camelCase kwargs still work but emit a DeprecationWarning that
+    names the new snake_case parameter, and produce the same request URL as
+    the snake_case call."""
+    request_url = (
+        "https://api.waterdata.usgs.gov/samples-data/results/fullphyschem?"
+        "activityMediaName=Water&activityStartDateLower=2020-01-01"
+        "&activityStartDateUpper=2024-12-31&monitoringLocationIdentifier=USGS-05406500&mimeType=text%2Fcsv"
+    )
+    response_file_path = "tests/data/samples_results.txt"
+    mock_request(httpx_mock, request_url, response_file_path)
+    with pytest.warns(DeprecationWarning, match="monitoring_location_id"):
+        df, md = get_samples(
+            service="results",
+            profile="fullphyschem",
+            activityMediaName="Water",
+            activityStartDateLower="2020-01-01",
+            activityStartDateUpper="2024-12-31",
+            monitoringLocationIdentifier="USGS-05406500",
+        )
+    assert type(df) is DataFrame
+    # The deprecated names map to the same camelCase wire params: same URL.
+    assert md.url == request_url
+
+
+def test_get_samples_summary_legacy_camelcase_kwarg_warns(httpx_mock):
+    """The deprecated ``monitoringLocationIdentifier`` keyword still works for
+    the summary endpoint and warns, naming the new snake_case parameter."""
+    request_url = (
+        "https://api.waterdata.usgs.gov/samples-data/summary/USGS-04183500"
+        "?mimeType=text%2Fcsv"
+    )
+    response_file_path = "tests/data/samples_summary.txt"
+    mock_request(httpx_mock, request_url, response_file_path)
+    with pytest.warns(DeprecationWarning, match="monitoring_location_id"):
+        df, md = get_samples_summary(monitoringLocationIdentifier="USGS-04183500")
+    assert type(df) is DataFrame
+    assert md.url == request_url
+
+
+def test_get_samples_rejects_both_legacy_and_new_kwarg():
+    """Passing both the deprecated camelCase name and its snake_case
+    replacement is ambiguous and must raise TypeError."""
+    with pytest.raises(TypeError, match="monitoring_location_id"):
+        get_samples(
+            monitoringLocationIdentifier="USGS-05406500",
+            monitoring_location_id="USGS-05406500",
+        )
+
+
+def test_accept_legacy_kwargs_passthrough_no_warning(recwarn):
+    """Using only the new names emits no DeprecationWarning."""
+    from dataretrieval.waterdata.utils import _accept_legacy_kwargs
+
+    @_accept_legacy_kwargs({"oldName": "new_name"})
+    def f(new_name=None):
+        return new_name
+
+    assert f(new_name="x") == "x"
+    assert not [w for w in recwarn.list if w.category is DeprecationWarning]
 
 
 def test_check_profiles():
@@ -337,9 +399,9 @@ def test_samples_results():
     df, _ = get_samples(
         service="results",
         profile="narrow",
-        monitoringLocationIdentifier="USGS-05288705",
-        activityStartDateLower="2024-10-01",
-        activityStartDateUpper="2025-04-24",
+        monitoring_location_id="USGS-05288705",
+        activity_start_date_lower="2024-10-01",
+        activity_start_date_upper="2025-04-24",
     )
     assert all(
         col in df.columns
@@ -353,7 +415,7 @@ def test_samples_activity():
     df, _ = get_samples(
         service="activities",
         profile="sampact",
-        monitoringLocationIdentifier="USGS-06719505",
+        monitoring_location_id="USGS-06719505",
     )
     assert len(df) > 0
     assert len(df.columns) == 97
@@ -365,10 +427,10 @@ def test_samples_locations():
     df, _ = get_samples(
         service="locations",
         profile="site",
-        stateFips="US:55",
-        activityStartDateLower="2024-10-01",
-        activityStartDateUpper="2025-04-24",
-        usgsPCode="00010",
+        state_code="US:55",
+        activity_start_date_lower="2024-10-01",
+        activity_start_date_upper="2025-04-24",
+        usgs_pcode="00010",
     )
     assert all(
         col in df.columns for col in ["Location_Identifier", "Location_Latitude"]
@@ -381,9 +443,9 @@ def test_samples_projects():
     df, _ = get_samples(
         service="projects",
         profile="project",
-        stateFips="US:15",
-        activityStartDateLower="2024-10-01",
-        activityStartDateUpper="2025-04-24",
+        state_code="US:15",
+        activity_start_date_lower="2024-10-01",
+        activity_start_date_upper="2025-04-24",
     )
     assert all(col in df.columns for col in ["Org_Identifier", "Project_Identifier"])
     assert len(df) > 0
@@ -391,7 +453,7 @@ def test_samples_projects():
 
 def test_samples_organizations():
     """Test organizations call for proper columns"""
-    df, _ = get_samples(service="organizations", profile="count", stateFips="US:01")
+    df, _ = get_samples(service="organizations", profile="count", state_code="US:01")
     assert len(df) == 1
     assert df.size == 3
 

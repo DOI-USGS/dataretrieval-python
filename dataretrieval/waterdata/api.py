@@ -36,6 +36,7 @@ from dataretrieval.waterdata.utils import (
     _OUTPUT_ID_BY_SERVICE,
     GEOPANDAS,
     SAMPLES_URL,
+    _accept_legacy_kwargs,
     _as_str_list,
     _check_profiles,
     _construct_cql_request,
@@ -2259,32 +2260,70 @@ def _get_samples_csv(
     return df, response
 
 
+# Map the public snake_case ``get_samples`` parameters to the camelCase query
+# parameter names the Samples API expects on the wire. ``characteristic`` is
+# already snake_case-compatible (single word) and is sent unchanged. The
+# remaining snake_case params are bookkeeping (``service``/``profile``/
+# ``ssl_check``) and never reach the request.
+_SAMPLES_PARAM_TO_API = {
+    "activity_media_name": "activityMediaName",
+    "activity_start_date_lower": "activityStartDateLower",
+    "activity_start_date_upper": "activityStartDateUpper",
+    "activity_type_code": "activityTypeCode",
+    "characteristic_group": "characteristicGroup",
+    "characteristic_user_supplied": "characteristicUserSupplied",
+    "bbox": "boundingBox",
+    "country_code": "countryFips",
+    "state_code": "stateFips",
+    "county_code": "countyFips",
+    "site_type_code": "siteTypeCode",
+    "site_type_name": "siteTypeName",
+    "usgs_pcode": "usgsPCode",
+    "hydrologic_unit": "hydrologicUnit",
+    "monitoring_location_id": "monitoringLocationIdentifier",
+    "organization_id": "organizationIdentifier",
+    "point_location_latitude": "pointLocationLatitude",
+    "point_location_longitude": "pointLocationLongitude",
+    "point_location_within_miles": "pointLocationWithinMiles",
+    "project_id": "projectIdentifier",
+    "record_identifier_user_supplied": "recordIdentifierUserSupplied",
+}
+
+# Deprecated camelCase keyword names (the Samples-API spelling) accepted for
+# backward compatibility, mapped to the new snake_case parameter names. Derived
+# from ``_SAMPLES_PARAM_TO_API`` so the two never drift apart.
+_SAMPLES_LEGACY_KWARGS = {
+    api_name: py_name for py_name, api_name in _SAMPLES_PARAM_TO_API.items()
+}
+
+
+@_accept_legacy_kwargs(_SAMPLES_LEGACY_KWARGS)
 def get_samples(
     ssl_check: bool = True,
     service: SERVICES = "results",
     profile: PROFILES = "fullphyschem",
-    activityMediaName: str | Iterable[str] | None = None,
-    activityStartDateLower: str | None = None,
-    activityStartDateUpper: str | None = None,
-    activityTypeCode: str | Iterable[str] | None = None,
-    characteristicGroup: str | Iterable[str] | None = None,
+    activity_media_name: str | Iterable[str] | None = None,
+    activity_start_date_lower: str | None = None,
+    activity_start_date_upper: str | None = None,
+    activity_type_code: str | Iterable[str] | None = None,
+    characteristic_group: str | Iterable[str] | None = None,
     characteristic: str | Iterable[str] | None = None,
-    characteristicUserSupplied: str | Iterable[str] | None = None,
-    boundingBox: list[float] | None = None,
-    countryFips: str | Iterable[str] | None = None,
-    stateFips: str | Iterable[str] | None = None,
-    countyFips: str | Iterable[str] | None = None,
-    siteTypeCode: str | Iterable[str] | None = None,
-    siteTypeName: str | Iterable[str] | None = None,
-    usgsPCode: str | Iterable[str] | None = None,
-    hydrologicUnit: str | Iterable[str] | None = None,
-    monitoringLocationIdentifier: str | Iterable[str] | None = None,
-    organizationIdentifier: str | Iterable[str] | None = None,
-    pointLocationLatitude: float | None = None,
-    pointLocationLongitude: float | None = None,
-    pointLocationWithinMiles: float | None = None,
-    projectIdentifier: str | Iterable[str] | None = None,
-    recordIdentifierUserSupplied: str | Iterable[str] | None = None,
+    characteristic_user_supplied: str | Iterable[str] | None = None,
+    bbox: list[float] | None = None,
+    country_code: str | Iterable[str] | None = None,
+    state_code: str | Iterable[str] | None = None,
+    county_code: str | Iterable[str] | None = None,
+    site_type_code: str | Iterable[str] | None = None,
+    site_type_name: str | Iterable[str] | None = None,
+    usgs_pcode: str | Iterable[str] | None = None,
+    hydrologic_unit: str | Iterable[str] | None = None,
+    monitoring_location_id: str | Iterable[str] | None = None,
+    organization_id: str | Iterable[str] | None = None,
+    point_location_latitude: float | None = None,
+    point_location_longitude: float | None = None,
+    point_location_within_miles: float | None = None,
+    project_id: str | Iterable[str] | None = None,
+    record_identifier_user_supplied: str | Iterable[str] | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Search Samples database for USGS water quality data.
     This is a wrapper function for the Samples database API. All potential
@@ -2320,35 +2359,38 @@ def get_samples(
         "actgroup", "count"
         projects - "project", "projectmonitoringlocationweight"
         organizations - "organization", "count"
-    activityMediaName : string or iterable of strings, optional
+    activity_media_name : string or iterable of strings, optional
         Name or code indicating environmental medium in which sample was taken.
         Call ``get_codes("samplemedia")`` for the valid inputs.
-        Example: "Water".
-    activityStartDateLower : string, optional
+        Example: "Water". (Samples API: ``activityMediaName``)
+    activity_start_date_lower : string, optional
         The start date if using a date range. Takes the format YYYY-MM-DD.
         The logic is inclusive, i.e. it will also return results that
         match the date. If left as None, will pull all data on or before
-        activityStartDateUpper, if populated.
-    activityStartDateUpper : string, optional
+        ``activity_start_date_upper``, if populated.
+        (Samples API: ``activityStartDateLower``)
+    activity_start_date_upper : string, optional
         The end date if using a date range. Takes the format YYYY-MM-DD.
         The logic is inclusive, i.e. it will also return results that
         match the date. If left as None, will pull all data after
-        activityStartDateLower up to the most recent available results.
-    activityTypeCode : string or iterable of strings, optional
+        ``activity_start_date_lower`` up to the most recent available results.
+        (Samples API: ``activityStartDateUpper``)
+    activity_type_code : string or iterable of strings, optional
         Text code that describes type of field activity performed.
-        Example: "Sample-Routine, regular".
-    characteristicGroup : string or iterable of strings, optional
+        Example: "Sample-Routine, regular". (Samples API: ``activityTypeCode``)
+    characteristic_group : string or iterable of strings, optional
         Characteristic group is a broad category of characteristics
         describing one or more results. Call ``get_codes("characteristicgroup")``
         for the valid inputs.
-        Example: "Organics, PFAS"
+        Example: "Organics, PFAS" (Samples API: ``characteristicGroup``)
     characteristic : string or iterable of strings, optional
         Characteristic is a specific category describing one or more results.
         Call ``get_codes("characteristics")`` for the valid inputs.
-        Example: "Suspended Sediment Discharge"
-    characteristicUserSupplied : string or iterable of strings, optional
+        Example: "Suspended Sediment Discharge" (Samples API: ``characteristic``)
+    characteristic_user_supplied : string or iterable of strings, optional
         A user supplied characteristic name describing one or more results.
-    boundingBox: list of four floats, optional
+        (Samples API: ``characteristicUserSupplied``)
+    bbox : list of four floats, optional
         Filters on the associated monitoring location's point location
         by checking if it is located within the specified geographic area.
         The logic is inclusive, i.e. it will include locations that overlap
@@ -2361,55 +2403,63 @@ def get_samples(
             * Eastern-most longitude
             * Northern-most latitude
 
-        Example: [-92.8,44.2,-88.9,46.0]
-    countryFips : string or iterable of strings, optional
-        Example: "US" (United States)
-    stateFips : string or iterable of strings, optional
+        Example: [-92.8,44.2,-88.9,46.0] (Samples API: ``boundingBox``)
+    country_code : string or iterable of strings, optional
+        Example: "US" (United States) (Samples API: ``countryFips``)
+    state_code : string or iterable of strings, optional
         Call ``get_codes("states")`` for the valid inputs.
-        Example: "US:15" (United States: Hawaii)
-    countyFips : string or iterable of strings, optional
+        Example: "US:15" (United States: Hawaii) (Samples API: ``stateFips``)
+    county_code : string or iterable of strings, optional
         Call ``get_codes("counties")`` for the valid inputs.
         Example: "US:15:001" (United States: Hawaii, Hawaii County)
-    siteTypeCode : string or iterable of strings, optional
+        (Samples API: ``countyFips``)
+    site_type_code : string or iterable of strings, optional
         An abbreviation for a certain site type. Call ``get_codes("sitetype")``
         for the valid inputs.
-        Example: "GW" (Groundwater site)
-    siteTypeName : string or iterable of strings, optional
+        Example: "GW" (Groundwater site) (Samples API: ``siteTypeCode``)
+    site_type_name : string or iterable of strings, optional
         A full name for a certain site type. Call ``get_codes("sitetype")``
         for the valid inputs.
-        Example: "Well"
-    usgsPCode : string or iterable of strings, optional
+        Example: "Well" (Samples API: ``siteTypeName``)
+    usgs_pcode : string or iterable of strings, optional
         5-digit number used in the US Geological Survey computerized
         data system, National Water Information System (NWIS), to
         uniquely identify a specific constituent (the ``parameterCode`` column
         of ``get_codes("characteristics")``).
         Example: "00060" (Discharge, cubic feet per second)
-    hydrologicUnit : string or iterable of strings, optional
+        (Samples API: ``usgsPCode``)
+    hydrologic_unit : string or iterable of strings, optional
         Max 12-digit number used to describe a hydrologic unit.
-        Example: "070900020502"
-    monitoringLocationIdentifier : string or iterable of strings, optional
+        Example: "070900020502" (Samples API: ``hydrologicUnit``)
+    monitoring_location_id : string or iterable of strings, optional
         A monitoring location identifier has two parts: the agency code
         and the location number, separated by a dash (-).
         Example: "USGS-040851385"
-    organizationIdentifier : string or iterable of strings, optional
+        (Samples API: ``monitoringLocationIdentifier``)
+    organization_id : string or iterable of strings, optional
         Designator used to uniquely identify a specific organization.
         Currently only accepting the organization "USGS".
-    pointLocationLatitude : float, optional
+        (Samples API: ``organizationIdentifier``)
+    point_location_latitude : float, optional
         Latitude for a point/radius query (decimal degrees). Must be used
-        with pointLocationLongitude and pointLocationWithinMiles.
-    pointLocationLongitude : float, optional
+        with ``point_location_longitude`` and ``point_location_within_miles``.
+        (Samples API: ``pointLocationLatitude``)
+    point_location_longitude : float, optional
         Longitude for a point/radius query (decimal degrees). Must be used
-        with pointLocationLatitude and pointLocationWithinMiles.
-    pointLocationWithinMiles : float, optional
+        with ``point_location_latitude`` and ``point_location_within_miles``.
+        (Samples API: ``pointLocationLongitude``)
+    point_location_within_miles : float, optional
         Radius for a point/radius query. Must be used with
-        pointLocationLatitude and pointLocationLongitude
-    projectIdentifier : string or iterable of strings, optional
+        ``point_location_latitude`` and ``point_location_longitude``.
+        (Samples API: ``pointLocationWithinMiles``)
+    project_id : string or iterable of strings, optional
         Designator used to uniquely identify a data collection project. Project
         identifiers are specific to an organization (e.g. USGS).
-        Example: "ZH003QW03"
-    recordIdentifierUserSupplied : string or iterable of strings, optional
+        Example: "ZH003QW03" (Samples API: ``projectIdentifier``)
+    record_identifier_user_supplied : string or iterable of strings, optional
         Internal AQS record identifier that returns 1 entry. Only available
         for the "results" service.
+        (Samples API: ``recordIdentifierUserSupplied``)
 
     Returns
     -------
@@ -2432,34 +2482,37 @@ def get_samples(
 
         >>> # Get PFAS results within a bounding box
         >>> df, md = dataretrieval.waterdata.get_samples(
-        ...     boundingBox=[-90.2, 42.6, -88.7, 43.2],
-        ...     characteristicGroup="Organics, PFAS",
+        ...     bbox=[-90.2, 42.6, -88.7, 43.2],
+        ...     characteristic_group="Organics, PFAS",
         ... )
 
         >>> # Get all activities for the Commonwealth of Virginia over a date range
         >>> df, md = dataretrieval.waterdata.get_samples(
         ...     service="activities",
         ...     profile="sampact",
-        ...     activityStartDateLower="2023-10-01",
-        ...     activityStartDateUpper="2024-01-01",
-        ...     stateFips="US:51",
+        ...     activity_start_date_lower="2023-10-01",
+        ...     activity_start_date_upper="2024-01-01",
+        ...     state_code="US:51",
         ... )
 
         >>> # Get all pH samples for two sites in Utah
         >>> df, md = dataretrieval.waterdata.get_samples(
-        ...     monitoringLocationIdentifier=[
+        ...     monitoring_location_id=[
         ...         "USGS-393147111462301",
         ...         "USGS-393343111454101",
         ...     ],
-        ...     usgsPCode="00400",
+        ...     usgs_pcode="00400",
         ... )
 
     """
 
     _check_profiles(service, profile)
 
-    # Build argument dictionary, omitting None values
-    params = _get_args(locals(), exclude={"ssl_check", "profile"})
+    # Build argument dictionary, omitting None values. Parameters are the
+    # public snake_case names here; translate them to the camelCase names the
+    # Samples API expects just before building the request.
+    args = _get_args(locals(), exclude={"ssl_check", "profile"})
+    params = {_SAMPLES_PARAM_TO_API.get(key, key): value for key, value in args.items()}
 
     params.update({"mimeType": "text/csv"})
 
@@ -2474,8 +2527,9 @@ def get_samples(
     return df, BaseMetadata(response)
 
 
+@_accept_legacy_kwargs({"monitoringLocationIdentifier": "monitoring_location_id"})
 def get_samples_summary(
-    monitoringLocationIdentifier: str,
+    monitoring_location_id: str,
     ssl_check: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get a summary of discrete water-quality samples at a single monitoring location.
@@ -2493,13 +2547,13 @@ def get_samples_summary(
 
     Parameters
     ----------
-    monitoringLocationIdentifier : string
+    monitoring_location_id : string
         A monitoring location identifier has two parts, separated by a dash
         (``-``): the agency code and the location number. Examples:
         ``"USGS-040851385"``, ``"AZ014-320821110580701"``,
         ``"CAX01-15304600"``. Bare location numbers without an agency prefix
         are accepted by the service but return an empty result, so a prefix
-        is effectively required.
+        is effectively required. (Samples API: ``monitoringLocationIdentifier``)
     ssl_check : bool, optional
         Check the SSL certificate. Default is True.
 
@@ -2516,18 +2570,18 @@ def get_samples_summary(
 
         >>> # What discrete-sample data is available at this site?
         >>> df, md = dataretrieval.waterdata.get_samples_summary(
-        ...     monitoringLocationIdentifier="USGS-04074950"
+        ...     monitoring_location_id="USGS-04074950"
         ... )
 
     """
-    if not isinstance(monitoringLocationIdentifier, str):
+    if not isinstance(monitoring_location_id, str):
         raise TypeError(
-            "monitoringLocationIdentifier must be a string; the Samples "
+            "monitoring_location_id must be a string; the Samples "
             "summary service accepts exactly one monitoring location per "
-            f"request, got {type(monitoringLocationIdentifier).__name__}."
+            f"request, got {type(monitoring_location_id).__name__}."
         )
 
-    url = f"{SAMPLES_URL}/summary/{quote(monitoringLocationIdentifier, safe='')}"
+    url = f"{SAMPLES_URL}/summary/{quote(monitoring_location_id, safe='')}"
     params = {"mimeType": "text/csv"}
 
     df, response = _get_samples_csv(url, params, ssl_check)

@@ -15,7 +15,10 @@ from here is re-exported below.
 
 from __future__ import annotations
 
-from typing import Any, get_args
+import functools
+import warnings
+from collections.abc import Callable, Mapping
+from typing import Any, TypeVar, get_args
 
 import httpx
 import pandas as pd
@@ -293,6 +296,59 @@ def _check_profiles(
         )
 
 
+_R = TypeVar("_R")
+
+
+def _accept_legacy_kwargs(
+    mapping: Mapping[str, str],
+) -> Callable[[Callable[..., _R]], Callable[..., _R]]:
+    """Decorator: accept deprecated keyword-argument names, translating them
+    to their modern equivalents and emitting a :class:`DeprecationWarning`.
+
+    ``mapping`` maps each deprecated keyword name to the new keyword name the
+    wrapped function expects (e.g. ``{"stateFips": "state_code"}``). When a
+    caller passes a deprecated name, it is renamed to the new name before the
+    wrapped function is invoked and a ``DeprecationWarning`` naming the
+    replacement is emitted. Callers that already use the new names are
+    unaffected (no warning, no overhead beyond the wrapper call).
+
+    The wrapped function's return type is preserved; its parameter list is
+    intentionally relaxed (the wrapper accepts the extra deprecated names),
+    so static checkers won't flag legacy call sites.
+
+    Raises
+    ------
+    TypeError
+        If both a deprecated name and its modern equivalent are supplied for
+        the same argument (ambiguous), mirroring Python's "got multiple
+        values for argument" error.
+    """
+
+    def decorator(func: Callable[..., _R]) -> Callable[..., _R]:
+        @functools.wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> _R:
+            for old_name, new_name in mapping.items():
+                if old_name not in kwargs:
+                    continue
+                if new_name in kwargs:
+                    raise TypeError(
+                        f"{func.__name__}() received both {old_name!r} "
+                        f"(deprecated) and {new_name!r}; pass only {new_name!r}."
+                    )
+                warnings.warn(
+                    f"The {old_name!r} argument is deprecated and will be "
+                    f"removed in a future release; use {new_name!r} instead.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                kwargs[new_name] = kwargs.pop(old_name)
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
 __all__ = [
     "BASE_URL",
     "GEOPANDAS",
@@ -304,6 +360,7 @@ __all__ = [
     "_EXTRA_ID_COLS",
     "_NO_NORMALIZE_PARAMS",
     "_OUTPUT_ID_BY_SERVICE",
+    "_accept_legacy_kwargs",
     "_arrange_cols",
     "_as_str_list",
     "_check_id_format",
