@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g5b4c1f033 documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g566ef869a documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=3b7e0e16"></script>
+      <script src="../_static/documentation_options.js?v=ff907d52"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -51,11 +51,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">API reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="exceptions.html">dataretrieval.exceptions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nadp.html">dataretrieval.nadp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ngwmn.html">dataretrieval.ngwmn</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nldi.html">dataretrieval.nldi</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nwis.html">dataretrieval.nwis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="samples.html">dataretrieval.samples</a></li>
 <li class="toctree-l2"><a class="reference internal" href="streamstats.html">dataretrieval.streamstats</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.utils</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils.BaseMetadata"><code class="docutils literal notranslate"><span class="pre">BaseMetadata</span></code></a><ul>
@@ -238,7 +236,7 @@ round-trip <code class="docutils literal notranslate"><span class="pre">exc</spa
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">_raise_for_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">response</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Response</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/utils.html#_raise_for_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils._raise_for_status" title="Link to this definition"></a></dt>
 <dd><p>Raise the typed <code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code> for an HTTP error response;
 return <code class="docutils literal notranslate"><span class="pre">None</span></code> on success.</p>
-<p>Shared by the legacy <a class="reference internal" href="#dataretrieval.utils.query" title="dataretrieval.utils.query"><code class="xref py py-func docutils literal notranslate"><span class="pre">query()</span></code></a> path (and <code class="docutils literal notranslate"><span class="pre">nadp</span></code> / <code class="docutils literal notranslate"><span class="pre">streamstats</span></code>).
+<p>Shared by the legacy <a class="reference internal" href="#dataretrieval.utils.query" title="dataretrieval.utils.query"><code class="xref py py-func docutils literal notranslate"><span class="pre">query()</span></code></a> path (and <code class="docutils literal notranslate"><span class="pre">streamstats</span></code>).
 Delegates the status-to-type mapping to
 <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.error_for_status" title="dataretrieval.exceptions.error_for_status"><code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.exceptions.error_for_status()</span></code></a>, except a too-long-URL
 status (413 / 414): that gets the same actionable “split your query”
