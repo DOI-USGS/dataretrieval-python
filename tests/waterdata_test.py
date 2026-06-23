@@ -219,6 +219,41 @@ def test_accept_legacy_kwargs_passthrough_no_warning(recwarn):
     assert not [w for w in recwarn.list if w.category is DeprecationWarning]
 
 
+def test_every_legacy_camelcase_samples_kwarg_is_backward_compatible():
+    """Every deprecated camelCase ``get_samples`` parameter stays backward
+    compatible: it is still accepted, is renamed to its snake_case replacement
+    with a ``DeprecationWarning``, and resolves to the exact same Samples-API
+    wire parameter it always did — so existing camelCase call sites keep
+    producing identical requests after the rename. Covers the whole mapping, so
+    a future param renamed without a legacy alias fails here."""
+    from dataretrieval.waterdata.api import (
+        _SAMPLES_LEGACY_KWARGS,
+        _SAMPLES_PARAM_TO_API,
+    )
+    from dataretrieval.waterdata.utils import _accept_legacy_kwargs
+
+    assert _SAMPLES_LEGACY_KWARGS, "expected a non-empty legacy-kwarg mapping"
+
+    received = {}
+
+    @_accept_legacy_kwargs(_SAMPLES_LEGACY_KWARGS)
+    def spy(**kwargs):
+        received.clear()
+        received.update(kwargs)
+
+    for old_camel, new_snake in _SAMPLES_LEGACY_KWARGS.items():
+        # The deprecated camelCase name is accepted, warns, and is translated to
+        # the snake_case parameter the function now expects ...
+        with pytest.warns(DeprecationWarning, match=new_snake):
+            spy(**{old_camel: "sentinel"})
+        assert received == {new_snake: "sentinel"}, (
+            f"legacy {old_camel!r} did not map to {new_snake!r}"
+        )
+        # ... and that snake_case parameter resolves back to the same camelCase
+        # wire name, so the request is byte-identical to the pre-rename behavior.
+        assert _SAMPLES_PARAM_TO_API[new_snake] == old_camel
+
+
 def test_check_profiles():
     """Tests that correct errors are raised for invalid profiles."""
     with pytest.raises(ValueError):
