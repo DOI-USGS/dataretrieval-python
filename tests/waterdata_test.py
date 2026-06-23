@@ -40,33 +40,12 @@ from dataretrieval.waterdata.utils import (
     _get_args,
     _normalize_str_iterable,
 )
+from tests.conftest import flaky_api
 
-# Most tests in this module call the live USGS Water Data API. After
-# PR #273, transient upstream errors (5xx / 429 / connection drops)
-# propagate instead of silently truncating, which makes CI susceptible
-# to flaking on a brief upstream blip. Auto-retry such failures, but
-# only for the narrow set of transient-error trace patterns below —
-# library bugs raising other exception types still fail on the first
-# try. The marker is attached to every test in the module, but the
-# patterns match only traces produced by real network round-trips
-# (``_raise_for_non_200`` output, ``requests`` exceptions), so tests
-# using ``httpx_mock`` or ``mock.patch`` are no-ops for the rerun.
-pytestmark = pytest.mark.flaky(
-    reruns=2,
-    reruns_delay=5,
-    only_rerun=[
-        # Transient HTTP errors (429 / 5xx) on the direct path: RateLimited /
-        # ServiceUnavailable carry a "<status>: ..." message (the RuntimeError
-        # shape is kept for any legacy call site).
-        r"(?:RateLimited|ServiceUnavailable|RuntimeError):\s*(?:429|5\d\d):",
-        # The chunked fan-out wraps a transient sub-request as a ChunkInterrupted
-        # subclass (QuotaExhausted for 429, ServiceInterrupted for 5xx), whose
-        # message has no leading status token.
-        r"(?:QuotaExhausted|ServiceInterrupted):",
-        r"Connect(ion)?Error",  # requests' ConnectionError + httpx' ConnectError
-        r"ReadTimeout|ConnectTimeout|Timeout",
-    ],
-)
+# Most tests in this module call the live USGS Water Data API; transient
+# upstream errors propagate (since #273) instead of silently truncating, so
+# retry them rather than flaking CI (see ``conftest.flaky_api``).
+pytestmark = flaky_api
 
 
 @pytest.fixture(autouse=True)

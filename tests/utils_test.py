@@ -6,8 +6,12 @@ import pandas as pd
 import pytest
 
 from dataretrieval import exceptions, nwis, utils
+from tests.conftest import flaky_api
 
 
+# Test_query hits the live NWIS services (the rest of this module is mocked),
+# so retry transient upstream failures rather than flaking CI.
+@flaky_api
 class Test_query:
     """Tests of the query function."""
 

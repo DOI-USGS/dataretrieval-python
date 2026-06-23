@@ -24,12 +24,17 @@ from dataretrieval.nwis import (
     preformat_peaks_response,
     what_sites,
 )
+from tests.conftest import flaky_api
 
 START_DATE = "2018-01-24"
 END_DATE = "2018-01-25"
 
 DATETIME_COL = "datetime"
 SITENO_COL = "site_no"
+
+# Several tests in this module hit the live NWIS services, so retry a transient
+# upstream failure rather than failing CI (see ``conftest.flaky_api``).
+pytestmark = flaky_api
 
 
 def _load_mock_json(file_name):
@@ -254,21 +259,27 @@ class TestDefunct:
 class TestTZ:
     """Tests relating to GitHub Issue #60."""
 
-    sites, _ = what_sites(stateCd="MD")
+    @pytest.fixture(scope="class")
+    def sites(self):
+        # Fetch once per class, at test time (not at collection) so a transient
+        # upstream failure is retried by the module ``flaky`` marker instead of
+        # aborting collection — a class-body call cannot be reran.
+        sites, _ = what_sites(stateCd="MD")
+        return sites
 
-    def test_multiple_tz_01(self):
+    def test_multiple_tz_01(self, sites):
         """Test based on GitHub Issue #60 - error merging different time zones."""
         # this test fails before issue #60 is fixed
-        iv, _ = get_iv(sites=self.sites.site_no.values[:25].tolist())
+        iv, _ = get_iv(sites=sites.site_no.values[:25].tolist())
         # assert that the datetime column exists
         assert "datetime" in iv.index.names
         # assert that it is a datetime type
         assert isinstance(iv.index[0][1], datetime.datetime)
 
-    def test_multiple_tz_02(self):
+    def test_multiple_tz_02(self, sites):
         """Test based on GitHub Issue #60 - confirm behavior for same tz."""
         # this test passes before issue #60 is fixed
-        iv, _ = get_iv(sites=self.sites.site_no.values[:20].tolist())
+        iv, _ = get_iv(sites=sites.site_no.values[:20].tolist())
         # assert that the datetime column exists
         assert "datetime" in iv.index.names
         # assert that it is a datetime type
