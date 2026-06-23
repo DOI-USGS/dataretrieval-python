@@ -311,7 +311,7 @@ def _raise_for_status(response: httpx.Response) -> None:
     """Raise the typed :class:`DataRetrievalError` for an HTTP error response;
     return ``None`` on success.
 
-    Shared by the legacy :func:`query` path (and ``nadp`` / ``streamstats``).
+    Shared by the legacy :func:`query` path (and ``streamstats``).
     Delegates the status-to-type mapping to
     :func:`dataretrieval.exceptions.error_for_status`, except a too-long-URL
     status (413 / 414): that gets the same actionable "split your query"

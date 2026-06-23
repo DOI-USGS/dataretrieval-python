@@ -8,11 +8,9 @@ API reference
     :maxdepth: 1
 
     exceptions
-    nadp
     ngwmn
     nldi
     nwis
-    samples
     streamstats
     utils
     waterdata

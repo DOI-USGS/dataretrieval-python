@@ -1,6 +1,6 @@
 """Exception taxonomy for ``dataretrieval``.
 
-Every service module (``nwis``, ``wqp``, ``nldi``, ``waterdata``, ``nadp``,
+Every service module (``nwis``, ``wqp``, ``nldi``, ``waterdata``,
 ``streamstats``) raises a subclass of :class:`DataRetrievalError` when a request
 fails, so one ``except dataretrieval.DataRetrievalError`` catches them all --
 including connection-level failures (timeouts, DNS, refused connections), which
@@ -267,7 +267,7 @@ def error_for_status(
     """Return the typed :class:`DataRetrievalError` for an HTTP error *status*.
 
     The one status-to-type mapping every request path shares (the legacy
-    ``query`` path, ``waterdata``, ``nadp`` / ``streamstats``), so a given status
+    ``query`` path, ``waterdata``, ``streamstats``), so a given status
     becomes the same type everywhere:
 
     * **413, 414** -> :class:`URLTooLong` (a :class:`RequestTooLarge`) -- the
