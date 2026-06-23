@@ -16,16 +16,11 @@ if sys.version_info < (3, 10):
 
 from dataretrieval import ngwmn
 from dataretrieval.utils import BaseMetadata
+from tests.conftest import flaky_api
 
-pytestmark = pytest.mark.flaky(
-    reruns=2,
-    reruns_delay=5,
-    only_rerun=[
-        r"(?:RateLimited|RuntimeError):\s*(?:429|5\d\d):",
-        r"Connect(ion)?Error",
-        r"ReadTimeout|ConnectTimeout|Timeout",
-    ],
-)
+# These hit the live NGWMN OGC API, so retry transient upstream failures
+# rather than flaking CI (see ``conftest.flaky_api``).
+pytestmark = flaky_api
 
 # A site with water-level, construction, and lithology records (per the R
 # dataRetrieval NGWMN examples), plus a non-USGS-agency id to exercise the
