@@ -254,6 +254,54 @@ def test_every_legacy_camelcase_samples_kwarg_is_backward_compatible():
         assert _SAMPLES_PARAM_TO_API[new_snake] == old_camel
 
 
+def test_legacy_camelcase_kwargs_return_identical_to_snake_case(httpx_mock):
+    """End-to-end: a legacy camelCase ``get_samples`` call returns results
+    byte-identical to the equivalent snake_case call — same request URL and same
+    DataFrame — for every renamed parameter at once. The camelCase shim changes
+    nothing the caller sees but the parameter names."""
+    import warnings
+
+    from dataretrieval.waterdata.api import _SAMPLES_LEGACY_KWARGS
+
+    def value_for(snake):
+        if snake == "monitoring_location_id":
+            return "USGS-01646500"  # must satisfy the AGENCY-ID format check
+        if snake in {
+            "point_location_latitude",
+            "point_location_longitude",
+            "point_location_within_miles",
+        }:
+            return 42.5
+        if snake == "bbox":
+            return [-90.0, 30.0, -89.0, 31.0]
+        return "x"
+
+    with open("tests/data/samples_results.txt") as fh:
+        body = fh.read()
+    # one mocked response per call; match any URL so both requests are captured.
+    httpx_mock.add_response(text=body, headers={"mock_header": "v"})
+    httpx_mock.add_response(text=body, headers={"mock_header": "v"})
+
+    new_kwargs = {snake: value_for(snake) for snake in _SAMPLES_LEGACY_KWARGS.values()}
+    legacy_kwargs = {
+        camel: value_for(snake) for camel, snake in _SAMPLES_LEGACY_KWARGS.items()
+    }
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        df_legacy, md_legacy = get_samples(
+            service="results", profile="fullphyschem", **legacy_kwargs
+        )
+    df_new, md_new = get_samples(
+        service="results", profile="fullphyschem", **new_kwargs
+    )
+
+    legacy_req, new_req = httpx_mock.get_requests()
+    assert str(legacy_req.url) == str(new_req.url)
+    assert md_legacy.url == md_new.url
+    assert df_legacy.equals(df_new)
+
+
 def test_check_profiles():
     """Tests that correct errors are raised for invalid profiles."""
     with pytest.raises(ValueError):
