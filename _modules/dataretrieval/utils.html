@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g566ef869a documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+gaf9b23823 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=ff907d52"></script>
+      <script src="../../_static/documentation_options.js?v=0bbe64ed"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -345,17 +345,13 @@
         <span class="c1"># # disclaimer seems to be only part of importWaterML1</span>
         <span class="c1"># self.disclaimer = None</span>
 
-    <span class="c1"># These properties are to be set by `nwis` or `wqp`-specific metadata classes.</span>
+    <span class="c1"># ``site_info`` is set by ``nwis`` / ``wqp``-specific metadata classes; the</span>
+    <span class="c1"># modern ``waterdata`` metadata leaves it unimplemented (use</span>
+    <span class="c1"># ``waterdata.get_monitoring_locations`` to retrieve site descriptions).</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">site_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="s2">&quot;site_info must be implemented by utils.BaseMetadata children&quot;</span>
-        <span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">variable_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="s2">&quot;variable_info must be implemented by utils.BaseMetadata children&quot;</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="BaseMetadata.__repr__">
