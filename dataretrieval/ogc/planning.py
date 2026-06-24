@@ -563,6 +563,56 @@ def _combine_chunk_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
     return combined
 
 
+# Response header USGS uses to advertise remaining hourly quota. Lives in this
+# base module so every layer (planning's ``_lowest_remaining``, the engine's
+# per-page progress) reads it from one place rather than hard-coding the string.
+_QUOTA_HEADER = "x-ratelimit-remaining"
+
+
+def _lowest_remaining(responses: list[httpx.Response]) -> httpx.Response:
+    """The response reporting the lowest ``x-ratelimit-remaining``.
+
+    The rate-limit counter decreases monotonically within a window, so the
+    smallest value any sub-request saw is the most-current "quota left after
+    this call" — the right thing to surface. Under concurrent fan-out the
+    last response *by index* need not be the one the server processed last, so
+    pick the minimum (falling back to the last response if none report it).
+    """
+    best: httpx.Response | None = None
+    best_remaining: int | None = None
+    for response in responses:
+        try:
+            remaining = int(response.headers[_QUOTA_HEADER])
+        except (KeyError, ValueError):
+            continue
+        if best_remaining is None or remaining < best_remaining:
+            best, best_remaining = response, remaining
+    return best if best is not None else responses[-1]
+
+
+def _merge_response(
+    base: httpx.Response,
+    *,
+    headers_from: httpx.Response,
+    elapsed: timedelta,
+    url: str | httpx.URL | None = None,
+) -> httpx.Response:
+    """Fold several responses into one: a shallow copy of ``base`` whose
+    ``.headers`` are rebuilt as a fresh ``httpx.Headers`` from ``headers_from``,
+    ``.elapsed`` set to ``elapsed``, and ``.url`` overridden when ``url`` is
+    given. ``base`` and ``headers_from`` are never mutated, and the fresh
+    ``httpx.Headers`` means downstream mutations don't back-propagate into any
+    underlying response — so callers may re-fold idempotently. This is the one
+    low-level merge behind both pagination (:func:`_paginate`) and the chunked /
+    fan-out aggregation (:func:`_combine_chunk_responses`)."""
+    merged = copy.copy(base)
+    merged.headers = httpx.Headers(headers_from.headers)
+    merged.elapsed = elapsed
+    if url is not None:
+        _set_response_url(merged, url)
+    return merged
+
+
 def _combine_chunk_responses(
     responses: list[httpx.Response], canonical_url: str | None
 ) -> httpx.Response:
@@ -570,8 +620,9 @@ def _combine_chunk_responses(
     Fold per-sub-request responses into a single aggregated response.
 
     For a multi-response input, returns a shallow copy of
-    ``responses[0]`` with ``.headers`` set to the last response's (so
-    ``x-ratelimit-remaining`` reflects current state), ``.elapsed`` set
+    ``responses[0]`` with ``.headers`` set to those of the most-depleted
+    response (lowest ``x-ratelimit-remaining`` — the quota actually left
+    after the fan-out; see :func:`_lowest_remaining`), ``.elapsed`` set
     to total wall-clock across every response, and ``.url`` set to the
     canonical original-query URL (when supplied) so ``BaseMetadata``
     reflects the user's full request rather than the first chunk.
@@ -605,20 +656,15 @@ def _combine_chunk_responses(
     if len(responses) == 1 and canonical_url is None:
         return responses[0]
 
-    # ``copy.copy`` lets repeated calls re-sum elapsed from scratch
-    # rather than re-mutating ``responses[0]`` in place. The headers
-    # dict is then rewrapped in a fresh ``httpx.Headers`` so the
-    # aggregate's headers don't share identity with — or leak mutations
-    # back into — any underlying response on ``ChunkedCall._chunks``.
-    head = copy.copy(responses[0])
-    if len(responses) > 1:
-        head.headers = httpx.Headers(responses[-1].headers)
-        head.elapsed = sum(
-            (_safe_elapsed(r) for r in responses[1:]),
-            start=_safe_elapsed(responses[0]),
-        )
-    else:
-        head.headers = httpx.Headers(responses[0].headers)
-    if canonical_url is not None:
-        _set_response_url(head, canonical_url)
-    return head
+    # Headers come from the most-depleted response (lowest quota left after a
+    # concurrent fan-out; ``_lowest_remaining`` returns the lone response as-is
+    # for a single-element list). ``_merge_response`` re-sums elapsed onto a
+    # fresh copy, so repeated calls (e.g. via ``ChunkedCall.partial_response``
+    # during resume) stay idempotent.
+    elapsed = sum((_safe_elapsed(r) for r in responses), start=timedelta())
+    return _merge_response(
+        responses[0],
+        headers_from=_lowest_remaining(responses),
+        elapsed=elapsed,
+        url=canonical_url,
+    )

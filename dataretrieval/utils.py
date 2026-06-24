@@ -4,9 +4,12 @@ Useful utilities for data munging.
 
 from __future__ import annotations
 
+import os
 import warnings
-from collections.abc import Iterable
-from typing import Any
+from collections.abc import Callable, Iterable, Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
+from typing import Any, Generic, TypeVar
 
 import httpx
 import pandas as pd
@@ -27,6 +30,69 @@ HTTPX_DEFAULTS: dict[str, Any] = {
     "follow_redirects": True,
     "timeout": httpx.Timeout(60.0, connect=10.0),
 }
+
+_T = TypeVar("_T")
+
+
+class Ambient(Generic[_T]):
+    """A :class:`~contextvars.ContextVar` paired with a scoping contextmanager.
+
+    Bundles the var and its set/reset-token dance into one object, so an ambient
+    value needs a single declaration instead of a ``var`` + setter-function pair.
+    Read the current value with :meth:`get`; set it for a ``with`` block by
+    *calling* the instance — the previous value is restored on exit (and can't
+    leak into a later call the way a hand-written ``try/finally`` can when its
+    ``reset`` is dropped)::
+
+        _base_url = Ambient("ogc_base_url", DEFAULT)
+        with _base_url(other):  # scoped to the block
+            _base_url.get()  # -> other
+    """
+
+    def __init__(self, name: str, default: _T) -> None:
+        self._var: ContextVar[_T] = ContextVar(name, default=default)
+
+    def get(self) -> _T:
+        """The current value — the default outside any active scope."""
+        return self._var.get()
+
+    @contextmanager
+    def __call__(self, value: _T) -> Iterator[None]:
+        """Set the value for the duration of the ``with`` block."""
+        token = self._var.set(value)
+        try:
+            yield
+        finally:
+            self._var.reset(token)
+
+
+def _default_headers() -> dict[str, str]:
+    """Build the default HTTP headers for a USGS web-API request.
+
+    Always sets a descriptive ``User-Agent`` plus ``Accept`` /
+    ``Accept-Encoding`` and ``lang``. If the ``API_USGS_PAT`` environment
+    variable is set, its value is added as the ``X-Api-Key`` header — a USGS
+    personal access token raises the request rate limit.
+
+    Shared by the OGC engine (:mod:`dataretrieval.ogc`), the Water Data getters
+    (:mod:`dataretrieval.waterdata`), and :mod:`dataretrieval.wateruse`, so the
+    request identity is consistent across every USGS API the package talks to.
+
+    Returns
+    -------
+    dict[str, str]
+        Headers suitable for an ``httpx`` request against a USGS API.
+    """
+    headers = {
+        "Accept-Encoding": "compress, gzip",
+        "Accept": "application/json",
+        "User-Agent": f"python-dataretrieval/{dataretrieval.__version__}",
+        "lang": "en-US",
+    }
+    token = os.getenv("API_USGS_PAT")
+    if token:
+        headers["X-Api-Key"] = token
+    return headers
 
 
 def to_str(listlike: object, delimiter: str = ",") -> str | None:
@@ -303,26 +369,38 @@ def _get(url: str | httpx.URL, **kwargs: Any) -> httpx.Response:
         raise _network_error(url, exc) from exc
 
 
-def _raise_for_status(response: httpx.Response) -> None:
+def _raise_for_status(
+    response: httpx.Response,
+    *,
+    detail_from: Callable[[httpx.Response], str | None] | None = None,
+) -> None:
     """Raise the typed :class:`DataRetrievalError` for an HTTP error response;
     return ``None`` on success.
 
-    Shared by the legacy :func:`query` path (and ``streamstats``).
-    Delegates the status-to-type mapping to
+    Shared by the legacy :func:`query` path (and ``streamstats`` /
+    ``wateruse``). Delegates the status-to-type mapping to
     :func:`dataretrieval.exceptions.error_for_status`, except a too-long-URL
     status (413 / 414): that gets the same actionable "split your query"
     remediation as the client-side over-long-URL case below, rather than a bare
     ``HTTP 414`` (both still raise :class:`~dataretrieval.exceptions.URLTooLong`).
+
+    ``detail_from``, when given, is called *only on an error response* to pull an
+    API-specific detail string (e.g. a JSON error envelope's message) out of the
+    body; a truthy result is appended to the raised message. This lets callers
+    surface their API's error wording without re-implementing the status-to-type
+    mapping and message format.
     """
     status = response.status_code
     if status < 400:
         return
     if status in (413, 414):
         raise _url_too_long_error(f"API response reason: {response.reason_phrase}")
-    raise error_for_status(
-        status,
-        f"HTTP {status} {response.reason_phrase}".rstrip() + f" (URL: {response.url})",
-    )
+    message = f"HTTP {status} {response.reason_phrase}".rstrip()
+    detail = detail_from(response) if detail_from is not None else None
+    if detail:
+        message += f": {detail}"
+    message += f" (URL: {response.url})"
+    raise error_for_status(status, message)
 
 
 def query(

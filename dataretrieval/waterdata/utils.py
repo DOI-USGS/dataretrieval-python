@@ -35,12 +35,10 @@ from dataretrieval.ogc.engine import (
     OGC_API_URL,
     OgcDialect,
     _as_str_list,
-    _check_id_format,
     _check_monitoring_location_id,
     _check_ogc_requests,
     _construct_api_requests,
     _construct_cql_request,
-    _default_headers,
     _next_req_url,
     _normalize_str_iterable,
     _paginate,
@@ -68,7 +66,7 @@ from dataretrieval.ogc.shaping import (
 from dataretrieval.ogc.shaping import (
     _finalize_ogc as _engine_finalize_ogc,
 )
-from dataretrieval.utils import BaseMetadata
+from dataretrieval.utils import BaseMetadata, _default_headers
 from dataretrieval.waterdata.types import (
     PROFILE_LOOKUP,
     PROFILES,
@@ -363,7 +361,6 @@ __all__ = [
     "_accept_legacy_kwargs",
     "_arrange_cols",
     "_as_str_list",
-    "_check_id_format",
     "_check_monitoring_location_id",
     "_check_ogc_requests",
     "_check_profiles",

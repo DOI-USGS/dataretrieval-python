@@ -40,7 +40,6 @@ from dataretrieval.exceptions import (
 from dataretrieval.ogc import chunking as _chunking
 from dataretrieval.ogc import retry as _retry_mod
 from dataretrieval.ogc.chunking import (
-    _QUOTA_HEADER,
     ChunkedCall,
     _chunked_client,
     get_active_client,
@@ -55,6 +54,7 @@ from dataretrieval.ogc.planning import (
     _LIST_SEP,
     _NEVER_CHUNK,
     _OR_SEP,
+    _QUOTA_HEADER,
     ChunkPlan,
     _combine_chunk_frames,
     _combine_chunk_responses,
@@ -1040,12 +1040,31 @@ def test_combine_chunk_responses_returns_independent_headers():
     )
     head = _combine_chunk_responses([r0, r1], canonical_url=None)
 
-    # Aggregate carries the last chunk's headers...
+    # Aggregate carries a chunk's headers (here the last, as the fallback when
+    # neither reports a rate limit)...
     assert head.headers["X-Foo"] == "1"
     # ...but mutating the aggregate must not back-propagate.
     head.headers["X-Trace-Id"] = "abc"
     assert "X-Trace-Id" not in r1.headers
     assert "X-Trace-Id" not in r0.headers
+
+
+def test_combine_chunk_responses_surfaces_lowest_remaining():
+    """``x-ratelimit-remaining`` reports the LOWEST any sub-request saw — the
+    quota actually left after the fan-out — not the last-by-index, which under
+    concurrency need not be the response the server processed last."""
+    r0 = mock.Mock(
+        elapsed=datetime.timedelta(seconds=0.1),
+        headers={"x-ratelimit-remaining": "5"},  # lowest, but first by index
+        url="u0",
+    )
+    r1 = mock.Mock(
+        elapsed=datetime.timedelta(seconds=0.2),
+        headers={"x-ratelimit-remaining": "99"},  # last by index, but higher
+        url="u1",
+    )
+    head = _combine_chunk_responses([r0, r1], canonical_url=None)
+    assert head.headers["x-ratelimit-remaining"] == "5"
 
 
 def test_paginate_terminates_on_empty_string_cursor():

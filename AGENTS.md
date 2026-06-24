@@ -6,7 +6,7 @@
 - Exclude `.claude/worktrees/` from searches and edits; it contains stale worktrees that pollute results.
 
 ## Example Notebooks
-- `demos/*.ipynb` — top-level Water Data tour: `USGS_WaterData_Introduction_Examples.ipynb` is the entry point; `_ContinuousData_`, `_DailyStatistics_`, `_DiscreteSamples_`, `_ReferenceLists_` cover individual collections; `WaterData_demo.ipynb`, `peak_streamflow_trends.ipynb`, and `R Python Vignette equivalents.ipynb` are standalone walkthroughs.
+- `demos/*.ipynb` — top-level Water Data tour: `USGS_WaterData_Introduction_Examples.ipynb` is the entry point; `_ContinuousData_`, `_DailyStatistics_`, `_DiscreteSamples_`, `_ReferenceLists_` cover individual collections; `WaterData_demo.ipynb`, `peak_streamflow_trends.ipynb`, `USGS_WaterUse_Examples.ipynb` (NWDC water-use data via `wateruse.get_wateruse`), and `R Python Vignette equivalents.ipynb` are standalone walkthroughs.
 - `demos/hydroshare/*.ipynb` — per-service HydroShare examples (NLDI, NWIS WaterUse, and Water Data DailyValues / GroundwaterLevels / Measurements / ParameterCodes / Peaks / Ratings / Samples / SiteInfo / SiteInventory / Statistics / UnitValues). Mirror these when adding examples for a new collection.
 - `demos/nwqn_data_pull/` — non-notebook example: a lithops/Docker batch pipeline (`retrieve_nwqn_samples.py`, `retrieve_nwqn_streamflow.py`) with its own `README.md`.
 - Any `Untitled*.ipynb`, `*_test.ipynb`, or notebooks not listed here are untracked local scratch; ignore them.
