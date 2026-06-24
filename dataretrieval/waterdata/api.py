@@ -16,6 +16,7 @@ from urllib.parse import quote
 import httpx
 import pandas as pd
 
+from dataretrieval.ogc.engine import OGC_API_URL
 from dataretrieval.ogc.filters import FILTER_LANG
 from dataretrieval.utils import (
     HTTPX_DEFAULTS,
@@ -2196,6 +2197,70 @@ def get_reference_table(
     return get_ogc_data(
         args=query_args, output_id=output_id, service=collection, max_rows=max_rows
     )
+
+
+def get_queryables(collection: str) -> tuple[pd.DataFrame, BaseMetadata]:
+    """List the queryable properties of a Water Data API collection.
+
+    Every OGC collection (``daily``, ``continuous``, ``monitoring-locations``,
+    ...) advertises the set of properties that can be filtered on -- exposed as
+    the typed keyword arguments of the matching ``get_*`` function, and usable
+    directly in a CQL2 ``filter``. This returns that set, so the available
+    filters can be discovered programmatically and monitored for upstream
+    additions.
+
+    Parameters
+    ----------
+    collection : string
+        The collection id, e.g. ``"daily"``, ``"continuous"``,
+        ``"monitoring-locations"``, or ``"time-series-metadata"``. See
+        :data:`dataretrieval.waterdata.types.WATERDATA_SERVICES` for the data
+        collections; reference collections (e.g. ``"parameter-codes"``) work
+        too.
+
+    Returns
+    -------
+    df : ``pandas.DataFrame``
+        One row per queryable, sorted by name, with columns ``queryable`` (the
+        property name), ``type``, ``title``, and ``description``.
+    md : :class:`dataretrieval.utils.BaseMetadata`
+        Metadata describing the request (URL, query time, response headers).
+
+    Raises
+    ------
+    DataRetrievalError
+        On an HTTP error response (e.g. an unknown ``collection`` yields a 404),
+        the typed subclass for the status.
+
+    Examples
+    --------
+    .. doctest::
+        :skipif: True  # network
+
+        >>> from dataretrieval import waterdata
+        >>> df, md = waterdata.get_queryables("daily")
+        >>> df.set_index("queryable").loc["state_name", "type"]
+        'string'
+    """
+    url = f"{OGC_API_URL}/collections/{collection}/queryables"
+    response = _get(url, headers=_default_headers(), **HTTPX_DEFAULTS)
+    _raise_for_non_200(response)
+    # The OGC queryables document is a JSON Schema whose ``properties`` map each
+    # filterable property name to a ``{title, type, description}`` definition.
+    properties: dict[str, Any] = response.json().get("properties", {})
+    df = pd.DataFrame(
+        [
+            {
+                "queryable": name,
+                "type": prop.get("type"),
+                "title": prop.get("title"),
+                "description": (prop.get("description") or "").strip(),
+            }
+            for name, prop in sorted(properties.items())
+        ],
+        columns=["queryable", "type", "title", "description"],
+    )
+    return df, BaseMetadata(response)
 
 
 def get_codes(code_service: CODE_SERVICES) -> tuple[pd.DataFrame, BaseMetadata]:
