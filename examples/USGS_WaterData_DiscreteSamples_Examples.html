@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Discrete water-quality samples: get_samples &mdash; dataretrieval 0.1.dev1+gaf9b23823 documentation</title>
+  <title>Discrete water-quality samples: get_samples &mdash; dataretrieval 0.1.dev1+g047a53e36 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=0bbe64ed"></script>
+      <script src="../_static/documentation_options.js?v=ffc3abcb"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -155,6 +155,15 @@
 <span class="n">data_at_site</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;resultCount&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_6224/3713017147.py:2: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  data_at_site, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=site)
+</pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
@@ -318,6 +327,17 @@
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_6224/198475073.py:2: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
+  phos_data, _ = waterdata.get_samples(
+/tmp/ipykernel_6224/198475073.py:2: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  phos_data, _ = waterdata.get_samples(
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
@@ -340,6 +360,17 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 <span class="n">phos_narrow</span><span class="p">[[</span><span class="s2">&quot;Activity_StartDateTime&quot;</span><span class="p">,</span> <span class="s2">&quot;Result_Measure&quot;</span><span class="p">,</span> <span class="s2">&quot;Result_MeasureUnit&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_6224/784441668.py:1: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
+  phos_narrow, _ = waterdata.get_samples(
+/tmp/ipykernel_6224/784441668.py:1: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  phos_narrow, _ = waterdata.get_samples(
+</pre></div></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -489,11 +520,22 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_6224/4134191907.py:2: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
+  bbox_sites, _ = waterdata.get_samples(
+/tmp/ipykernel_6224/4134191907.py:2: DeprecationWarning: The &#39;boundingBox&#39; argument is deprecated and will be removed in a future release; use &#39;bbox&#39; instead.
+  bbox_sites, _ = waterdata.get_samples(
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_12_0.png" src="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_12_0.png" />
+<img alt="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_12_1.png" src="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_12_1.png" />
 </div>
 </div>
 </section>
@@ -514,11 +556,22 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_6224/3301780226.py:1: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
+  huc_sites, _ = waterdata.get_samples(
+/tmp/ipykernel_6224/3301780226.py:1: DeprecationWarning: The &#39;hydrologicUnit&#39; argument is deprecated and will be removed in a future release; use &#39;hydrologic_unit&#39; instead.
+  huc_sites, _ = waterdata.get_samples(
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_14_0.png" src="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_14_0.png" />
+<img alt="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_14_1.png" src="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_14_1.png" />
 </div>
 </div>
 </section>
@@ -541,11 +594,26 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_6224/937496630.py:1: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
+  point_sites, _ = waterdata.get_samples(
+/tmp/ipykernel_6224/937496630.py:1: DeprecationWarning: The &#39;pointLocationLatitude&#39; argument is deprecated and will be removed in a future release; use &#39;point_location_latitude&#39; instead.
+  point_sites, _ = waterdata.get_samples(
+/tmp/ipykernel_6224/937496630.py:1: DeprecationWarning: The &#39;pointLocationLongitude&#39; argument is deprecated and will be removed in a future release; use &#39;point_location_longitude&#39; instead.
+  point_sites, _ = waterdata.get_samples(
+/tmp/ipykernel_6224/937496630.py:1: DeprecationWarning: The &#39;pointLocationWithinMiles&#39; argument is deprecated and will be removed in a future release; use &#39;point_location_within_miles&#39; instead.
+  point_sites, _ = waterdata.get_samples(
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_16_0.png" src="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_16_0.png" />
+<img alt="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_16_1.png" src="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_16_1.png" />
 </div>
 </div>
 </section>
@@ -570,11 +638,22 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_6224/1942246246.py:5: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
+  county_sites, _ = waterdata.get_samples(
+/tmp/ipykernel_6224/1942246246.py:5: DeprecationWarning: The &#39;countyFips&#39; argument is deprecated and will be removed in a future release; use &#39;county_code&#39; instead.
+  county_sites, _ = waterdata.get_samples(
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_18_0.png" src="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_18_0.png" />
+<img alt="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_18_1.png" src="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_18_1.png" />
 </div>
 </div>
 </section>
@@ -598,11 +677,26 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_6224/2071568402.py:2: DeprecationWarning: The &#39;activityStartDateLower&#39; argument is deprecated and will be removed in a future release; use &#39;activity_start_date_lower&#39; instead.
+  state_sites_recent, _ = waterdata.get_samples(
+/tmp/ipykernel_6224/2071568402.py:2: DeprecationWarning: The &#39;activityStartDateUpper&#39; argument is deprecated and will be removed in a future release; use &#39;activity_start_date_upper&#39; instead.
+  state_sites_recent, _ = waterdata.get_samples(
+/tmp/ipykernel_6224/2071568402.py:2: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
+  state_sites_recent, _ = waterdata.get_samples(
+/tmp/ipykernel_6224/2071568402.py:2: DeprecationWarning: The &#39;stateFips&#39; argument is deprecated and will be removed in a future release; use &#39;state_code&#39; instead.
+  state_sites_recent, _ = waterdata.get_samples(
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_20_0.png" src="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_20_0.png" />
+<img alt="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_20_1.png" src="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_20_1.png" />
 </div>
 </div>
 </section>
@@ -839,12 +933,25 @@ example USGS parameter codes:
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
+<div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 18 lake sites measuring phosphorus in Dane County, WI
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_6224/3513897362.py:1: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
+  county_lake_sites, _ = waterdata.get_samples(
+/tmp/ipykernel_6224/3513897362.py:1: DeprecationWarning: The &#39;countyFips&#39; argument is deprecated and will be removed in a future release; use &#39;county_code&#39; instead.
+  county_lake_sites, _ = waterdata.get_samples(
+/tmp/ipykernel_6224/3513897362.py:1: DeprecationWarning: The &#39;siteTypeName&#39; argument is deprecated and will be removed in a future release; use &#39;site_type_name&#39; instead.
+  county_lake_sites, _ = waterdata.get_samples(
 </pre></div></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">get_samples_summary</span></code> accepts one site at a time, so we loop over the candidate sites to tally how much phosphorus data each has — useful for deciding which sites to actually pull results from.</p>
@@ -869,6 +976,49 @@ example USGS parameter codes:
 <span class="p">]</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+/tmp/ipykernel_6224/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+</pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:

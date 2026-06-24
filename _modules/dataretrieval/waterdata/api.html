@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+gaf9b23823 documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g047a53e36 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=0bbe64ed"></script>
+      <script src="../../../_static/documentation_options.js?v=ffc3abcb"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -112,6 +112,7 @@
     <span class="n">_OUTPUT_ID_BY_SERVICE</span><span class="p">,</span>
     <span class="n">GEOPANDAS</span><span class="p">,</span>
     <span class="n">SAMPLES_URL</span><span class="p">,</span>
+    <span class="n">_accept_legacy_kwargs</span><span class="p">,</span>
     <span class="n">_as_str_list</span><span class="p">,</span>
     <span class="n">_check_profiles</span><span class="p">,</span>
     <span class="n">_construct_cql_request</span><span class="p">,</span>
@@ -2371,34 +2372,72 @@
     <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">response</span>
 
 
+<span class="c1"># Map the public snake_case ``get_samples`` parameters to the camelCase query</span>
+<span class="c1"># parameter names the Samples API expects on the wire. ``characteristic`` is</span>
+<span class="c1"># already snake_case-compatible (single word) and is sent unchanged. The</span>
+<span class="c1"># remaining snake_case params are bookkeeping (``service``/``profile``/</span>
+<span class="c1"># ``ssl_check``) and never reach the request.</span>
+<span class="n">_SAMPLES_PARAM_TO_API</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;activity_media_name&quot;</span><span class="p">:</span> <span class="s2">&quot;activityMediaName&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;activity_start_date_lower&quot;</span><span class="p">:</span> <span class="s2">&quot;activityStartDateLower&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;activity_start_date_upper&quot;</span><span class="p">:</span> <span class="s2">&quot;activityStartDateUpper&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;activity_type_code&quot;</span><span class="p">:</span> <span class="s2">&quot;activityTypeCode&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;characteristic_group&quot;</span><span class="p">:</span> <span class="s2">&quot;characteristicGroup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;characteristic_user_supplied&quot;</span><span class="p">:</span> <span class="s2">&quot;characteristicUserSupplied&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bbox&quot;</span><span class="p">:</span> <span class="s2">&quot;boundingBox&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;country_code&quot;</span><span class="p">:</span> <span class="s2">&quot;countryFips&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;state_code&quot;</span><span class="p">:</span> <span class="s2">&quot;stateFips&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;county_code&quot;</span><span class="p">:</span> <span class="s2">&quot;countyFips&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;site_type_code&quot;</span><span class="p">:</span> <span class="s2">&quot;siteTypeCode&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;site_type_name&quot;</span><span class="p">:</span> <span class="s2">&quot;siteTypeName&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;usgs_pcode&quot;</span><span class="p">:</span> <span class="s2">&quot;usgsPCode&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hydrologic_unit&quot;</span><span class="p">:</span> <span class="s2">&quot;hydrologicUnit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">:</span> <span class="s2">&quot;monitoringLocationIdentifier&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;organization_id&quot;</span><span class="p">:</span> <span class="s2">&quot;organizationIdentifier&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;point_location_latitude&quot;</span><span class="p">:</span> <span class="s2">&quot;pointLocationLatitude&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;point_location_longitude&quot;</span><span class="p">:</span> <span class="s2">&quot;pointLocationLongitude&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;point_location_within_miles&quot;</span><span class="p">:</span> <span class="s2">&quot;pointLocationWithinMiles&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;project_id&quot;</span><span class="p">:</span> <span class="s2">&quot;projectIdentifier&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;record_identifier_user_supplied&quot;</span><span class="p">:</span> <span class="s2">&quot;recordIdentifierUserSupplied&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1"># Deprecated camelCase keyword names (the Samples-API spelling) accepted for</span>
+<span class="c1"># backward compatibility, mapped to the new snake_case parameter names. Derived</span>
+<span class="c1"># from ``_SAMPLES_PARAM_TO_API`` so the two never drift apart.</span>
+<span class="n">_SAMPLES_LEGACY_KWARGS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">api_name</span><span class="p">:</span> <span class="n">py_name</span> <span class="k">for</span> <span class="n">py_name</span><span class="p">,</span> <span class="n">api_name</span> <span class="ow">in</span> <span class="n">_SAMPLES_PARAM_TO_API</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="p">}</span>
+
+
 <div class="viewcode-block" id="get_samples">
 <a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_samples">[docs]</a>
+<span class="nd">@_accept_legacy_kwargs</span><span class="p">(</span><span class="n">_SAMPLES_LEGACY_KWARGS</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_samples</span><span class="p">(</span>
     <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">service</span><span class="p">:</span> <span class="n">SERVICES</span> <span class="o">=</span> <span class="s2">&quot;results&quot;</span><span class="p">,</span>
     <span class="n">profile</span><span class="p">:</span> <span class="n">PROFILES</span> <span class="o">=</span> <span class="s2">&quot;fullphyschem&quot;</span><span class="p">,</span>
-    <span class="n">activityMediaName</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">activityStartDateLower</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">activityStartDateUpper</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">activityTypeCode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">characteristicGroup</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">activity_media_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">activity_start_date_lower</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">activity_start_date_upper</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">activity_type_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">characteristic_group</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">characteristic</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">characteristicUserSupplied</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">boundingBox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">countryFips</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">stateFips</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">countyFips</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">siteTypeCode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">siteTypeName</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">usgsPCode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">hydrologicUnit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">monitoringLocationIdentifier</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">organizationIdentifier</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">pointLocationLatitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">pointLocationLongitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">pointLocationWithinMiles</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">projectIdentifier</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">recordIdentifierUserSupplied</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">characteristic_user_supplied</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">country_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">state_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">county_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">site_type_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">site_type_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">usgs_pcode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">hydrologic_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">monitoring_location_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">organization_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">point_location_latitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">point_location_longitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">point_location_within_miles</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">project_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">record_identifier_user_supplied</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search Samples database for USGS water quality data.</span>
 <span class="sd">    This is a wrapper function for the Samples database API. All potential</span>
@@ -2434,35 +2473,38 @@
 <span class="sd">        &quot;actgroup&quot;, &quot;count&quot;</span>
 <span class="sd">        projects - &quot;project&quot;, &quot;projectmonitoringlocationweight&quot;</span>
 <span class="sd">        organizations - &quot;organization&quot;, &quot;count&quot;</span>
-<span class="sd">    activityMediaName : string or iterable of strings, optional</span>
+<span class="sd">    activity_media_name : string or iterable of strings, optional</span>
 <span class="sd">        Name or code indicating environmental medium in which sample was taken.</span>
 <span class="sd">        Call ``get_codes(&quot;samplemedia&quot;)`` for the valid inputs.</span>
-<span class="sd">        Example: &quot;Water&quot;.</span>
-<span class="sd">    activityStartDateLower : string, optional</span>
+<span class="sd">        Example: &quot;Water&quot;. (Samples API: ``activityMediaName``)</span>
+<span class="sd">    activity_start_date_lower : string, optional</span>
 <span class="sd">        The start date if using a date range. Takes the format YYYY-MM-DD.</span>
 <span class="sd">        The logic is inclusive, i.e. it will also return results that</span>
 <span class="sd">        match the date. If left as None, will pull all data on or before</span>
-<span class="sd">        activityStartDateUpper, if populated.</span>
-<span class="sd">    activityStartDateUpper : string, optional</span>
+<span class="sd">        ``activity_start_date_upper``, if populated.</span>
+<span class="sd">        (Samples API: ``activityStartDateLower``)</span>
+<span class="sd">    activity_start_date_upper : string, optional</span>
 <span class="sd">        The end date if using a date range. Takes the format YYYY-MM-DD.</span>
 <span class="sd">        The logic is inclusive, i.e. it will also return results that</span>
 <span class="sd">        match the date. If left as None, will pull all data after</span>
-<span class="sd">        activityStartDateLower up to the most recent available results.</span>
-<span class="sd">    activityTypeCode : string or iterable of strings, optional</span>
+<span class="sd">        ``activity_start_date_lower`` up to the most recent available results.</span>
+<span class="sd">        (Samples API: ``activityStartDateUpper``)</span>
+<span class="sd">    activity_type_code : string or iterable of strings, optional</span>
 <span class="sd">        Text code that describes type of field activity performed.</span>
-<span class="sd">        Example: &quot;Sample-Routine, regular&quot;.</span>
-<span class="sd">    characteristicGroup : string or iterable of strings, optional</span>
+<span class="sd">        Example: &quot;Sample-Routine, regular&quot;. (Samples API: ``activityTypeCode``)</span>
+<span class="sd">    characteristic_group : string or iterable of strings, optional</span>
 <span class="sd">        Characteristic group is a broad category of characteristics</span>
 <span class="sd">        describing one or more results. Call ``get_codes(&quot;characteristicgroup&quot;)``</span>
 <span class="sd">        for the valid inputs.</span>
-<span class="sd">        Example: &quot;Organics, PFAS&quot;</span>
+<span class="sd">        Example: &quot;Organics, PFAS&quot; (Samples API: ``characteristicGroup``)</span>
 <span class="sd">    characteristic : string or iterable of strings, optional</span>
 <span class="sd">        Characteristic is a specific category describing one or more results.</span>
 <span class="sd">        Call ``get_codes(&quot;characteristics&quot;)`` for the valid inputs.</span>
-<span class="sd">        Example: &quot;Suspended Sediment Discharge&quot;</span>
-<span class="sd">    characteristicUserSupplied : string or iterable of strings, optional</span>
+<span class="sd">        Example: &quot;Suspended Sediment Discharge&quot; (Samples API: ``characteristic``)</span>
+<span class="sd">    characteristic_user_supplied : string or iterable of strings, optional</span>
 <span class="sd">        A user supplied characteristic name describing one or more results.</span>
-<span class="sd">    boundingBox: list of four floats, optional</span>
+<span class="sd">        (Samples API: ``characteristicUserSupplied``)</span>
+<span class="sd">    bbox : list of four floats, optional</span>
 <span class="sd">        Filters on the associated monitoring location&#39;s point location</span>
 <span class="sd">        by checking if it is located within the specified geographic area.</span>
 <span class="sd">        The logic is inclusive, i.e. it will include locations that overlap</span>
@@ -2475,55 +2517,63 @@
 <span class="sd">            * Eastern-most longitude</span>
 <span class="sd">            * Northern-most latitude</span>
 
-<span class="sd">        Example: [-92.8,44.2,-88.9,46.0]</span>
-<span class="sd">    countryFips : string or iterable of strings, optional</span>
-<span class="sd">        Example: &quot;US&quot; (United States)</span>
-<span class="sd">    stateFips : string or iterable of strings, optional</span>
+<span class="sd">        Example: [-92.8,44.2,-88.9,46.0] (Samples API: ``boundingBox``)</span>
+<span class="sd">    country_code : string or iterable of strings, optional</span>
+<span class="sd">        Example: &quot;US&quot; (United States) (Samples API: ``countryFips``)</span>
+<span class="sd">    state_code : string or iterable of strings, optional</span>
 <span class="sd">        Call ``get_codes(&quot;states&quot;)`` for the valid inputs.</span>
-<span class="sd">        Example: &quot;US:15&quot; (United States: Hawaii)</span>
-<span class="sd">    countyFips : string or iterable of strings, optional</span>
+<span class="sd">        Example: &quot;US:15&quot; (United States: Hawaii) (Samples API: ``stateFips``)</span>
+<span class="sd">    county_code : string or iterable of strings, optional</span>
 <span class="sd">        Call ``get_codes(&quot;counties&quot;)`` for the valid inputs.</span>
 <span class="sd">        Example: &quot;US:15:001&quot; (United States: Hawaii, Hawaii County)</span>
-<span class="sd">    siteTypeCode : string or iterable of strings, optional</span>
+<span class="sd">        (Samples API: ``countyFips``)</span>
+<span class="sd">    site_type_code : string or iterable of strings, optional</span>
 <span class="sd">        An abbreviation for a certain site type. Call ``get_codes(&quot;sitetype&quot;)``</span>
 <span class="sd">        for the valid inputs.</span>
-<span class="sd">        Example: &quot;GW&quot; (Groundwater site)</span>
-<span class="sd">    siteTypeName : string or iterable of strings, optional</span>
+<span class="sd">        Example: &quot;GW&quot; (Groundwater site) (Samples API: ``siteTypeCode``)</span>
+<span class="sd">    site_type_name : string or iterable of strings, optional</span>
 <span class="sd">        A full name for a certain site type. Call ``get_codes(&quot;sitetype&quot;)``</span>
 <span class="sd">        for the valid inputs.</span>
-<span class="sd">        Example: &quot;Well&quot;</span>
-<span class="sd">    usgsPCode : string or iterable of strings, optional</span>
+<span class="sd">        Example: &quot;Well&quot; (Samples API: ``siteTypeName``)</span>
+<span class="sd">    usgs_pcode : string or iterable of strings, optional</span>
 <span class="sd">        5-digit number used in the US Geological Survey computerized</span>
 <span class="sd">        data system, National Water Information System (NWIS), to</span>
 <span class="sd">        uniquely identify a specific constituent (the ``parameterCode`` column</span>
 <span class="sd">        of ``get_codes(&quot;characteristics&quot;)``).</span>
 <span class="sd">        Example: &quot;00060&quot; (Discharge, cubic feet per second)</span>
-<span class="sd">    hydrologicUnit : string or iterable of strings, optional</span>
+<span class="sd">        (Samples API: ``usgsPCode``)</span>
+<span class="sd">    hydrologic_unit : string or iterable of strings, optional</span>
 <span class="sd">        Max 12-digit number used to describe a hydrologic unit.</span>
-<span class="sd">        Example: &quot;070900020502&quot;</span>
-<span class="sd">    monitoringLocationIdentifier : string or iterable of strings, optional</span>
+<span class="sd">        Example: &quot;070900020502&quot; (Samples API: ``hydrologicUnit``)</span>
+<span class="sd">    monitoring_location_id : string or iterable of strings, optional</span>
 <span class="sd">        A monitoring location identifier has two parts: the agency code</span>
 <span class="sd">        and the location number, separated by a dash (-).</span>
 <span class="sd">        Example: &quot;USGS-040851385&quot;</span>
-<span class="sd">    organizationIdentifier : string or iterable of strings, optional</span>
+<span class="sd">        (Samples API: ``monitoringLocationIdentifier``)</span>
+<span class="sd">    organization_id : string or iterable of strings, optional</span>
 <span class="sd">        Designator used to uniquely identify a specific organization.</span>
 <span class="sd">        Currently only accepting the organization &quot;USGS&quot;.</span>
-<span class="sd">    pointLocationLatitude : float, optional</span>
+<span class="sd">        (Samples API: ``organizationIdentifier``)</span>
+<span class="sd">    point_location_latitude : float, optional</span>
 <span class="sd">        Latitude for a point/radius query (decimal degrees). Must be used</span>
-<span class="sd">        with pointLocationLongitude and pointLocationWithinMiles.</span>
-<span class="sd">    pointLocationLongitude : float, optional</span>
+<span class="sd">        with ``point_location_longitude`` and ``point_location_within_miles``.</span>
+<span class="sd">        (Samples API: ``pointLocationLatitude``)</span>
+<span class="sd">    point_location_longitude : float, optional</span>
 <span class="sd">        Longitude for a point/radius query (decimal degrees). Must be used</span>
-<span class="sd">        with pointLocationLatitude and pointLocationWithinMiles.</span>
-<span class="sd">    pointLocationWithinMiles : float, optional</span>
+<span class="sd">        with ``point_location_latitude`` and ``point_location_within_miles``.</span>
+<span class="sd">        (Samples API: ``pointLocationLongitude``)</span>
+<span class="sd">    point_location_within_miles : float, optional</span>
 <span class="sd">        Radius for a point/radius query. Must be used with</span>
-<span class="sd">        pointLocationLatitude and pointLocationLongitude</span>
-<span class="sd">    projectIdentifier : string or iterable of strings, optional</span>
+<span class="sd">        ``point_location_latitude`` and ``point_location_longitude``.</span>
+<span class="sd">        (Samples API: ``pointLocationWithinMiles``)</span>
+<span class="sd">    project_id : string or iterable of strings, optional</span>
 <span class="sd">        Designator used to uniquely identify a data collection project. Project</span>
 <span class="sd">        identifiers are specific to an organization (e.g. USGS).</span>
-<span class="sd">        Example: &quot;ZH003QW03&quot;</span>
-<span class="sd">    recordIdentifierUserSupplied : string or iterable of strings, optional</span>
+<span class="sd">        Example: &quot;ZH003QW03&quot; (Samples API: ``projectIdentifier``)</span>
+<span class="sd">    record_identifier_user_supplied : string or iterable of strings, optional</span>
 <span class="sd">        Internal AQS record identifier that returns 1 entry. Only available</span>
 <span class="sd">        for the &quot;results&quot; service.</span>
+<span class="sd">        (Samples API: ``recordIdentifierUserSupplied``)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -2546,34 +2596,37 @@
 
 <span class="sd">        &gt;&gt;&gt; # Get PFAS results within a bounding box</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_samples(</span>
-<span class="sd">        ...     boundingBox=[-90.2, 42.6, -88.7, 43.2],</span>
-<span class="sd">        ...     characteristicGroup=&quot;Organics, PFAS&quot;,</span>
+<span class="sd">        ...     bbox=[-90.2, 42.6, -88.7, 43.2],</span>
+<span class="sd">        ...     characteristic_group=&quot;Organics, PFAS&quot;,</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get all activities for the Commonwealth of Virginia over a date range</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_samples(</span>
 <span class="sd">        ...     service=&quot;activities&quot;,</span>
 <span class="sd">        ...     profile=&quot;sampact&quot;,</span>
-<span class="sd">        ...     activityStartDateLower=&quot;2023-10-01&quot;,</span>
-<span class="sd">        ...     activityStartDateUpper=&quot;2024-01-01&quot;,</span>
-<span class="sd">        ...     stateFips=&quot;US:51&quot;,</span>
+<span class="sd">        ...     activity_start_date_lower=&quot;2023-10-01&quot;,</span>
+<span class="sd">        ...     activity_start_date_upper=&quot;2024-01-01&quot;,</span>
+<span class="sd">        ...     state_code=&quot;US:51&quot;,</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get all pH samples for two sites in Utah</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_samples(</span>
-<span class="sd">        ...     monitoringLocationIdentifier=[</span>
+<span class="sd">        ...     monitoring_location_id=[</span>
 <span class="sd">        ...         &quot;USGS-393147111462301&quot;,</span>
 <span class="sd">        ...         &quot;USGS-393343111454101&quot;,</span>
 <span class="sd">        ...     ],</span>
-<span class="sd">        ...     usgsPCode=&quot;00400&quot;,</span>
+<span class="sd">        ...     usgs_pcode=&quot;00400&quot;,</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">_check_profiles</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">profile</span><span class="p">)</span>
 
-    <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">params</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;ssl_check&quot;</span><span class="p">,</span> <span class="s2">&quot;profile&quot;</span><span class="p">})</span>
+    <span class="c1"># Build argument dictionary, omitting None values. Parameters are the</span>
+    <span class="c1"># public snake_case names here; translate them to the camelCase names the</span>
+    <span class="c1"># Samples API expects just before building the request.</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;ssl_check&quot;</span><span class="p">,</span> <span class="s2">&quot;profile&quot;</span><span class="p">})</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">_SAMPLES_PARAM_TO_API</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 
     <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;mimeType&quot;</span><span class="p">:</span> <span class="s2">&quot;text/csv&quot;</span><span class="p">})</span>
 
@@ -2591,8 +2644,9 @@
 
 <div class="viewcode-block" id="get_samples_summary">
 <a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_samples_summary">[docs]</a>
+<span class="nd">@_accept_legacy_kwargs</span><span class="p">({</span><span class="s2">&quot;monitoringLocationIdentifier&quot;</span><span class="p">:</span> <span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">})</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_samples_summary</span><span class="p">(</span>
-    <span class="n">monitoringLocationIdentifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">monitoring_location_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a summary of discrete water-quality samples at a single monitoring location.</span>
@@ -2610,13 +2664,13 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    monitoringLocationIdentifier : string</span>
+<span class="sd">    monitoring_location_id : string</span>
 <span class="sd">        A monitoring location identifier has two parts, separated by a dash</span>
 <span class="sd">        (``-``): the agency code and the location number. Examples:</span>
 <span class="sd">        ``&quot;USGS-040851385&quot;``, ``&quot;AZ014-320821110580701&quot;``,</span>
 <span class="sd">        ``&quot;CAX01-15304600&quot;``. Bare location numbers without an agency prefix</span>
 <span class="sd">        are accepted by the service but return an empty result, so a prefix</span>
-<span class="sd">        is effectively required.</span>
+<span class="sd">        is effectively required. (Samples API: ``monitoringLocationIdentifier``)</span>
 <span class="sd">    ssl_check : bool, optional</span>
 <span class="sd">        Check the SSL certificate. Default is True.</span>
 
@@ -2633,18 +2687,18 @@
 
 <span class="sd">        &gt;&gt;&gt; # What discrete-sample data is available at this site?</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_samples_summary(</span>
-<span class="sd">        ...     monitoringLocationIdentifier=&quot;USGS-04074950&quot;</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-04074950&quot;</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-            <span class="s2">&quot;monitoringLocationIdentifier must be a string; the Samples &quot;</span>
+            <span class="s2">&quot;monitoring_location_id must be a string; the Samples &quot;</span>
             <span class="s2">&quot;summary service accepts exactly one monitoring location per &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;request, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;request, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
         <span class="p">)</span>
 
-    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">SAMPLES_URL</span><span class="si">}</span><span class="s2">/summary/</span><span class="si">{</span><span class="n">quote</span><span class="p">(</span><span class="n">monitoringLocationIdentifier</span><span class="p">,</span><span class="w"> </span><span class="n">safe</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">SAMPLES_URL</span><span class="si">}</span><span class="s2">/summary/</span><span class="si">{</span><span class="n">quote</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="p">,</span><span class="w"> </span><span class="n">safe</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;mimeType&quot;</span><span class="p">:</span> <span class="s2">&quot;text/csv&quot;</span><span class="p">}</span>
 
     <span class="n">df</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="n">_get_samples_csv</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">)</span>
