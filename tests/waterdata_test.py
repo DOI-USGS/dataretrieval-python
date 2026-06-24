@@ -1024,21 +1024,20 @@ class TestNormalizeStrIterable:
         # Note: no hyphen requirement here — that's monitoring_location_id-specific.
         assert _normalize_str_iterable("dog", "parameter_code") == "dog"
 
-    def test_list_returned_unchanged(self):
-        assert _normalize_str_iterable(["00060", "00010"], "p") == ["00060", "00010"]
-
-    def test_tuple_normalizes_to_list(self):
-        result = _normalize_str_iterable(("00060", "00010"), "p")
-        assert result == ["00060", "00010"]
-        assert isinstance(result, list)
-
-    def test_pandas_series_normalizes_to_list(self):
-        result = _normalize_str_iterable(pd.Series(["00060", "00010"]), "p")
-        assert result == ["00060", "00010"]
-        assert isinstance(result, list)
-
-    def test_numpy_array_normalizes_to_list(self):
-        result = _normalize_str_iterable(np.array(["00060", "00010"]), "p")
+    @pytest.mark.parametrize(
+        "value",
+        [
+            ["00060", "00010"],
+            ("00060", "00010"),
+            pd.Series(["00060", "00010"]),
+            np.array(["00060", "00010"]),
+        ],
+        ids=["list", "tuple", "series", "ndarray"],
+    )
+    def test_iterable_normalizes_to_list(self, value):
+        """Any iterable of strings (list / tuple / Series / ndarray) comes back
+        as a plain ``list``."""
+        result = _normalize_str_iterable(value, "p")
         assert result == ["00060", "00010"]
         assert isinstance(result, list)
 
