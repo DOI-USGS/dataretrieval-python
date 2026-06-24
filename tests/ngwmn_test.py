@@ -6,13 +6,7 @@ mirroring the integration-test style of ``waterdata_test.py``. The
 behavior change still fails on the first run.
 """
 
-import sys
-
-import pytest
 from pandas import DataFrame
-
-if sys.version_info < (3, 10):
-    pytest.skip("Skip entire module on Python < 3.10", allow_module_level=True)
 
 from dataretrieval import ngwmn
 from dataretrieval.utils import BaseMetadata

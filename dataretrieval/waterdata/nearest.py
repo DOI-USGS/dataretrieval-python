@@ -197,7 +197,8 @@ def _build_window_or_filter(targets: pd.DatetimeIndex, window_td: pd.Timedelta) 
     lowers = (targets - window_td).strftime(fmt)
     uppers = (targets + window_td).strftime(fmt)
     return " OR ".join(
-        f"(time >= '{lo}' AND time <= '{up}')" for lo, up in zip(lowers, uppers)
+        f"(time >= '{lo}' AND time <= '{up}')"
+        for lo, up in zip(lowers, uppers, strict=False)
     )
 
 

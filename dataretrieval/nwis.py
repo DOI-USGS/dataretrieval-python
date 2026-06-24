@@ -1033,11 +1033,15 @@ def _read_json(json: dict[str, Any]) -> pd.DataFrame:
     # for example, [0, 21, 22] would be the first and last indices
     index_list = [0]
     index_list.extend(
-        [i + 1 for i, (a, b) in enumerate(zip(site_list[:-1], site_list[1:])) if a != b]
+        [
+            i + 1
+            for i, (a, b) in enumerate(zip(site_list[:-1], site_list[1:], strict=False))
+            if a != b
+        ]
     )
     index_list.append(len(site_list))
 
-    for start, end in zip(index_list[:-1], index_list[1:]):
+    for start, end in zip(index_list[:-1], index_list[1:], strict=False):
         # grab a block containing timeseries 0:21,
         # which are all from the same site
         site_block = json["value"]["timeSeries"][start:end]
@@ -1133,8 +1137,8 @@ class NWIS_Metadata(BaseMetadata):
 
     Notes
     -----
-    ``site_info`` and ``variable_info`` are exposed as properties (documented
-    below) rather than plain attributes.
+    ``site_info`` is exposed as a property (documented below) rather than a
+    plain attribute.
 
     """
 
@@ -1196,17 +1200,3 @@ class NWIS_Metadata(BaseMetadata):
 
         else:
             return None  # don't set metadata site_info attribute
-
-    @property
-    def variable_info(self) -> None:
-        """
-        Deprecated. Accessing variable_info via NWIS_Metadata is deprecated.
-        Returns None.
-        """
-        warnings.warn(
-            "Accessing variable_info via NWIS_Metadata is deprecated as "
-            "it relies on the defunct get_pmcodes function.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return None

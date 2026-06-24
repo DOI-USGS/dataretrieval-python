@@ -359,7 +359,7 @@ class TestMetaData:
     -----
 
     - Originally based on GitHub Issue #73.
-    - Modified to site_info and variable_info as properties, not callables.
+    - Modified to expose site_info as a property, not a callable.
     """
 
     def test_set_metadata_info_site(self):
@@ -415,17 +415,6 @@ class TestMetaData:
         md = NWIS_Metadata(response, countyCd="01001")
         # assert that site_info is implemented
         assert md.site_info
-
-    def test_variable_info_deprecated(self):
-        """Test that variable_info raises a DeprecationWarning and returns None."""
-        response = mock.MagicMock()
-        md = NWIS_Metadata(response)
-        with pytest.warns(
-            DeprecationWarning,
-            match="Accessing variable_info via NWIS_Metadata is deprecated",
-        ):
-            result = md.variable_info
-        assert result is None
 
 
 class TestReadRdb:

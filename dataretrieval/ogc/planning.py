@@ -497,7 +497,7 @@ class ChunkPlan:
         chunk_lists = [self.chunks[ax.arg_key] for ax in self.axes]
         for combo in itertools.product(*chunk_lists):
             sub_args = dict(self.args)
-            for axis, chunk in zip(self.axes, combo):
+            for axis, chunk in zip(self.axes, combo, strict=False):
                 sub_args[axis.arg_key] = axis.render(chunk)
             yield sub_args
 

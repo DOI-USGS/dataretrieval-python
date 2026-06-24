@@ -26,6 +26,11 @@ _TRANSIENT_RERUN_PATTERNS = [
     r"(?:QuotaExhausted|ServiceInterrupted):",
     r"Connect(ion)?Error",  # requests' ConnectionError + httpx' ConnectError
     r"ReadTimeout|ConnectTimeout|Timeout",
+    # ``dataretrieval`` wraps connection-level failures (timeout / DNS / refused)
+    # in a typed ``NetworkError``; rerunfailures matches the crash line (the
+    # ``NetworkError``), not the chained raw httpx exception, so match the
+    # wrapper too -- otherwise a transient SSL/handshake timeout fails CI.
+    r"NetworkError",
 ]
 
 #: Apply to a test module (``pytestmark = flaky_api``) or class (``@flaky_api``)

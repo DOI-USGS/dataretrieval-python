@@ -252,17 +252,13 @@ class BaseMetadata:
         # # disclaimer seems to be only part of importWaterML1
         # self.disclaimer = None
 
-    # These properties are to be set by `nwis` or `wqp`-specific metadata classes.
+    # ``site_info`` is set by ``nwis`` / ``wqp``-specific metadata classes; the
+    # modern ``waterdata`` metadata leaves it unimplemented (use
+    # ``waterdata.get_monitoring_locations`` to retrieve site descriptions).
     @property
     def site_info(self) -> Any:
         raise NotImplementedError(
             "site_info must be implemented by utils.BaseMetadata children"
-        )
-
-    @property
-    def variable_info(self) -> Any:
-        raise NotImplementedError(
-            "variable_info must be implemented by utils.BaseMetadata children"
         )
 
     def __repr__(self) -> str:
