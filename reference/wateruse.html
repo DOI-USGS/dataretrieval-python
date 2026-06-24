@@ -1,0 +1,363 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dataretrieval.wateruse &mdash; dataretrieval 0.1.dev1+g4daf77131 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=53843b8e"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="dataretrieval.wqp" href="wqp.html" />
+    <link rel="prev" title="dataretrieval.waterdata" href="waterdata.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html">dataretrieval.exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ngwmn.html">dataretrieval.ngwmn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nldi.html">dataretrieval.nldi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nwis.html">dataretrieval.nwis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="streamstats.html">dataretrieval.streamstats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">dataretrieval.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="waterdata.html">dataretrieval.waterdata</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.wateruse</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wateruse.MAX_CONCURRENT_REQUESTS"><code class="docutils literal notranslate"><span class="pre">MAX_CONCURRENT_REQUESTS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wateruse.MODELS"><code class="docutils literal notranslate"><span class="pre">MODELS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wateruse.TIME_RESOLUTIONS"><code class="docutils literal notranslate"><span class="pre">TIME_RESOLUTIONS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wateruse._as_list"><code class="docutils literal notranslate"><span class="pre">_as_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wateruse._fan_out"><code class="docutils literal notranslate"><span class="pre">_fan_out()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wateruse._next_page_url"><code class="docutils literal notranslate"><span class="pre">_next_page_url()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wateruse._nwdc_error_detail"><code class="docutils literal notranslate"><span class="pre">_nwdc_error_detail()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wateruse._read_csv_page"><code class="docutils literal notranslate"><span class="pre">_read_csv_page()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wateruse._resolve_locations"><code class="docutils literal notranslate"><span class="pre">_resolve_locations()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wateruse._validate_county"><code class="docutils literal notranslate"><span class="pre">_validate_county()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wateruse._validate_huc"><code class="docutils literal notranslate"><span class="pre">_validate_huc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wateruse.get_wateruse"><code class="docutils literal notranslate"><span class="pre">get_wateruse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wqp.html">dataretrieval.wqp</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">API reference</a></li>
+      <li class="breadcrumb-item active">dataretrieval.wateruse</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/reference/wateruse.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-dataretrieval.wateruse">
+<span id="dataretrieval-wateruse"></span><span id="wateruse"></span><h1>dataretrieval.wateruse<a class="headerlink" href="#module-dataretrieval.wateruse" title="Link to this heading"></a></h1>
+<p>Retrieve USGS water-use data from the National Water Availability
+Assessment Data Companion (NWDC).</p>
+<p>The NWDC web services provide national-scale, USGS-modeled water-use data that
+underlie the <a class="reference external" href="https://water.usgs.gov/nwaa-data/">USGS National Water Availability Assessment</a>. Estimates are served on a HUC12
+(12-digit hydrologic unit) spatial grid and can be queried for any county,
+state, or hydrologic unit. This is the modern replacement for the defunct
+legacy NWIS water-use service (<code class="docutils literal notranslate"><span class="pre">nwis.get_water_use</span></code>).</p>
+<p>Unlike the main Water Data getters (<a class="reference internal" href="waterdata.html#module-dataretrieval.waterdata" title="dataretrieval.waterdata"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code></a>) and NGWMN
+(<a class="reference internal" href="ngwmn.html#module-dataretrieval.ngwmn" title="dataretrieval.ngwmn"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.ngwmn</span></code></a>), the NWDC is a plain CSV REST service rather than
+an OGC API Features collection. This module supplies the NWDC-specific bits —
+request building, CSV parsing, the <code class="docutils literal notranslate"><span class="pre">Link</span></code>-header cursor, and the <code class="docutils literal notranslate"><span class="pre">{detail}</span></code>
+error envelope — but reuses the OGC engine’s generic, API-agnostic pagination
+and sync-from-async plumbing (<code class="xref py py-func docutils literal notranslate"><span class="pre">_paginate()</span></code> and
+<code class="xref py py-func docutils literal notranslate"><span class="pre">_run_sync()</span></code>) rather than re-implementing it. It
+follows the same conventions: shared request headers
+(<a class="reference internal" href="utils.html#dataretrieval.utils._default_headers" title="dataretrieval.utils._default_headers"><code class="xref py py-func docutils literal notranslate"><span class="pre">_default_headers()</span></code></a>), the typed
+<a class="reference internal" href="exceptions.html#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a> taxonomy, and a
+<code class="docutils literal notranslate"><span class="pre">(DataFrame,</span> <span class="pre">BaseMetadata)</span></code> return.</p>
+<p>See <a class="reference external" href="https://api.water.usgs.gov/docs/nwaa-data/">https://api.water.usgs.gov/docs/nwaa-data/</a> for the API reference and
+<a class="reference external" href="https://water.usgs.gov/nwaa-data/">https://water.usgs.gov/nwaa-data/</a> for the catalog of available models and
+variables.</p>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">wateruse</span>
+
+<span class="c1"># Monthly public-supply withdrawals for Rhode Island, 2020 onward.</span>
+<span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">wateruse</span><span class="o">.</span><span class="n">get_wateruse</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;wu-public-supply-wd&quot;</span><span class="p">,</span>
+    <span class="n">variable</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;pswdtot&quot;</span><span class="p">,</span> <span class="s2">&quot;pswdgw&quot;</span><span class="p">,</span> <span class="s2">&quot;pswdsw&quot;</span><span class="p">],</span>
+    <span class="n">state</span><span class="o">=</span><span class="s2">&quot;RI&quot;</span><span class="p">,</span>
+    <span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;2020-01&quot;</span><span class="p">,</span>
+    <span class="n">time_resolution</span><span class="o">=</span><span class="s2">&quot;monthly&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py data">
+<dt class="sig sig-object py" id="dataretrieval.wateruse.MAX_CONCURRENT_REQUESTS">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wateruse.</span></span><span class="sig-name descname"><span class="pre">MAX_CONCURRENT_REQUESTS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#dataretrieval.wateruse.MAX_CONCURRENT_REQUESTS" title="Link to this definition"></a></dt>
+<dd><p>Maximum locations fetched concurrently when a list of state/county/huc
+selectors is fanned out (one request per location). Kept conservative
+because this module intentionally carries no request backoff/retry; the
+NWDC tolerates this level of concurrency without rate-limit errors (verified
+by stress test). Set <code class="docutils literal notranslate"><span class="pre">wateruse.MAX_CONCURRENT_REQUESTS</span> <span class="pre">=</span> <span class="pre">1</span></code> for serial.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="dataretrieval.wateruse.MODELS">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wateruse.</span></span><span class="sig-name descname"><span class="pre">MODELS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('wu-public-supply-wd',</span> <span class="pre">'wu-public-supply-cu',</span> <span class="pre">'wu-thermoelectric',</span> <span class="pre">'wu-irrigation-wd',</span> <span class="pre">'wu-irrigation-cu')</span></span><a class="headerlink" href="#dataretrieval.wateruse.MODELS" title="Link to this definition"></a></dt>
+<dd><p>Water-use models (categories) served by the NWDC. The catalog at
+<a class="reference external" href="https://water.usgs.gov/nwaa-data/">https://water.usgs.gov/nwaa-data/</a> lists the variables available within each.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="dataretrieval.wateruse.TIME_RESOLUTIONS">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wateruse.</span></span><span class="sig-name descname"><span class="pre">TIME_RESOLUTIONS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('monthly',</span> <span class="pre">'annualcy',</span> <span class="pre">'annualwy')</span></span><a class="headerlink" href="#dataretrieval.wateruse.TIME_RESOLUTIONS" title="Link to this definition"></a></dt>
+<dd><p>monthly, annual calendar year, annual water year.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Temporal resolutions</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.wateruse._as_list">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wateruse.</span></span><span class="sig-name descname"><span class="pre">_as_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/wateruse.html#_as_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wateruse._as_list" title="Link to this definition"></a></dt>
+<dd><p>A scalar becomes a one-element list; any non-string iterable (list,
+tuple, Series, ndarray, generator) is materialized to a list. A string is
+treated as a scalar so it isn’t exploded into characters.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.wateruse._fan_out">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.wateruse.</span></span><span class="sig-name descname"><span class="pre">_fan_out</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">requests</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Request</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">headers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Response</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/wateruse.html#_fan_out"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wateruse._fan_out" title="Link to this definition"></a></dt>
+<dd><p>Fetch every request (each paginated) concurrently over one shared client.</p>
+<p>Each request is paginated by the engine’s
+<code class="xref py py-func docutils literal notranslate"><span class="pre">_paginate()</span></code> with NWDC strategies: parse a CSV
+page and read its <code class="docutils literal notranslate"><span class="pre">Link</span></code> header cursor (<code class="docutils literal notranslate"><span class="pre">parse</span></code>), follow that cursor
+(<code class="docutils literal notranslate"><span class="pre">follow</span></code>), and raise the typed error carrying the NWDC <code class="docutils literal notranslate"><span class="pre">detail</span></code>
+(<code class="docutils literal notranslate"><span class="pre">raise_for_status</span></code>). Concurrency is bounded by a semaphore at
+<a class="reference internal" href="#dataretrieval.wateruse.MAX_CONCURRENT_REQUESTS" title="dataretrieval.wateruse.MAX_CONCURRENT_REQUESTS"><code class="xref py py-data docutils literal notranslate"><span class="pre">MAX_CONCURRENT_REQUESTS</span></code></a>, and <code class="docutils literal notranslate"><span class="pre">asyncio.gather</span></code> preserves input
+order, so the concatenation is deterministic. The shared
+<code class="xref py py-class docutils literal notranslate"><span class="pre">httpx.AsyncClient</span></code> keeps connections alive across pages and requests.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.wateruse._next_page_url">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wateruse.</span></span><span class="sig-name descname"><span class="pre">_next_page_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">response</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Response</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/wateruse.html#_next_page_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wateruse._next_page_url" title="Link to this definition"></a></dt>
+<dd><p>Return the absolute URL of the next page, or None if this is the last.</p>
+<p>Reads the standard <code class="docutils literal notranslate"><span class="pre">Link:</span> <span class="pre">&lt;...&gt;;</span> <span class="pre">rel=&quot;next&quot;</span></code> header (parsed by httpx into
+<code class="docutils literal notranslate"><span class="pre">response.links</span></code>). A next link served against the bare <code class="docutils literal notranslate"><span class="pre">water.usgs.gov</span></code>
+host is normalized to the public <code class="docutils literal notranslate"><span class="pre">api.water.usgs.gov</span></code> gateway so the
+follow-up request reaches the API.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.wateruse._nwdc_error_detail">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wateruse.</span></span><span class="sig-name descname"><span class="pre">_nwdc_error_detail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">response</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Response</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/wateruse.html#_nwdc_error_detail"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wateruse._nwdc_error_detail" title="Link to this definition"></a></dt>
+<dd><p>Pull the <code class="docutils literal notranslate"><span class="pre">detail</span></code> message out of an NWDC JSON error envelope, if any.</p>
+<p>The NWDC reports errors as <code class="docutils literal notranslate"><span class="pre">{&quot;detail&quot;:</span> <span class="pre">&quot;Invalid</span> <span class="pre">model</span> <span class="pre">name:</span> <span class="pre">...&quot;}</span></code>. Passed
+to <a class="reference internal" href="utils.html#dataretrieval.utils._raise_for_status" title="dataretrieval.utils._raise_for_status"><code class="xref py py-func docutils literal notranslate"><span class="pre">_raise_for_status()</span></code></a> as <code class="docutils literal notranslate"><span class="pre">detail_from</span></code> so the
+service’s wording surfaces in the typed error message.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.wateruse._read_csv_page">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wateruse.</span></span><span class="sig-name descname"><span class="pre">_read_csv_page</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">response</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Response</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/dataretrieval/wateruse.html#_read_csv_page"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wateruse._read_csv_page" title="Link to this definition"></a></dt>
+<dd><p>Parse one CSV page; <code class="docutils literal notranslate"><span class="pre">huc12_id</span></code> stays a string to keep leading zeros.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.wateruse._resolve_locations">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wateruse.</span></span><span class="sig-name descname"><span class="pre">_resolve_locations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">county</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">huc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/wateruse.html#_resolve_locations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wateruse._resolve_locations" title="Link to this definition"></a></dt>
+<dd><p>Build the NWDC <code class="docutils literal notranslate"><span class="pre">location=&lt;type&gt;:&lt;id&gt;</span></code> value(s) from the selectors.</p>
+<p>Exactly one of <code class="docutils literal notranslate"><span class="pre">state</span></code> / <code class="docutils literal notranslate"><span class="pre">county</span></code> / <code class="docutils literal notranslate"><span class="pre">huc</span></code> must be given; each may be a
+single value or a list. <code class="docutils literal notranslate"><span class="pre">state</span></code> is normalized to the two-letter postal
+code <code class="docutils literal notranslate"><span class="pre">stateCd</span></code> requires; <code class="docutils literal notranslate"><span class="pre">county</span></code> is a five-digit FIPS code; and a
+<code class="docutils literal notranslate"><span class="pre">huc</span></code> code’s length selects its level (<code class="docutils literal notranslate"><span class="pre">huc2</span></code> … <code class="docutils literal notranslate"><span class="pre">huc12</span></code>). Returns one
+location string per value — the caller issues one request per location.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.wateruse._validate_county">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wateruse.</span></span><span class="sig-name descname"><span class="pre">_validate_county</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/dataretrieval/wateruse.html#_validate_county"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wateruse._validate_county" title="Link to this definition"></a></dt>
+<dd><p>Validate and normalize a five-digit state+county FIPS code.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.wateruse._validate_huc">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wateruse.</span></span><span class="sig-name descname"><span class="pre">_validate_huc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/dataretrieval/wateruse.html#_validate_huc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wateruse._validate_huc" title="Link to this definition"></a></dt>
+<dd><p>Validate a HUC code (even length 2-12 digits; level set by length).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.wateruse.get_wateruse">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wateruse.</span></span><span class="sig-name descname"><span class="pre">get_wateruse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">county</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">huc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_resolution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intersection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'overlap'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/wateruse.html#get_wateruse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.wateruse.get_wateruse" title="Link to this definition"></a></dt>
+<dd><p>Get USGS water-use data from the NWDC web service.</p>
+<p>Retrieves modeled water-use estimates from the USGS National Water
+Availability Assessment Data Companion. The area is given as exactly one of
+<code class="docutils literal notranslate"><span class="pre">state</span></code>, <code class="docutils literal notranslate"><span class="pre">county</span></code>, or <code class="docutils literal notranslate"><span class="pre">huc</span></code>; results are always returned on a HUC12
+grid, in a long (tidy) frame with one row per HUC12 and time step. Large
+areas (e.g. a whole region or a populous state) are served across multiple
+pages, which this function follows transparently and concatenates into one
+frame.</p>
+<p>Each selector also accepts a list of values. The NWDC queries one area per
+request, so a list is fanned out into one request per value — up to
+<a class="reference internal" href="#dataretrieval.wateruse.MAX_CONCURRENT_REQUESTS" title="dataretrieval.wateruse.MAX_CONCURRENT_REQUESTS"><code class="xref py py-data docutils literal notranslate"><span class="pre">MAX_CONCURRENT_REQUESTS</span></code></a> in parallel — and the results are
+concatenated in the order given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>string</em>) – Water-use category to query. See <a class="reference internal" href="#dataretrieval.wateruse.MODELS" title="dataretrieval.wateruse.MODELS"><code class="xref py py-data docutils literal notranslate"><span class="pre">MODELS</span></code></a> for the available
+options (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;wu-public-supply-wd&quot;</span></code>). The full catalog of models
+and their variables is at <a class="reference external" href="https://water.usgs.gov/nwaa-data/">https://water.usgs.gov/nwaa-data/</a>.</p></li>
+<li><p><strong>variable</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – One or more variable IDs within <code class="docutils literal notranslate"><span class="pre">model</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;pswdtot&quot;</span></code> for total
+public-supply withdrawals, or <code class="docutils literal notranslate"><span class="pre">[&quot;pswdgw&quot;,</span> <span class="pre">&quot;pswdsw&quot;]</span></code> for the
+groundwater and surface-water components). Multiple variables are
+comma-joined into a single request. The service requires at least one
+variable; omitting it returns a 400 listing the model’s valid variable
+IDs (surfaced as a <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a>).</p></li>
+<li><p><strong>state</strong> (<em>string</em><em>, </em><em>int</em><em>, or </em><em>iterable</em><em>, </em><em>optional</em>) – One or more US states/territories to query. Each accepts a full name
+(<code class="docutils literal notranslate"><span class="pre">&quot;Wisconsin&quot;</span></code>), a two-letter postal code (<code class="docutils literal notranslate"><span class="pre">&quot;WI&quot;</span></code>), or a two-digit
+ANSI/FIPS code (<code class="docutils literal notranslate"><span class="pre">&quot;55&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">55</span></code>), mirroring
+<a class="reference internal" href="ngwmn.html#dataretrieval.ngwmn.get_sites" title="dataretrieval.ngwmn.get_sites"><code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.ngwmn.get_sites()</span></code></a>.</p></li>
+<li><p><strong>county</strong> (<em>string</em><em> or </em><em>iterable</em><em>, </em><em>optional</em>) – One or more five-digit county FIPS codes — state FIPS + county FIPS,
+e.g. <code class="docutils literal notranslate"><span class="pre">&quot;55025&quot;</span></code> for Dane County, Wisconsin.</p></li>
+<li><p><strong>huc</strong> (<em>string</em><em> or </em><em>iterable</em><em>, </em><em>optional</em>) – <p>One or more hydrologic unit codes. Each code’s level is taken from its
+length: a 2-digit code queries a HUC2 region, 8-digit a HUC8 subbasin,
+12-digit a single HUC12, and so on (even lengths 2-12, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;04&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;07070005&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;010900020502&quot;</span></code>).</p>
+<p>Provide exactly one of <code class="docutils literal notranslate"><span class="pre">state</span></code>, <code class="docutils literal notranslate"><span class="pre">county</span></code>, or <code class="docutils literal notranslate"><span class="pre">huc</span></code> (each may be a
+single value or a list).</p>
+</p></li>
+<li><p><strong>time_resolution</strong> (<em>string</em><em>, </em><em>optional</em>) – Temporal resolution: <code class="docutils literal notranslate"><span class="pre">&quot;monthly&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;annualcy&quot;</span></code> (annual, calendar
+year), or <code class="docutils literal notranslate"><span class="pre">&quot;annualwy&quot;</span></code> (annual, water year). See
+<a class="reference internal" href="#dataretrieval.wateruse.TIME_RESOLUTIONS" title="dataretrieval.wateruse.TIME_RESOLUTIONS"><code class="xref py py-data docutils literal notranslate"><span class="pre">TIME_RESOLUTIONS</span></code></a>.</p></li>
+<li><p><strong>start_date</strong> (<em>string</em><em>, </em><em>optional</em>) – Start of the query window, formatted <code class="docutils literal notranslate"><span class="pre">&quot;YYYY&quot;</span></code> for annual data or
+<code class="docutils literal notranslate"><span class="pre">&quot;YYYY-MM&quot;</span></code> for monthly data.</p></li>
+<li><p><strong>end_date</strong> (<em>string</em><em>, </em><em>optional</em>) – End of the query window, in the same format as <code class="docutils literal notranslate"><span class="pre">start_date</span></code>.</p></li>
+<li><p><strong>intersection</strong> (<em>string</em><em>, </em><em>optional</em>) – How to select HUC12s that straddle the queried-area boundary:
+<code class="docutils literal notranslate"><span class="pre">&quot;overlap&quot;</span></code> (any overlap, the default) or <code class="docutils literal notranslate"><span class="pre">&quot;envelop&quot;</span></code> (fully
+enclosed).</p></li>
+<li><p><strong>limit</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of HUC12s returned per page. Queries spanning more than
+<code class="docutils literal notranslate"><span class="pre">limit</span></code> HUC12s are split across pages and reassembled. Default 600.</p></li>
+<li><p><strong>ssl_check</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True (default), verify SSL certificates; set False to skip
+verification (e.g. behind a TLS-intercepting proxy).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Water-use estimates in long form: a <code class="docutils literal notranslate"><span class="pre">huc12_id</span></code> column (string,
+leading zeros preserved), a time column (<code class="docutils literal notranslate"><span class="pre">year_month</span></code> for monthly
+data or <code class="docutils literal notranslate"><span class="pre">year</span></code> for annual data), and one value column per requested
+variable (suffixed with its unit, e.g. <code class="docutils literal notranslate"><span class="pre">pswdtot_mgd</span></code> for million
+gallons per day).</p></li>
+<li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><code class="xref py py-class docutils literal notranslate"><span class="pre">dataretrieval.utils.BaseMetadata</span></code></a>) – Metadata describing the request (URL, query time, response headers).</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If not exactly one of <code class="docutils literal notranslate"><span class="pre">state</span></code>, <code class="docutils literal notranslate"><span class="pre">county</span></code>, or <code class="docutils literal notranslate"><span class="pre">huc</span></code> is given, or a
+    given selector is malformed (an unrecognized state, a county code that
+    is not five digits, or a HUC of invalid length).</p></li>
+<li><p><a class="reference internal" href="exceptions.html#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><strong>DataRetrievalError</strong></a> – On an HTTP error response, the typed subclass for the status (see
+    <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.error_for_status" title="dataretrieval.exceptions.error_for_status"><code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.exceptions.error_for_status()</span></code></a>); or
+    <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.NetworkError" title="dataretrieval.exceptions.NetworkError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkError</span></code></a> on a connection-level
+    failure (timeout, DNS).</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">wateruse</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">wateruse</span><span class="o">.</span><span class="n">get_wateruse</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;wu-public-supply-wd&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">variable</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;pswdtot&quot;</span><span class="p">,</span> <span class="s2">&quot;pswdgw&quot;</span><span class="p">,</span> <span class="s2">&quot;pswdsw&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">state</span><span class="o">=</span><span class="s2">&quot;RI&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;2020-01&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">time_resolution</span><span class="o">=</span><span class="s2">&quot;monthly&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="waterdata.html" class="btn btn-neutral float-left" title="dataretrieval.waterdata" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wqp.html" class="btn btn-neutral float-right" title="dataretrieval.wqp" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

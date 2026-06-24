@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g5b79b2d68 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g4daf77131 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=262ad1e1"></script>
+      <script src="../_static/documentation_options.js?v=53843b8e"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -90,6 +90,7 @@
 <li class="toctree-l2"><a class="reference internal" href="streamstats.html">dataretrieval.streamstats</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html">dataretrieval.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="waterdata.html">dataretrieval.waterdata</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wateruse.html">dataretrieval.wateruse</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wqp.html">dataretrieval.wqp</a></li>
 </ul>
 </li>
@@ -670,7 +671,11 @@ default is True</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis.get_water_use">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">get_water_use</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">NoReturn</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#get_water_use"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis.get_water_use" title="Link to this definition"></a></dt>
-<dd><p>Defunct: no current replacement.</p>
+<dd><p>Defunct: use <code class="docutils literal notranslate"><span class="pre">dataretrieval.wateruse.get_wateruse</span></code> instead.</p>
+<p>The legacy NWIS water-use service has been retired. Modeled water-use
+estimates are now served by the National Water Availability Assessment Data
+Companion (NWDC); retrieve them with
+<a class="reference internal" href="wateruse.html#dataretrieval.wateruse.get_wateruse" title="dataretrieval.wateruse.get_wateruse"><code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.wateruse.get_wateruse()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py function">

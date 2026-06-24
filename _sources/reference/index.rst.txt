@@ -14,4 +14,5 @@ API reference
     streamstats
     utils
     waterdata
+    wateruse
     wqp

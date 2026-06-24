@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g5b79b2d68 documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g4daf77131 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=262ad1e1"></script>
+      <script src="../../_static/documentation_options.js?v=53843b8e"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -80,9 +80,12 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextvars</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContextVar</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TypeVar</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
@@ -103,6 +106,84 @@
     <span class="s2">&quot;follow_redirects&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
     <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Timeout</span><span class="p">(</span><span class="mf">60.0</span><span class="p">,</span> <span class="n">connect</span><span class="o">=</span><span class="mf">10.0</span><span class="p">),</span>
 <span class="p">}</span>
+
+<span class="n">_T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_T&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Ambient">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.Ambient">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Ambient</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">_T</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A :class:`~contextvars.ContextVar` paired with a scoping contextmanager.</span>
+
+<span class="sd">    Bundles the var and its set/reset-token dance into one object, so an ambient</span>
+<span class="sd">    value needs a single declaration instead of a ``var`` + setter-function pair.</span>
+<span class="sd">    Read the current value with :meth:`get`; set it for a ``with`` block by</span>
+<span class="sd">    *calling* the instance — the previous value is restored on exit (and can&#39;t</span>
+<span class="sd">    leak into a later call the way a hand-written ``try/finally`` can when its</span>
+<span class="sd">    ``reset`` is dropped)::</span>
+
+<span class="sd">        _base_url = Ambient(&quot;ogc_base_url&quot;, DEFAULT)</span>
+<span class="sd">        with _base_url(other):  # scoped to the block</span>
+<span class="sd">            _base_url.get()  # -&gt; other</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Ambient.__init__">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.Ambient.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">_T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_var</span><span class="p">:</span> <span class="n">ContextVar</span><span class="p">[</span><span class="n">_T</span><span class="p">]</span> <span class="o">=</span> <span class="n">ContextVar</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Ambient.get">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.Ambient.get">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_T</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The current value — the default outside any active scope.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var</span><span class="o">.</span><span class="n">get</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Ambient.__call__">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.Ambient.__call__">[docs]</a>
+    <span class="nd">@contextmanager</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">_T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value for the duration of the ``with`` block.&quot;&quot;&quot;</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">yield</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_var</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">token</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="_default_headers">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils._default_headers">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_default_headers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build the default HTTP headers for a USGS web-API request.</span>
+
+<span class="sd">    Always sets a descriptive ``User-Agent`` plus ``Accept`` /</span>
+<span class="sd">    ``Accept-Encoding`` and ``lang``. If the ``API_USGS_PAT`` environment</span>
+<span class="sd">    variable is set, its value is added as the ``X-Api-Key`` header — a USGS</span>
+<span class="sd">    personal access token raises the request rate limit.</span>
+
+<span class="sd">    Shared by the OGC engine (:mod:`dataretrieval.ogc`), the Water Data getters</span>
+<span class="sd">    (:mod:`dataretrieval.waterdata`), and :mod:`dataretrieval.wateruse`, so the</span>
+<span class="sd">    request identity is consistent across every USGS API the package talks to.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict[str, str]</span>
+<span class="sd">        Headers suitable for an ``httpx`` request against a USGS API.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Accept-Encoding&quot;</span><span class="p">:</span> <span class="s2">&quot;compress, gzip&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Accept&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;python-dataretrieval/</span><span class="si">{</span><span class="n">dataretrieval</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lang&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">token</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;API_USGS_PAT&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">token</span><span class="p">:</span>
+        <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;X-Api-Key&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">token</span>
+    <span class="k">return</span> <span class="n">headers</span></div>
+
 
 
 <div class="viewcode-block" id="to_str">
@@ -408,26 +489,38 @@
 
 <div class="viewcode-block" id="_raise_for_status">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils._raise_for_status">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">_raise_for_status</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_raise_for_status</span><span class="p">(</span>
+    <span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">detail_from</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">],</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Raise the typed :class:`DataRetrievalError` for an HTTP error response;</span>
 <span class="sd">    return ``None`` on success.</span>
 
-<span class="sd">    Shared by the legacy :func:`query` path (and ``streamstats``).</span>
-<span class="sd">    Delegates the status-to-type mapping to</span>
+<span class="sd">    Shared by the legacy :func:`query` path (and ``streamstats`` /</span>
+<span class="sd">    ``wateruse``). Delegates the status-to-type mapping to</span>
 <span class="sd">    :func:`dataretrieval.exceptions.error_for_status`, except a too-long-URL</span>
 <span class="sd">    status (413 / 414): that gets the same actionable &quot;split your query&quot;</span>
 <span class="sd">    remediation as the client-side over-long-URL case below, rather than a bare</span>
 <span class="sd">    ``HTTP 414`` (both still raise :class:`~dataretrieval.exceptions.URLTooLong`).</span>
+
+<span class="sd">    ``detail_from``, when given, is called *only on an error response* to pull an</span>
+<span class="sd">    API-specific detail string (e.g. a JSON error envelope&#39;s message) out of the</span>
+<span class="sd">    body; a truthy result is appended to the raised message. This lets callers</span>
+<span class="sd">    surface their API&#39;s error wording without re-implementing the status-to-type</span>
+<span class="sd">    mapping and message format.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">status</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span>
     <span class="k">if</span> <span class="n">status</span> <span class="o">&lt;</span> <span class="mi">400</span><span class="p">:</span>
         <span class="k">return</span>
     <span class="k">if</span> <span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">413</span><span class="p">,</span> <span class="mi">414</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">_url_too_long_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;API response reason: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">reason_phrase</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">raise</span> <span class="n">error_for_status</span><span class="p">(</span>
-        <span class="n">status</span><span class="p">,</span>
-        <span class="sa">f</span><span class="s2">&quot;HTTP </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">reason_phrase</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot; (URL: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
-    <span class="p">)</span></div>
+    <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;HTTP </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">reason_phrase</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+    <span class="n">detail</span> <span class="o">=</span> <span class="n">detail_from</span><span class="p">(</span><span class="n">response</span><span class="p">)</span> <span class="k">if</span> <span class="n">detail_from</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">detail</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;: </span><span class="si">{</span><span class="n">detail</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; (URL: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">)&quot;</span>
+    <span class="k">raise</span> <span class="n">error_for_status</span><span class="p">(</span><span class="n">status</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
 

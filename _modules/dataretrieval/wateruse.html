@@ -1,0 +1,548 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dataretrieval.wateruse &mdash; dataretrieval 0.1.dev1+g4daf77131 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=53843b8e"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dataretrieval.wateruse</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dataretrieval.wateruse</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Retrieve USGS water-use data from the National Water Availability</span>
+<span class="sd">Assessment Data Companion (NWDC).</span>
+
+<span class="sd">The NWDC web services provide national-scale, USGS-modeled water-use data that</span>
+<span class="sd">underlie the `USGS National Water Availability Assessment</span>
+<span class="sd">&lt;https://water.usgs.gov/nwaa-data/&gt;`_. Estimates are served on a HUC12</span>
+<span class="sd">(12-digit hydrologic unit) spatial grid and can be queried for any county,</span>
+<span class="sd">state, or hydrologic unit. This is the modern replacement for the defunct</span>
+<span class="sd">legacy NWIS water-use service (``nwis.get_water_use``).</span>
+
+<span class="sd">Unlike the main Water Data getters (:mod:`dataretrieval.waterdata`) and NGWMN</span>
+<span class="sd">(:mod:`dataretrieval.ngwmn`), the NWDC is a plain CSV REST service rather than</span>
+<span class="sd">an OGC API Features collection. This module supplies the NWDC-specific bits —</span>
+<span class="sd">request building, CSV parsing, the ``Link``-header cursor, and the ``{detail}``</span>
+<span class="sd">error envelope — but reuses the OGC engine&#39;s generic, API-agnostic pagination</span>
+<span class="sd">and sync-from-async plumbing (:func:`~dataretrieval.ogc.engine._paginate` and</span>
+<span class="sd">:func:`~dataretrieval.ogc.engine._run_sync`) rather than re-implementing it. It</span>
+<span class="sd">follows the same conventions: shared request headers</span>
+<span class="sd">(:func:`~dataretrieval.utils._default_headers`), the typed</span>
+<span class="sd">:class:`~dataretrieval.exceptions.DataRetrievalError` taxonomy, and a</span>
+<span class="sd">``(DataFrame, BaseMetadata)`` return.</span>
+
+<span class="sd">See https://api.water.usgs.gov/docs/nwaa-data/ for the API reference and</span>
+<span class="sd">https://water.usgs.gov/nwaa-data/ for the catalog of available models and</span>
+<span class="sd">variables.</span>
+
+<span class="sd">Examples</span>
+<span class="sd">--------</span>
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">    from dataretrieval import wateruse</span>
+
+<span class="sd">    # Monthly public-supply withdrawals for Rhode Island, 2020 onward.</span>
+<span class="sd">    df, md = wateruse.get_wateruse(</span>
+<span class="sd">        model=&quot;wu-public-supply-wd&quot;,</span>
+<span class="sd">        variable=[&quot;pswdtot&quot;, &quot;pswdgw&quot;, &quot;pswdsw&quot;],</span>
+<span class="sd">        state=&quot;RI&quot;,</span>
+<span class="sd">        start_date=&quot;2020-01&quot;,</span>
+<span class="sd">        time_resolution=&quot;monthly&quot;,</span>
+<span class="sd">    )</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.codes.states</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_state</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataRetrievalError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">_paginate</span><span class="p">,</span> <span class="n">_run_sync</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.planning</span><span class="w"> </span><span class="kn">import</span> <span class="n">_combine_chunk_frames</span><span class="p">,</span> <span class="n">_combine_chunk_responses</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">HTTPX_DEFAULTS</span><span class="p">,</span>
+    <span class="n">BaseMetadata</span><span class="p">,</span>
+    <span class="n">_default_headers</span><span class="p">,</span>
+    <span class="n">_raise_for_status</span><span class="p">,</span>
+    <span class="n">to_str</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">WATERUSE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://api.water.usgs.gov/nwaa-data/data&quot;</span>
+
+<span class="c1">#: Water-use models (categories) served by the NWDC. The catalog at</span>
+<span class="c1">#: https://water.usgs.gov/nwaa-data/ lists the variables available within each.</span>
+<span class="n">MODELS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;wu-public-supply-wd&quot;</span><span class="p">,</span>  <span class="c1"># public-supply withdrawals</span>
+    <span class="s2">&quot;wu-public-supply-cu&quot;</span><span class="p">,</span>  <span class="c1"># public-supply consumptive use</span>
+    <span class="s2">&quot;wu-thermoelectric&quot;</span><span class="p">,</span>  <span class="c1"># thermoelectric-power water use</span>
+    <span class="s2">&quot;wu-irrigation-wd&quot;</span><span class="p">,</span>  <span class="c1"># irrigation withdrawals</span>
+    <span class="s2">&quot;wu-irrigation-cu&quot;</span><span class="p">,</span>  <span class="c1"># irrigation consumptive use</span>
+<span class="p">)</span>
+
+<span class="c1">#: Temporal resolutions: monthly, annual calendar year, annual water year.</span>
+<span class="n">TIME_RESOLUTIONS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;monthly&quot;</span><span class="p">,</span> <span class="s2">&quot;annualcy&quot;</span><span class="p">,</span> <span class="s2">&quot;annualwy&quot;</span><span class="p">)</span>
+
+<span class="c1">#: Maximum locations fetched concurrently when a list of state/county/huc</span>
+<span class="c1">#: selectors is fanned out (one request per location). Kept conservative</span>
+<span class="c1">#: because this module intentionally carries no request backoff/retry; the</span>
+<span class="c1">#: NWDC tolerates this level of concurrency without rate-limit errors (verified</span>
+<span class="c1">#: by stress test). Set ``wateruse.MAX_CONCURRENT_REQUESTS = 1`` for serial.</span>
+<span class="n">MAX_CONCURRENT_REQUESTS</span> <span class="o">=</span> <span class="mi">4</span>
+
+<span class="c1"># Page responses carry the HUC12 identifier in this column; it must stay a</span>
+<span class="c1"># string so leading zeros (e.g. &quot;010900020502&quot;) survive the round trip.</span>
+<span class="n">_HUC12_COLUMN</span> <span class="o">=</span> <span class="s2">&quot;huc12_id&quot;</span>
+
+
+<div class="viewcode-block" id="get_wateruse">
+<a class="viewcode-back" href="../../reference/wateruse.html#dataretrieval.wateruse.get_wateruse">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_wateruse</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">county</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">huc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">time_resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">intersection</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;overlap&quot;</span><span class="p">,</span>
+    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">600</span><span class="p">,</span>
+    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get USGS water-use data from the NWDC web service.</span>
+
+<span class="sd">    Retrieves modeled water-use estimates from the USGS National Water</span>
+<span class="sd">    Availability Assessment Data Companion. The area is given as exactly one of</span>
+<span class="sd">    ``state``, ``county``, or ``huc``; results are always returned on a HUC12</span>
+<span class="sd">    grid, in a long (tidy) frame with one row per HUC12 and time step. Large</span>
+<span class="sd">    areas (e.g. a whole region or a populous state) are served across multiple</span>
+<span class="sd">    pages, which this function follows transparently and concatenates into one</span>
+<span class="sd">    frame.</span>
+
+<span class="sd">    Each selector also accepts a list of values. The NWDC queries one area per</span>
+<span class="sd">    request, so a list is fanned out into one request per value — up to</span>
+<span class="sd">    :data:`MAX_CONCURRENT_REQUESTS` in parallel — and the results are</span>
+<span class="sd">    concatenated in the order given.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : string</span>
+<span class="sd">        Water-use category to query. See :data:`MODELS` for the available</span>
+<span class="sd">        options (e.g. ``&quot;wu-public-supply-wd&quot;``). The full catalog of models</span>
+<span class="sd">        and their variables is at https://water.usgs.gov/nwaa-data/.</span>
+<span class="sd">    variable : string or iterable of strings, optional</span>
+<span class="sd">        One or more variable IDs within ``model`` (e.g. ``&quot;pswdtot&quot;`` for total</span>
+<span class="sd">        public-supply withdrawals, or ``[&quot;pswdgw&quot;, &quot;pswdsw&quot;]`` for the</span>
+<span class="sd">        groundwater and surface-water components). Multiple variables are</span>
+<span class="sd">        comma-joined into a single request. The service requires at least one</span>
+<span class="sd">        variable; omitting it returns a 400 listing the model&#39;s valid variable</span>
+<span class="sd">        IDs (surfaced as a :class:`~dataretrieval.exceptions.DataRetrievalError`).</span>
+<span class="sd">    state : string, int, or iterable, optional</span>
+<span class="sd">        One or more US states/territories to query. Each accepts a full name</span>
+<span class="sd">        (``&quot;Wisconsin&quot;``), a two-letter postal code (``&quot;WI&quot;``), or a two-digit</span>
+<span class="sd">        ANSI/FIPS code (``&quot;55&quot;`` or ``55``), mirroring</span>
+<span class="sd">        :func:`dataretrieval.ngwmn.get_sites`.</span>
+<span class="sd">    county : string or iterable, optional</span>
+<span class="sd">        One or more five-digit county FIPS codes — state FIPS + county FIPS,</span>
+<span class="sd">        e.g. ``&quot;55025&quot;`` for Dane County, Wisconsin.</span>
+<span class="sd">    huc : string or iterable, optional</span>
+<span class="sd">        One or more hydrologic unit codes. Each code&#39;s level is taken from its</span>
+<span class="sd">        length: a 2-digit code queries a HUC2 region, 8-digit a HUC8 subbasin,</span>
+<span class="sd">        12-digit a single HUC12, and so on (even lengths 2-12, e.g. ``&quot;04&quot;``,</span>
+<span class="sd">        ``&quot;07070005&quot;``, ``&quot;010900020502&quot;``).</span>
+
+<span class="sd">        Provide exactly one of ``state``, ``county``, or ``huc`` (each may be a</span>
+<span class="sd">        single value or a list).</span>
+<span class="sd">    time_resolution : string, optional</span>
+<span class="sd">        Temporal resolution: ``&quot;monthly&quot;``, ``&quot;annualcy&quot;`` (annual, calendar</span>
+<span class="sd">        year), or ``&quot;annualwy&quot;`` (annual, water year). See</span>
+<span class="sd">        :data:`TIME_RESOLUTIONS`.</span>
+<span class="sd">    start_date : string, optional</span>
+<span class="sd">        Start of the query window, formatted ``&quot;YYYY&quot;`` for annual data or</span>
+<span class="sd">        ``&quot;YYYY-MM&quot;`` for monthly data.</span>
+<span class="sd">    end_date : string, optional</span>
+<span class="sd">        End of the query window, in the same format as ``start_date``.</span>
+<span class="sd">    intersection : string, optional</span>
+<span class="sd">        How to select HUC12s that straddle the queried-area boundary:</span>
+<span class="sd">        ``&quot;overlap&quot;`` (any overlap, the default) or ``&quot;envelop&quot;`` (fully</span>
+<span class="sd">        enclosed).</span>
+<span class="sd">    limit : int, optional</span>
+<span class="sd">        Maximum number of HUC12s returned per page. Queries spanning more than</span>
+<span class="sd">        ``limit`` HUC12s are split across pages and reassembled. Default 600.</span>
+<span class="sd">    ssl_check : bool, optional</span>
+<span class="sd">        If True (default), verify SSL certificates; set False to skip</span>
+<span class="sd">        verification (e.g. behind a TLS-intercepting proxy).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame``</span>
+<span class="sd">        Water-use estimates in long form: a ``huc12_id`` column (string,</span>
+<span class="sd">        leading zeros preserved), a time column (``year_month`` for monthly</span>
+<span class="sd">        data or ``year`` for annual data), and one value column per requested</span>
+<span class="sd">        variable (suffixed with its unit, e.g. ``pswdtot_mgd`` for million</span>
+<span class="sd">        gallons per day).</span>
+<span class="sd">    md : :class:`dataretrieval.utils.BaseMetadata`</span>
+<span class="sd">        Metadata describing the request (URL, query time, response headers).</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If not exactly one of ``state``, ``county``, or ``huc`` is given, or a</span>
+<span class="sd">        given selector is malformed (an unrecognized state, a county code that</span>
+<span class="sd">        is not five digits, or a HUC of invalid length).</span>
+<span class="sd">    DataRetrievalError</span>
+<span class="sd">        On an HTTP error response, the typed subclass for the status (see</span>
+<span class="sd">        :func:`dataretrieval.exceptions.error_for_status`); or</span>
+<span class="sd">        :class:`~dataretrieval.exceptions.NetworkError` on a connection-level</span>
+<span class="sd">        failure (timeout, DNS).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. doctest::</span>
+<span class="sd">        :skipif: True  # network</span>
+
+<span class="sd">        &gt;&gt;&gt; from dataretrieval import wateruse</span>
+<span class="sd">        &gt;&gt;&gt; df, md = wateruse.get_wateruse(</span>
+<span class="sd">        ...     model=&quot;wu-public-supply-wd&quot;,</span>
+<span class="sd">        ...     variable=[&quot;pswdtot&quot;, &quot;pswdgw&quot;, &quot;pswdsw&quot;],</span>
+<span class="sd">        ...     state=&quot;RI&quot;,</span>
+<span class="sd">        ...     start_date=&quot;2020-01&quot;,</span>
+<span class="sd">        ...     time_resolution=&quot;monthly&quot;,</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># The public parameters are idiomatic snake_case (consistent with</span>
+    <span class="c1"># ``waterdata.get_samples``); the NWDC service expects compact lowercase</span>
+    <span class="c1"># query names, so map to those here as the request is built.</span>
+    <span class="n">base_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;csv&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model</span><span class="p">,</span>
+        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="n">to_str</span><span class="p">(</span><span class="n">variable</span><span class="p">),</span>
+        <span class="s2">&quot;timeres&quot;</span><span class="p">:</span> <span class="n">time_resolution</span><span class="p">,</span>
+        <span class="s2">&quot;startdate&quot;</span><span class="p">:</span> <span class="n">start_date</span><span class="p">,</span>
+        <span class="s2">&quot;enddate&quot;</span><span class="p">:</span> <span class="n">end_date</span><span class="p">,</span>
+        <span class="s2">&quot;intersection&quot;</span><span class="p">:</span> <span class="n">intersection</span><span class="p">,</span>
+        <span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="n">limit</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="c1"># Drop params the caller left unset; the service rejects empty values.</span>
+    <span class="n">base_params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">base_params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
+
+    <span class="c1"># The NWDC queries one location per request, so fan a multi-value selector</span>
+    <span class="c1"># out into one request per location, each paginated by the OGC engine&#39;s</span>
+    <span class="c1"># shared pager (``_paginate``), and concatenate the results.</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="n">_default_headers</span><span class="p">()</span>
+    <span class="n">requests</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span>
+            <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+            <span class="n">WATERUSE_URL</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="n">base_params</span><span class="p">,</span> <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="n">location</span><span class="p">},</span>
+            <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">_resolve_locations</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">county</span><span class="p">,</span> <span class="n">huc</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="c1"># ``_run_sync`` drives the async fan-out via an anyio portal, so it is safe</span>
+    <span class="c1"># even inside an already-running event loop (e.g. a Jupyter notebook).</span>
+    <span class="c1"># ``error_url`` is the host reported in any connection-error message (this</span>
+    <span class="c1"># module builds its own requests, so it has no OGC request-builder base).</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="n">_run_sync</span><span class="p">(</span>
+        <span class="k">lambda</span><span class="p">:</span> <span class="n">_fan_out</span><span class="p">(</span><span class="n">requests</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">),</span>
+        <span class="n">service</span><span class="o">=</span><span class="s2">&quot;wateruse&quot;</span><span class="p">,</span>
+        <span class="n">error_url</span><span class="o">=</span><span class="n">WATERUSE_URL</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># Valid HUC code lengths (digits) → the hydrologic-unit level they query.</span>
+<span class="n">_HUC_LENGTHS</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
+
+<span class="c1"># Maps each selector to the NWDC ``location=&lt;type&gt;:&lt;id&gt;`` value(s) it produces.</span>
+<span class="c1"># A value may be a single code or a list; ``_as_list`` normalizes both (``state``</span>
+<span class="c1"># additionally normalizes to the two-letter postal code, and ``to_state`` may</span>
+<span class="c1"># itself return a scalar or list, which ``_as_list`` flattens the same way).</span>
+<span class="c1"># Since NWDC takes one location per request, a list value fans out — one request</span>
+<span class="c1"># per location (see :func:`_fan_out`).</span>
+<span class="n">_LOCATION_BUILDERS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;state&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;stateCd:</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">_as_list</span><span class="p">(</span><span class="n">to_state</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="s2">&quot;postal&quot;</span><span class="p">))],</span>
+    <span class="s2">&quot;county&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;countyCd:</span><span class="si">{</span><span class="n">_validate_county</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">_as_list</span><span class="p">(</span><span class="n">v</span><span class="p">)],</span>
+    <span class="s2">&quot;huc&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;huc</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span><span class="n">_validate_huc</span><span class="p">,</span> <span class="n">_as_list</span><span class="p">(</span><span class="n">v</span><span class="p">))],</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="_resolve_locations">
+<a class="viewcode-back" href="../../reference/wateruse.html#dataretrieval.wateruse._resolve_locations">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_locations</span><span class="p">(</span>
+    <span class="n">state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">county</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">huc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build the NWDC ``location=&lt;type&gt;:&lt;id&gt;`` value(s) from the selectors.</span>
+
+<span class="sd">    Exactly one of ``state`` / ``county`` / ``huc`` must be given; each may be a</span>
+<span class="sd">    single value or a list. ``state`` is normalized to the two-letter postal</span>
+<span class="sd">    code ``stateCd`` requires; ``county`` is a five-digit FIPS code; and a</span>
+<span class="sd">    ``huc`` code&#39;s length selects its level (``huc2`` … ``huc12``). Returns one</span>
+<span class="sd">    location string per value — the caller issues one request per location.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">selected</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">value</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="n">state</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;county&quot;</span><span class="p">,</span> <span class="n">county</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;huc&quot;</span><span class="p">,</span> <span class="n">huc</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">selected</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Specify exactly one of state, county, or huc &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;(got: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">selected</span><span class="p">)</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;none&#39;</span><span class="si">}</span><span class="s2">).&quot;</span>
+        <span class="p">)</span>
+    <span class="p">[(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)]</span> <span class="o">=</span> <span class="n">selected</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="n">locations</span> <span class="o">=</span> <span class="n">_LOCATION_BUILDERS</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">locations</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;The chosen location selector is empty; pass at least one value.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">locations</span></div>
+
+
+
+<div class="viewcode-block" id="_as_list">
+<a class="viewcode-back" href="../../reference/wateruse.html#dataretrieval.wateruse._as_list">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_as_list</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A scalar becomes a one-element list; any non-string iterable (list,</span>
+<span class="sd">    tuple, Series, ndarray, generator) is materialized to a list. A string is</span>
+<span class="sd">    treated as a scalar so it isn&#39;t exploded into characters.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">value</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="_validate_county">
+<a class="viewcode-back" href="../../reference/wateruse.html#dataretrieval.wateruse._validate_county">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_county</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate and normalize a five-digit state+county FIPS code.&quot;&quot;&quot;</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">code</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;county must be a five-digit state+county FIPS code &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;(e.g. &#39;55025&#39;), got </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">code</span></div>
+
+
+
+<div class="viewcode-block" id="_validate_huc">
+<a class="viewcode-back" href="../../reference/wateruse.html#dataretrieval.wateruse._validate_huc">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_huc</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate a HUC code (even length 2-12 digits; level set by length).&quot;&quot;&quot;</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">code</span><span class="p">)</span> <span class="ow">in</span> <span class="n">_HUC_LENGTHS</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;huc must be a hydrologic unit code of even length 2-12 digits &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;(e.g. &#39;04&#39;, &#39;07070005&#39;, &#39;010900020502&#39;), got </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">code</span></div>
+
+
+
+<div class="viewcode-block" id="_fan_out">
+<a class="viewcode-back" href="../../reference/wateruse.html#dataretrieval.wateruse._fan_out">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_fan_out</span><span class="p">(</span>
+    <span class="n">requests</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">],</span> <span class="n">headers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fetch every request (each paginated) concurrently over one shared client.</span>
+
+<span class="sd">    Each request is paginated by the engine&#39;s</span>
+<span class="sd">    :func:`~dataretrieval.ogc.engine._paginate` with NWDC strategies: parse a CSV</span>
+<span class="sd">    page and read its ``Link`` header cursor (``parse``), follow that cursor</span>
+<span class="sd">    (``follow``), and raise the typed error carrying the NWDC ``detail``</span>
+<span class="sd">    (``raise_for_status``). Concurrency is bounded by a semaphore at</span>
+<span class="sd">    :data:`MAX_CONCURRENT_REQUESTS`, and ``asyncio.gather`` preserves input</span>
+<span class="sd">    order, so the concatenation is deterministic. The shared</span>
+<span class="sd">    :class:`httpx.AsyncClient` keeps connections alive across pages and requests.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">_read_csv_page</span><span class="p">(</span><span class="n">response</span><span class="p">),</span> <span class="n">_next_page_url</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">follow</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sess</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">sess</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">raise_for_status</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_raise_for_status</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">detail_from</span><span class="o">=</span><span class="n">_nwdc_error_detail</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">(</span><span class="n">verify</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">HTTPX_DEFAULTS</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+        <span class="n">semaphore</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">MAX_CONCURRENT_REQUESTS</span><span class="p">))</span>
+
+        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_one</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="n">semaphore</span><span class="p">:</span>
+                <span class="k">return</span> <span class="k">await</span> <span class="n">_paginate</span><span class="p">(</span>
+                    <span class="n">request</span><span class="p">,</span>
+                    <span class="n">parse_response</span><span class="o">=</span><span class="n">parse</span><span class="p">,</span>
+                    <span class="n">follow_up</span><span class="o">=</span><span class="n">follow</span><span class="p">,</span>
+                    <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
+                    <span class="n">raise_for_status</span><span class="o">=</span><span class="n">raise_for_status</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">_one</span><span class="p">(</span><span class="n">req</span><span class="p">)</span> <span class="k">for</span> <span class="n">req</span> <span class="ow">in</span> <span class="n">requests</span><span class="p">))</span>
+
+    <span class="c1"># Reuse the engine&#39;s combine helpers: drop empty frames and concat, and fold</span>
+    <span class="c1"># the per-location responses into one (lowest-remaining rate-limit headers +</span>
+    <span class="c1"># cumulative elapsed), keeping the first request&#39;s URL as the query identity.</span>
+    <span class="n">frames</span> <span class="o">=</span> <span class="p">[</span><span class="n">frame</span> <span class="k">for</span> <span class="n">frame</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+    <span class="n">responses</span> <span class="o">=</span> <span class="p">[</span><span class="n">resp</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">resp</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">_combine_chunk_frames</span><span class="p">(</span><span class="n">frames</span><span class="p">),</span> <span class="n">_combine_chunk_responses</span><span class="p">(</span>
+        <span class="n">responses</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">requests</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_read_csv_page">
+<a class="viewcode-back" href="../../reference/wateruse.html#dataretrieval.wateruse._read_csv_page">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_csv_page</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse one CSV page; ``huc12_id`` stays a string to keep leading zeros.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="p">{</span><span class="n">_HUC12_COLUMN</span><span class="p">:</span> <span class="nb">str</span><span class="p">})</span>
+    <span class="k">except</span> <span class="n">pd</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">EmptyDataError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="c1"># NWDC normally signals &quot;no data&quot; with a 400 (handled above) or rows of</span>
+        <span class="c1"># zeros, never an empty body — but keep the typed-error contract if it</span>
+        <span class="c1"># ever returns one rather than leaking a bare pandas exception.</span>
+        <span class="k">raise</span> <span class="n">DataRetrievalError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;NWDC returned an empty response body (URL: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">).&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span></div>
+
+
+
+<div class="viewcode-block" id="_next_page_url">
+<a class="viewcode-back" href="../../reference/wateruse.html#dataretrieval.wateruse._next_page_url">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_next_page_url</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the absolute URL of the next page, or None if this is the last.</span>
+
+<span class="sd">    Reads the standard ``Link: &lt;...&gt;; rel=&quot;next&quot;`` header (parsed by httpx into</span>
+<span class="sd">    ``response.links``). A next link served against the bare ``water.usgs.gov``</span>
+<span class="sd">    host is normalized to the public ``api.water.usgs.gov`` gateway so the</span>
+<span class="sd">    follow-up request reaches the API.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;next&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">url</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;https://water.usgs.gov&quot;</span><span class="p">,</span> <span class="s2">&quot;https://api.water.usgs.gov&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_nwdc_error_detail">
+<a class="viewcode-back" href="../../reference/wateruse.html#dataretrieval.wateruse._nwdc_error_detail">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_nwdc_error_detail</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pull the ``detail`` message out of an NWDC JSON error envelope, if any.</span>
+
+<span class="sd">    The NWDC reports errors as ``{&quot;detail&quot;: &quot;Invalid model name: ...&quot;}``. Passed</span>
+<span class="sd">    to :func:`~dataretrieval.utils._raise_for_status` as ``detail_from`` so the</span>
+<span class="sd">    service&#39;s wording surfaces in the typed error message.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;detail&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
