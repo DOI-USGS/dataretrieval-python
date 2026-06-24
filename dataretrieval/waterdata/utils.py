@@ -166,7 +166,17 @@ def _get_args(
     params such as ``water_year``, ``thresholds``, ``boundingBox``) so they
     keep their element types. See :func:`engine._get_args` for the full
     normalization contract.
+
+    A getter's ``**queryables`` passthrough kwargs are collected by ``locals()``
+    under the ``queryables`` key; they are flattened in here, so an extra
+    server-side filter such as ``state_name="Wisconsin"`` is normalized and sent
+    exactly like a named param. See
+    :func:`dataretrieval.waterdata.get_queryables` for each collection's
+    filterable properties (the service rejects an unknown one with a 400).
     """
+    queryables = local_vars.pop("queryables", None)
+    if queryables:
+        local_vars.update(queryables)
     return _engine_get_args(local_vars, exclude, no_normalize=_NO_NORMALIZE_PARAMS)
 
 

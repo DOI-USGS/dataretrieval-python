@@ -26,6 +26,7 @@ new queryables on the matching getter. Regenerate with::
 import json
 import re
 from pathlib import Path
+from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
@@ -94,6 +95,67 @@ def test_get_queryables_unknown_collection_raises(httpx_mock):
 
     with pytest.raises(dataretrieval.DataRetrievalError):
         waterdata.get_queryables("not-a-collection")
+
+
+# --- passthrough queryables (mocked) ---------------------------------------
+
+_DAILY_ITEMS_RE = re.compile(
+    r"^https://api\.waterdata\.usgs\.gov/ogcapi/v0/collections/daily/items"
+)
+_DAILY_SCHEMA_RE = re.compile(
+    r"^https://api\.waterdata\.usgs\.gov/ogcapi/v0/collections/daily/schema$"
+)
+_EMPTY_FEATURES = {
+    "type": "FeatureCollection",
+    "features": [],
+    "numberReturned": 0,
+    "numberMatched": 0,
+    "links": [],
+}
+
+
+def _mock_daily(httpx_mock):
+    """Mock the two endpoints a ``get_daily`` call touches: the items query and
+    the schema fetch (used for output typing)."""
+    httpx_mock.add_response(method="GET", url=_DAILY_SCHEMA_RE, json={"properties": {}})
+    httpx_mock.add_response(method="GET", url=_DAILY_ITEMS_RE, json=_EMPTY_FEATURES)
+
+
+def _items_query(httpx_mock):
+    """Parsed query string of the ``/items`` request the getter sent."""
+    req = next(r for r in httpx_mock.get_requests() if "/items" in str(r.url))
+    return parse_qs(urlsplit(str(req.url)).query)
+
+
+def test_passthrough_queryables_sent_as_filters(httpx_mock):
+    """An OGC getter forwards queryables that aren't in its explicit signature
+    (e.g. ``state_name``, ``site_type_code``) to the service as query filters,
+    alongside the named params."""
+    _mock_daily(httpx_mock)
+
+    waterdata.get_daily(
+        monitoring_location_id="USGS-05427718",
+        state_name="Wisconsin",
+        site_type_code="ST",
+    )
+
+    qs = _items_query(httpx_mock)
+    assert qs["state_name"] == ["Wisconsin"]
+    assert qs["site_type_code"] == ["ST"]
+    assert qs["monitoring_location_id"] == ["USGS-05427718"]
+
+
+def test_passthrough_list_queryable_is_comma_joined(httpx_mock):
+    """A list-valued passthrough queryable is normalized and comma-joined like a
+    named multi-value param."""
+    _mock_daily(httpx_mock)
+
+    waterdata.get_daily(
+        monitoring_location_id="USGS-05427718",
+        site_type_code=["ST", "LK"],
+    )
+
+    assert _items_query(httpx_mock)["site_type_code"] == ["ST,LK"]
 
 
 # --- live queryables monitor -----------------------------------------------
