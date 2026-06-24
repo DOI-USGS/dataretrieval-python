@@ -6,31 +6,21 @@ import pandas as pd
 import pytest
 
 from dataretrieval import exceptions, nwis, utils
-from tests.conftest import flaky_api
 
 
-# Test_query hits the live NWIS services (the rest of this module is mocked),
-# so retry transient upstream failures rather than flaking CI.
-@flaky_api
 class Test_query:
-    """Tests of the query function."""
+    """Tests of the query function (mocked — no live NWIS calls)."""
 
-    def test_url_too_long(self):
-        """Test to confirm error when query URL too long.
+    def test_url_too_long(self, httpx_mock):
+        """A 413 / 414 from the service (an over-long query URL, Issue #64) is
+        surfaced as the typed URLTooLong."""
+        httpx_mock.add_response(method="GET", status_code=414)
+        with pytest.raises(exceptions.URLTooLong):
+            nwis.get_iv(sites=["01491000", "01491001"])
 
-        Test based on GitHub Issue #64.
-        The server may respond with a 414 (converted to URLTooLong by query())
-        or abruptly close the connection (a transport error, now wrapped as
-        NetworkError). Both are valid responses to an excessively long URL.
-        """
-        # all sites in MD
-        sites, _ = nwis.what_sites(stateCd="MD")
-        # raise error by trying to query them all, so URL is way too long
-        with pytest.raises((exceptions.URLTooLong, exceptions.NetworkError)):
-            nwis.get_iv(sites=sites.site_no.values.tolist())
-
-    def test_header(self):
-        """Test checking header info with user-agent is part of query."""
+    def test_header(self, httpx_mock):
+        """query() sends a User-Agent header and returns the response."""
+        httpx_mock.add_response(method="GET", json={"value": {"timeSeries": []}})
         url = "https://waterservices.usgs.gov/nwis/dv"
         payload = {
             "format": "json",

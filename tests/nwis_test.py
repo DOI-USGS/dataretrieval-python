@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.nwis import (
     NWIS_Metadata,
     _read_rdb,
@@ -24,7 +23,6 @@ from dataretrieval.nwis import (
     preformat_peaks_response,
     what_sites,
 )
-from tests.conftest import flaky_api
 
 START_DATE = "2018-01-24"
 END_DATE = "2018-01-25"
@@ -32,9 +30,9 @@ END_DATE = "2018-01-25"
 DATETIME_COL = "datetime"
 SITENO_COL = "site_no"
 
-# Several tests in this module hit the live NWIS services, so retry a transient
-# upstream failure rather than failing CI (see ``conftest.flaky_api``).
-pytestmark = flaky_api
+# Legacy NWIS endpoints these tests mock — this module makes no live calls.
+_SITE_RE = re.compile(r"^https://waterservices\.usgs\.gov/nwis/site(\?.*)?$")
+_IV_RE = re.compile(r"^https://waterservices\.usgs\.gov/nwis/iv(\?.*)?$")
 
 
 def _load_mock_json(file_name):
@@ -42,6 +40,16 @@ def _load_mock_json(file_name):
     path = Path(__file__).parent / "data" / file_name
     with open(path, encoding="utf-8") as f:
         return json.load(f)
+
+
+def _load_fixture(file_name):
+    """Read a raw fixture file (e.g. an RDB response) from tests/data."""
+    return (Path(__file__).parent / "data" / file_name).read_text(encoding="utf-8")
+
+
+def _mock_site(httpx_mock, fixture="waterservices_site.txt"):
+    """Mock the legacy NWIS ``site`` endpoint with an RDB fixture."""
+    httpx_mock.add_response(method="GET", url=_SITE_RE, text=_load_fixture(fixture))
 
 
 def _test_iv_service(httpx_mock):
@@ -73,39 +81,6 @@ def test_iv_service_answer(httpx_mock):
     ], f"iv service returned incorrect index: {df.index.names}"
 
 
-def test_nwis_service_live():
-    """Live sanity check of NWIS service, tolerant of transient NWIS outages."""
-    site = "01491000"
-    try:
-        # Minimal query: just most recent record
-        get_iv(sites=site)
-    except (DataRetrievalError, ValueError) as e:
-        # Catch known transient service failures: a typed DataRetrievalError
-        # (e.g. ServiceUnavailable on a 5xx, a RuntimeError) or a legacy ValueError
-        error_text = str(e)
-        if any(
-            err in error_text
-            for err in [
-                "500",
-                "502",
-                "503",
-                "Service Unavailable",
-                "Received HTML response instead of JSON",
-            ]
-        ):
-            pytest.skip(
-                f"Service is currently unavailable (transient NWIS outage): {e}"
-            )
-        raise
-    except Exception as e:
-        # Fallback for other potential transient network issues
-        if "Expecting value" in str(e) or "JSON" in str(e):
-            pytest.skip(
-                f"Service returned invalid response (likely transient outage): {e}"
-            )
-        raise
-
-
 def test_preformat_peaks_response():
     # make a data frame with a "peak_dt" datetime column
     # it will have some nan and none values
@@ -117,14 +92,6 @@ def test_preformat_peaks_response():
     # assertions
     assert "datetime" in df.columns
     assert df["datetime"].isna().sum() == 0
-
-
-# tests using real queries to USGS webservices
-# these specific queries represent some edge-cases and the tests to address
-# incomplete date-time information
-
-
-# Removed defunct gwlevels tests.
 
 
 class TestDeprecationWarnings:
@@ -257,78 +224,80 @@ class TestDefunct:
 
 
 class TestTZ:
-    """Tests relating to GitHub Issue #60."""
+    """Tests relating to GitHub Issue #60 — merging IV results across sites
+    yields a proper datetime index. Mocked against fixture responses."""
 
-    @pytest.fixture(scope="class")
-    def sites(self):
-        # Fetch once per class, at test time (not at collection) so a transient
-        # upstream failure is retried by the module ``flaky`` marker instead of
-        # aborting collection — a class-body call cannot be reran.
+    def _mock(self, httpx_mock):
+        _mock_site(httpx_mock)
+        httpx_mock.add_response(
+            method="GET", url=_IV_RE, json=_load_mock_json("nwis_iv_mock.json")
+        )
+
+    def test_multiple_tz_01(self, httpx_mock):
+        """Issue #60 - merging IV across sites yields a datetime index."""
+        self._mock(httpx_mock)
         sites, _ = what_sites(stateCd="MD")
-        return sites
-
-    def test_multiple_tz_01(self, sites):
-        """Test based on GitHub Issue #60 - error merging different time zones."""
-        # this test fails before issue #60 is fixed
         iv, _ = get_iv(sites=sites.site_no.values[:25].tolist())
-        # assert that the datetime column exists
         assert "datetime" in iv.index.names
-        # assert that it is a datetime type
         assert isinstance(iv.index[0][1], datetime.datetime)
 
-    def test_multiple_tz_02(self, sites):
-        """Test based on GitHub Issue #60 - confirm behavior for same tz."""
-        # this test passes before issue #60 is fixed
+    def test_multiple_tz_02(self, httpx_mock):
+        """Issue #60 - the same-tz path also yields a datetime index."""
+        self._mock(httpx_mock)
+        sites, _ = what_sites(stateCd="MD")
         iv, _ = get_iv(sites=sites.site_no.values[:20].tolist())
-        # assert that the datetime column exists
         assert "datetime" in iv.index.names
-        # assert that it is a datetime type
         assert isinstance(iv.index[0][1], datetime.datetime)
 
 
 class TestSiteseriesCatalogOutput:
-    """Tests relating to GitHub Issue #34."""
+    """Tests relating to GitHub Issue #34 — ``seriesCatalogOutput`` adds the
+    data-inventory columns (begin_date / end_date / count_nu). Mocked against
+    fixture responses (the chosen fixture, not the request param, decides which
+    columns come back)."""
 
-    def test_seriesCatalogOutput_get_record(self):
-        """Test setting seriesCatalogOutput to true with get_record."""
+    _SERIESCATALOG = "nwis_site_seriescatalog.txt"
+
+    def test_seriesCatalogOutput_get_record(self, httpx_mock):
+        """seriesCatalogOutput=True with get_record exposes inventory columns."""
+        _mock_site(httpx_mock, self._SERIESCATALOG)
         data = get_record(
             huc="20", parameterCd="00060", service="site", seriesCatalogOutput="True"
         )
-        # assert that expected data columns are present
         assert "begin_date" in data.columns
         assert "end_date" in data.columns
         assert "count_nu" in data.columns
 
-    def test_seriesCatalogOutput_get_info(self):
-        """Test setting seriesCatalogOutput to true with get_info."""
+    def test_seriesCatalogOutput_get_info(self, httpx_mock):
+        """seriesCatalogOutput=TRUE with get_info exposes inventory columns."""
+        _mock_site(httpx_mock, self._SERIESCATALOG)
         data, _ = get_info(huc="20", parameterCd="00060", seriesCatalogOutput="TRUE")
-        # assert that expected data columns are present
         assert "begin_date" in data.columns
         assert "end_date" in data.columns
         assert "count_nu" in data.columns
 
-    def test_seriesCatalogOutput_bool(self):
-        """Test setting seriesCatalogOutput with a boolean."""
+    def test_seriesCatalogOutput_bool(self, httpx_mock):
+        """A boolean seriesCatalogOutput is accepted and exposes inventory cols."""
+        _mock_site(httpx_mock, self._SERIESCATALOG)
         data, _ = get_info(huc="20", parameterCd="00060", seriesCatalogOutput=True)
-        # assert that expected data columns are present
         assert "begin_date" in data.columns
         assert "end_date" in data.columns
         assert "count_nu" in data.columns
 
-    def test_expandedrdb_get_record(self):
-        """Test default expanded_rdb format with get_record."""
+    def test_expandedrdb_get_record(self, httpx_mock):
+        """The default expanded-rdb format omits the inventory columns."""
+        _mock_site(httpx_mock)
         data = get_record(
             huc="20", parameterCd="00060", service="site", seriesCatalogOutput="False"
         )
-        # assert that seriesCatalogOutput columns are not present
         assert "begin_date" not in data.columns
         assert "end_date" not in data.columns
         assert "count_nu" not in data.columns
 
-    def test_expandedrdb_get_info(self):
-        """Test default expanded_rdb format with get_info."""
+    def test_expandedrdb_get_info(self, httpx_mock):
+        """get_info default omits the inventory columns."""
+        _mock_site(httpx_mock)
         data, _ = get_info(huc="20", parameterCd="00060")
-        # assert that seriesCatalogOutput columns are not present
         assert "begin_date" not in data.columns
         assert "end_date" not in data.columns
         assert "count_nu" not in data.columns
@@ -353,67 +322,46 @@ def test_empty_timeseries(httpx_mock):
 
 
 class TestMetaData:
-    """Tests of NWIS metadata setting,
+    """Tests of NWIS metadata setting (originally GitHub Issue #73).
 
-    Notes
-    -----
-
-    - Originally based on GitHub Issue #73.
-    - Modified to expose site_info as a property, not a callable.
+    ``site_info`` is a property that lazily re-queries ``what_sites``; mocked
+    here against the ``site`` endpoint so it is exercised offline.
     """
 
-    def test_set_metadata_info_site(self):
-        """Test metadata info is set when site parameter is supplied."""
-        # mock the query response
-        response = mock.MagicMock()
-        # make metadata call
-        md = NWIS_Metadata(response, sites="01491000")
-        # assert that site_info is implemented
+    def test_set_metadata_info_site(self, httpx_mock):
+        """site_info is populated when ``sites`` is supplied."""
+        _mock_site(httpx_mock)
+        md = NWIS_Metadata(mock.MagicMock(), sites="01491000")
         assert md.site_info
 
-    def test_set_metadata_info_site_no(self):
-        """Test metadata info is set when site_no parameter is supplied."""
-        # mock the query response
-        response = mock.MagicMock()
-        # make metadata call
-        md = NWIS_Metadata(response, site_no="01491000")
-        # assert that site_info is implemented
+    def test_set_metadata_info_site_no(self, httpx_mock):
+        """site_info is populated when ``site_no`` is supplied."""
+        _mock_site(httpx_mock)
+        md = NWIS_Metadata(mock.MagicMock(), site_no="01491000")
         assert md.site_info
 
-    def test_set_metadata_info_stateCd(self):
-        """Test metadata info is set when stateCd parameter is supplied."""
-        # mock the query response
-        response = mock.MagicMock()
-        # make metadata call
-        md = NWIS_Metadata(response, stateCd="RI")
-        # assert that site_info is implemented
+    def test_set_metadata_info_stateCd(self, httpx_mock):
+        """site_info is populated when ``stateCd`` is supplied."""
+        _mock_site(httpx_mock)
+        md = NWIS_Metadata(mock.MagicMock(), stateCd="RI")
         assert md.site_info
 
-    def test_set_metadata_info_huc(self):
-        """Test metadata info is set when huc parameter is supplied."""
-        # mock the query response
-        response = mock.MagicMock()
-        # make metadata call
-        md = NWIS_Metadata(response, huc="01")
-        # assert that site_info is implemented
+    def test_set_metadata_info_huc(self, httpx_mock):
+        """site_info is populated when ``huc`` is supplied."""
+        _mock_site(httpx_mock)
+        md = NWIS_Metadata(mock.MagicMock(), huc="01")
         assert md.site_info
 
-    def test_set_metadata_info_bbox(self):
-        """Test metadata info is set when bbox parameter is supplied."""
-        # mock the query response
-        response = mock.MagicMock()
-        # make metadata call
-        md = NWIS_Metadata(response, bBox="-92.8,44.2,-88.9,46.0")
-        # assert that site_info is implemented
+    def test_set_metadata_info_bbox(self, httpx_mock):
+        """site_info is populated when ``bBox`` is supplied."""
+        _mock_site(httpx_mock)
+        md = NWIS_Metadata(mock.MagicMock(), bBox="-92.8,44.2,-88.9,46.0")
         assert md.site_info
 
-    def test_set_metadata_info_countyCd(self):
-        """Test metadata info is set when countyCd parameter is supplied."""
-        # mock the query response
-        response = mock.MagicMock()
-        # make metadata call
-        md = NWIS_Metadata(response, countyCd="01001")
-        # assert that site_info is implemented
+    def test_set_metadata_info_countyCd(self, httpx_mock):
+        """site_info is populated when ``countyCd`` is supplied."""
+        _mock_site(httpx_mock)
+        md = NWIS_Metadata(mock.MagicMock(), countyCd="01001")
         assert md.site_info
 
 

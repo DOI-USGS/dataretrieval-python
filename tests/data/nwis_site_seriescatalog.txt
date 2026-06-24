@@ -1,0 +1,46 @@
+#
+#
+# US Geological Survey
+# retrieved: 2026-06-24 13:30:23 -04:00	(caas01)
+#
+# The Site File stores location and general information about groundwater,
+# surface water, and meteorological sites
+# for sites in USA.
+#
+# File-format description:  http://help.waterdata.usgs.gov/faq/about-tab-delimited-output
+# Automated-retrieval info: http://waterservices.usgs.gov/rest/Site-Service.html
+#
+# Contact:   gs-w_support_nwisweb@usgs.gov
+#
+# The following selected fields are included in this output:
+#
+#  agency_cd       -- Agency
+#  site_no         -- Site identification number
+#  station_nm      -- Site name
+#  site_tp_cd      -- Site type
+#  dec_lat_va      -- Decimal latitude
+#  dec_long_va     -- Decimal longitude
+#  coord_acy_cd    -- Latitude-longitude accuracy
+#  dec_coord_datum_cd -- Decimal Latitude-longitude datum
+#  alt_va          -- Altitude of Gage/land surface
+#  alt_acy_va      -- Altitude accuracy
+#  alt_datum_cd    -- Altitude datum
+#  huc_cd          -- Hydrologic unit code
+#  data_type_cd    -- Data type
+#  parm_cd         -- Parameter code
+#  stat_cd         -- Statistical code
+#  ts_id           -- Internal timeseries ID
+#  loc_web_ds      -- Additional measurement description
+#  medium_grp_cd   -- Medium group code
+#  parm_grp_cd     -- Parameter group code
+#  srs_id          -- SRS ID
+#  access_cd       -- Access code
+#  begin_date      -- Begin date
+#  end_date        -- End date
+#  count_nu        -- Record count
+#
+agency_cd	site_no	station_nm	site_tp_cd	dec_lat_va	dec_long_va	coord_acy_cd	dec_coord_datum_cd	alt_va	alt_acy_va	alt_datum_cd	huc_cd	data_type_cd	parm_cd	stat_cd	ts_id	loc_web_ds	medium_grp_cd	parm_grp_cd	srs_id	access_cd	begin_date	end_date	count_nu
+5s	15s	50s	7s	16s	16s	1s	10s	8s	3s	10s	16s	2s	5s	5s	5n	30s	3s	3s	5n	4n	20d	20d	5n
+USGS	01491000	CHOPTANK RIVER NEAR GREENSBORO, MD	ST	38.99719444	-75.7858056	S	NAD83	 2.73	 .1	NAVD88	02060005	ad			0		wat		0	0	2006	2025	20
+USGS	01491000	CHOPTANK RIVER NEAR GREENSBORO, MD	ST	38.99719444	-75.7858056	S	NAD83	 2.73	 .1	NAVD88	02060005	dv	00010	00001	68074	[Discontinued]	wat		1645597	0	1988-10-01	2012-05-09	894
+USGS	01491000	CHOPTANK RIVER NEAR GREENSBORO, MD	ST	38.99719444	-75.7858056	S	NAD83	 2.73	 .1	NAVD88	02060005	dv	00010	00001	327630		wat		1645597	0	2023-04-21	2026-06-23	1155
