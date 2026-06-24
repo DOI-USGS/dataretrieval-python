@@ -379,7 +379,7 @@ def test_next_req_url_stops_when_no_features():
 
 def test_walk_pages_does_not_mutate_initial_response():
     """The aggregated response returned from ``_walk_pages`` is built
-    via ``_aggregate_paginated_response``, which returns a fresh copy.
+    via ``_merge_response``, which returns a fresh copy.
     Any caller that inspected ``initial_response.headers`` /
     ``.elapsed`` before pagination completed (a Session response hook,
     a logging middleware) must continue to see the original first-page

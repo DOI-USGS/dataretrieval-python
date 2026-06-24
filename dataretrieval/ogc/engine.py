@@ -24,44 +24,42 @@ API-specific behavior is supplied by the caller:
 
 from __future__ import annotations
 
-import copy
 import functools
 import json
 import logging
 import numbers
-import os
 import re
 from collections.abc import (
     AsyncIterator,
     Awaitable,
     Callable,
     Iterable,
-    Iterator,
     Mapping,
 )
-from contextlib import asynccontextmanager, contextmanager
-from contextvars import ContextVar
+from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from datetime import timedelta
 from typing import Any, TypeVar, cast
 
 import httpx
 import pandas as pd
 from anyio.from_thread import start_blocking_portal
 
-from dataretrieval import __version__
 from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.ogc import chunking
 from dataretrieval.ogc import progress as _progress
-from dataretrieval.ogc.chunking import (
-    _QUOTA_HEADER,
-    get_active_client,
-)
+from dataretrieval.ogc.chunking import get_active_client
 from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_api_dates
 from dataretrieval.ogc.errors import _paginated_failure_message, _raise_for_non_200
-from dataretrieval.ogc.planning import _safe_elapsed
+from dataretrieval.ogc.planning import _QUOTA_HEADER, _merge_response, _safe_elapsed
 from dataretrieval.ogc.shaping import GEOPANDAS, _finalize_ogc, _get_resp_data
-from dataretrieval.utils import HTTPX_DEFAULTS, BaseMetadata, _get, _network_error
+from dataretrieval.utils import (
+    HTTPX_DEFAULTS,
+    Ambient,
+    BaseMetadata,
+    _default_headers,
+    _get,
+    _network_error,
+)
 
 # Set up logger for this module
 logger = logging.getLogger(__name__)
@@ -233,36 +231,14 @@ def _cql2_param(args: dict[str, Any]) -> str:
     which roughly doubles how many monitoring-location ids fit in one
     sub-request and so halves the chunk count for large id lists.
     """
-    filters = []
-    for key, values in args.items():
-        filters.append({"op": "in", "args": [{"property": key}, values]})
-
-    query = {"op": "and", "args": filters}
-
-    return json.dumps(query, separators=(",", ":"))
-
-
-def _default_headers() -> dict[str, str]:
-    """
-    Generate default HTTP headers for API requests.
-
-    Returns
-    -------
-    dict
-        A dictionary containing default headers including 'Accept-Encoding',
-        'Accept', 'User-Agent', and 'lang'. If the environment variable
-        'API_USGS_PAT' is set, its value is included as the 'X-Api-Key' header.
-    """
-    headers = {
-        "Accept-Encoding": "compress, gzip",
-        "Accept": "application/json",
-        "User-Agent": f"python-dataretrieval/{__version__}",
-        "lang": "en-US",
+    query = {
+        "op": "and",
+        "args": [
+            {"op": "in", "args": [{"property": key}, values]}
+            for key, values in args.items()
+        ],
     }
-    token = os.getenv("API_USGS_PAT")
-    if token:
-        headers["X-Api-Key"] = token
-    return headers
+    return json.dumps(query, separators=(",", ":"))
 
 
 def _check_ogc_requests(endpoint: str, req_type: str = "queryables") -> dict[str, Any]:
@@ -294,7 +270,7 @@ def _check_ogc_requests(endpoint: str, req_type: str = "queryables") -> dict[str
     """
     if req_type not in ("queryables", "schema"):
         raise ValueError(f"req_type must be 'queryables' or 'schema', got {req_type!r}")
-    url = f"{_ogc_base_url_var.get()}/collections/{endpoint}/{req_type}"
+    url = f"{_ogc_base_url.get()}/collections/{endpoint}/{req_type}"
     resp = _get(url, headers=_default_headers(), **HTTPX_DEFAULTS)
     _raise_for_non_200(resp)
     # ``Response.json`` is typed ``Any``; the OGC queryables/schema endpoints
@@ -374,8 +350,8 @@ def _construct_api_requests(
     -----
     - Date/time parameters are automatically formatted to ISO8601.
     """
-    service_url = f"{_ogc_base_url_var.get()}/collections/{service}/items"
-    dialect = _dialect_var.get()
+    service_url = f"{_ogc_base_url.get()}/collections/{service}/items"
+    dialect = _dialect.get()
 
     # Format date/time parameters to ISO8601 first — both routing paths need it.
     for key in _DATE_RANGE_PARAMS:
@@ -473,7 +449,7 @@ def _construct_cql_request(
     httpx.Request
         A POST request with ``Content-Type: application/query-cql-json``.
     """
-    service_url = f"{_ogc_base_url_var.get()}/collections/{service}/items"
+    service_url = f"{_ogc_base_url.get()}/collections/{service}/items"
     params = _ogc_query_params(
         {},
         properties=properties,
@@ -605,108 +581,25 @@ async def _client_for(
         yield new
 
 
-def _aggregate_paginated_response(
-    initial: httpx.Response,
-    last: httpx.Response,
-    total_elapsed: timedelta,
-) -> httpx.Response:
-    """
-    Build a single response covering a paginated call.
-
-    Returns a shallow copy of ``initial`` with ``.headers`` set to the
-    LAST page's (so downstream sees current ``x-ratelimit-remaining``)
-    and ``.elapsed`` set to total wall-clock. The canonical
-    ``initial.url`` is preserved (it's the user's original query).
-    Both ``initial`` and ``last`` are left unmutated, mirroring the
-    convention of
-    :func:`dataretrieval.ogc.planning._combine_chunk_responses`.
-
-    Parameters
-    ----------
-    initial : httpx.Response
-        First-page response (the canonical one for ``md.url``).
-    last : httpx.Response
-        Last-page response — supplies the headers to copy over.
-    total_elapsed : datetime.timedelta
-        Cumulative wall-clock across every page, including ``initial``.
-
-    Returns
-    -------
-    httpx.Response
-        A shallow copy of ``initial`` with ``.headers`` set to a fresh
-        ``httpx.Headers`` and ``.elapsed`` set to the cumulative
-        wall-clock. ``initial.headers`` / ``initial.elapsed`` are
-        never mutated, so callers holding a pre-pagination reference
-        still see the original first-page values.
-    """
-    final = copy.copy(initial)
-    final.headers = httpx.Headers(last.headers)
-    final.elapsed = total_elapsed
-    return final
-
-
 _Cursor = TypeVar("_Cursor")
 
-# Optional cap on the total rows a single paginated call accumulates before it
-# stops following ``next`` links. ``None`` (the default the data getters use)
-# means "no cap — fetch the whole series". Set via :func:`_row_cap` so the deep
-# ``_paginate`` loop can honor it without threading the value through the
-# generic chunker; this mirrors the ``_progress`` ambient-reporter pattern.
-_row_cap_var: ContextVar[int | None] = ContextVar("ogc_row_cap", default=None)
+# Ambient per-call state the generic chunker would otherwise have to thread
+# through to the deep request builder / paginate loop. Each is read with
+# ``.get()`` and scoped with ``with _x(value):``; the defaults leave every
+# existing getter unaffected. (Mirrors the ``_progress`` ambient-reporter.)
 
+# Optional cap on the rows one paginated call accumulates before it stops
+# following ``next`` links (``None`` = uncapped). Set by :func:`get_reference_table`
+# to preview large tables without downloading every page.
+_row_cap: Ambient[int | None] = Ambient("ogc_row_cap", None)
 
-@contextmanager
-def _row_cap(max_rows: int | None) -> Iterator[None]:
-    """Cap the rows any :func:`_paginate` under this context will
-    accumulate (``None`` = uncapped). Used by :func:`get_reference_table`
-    to preview large tables without downloading every page."""
-    token = _row_cap_var.set(max_rows)
-    try:
-        yield
-    finally:
-        _row_cap_var.reset(token)
+# OGC base URL the shared request builder (:func:`_construct_api_requests`)
+# targets — the main Water Data API or, for NGWMN collections, their own base.
+_ogc_base_url: Ambient[str] = Ambient("ogc_base_url", OGC_API_URL)
 
-
-# OGC base URL for the active request. ``get_ogc_data`` sets it per call so the
-# shared request builder (:func:`_construct_api_requests`) can target either the
-# main Water Data API or the NGWMN sub-API without threading the value through
-# the generic chunker; this mirrors the ``_row_cap`` ambient pattern. The
-# default is the main API, so every existing getter is unaffected.
-_ogc_base_url_var: ContextVar[str] = ContextVar("ogc_base_url", default=OGC_API_URL)
-
-
-@contextmanager
-def _ogc_base_url(base_url: str) -> Iterator[None]:
-    """Point :func:`_construct_api_requests` (and the chunk planner that calls
-    it) at ``base_url`` for the duration of the block. Used by
-    :func:`get_ogc_data` to serve NGWMN collections from their own OGC base."""
-    token = _ogc_base_url_var.set(base_url)
-    try:
-        yield
-    finally:
-        _ogc_base_url_var.reset(token)
-
-
-# Per-call OGC dialect (which services need POST/CQL2, which use date-only time
-# args). ``get_ogc_data`` sets it so the shared request builder
-# (:func:`_construct_api_requests`) can adapt to the active API without
-# threading the value through the generic chunker; this mirrors the
-# ``_ogc_base_url`` ambient pattern. The default is a plain OGC API.
-_dialect_var: ContextVar[OgcDialect] = ContextVar(
-    "ogc_dialect", default=_DEFAULT_DIALECT
-)
-
-
-@contextmanager
-def _dialect(dialect: OgcDialect) -> Iterator[None]:
-    """Make ``dialect`` the active :class:`OgcDialect` that
-    :func:`_construct_api_requests` reads for CQL2-vs-GET routing and
-    date-only formatting, for the duration of the block."""
-    token = _dialect_var.set(dialect)
-    try:
-        yield
-    finally:
-        _dialect_var.reset(token)
+# Per-call OGC dialect the request builder reads for CQL2-vs-GET routing and
+# date-only formatting (default: a plain OGC API).
+_dialect: Ambient[OgcDialect] = Ambient("ogc_dialect", _DEFAULT_DIALECT)
 
 
 async def _paginate(
@@ -715,6 +608,7 @@ async def _paginate(
     parse_response: Callable[[httpx.Response], tuple[pd.DataFrame, _Cursor | None]],
     follow_up: Callable[[_Cursor, httpx.AsyncClient], Awaitable[httpx.Response]],
     client: httpx.AsyncClient | None = None,
+    raise_for_status: Callable[[httpx.Response], None] = _raise_for_non_200,
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """
     Drive a paginated request to completion over an
@@ -745,6 +639,10 @@ async def _paginate(
         Caller-borrowed client. ``None`` (default) means use the
         chunker's shared client (if inside a chunked call) or open
         a temporary one.
+    raise_for_status : callable, optional
+        ``resp -> None``; raises the typed error for a non-OK response.
+        Defaults to :func:`_raise_for_non_200` (the OGC ``{code, description}``
+        envelope); wateruse passes its own to surface the NWDC ``detail``.
 
     Returns
     -------
@@ -775,9 +673,19 @@ async def _paginate(
     """
     logger.debug("Requesting: %s", initial_req.url)
     reporter = _progress.current()
+
+    def report_page(page: httpx.Response, frame: pd.DataFrame) -> None:
+        """Tick the ambient progress reporter (a no-op when unset) for one page."""
+        if reporter is not None:
+            reporter.set_rate_remaining(
+                page.headers.get(_QUOTA_HEADER),
+                limit=page.headers.get("x-ratelimit-limit"),
+            )
+            reporter.add_page(rows=len(frame))
+
     async with _client_for(client) as sess:
         resp = await sess.send(initial_req)
-        _raise_for_non_200(resp)
+        raise_for_status(resp)
         initial_response = resp
         total_elapsed = _safe_elapsed(resp)
 
@@ -794,28 +702,25 @@ async def _paginate(
         # Stop following ``next`` links once the optional row cap is reached
         # (see :func:`_row_cap`); ``None`` means uncapped. The concatenation
         # is sliced to the cap below so a final over-budget page can't exceed it.
-        cap = _row_cap_var.get()
+        cap = _row_cap.get()
         nrows = len(df)
-        if reporter is not None:
-            reporter.set_rate_remaining(
-                resp.headers.get(_QUOTA_HEADER),
-                limit=resp.headers.get("x-ratelimit-limit"),
-            )
-            reporter.add_page(rows=len(df))
-        while cursor is not None and (cap is None or nrows < cap):
+        # Guard a non-advancing or cyclic cursor (a server bug that would
+        # otherwise loop forever). OGC's next-URLs are unique, so this never
+        # fires for them; the Link-header pagers (e.g. wateruse) rely on it.
+        seen: set[Any] = set()
+        report_page(resp, df)
+        while (
+            cursor is not None and cursor not in seen and (cap is None or nrows < cap)
+        ):
+            seen.add(cursor)
             try:
                 resp = await follow_up(cursor, sess)
-                _raise_for_non_200(resp)
+                raise_for_status(resp)
                 df, cursor = parse_response(resp)
                 dfs.append(df)
                 nrows += len(df)
                 total_elapsed += _safe_elapsed(resp)
-                if reporter is not None:
-                    reporter.set_rate_remaining(
-                        resp.headers.get(_QUOTA_HEADER),
-                        limit=resp.headers.get("x-ratelimit-limit"),
-                    )
-                    reporter.add_page(rows=len(df))
+                report_page(resp, df)
             except Exception as e:  # noqa: BLE001
                 logger.warning(
                     "Request failed at cursor %r. Data download interrupted.",
@@ -823,12 +728,13 @@ async def _paginate(
                 )
                 raise DataRetrievalError(_paginated_failure_message(len(dfs), e)) from e
 
-        # Aggregate headers / elapsed onto a COPY of the initial
-        # response so the user's caller never sees an in-place
-        # mutation of the response object they may have inspected
-        # mid-pagination via a hook or test fixture.
-        final_response = _aggregate_paginated_response(
-            initial_response, resp, total_elapsed
+        # Fold the pages onto a COPY of the initial response so a caller that
+        # inspected it mid-pagination (a hook, a test fixture) never sees an
+        # in-place mutation. ``resp`` is the last page, whose headers carry the
+        # current ``x-ratelimit-remaining`` (monotonic, so the last page is the
+        # most depleted) — the same low-level merge the fan-out aggregation uses.
+        final_response = _merge_response(
+            initial_response, headers_from=resp, elapsed=total_elapsed
         )
         result = pd.concat(dfs, ignore_index=True)
         if cap is not None:
@@ -1039,6 +945,7 @@ def _run_sync(
     make_coro: Callable[[], Awaitable[tuple[pd.DataFrame, httpx.Response]]],
     *,
     service: str,
+    error_url: str | httpx.URL | None = None,
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Drive an async OGC fetch to completion from synchronous code.
 
@@ -1051,6 +958,11 @@ def _run_sync(
     Shared by the non-chunked fetch paths; the chunked OGC getters
     drive their own portal
     inside :meth:`chunking.ChunkedCall.resume`.
+
+    A connection failure on the initial request is surfaced as a typed
+    ``NetworkError`` against ``error_url`` when given (callers that build their
+    own requests, e.g. ``wateruse``), else the request-builder base the caller
+    scoped via ``_ogc_base_url`` (the OGC / NGWMN getters).
     """
     with _progress.progress_context(service=service):
         with start_blocking_portal() as portal:
@@ -1064,9 +976,15 @@ def _run_sync(
             except httpx.TransportError as exc:
                 # The initial-request connection failure ``_paginate`` lets
                 # through raw; mid-pagination failures are already typed.
-                # Report the base URL actually targeted (NGWMN/sibling APIs
-                # set their own via ``_ogc_base_url``), not a hardcoded host.
-                raise _network_error(_ogc_base_url_var.get(), exc) from exc
+                # Report the base URL actually targeted: callers that build
+                # their own requests (``wateruse``) pass ``error_url``; the OGC
+                # getters leave it unset and fall back to the request-builder
+                # base they scoped via ``_ogc_base_url`` (NGWMN/sibling APIs set
+                # their own), not a hardcoded host.
+                raise _network_error(
+                    error_url if error_url is not None else _ogc_base_url.get(),
+                    exc,
+                ) from exc
 
 
 # ``AGENCY-ID``: a hyphen-separated agency prefix and local id. The local id
@@ -1187,17 +1105,12 @@ def _check_monitoring_location_id(
     if value is None:
         return None
     for item in (value,) if isinstance(value, str) else value:
-        _check_id_format(item)
+        if not _MONITORING_LOCATION_ID_RE.fullmatch(item):
+            raise ValueError(
+                f"Invalid monitoring_location_id: {item!r}. "
+                f"Expected 'AGENCY-ID' format, e.g., 'USGS-01646500'."
+            )
     return value
-
-
-def _check_id_format(value: str) -> None:
-    """Raise ``ValueError`` if ``value`` is not in ``AGENCY-ID`` format."""
-    if not _MONITORING_LOCATION_ID_RE.fullmatch(value):
-        raise ValueError(
-            f"Invalid monitoring_location_id: {value!r}. "
-            f"Expected 'AGENCY-ID' format, e.g., 'USGS-01646500'."
-        )
 
 
 def _get_args(

@@ -1002,8 +1002,8 @@ class TestCheckMonitoringLocationId:
     def test_per_item_format_check_in_list(self):
         """The AGENCY-ID format check runs on EVERY element of an
         iterable, not just the first. Regression guard against a
-        future ``_check_id_format`` loop that bails after one valid
-        item or only checks the head."""
+        future ``_check_monitoring_location_id`` loop that bails after one
+        valid item or only checks the head."""
         with pytest.raises(ValueError, match="Invalid monitoring_location_id"):
             _check_monitoring_location_id(["USGS-01646500", "badformat"])
 
