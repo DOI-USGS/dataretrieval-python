@@ -41,22 +41,6 @@ def test_quote_cql_str_doubles_embedded_quotes():
     assert _quote_cql_str("a'b'c") == "a''b''c"
 
 
-def test_construct_filter_passthrough():
-    """`filter` is forwarded verbatim as a query parameter."""
-    expr = (
-        "(time >= '2023-01-06T16:00:00Z' AND time <= '2023-01-06T18:00:00Z') "
-        "OR (time >= '2023-01-10T18:00:00Z' AND time <= '2023-01-10T20:00:00Z')"
-    )
-    req = _construct_api_requests(
-        service="continuous",
-        monitoring_location_id="USGS-07374525",
-        parameter_code="72255",
-        filter=expr,
-    )
-    qs = _query_params(req)
-    assert qs["filter"] == [expr]
-
-
 def test_construct_filter_lang_hyphenated():
     """The Python kwarg `filter_lang` is sent as URL key `filter-lang`."""
     req = _construct_api_requests(

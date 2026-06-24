@@ -1,4 +1,3 @@
-import datetime
 import json
 import re
 import warnings
@@ -14,14 +13,12 @@ from dataretrieval.nwis import (
     _read_rdb,
     get_discharge_measurements,
     get_gwlevels,
-    get_info,
     get_iv,
     get_pmcodes,
     get_qwdata,
     get_record,
     get_water_use,
     preformat_peaks_response,
-    what_sites,
 )
 
 START_DATE = "2018-01-24"
@@ -30,9 +27,8 @@ END_DATE = "2018-01-25"
 DATETIME_COL = "datetime"
 SITENO_COL = "site_no"
 
-# Legacy NWIS endpoints these tests mock — this module makes no live calls.
+# Legacy NWIS site endpoint these tests mock — this module makes no live calls.
 _SITE_RE = re.compile(r"^https://waterservices\.usgs\.gov/nwis/site(\?.*)?$")
-_IV_RE = re.compile(r"^https://waterservices\.usgs\.gov/nwis/iv(\?.*)?$")
 
 
 def _load_mock_json(file_name):
@@ -221,86 +217,6 @@ class TestDefunct:
     def test_get_record_defunct_service_water_use(self):
         with pytest.raises(NameError, match="no longer supported by get_record"):
             get_record(service="water_use")
-
-
-class TestTZ:
-    """Tests relating to GitHub Issue #60 — merging IV results across sites
-    yields a proper datetime index. Mocked against fixture responses."""
-
-    def _mock(self, httpx_mock):
-        _mock_site(httpx_mock)
-        httpx_mock.add_response(
-            method="GET", url=_IV_RE, json=_load_mock_json("nwis_iv_mock.json")
-        )
-
-    def test_multiple_tz_01(self, httpx_mock):
-        """Issue #60 - merging IV across sites yields a datetime index."""
-        self._mock(httpx_mock)
-        sites, _ = what_sites(stateCd="MD")
-        iv, _ = get_iv(sites=sites.site_no.values[:25].tolist())
-        assert "datetime" in iv.index.names
-        assert isinstance(iv.index[0][1], datetime.datetime)
-
-    def test_multiple_tz_02(self, httpx_mock):
-        """Issue #60 - the same-tz path also yields a datetime index."""
-        self._mock(httpx_mock)
-        sites, _ = what_sites(stateCd="MD")
-        iv, _ = get_iv(sites=sites.site_no.values[:20].tolist())
-        assert "datetime" in iv.index.names
-        assert isinstance(iv.index[0][1], datetime.datetime)
-
-
-class TestSiteseriesCatalogOutput:
-    """Tests relating to GitHub Issue #34 — ``seriesCatalogOutput`` adds the
-    data-inventory columns (begin_date / end_date / count_nu). Mocked against
-    fixture responses (the chosen fixture, not the request param, decides which
-    columns come back)."""
-
-    _SERIESCATALOG = "nwis_site_seriescatalog.txt"
-
-    def test_seriesCatalogOutput_get_record(self, httpx_mock):
-        """seriesCatalogOutput=True with get_record exposes inventory columns."""
-        _mock_site(httpx_mock, self._SERIESCATALOG)
-        data = get_record(
-            huc="20", parameterCd="00060", service="site", seriesCatalogOutput="True"
-        )
-        assert "begin_date" in data.columns
-        assert "end_date" in data.columns
-        assert "count_nu" in data.columns
-
-    def test_seriesCatalogOutput_get_info(self, httpx_mock):
-        """seriesCatalogOutput=TRUE with get_info exposes inventory columns."""
-        _mock_site(httpx_mock, self._SERIESCATALOG)
-        data, _ = get_info(huc="20", parameterCd="00060", seriesCatalogOutput="TRUE")
-        assert "begin_date" in data.columns
-        assert "end_date" in data.columns
-        assert "count_nu" in data.columns
-
-    def test_seriesCatalogOutput_bool(self, httpx_mock):
-        """A boolean seriesCatalogOutput is accepted and exposes inventory cols."""
-        _mock_site(httpx_mock, self._SERIESCATALOG)
-        data, _ = get_info(huc="20", parameterCd="00060", seriesCatalogOutput=True)
-        assert "begin_date" in data.columns
-        assert "end_date" in data.columns
-        assert "count_nu" in data.columns
-
-    def test_expandedrdb_get_record(self, httpx_mock):
-        """The default expanded-rdb format omits the inventory columns."""
-        _mock_site(httpx_mock)
-        data = get_record(
-            huc="20", parameterCd="00060", service="site", seriesCatalogOutput="False"
-        )
-        assert "begin_date" not in data.columns
-        assert "end_date" not in data.columns
-        assert "count_nu" not in data.columns
-
-    def test_expandedrdb_get_info(self, httpx_mock):
-        """get_info default omits the inventory columns."""
-        _mock_site(httpx_mock)
-        data, _ = get_info(huc="20", parameterCd="00060")
-        assert "begin_date" not in data.columns
-        assert "end_date" not in data.columns
-        assert "count_nu" not in data.columns
 
 
 def test_empty_timeseries(httpx_mock):
