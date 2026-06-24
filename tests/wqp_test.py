@@ -19,6 +19,24 @@ from dataretrieval.wqp import (
 )
 
 
+def mock_request(httpx_mock, request_url, file_path):
+    with open(file_path) as text:
+        httpx_mock.add_response(
+            method="GET",
+            url=request_url,
+            text=text.read(),
+            headers={"mock_header": "value"},
+        )
+
+
+def _assert_wqp_metadata(md, request_url):
+    """The metadata assertions shared by every mocked WQP query."""
+    assert md.url == request_url
+    assert isinstance(md.query_time, datetime.timedelta)
+    assert md.header.get("mock_header") == "value"
+    assert md.comment is None
+
+
 def test_read_wqp_csv_preserves_leading_zero_codes():
     """Regression: WQP code columns (HUCs, parameter codes, FIPS) carry
     significant leading zeros; a bare ``read_csv`` inferred them as int/float
@@ -52,10 +70,7 @@ def test_get_results(httpx_mock):
     )
     assert type(df) is DataFrame
     assert df.shape == (5, 65)
-    assert md.url == request_url
-    assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header.get("mock_header") == "value"
-    assert md.comment is None
+    _assert_wqp_metadata(md, request_url)
     assert df["ActivityStartDateTime"].notna().all()
     # Regression: the getter must thread the query kwargs into the metadata
     # (it previously built WQP_Metadata(response), dropping them), so that
@@ -82,157 +97,52 @@ def test_get_results_WQX3(httpx_mock):
     )
     assert type(df) is DataFrame
     assert df.shape == (5, 186)
-    assert md.url == request_url
-    assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header.get("mock_header") == "value"
-    assert md.comment is None
+    _assert_wqp_metadata(md, request_url)
     assert df["Activity_StartDateTime"].notna().all()
 
 
-def test_what_sites(httpx_mock):
-    """Tests Water quality portal sites query"""
+# Every WQP ``what_*`` wrapper issues the same query against its own service
+# endpoint and returns the parsed DataFrame + metadata; they differ only by the
+# service path segment, the response fixture, and the expected size.
+_WHAT_CASES = [
+    (what_sites, "Station", "wqp_sites.txt", 239868),
+    (what_organizations, "Organization", "wqp_organizations.txt", 576),
+    (what_projects, "Project", "wqp_projects.txt", 530),
+    (what_activities, "Activity", "wqp_activities.txt", 5087443),
+    (
+        what_detection_limits,
+        "ResultDetectionQuantitationLimit",
+        "wqp_detection_limits.txt",
+        98770,
+    ),
+    (what_habitat_metrics, "BiologicalMetric", "wqp_habitat_metrics.txt", 48114),
+    (
+        what_project_weights,
+        "ProjectMonitoringLocationWeighting",
+        "wqp_project_weights.txt",
+        33098,
+    ),
+    (what_activity_metrics, "ActivityMetric", "wqp_activity_metrics.txt", 378),
+]
+
+
+@pytest.mark.parametrize(
+    "func, service, fixture, size",
+    _WHAT_CASES,
+    ids=[case[0].__name__ for case in _WHAT_CASES],
+)
+def test_what_query(httpx_mock, func, service, fixture, size):
+    """Each WQP ``what_*`` wrapper hits its own service endpoint and returns the
+    parsed DataFrame + metadata."""
     request_url = (
-        "https://www.waterqualitydata.us/data/Station/Search?statecode=US%3A34&characteristicName=Chloride"
-        "&mimeType=csv"
+        f"https://www.waterqualitydata.us/data/{service}/Search?"
+        "statecode=US%3A34&characteristicName=Chloride&mimeType=csv"
     )
-    response_file_path = "tests/data/wqp_sites.txt"
-    mock_request(httpx_mock, request_url, response_file_path)
-    df, md = what_sites(statecode="US:34", characteristicName="Chloride")
+    mock_request(httpx_mock, request_url, f"tests/data/{fixture}")
+    df, md = func(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
-    assert df.size == 239868
-    assert md.url == request_url
-    assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header.get("mock_header") == "value"
-    assert md.comment is None
-
-
-def test_what_organizations(httpx_mock):
-    """Tests Water quality portal organizations query"""
-    request_url = (
-        "https://www.waterqualitydata.us/data/Organization/Search?statecode=US%3A34&characteristicName=Chloride"
-        "&mimeType=csv"
-    )
-    response_file_path = "tests/data/wqp_organizations.txt"
-    mock_request(httpx_mock, request_url, response_file_path)
-    df, md = what_organizations(statecode="US:34", characteristicName="Chloride")
-    assert type(df) is DataFrame
-    assert df.size == 576
-    assert md.url == request_url
-    assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header.get("mock_header") == "value"
-    assert md.comment is None
-
-
-def test_what_projects(httpx_mock):
-    """Tests Water quality portal projects query"""
-    request_url = (
-        "https://www.waterqualitydata.us/data/Project/Search?statecode=US%3A34&characteristicName=Chloride"
-        "&mimeType=csv"
-    )
-    response_file_path = "tests/data/wqp_projects.txt"
-    mock_request(httpx_mock, request_url, response_file_path)
-    df, md = what_projects(statecode="US:34", characteristicName="Chloride")
-    assert type(df) is DataFrame
-    assert df.size == 530
-    assert md.url == request_url
-    assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header.get("mock_header") == "value"
-    assert md.comment is None
-
-
-def test_what_activities(httpx_mock):
-    """Tests Water quality portal activities query"""
-    request_url = (
-        "https://www.waterqualitydata.us/data/Activity/Search?statecode=US%3A34&characteristicName=Chloride"
-        "&mimeType=csv"
-    )
-    response_file_path = "tests/data/wqp_activities.txt"
-    mock_request(httpx_mock, request_url, response_file_path)
-    df, md = what_activities(statecode="US:34", characteristicName="Chloride")
-    assert type(df) is DataFrame
-    assert df.size == 5087443
-    assert md.url == request_url
-    assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header.get("mock_header") == "value"
-    assert md.comment is None
-
-
-def test_what_detection_limits(httpx_mock):
-    """Tests Water quality portal detection limits query"""
-    request_url = (
-        "https://www.waterqualitydata.us/data/ResultDetectionQuantitationLimit/Search?statecode=US%3A34&characteristicName=Chloride"
-        "&mimeType=csv"
-    )
-    response_file_path = "tests/data/wqp_detection_limits.txt"
-    mock_request(httpx_mock, request_url, response_file_path)
-    df, md = what_detection_limits(statecode="US:34", characteristicName="Chloride")
-    assert type(df) is DataFrame
-    assert df.size == 98770
-    assert md.url == request_url
-    assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header.get("mock_header") == "value"
-    assert md.comment is None
-
-
-def test_what_habitat_metrics(httpx_mock):
-    """Tests Water quality portal habitat metrics query"""
-    request_url = (
-        "https://www.waterqualitydata.us/data/BiologicalMetric/Search?statecode=US%3A34&characteristicName=Chloride"
-        "&mimeType=csv"
-    )
-    response_file_path = "tests/data/wqp_habitat_metrics.txt"
-    mock_request(httpx_mock, request_url, response_file_path)
-    df, md = what_habitat_metrics(statecode="US:34", characteristicName="Chloride")
-    assert type(df) is DataFrame
-    assert df.size == 48114
-    assert md.url == request_url
-    assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header.get("mock_header") == "value"
-    assert md.comment is None
-
-
-def test_what_project_weights(httpx_mock):
-    """Tests Water quality portal project weights query"""
-    request_url = (
-        "https://www.waterqualitydata.us/data/ProjectMonitoringLocationWeighting/Search?statecode=US%3A34&characteristicName=Chloride"
-        "&mimeType=csv"
-    )
-    response_file_path = "tests/data/wqp_project_weights.txt"
-    mock_request(httpx_mock, request_url, response_file_path)
-    df, md = what_project_weights(statecode="US:34", characteristicName="Chloride")
-    assert type(df) is DataFrame
-    assert df.size == 33098
-    assert md.url == request_url
-    assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header.get("mock_header") == "value"
-    assert md.comment is None
-
-
-def test_what_activity_metrics(httpx_mock):
-    """Tests Water quality portal activity metrics query"""
-    request_url = (
-        "https://www.waterqualitydata.us/data/ActivityMetric/Search?statecode=US%3A34&characteristicName=Chloride"
-        "&mimeType=csv"
-    )
-    response_file_path = "tests/data/wqp_activity_metrics.txt"
-    mock_request(httpx_mock, request_url, response_file_path)
-    df, md = what_activity_metrics(statecode="US:34", characteristicName="Chloride")
-    assert type(df) is DataFrame
-    assert df.size == 378
-    assert md.url == request_url
-    assert isinstance(md.query_time, datetime.timedelta)
-    assert md.header.get("mock_header") == "value"
-    assert md.comment is None
-
-
-def mock_request(httpx_mock, request_url, file_path):
-    with open(file_path) as text:
-        httpx_mock.add_response(
-            method="GET",
-            url=request_url,
-            text=text.read(),
-            headers={"mock_header": "value"},
-        )
+    assert df.size == size
+    _assert_wqp_metadata(md, request_url)
 
 
 def test_check_kwargs():
