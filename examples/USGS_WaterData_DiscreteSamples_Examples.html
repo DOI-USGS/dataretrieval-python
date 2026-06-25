@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Discrete water-quality samples: get_samples &mdash; dataretrieval 0.1.dev1+g4daf77131 documentation</title>
+  <title>Discrete water-quality samples: get_samples &mdash; dataretrieval 0.1.dev1+g3ccdef3eb documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=53843b8e"></script>
+      <script src="../_static/documentation_options.js?v=7225a801"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -161,7 +161,7 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_6198/3713017147.py:2: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+/tmp/ipykernel_6153/3713017147.py:2: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
   data_at_site, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=site)
 </pre></div></div>
 </div>
@@ -332,9 +332,9 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_6198/198475073.py:2: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
+/tmp/ipykernel_6153/198475073.py:2: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
   phos_data, _ = waterdata.get_samples(
-/tmp/ipykernel_6198/198475073.py:2: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+/tmp/ipykernel_6153/198475073.py:2: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
   phos_data, _ = waterdata.get_samples(
 </pre></div></div>
 </div>
@@ -366,9 +366,9 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_6198/784441668.py:1: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
+/tmp/ipykernel_6153/784441668.py:1: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
   phos_narrow, _ = waterdata.get_samples(
-/tmp/ipykernel_6198/784441668.py:1: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+/tmp/ipykernel_6153/784441668.py:1: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
   phos_narrow, _ = waterdata.get_samples(
 </pre></div></div>
 </div>
@@ -525,9 +525,9 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_6198/4134191907.py:2: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
+/tmp/ipykernel_6153/4134191907.py:2: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
   bbox_sites, _ = waterdata.get_samples(
-/tmp/ipykernel_6198/4134191907.py:2: DeprecationWarning: The &#39;boundingBox&#39; argument is deprecated and will be removed in a future release; use &#39;bbox&#39; instead.
+/tmp/ipykernel_6153/4134191907.py:2: DeprecationWarning: The &#39;boundingBox&#39; argument is deprecated and will be removed in a future release; use &#39;bbox&#39; instead.
   bbox_sites, _ = waterdata.get_samples(
 </pre></div></div>
 </div>
@@ -535,8 +535,257 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_12_1.png" src="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_12_1.png" />
-</div>
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ReadTimeout</span>                               Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_transports/default.py:101</span>, in <span class="ansi-cyan-fg">map_httpcore_exceptions</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">    100</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">101</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">yield</span>
+<span class="ansi-green-fg">    102</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">Exception</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> exc:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_transports/default.py:250</span>, in <span class="ansi-cyan-fg">HTTPTransport.handle_request</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">    249</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> map_httpcore_exceptions():
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">250</span>     resp = <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_pool</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">handle_request</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">req</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    252</span> <span class="ansi-bold" style="color: rgb(0,135,0)">assert</span> <span style="color: rgb(0,135,0)">isinstance</span>(resp.stream, typing.Iterable)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_sync/connection_pool.py:256</span>, in <span class="ansi-cyan-fg">ConnectionPool.handle_request</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">    255</span>     <span style="color: rgb(0,135,0)">self</span>._close_connections(closing)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">256</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> exc <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
+<span class="ansi-green-fg">    258</span> <span style="color: rgb(95,135,135)"># Return the response. Note that in this case we still have to manage</span>
+<span class="ansi-green-fg">    259</span> <span style="color: rgb(95,135,135)"># the point at which the response is closed.</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_sync/connection_pool.py:236</span>, in <span class="ansi-cyan-fg">ConnectionPool.handle_request</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">    234</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">    235</span>     <span style="color: rgb(95,135,135)"># Send the request on the assigned connection.</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">236</span>     response = <span class="ansi-black-fg ansi-yellow-bg">connection</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">handle_request</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">    237</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">pool_request</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">request</span>
+<span class="ansi-green-fg">    238</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    239</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> ConnectionNotAvailable:
+<span class="ansi-green-fg">    240</span>     <span style="color: rgb(95,135,135)"># In some cases a connection may initially be available to</span>
+<span class="ansi-green-fg">    241</span>     <span style="color: rgb(95,135,135)"># handle a request, but then become unavailable.</span>
+<span class="ansi-green-fg">    242</span>     <span style="color: rgb(95,135,135)">#</span>
+<span class="ansi-green-fg">    243</span>     <span style="color: rgb(95,135,135)"># In this case we clear the connection and try again.</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_sync/connection.py:103</span>, in <span class="ansi-cyan-fg">HTTPConnection.handle_request</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">    101</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> exc
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">103</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_connection</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">handle_request</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">request</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_sync/http11.py:136</span>, in <span class="ansi-cyan-fg">HTTP11Connection.handle_request</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">    135</span>         <span style="color: rgb(0,135,0)">self</span>._response_closed()
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">136</span> <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> exc
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_sync/http11.py:106</span>, in <span class="ansi-cyan-fg">HTTP11Connection.handle_request</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">     97</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> Trace(
+<span class="ansi-green-fg">     98</span>     <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">receive_response_headers</span><span class="ansi-yellow-fg">&#34;</span>, logger, request, kwargs
+<span class="ansi-green-fg">     99</span> ) <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> trace:
+<span class="ansi-green-fg">    100</span>     (
+<span class="ansi-green-fg">    101</span>         http_version,
+<span class="ansi-green-fg">    102</span>         status,
+<span class="ansi-green-fg">    103</span>         reason_phrase,
+<span class="ansi-green-fg">    104</span>         headers,
+<span class="ansi-green-fg">    105</span>         trailing_data,
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">106</span>     ) = <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_receive_response_headers</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">kwargs</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    107</span>     trace.return_value = (
+<span class="ansi-green-fg">    108</span>         http_version,
+<span class="ansi-green-fg">    109</span>         status,
+<span class="ansi-green-fg">    110</span>         reason_phrase,
+<span class="ansi-green-fg">    111</span>         headers,
+<span class="ansi-green-fg">    112</span>     )
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_sync/http11.py:177</span>, in <span class="ansi-cyan-fg">HTTP11Connection._receive_response_headers</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">    176</span> <span class="ansi-bold" style="color: rgb(0,135,0)">while</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">177</span>     event = <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_receive_event</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">timeout</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">timeout</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    178</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(event, h11.Response):
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_sync/http11.py:217</span>, in <span class="ansi-cyan-fg">HTTP11Connection._receive_event</span><span class="ansi-blue-fg">(self, timeout)</span>
+<span class="ansi-green-fg">    216</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> event <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> h11.NEED_DATA:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">217</span>     data = <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_network_stream</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">read</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">    218</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">READ_NUM_BYTES</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">timeout</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">timeout</span>
+<span class="ansi-green-fg">    219</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    221</span>     <span style="color: rgb(95,135,135)"># If we feed this case through h11 we&#39;ll raise an exception like:</span>
+<span class="ansi-green-fg">    222</span>     <span style="color: rgb(95,135,135)">#</span>
+<span class="ansi-green-fg">    223</span>     <span style="color: rgb(95,135,135)">#     httpcore.RemoteProtocolError: can&#39;t handle event type</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    227</span>     <span style="color: rgb(95,135,135)"># perspective. Instead we handle this case distinctly and treat</span>
+<span class="ansi-green-fg">    228</span>     <span style="color: rgb(95,135,135)"># it as a ConnectError.</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_backends/sync.py:126</span>, in <span class="ansi-cyan-fg">SyncStream.read</span><span class="ansi-blue-fg">(self, max_bytes, timeout)</span>
+<span class="ansi-green-fg">    125</span> exc_map: ExceptionMapping = {socket.timeout: ReadTimeout, <span class="ansi-bold" style="color: rgb(215,95,95)">OSError</span>: ReadError}
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">126</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> map_exceptions(exc_map):
+<span class="ansi-green-fg">    127</span>     <span style="color: rgb(0,135,0)">self</span>._sock.settimeout(timeout)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/contextlib.py:162</span>, in <span class="ansi-cyan-fg">_GeneratorContextManager.__exit__</span><span class="ansi-blue-fg">(self, typ, value, traceback)</span>
+<span class="ansi-green-fg">    161</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">162</span>     <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">gen</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">throw</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">value</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    163</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">StopIteration</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> exc:
+<span class="ansi-green-fg">    164</span>     <span style="color: rgb(95,135,135)"># Suppress StopIteration *unless* it&#39;s the same exception that</span>
+<span class="ansi-green-fg">    165</span>     <span style="color: rgb(95,135,135)"># was passed to throw().  This prevents a StopIteration</span>
+<span class="ansi-green-fg">    166</span>     <span style="color: rgb(95,135,135)"># raised inside the &#34;with&#34; statement from being suppressed.</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_exceptions.py:14</span>, in <span class="ansi-cyan-fg">map_exceptions</span><span class="ansi-blue-fg">(map)</span>
+<span class="ansi-green-fg">     13</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(exc, from_exc):
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">14</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> to_exc(exc) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">exc</span>
+<span class="ansi-green-fg">     15</span> <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span>
+
+<span class="ansi-red-fg">ReadTimeout</span>: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">ReadTimeout</span>                               Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/utils.py:367</span>, in <span class="ansi-cyan-fg">_get</span><span class="ansi-blue-fg">(url, **kwargs)</span>
+<span class="ansi-green-fg">    366</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">367</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">httpx</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">get</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">url</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">kwargs</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    368</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> httpx.TransportError <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> exc:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_api.py:195</span>, in <span class="ansi-cyan-fg">get</span><span class="ansi-blue-fg">(url, params, headers, cookies, auth, proxy, follow_redirects, verify, timeout, trust_env)</span>
+<span class="ansi-green-fg">    187</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">    188</span> <span class="ansi-yellow-fg">Sends a `GET` request.</span>
+<span class="ansi-green-fg">    189</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    193</span> <span class="ansi-yellow-fg">on this function, as `GET` requests should not include a request body.</span>
+<span class="ansi-green-fg">    194</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">195</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">request</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">    196</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">GET</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    197</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">url</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    198</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">params</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">params</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    199</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">headers</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">headers</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    200</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">cookies</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">cookies</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    201</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">auth</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">auth</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    202</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">proxy</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">proxy</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    203</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    204</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">verify</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">verify</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    205</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">timeout</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">timeout</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    206</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">trust_env</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">trust_env</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    207</span> <span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_api.py:109</span>, in <span class="ansi-cyan-fg">request</span><span class="ansi-blue-fg">(method, url, params, content, data, files, json, headers, cookies, auth, proxy, timeout, follow_redirects, verify, trust_env)</span>
+<span class="ansi-green-fg">    102</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> Client(
+<span class="ansi-green-fg">    103</span>     cookies=cookies,
+<span class="ansi-green-fg">    104</span>     proxy=proxy,
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    107</span>     trust_env=trust_env,
+<span class="ansi-green-fg">    108</span> ) <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> client:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">109</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">client</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">request</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">    110</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">method</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">method</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    111</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">url</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">url</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    112</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">content</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">content</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    113</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">data</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">data</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    114</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">files</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">files</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    115</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">json</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">json</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    116</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">params</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">params</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    117</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">headers</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">headers</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    118</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">auth</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">auth</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    119</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    120</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_client.py:825</span>, in <span class="ansi-cyan-fg">Client.request</span><span class="ansi-blue-fg">(self, method, url, content, data, files, json, params, headers, cookies, auth, follow_redirects, timeout, extensions)</span>
+<span class="ansi-green-fg">    812</span> request = <span style="color: rgb(0,135,0)">self</span>.build_request(
+<span class="ansi-green-fg">    813</span>     method=method,
+<span class="ansi-green-fg">    814</span>     url=url,
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    823</span>     extensions=extensions,
+<span class="ansi-green-fg">    824</span> )
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">825</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">send</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">request</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">auth</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">auth</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_client.py:914</span>, in <span class="ansi-cyan-fg">Client.send</span><span class="ansi-blue-fg">(self, request, stream, auth, follow_redirects)</span>
+<span class="ansi-green-fg">    912</span> auth = <span style="color: rgb(0,135,0)">self</span>._build_request_auth(request, auth)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">914</span> response = <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_send_handling_auth</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">    915</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">request</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    916</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">auth</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">auth</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    917</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    918</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">history</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">[</span><span class="ansi-black-fg ansi-yellow-bg">]</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    919</span> <span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    920</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_client.py:942</span>, in <span class="ansi-cyan-fg">Client._send_handling_auth</span><span class="ansi-blue-fg">(self, request, auth, follow_redirects, history)</span>
+<span class="ansi-green-fg">    941</span> <span class="ansi-bold" style="color: rgb(0,135,0)">while</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">942</span>     response = <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_send_handling_redirects</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">    943</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">request</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    944</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    945</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">history</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">history</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    946</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    947</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_client.py:979</span>, in <span class="ansi-cyan-fg">Client._send_handling_redirects</span><span class="ansi-blue-fg">(self, request, follow_redirects, history)</span>
+<span class="ansi-green-fg">    977</span>     hook(request)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">979</span> response = <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_send_single_request</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">request</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    980</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_client.py:1014</span>, in <span class="ansi-cyan-fg">Client._send_single_request</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">   1013</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> request_context(request=request):
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1014</span>     response = <span class="ansi-black-fg ansi-yellow-bg">transport</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">handle_request</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">request</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   1016</span> <span class="ansi-bold" style="color: rgb(0,135,0)">assert</span> <span style="color: rgb(0,135,0)">isinstance</span>(response.stream, SyncByteStream)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_transports/default.py:249</span>, in <span class="ansi-cyan-fg">HTTPTransport.handle_request</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">    237</span> req = httpcore.Request(
+<span class="ansi-green-fg">    238</span>     method=request.method,
+<span class="ansi-green-fg">    239</span>     url=httpcore.URL(
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    247</span>     extensions=request.extensions,
+<span class="ansi-green-fg">    248</span> )
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">249</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> map_httpcore_exceptions():
+<span class="ansi-green-fg">    250</span>     resp = <span style="color: rgb(0,135,0)">self</span>._pool.handle_request(req)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/contextlib.py:162</span>, in <span class="ansi-cyan-fg">_GeneratorContextManager.__exit__</span><span class="ansi-blue-fg">(self, typ, value, traceback)</span>
+<span class="ansi-green-fg">    161</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">162</span>     <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">gen</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">throw</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">value</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    163</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">StopIteration</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> exc:
+<span class="ansi-green-fg">    164</span>     <span style="color: rgb(95,135,135)"># Suppress StopIteration *unless* it&#39;s the same exception that</span>
+<span class="ansi-green-fg">    165</span>     <span style="color: rgb(95,135,135)"># was passed to throw().  This prevents a StopIteration</span>
+<span class="ansi-green-fg">    166</span>     <span style="color: rgb(95,135,135)"># raised inside the &#34;with&#34; statement from being suppressed.</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_transports/default.py:118</span>, in <span class="ansi-cyan-fg">map_httpcore_exceptions</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">    117</span> message = <span style="color: rgb(0,135,0)">str</span>(exc)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">118</span> <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> mapped_exc(message) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">exc</span>
+
+<span class="ansi-red-fg">ReadTimeout</span>: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">NetworkError</span>                              Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 2</span>
+<span class="ansi-green-fg">      1</span> bbox = [-<span class="ansi-green-fg">90.8</span>, <span class="ansi-green-fg">44.2</span>, -<span class="ansi-green-fg">89.9</span>, <span class="ansi-green-fg">45.0</span>]
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> bbox_sites, _ = waterdata.get_samples(
+<span class="ansi-green-fg">      3</span>     boundingBox=bbox,
+<span class="ansi-green-fg">      4</span>     characteristicUserSupplied=user_char,
+<span class="ansi-green-fg">      5</span>     service=<span class="ansi-yellow-fg">&#34;locations&#34;</span>,
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:343</span>, in <span class="ansi-cyan-fg">_accept_legacy_kwargs.&lt;locals&gt;.decorator.&lt;locals&gt;.wrapper</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
+<span class="ansi-green-fg">    336</span>     warnings.warn(
+<span class="ansi-green-fg">    337</span>         <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">The </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>old_name<span class="ansi-bold" style="color: rgb(175,95,135)">!r}</span><span class="ansi-yellow-fg"> argument is deprecated and will be </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">    338</span>         <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">removed in a future release; use </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>new_name<span class="ansi-bold" style="color: rgb(175,95,135)">!r}</span><span class="ansi-yellow-fg"> instead.</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">    339</span>         <span class="ansi-bold" style="color: rgb(215,95,95)">DeprecationWarning</span>,
+<span class="ansi-green-fg">    340</span>         stacklevel=<span class="ansi-green-fg">2</span>,
+<span class="ansi-green-fg">    341</span>     )
+<span class="ansi-green-fg">    342</span>     kwargs[new_name] = kwargs.pop(old_name)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">343</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">func</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">args</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">kwargs</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/api.py:2524</span>, in <span class="ansi-cyan-fg">get_samples</span><span class="ansi-blue-fg">(ssl_check, service, profile, activity_media_name, activity_start_date_lower, activity_start_date_upper, activity_type_code, characteristic_group, characteristic, characteristic_user_supplied, bbox, country_code, state_code, county_code, site_type_code, site_type_name, usgs_pcode, hydrologic_unit, monitoring_location_id, organization_id, point_location_latitude, point_location_longitude, point_location_within_miles, project_id, record_identifier_user_supplied)</span>
+<span class="ansi-green-fg">   2520</span>     params[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">boundingBox</span><span class="ansi-yellow-fg">&#34;</span>] = to_str(params[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">boundingBox</span><span class="ansi-yellow-fg">&#34;</span>])
+<span class="ansi-green-fg">   2522</span> url = <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>SAMPLES_URL<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">/</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>service<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">/</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>profile<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">2524</span> df, response = <span class="ansi-black-fg ansi-yellow-bg">_get_samples_csv</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">url</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">params</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">ssl_check</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   2525</span> df = _attach_datetime_columns(df)
+<span class="ansi-green-fg">   2527</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> df, BaseMetadata(response)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/api.py:2251</span>, in <span class="ansi-cyan-fg">_get_samples_csv</span><span class="ansi-blue-fg">(url, params, ssl_check)</span>
+<span class="ansi-green-fg">   2242</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Issue a Samples CSV request and parse the body into a DataFrame.</span>
+<span class="ansi-green-fg">   2243</span>
+<span class="ansi-green-fg">   2244</span> <span class="ansi-yellow-fg">Shared tail for the Samples getters: sends the GET with the standard</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">   2248</span> <span class="ansi-yellow-fg">as metadata and applies any per-getter post-step.</span>
+<span class="ansi-green-fg">   2249</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">   2250</span> logger.debug(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Request: </span><span class="ansi-bold" style="color: rgb(175,95,135)">%s</span><span class="ansi-yellow-fg">&#34;</span>, httpx.URL(url).copy_merge_params(params))
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">2251</span> response = <span class="ansi-black-fg ansi-yellow-bg">_get</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">   2252</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">url</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">   2253</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">params</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">params</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">   2254</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">verify</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">ssl_check</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">   2255</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">headers</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">_default_headers</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">   2256</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">HTTPX_DEFAULTS</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">   2257</span> <span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   2258</span> _raise_for_non_200(response)
+<span class="ansi-green-fg">   2259</span> df = pd.read_csv(StringIO(response.text), delimiter=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">,</span><span class="ansi-yellow-fg">&#34;</span>)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/utils.py:369</span>, in <span class="ansi-cyan-fg">_get</span><span class="ansi-blue-fg">(url, **kwargs)</span>
+<span class="ansi-green-fg">    367</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> httpx.get(url, **kwargs)
+<span class="ansi-green-fg">    368</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> httpx.TransportError <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> exc:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">369</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> _network_error(url, exc) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">exc</span>
+
+<span class="ansi-red-fg">NetworkError</span>: Could not reach the service at https://api.waterdata.usgs.gov/samples-data/locations/site: The read operation timed out
+</pre></div></div>
 </div>
 </section>
 <section id="Hydrologic-unit-codes-(HUCs)">
@@ -561,9 +810,9 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_6198/3301780226.py:1: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
+/tmp/ipykernel_6153/3301780226.py:1: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
   huc_sites, _ = waterdata.get_samples(
-/tmp/ipykernel_6198/3301780226.py:1: DeprecationWarning: The &#39;hydrologicUnit&#39; argument is deprecated and will be removed in a future release; use &#39;hydrologic_unit&#39; instead.
+/tmp/ipykernel_6153/3301780226.py:1: DeprecationWarning: The &#39;hydrologicUnit&#39; argument is deprecated and will be removed in a future release; use &#39;hydrologic_unit&#39; instead.
   huc_sites, _ = waterdata.get_samples(
 </pre></div></div>
 </div>
@@ -599,13 +848,13 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_6198/937496630.py:1: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
+/tmp/ipykernel_6153/937496630.py:1: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
   point_sites, _ = waterdata.get_samples(
-/tmp/ipykernel_6198/937496630.py:1: DeprecationWarning: The &#39;pointLocationLatitude&#39; argument is deprecated and will be removed in a future release; use &#39;point_location_latitude&#39; instead.
+/tmp/ipykernel_6153/937496630.py:1: DeprecationWarning: The &#39;pointLocationLatitude&#39; argument is deprecated and will be removed in a future release; use &#39;point_location_latitude&#39; instead.
   point_sites, _ = waterdata.get_samples(
-/tmp/ipykernel_6198/937496630.py:1: DeprecationWarning: The &#39;pointLocationLongitude&#39; argument is deprecated and will be removed in a future release; use &#39;point_location_longitude&#39; instead.
+/tmp/ipykernel_6153/937496630.py:1: DeprecationWarning: The &#39;pointLocationLongitude&#39; argument is deprecated and will be removed in a future release; use &#39;point_location_longitude&#39; instead.
   point_sites, _ = waterdata.get_samples(
-/tmp/ipykernel_6198/937496630.py:1: DeprecationWarning: The &#39;pointLocationWithinMiles&#39; argument is deprecated and will be removed in a future release; use &#39;point_location_within_miles&#39; instead.
+/tmp/ipykernel_6153/937496630.py:1: DeprecationWarning: The &#39;pointLocationWithinMiles&#39; argument is deprecated and will be removed in a future release; use &#39;point_location_within_miles&#39; instead.
   point_sites, _ = waterdata.get_samples(
 </pre></div></div>
 </div>
@@ -613,8 +862,256 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_16_1.png" src="../_images/examples_USGS_WaterData_DiscreteSamples_Examples_16_1.png" />
-</div>
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ReadTimeout</span>                               Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_transports/default.py:101</span>, in <span class="ansi-cyan-fg">map_httpcore_exceptions</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">    100</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">101</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">yield</span>
+<span class="ansi-green-fg">    102</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">Exception</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> exc:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_transports/default.py:250</span>, in <span class="ansi-cyan-fg">HTTPTransport.handle_request</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">    249</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> map_httpcore_exceptions():
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">250</span>     resp = <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_pool</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">handle_request</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">req</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    252</span> <span class="ansi-bold" style="color: rgb(0,135,0)">assert</span> <span style="color: rgb(0,135,0)">isinstance</span>(resp.stream, typing.Iterable)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_sync/connection_pool.py:256</span>, in <span class="ansi-cyan-fg">ConnectionPool.handle_request</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">    255</span>     <span style="color: rgb(0,135,0)">self</span>._close_connections(closing)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">256</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> exc <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
+<span class="ansi-green-fg">    258</span> <span style="color: rgb(95,135,135)"># Return the response. Note that in this case we still have to manage</span>
+<span class="ansi-green-fg">    259</span> <span style="color: rgb(95,135,135)"># the point at which the response is closed.</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_sync/connection_pool.py:236</span>, in <span class="ansi-cyan-fg">ConnectionPool.handle_request</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">    234</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">    235</span>     <span style="color: rgb(95,135,135)"># Send the request on the assigned connection.</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">236</span>     response = <span class="ansi-black-fg ansi-yellow-bg">connection</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">handle_request</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">    237</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">pool_request</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">request</span>
+<span class="ansi-green-fg">    238</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    239</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> ConnectionNotAvailable:
+<span class="ansi-green-fg">    240</span>     <span style="color: rgb(95,135,135)"># In some cases a connection may initially be available to</span>
+<span class="ansi-green-fg">    241</span>     <span style="color: rgb(95,135,135)"># handle a request, but then become unavailable.</span>
+<span class="ansi-green-fg">    242</span>     <span style="color: rgb(95,135,135)">#</span>
+<span class="ansi-green-fg">    243</span>     <span style="color: rgb(95,135,135)"># In this case we clear the connection and try again.</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_sync/connection.py:103</span>, in <span class="ansi-cyan-fg">HTTPConnection.handle_request</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">    101</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> exc
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">103</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_connection</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">handle_request</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">request</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_sync/http11.py:136</span>, in <span class="ansi-cyan-fg">HTTP11Connection.handle_request</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">    135</span>         <span style="color: rgb(0,135,0)">self</span>._response_closed()
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">136</span> <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> exc
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_sync/http11.py:106</span>, in <span class="ansi-cyan-fg">HTTP11Connection.handle_request</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">     97</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> Trace(
+<span class="ansi-green-fg">     98</span>     <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">receive_response_headers</span><span class="ansi-yellow-fg">&#34;</span>, logger, request, kwargs
+<span class="ansi-green-fg">     99</span> ) <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> trace:
+<span class="ansi-green-fg">    100</span>     (
+<span class="ansi-green-fg">    101</span>         http_version,
+<span class="ansi-green-fg">    102</span>         status,
+<span class="ansi-green-fg">    103</span>         reason_phrase,
+<span class="ansi-green-fg">    104</span>         headers,
+<span class="ansi-green-fg">    105</span>         trailing_data,
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">106</span>     ) = <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_receive_response_headers</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">kwargs</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    107</span>     trace.return_value = (
+<span class="ansi-green-fg">    108</span>         http_version,
+<span class="ansi-green-fg">    109</span>         status,
+<span class="ansi-green-fg">    110</span>         reason_phrase,
+<span class="ansi-green-fg">    111</span>         headers,
+<span class="ansi-green-fg">    112</span>     )
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_sync/http11.py:177</span>, in <span class="ansi-cyan-fg">HTTP11Connection._receive_response_headers</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">    176</span> <span class="ansi-bold" style="color: rgb(0,135,0)">while</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">177</span>     event = <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_receive_event</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">timeout</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">timeout</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    178</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(event, h11.Response):
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_sync/http11.py:217</span>, in <span class="ansi-cyan-fg">HTTP11Connection._receive_event</span><span class="ansi-blue-fg">(self, timeout)</span>
+<span class="ansi-green-fg">    216</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> event <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> h11.NEED_DATA:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">217</span>     data = <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_network_stream</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">read</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">    218</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">READ_NUM_BYTES</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">timeout</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">timeout</span>
+<span class="ansi-green-fg">    219</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    221</span>     <span style="color: rgb(95,135,135)"># If we feed this case through h11 we&#39;ll raise an exception like:</span>
+<span class="ansi-green-fg">    222</span>     <span style="color: rgb(95,135,135)">#</span>
+<span class="ansi-green-fg">    223</span>     <span style="color: rgb(95,135,135)">#     httpcore.RemoteProtocolError: can&#39;t handle event type</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    227</span>     <span style="color: rgb(95,135,135)"># perspective. Instead we handle this case distinctly and treat</span>
+<span class="ansi-green-fg">    228</span>     <span style="color: rgb(95,135,135)"># it as a ConnectError.</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_backends/sync.py:126</span>, in <span class="ansi-cyan-fg">SyncStream.read</span><span class="ansi-blue-fg">(self, max_bytes, timeout)</span>
+<span class="ansi-green-fg">    125</span> exc_map: ExceptionMapping = {socket.timeout: ReadTimeout, <span class="ansi-bold" style="color: rgb(215,95,95)">OSError</span>: ReadError}
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">126</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> map_exceptions(exc_map):
+<span class="ansi-green-fg">    127</span>     <span style="color: rgb(0,135,0)">self</span>._sock.settimeout(timeout)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/contextlib.py:162</span>, in <span class="ansi-cyan-fg">_GeneratorContextManager.__exit__</span><span class="ansi-blue-fg">(self, typ, value, traceback)</span>
+<span class="ansi-green-fg">    161</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">162</span>     <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">gen</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">throw</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">value</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    163</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">StopIteration</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> exc:
+<span class="ansi-green-fg">    164</span>     <span style="color: rgb(95,135,135)"># Suppress StopIteration *unless* it&#39;s the same exception that</span>
+<span class="ansi-green-fg">    165</span>     <span style="color: rgb(95,135,135)"># was passed to throw().  This prevents a StopIteration</span>
+<span class="ansi-green-fg">    166</span>     <span style="color: rgb(95,135,135)"># raised inside the &#34;with&#34; statement from being suppressed.</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpcore/_exceptions.py:14</span>, in <span class="ansi-cyan-fg">map_exceptions</span><span class="ansi-blue-fg">(map)</span>
+<span class="ansi-green-fg">     13</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(exc, from_exc):
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">14</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> to_exc(exc) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">exc</span>
+<span class="ansi-green-fg">     15</span> <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span>
+
+<span class="ansi-red-fg">ReadTimeout</span>: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">ReadTimeout</span>                               Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/utils.py:367</span>, in <span class="ansi-cyan-fg">_get</span><span class="ansi-blue-fg">(url, **kwargs)</span>
+<span class="ansi-green-fg">    366</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">367</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">httpx</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">get</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">url</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">kwargs</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    368</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> httpx.TransportError <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> exc:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_api.py:195</span>, in <span class="ansi-cyan-fg">get</span><span class="ansi-blue-fg">(url, params, headers, cookies, auth, proxy, follow_redirects, verify, timeout, trust_env)</span>
+<span class="ansi-green-fg">    187</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">    188</span> <span class="ansi-yellow-fg">Sends a `GET` request.</span>
+<span class="ansi-green-fg">    189</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    193</span> <span class="ansi-yellow-fg">on this function, as `GET` requests should not include a request body.</span>
+<span class="ansi-green-fg">    194</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">195</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">request</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">    196</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">GET</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    197</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">url</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    198</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">params</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">params</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    199</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">headers</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">headers</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    200</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">cookies</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">cookies</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    201</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">auth</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">auth</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    202</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">proxy</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">proxy</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    203</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    204</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">verify</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">verify</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    205</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">timeout</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">timeout</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    206</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">trust_env</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">trust_env</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    207</span> <span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_api.py:109</span>, in <span class="ansi-cyan-fg">request</span><span class="ansi-blue-fg">(method, url, params, content, data, files, json, headers, cookies, auth, proxy, timeout, follow_redirects, verify, trust_env)</span>
+<span class="ansi-green-fg">    102</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> Client(
+<span class="ansi-green-fg">    103</span>     cookies=cookies,
+<span class="ansi-green-fg">    104</span>     proxy=proxy,
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    107</span>     trust_env=trust_env,
+<span class="ansi-green-fg">    108</span> ) <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> client:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">109</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">client</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">request</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">    110</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">method</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">method</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    111</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">url</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">url</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    112</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">content</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">content</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    113</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">data</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">data</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    114</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">files</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">files</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    115</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">json</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">json</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    116</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">params</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">params</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    117</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">headers</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">headers</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    118</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">auth</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">auth</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    119</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    120</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_client.py:825</span>, in <span class="ansi-cyan-fg">Client.request</span><span class="ansi-blue-fg">(self, method, url, content, data, files, json, params, headers, cookies, auth, follow_redirects, timeout, extensions)</span>
+<span class="ansi-green-fg">    812</span> request = <span style="color: rgb(0,135,0)">self</span>.build_request(
+<span class="ansi-green-fg">    813</span>     method=method,
+<span class="ansi-green-fg">    814</span>     url=url,
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    823</span>     extensions=extensions,
+<span class="ansi-green-fg">    824</span> )
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">825</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">send</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">request</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">auth</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">auth</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_client.py:914</span>, in <span class="ansi-cyan-fg">Client.send</span><span class="ansi-blue-fg">(self, request, stream, auth, follow_redirects)</span>
+<span class="ansi-green-fg">    912</span> auth = <span style="color: rgb(0,135,0)">self</span>._build_request_auth(request, auth)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">914</span> response = <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_send_handling_auth</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">    915</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">request</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    916</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">auth</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">auth</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    917</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    918</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">history</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">[</span><span class="ansi-black-fg ansi-yellow-bg">]</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    919</span> <span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    920</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_client.py:942</span>, in <span class="ansi-cyan-fg">Client._send_handling_auth</span><span class="ansi-blue-fg">(self, request, auth, follow_redirects, history)</span>
+<span class="ansi-green-fg">    941</span> <span class="ansi-bold" style="color: rgb(0,135,0)">while</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">942</span>     response = <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_send_handling_redirects</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">    943</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">request</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    944</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">follow_redirects</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    945</span> <span class="ansi-black-fg ansi-yellow-bg">        </span><span class="ansi-black-fg ansi-yellow-bg">history</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">history</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    946</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    947</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_client.py:979</span>, in <span class="ansi-cyan-fg">Client._send_handling_redirects</span><span class="ansi-blue-fg">(self, request, follow_redirects, history)</span>
+<span class="ansi-green-fg">    977</span>     hook(request)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">979</span> response = <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_send_single_request</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">request</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    980</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_client.py:1014</span>, in <span class="ansi-cyan-fg">Client._send_single_request</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">   1013</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> request_context(request=request):
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1014</span>     response = <span class="ansi-black-fg ansi-yellow-bg">transport</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">handle_request</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">request</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   1016</span> <span class="ansi-bold" style="color: rgb(0,135,0)">assert</span> <span style="color: rgb(0,135,0)">isinstance</span>(response.stream, SyncByteStream)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_transports/default.py:249</span>, in <span class="ansi-cyan-fg">HTTPTransport.handle_request</span><span class="ansi-blue-fg">(self, request)</span>
+<span class="ansi-green-fg">    237</span> req = httpcore.Request(
+<span class="ansi-green-fg">    238</span>     method=request.method,
+<span class="ansi-green-fg">    239</span>     url=httpcore.URL(
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    247</span>     extensions=request.extensions,
+<span class="ansi-green-fg">    248</span> )
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">249</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> map_httpcore_exceptions():
+<span class="ansi-green-fg">    250</span>     resp = <span style="color: rgb(0,135,0)">self</span>._pool.handle_request(req)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/contextlib.py:162</span>, in <span class="ansi-cyan-fg">_GeneratorContextManager.__exit__</span><span class="ansi-blue-fg">(self, typ, value, traceback)</span>
+<span class="ansi-green-fg">    161</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">162</span>     <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">gen</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">throw</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">value</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    163</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">StopIteration</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> exc:
+<span class="ansi-green-fg">    164</span>     <span style="color: rgb(95,135,135)"># Suppress StopIteration *unless* it&#39;s the same exception that</span>
+<span class="ansi-green-fg">    165</span>     <span style="color: rgb(95,135,135)"># was passed to throw().  This prevents a StopIteration</span>
+<span class="ansi-green-fg">    166</span>     <span style="color: rgb(95,135,135)"># raised inside the &#34;with&#34; statement from being suppressed.</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/httpx/_transports/default.py:118</span>, in <span class="ansi-cyan-fg">map_httpcore_exceptions</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">    117</span> message = <span style="color: rgb(0,135,0)">str</span>(exc)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">118</span> <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> mapped_exc(message) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">exc</span>
+
+<span class="ansi-red-fg">ReadTimeout</span>: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">NetworkError</span>                              Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[9]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> point_sites, _ = waterdata.get_samples(
+<span class="ansi-green-fg">      2</span>     pointLocationLatitude=<span class="ansi-green-fg">43.074680</span>,
+<span class="ansi-green-fg">      3</span>     pointLocationLongitude=-<span class="ansi-green-fg">89.428054</span>,
+<span class="ansi-green-fg">      4</span>     pointLocationWithinMiles=<span class="ansi-green-fg">20</span>,
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:343</span>, in <span class="ansi-cyan-fg">_accept_legacy_kwargs.&lt;locals&gt;.decorator.&lt;locals&gt;.wrapper</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
+<span class="ansi-green-fg">    336</span>     warnings.warn(
+<span class="ansi-green-fg">    337</span>         <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">The </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>old_name<span class="ansi-bold" style="color: rgb(175,95,135)">!r}</span><span class="ansi-yellow-fg"> argument is deprecated and will be </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">    338</span>         <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">removed in a future release; use </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>new_name<span class="ansi-bold" style="color: rgb(175,95,135)">!r}</span><span class="ansi-yellow-fg"> instead.</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">    339</span>         <span class="ansi-bold" style="color: rgb(215,95,95)">DeprecationWarning</span>,
+<span class="ansi-green-fg">    340</span>         stacklevel=<span class="ansi-green-fg">2</span>,
+<span class="ansi-green-fg">    341</span>     )
+<span class="ansi-green-fg">    342</span>     kwargs[new_name] = kwargs.pop(old_name)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">343</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">func</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">args</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">kwargs</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/api.py:2524</span>, in <span class="ansi-cyan-fg">get_samples</span><span class="ansi-blue-fg">(ssl_check, service, profile, activity_media_name, activity_start_date_lower, activity_start_date_upper, activity_type_code, characteristic_group, characteristic, characteristic_user_supplied, bbox, country_code, state_code, county_code, site_type_code, site_type_name, usgs_pcode, hydrologic_unit, monitoring_location_id, organization_id, point_location_latitude, point_location_longitude, point_location_within_miles, project_id, record_identifier_user_supplied)</span>
+<span class="ansi-green-fg">   2520</span>     params[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">boundingBox</span><span class="ansi-yellow-fg">&#34;</span>] = to_str(params[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">boundingBox</span><span class="ansi-yellow-fg">&#34;</span>])
+<span class="ansi-green-fg">   2522</span> url = <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>SAMPLES_URL<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">/</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>service<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">/</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>profile<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">2524</span> df, response = <span class="ansi-black-fg ansi-yellow-bg">_get_samples_csv</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">url</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">params</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">ssl_check</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   2525</span> df = _attach_datetime_columns(df)
+<span class="ansi-green-fg">   2527</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> df, BaseMetadata(response)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/api.py:2251</span>, in <span class="ansi-cyan-fg">_get_samples_csv</span><span class="ansi-blue-fg">(url, params, ssl_check)</span>
+<span class="ansi-green-fg">   2242</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;Issue a Samples CSV request and parse the body into a DataFrame.</span>
+<span class="ansi-green-fg">   2243</span>
+<span class="ansi-green-fg">   2244</span> <span class="ansi-yellow-fg">Shared tail for the Samples getters: sends the GET with the standard</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">   2248</span> <span class="ansi-yellow-fg">as metadata and applies any per-getter post-step.</span>
+<span class="ansi-green-fg">   2249</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">   2250</span> logger.debug(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Request: </span><span class="ansi-bold" style="color: rgb(175,95,135)">%s</span><span class="ansi-yellow-fg">&#34;</span>, httpx.URL(url).copy_merge_params(params))
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">2251</span> response = <span class="ansi-black-fg ansi-yellow-bg">_get</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">   2252</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">url</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">   2253</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">params</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">params</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">   2254</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">verify</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">ssl_check</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">   2255</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">headers</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">_default_headers</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">   2256</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">HTTPX_DEFAULTS</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">   2257</span> <span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   2258</span> _raise_for_non_200(response)
+<span class="ansi-green-fg">   2259</span> df = pd.read_csv(StringIO(response.text), delimiter=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">,</span><span class="ansi-yellow-fg">&#34;</span>)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/utils.py:369</span>, in <span class="ansi-cyan-fg">_get</span><span class="ansi-blue-fg">(url, **kwargs)</span>
+<span class="ansi-green-fg">    367</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> httpx.get(url, **kwargs)
+<span class="ansi-green-fg">    368</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> httpx.TransportError <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> exc:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">369</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> _network_error(url, exc) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">exc</span>
+
+<span class="ansi-red-fg">NetworkError</span>: Could not reach the service at https://api.waterdata.usgs.gov/samples-data/locations/site: The read operation timed out
+</pre></div></div>
 </div>
 </section>
 <section id="County-FIPS">
@@ -643,9 +1140,9 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_6198/1942246246.py:5: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
+/tmp/ipykernel_6153/1942246246.py:5: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
   county_sites, _ = waterdata.get_samples(
-/tmp/ipykernel_6198/1942246246.py:5: DeprecationWarning: The &#39;countyFips&#39; argument is deprecated and will be removed in a future release; use &#39;county_code&#39; instead.
+/tmp/ipykernel_6153/1942246246.py:5: DeprecationWarning: The &#39;countyFips&#39; argument is deprecated and will be removed in a future release; use &#39;county_code&#39; instead.
   county_sites, _ = waterdata.get_samples(
 </pre></div></div>
 </div>
@@ -682,13 +1179,13 @@ default (&#39;fullphyschem&#39;) profile -&gt; 187 columns
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_6198/2071568402.py:2: DeprecationWarning: The &#39;activityStartDateLower&#39; argument is deprecated and will be removed in a future release; use &#39;activity_start_date_lower&#39; instead.
+/tmp/ipykernel_6153/2071568402.py:2: DeprecationWarning: The &#39;activityStartDateLower&#39; argument is deprecated and will be removed in a future release; use &#39;activity_start_date_lower&#39; instead.
   state_sites_recent, _ = waterdata.get_samples(
-/tmp/ipykernel_6198/2071568402.py:2: DeprecationWarning: The &#39;activityStartDateUpper&#39; argument is deprecated and will be removed in a future release; use &#39;activity_start_date_upper&#39; instead.
+/tmp/ipykernel_6153/2071568402.py:2: DeprecationWarning: The &#39;activityStartDateUpper&#39; argument is deprecated and will be removed in a future release; use &#39;activity_start_date_upper&#39; instead.
   state_sites_recent, _ = waterdata.get_samples(
-/tmp/ipykernel_6198/2071568402.py:2: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
+/tmp/ipykernel_6153/2071568402.py:2: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
   state_sites_recent, _ = waterdata.get_samples(
-/tmp/ipykernel_6198/2071568402.py:2: DeprecationWarning: The &#39;stateFips&#39; argument is deprecated and will be removed in a future release; use &#39;state_code&#39; instead.
+/tmp/ipykernel_6153/2071568402.py:2: DeprecationWarning: The &#39;stateFips&#39; argument is deprecated and will be removed in a future release; use &#39;state_code&#39; instead.
   state_sites_recent, _ = waterdata.get_samples(
 </pre></div></div>
 </div>
@@ -938,11 +1435,11 @@ example USGS parameter codes:
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_6198/3513897362.py:1: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
+/tmp/ipykernel_6153/3513897362.py:1: DeprecationWarning: The &#39;characteristicUserSupplied&#39; argument is deprecated and will be removed in a future release; use &#39;characteristic_user_supplied&#39; instead.
   county_lake_sites, _ = waterdata.get_samples(
-/tmp/ipykernel_6198/3513897362.py:1: DeprecationWarning: The &#39;countyFips&#39; argument is deprecated and will be removed in a future release; use &#39;county_code&#39; instead.
+/tmp/ipykernel_6153/3513897362.py:1: DeprecationWarning: The &#39;countyFips&#39; argument is deprecated and will be removed in a future release; use &#39;county_code&#39; instead.
   county_lake_sites, _ = waterdata.get_samples(
-/tmp/ipykernel_6198/3513897362.py:1: DeprecationWarning: The &#39;siteTypeName&#39; argument is deprecated and will be removed in a future release; use &#39;site_type_name&#39; instead.
+/tmp/ipykernel_6153/3513897362.py:1: DeprecationWarning: The &#39;siteTypeName&#39; argument is deprecated and will be removed in a future release; use &#39;site_type_name&#39; instead.
   county_lake_sites, _ = waterdata.get_samples(
 </pre></div></div>
 </div>
@@ -982,222 +1479,73 @@ example USGS parameter codes:
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+/tmp/ipykernel_6153/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
   avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+/tmp/ipykernel_6153/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
   avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+/tmp/ipykernel_6153/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
   avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+/tmp/ipykernel_6153/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
   avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+/tmp/ipykernel_6153/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
   avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
-  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
-  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
-  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
-  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
-  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
-  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
-  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
-  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
-  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
-  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
-  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
-  avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
-/tmp/ipykernel_6198/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+/tmp/ipykernel_6153/2100374856.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
   avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
-</pre></div>
+<div class="prompt empty docutils container">
 </div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ServiceUnavailable</span>                        Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[18]</span><span class="ansi-green-fg">, line 3</span>
+<span class="ansi-green-fg">      1</span> rows = []
+<span class="ansi-green-fg">      2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> loc_id <span class="ansi-bold" style="color: rgb(0,135,0)">in</span> county_lake_sites[<span class="ansi-yellow-fg">&#34;Location_Identifier&#34;</span>]:
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">3</span>     avail, _ = waterdata.get_samples_summary(monitoringLocationIdentifier=loc_id)
+<span class="ansi-green-fg">      4</span>     rows.append(avail[avail[<span class="ansi-yellow-fg">&#34;characteristicUserSupplied&#34;</span>] == user_char])
+<span class="ansi-green-fg">      5</span>
+<span class="ansi-green-fg">      6</span> all_data = pd.concat(rows, ignore_index=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>)
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:343</span>, in <span class="ansi-cyan-fg">_accept_legacy_kwargs.&lt;locals&gt;.decorator.&lt;locals&gt;.wrapper</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
+<span class="ansi-green-fg">    336</span>     warnings.warn(
+<span class="ansi-green-fg">    337</span>         <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">The </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>old_name<span class="ansi-bold" style="color: rgb(175,95,135)">!r}</span><span class="ansi-yellow-fg"> argument is deprecated and will be </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">    338</span>         <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">removed in a future release; use </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>new_name<span class="ansi-bold" style="color: rgb(175,95,135)">!r}</span><span class="ansi-yellow-fg"> instead.</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">    339</span>         <span class="ansi-bold" style="color: rgb(215,95,95)">DeprecationWarning</span>,
+<span class="ansi-green-fg">    340</span>         stacklevel=<span class="ansi-green-fg">2</span>,
+<span class="ansi-green-fg">    341</span>     )
+<span class="ansi-green-fg">    342</span>     kwargs[new_name] = kwargs.pop(old_name)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">343</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">func</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">args</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">kwargs</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
 
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>monitoringLocationIdentifier</th>
-      <th>resultCount</th>
-      <th>activityCount</th>
-      <th>firstActivity</th>
-      <th>mostRecentActivity</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>13</th>
-      <td>USGS-430309089260701</td>
-      <td>159</td>
-      <td>159</td>
-      <td>1986-06-28</td>
-      <td>1995-04-07</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>USGS-054279449</td>
-      <td>96</td>
-      <td>96</td>
-      <td>1998-02-12</td>
-      <td>1998-08-23</td>
-    </tr>
-    <tr>
-      <th>10</th>
-      <td>USGS-430117089442701</td>
-      <td>49</td>
-      <td>49</td>
-      <td>1992-05-21</td>
-      <td>1993-09-24</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>USGS-430307089260200</td>
-      <td>49</td>
-      <td>49</td>
-      <td>1986-09-28</td>
-      <td>1988-04-05</td>
-    </tr>
-    <tr>
-      <th>12</th>
-      <td>USGS-430305089260600</td>
-      <td>32</td>
-      <td>32</td>
-      <td>1986-11-22</td>
-      <td>1987-12-08</td>
-    </tr>
-    <tr>
-      <th>0</th>
-      <td>USGS-05427946</td>
-      <td>12</td>
-      <td>12</td>
-      <td>1981-09-02</td>
-      <td>1982-08-12</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>USGS-054279485</td>
-      <td>12</td>
-      <td>12</td>
-      <td>1981-09-02</td>
-      <td>1982-08-12</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>USGS-05427949</td>
-      <td>12</td>
-      <td>12</td>
-      <td>1981-09-02</td>
-      <td>1982-08-12</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>USGS-430113089320101</td>
-      <td>6</td>
-      <td>6</td>
-      <td>1975-03-22</td>
-      <td>1976-05-31</td>
-    </tr>
-    <tr>
-      <th>15</th>
-      <td>USGS-430325089361601</td>
-      <td>5</td>
-      <td>5</td>
-      <td>1975-05-16</td>
-      <td>1976-05-19</td>
-    </tr>
-    <tr>
-      <th>17</th>
-      <td>USGS-430349089361801</td>
-      <td>4</td>
-      <td>4</td>
-      <td>1975-05-16</td>
-      <td>1976-05-19</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>USGS-430100089320601</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1975-03-22</td>
-      <td>1975-03-22</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>USGS-430059089321401</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1975-03-22</td>
-      <td>1975-03-22</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>USGS-425750089143800</td>
-      <td>1</td>
-      <td>1</td>
-      <td>2007-07-02</td>
-      <td>2007-07-02</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>USGS-430106089315901</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1975-03-22</td>
-      <td>1975-03-22</td>
-    </tr>
-    <tr>
-      <th>11</th>
-      <td>USGS-430117089320701</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1975-03-22</td>
-      <td>1975-03-22</td>
-    </tr>
-    <tr>
-      <th>14</th>
-      <td>USGS-430321089360401</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1975-03-22</td>
-      <td>1975-03-22</td>
-    </tr>
-    <tr>
-      <th>16</th>
-      <td>USGS-430347089360301</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1975-03-22</td>
-      <td>1975-03-22</td>
-    </tr>
-  </tbody>
-</table>
-</div></div>
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/api.py:2587</span>, in <span class="ansi-cyan-fg">get_samples_summary</span><span class="ansi-blue-fg">(monitoring_location_id, ssl_check)</span>
+<span class="ansi-green-fg">   2584</span> url = <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>SAMPLES_URL<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">/summary/</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>quote(monitoring_location_id,<span style="color: rgb(188,188,188)"> </span>safe=<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">&#39;</span>)<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">   2585</span> params = {<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">mimeType</span><span class="ansi-yellow-fg">&#34;</span>: <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">text/csv</span><span class="ansi-yellow-fg">&#34;</span>}
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">2587</span> df, response = <span class="ansi-black-fg ansi-yellow-bg">_get_samples_csv</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">url</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">params</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">ssl_check</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   2589</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> df, BaseMetadata(response)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/api.py:2258</span>, in <span class="ansi-cyan-fg">_get_samples_csv</span><span class="ansi-blue-fg">(url, params, ssl_check)</span>
+<span class="ansi-green-fg">   2250</span> logger.debug(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Request: </span><span class="ansi-bold" style="color: rgb(175,95,135)">%s</span><span class="ansi-yellow-fg">&#34;</span>, httpx.URL(url).copy_merge_params(params))
+<span class="ansi-green-fg">   2251</span> response = _get(
+<span class="ansi-green-fg">   2252</span>     url,
+<span class="ansi-green-fg">   2253</span>     params=params,
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">   2256</span>     **HTTPX_DEFAULTS,
+<span class="ansi-green-fg">   2257</span> )
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">2258</span> <span class="ansi-black-fg ansi-yellow-bg">_raise_for_non_200</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">response</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   2259</span> df = pd.read_csv(StringIO(response.text), delimiter=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">,</span><span class="ansi-yellow-fg">&#34;</span>)
+<span class="ansi-green-fg">   2260</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> df, response
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/errors.py:127</span>, in <span class="ansi-cyan-fg">_raise_for_non_200</span><span class="ansi-blue-fg">(resp)</span>
+<span class="ansi-green-fg">    125</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> status &lt; <span class="ansi-green-fg">400</span>:
+<span class="ansi-green-fg">    126</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">127</span> <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> error_for_status(
+<span class="ansi-green-fg">    128</span>     status,
+<span class="ansi-green-fg">    129</span>     _error_body(resp),
+<span class="ansi-green-fg">    130</span>     retry_after=_parse_retry_after(resp.headers.get(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retry-After</span><span class="ansi-yellow-fg">&#34;</span>)),
+<span class="ansi-green-fg">    131</span> )
+
+<span class="ansi-red-fg">ServiceUnavailable</span>: 500: Internal Server Error. Internal Server Error
+</pre></div></div>
 </div>
 <p>This summary helps narrow down which sites to request data from — whether you need sites with recent data, lots of data, or just any measurement at all.</p>
 </section>
