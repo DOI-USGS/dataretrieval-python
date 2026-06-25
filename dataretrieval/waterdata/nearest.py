@@ -187,10 +187,8 @@ def _coerce_targets(targets: Any) -> pd.DatetimeIndex:
     is wrapped directly so its elements are preserved.
     """
     parsed = pd.to_datetime(targets, utc=True)
-    if isinstance(parsed, pd.DatetimeIndex):
-        return parsed
     if pd.api.types.is_scalar(parsed):
-        return pd.DatetimeIndex([parsed])
+        parsed = [parsed]
     return pd.DatetimeIndex(parsed)
 
 
