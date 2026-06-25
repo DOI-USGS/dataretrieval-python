@@ -37,7 +37,7 @@ pip install git+https://github.com/DOI-USGS/dataretrieval-python.git
 
 ## Usage Examples
 
-### Water Data API (Recommended - Modern USGS Data)
+### Water Data API
 
 Access USGS water-monitoring data.
 
@@ -219,10 +219,11 @@ print(statewide.head())
 
 ## Available Data Services
 
-### Modern USGS Water Data APIs (Recommended) — `dataretrieval.waterdata`
+### Modern USGS Water Data APIs — `dataretrieval.waterdata`
 - `get_daily`: Daily statistical summaries (mean, min, max)
 - `get_continuous`: High-frequency continuous (instantaneous) values
 - `get_field_measurements`: Discrete measurements from field visits
+- `get_peaks`: Annual peak streamflow
 - `get_monitoring_locations`: Site information and metadata
 - `get_time_series_metadata`: A location's available data parameters
 - `get_latest_daily`: Most recent daily statistical summary
@@ -257,12 +258,8 @@ print(statewide.head())
 - `get_features`: Find monitoring sites, dams, and other features along the network
 - `get_features_by_data_source`: Features from a specific data source
 
-### Water Use (NWDC)
-- **Public supply**: Modeled public-supply withdrawals and consumptive use
-- **Irrigation**: Modeled irrigation withdrawals and consumptive use
-- **Thermoelectric**: Modeled thermoelectric-power water use
-- **HUC12 estimates**: National coverage on a 12-digit hydrologic-unit grid,
-  summarizable to counties, states, or coarser hydrologic units
+### Water Use (NWDC) — `dataretrieval.wateruse`
+- `get_wateruse`: Modeled water-use estimates — public-supply, irrigation, and thermoelectric withdrawals and consumptive use — on a national 12-digit hydrologic-unit (HUC12) grid, summarizable to counties, states, or coarser hydrologic units
 
 ## More Examples
 
