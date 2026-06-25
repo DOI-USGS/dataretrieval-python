@@ -53,6 +53,37 @@ def test_read_wqp_csv_preserves_leading_zero_codes():
     assert df["ResultMeasureValue"].iloc[0] == 1.5
 
 
+def test_read_wqp_csv_tsv_delimiter_preserves_codes():
+    """``mimeType=tsv`` responses are parsed as tab-delimited via
+    ``_read_wqp_csv``'s ``delimiter`` while still preserving leading zeros on
+    code columns."""
+    from dataretrieval.wqp import _read_wqp_csv
+
+    tsv = (
+        "Location_HUCEightDigitCode\tUSGSpcode\tResultMeasureValue\n"
+        "07090002\t00060\t1.5\n"
+    )
+    df = _read_wqp_csv(tsv, delimiter="\t")
+    assert list(df.columns) == [
+        "Location_HUCEightDigitCode",
+        "USGSpcode",
+        "ResultMeasureValue",
+    ]
+    assert df["Location_HUCEightDigitCode"].iloc[0] == "07090002"
+    assert df["USGSpcode"].iloc[0] == "00060"
+    assert df["ResultMeasureValue"].iloc[0] == 1.5
+
+
+def test_wqp_delimiter_selects_tab_for_tsv():
+    """``_wqp_delimiter`` maps ``mimeType=tsv`` to a tab and everything else
+    (including a missing mimeType) to a comma."""
+    from dataretrieval.wqp import _wqp_delimiter
+
+    assert _wqp_delimiter({"mimeType": "tsv"}) == "\t"
+    assert _wqp_delimiter({"mimeType": "csv"}) == ","
+    assert _wqp_delimiter({}) == ","
+
+
 def test_get_results(httpx_mock):
     """Tests water quality portal ratings query"""
     request_url = (
@@ -153,6 +184,16 @@ def test_check_kwargs():
     kwargs = {"mimeType": "foo"}
     with pytest.raises(ValueError):
         kwargs = _check_kwargs(kwargs)
+
+
+def test_check_kwargs_mimetype_csv_tsv_xlsx():
+    """csv/tsv are accepted as-is, a missing mimeType defaults to csv, and
+    xlsx raises a clear NotImplementedError pointing at the csv/tsv options."""
+    assert _check_kwargs({"mimeType": "csv"})["mimeType"] == "csv"
+    assert _check_kwargs({"mimeType": "tsv"})["mimeType"] == "tsv"
+    assert _check_kwargs({})["mimeType"] == "csv"
+    with pytest.raises(NotImplementedError, match="Excel"):
+        _check_kwargs({"mimeType": "xlsx"})
 
 
 def test_get_results_wqx3_preserves_user_dataProfile(httpx_mock):

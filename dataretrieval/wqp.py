@@ -52,8 +52,8 @@ def _is_code_column(name: str) -> bool:
     )
 
 
-def _read_wqp_csv(text: str) -> DataFrame:
-    """Read a WQP CSV, forcing code/identifier columns to ``str``.
+def _read_wqp_csv(text: str, delimiter: str = ",") -> DataFrame:
+    """Read a WQP CSV/TSV, forcing code/identifier columns to ``str``.
 
     WQP returns codes with significant leading zeros — HUCs, parameter codes
     (``USGSpcode``), FIPS state/county codes. A bare ``read_csv`` infers those
@@ -61,10 +61,20 @@ def _read_wqp_csv(text: str) -> DataFrame:
     ``"07090002"`` -> ``7090002``). Read the header first, then re-read with
     ``dtype=str`` for every column that :func:`_is_code_column` flags, so the
     zeros survive.
+
+    ``delimiter`` selects comma (CSV, the default) vs tab (TSV); see
+    :func:`_wqp_delimiter`.
     """
-    columns = pd.read_csv(StringIO(text), delimiter=",", nrows=0).columns
+    columns = pd.read_csv(StringIO(text), delimiter=delimiter, nrows=0).columns
     str_cols = {col: str for col in columns if _is_code_column(col)}
-    return pd.read_csv(StringIO(text), delimiter=",", low_memory=False, dtype=str_cols)
+    return pd.read_csv(
+        StringIO(text), delimiter=delimiter, low_memory=False, dtype=str_cols
+    )
+
+
+def _wqp_delimiter(kwargs: dict[str, Any]) -> str:
+    """Field delimiter for the requested ``mimeType``: tab for ``tsv``, else comma."""
+    return "\t" if kwargs.get("mimeType") == "tsv" else ","
 
 
 def get_results(
@@ -181,7 +191,7 @@ def get_results(
 
     response = query(url, kwargs, delimiter=";", ssl_check=ssl_check)
 
-    df = _read_wqp_csv(response.text)
+    df = _read_wqp_csv(response.text, _wqp_delimiter(kwargs))
     df = _attach_datetime_columns(df)
     return df, WQP_Metadata(response, **kwargs)
 
@@ -209,7 +219,7 @@ def _what(
         url = _legacy_only_url(service, legacy=legacy)
 
     response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
-    df = _read_wqp_csv(response.text)
+    df = _read_wqp_csv(response.text, _wqp_delimiter(kwargs))
     return df, WQP_Metadata(response, **kwargs)
 
 
@@ -690,9 +700,13 @@ def _check_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     mimetype = kwargs.get("mimeType")
     if mimetype == "geojson":
         raise NotImplementedError("GeoJSON not yet supported. Set 'mimeType=csv'.")
-    elif mimetype != "csv" and mimetype is not None:
-        raise ValueError("Invalid mimeType. Set 'mimeType=csv'.")
-    else:
+    elif mimetype == "xlsx":
+        raise NotImplementedError(
+            "Excel format not yet supported. Set 'mimeType=csv' or 'mimeType=tsv'."
+        )
+    elif mimetype not in ("csv", "tsv", None):
+        raise ValueError("Invalid mimeType. Supported options: 'csv', 'tsv'.")
+    elif mimetype is None:
         kwargs["mimeType"] = "csv"
 
     return kwargs
