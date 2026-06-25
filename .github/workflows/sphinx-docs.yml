@@ -6,6 +6,15 @@ on:
   push:
   pull_request:
 
+# Serialize runs for the same ref so two near-simultaneous pushes to main
+# don't race to force-push gh-pages. Without this, the second deploy fails
+# with "cannot lock ref 'refs/heads/gh-pages'" because the first run advanced
+# the branch after the second had already read its tip. Queue rather than
+# cancel (cancel-in-progress: false) so every commit's docs still deploy.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   docs:
     runs-on: ubuntu-latest
