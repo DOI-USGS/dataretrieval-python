@@ -419,7 +419,7 @@ def query(
     url: string
         URL to query
     payload: dict
-        query parameters passed to ``httpx.get``
+        query parameters passed to ``httpx.get``. Not mutated.
     delimiter: string
         delimiter to use with lists
     ssl_check: bool
@@ -442,18 +442,18 @@ def query(
         ``httpx`` exception on ``__cause__``.
     """
 
-    for key, value in payload.items():
-        payload[key] = to_str(value, delimiter)
+    # Build a fresh params dict; never mutate the caller's payload.
+    params = {key: to_str(value, delimiter) for key, value in payload.items()}
     # httpx serializes None params as ``foo=``; USGS rejects with 400.
     # Drop them. (``to_str`` returns None for non-iterable scalars like bools.)
-    payload = {k: v for k, v in payload.items() if v is not None}
+    params = {k: v for k, v in params.items() if v is not None}
 
     user_agent = {"user-agent": f"python-dataretrieval/{dataretrieval.__version__}"}
 
     try:
         response = _get(
             url,
-            params=payload,
+            params=params,
             headers=user_agent,
             verify=ssl_check,
             **HTTPX_DEFAULTS,
