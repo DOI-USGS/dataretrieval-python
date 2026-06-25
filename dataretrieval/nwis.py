@@ -126,6 +126,21 @@ def _parse_json_or_raise(response: httpx.Response) -> pd.DataFrame:
         raise
 
 
+def _reject_unexpected_format(
+    kwargs: dict[str, Any], func_name: str, expected: str
+) -> None:
+    """Drop ``format`` from ``kwargs`` and reject any value other than ``expected``.
+
+    These getters always request a fixed ``format`` and parse that specific body,
+    so a caller-supplied ``format`` would either collide with the explicit
+    ``format=`` argument or be silently overridden; reject it explicitly instead.
+    """
+    if kwargs.pop("format", expected) != expected:
+        raise ValueError(
+            f"{func_name} returns {expected.upper()} and does not accept a `format`."
+        )
+
+
 def format_response(
     df: pd.DataFrame, service: str | None = None, **kwargs: Any
 ) -> pd.DataFrame:
@@ -277,6 +292,7 @@ def get_discharge_peaks(
     kwargs["end_date"] = kwargs.pop("end_date", end)
     kwargs["multi_index"] = multi_index
 
+    _reject_unexpected_format(kwargs, "get_discharge_peaks", "rdb")
     response = query_waterdata("peaks", format="rdb", ssl_check=ssl_check, **kwargs)
 
     # Parse raw (read_rdb), not _read_rdb — the latter already runs
@@ -355,6 +371,8 @@ def get_stats(
     """
     _check_sites_value_types(sites)
 
+    # get_stats parses an RDB body; reject a caller-supplied non-RDB `format`.
+    _reject_unexpected_format(kwargs, "get_stats", "rdb")
     response = query_waterservices(
         service="stat", sites=sites, ssl_check=ssl_check, **kwargs
     )
@@ -392,11 +410,13 @@ def query_waterdata(
         "se_latitude_va",
     ]
 
-    if not any(key in kwargs for key in major_params + bbox_params):
+    # Present *and* non-None — see query_waterservices for why membership alone
+    # would let an unset filter slip through.
+    if not any(kwargs.get(key) is not None for key in major_params + bbox_params):
         raise TypeError("Query must specify a major filter: site_no, stateCd, bBox")
 
-    elif any(key in kwargs for key in bbox_params) and not all(
-        key in kwargs for key in bbox_params
+    elif any(kwargs.get(key) is not None for key in bbox_params) and not all(
+        kwargs.get(key) is not None for key in bbox_params
     ):
         raise TypeError("One or more lat/long coordinates missing or invalid.")
 
@@ -453,8 +473,15 @@ def query_waterservices(
         The response object from the API request to the web service
 
     """
+    # A major filter must be present *and* non-None. Membership alone is not
+    # enough: callers may inject an unset filter (e.g. sites=None), and
+    # utils.query() later strips None-valued params, so a plain `"sites" in
+    # kwargs` would wave a filterless request through to a confusing "Bad
+    # Request". Checking the value keeps that decision in one place instead of
+    # forcing every getter to pre-filter its own kwargs.
     if not any(
-        key in kwargs for key in ["sites", "stateCd", "bBox", "huc", "countyCd"]
+        kwargs.get(key) is not None
+        for key in ["sites", "stateCd", "bBox", "huc", "countyCd"]
     ):
         raise TypeError(
             "Query must specify a major filter: sites, stateCd, bBox, huc, or countyCd"
@@ -537,6 +564,7 @@ def get_dv(
     kwargs["sites"] = kwargs.pop("sites", sites)
     kwargs["multi_index"] = multi_index
 
+    _reject_unexpected_format(kwargs, "get_dv", "json")
     response = query_waterservices("dv", format="json", ssl_check=ssl_check, **kwargs)
     df = _parse_json_or_raise(response)
 
@@ -724,6 +752,7 @@ def get_iv(
     kwargs["sites"] = kwargs.pop("sites", sites)
     kwargs["multi_index"] = multi_index
 
+    _reject_unexpected_format(kwargs, "get_iv", "json")
     response = query_waterservices(
         service="iv", format="json", ssl_check=ssl_check, **kwargs
     )
@@ -797,6 +826,11 @@ def get_ratings(
 
     """
     site = kwargs.pop("site_no", site)
+    # The ratings endpoint is per-site; without one it would issue a request
+    # that returns an unhelpful error page. Fail fast with a clear message
+    # (also covers get_record(service="ratings") called without a site).
+    if site is None:
+        raise TypeError("get_ratings requires a `site` (USGS site number).")
 
     payload = {}
     url = WATERDATA_BASE_URL + "nwisweb/get_ratings/"
@@ -964,6 +998,12 @@ def get_record(
 
     if service not in WATERSERVICES_SERVICES + WATERDATA_SERVICES:
         raise TypeError(f"Unrecognized service: {service}")
+
+    # Forward the documented `state` filter as the NWIS `stateCd` major filter;
+    # it was previously accepted but silently ignored, which produced a
+    # confusing "Bad Request" when used without `sites`.
+    if state is not None:
+        kwargs.setdefault("stateCd", state)
 
     if service == "iv":
         df, _ = get_iv(
