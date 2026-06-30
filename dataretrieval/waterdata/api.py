@@ -16,7 +16,6 @@ from urllib.parse import quote
 import httpx
 import pandas as pd
 
-from dataretrieval.ogc.engine import OGC_API_URL
 from dataretrieval.ogc.filters import FILTER_LANG
 from dataretrieval.utils import (
     HTTPX_DEFAULTS,
@@ -39,6 +38,7 @@ from dataretrieval.waterdata.utils import (
     SAMPLES_URL,
     _accept_legacy_kwargs,
     _as_str_list,
+    _check_ogc_requests,
     _check_profiles,
     _construct_cql_request,
     _default_headers,
@@ -2322,12 +2322,10 @@ def get_queryables(collection: str) -> tuple[pd.DataFrame, BaseMetadata]:
         >>> df.set_index("queryable").loc["state_name", "type"]
         'string'
     """
-    url = f"{OGC_API_URL}/collections/{collection}/queryables"
-    response = _get(url, headers=_default_headers(), **HTTPX_DEFAULTS)
-    _raise_for_non_200(response)
     # The OGC queryables document is a JSON Schema whose ``properties`` map each
     # filterable property name to a ``{title, type, description}`` definition.
-    properties: dict[str, Any] = response.json().get("properties", {})
+    body, response = _check_ogc_requests(endpoint=collection, req_type="queryables")
+    properties: dict[str, Any] = body.get("properties", {})
     df = pd.DataFrame(
         [
             {
