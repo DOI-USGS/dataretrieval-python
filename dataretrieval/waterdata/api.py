@@ -74,6 +74,7 @@ def get_daily(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    max_rows: int | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data provide one data value to represent water conditions for the
     day.
@@ -199,6 +200,9 @@ def get_daily(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
+        This is a per-page size, not a cap on the total result: a query
+        matching more rows than ``limit`` still returns every matching row
+        across multiple pages. Use ``max_rows`` to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -206,6 +210,11 @@ def get_daily(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    max_rows : int, optional
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
+        per-page size), this bounds the total result across every page.
+        The default (None) follows pagination to completion.
 
     Returns
     -------
@@ -273,9 +282,9 @@ def get_daily(
     service = "daily"
 
     # Build argument dictionary, omitting None values
-    args = _get_args(locals())
+    args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, service)
+    return get_ogc_data(args, service, max_rows=max_rows)
 
 
 def get_continuous(
@@ -295,6 +304,7 @@ def get_continuous(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    max_rows: int | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Continuous data provide instantaneous water conditions.
@@ -414,6 +424,9 @@ def get_continuous(
         allowable limit is 10000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
+        This is a per-page size, not a cap on the total result: a query
+        matching more rows than ``limit`` still returns every matching row
+        across multiple pages. Use ``max_rows`` to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -421,6 +434,11 @@ def get_continuous(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    max_rows : int, optional
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
+        per-page size), this bounds the total result across every page.
+        The default (None) follows pagination to completion.
 
     Returns
     -------
@@ -466,9 +484,9 @@ def get_continuous(
     service = "continuous"
 
     # Build argument dictionary, omitting None values
-    args = _get_args(locals())
+    args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, service)
+    return get_ogc_data(args, service, max_rows=max_rows)
 
 
 def get_monitoring_locations(
@@ -520,6 +538,7 @@ def get_monitoring_locations(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    max_rows: int | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Location information is basic information about the monitoring location
     including the name, identifier, agency responsible for data collection, and
@@ -726,6 +745,9 @@ def get_monitoring_locations(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
+        This is a per-page size, not a cap on the total result: a query
+        matching more rows than ``limit`` still returns every matching row
+        across multiple pages. Use ``max_rows`` to cap the total instead.
     skip_geometry : boolean, optional
         This option can be used to skip response geometries for each feature.
         The returning object will be a data frame with no spatial information.
@@ -738,6 +760,11 @@ def get_monitoring_locations(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    max_rows : int, optional
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
+        per-page size), this bounds the total result across every page.
+        The default (None) follows pagination to completion.
 
     Returns
     -------
@@ -774,9 +801,11 @@ def get_monitoring_locations(
 
     # Build argument dictionary, omitting None values (resolving the unified
     # `state` argument into the OGC `state_name` queryable).
-    args = _get_args(_with_state(locals(), to="name", into="state_name"))
+    args = _get_args(
+        _with_state(locals(), to="name", into="state_name"), exclude={"max_rows"}
+    )
 
-    return get_ogc_data(args, service)
+    return get_ogc_data(args, service, max_rows=max_rows)
 
 
 def get_time_series_metadata(
@@ -808,6 +837,7 @@ def get_time_series_metadata(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    max_rows: int | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data and continuous measurements are grouped into time series,
     which represent a collection of observations of a single parameter,
@@ -968,6 +998,9 @@ def get_time_series_metadata(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
+        This is a per-page size, not a cap on the total result: a query
+        matching more rows than ``limit`` still returns every matching row
+        across multiple pages. Use ``max_rows`` to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -975,6 +1008,11 @@ def get_time_series_metadata(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    max_rows : int, optional
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
+        per-page size), this bounds the total result across every page.
+        The default (None) follows pagination to completion.
 
     Returns
     -------
@@ -1011,9 +1049,11 @@ def get_time_series_metadata(
 
     # Build argument dictionary, omitting None values (resolving the unified
     # `state` argument into the OGC `state_name` queryable).
-    args = _get_args(_with_state(locals(), to="name", into="state_name"))
+    args = _get_args(
+        _with_state(locals(), to="name", into="state_name"), exclude={"max_rows"}
+    )
 
-    return get_ogc_data(args, service)
+    return get_ogc_data(args, service, max_rows=max_rows)
 
 
 def get_combined_metadata(
@@ -1080,6 +1120,7 @@ def get_combined_metadata(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    max_rows: int | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get combined monitoring-location and time-series metadata.
 
@@ -1174,7 +1215,10 @@ site_type_code : string or iterable of strings, optional
         (longitude/latitude, west-south-east-north).
     limit : int, optional
         Page size; the maximum allowable value is 50000. Default
-        (``None``) requests the maximum allowable limit.
+        (``None``) requests the maximum allowable limit. This is a
+        per-page size, not a cap on the total result: a query matching more
+        rows than ``limit`` still returns every matching row across
+        multiple pages. Use ``max_rows`` to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -1182,6 +1226,11 @@ site_type_code : string or iterable of strings, optional
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    max_rows : int, optional
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
+        per-page size), this bounds the total result across every page.
+        The default (None) follows pagination to completion.
 
     Returns
     -------
@@ -1253,9 +1302,11 @@ site_type_code : string or iterable of strings, optional
     service = "combined-metadata"
 
     # Resolve the unified `state` argument into the OGC `state_name` queryable.
-    args = _get_args(_with_state(locals(), to="name", into="state_name"))
+    args = _get_args(
+        _with_state(locals(), to="name", into="state_name"), exclude={"max_rows"}
+    )
 
-    return get_ogc_data(args, service)
+    return get_ogc_data(args, service, max_rows=max_rows)
 
 
 def get_latest_continuous(
@@ -1277,6 +1328,7 @@ def get_latest_continuous(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    max_rows: int | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """This endpoint provides the most recent observation for each time series
     of continuous data. Continuous data are collected via automated sensors
@@ -1399,6 +1451,9 @@ def get_latest_continuous(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
+        This is a per-page size, not a cap on the total result: a query
+        matching more rows than ``limit`` still returns every matching row
+        across multiple pages. Use ``max_rows`` to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -1406,6 +1461,11 @@ def get_latest_continuous(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    max_rows : int, optional
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
+        per-page size), this bounds the total result across every page.
+        The default (None) follows pagination to completion.
 
     Returns
     -------
@@ -1454,9 +1514,9 @@ def get_latest_continuous(
     service = "latest-continuous"
 
     # Build argument dictionary, omitting None values
-    args = _get_args(locals())
+    args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, service)
+    return get_ogc_data(args, service, max_rows=max_rows)
 
 
 def get_latest_daily(
@@ -1478,6 +1538,7 @@ def get_latest_daily(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    max_rows: int | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data provide one data value to represent water conditions for the
     day.
@@ -1602,6 +1663,9 @@ def get_latest_daily(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
+        This is a per-page size, not a cap on the total result: a query
+        matching more rows than ``limit`` still returns every matching row
+        across multiple pages. Use ``max_rows`` to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -1609,6 +1673,11 @@ def get_latest_daily(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    max_rows : int, optional
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
+        per-page size), this bounds the total result across every page.
+        The default (None) follows pagination to completion.
 
     Returns
     -------
@@ -1656,9 +1725,9 @@ def get_latest_daily(
     service = "latest-daily"
 
     # Build argument dictionary, omitting None values
-    args = _get_args(locals())
+    args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, service)
+    return get_ogc_data(args, service, max_rows=max_rows)
 
 
 def get_field_measurements(
@@ -1682,6 +1751,7 @@ def get_field_measurements(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    max_rows: int | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Field measurements are physically measured values collected during a
     visit to the monitoring location. Field measurements consist of measurements
@@ -1797,6 +1867,9 @@ def get_field_measurements(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
+        This is a per-page size, not a cap on the total result: a query
+        matching more rows than ``limit`` still returns every matching row
+        across multiple pages. Use ``max_rows`` to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -1804,6 +1877,11 @@ def get_field_measurements(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    max_rows : int, optional
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
+        per-page size), this bounds the total result across every page.
+        The default (None) follows pagination to completion.
 
     Returns
     -------
@@ -1853,9 +1931,9 @@ def get_field_measurements(
     service = "field-measurements"
 
     # Build argument dictionary, omitting None values
-    args = _get_args(locals())
+    args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, service)
+    return get_ogc_data(args, service, max_rows=max_rows)
 
 
 def get_field_measurements_metadata(
@@ -1873,6 +1951,7 @@ def get_field_measurements_metadata(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    max_rows: int | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get field-measurement metadata: one row per (location, parameter) series.
 
@@ -1918,7 +1997,10 @@ def get_field_measurements_metadata(
         (longitude / latitude, west-south-east-north).
     limit : int, optional
         Page size; the maximum allowable value is 50000. Default
-        (``None``) requests the maximum allowable limit.
+        (``None``) requests the maximum allowable limit. This is a
+        per-page size, not a cap on the total result: a query matching more
+        rows than ``limit`` still returns every matching row across
+        multiple pages. Use ``max_rows`` to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -1926,6 +2008,11 @@ def get_field_measurements_metadata(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    max_rows : int, optional
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
+        per-page size), this bounds the total result across every page.
+        The default (None) follows pagination to completion.
 
     Returns
     -------
@@ -1974,9 +2061,9 @@ def get_field_measurements_metadata(
     """
     service = "field-measurements-metadata"
 
-    args = _get_args(locals())
+    args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, service)
+    return get_ogc_data(args, service, max_rows=max_rows)
 
 
 def get_peaks(
@@ -1998,6 +2085,7 @@ def get_peaks(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    max_rows: int | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get the annual peak streamflow / stage record for a monitoring location.
 
@@ -2048,7 +2136,10 @@ def get_peaks(
         (longitude / latitude, west-south-east-north).
     limit : int, optional
         Page size; the maximum allowable value is 50000. Default
-        (``None``) requests the maximum allowable limit.
+        (``None``) requests the maximum allowable limit. This is a
+        per-page size, not a cap on the total result: a query matching more
+        rows than ``limit`` still returns every matching row across
+        multiple pages. Use ``max_rows`` to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -2056,6 +2147,11 @@ def get_peaks(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    max_rows : int, optional
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
+        per-page size), this bounds the total result across every page.
+        The default (None) follows pagination to completion.
 
     Returns
     -------
@@ -2100,9 +2196,9 @@ def get_peaks(
     """
     service = "peaks"
 
-    args = _get_args(locals())
+    args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, service)
+    return get_ogc_data(args, service, max_rows=max_rows)
 
 
 def get_reference_table(
@@ -2916,6 +3012,7 @@ def get_channel(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    max_rows: int | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Channel measurements taken as part of streamflow field measurements.
@@ -3038,6 +3135,9 @@ def get_channel(
         allowable limit is 50000. It may be beneficial to set this number lower
         if your internet connection is spotty. The default (None) will set the
         limit to the maximum allowable limit for the service.
+        This is a per-page size, not a cap on the total result: a query
+        matching more rows than ``limit`` still returns every matching row
+        across multiple pages. Use ``max_rows`` to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -3045,6 +3145,11 @@ def get_channel(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    max_rows : int, optional
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
+        per-page size), this bounds the total result across every page.
+        The default (None) follows pagination to completion.
 
     Returns
     -------
@@ -3072,9 +3177,9 @@ def get_channel(
     """
     service = "channel-measurements"
 
-    args = _get_args(locals())
+    args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, service)
+    return get_ogc_data(args, service, max_rows=max_rows)
 
 
 def get_cql(

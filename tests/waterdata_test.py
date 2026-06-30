@@ -556,6 +556,22 @@ def test_get_daily():
     assert df["value"].dtype == "float64"
 
 
+def test_get_daily_max_rows_caps_total_across_pages():
+    # ``limit`` is a per-page size, not a result cap — it doesn't stop
+    # pagination from following every ``next`` link until the whole matching
+    # result is exhausted. ``max_rows`` is the actual cap: with a tiny
+    # ``limit`` forcing multiple pages, the combined result is still
+    # truncated to exactly ``max_rows`` instead of paging to completion.
+    df, _ = get_daily(
+        monitoring_location_id="USGS-05427718",
+        parameter_code="00060",
+        time="2025-01-01/..",
+        limit=1,
+        max_rows=3,
+    )
+    assert len(df) == 3
+
+
 def test_get_daily_properties():
     df, _ = get_daily(
         monitoring_location_id="USGS-05427718",
