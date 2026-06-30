@@ -174,9 +174,9 @@ def _get_args(
     :func:`dataretrieval.waterdata.get_queryables` for each collection's
     filterable properties (the service rejects an unknown one with a 400).
     """
-    queryables = local_vars.pop("queryables", None)
-    if queryables:
-        local_vars.update(queryables)
+    # ``**queryables`` always arrives as a dict (empty when unused), so flatten
+    # it unconditionally — ``update({})`` is a harmless no-op.
+    local_vars.update(local_vars.pop("queryables", {}))
     return _engine_get_args(local_vars, exclude, no_normalize=_NO_NORMALIZE_PARAMS)
 
 
