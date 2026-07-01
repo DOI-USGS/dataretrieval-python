@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+gd8f630eea documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+g74c48569d documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=52f9616f"></script>
+      <script src="../../../_static/documentation_options.js?v=fac4959c"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -153,6 +153,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Daily data provide one data value to represent water conditions for the</span>
@@ -279,6 +280,9 @@
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">        This is a per-page size, not a cap on the total result: a query</span>
+<span class="sd">        matching more rows than ``limit`` still returns every matching row</span>
+<span class="sd">        across multiple pages. Use ``max_rows`` to cap the total instead.</span>
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
@@ -286,6 +290,11 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    max_rows : int, optional</span>
+<span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
+<span class="sd">        instead of downloading the whole result. Unlike ``limit`` (the</span>
+<span class="sd">        per-page size), this bounds the total result across every page.</span>
+<span class="sd">        The default (None) follows pagination to completion.</span>
 <span class="sd">    **queryables : string or iterable of strings, optional</span>
 <span class="sd">        Any other queryable property of this collection, passed through as a</span>
 <span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
@@ -357,9 +366,9 @@
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;daily&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">})</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
 
 
 
@@ -382,6 +391,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -502,6 +512,9 @@
 <span class="sd">        allowable limit is 10000. It may be beneficial to set this number lower</span>
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">        This is a per-page size, not a cap on the total result: a query</span>
+<span class="sd">        matching more rows than ``limit`` still returns every matching row</span>
+<span class="sd">        across multiple pages. Use ``max_rows`` to cap the total instead.</span>
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
@@ -509,6 +522,11 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    max_rows : int, optional</span>
+<span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
+<span class="sd">        instead of downloading the whole result. Unlike ``limit`` (the</span>
+<span class="sd">        per-page size), this bounds the total result across every page.</span>
+<span class="sd">        The default (None) follows pagination to completion.</span>
 <span class="sd">    **queryables : string or iterable of strings, optional</span>
 <span class="sd">        Any other queryable property of this collection, passed through as a</span>
 <span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
@@ -558,9 +576,9 @@
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;continuous&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">})</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
 
 
 
@@ -615,6 +633,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Location information is basic information about the monitoring location</span>
@@ -822,6 +841,9 @@
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">        This is a per-page size, not a cap on the total result: a query</span>
+<span class="sd">        matching more rows than ``limit`` still returns every matching row</span>
+<span class="sd">        across multiple pages. Use ``max_rows`` to cap the total instead.</span>
 <span class="sd">    skip_geometry : boolean, optional</span>
 <span class="sd">        This option can be used to skip response geometries for each feature.</span>
 <span class="sd">        The returning object will be a data frame with no spatial information.</span>
@@ -834,6 +856,11 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    max_rows : int, optional</span>
+<span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
+<span class="sd">        instead of downloading the whole result. Unlike ``limit`` (the</span>
+<span class="sd">        per-page size), this bounds the total result across every page.</span>
+<span class="sd">        The default (None) follows pagination to completion.</span>
 <span class="sd">    **queryables : string or iterable of strings, optional</span>
 <span class="sd">        Any other queryable property of this collection, passed through as a</span>
 <span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
@@ -874,9 +901,11 @@
 
     <span class="c1"># Build argument dictionary, omitting None values (resolving the unified</span>
     <span class="c1"># `state` argument into the OGC `state_name` queryable).</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="n">_with_state</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">to</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s2">&quot;state_name&quot;</span><span class="p">))</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span>
+        <span class="n">_with_state</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">to</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s2">&quot;state_name&quot;</span><span class="p">),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">}</span>
+    <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
 
 
 
@@ -911,6 +940,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Daily data and continuous measurements are grouped into time series,</span>
@@ -1072,6 +1102,9 @@
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">        This is a per-page size, not a cap on the total result: a query</span>
+<span class="sd">        matching more rows than ``limit`` still returns every matching row</span>
+<span class="sd">        across multiple pages. Use ``max_rows`` to cap the total instead.</span>
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
@@ -1079,6 +1112,11 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    max_rows : int, optional</span>
+<span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
+<span class="sd">        instead of downloading the whole result. Unlike ``limit`` (the</span>
+<span class="sd">        per-page size), this bounds the total result across every page.</span>
+<span class="sd">        The default (None) follows pagination to completion.</span>
 <span class="sd">    **queryables : string or iterable of strings, optional</span>
 <span class="sd">        Any other queryable property of this collection, passed through as a</span>
 <span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
@@ -1119,9 +1157,11 @@
 
     <span class="c1"># Build argument dictionary, omitting None values (resolving the unified</span>
     <span class="c1"># `state` argument into the OGC `state_name` queryable).</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="n">_with_state</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">to</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s2">&quot;state_name&quot;</span><span class="p">))</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span>
+        <span class="n">_with_state</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">to</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s2">&quot;state_name&quot;</span><span class="p">),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">}</span>
+    <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
 
 
 
@@ -1191,6 +1231,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get combined monitoring-location and time-series metadata.</span>
@@ -1286,7 +1327,10 @@
 <span class="sd">        (longitude/latitude, west-south-east-north).</span>
 <span class="sd">    limit : int, optional</span>
 <span class="sd">        Page size; the maximum allowable value is 50000. Default</span>
-<span class="sd">        (``None``) requests the maximum allowable limit.</span>
+<span class="sd">        (``None``) requests the maximum allowable limit. This is a</span>
+<span class="sd">        per-page size, not a cap on the total result: a query matching more</span>
+<span class="sd">        rows than ``limit`` still returns every matching row across</span>
+<span class="sd">        multiple pages. Use ``max_rows`` to cap the total instead.</span>
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
@@ -1294,6 +1338,11 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    max_rows : int, optional</span>
+<span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
+<span class="sd">        instead of downloading the whole result. Unlike ``limit`` (the</span>
+<span class="sd">        per-page size), this bounds the total result across every page.</span>
+<span class="sd">        The default (None) follows pagination to completion.</span>
 <span class="sd">    **queryables : string or iterable of strings, optional</span>
 <span class="sd">        Any other queryable property of this collection, passed through as a</span>
 <span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
@@ -1369,9 +1418,11 @@
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;combined-metadata&quot;</span>
 
     <span class="c1"># Resolve the unified `state` argument into the OGC `state_name` queryable.</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="n">_with_state</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">to</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s2">&quot;state_name&quot;</span><span class="p">))</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span>
+        <span class="n">_with_state</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">to</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s2">&quot;state_name&quot;</span><span class="p">),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">}</span>
+    <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
 
 
 
@@ -1396,6 +1447,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;This endpoint provides the most recent observation for each time series</span>
@@ -1519,6 +1571,9 @@
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">        This is a per-page size, not a cap on the total result: a query</span>
+<span class="sd">        matching more rows than ``limit`` still returns every matching row</span>
+<span class="sd">        across multiple pages. Use ``max_rows`` to cap the total instead.</span>
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
@@ -1526,6 +1581,11 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    max_rows : int, optional</span>
+<span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
+<span class="sd">        instead of downloading the whole result. Unlike ``limit`` (the</span>
+<span class="sd">        per-page size), this bounds the total result across every page.</span>
+<span class="sd">        The default (None) follows pagination to completion.</span>
 <span class="sd">    **queryables : string or iterable of strings, optional</span>
 <span class="sd">        Any other queryable property of this collection, passed through as a</span>
 <span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
@@ -1578,9 +1638,9 @@
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;latest-continuous&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">})</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
 
 
 
@@ -1605,6 +1665,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Daily data provide one data value to represent water conditions for the</span>
@@ -1730,6 +1791,9 @@
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">        This is a per-page size, not a cap on the total result: a query</span>
+<span class="sd">        matching more rows than ``limit`` still returns every matching row</span>
+<span class="sd">        across multiple pages. Use ``max_rows`` to cap the total instead.</span>
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
@@ -1737,6 +1801,11 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    max_rows : int, optional</span>
+<span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
+<span class="sd">        instead of downloading the whole result. Unlike ``limit`` (the</span>
+<span class="sd">        per-page size), this bounds the total result across every page.</span>
+<span class="sd">        The default (None) follows pagination to completion.</span>
 <span class="sd">    **queryables : string or iterable of strings, optional</span>
 <span class="sd">        Any other queryable property of this collection, passed through as a</span>
 <span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
@@ -1788,9 +1857,9 @@
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;latest-daily&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">})</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
 
 
 
@@ -1817,6 +1886,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Field measurements are physically measured values collected during a</span>
@@ -1933,6 +2003,9 @@
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">        This is a per-page size, not a cap on the total result: a query</span>
+<span class="sd">        matching more rows than ``limit`` still returns every matching row</span>
+<span class="sd">        across multiple pages. Use ``max_rows`` to cap the total instead.</span>
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
@@ -1940,6 +2013,11 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    max_rows : int, optional</span>
+<span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
+<span class="sd">        instead of downloading the whole result. Unlike ``limit`` (the</span>
+<span class="sd">        per-page size), this bounds the total result across every page.</span>
+<span class="sd">        The default (None) follows pagination to completion.</span>
 <span class="sd">    **queryables : string or iterable of strings, optional</span>
 <span class="sd">        Any other queryable property of this collection, passed through as a</span>
 <span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
@@ -1993,9 +2071,9 @@
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;field-measurements&quot;</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">})</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
 
 
 
@@ -2016,6 +2094,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get field-measurement metadata: one row per (location, parameter) series.</span>
@@ -2062,7 +2141,10 @@
 <span class="sd">        (longitude / latitude, west-south-east-north).</span>
 <span class="sd">    limit : int, optional</span>
 <span class="sd">        Page size; the maximum allowable value is 50000. Default</span>
-<span class="sd">        (``None``) requests the maximum allowable limit.</span>
+<span class="sd">        (``None``) requests the maximum allowable limit. This is a</span>
+<span class="sd">        per-page size, not a cap on the total result: a query matching more</span>
+<span class="sd">        rows than ``limit`` still returns every matching row across</span>
+<span class="sd">        multiple pages. Use ``max_rows`` to cap the total instead.</span>
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
@@ -2070,6 +2152,11 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    max_rows : int, optional</span>
+<span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
+<span class="sd">        instead of downloading the whole result. Unlike ``limit`` (the</span>
+<span class="sd">        per-page size), this bounds the total result across every page.</span>
+<span class="sd">        The default (None) follows pagination to completion.</span>
 <span class="sd">    **queryables : string or iterable of strings, optional</span>
 <span class="sd">        Any other queryable property of this collection, passed through as a</span>
 <span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
@@ -2122,9 +2209,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;field-measurements-metadata&quot;</span>
 
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">})</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
 
 
 
@@ -2149,6 +2236,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the annual peak streamflow / stage record for a monitoring location.</span>
@@ -2200,7 +2288,10 @@
 <span class="sd">        (longitude / latitude, west-south-east-north).</span>
 <span class="sd">    limit : int, optional</span>
 <span class="sd">        Page size; the maximum allowable value is 50000. Default</span>
-<span class="sd">        (``None``) requests the maximum allowable limit.</span>
+<span class="sd">        (``None``) requests the maximum allowable limit. This is a</span>
+<span class="sd">        per-page size, not a cap on the total result: a query matching more</span>
+<span class="sd">        rows than ``limit`` still returns every matching row across</span>
+<span class="sd">        multiple pages. Use ``max_rows`` to cap the total instead.</span>
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
@@ -2208,6 +2299,11 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    max_rows : int, optional</span>
+<span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
+<span class="sd">        instead of downloading the whole result. Unlike ``limit`` (the</span>
+<span class="sd">        per-page size), this bounds the total result across every page.</span>
+<span class="sd">        The default (None) follows pagination to completion.</span>
 <span class="sd">    **queryables : string or iterable of strings, optional</span>
 <span class="sd">        Any other queryable property of this collection, passed through as a</span>
 <span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
@@ -2256,9 +2352,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;peaks&quot;</span>
 
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">})</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
 
 
 
@@ -3158,6 +3254,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -3281,6 +3378,9 @@
 <span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
 <span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
 <span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">        This is a per-page size, not a cap on the total result: a query</span>
+<span class="sd">        matching more rows than ``limit`` still returns every matching row</span>
+<span class="sd">        across multiple pages. Use ``max_rows`` to cap the total instead.</span>
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
@@ -3288,6 +3388,11 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    max_rows : int, optional</span>
+<span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
+<span class="sd">        instead of downloading the whole result. Unlike ``limit`` (the</span>
+<span class="sd">        per-page size), this bounds the total result across every page.</span>
+<span class="sd">        The default (None) follows pagination to completion.</span>
 <span class="sd">    **queryables : string or iterable of strings, optional</span>
 <span class="sd">        Any other queryable property of this collection, passed through as a</span>
 <span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
@@ -3319,9 +3424,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;channel-measurements&quot;</span>
 
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">})</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
 
 
 
