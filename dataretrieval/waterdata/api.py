@@ -38,6 +38,7 @@ from dataretrieval.waterdata.utils import (
     SAMPLES_URL,
     _accept_legacy_kwargs,
     _as_str_list,
+    _check_ogc_requests,
     _check_profiles,
     _construct_cql_request,
     _default_headers,
@@ -74,6 +75,7 @@ def get_daily(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data provide one data value to represent water conditions for the
     day.
@@ -206,6 +208,10 @@ def get_daily(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    **queryables : string or iterable of strings, optional
+        Any other queryable property of this collection, passed through as a
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -295,6 +301,7 @@ def get_continuous(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Continuous data provide instantaneous water conditions.
@@ -421,6 +428,10 @@ def get_continuous(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    **queryables : string or iterable of strings, optional
+        Any other queryable property of this collection, passed through as a
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -520,6 +531,7 @@ def get_monitoring_locations(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Location information is basic information about the monitoring location
     including the name, identifier, agency responsible for data collection, and
@@ -738,6 +750,10 @@ def get_monitoring_locations(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    **queryables : string or iterable of strings, optional
+        Any other queryable property of this collection, passed through as a
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -808,6 +824,7 @@ def get_time_series_metadata(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data and continuous measurements are grouped into time series,
     which represent a collection of observations of a single parameter,
@@ -975,6 +992,10 @@ def get_time_series_metadata(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    **queryables : string or iterable of strings, optional
+        Any other queryable property of this collection, passed through as a
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -1080,6 +1101,7 @@ def get_combined_metadata(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get combined monitoring-location and time-series metadata.
 
@@ -1182,6 +1204,10 @@ site_type_code : string or iterable of strings, optional
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    **queryables : string or iterable of strings, optional
+        Any other queryable property of this collection, passed through as a
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -1277,6 +1303,7 @@ def get_latest_continuous(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """This endpoint provides the most recent observation for each time series
     of continuous data. Continuous data are collected via automated sensors
@@ -1406,6 +1433,10 @@ def get_latest_continuous(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    **queryables : string or iterable of strings, optional
+        Any other queryable property of this collection, passed through as a
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -1478,6 +1509,7 @@ def get_latest_daily(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Daily data provide one data value to represent water conditions for the
     day.
@@ -1609,6 +1641,10 @@ def get_latest_daily(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    **queryables : string or iterable of strings, optional
+        Any other queryable property of this collection, passed through as a
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -1682,6 +1718,7 @@ def get_field_measurements(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Field measurements are physically measured values collected during a
     visit to the monitoring location. Field measurements consist of measurements
@@ -1804,6 +1841,10 @@ def get_field_measurements(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    **queryables : string or iterable of strings, optional
+        Any other queryable property of this collection, passed through as a
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -1873,6 +1914,7 @@ def get_field_measurements_metadata(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get field-measurement metadata: one row per (location, parameter) series.
 
@@ -1926,6 +1968,10 @@ def get_field_measurements_metadata(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    **queryables : string or iterable of strings, optional
+        Any other queryable property of this collection, passed through as a
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -1998,6 +2044,7 @@ def get_peaks(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get the annual peak streamflow / stage record for a monitoring location.
 
@@ -2056,6 +2103,10 @@ def get_peaks(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    **queryables : string or iterable of strings, optional
+        Any other queryable property of this collection, passed through as a
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -2196,6 +2247,68 @@ def get_reference_table(
     return get_ogc_data(
         args=query_args, output_id=output_id, service=collection, max_rows=max_rows
     )
+
+
+def get_queryables(collection: str) -> tuple[pd.DataFrame, BaseMetadata]:
+    """List the queryable properties of a Water Data API collection.
+
+    Every OGC collection (``daily``, ``continuous``, ``monitoring-locations``,
+    ...) advertises the set of properties that can be filtered on -- exposed as
+    the typed keyword arguments of the matching ``get_*`` function, and usable
+    directly in a CQL2 ``filter``. This returns that set, so the available
+    filters can be discovered programmatically and monitored for upstream
+    additions.
+
+    Parameters
+    ----------
+    collection : string
+        The collection id, e.g. ``"daily"``, ``"continuous"``,
+        ``"monitoring-locations"``, or ``"time-series-metadata"``. See
+        :data:`dataretrieval.waterdata.types.WATERDATA_SERVICES` for the data
+        collections; reference collections (e.g. ``"parameter-codes"``) work
+        too.
+
+    Returns
+    -------
+    df : ``pandas.DataFrame``
+        One row per queryable, sorted by name, with columns ``queryable`` (the
+        property name), ``type``, ``title``, and ``description``.
+    md : :class:`dataretrieval.utils.BaseMetadata`
+        Metadata describing the request (URL, query time, response headers).
+
+    Raises
+    ------
+    DataRetrievalError
+        On an HTTP error response (e.g. an unknown ``collection`` yields a 404),
+        the typed subclass for the status.
+
+    Examples
+    --------
+    .. doctest::
+        :skipif: True  # network
+
+        >>> from dataretrieval import waterdata
+        >>> df, md = waterdata.get_queryables("daily")
+        >>> df.set_index("queryable").loc["state_name", "type"]
+        'string'
+    """
+    # The OGC queryables document is a JSON Schema whose ``properties`` map each
+    # filterable property name to a ``{title, type, description}`` definition.
+    body, response = _check_ogc_requests(endpoint=collection, req_type="queryables")
+    properties: dict[str, Any] = body.get("properties", {})
+    df = pd.DataFrame(
+        [
+            {
+                "queryable": name,
+                "type": prop.get("type"),
+                "title": prop.get("title"),
+                "description": (prop.get("description") or "").strip(),
+            }
+            for name, prop in sorted(properties.items())
+        ],
+        columns=["queryable", "type", "title", "description"],
+    )
+    return df, BaseMetadata(response)
 
 
 def get_codes(code_service: CODE_SERVICES) -> tuple[pd.DataFrame, BaseMetadata]:
@@ -2916,6 +3029,7 @@ def get_channel(
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
+    **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Channel measurements taken as part of streamflow field measurements.
@@ -3045,6 +3159,10 @@ def get_channel(
         and the lexicographic-comparison pitfall.
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
+    **queryables : string or iterable of strings, optional
+        Any other queryable property of this collection, passed through as a
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------

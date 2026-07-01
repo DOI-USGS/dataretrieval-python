@@ -155,6 +155,23 @@ _NO_NORMALIZE_PARAMS = _DATE_RANGE_PARAMS | {
 }
 
 
+def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
+    """Merge a getter's ``**queryables`` passthrough kwargs -- collected by
+    ``locals()`` under the ``queryables`` key -- up into ``local_vars`` as
+    top-level entries, so an extra server-side filter such as
+    ``state_name="Wisconsin"`` is normalized, mutual-exclusion-checked, and sent
+    exactly like a named param. See
+    :func:`dataretrieval.waterdata.get_queryables` for each collection's
+    filterable properties (the service rejects an unknown one with a 400).
+
+    ``**queryables`` always arrives as a dict (empty when unused) and the key is
+    popped, so this is a no-op on getters without the passthrough and idempotent
+    if called twice.
+    """
+    local_vars.update(local_vars.pop("queryables", {}))
+    return local_vars
+
+
 def _get_args(
     local_vars: dict[str, Any], exclude: set[str] | None = None
 ) -> dict[str, Any]:
@@ -163,8 +180,10 @@ def _get_args(
     Supplies the Water Data API's extended ``no_normalize`` set (numeric
     params such as ``water_year``, ``thresholds``, ``boundingBox``) so they
     keep their element types. See :func:`engine._get_args` for the full
-    normalization contract.
+    normalization contract. Also flattens any ``**queryables`` passthrough
+    (see :func:`_flatten_queryables`).
     """
+    _flatten_queryables(local_vars)
     return _engine_get_args(local_vars, exclude, no_normalize=_NO_NORMALIZE_PARAMS)
 
 
@@ -180,6 +199,12 @@ def _with_state(local_vars: dict[str, Any], *, to: str, into: str) -> dict[str, 
     raw values (e.g. non-US FIPS); passing ``state`` together with either
     raises ``ValueError``.
     """
+    # Flatten ``**queryables`` first so a native state param arriving that way
+    # (e.g. ``get_time_series_metadata``'s ``state_code``, which isn't an
+    # explicit parameter) is visible to apply_state's mutual-exclusion guard.
+    # Otherwise ``state`` plus a passthrough ``state_code`` would slip past the
+    # check and silently send both.
+    _flatten_queryables(local_vars)
     return apply_state(
         local_vars, to=to, into=into, reject=("state_code", "state_name")
     )
