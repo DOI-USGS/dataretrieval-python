@@ -208,6 +208,24 @@ class Test_error_taxonomy:
             dataretrieval.ChunkInterrupted, dataretrieval.DataRetrievalError
         )
 
+    def test_chunk_granularity_exported_at_top_level_and_waterdata(self):
+        """The ``chunk_granularity`` context manager and its ``GranularityLevel``
+        type are reachable both from the top level (``from dataretrieval import
+        chunk_granularity``) and from the user-facing ``dataretrieval.waterdata``
+        namespace, and both resolve to the single objects defined in
+        ``dataretrieval.ogc.chunking``."""
+        import dataretrieval
+        from dataretrieval import waterdata
+        from dataretrieval.ogc import chunking
+
+        assert dataretrieval.chunk_granularity is chunking.chunk_granularity
+        assert waterdata.chunk_granularity is chunking.chunk_granularity
+        assert dataretrieval.GranularityLevel is chunking.GranularityLevel
+        assert waterdata.GranularityLevel is chunking.GranularityLevel
+        for name in ("chunk_granularity", "GranularityLevel"):
+            assert name in dataretrieval.__all__
+            assert name in waterdata.__all__
+
 
 class Test_BaseMetadata:
     """Tests of BaseMetadata"""

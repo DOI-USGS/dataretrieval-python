@@ -40,8 +40,13 @@ from dataretrieval.exceptions import (
 from dataretrieval.ogc import chunking as _chunking
 from dataretrieval.ogc import retry as _retry_mod
 from dataretrieval.ogc.chunking import (
+    _GRANULARITY_LEVELS,
+    _GRANULARITY_MAX_CHUNKS,
     ChunkedCall,
     _chunked_client,
+    _granularity,
+    _resolve_granularity,
+    chunk_granularity,
     get_active_client,
     multi_value_chunked,
 )
@@ -2105,3 +2110,246 @@ def test_resume_finalizes_but_partials_stay_raw(monkeypatch):
     assert "finalized" in df.columns
     assert md[0] == "METADATA"
     assert calls["finalize"] >= 1
+
+
+# ---------------------------------------------------------------------------
+# Chunk granularity: the opt-in dial (``"low"`` / ``"medium"`` / ``"high"``) to
+# fan a query out MORE finely than the byte limit alone requires
+# (``ChunkPlan._refine`` + the ``chunk_granularity`` context manager).
+# ``_fake_build``'s base is 200 bytes, so a handful of short atoms sits far
+# under ``url_limit=8000`` — the byte pass passes it through untouched, and any
+# splitting below is the granularity cap alone. ``ChunkPlan`` takes the resolved
+# integer cap (``max_chunks_per_axis``) directly; ``chunk_granularity`` /
+# ``_resolve_granularity`` map the level names onto it.
+# ---------------------------------------------------------------------------
+
+
+def test_zero_cap_preserves_passthrough():
+    """``max_chunks_per_axis=0`` (the default) must not perturb the existing
+    plan: a multi-value request that fits the byte limit is still the trivial
+    passthrough (no axes, ``total == 1``), byte-for-byte the pre-feature
+    behavior."""
+    args = {"monitoring_location_id": ["A", "B", "C", "D"]}
+    plan = ChunkPlan(args, _fake_build, url_limit=8000, max_chunks_per_axis=0)
+    assert plan.axes == []
+    assert plan.total == 1
+    assert list(plan.iter_sub_args()) == [args]
+
+
+@pytest.mark.parametrize(
+    ("max_chunks_per_axis", "expected_pieces"),
+    [(0, 1), (2, 2), (8, 8), (16, 10), (32, 10)],
+)
+def test_cap_ramps_then_saturates(max_chunks_per_axis, expected_pieces):
+    """A single 10-atom axis that fits the byte limit splits into
+    ``min(10, cap)`` pieces: 1 (off), 2, 8, then saturating at 10 (one atom per
+    chunk) once the cap overshoots the atom count. Monotonic and bounded, and
+    whenever it splits the partition is a cover — every atom exactly once. (The
+    cap-0 passthrough has no axis to cover; see the passthrough test.)"""
+    atoms = [f"S{i:02d}" for i in range(10)]
+    plan = ChunkPlan(
+        {"monitoring_location_id": atoms},
+        _fake_build,
+        url_limit=8000,
+        max_chunks_per_axis=max_chunks_per_axis,
+    )
+    assert plan.total == expected_pieces
+    if max_chunks_per_axis:
+        flattened = [
+            a for chunk in plan.chunks["monitoring_location_id"] for a in chunk
+        ]
+        assert sorted(flattened) == sorted(atoms)
+
+
+def test_cap_bounds_fan_out_for_a_long_axis():
+    """The cap is a quota guardrail: at the ``"high"`` cap a 100-atom axis
+    fans into ``cap`` pieces — NOT 100 singletons — so an accidental
+    ``chunk_granularity("high")`` on a huge list can't detonate into hundreds
+    of sub-requests. Every atom is still covered exactly once."""
+    high = _GRANULARITY_LEVELS["high"]
+    atoms = [f"X{i:03d}" for i in range(100)]
+    plan = ChunkPlan(
+        {"monitoring_location_id": atoms},
+        _fake_build,
+        url_limit=8000,
+        max_chunks_per_axis=high,
+    )
+    assert plan.total == high
+    flattened = [a for chunk in plan.chunks["monitoring_location_id"] for a in chunk]
+    assert sorted(flattened) == sorted(atoms)
+
+
+def test_cap_below_byte_split_does_not_reduce_fan_out():
+    """The cap is purely additive — it can only split further, never coarsen.
+    A request the byte budget already fans into K>2 chunks is untouched by a
+    cap of 2 (below K), so the byte-driven plan is preserved."""
+    # Heavy axis of four 30-char atoms; a limit tight enough that the byte pass
+    # must drive every atom into its own sub-request (4 pieces > the cap of 2).
+    args = {"monitoring_location_id": ["X" * 30, "Y" * 30, "Z" * 30, "W" * 30]}
+    baseline = ChunkPlan(args, _fake_build, url_limit=250, max_chunks_per_axis=0)
+    assert baseline.total > 2  # byte pass alone already fanned out past 2
+    refined = ChunkPlan(args, _fake_build, url_limit=250, max_chunks_per_axis=2)
+    # cap 2 < baseline pieces → refine is a no-op here.
+    assert refined.total == baseline.total
+
+
+def test_cap_never_exceeds_the_byte_budget():
+    """Refining on top of an over-budget request keeps the hard invariant:
+    every sub-request still fits ``url_limit`` (splitting only ever shrinks
+    a chunk), and the fan-out is at least what the byte pass required."""
+    args = {"monitoring_location_id": ["X" * 30, "Y" * 30, "Z" * 30, "W" * 30]}
+    limit = 310
+    byte_only = ChunkPlan(args, _fake_build, url_limit=limit, max_chunks_per_axis=0)
+    plan = ChunkPlan(args, _fake_build, url_limit=limit, max_chunks_per_axis=32)
+    assert plan.total >= byte_only.total
+    for sub in plan.iter_sub_args():
+        assert _safe_request_bytes(_fake_build, sub, limit) <= limit
+
+
+def test_cap_refines_the_filter_axis():
+    """The dial treats the cql-text ``filter`` axis like any other: an
+    under-budget filter of N top-level OR-clauses is split along that axis
+    into ``min(N, cap)`` pieces."""
+    clauses = [f"p='{i}'" for i in range(8)]
+    args = {"filter": " OR ".join(clauses)}
+    plan = ChunkPlan(args, _fake_build, url_limit=8000, max_chunks_per_axis=4)
+    assert len(plan.chunks["filter"]) == 4  # min(8, 4)
+    assert plan.total == 4
+
+
+def test_cap_multiplies_across_axes():
+    """With more than one multi-value axis the per-axis caps multiply —
+    documented behavior the caller opts into. Two 6-atom axes at a cap of 4
+    yield a 4x4 cartesian product."""
+    args = {
+        "monitoring_location_id": [f"L{i}" for i in range(6)],
+        "parameter_code": [f"{i:05d}" for i in range(6)],
+    }
+    plan = ChunkPlan(args, _fake_build, url_limit=8000, max_chunks_per_axis=4)
+    assert len(plan.chunks["monitoring_location_id"]) == 4
+    assert len(plan.chunks["parameter_code"]) == 4
+    assert plan.total == 16
+
+
+def test_cap_does_not_mask_unchunkable():
+    """A request with nothing to split that still busts the byte limit must
+    raise ``Unchunkable`` regardless of the cap — the soft pass has no axis to
+    act on and must not swallow the hard failure."""
+    args = {"monitoring_location_id": "one-huge-scalar"}
+    with pytest.raises(Unchunkable):
+        ChunkPlan(args, _fake_build, url_limit=10, max_chunks_per_axis=32)
+
+
+@pytest.mark.parametrize("level", ["low", "medium", "high"])
+def test_resolve_granularity_maps_each_level_to_its_cap(level):
+    """Each level name resolves to its per-axis sub-chunk cap from the table
+    (a positive int)."""
+    assert _resolve_granularity(level) == _GRANULARITY_LEVELS[level]
+    assert _resolve_granularity(level) >= 1
+
+
+def test_granularity_levels_ordered_and_spaced():
+    """The three caps hold the properties callers rely on: strictly increasing,
+    ``"high"`` saturating the declared ceiling, ``"low"`` still a real split
+    (>= 2), and each level spaced 4x from the next. The ceiling is a granularity
+    constant, deliberately independent of the concurrency default."""
+    low = _GRANULARITY_LEVELS["low"]
+    medium = _GRANULARITY_LEVELS["medium"]
+    high = _GRANULARITY_LEVELS["high"]
+    assert low < medium < high
+    assert high == _GRANULARITY_MAX_CHUNKS
+    assert low >= 2
+    assert medium == high // 4
+    assert low == medium // 4
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        "off",  # a dead keyword form
+        "LOW",  # wrong case — exact match only
+        " low ",  # stray whitespace
+        5,  # the old integer levels are gone
+        None,  # None not accepted
+        ["low"],  # unhashable → the ``not in`` check still rejects it cleanly
+    ],
+)
+def test_resolve_granularity_rejects_everything_but_the_three_levels(bad):
+    """Only the three exact level strings are accepted; every other value — a
+    representative of each rejected shape (dead keyword, wrong case, whitespace,
+    old int, ``None``, unhashable) — raises ``ValueError`` so a typo fails
+    loudly."""
+    with pytest.raises(ValueError, match="chunk_granularity level must be"):
+        _resolve_granularity(bad)
+
+
+def test_chunk_granularity_scopes_and_restores_the_ambient():
+    """The context manager resolves the level to its cap, publishes it on the
+    ambient for the block, and restores the previous value on exit — including
+    proper nesting."""
+    assert _granularity.get() == 0
+    with chunk_granularity("high"):
+        assert _granularity.get() == _GRANULARITY_LEVELS["high"]
+        with chunk_granularity("low"):
+            assert _granularity.get() == _GRANULARITY_LEVELS["low"]
+        assert _granularity.get() == _GRANULARITY_LEVELS["high"]  # outer restored
+    assert _granularity.get() == 0  # default (off) outside any block
+
+
+def test_chunk_granularity_validates_on_entry():
+    """An invalid level raises at ``with`` entry — before any request is
+    issued — and leaves the ambient untouched."""
+    with pytest.raises(ValueError, match="chunk_granularity level must be"):
+        with chunk_granularity("aggressive"):
+            pass
+    assert _granularity.get() == 0
+
+
+def test_chunk_granularity_high_drives_end_to_end_fan_out():
+    """End-to-end: the same fitting request passes through as a single call by
+    default, but fans into several sub-requests inside a
+    ``chunk_granularity("high")`` block — and the combined result still
+    recovers every atom exactly once."""
+    sites = [f"S{i:02d}" for i in range(8)]
+
+    calls: list[tuple[str, ...]] = []
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=8000)
+    async def fetch(args):
+        chunk = tuple(args["monitoring_location_id"])
+        calls.append(chunk)
+        return pd.DataFrame({"site": list(chunk)}), _ok_response()
+
+    # Default: comfortably under the byte limit → one passthrough call.
+    df_plain, _ = fetch({"monitoring_location_id": sites})
+    assert len(calls) == 1
+    assert sorted(df_plain["site"]) == sorted(sites)
+
+    calls.clear()
+    with chunk_granularity("high"):
+        df_fine, _ = fetch({"monitoring_location_id": sites})
+    # 8 atoms at the "high" cap (>= 8) → 8 singleton sub-requests.
+    assert len(calls) == 8
+    assert all(len(chunk) == 1 for chunk in calls)
+    # Union across chunks recovers the original set, once each.
+    assert sorted(a for chunk in calls for a in chunk) == sorted(sites)
+    assert sorted(df_fine["site"]) == sorted(sites)
+
+
+def test_chunk_granularity_low_is_a_gentle_split():
+    """``"low"`` is the mildest opt-in: an under-limit request fans into just
+    the ``"low"`` cap's worth of pieces, not singletons."""
+    low = _GRANULARITY_LEVELS["low"]
+    sites = [f"S{i:02d}" for i in range(8)]
+    calls: list[int] = []
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=8000)
+    async def fetch(args):
+        calls.append(len(args["monitoring_location_id"]))
+        return pd.DataFrame(), _ok_response()
+
+    with chunk_granularity("low"):
+        fetch({"monitoring_location_id": sites})
+    # low cap → that many sub-requests, together covering all 8 sites.
+    assert len(calls) == low
+    assert sum(calls) == 8
