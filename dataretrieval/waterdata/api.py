@@ -210,13 +210,8 @@ def get_daily(
         If True, converts columns to appropriate types.
     **queryables : string or iterable of strings, optional
         Any other queryable property of this collection, passed through as a
-        server-side filter. Many collections share the monitoring-location
-        attributes (e.g. ``state_name="Wisconsin"``, ``site_type_code="ST"``),
-        but the available queryables differ per collection -- call
-        :func:`get_queryables` for the ones this collection actually supports.
-        An unknown name is rejected by the service with a ``DataRetrievalError``
-        (HTTP 400). This passthrough is provisional and may be superseded by
-        explicit per-property keyword arguments.
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -435,13 +430,8 @@ def get_continuous(
         If True, converts columns to appropriate types.
     **queryables : string or iterable of strings, optional
         Any other queryable property of this collection, passed through as a
-        server-side filter. Many collections share the monitoring-location
-        attributes (e.g. ``state_name="Wisconsin"``, ``site_type_code="ST"``),
-        but the available queryables differ per collection -- call
-        :func:`get_queryables` for the ones this collection actually supports.
-        An unknown name is rejected by the service with a ``DataRetrievalError``
-        (HTTP 400). This passthrough is provisional and may be superseded by
-        explicit per-property keyword arguments.
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -762,13 +752,8 @@ def get_monitoring_locations(
         If True, converts columns to appropriate types.
     **queryables : string or iterable of strings, optional
         Any other queryable property of this collection, passed through as a
-        server-side filter. Many collections share the monitoring-location
-        attributes (e.g. ``state_name="Wisconsin"``, ``site_type_code="ST"``),
-        but the available queryables differ per collection -- call
-        :func:`get_queryables` for the ones this collection actually supports.
-        An unknown name is rejected by the service with a ``DataRetrievalError``
-        (HTTP 400). This passthrough is provisional and may be superseded by
-        explicit per-property keyword arguments.
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -1009,13 +994,8 @@ def get_time_series_metadata(
         If True, converts columns to appropriate types.
     **queryables : string or iterable of strings, optional
         Any other queryable property of this collection, passed through as a
-        server-side filter. Many collections share the monitoring-location
-        attributes (e.g. ``state_name="Wisconsin"``, ``site_type_code="ST"``),
-        but the available queryables differ per collection -- call
-        :func:`get_queryables` for the ones this collection actually supports.
-        An unknown name is rejected by the service with a ``DataRetrievalError``
-        (HTTP 400). This passthrough is provisional and may be superseded by
-        explicit per-property keyword arguments.
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -1226,13 +1206,8 @@ site_type_code : string or iterable of strings, optional
         If True, converts columns to appropriate types.
     **queryables : string or iterable of strings, optional
         Any other queryable property of this collection, passed through as a
-        server-side filter. Many collections share the monitoring-location
-        attributes (e.g. ``state_name="Wisconsin"``, ``site_type_code="ST"``),
-        but the available queryables differ per collection -- call
-        :func:`get_queryables` for the ones this collection actually supports.
-        An unknown name is rejected by the service with a ``DataRetrievalError``
-        (HTTP 400). This passthrough is provisional and may be superseded by
-        explicit per-property keyword arguments.
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -1460,13 +1435,8 @@ def get_latest_continuous(
         If True, converts columns to appropriate types.
     **queryables : string or iterable of strings, optional
         Any other queryable property of this collection, passed through as a
-        server-side filter. Many collections share the monitoring-location
-        attributes (e.g. ``state_name="Wisconsin"``, ``site_type_code="ST"``),
-        but the available queryables differ per collection -- call
-        :func:`get_queryables` for the ones this collection actually supports.
-        An unknown name is rejected by the service with a ``DataRetrievalError``
-        (HTTP 400). This passthrough is provisional and may be superseded by
-        explicit per-property keyword arguments.
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -1673,13 +1643,8 @@ def get_latest_daily(
         If True, converts columns to appropriate types.
     **queryables : string or iterable of strings, optional
         Any other queryable property of this collection, passed through as a
-        server-side filter. Many collections share the monitoring-location
-        attributes (e.g. ``state_name="Wisconsin"``, ``site_type_code="ST"``),
-        but the available queryables differ per collection -- call
-        :func:`get_queryables` for the ones this collection actually supports.
-        An unknown name is rejected by the service with a ``DataRetrievalError``
-        (HTTP 400). This passthrough is provisional and may be superseded by
-        explicit per-property keyword arguments.
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -1878,13 +1843,8 @@ def get_field_measurements(
         If True, converts columns to appropriate types.
     **queryables : string or iterable of strings, optional
         Any other queryable property of this collection, passed through as a
-        server-side filter. Many collections share the monitoring-location
-        attributes (e.g. ``state_name="Wisconsin"``, ``site_type_code="ST"``),
-        but the available queryables differ per collection -- call
-        :func:`get_queryables` for the ones this collection actually supports.
-        An unknown name is rejected by the service with a ``DataRetrievalError``
-        (HTTP 400). This passthrough is provisional and may be superseded by
-        explicit per-property keyword arguments.
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -2010,13 +1970,8 @@ def get_field_measurements_metadata(
         If True, converts columns to appropriate types.
     **queryables : string or iterable of strings, optional
         Any other queryable property of this collection, passed through as a
-        server-side filter. Many collections share the monitoring-location
-        attributes (e.g. ``state_name="Wisconsin"``, ``site_type_code="ST"``),
-        but the available queryables differ per collection -- call
-        :func:`get_queryables` for the ones this collection actually supports.
-        An unknown name is rejected by the service with a ``DataRetrievalError``
-        (HTTP 400). This passthrough is provisional and may be superseded by
-        explicit per-property keyword arguments.
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -2150,13 +2105,8 @@ def get_peaks(
         If True, converts columns to appropriate types.
     **queryables : string or iterable of strings, optional
         Any other queryable property of this collection, passed through as a
-        server-side filter. Many collections share the monitoring-location
-        attributes (e.g. ``state_name="Wisconsin"``, ``site_type_code="ST"``),
-        but the available queryables differ per collection -- call
-        :func:`get_queryables` for the ones this collection actually supports.
-        An unknown name is rejected by the service with a ``DataRetrievalError``
-        (HTTP 400). This passthrough is provisional and may be superseded by
-        explicit per-property keyword arguments.
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
@@ -3211,13 +3161,8 @@ def get_channel(
         If True, converts columns to appropriate types.
     **queryables : string or iterable of strings, optional
         Any other queryable property of this collection, passed through as a
-        server-side filter. Many collections share the monitoring-location
-        attributes (e.g. ``state_name="Wisconsin"``, ``site_type_code="ST"``),
-        but the available queryables differ per collection -- call
-        :func:`get_queryables` for the ones this collection actually supports.
-        An unknown name is rejected by the service with a ``DataRetrievalError``
-        (HTTP 400). This passthrough is provisional and may be superseded by
-        explicit per-property keyword arguments.
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
 
     Returns
     -------
