@@ -241,10 +241,14 @@ def _cql2_param(args: dict[str, Any]) -> str:
     return json.dumps(query, separators=(",", ":"))
 
 
-def _check_ogc_requests(endpoint: str, req_type: str = "queryables") -> dict[str, Any]:
+def _check_ogc_requests(
+    endpoint: str, req_type: str = "queryables"
+) -> tuple[dict[str, Any], httpx.Response]:
     """
     Sends an HTTP GET request to the specified OGC endpoint and request type,
-    returning the JSON response.
+    returning the parsed JSON body alongside the raw response (so a caller
+    that needs response-derived metadata, e.g. :class:`BaseMetadata`, doesn't
+    have to re-issue the request).
 
     Parameters
     ----------
@@ -258,6 +262,9 @@ def _check_ogc_requests(endpoint: str, req_type: str = "queryables") -> dict[str
     -------
     dict
         The JSON response from the OGC endpoint.
+    httpx.Response
+        The raw response, for callers that need it (URL, elapsed time,
+        headers).
 
     Raises
     ------
@@ -275,7 +282,7 @@ def _check_ogc_requests(endpoint: str, req_type: str = "queryables") -> dict[str
     _raise_for_non_200(resp)
     # ``Response.json`` is typed ``Any``; the OGC queryables/schema endpoints
     # return a JSON object, and callers index it as a dict.
-    return cast("dict[str, Any]", resp.json())
+    return cast("dict[str, Any]", resp.json()), resp
 
 
 def _ogc_query_params(

@@ -190,7 +190,7 @@ def _deal_with_empty(
             # call (it goes away once requests move to their own module).
             from dataretrieval.ogc.engine import _check_ogc_requests
 
-            schema = _check_ogc_requests(endpoint=service, req_type="schema")
+            schema, _ = _check_ogc_requests(endpoint=service, req_type="schema")
             properties = list(schema.get("properties", {}).keys())
         return pd.DataFrame(columns=properties)
     return return_list
