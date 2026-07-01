@@ -984,6 +984,19 @@ def test_with_state_conflict_raises():
         )
 
 
+def test_with_state_conflict_via_queryables_raises():
+    """A native state param arriving through ``**queryables`` (i.e. not an
+    explicit getter parameter, as with ``get_time_series_metadata``'s
+    ``state_code``) is flattened before the mutual-exclusion check, so combining
+    it with ``state`` still raises rather than silently sending both filters."""
+    with pytest.raises(ValueError, match="not both"):
+        _utils_module._with_state(
+            {"state": "WI", "queryables": {"state_code": "55"}},
+            to="name",
+            into="state_name",
+        )
+
+
 def test_ogc_getter_resolves_state_at_getter_layer(monkeypatch):
     """The OGC getters resolve the unified ``state`` into ``state_name``
     themselves (any encoding), so the shared ``get_ogc_data`` wrapper stays
