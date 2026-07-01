@@ -556,6 +556,27 @@ def test_get_daily():
     assert df["value"].dtype == "float64"
 
 
+def test_get_daily_max_rows_is_excluded_from_request_and_forwarded():
+    # ``max_rows`` is a client-side pagination cap, not an OGC query
+    # parameter — the server never sees it. So a getter must keep it out of
+    # the request ``args`` (which become query params) and instead forward it
+    # to ``get_ogc_data`` as the keyword that drives the cap. This pins that
+    # wiring; the cap mechanism itself (stop following ``next`` once the cap is
+    # met, then truncate the combined frame to exactly N) is covered without a
+    # network round-trip by the ``_row_cap`` / ``_finalize_ogc`` tests in
+    # tests/waterdata_utils_test.py.
+    with mock.patch("dataretrieval.waterdata.api.get_ogc_data") as fake:
+        fake.return_value = (pd.DataFrame(), mock.MagicMock(spec=[]))
+        get_daily(
+            monitoring_location_id="USGS-05427718",
+            parameter_code="00060",
+            max_rows=3,
+        )
+    args_dict = fake.call_args[0][0]
+    assert "max_rows" not in args_dict  # not leaked into the query params
+    assert fake.call_args.kwargs["max_rows"] == 3  # forwarded to the cap
+
+
 def test_get_daily_properties():
     df, _ = get_daily(
         monitoring_location_id="USGS-05427718",
