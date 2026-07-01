@@ -9,6 +9,7 @@ See https://api.waterdata.usgs.gov/ for API reference.
 
 from __future__ import annotations
 
+from dataretrieval.ogc.chunking import GranularityLevel, chunk_granularity
 from dataretrieval.ogc.filters import FILTER_LANG
 
 # Public API exports
@@ -50,6 +51,8 @@ __all__ = [
     "PROFILE_LOOKUP",
     "SERVICES",
     "WATERDATA_SERVICES",
+    "GranularityLevel",
+    "chunk_granularity",
     "get_channel",
     "get_codes",
     "get_combined_metadata",

@@ -9,6 +9,12 @@ sub-request URL under the budget; ``ChunkedCall`` fetches the resulting
 cartesian product of chunks. Requests that already fit get a trivial
 single-step plan — ``ChunkedCall`` has one code path either way.
 
+Granularity: the planner is conservative by default — it splits only as far as
+the byte limit forces. A caller who knows their result is large can opt into a
+finer split via the ``chunk_granularity`` context manager
+(``"low"`` / ``"medium"`` / ``"high"``); the resolved cap drives
+:meth:`ChunkPlan._refine`. See ``chunk_granularity`` for the why and the when.
+
 This module owns the *execution* half — the event loop and bounded
 concurrency that drive a plan to completion (``ChunkedCall``) plus the
 public ``multi_value_chunked`` decorator. The neighboring concerns live in
@@ -69,8 +75,9 @@ import asyncio
 import functools
 import os
 from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from contextvars import copy_context
-from typing import Any, cast
+from typing import Any, Literal, cast, get_args
 
 import httpx
 import pandas as pd
@@ -170,6 +177,130 @@ def get_active_client() -> httpx.AsyncClient | None:
         a :class:`ChunkedCall` run; ``None`` otherwise.
     """
     return _chunked_client.get()
+
+
+# Chunk-granularity dial: opt-in to fan a query out *more finely* than the byte
+# limit alone requires. Scoped to a ``with chunk_granularity(...):`` block (a
+# ContextVar), deliberately NOT an env var (see :func:`chunk_granularity` for
+# why). The ambient holds the resolved cap on sub-chunks per axis; ``0`` (the
+# default, outside any block) means "chunk only as much as the byte limit needs".
+_granularity: Ambient[int] = Ambient("ogc_chunk_granularity", 0)
+
+#: The three accepted granularity levels, as a typing ``Literal`` so a type
+#: checker rejects any other value at the call site.
+GranularityLevel = Literal["low", "medium", "high"]
+
+#: Valid levels derived from the type, so ``GranularityLevel`` stays the single
+#: source of truth for what ``_resolve_granularity`` accepts (mirrors the
+#: ``get_args``-based ``_VALID_ON_TIE`` / ``_VALID_FILE_TYPES`` in sibling
+#: modules).
+_VALID_LEVELS: tuple[GranularityLevel, ...] = get_args(GranularityLevel)
+
+# Granularity's own ceiling on sub-chunks per axis — deliberately NOT tied to the
+# concurrency default: fan-out *volume* (how many sub-requests a query becomes)
+# is orthogonal to how many run at once (``API_USGS_CONCURRENT``). 32 is a sane
+# single-axis ceiling that also bounds the blast radius of an accidental
+# ``"high"`` on a very long list; the milder levels are a quarter and a
+# sixteenth of it (the three are spaced 4x apart).
+_GRANULARITY_MAX_CHUNKS = 32
+_GRANULARITY_LEVELS: dict[str, int] = {
+    "low": _GRANULARITY_MAX_CHUNKS // 16,  # 2
+    "medium": _GRANULARITY_MAX_CHUNKS // 4,  # 8
+    "high": _GRANULARITY_MAX_CHUNKS,  # 32
+}
+
+
+def _resolve_granularity(level: GranularityLevel) -> int:
+    """
+    Map a granularity level name to its per-axis sub-chunk cap.
+
+    Parameters
+    ----------
+    level : {"low", "medium", "high"}
+        The user-supplied level.
+
+    Returns
+    -------
+    int
+        The maximum sub-chunks per multi-value axis for that level
+        (``2`` / ``8`` / ``32``).
+
+    Raises
+    ------
+    ValueError
+        If ``level`` is anything other than ``"low"``, ``"medium"``, or
+        ``"high"`` — raised eagerly (at the ``with`` statement) so a typo fails
+        loudly rather than silently doing nothing.
+    """
+    if level not in _VALID_LEVELS:
+        raise ValueError(
+            f"chunk_granularity level must be one of {_VALID_LEVELS}; got {level!r}."
+        )
+    return _GRANULARITY_LEVELS[level]
+
+
+@contextmanager
+def chunk_granularity(level: GranularityLevel) -> Iterator[None]:
+    """
+    Scope how finely the OGC getters chunk multi-value requests.
+
+    By default the Water Data / NGWMN getters chunk a request only as much as
+    the server's ~8 KB URL-byte limit forces — the fewest sub-requests that
+    fit. That is the safe default, but it can be *needlessly* conservative:
+    because every sub-request paginates, splitting a large result further is
+    usually quota-neutral (ten states pulled as one under-limit request page
+    just as many times as ten per-state requests would). This context manager
+    lets a caller who *knows* their pull is large ask for that finer split —
+    trading the same pages for more, smaller sub-requests, which gives smoother
+    progress, more even concurrency, and a smaller unit of retry/resume.
+
+    Because the library can't tell in advance whether a query is large (ten
+    states over a short window might fit in a single page, where extra chunks
+    would only burn quota), this is a *deliberate* per-call knob rather than an
+    automatic behavior or a process-wide environment variable — scoping it to a
+    ``with`` block keeps an aggressive setting from leaking into unrelated calls
+    and accidentally spending quota. Outside any block the getters use the
+    conservative default; there is no "off" level because *not* entering the
+    block is off. Only the OGC getters (Water Data, NGWMN) read this; wrapping a
+    legacy NWIS call in the block is a harmless no-op.
+
+    Parameters
+    ----------
+    level : {"low", "medium", "high"}
+        How aggressively to chunk within the block. Each level caps how many
+        sub-chunks a single multi-value argument is split into — ``2`` / ``8`` /
+        ``32`` for ``"low"`` / ``"medium"`` / ``"high"`` — or one value per
+        sub-request once the argument has fewer values than the cap. The ceiling
+        is fixed (it is *not* tied to ``API_USGS_CONCURRENT``: how finely a query
+        splits is orthogonal to how many sub-requests run at once); capping
+        ``"high"`` at ``32`` keeps an accidental aggressive level on a very long
+        list from exploding into thousands of sub-requests. (With several
+        multi-value arguments the per-argument counts still multiply.)
+
+    Yields
+    ------
+    None
+
+    Raises
+    ------
+    ValueError
+        If ``level`` isn't ``"low"``, ``"medium"``, or ``"high"`` — raised on
+        ``with`` entry, before any request is issued.
+
+    Examples
+    --------
+    >>> from dataretrieval import waterdata
+    >>> with waterdata.chunk_granularity("high"):
+    ...     df, md = waterdata.get_daily(
+    ...         monitoring_location_id=many_sites, parameter_code="00060"
+    ...     )  # doctest: +SKIP
+
+    See Also
+    --------
+    ChunkPlan._refine : the planning-side effect of the level.
+    """
+    with _granularity(_resolve_granularity(level)):
+        yield
 
 
 class ChunkedCall:
@@ -591,8 +722,9 @@ def multi_value_chunked(
     ``async def fetch(args) -> (df, response)``, and drives it to
     completion via :meth:`ChunkedCall.resume`. The plan splits multi-value
     list params and the cql-text filter so each sub-request URL fits the
-    byte limit; an already-fitting request is a one-step plan. See the
-    module docstring for the concurrency model.
+    byte limit; an already-fitting request is a one-step plan, unless an
+    active :func:`chunk_granularity` block asks the plan to fan out more
+    finely. See the module docstring for the concurrency model.
 
     Parameters
     ----------
@@ -636,7 +768,14 @@ def multi_value_chunked(
             finalize: _Finalize = _passthrough_result,
         ) -> tuple[pd.DataFrame, Any]:
             limit = _OGC_URL_BYTE_LIMIT if url_limit is None else url_limit
-            plan = ChunkPlan(args, build_request, limit)
+            # Read the granularity dial from the ambient set by
+            # ``chunk_granularity`` (0 = off outside any such block; otherwise the
+            # per-axis sub-chunk cap). It only affects *planning*, done here up
+            # front, so a later resume — which re-issues the already-planned
+            # sub-requests — needs no snapshot.
+            plan = ChunkPlan(
+                args, build_request, limit, max_chunks_per_axis=_granularity.get()
+            )
             retry_policy = RetryPolicy.from_env()
             # The concurrency cap is resolved inside ``resume()`` from
             # ``API_USGS_CONCURRENT``; ``1`` is a sequential gather,

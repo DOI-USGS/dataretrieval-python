@@ -96,6 +96,41 @@ condition clears -- only the unfinished sub-requests are re-issued.
             except ChunkInterrupted as again:
                 exc = again
 
+Chunk a large request more finely
+=================================
+
+By default the getters split an over-large request only as much as the
+server's ~8 KB URL limit forces -- the fewest sub-requests. Because each
+sub-request paginates, splitting a large result further is usually
+quota-neutral (ten states pulled as one under-limit request page just as many
+times as ten per-state requests would), so if you *know* your pull is large
+you can ask for a finer split with ``chunk_granularity`` -- trading the same
+pages for more, smaller sub-requests, which gives smoother progress, more even
+concurrency, and a smaller unit of retry/resume. It is a scoped ``with``
+block, so an aggressive setting can't leak into unrelated calls and
+accidentally spend quota:
+
+.. code-block:: python
+
+    from dataretrieval import waterdata
+
+    with waterdata.chunk_granularity("high"):
+        df, md = waterdata.get_daily(
+            monitoring_location_id=many_sites, parameter_code="00060"
+        )
+
+The level is one of ``"low"``, ``"medium"``, or ``"high"`` (an invalid value
+raises ``ValueError`` at the ``with``). Each caps how many sub-chunks a
+multi-value argument is split into -- ``2`` / ``8`` / ``32`` for
+``"low"`` / ``"medium"`` / ``"high"``. That ceiling is fixed, deliberately
+independent of the fan-out concurrency (``API_USGS_CONCURRENT``): how finely a
+query splits is orthogonal to how many sub-requests run at once. Capping the
+aggressive end at 32 is a guardrail -- an accidental ``"high"`` on a very long
+list can't explode into thousands of sub-requests. There is no "off" level:
+simply don't enter the block unless you already expect a large, multi-page
+result -- on a query that would have fit in a single page, extra chunks only
+burn quota.
+
 The full taxonomy
 =================
 

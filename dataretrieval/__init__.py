@@ -44,6 +44,11 @@ from dataretrieval.exceptions import (
     URLTooLong,
 )
 
+# Chunk-granularity control (a context manager) and its level type. Defined with
+# the chunker in ``dataretrieval.ogc.chunking``; surfaced here for a stable
+# public path ``from dataretrieval import chunk_granularity``.
+from dataretrieval.ogc.chunking import GranularityLevel, chunk_granularity
+
 # Resumable chunk-interruption exceptions. They are defined in
 # ``dataretrieval.ogc.interruptions`` rather than ``dataretrieval.exceptions``
 # because they carry pandas/httpx state and a resumable ``ChunkedCall`` handle,
@@ -93,5 +98,8 @@ __all__ = [
     "ChunkInterrupted",
     "QuotaExhausted",
     "ServiceInterrupted",
+    # chunk-granularity control (defined in ogc.chunking)
+    "chunk_granularity",
+    "GranularityLevel",
     "__version__",
 ]

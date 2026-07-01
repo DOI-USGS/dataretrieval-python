@@ -288,6 +288,21 @@ def _extract_axes(args: dict[str, Any]) -> list[_Axis]:
     return axes
 
 
+def _split_at(chunks: list[list[str]], idx: int) -> None:
+    """Replace ``chunks[idx]`` in place with its two contiguous halves.
+
+    The single primitive both planning passes use to fan an axis out. It
+    preserves the partition invariants every consumer relies on: *coverage*
+    (each atom survives, exactly once) and *contiguous, deterministic order*
+    (resume and :meth:`ChunkPlan.iter_sub_args` depend on it). Kept in one
+    place so those invariants can't drift between :meth:`ChunkPlan._plan`
+    (byte-driven) and :meth:`ChunkPlan._refine` (granularity-driven).
+    """
+    chunk = chunks[idx]
+    mid = len(chunk) // 2
+    chunks[idx : idx + 1] = [chunk[:mid], chunk[mid:]]
+
+
 class ChunkPlan:
     """
     Strategy for issuing one user-level request as a sequence of
@@ -312,7 +327,17 @@ class ChunkPlan:
         Factory that turns a kwargs dict into a sized httpx request,
         e.g. ``_construct_api_requests``.
     url_limit : int
-        Byte budget for the request (URL + body).
+        Byte budget for the request (URL + body) — a hard ceiling every
+        sub-request must fit.
+    max_chunks_per_axis : int, optional
+        Soft cap on sub-chunks per multi-value axis (default ``0`` = off).
+        ``0`` chunks only as much as ``url_limit`` requires — the most
+        conservative plan, fewest sub-requests. A positive cap fans each axis
+        out into up to ``min(len(atoms), max_chunks_per_axis)`` pieces (never
+        fewer than the byte budget already forces), so a large multi-page pull
+        is issued as more, smaller sub-requests. Set from the resolved
+        :func:`~dataretrieval.ogc.chunking.chunk_granularity` level; see
+        :meth:`_refine`.
 
     Attributes
     ----------
@@ -344,6 +369,7 @@ class ChunkPlan:
         args: dict[str, Any],
         build_request: Callable[..., httpx.Request],
         url_limit: int,
+        max_chunks_per_axis: int = 0,
     ) -> None:
         self.args = args
         self.axes: list[_Axis] = []
@@ -352,10 +378,10 @@ class ChunkPlan:
 
         axes = _extract_axes(args)
         if not axes:
-            # No chunkable axis: nothing to split. If the single request fits,
-            # run it verbatim (the common passthrough). ``_safe_request_bytes``
-            # treats an un-constructable URL (httpx.InvalidURL, > 64 KB) as over
-            # budget.
+            # No chunkable axis: nothing to split, and ``granularity`` has
+            # nothing to act on either. If the single request fits, run it
+            # verbatim (the common passthrough). ``_safe_request_bytes`` treats
+            # an un-constructable URL (httpx.InvalidURL, > 64 KB) as over budget.
             if _safe_request_bytes(build_request, args, url_limit) <= url_limit:
                 return
             # Over budget. A filter the chunker doesn't manage — cql-json — is
@@ -388,14 +414,29 @@ class ChunkPlan:
         except httpx.InvalidURL:
             initial_request = None
 
+        fits = False
         if initial_request is not None:
             self.canonical_url = str(initial_request.url)
-            if _request_bytes(initial_request) <= url_limit:
-                return
+            fits = _request_bytes(initial_request) <= url_limit
+
+        # A request that already fits and hasn't opted into finer chunking is
+        # the common passthrough: leave ``axes``/``chunks`` empty so
+        # ``total == 1`` and ``iter_sub_args`` yields the original args
+        # verbatim. Only when ``max_chunks_per_axis`` asks for extra fan-out do
+        # we set the axes up to be refined below.
+        if fits and max_chunks_per_axis <= 0:
+            return
 
         self.axes = axes
         self.chunks = {axis.arg_key: [list(axis.atoms)] for axis in axes}
-        self._plan(build_request, url_limit)
+        if not fits:
+            # Hard pass: greedy-halve until every worst-case sub-request fits
+            # the byte budget (may raise ``Unchunkable``).
+            self._plan(build_request, url_limit)
+        # Soft pass: optionally split further than the byte budget requires.
+        # Purely additive — never re-raises, and the byte budget stays
+        # satisfied; a no-op at ``max_chunks_per_axis <= 0``.
+        self._refine(max_chunks_per_axis)
 
         if self.canonical_url is None:
             # Original URL was un-constructable (httpx.InvalidURL); fall
@@ -447,10 +488,42 @@ class ChunkPlan:
                     f"sub-request). Reduce input sizes, shorten or simplify "
                     f"the filter, or split the call manually."
                 )
-            axis_chunks = self.chunks[biggest_axis.arg_key]
-            chunk = axis_chunks[biggest_idx]
-            mid = len(chunk) // 2
-            axis_chunks[biggest_idx : biggest_idx + 1] = [chunk[:mid], chunk[mid:]]
+            _split_at(self.chunks[biggest_axis.arg_key], biggest_idx)
+
+    def _refine(self, max_chunks_per_axis: int) -> None:
+        """
+        Fan each axis out more finely than the byte budget alone requires —
+        the granularity dial (see
+        :func:`~dataretrieval.ogc.chunking.chunk_granularity` for why a caller
+        would want this).
+
+        Each axis is split until it holds at least
+        ``min(len(atoms), max_chunks_per_axis)`` chunks — up to the cap, or one
+        atom per chunk for a shorter axis. Purely additive — only ever *splits*
+        existing chunks, so the byte pass's work and the ``url_limit`` invariant
+        are both preserved (an axis the byte pass already split past the cap is
+        left alone), and it never raises. A no-op at ``max_chunks_per_axis <= 0``.
+
+        Parameters
+        ----------
+        max_chunks_per_axis : int
+            Soft cap on sub-chunks per axis (``0`` = off), the resolved
+            granularity level. A shorter axis simply saturates at one atom per
+            chunk.
+        """
+        if max_chunks_per_axis <= 0:
+            return
+        for axis in self.axes:
+            chunks = self.chunks[axis.arg_key]
+            target = min(len(axis.atoms), max_chunks_per_axis)
+            # ``target <= len(atoms)`` guarantees a splittable chunk each pass, so
+            # this reaches exactly ``target`` and terminates. Split the chunk with
+            # the most *atoms* (``_plan`` splits by *bytes*): here we even out
+            # cardinality for smooth fan-out, not URL size. Ties take the lowest
+            # index, keeping the split deterministic.
+            while len(chunks) < target:
+                idx, _ = max(enumerate(chunks), key=lambda kv: len(kv[1]))
+                _split_at(chunks, idx)
 
     def _worst_case_args(self) -> dict[str, Any]:
         """
