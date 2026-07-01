@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+gc5c0f9f71 documentation</title>
+  <title>dataretrieval.waterdata.api &mdash; dataretrieval 0.1.dev1+gd8f630eea documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=212e0881"></script>
+      <script src="../../../_static/documentation_options.js?v=52f9616f"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -114,6 +114,7 @@
     <span class="n">SAMPLES_URL</span><span class="p">,</span>
     <span class="n">_accept_legacy_kwargs</span><span class="p">,</span>
     <span class="n">_as_str_list</span><span class="p">,</span>
+    <span class="n">_check_ogc_requests</span><span class="p">,</span>
     <span class="n">_check_profiles</span><span class="p">,</span>
     <span class="n">_construct_cql_request</span><span class="p">,</span>
     <span class="n">_default_headers</span><span class="p">,</span>
@@ -152,6 +153,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Daily data provide one data value to represent water conditions for the</span>
 <span class="sd">    day.</span>
@@ -284,6 +286,10 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    **queryables : string or iterable of strings, optional</span>
+<span class="sd">        Any other queryable property of this collection, passed through as a</span>
+<span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
+<span class="sd">        collection supports.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -376,6 +382,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Continuous data provide instantaneous water conditions.</span>
@@ -502,6 +509,10 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    **queryables : string or iterable of strings, optional</span>
+<span class="sd">        Any other queryable property of this collection, passed through as a</span>
+<span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
+<span class="sd">        collection supports.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -604,6 +615,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Location information is basic information about the monitoring location</span>
 <span class="sd">    including the name, identifier, agency responsible for data collection, and</span>
@@ -822,6 +834,10 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    **queryables : string or iterable of strings, optional</span>
+<span class="sd">        Any other queryable property of this collection, passed through as a</span>
+<span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
+<span class="sd">        collection supports.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -895,6 +911,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Daily data and continuous measurements are grouped into time series,</span>
 <span class="sd">    which represent a collection of observations of a single parameter,</span>
@@ -1062,6 +1079,10 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    **queryables : string or iterable of strings, optional</span>
+<span class="sd">        Any other queryable property of this collection, passed through as a</span>
+<span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
+<span class="sd">        collection supports.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1170,6 +1191,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get combined monitoring-location and time-series metadata.</span>
 
@@ -1272,6 +1294,10 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    **queryables : string or iterable of strings, optional</span>
+<span class="sd">        Any other queryable property of this collection, passed through as a</span>
+<span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
+<span class="sd">        collection supports.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1370,6 +1396,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;This endpoint provides the most recent observation for each time series</span>
 <span class="sd">    of continuous data. Continuous data are collected via automated sensors</span>
@@ -1499,6 +1526,10 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    **queryables : string or iterable of strings, optional</span>
+<span class="sd">        Any other queryable property of this collection, passed through as a</span>
+<span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
+<span class="sd">        collection supports.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1574,6 +1605,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Daily data provide one data value to represent water conditions for the</span>
 <span class="sd">    day.</span>
@@ -1705,6 +1737,10 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    **queryables : string or iterable of strings, optional</span>
+<span class="sd">        Any other queryable property of this collection, passed through as a</span>
+<span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
+<span class="sd">        collection supports.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1781,6 +1817,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Field measurements are physically measured values collected during a</span>
 <span class="sd">    visit to the monitoring location. Field measurements consist of measurements</span>
@@ -1903,6 +1940,10 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    **queryables : string or iterable of strings, optional</span>
+<span class="sd">        Any other queryable property of this collection, passed through as a</span>
+<span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
+<span class="sd">        collection supports.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1975,6 +2016,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get field-measurement metadata: one row per (location, parameter) series.</span>
 
@@ -2028,6 +2070,10 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    **queryables : string or iterable of strings, optional</span>
+<span class="sd">        Any other queryable property of this collection, passed through as a</span>
+<span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
+<span class="sd">        collection supports.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -2103,6 +2149,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the annual peak streamflow / stage record for a monitoring location.</span>
 
@@ -2161,6 +2208,10 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    **queryables : string or iterable of strings, optional</span>
+<span class="sd">        Any other queryable property of this collection, passed through as a</span>
+<span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
+<span class="sd">        collection supports.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -2304,6 +2355,71 @@
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span>
         <span class="n">args</span><span class="o">=</span><span class="n">query_args</span><span class="p">,</span> <span class="n">output_id</span><span class="o">=</span><span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="n">collection</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span>
     <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_queryables">
+<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_queryables">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_queryables</span><span class="p">(</span><span class="n">collection</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;List the queryable properties of a Water Data API collection.</span>
+
+<span class="sd">    Every OGC collection (``daily``, ``continuous``, ``monitoring-locations``,</span>
+<span class="sd">    ...) advertises the set of properties that can be filtered on -- exposed as</span>
+<span class="sd">    the typed keyword arguments of the matching ``get_*`` function, and usable</span>
+<span class="sd">    directly in a CQL2 ``filter``. This returns that set, so the available</span>
+<span class="sd">    filters can be discovered programmatically and monitored for upstream</span>
+<span class="sd">    additions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    collection : string</span>
+<span class="sd">        The collection id, e.g. ``&quot;daily&quot;``, ``&quot;continuous&quot;``,</span>
+<span class="sd">        ``&quot;monitoring-locations&quot;``, or ``&quot;time-series-metadata&quot;``. See</span>
+<span class="sd">        :data:`dataretrieval.waterdata.types.WATERDATA_SERVICES` for the data</span>
+<span class="sd">        collections; reference collections (e.g. ``&quot;parameter-codes&quot;``) work</span>
+<span class="sd">        too.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame``</span>
+<span class="sd">        One row per queryable, sorted by name, with columns ``queryable`` (the</span>
+<span class="sd">        property name), ``type``, ``title``, and ``description``.</span>
+<span class="sd">    md : :class:`dataretrieval.utils.BaseMetadata`</span>
+<span class="sd">        Metadata describing the request (URL, query time, response headers).</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    DataRetrievalError</span>
+<span class="sd">        On an HTTP error response (e.g. an unknown ``collection`` yields a 404),</span>
+<span class="sd">        the typed subclass for the status.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. doctest::</span>
+<span class="sd">        :skipif: True  # network</span>
+
+<span class="sd">        &gt;&gt;&gt; from dataretrieval import waterdata</span>
+<span class="sd">        &gt;&gt;&gt; df, md = waterdata.get_queryables(&quot;daily&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; df.set_index(&quot;queryable&quot;).loc[&quot;state_name&quot;, &quot;type&quot;]</span>
+<span class="sd">        &#39;string&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># The OGC queryables document is a JSON Schema whose ``properties`` map each</span>
+    <span class="c1"># filterable property name to a ``{title, type, description}`` definition.</span>
+    <span class="n">body</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="n">_check_ogc_requests</span><span class="p">(</span><span class="n">endpoint</span><span class="o">=</span><span class="n">collection</span><span class="p">,</span> <span class="n">req_type</span><span class="o">=</span><span class="s2">&quot;queryables&quot;</span><span class="p">)</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;properties&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;queryable&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">prop</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">prop</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">prop</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">properties</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="p">],</span>
+        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;queryable&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
 
 
 
@@ -3042,6 +3158,7 @@
     <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Channel measurements taken as part of streamflow field measurements.</span>
@@ -3171,6 +3288,10 @@
 <span class="sd">        and the lexicographic-comparison pitfall.</span>
 <span class="sd">    convert_type : boolean, optional</span>
 <span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    **queryables : string or iterable of strings, optional</span>
+<span class="sd">        Any other queryable property of this collection, passed through as a</span>
+<span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
+<span class="sd">        collection supports.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
