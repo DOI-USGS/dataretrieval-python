@@ -596,6 +596,60 @@ def test_get_resp_data_empty_preserves_geopd_type():
     assert isinstance(result, _Sentinel)
 
 
+def test_get_resp_data_attaches_wgs84_crs():
+    """A geometry-bearing Water Data page should come back tagged as
+    EPSG:4326 (the CRS the coordinates are published in), so callers can
+    run ``to_crs`` / spatial joins without first patching in a CRS by
+    hand. Regression for the ``.crs is None`` reported in issue #342."""
+    geopandas = pytest.importorskip("geopandas")
+
+    resp = mock.MagicMock()
+    resp.json.return_value = {
+        "numberReturned": 1,
+        "features": [
+            {
+                "type": "Feature",
+                "id": "USGS-01",
+                "geometry": {"type": "Point", "coordinates": [-76.5, 39.2]},
+                "properties": {"monitoring_location_id": "USGS-01"},
+            }
+        ],
+    }
+    df = _get_resp_data(resp, geopd=True)
+    assert isinstance(df, geopandas.GeoDataFrame)
+    assert df.crs == "EPSG:4326"
+
+
+def test_handle_nesting_attaches_wgs84_crs():
+    """The stats path builds its GeoDataFrame the same way, so it should
+    carry EPSG:4326 too (issue #342)."""
+    geopandas = pytest.importorskip("geopandas")
+
+    body = {
+        "next": None,
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [-76.5, 39.2]},
+                "properties": {
+                    "monitoring_location_id": "USGS-01",
+                    "data": [
+                        {
+                            "parameter_code": "00060",
+                            "unit_of_measure": "ft^3/s",
+                            "parent_time_series_id": "ts-1",
+                            "values": [{"statistic_id": "mean", "value": 10.0}],
+                        }
+                    ],
+                },
+            }
+        ],
+    }
+    df = _handle_nesting(body, geopd=True)
+    assert isinstance(df, geopandas.GeoDataFrame)
+    assert df.crs == "EPSG:4326"
+
+
 def test_handle_nesting_tolerates_missing_features_key():
     """A 200 response with a body that doesn't carry ``features`` at
     all (rare but seen in error envelopes) must also short-circuit

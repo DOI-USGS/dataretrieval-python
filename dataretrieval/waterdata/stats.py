@@ -22,6 +22,7 @@ from dataretrieval.ogc.engine import (
     _run_sync,
 )
 from dataretrieval.ogc.shaping import (
+    _CRS,
     GEOPANDAS,
     _attach_coordinates,
     _empty_feature_frame,
@@ -111,7 +112,8 @@ def _handle_nesting(
         # can't ``KeyError`` on a stats feature that omits geometry — mirrors
         # the guard in :func:`engine._get_resp_data`.
         df = gpd.GeoDataFrame.from_features(
-            [f if "geometry" in f else {**f, "geometry": None} for f in features]
+            [f if "geometry" in f else {**f, "geometry": None} for f in features],
+            crs=_CRS,
         ).drop(columns=["data"], errors="ignore")
 
     # Unnest json features, properties, data, and values while retaining necessary
