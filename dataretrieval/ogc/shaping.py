@@ -31,6 +31,12 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+# Water Data OGC coordinates are published in WGS84, so attach that CRS where the
+# GeoDataFrame is built (otherwise the result is CRS-naive and ``to_crs`` /
+# spatial joins fail). Mirrors the constants in ``nldi`` (EPSG:4326) and ``nwis``
+# (EPSG:4269).
+_CRS = "EPSG:4326"
+
 # Whether geopandas is present is a static, environment-level fact, so warn
 # once here at import time rather than per query/chunk.
 if not GEOPANDAS:
@@ -141,7 +147,8 @@ def _get_resp_data(
     # a plain DataFrame. Features that already carry geometry (the common
     # sites case) are passed through without a per-feature dict copy.
     df = gpd.GeoDataFrame.from_features(
-        [f if "geometry" in f else {**f, "geometry": None} for f in features]
+        [f if "geometry" in f else {**f, "geometry": None} for f in features],
+        crs=_CRS,
     )
     # Mirror the non-geopandas branch's defensive ``f.get("id")`` so a feature
     # missing a top-level ``id`` yields None rather than a KeyError.
