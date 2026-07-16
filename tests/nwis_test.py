@@ -20,6 +20,7 @@ from dataretrieval.nwis import (
     get_record,
     get_water_use,
     preformat_peaks_response,
+    read_rdb,
 )
 
 START_DATE = "2018-01-24"
@@ -317,7 +318,9 @@ class TestReadRdb:
             "# //Response-Status: OK\n"
             "# //Response-Message: No sites found matching all criteria\n"
         )
-        df = _read_rdb(no_peaks_rdb)
+        # Mirror get_discharge_peaks: raw read_rdb, then the peaks-specific
+        # format_response (not _read_rdb, which formats with service=None).
+        df = read_rdb(no_peaks_rdb)
         df = format_response(df, service="peaks")
         assert isinstance(df, pd.DataFrame)
         assert df.empty
