@@ -4,6 +4,7 @@ Useful utilities for data munging.
 
 from __future__ import annotations
 
+import numbers
 import os
 import warnings
 from collections.abc import Callable, Iterable, Iterator
@@ -64,6 +65,36 @@ class Ambient(Generic[_T]):
             yield
         finally:
             self._var.reset(token)
+
+
+def _require_positive_int(
+    value: int, name: str, *, examples: str | None = None
+) -> None:
+    """Validate that ``value`` is a positive integer, else raise ``ValueError``.
+
+    Accepts any :class:`numbers.Integral` (so a numpy/pandas integer passes,
+    not only ``int``) but rejects ``bool`` — an ``Integral`` subtype that is
+    nonsensical as a count. A non-integer (float, str, ``None``) or a value
+    ``< 1`` raises before any I/O, rather than crashing later (e.g. deep in
+    ``pd.DataFrame.head``). Shared by the user-facing count knobs ``max_rows``
+    and ``parallel_chunks(n)`` so their boundary validation can't drift.
+    (``ChunkPlan.max_chunks`` is an internal, already-``int`` precondition with
+    its own domain-specific message, so it keeps a lighter ``< 1`` guard rather
+    than routing through here.)
+
+    Parameters
+    ----------
+    value : int
+        The value to check. Typed ``int`` for callers, but validated at
+        runtime because the real value may be anything the user passed.
+    name : str
+        Parameter name, used as the subject of the error message.
+    examples : str, optional
+        Illustrative values appended to the message (e.g. ``"2, 8, 32"``).
+    """
+    if not isinstance(value, numbers.Integral) or isinstance(value, bool) or value < 1:
+        eg = f", e.g. {examples}" if examples else ""
+        raise ValueError(f"{name} must be a positive integer{eg} (got {value!r}).")
 
 
 def _default_headers() -> dict[str, str]:

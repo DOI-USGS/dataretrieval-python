@@ -208,6 +208,20 @@ class Test_error_taxonomy:
             dataretrieval.ChunkInterrupted, dataretrieval.DataRetrievalError
         )
 
+    def test_parallel_chunks_exported_at_top_level_and_waterdata(self):
+        """The ``parallel_chunks`` context manager is reachable both from the top
+        level (``from dataretrieval import parallel_chunks``) and from the
+        user-facing ``dataretrieval.waterdata`` namespace, and both resolve to
+        the single object defined in ``dataretrieval.ogc.chunking``."""
+        import dataretrieval
+        from dataretrieval import waterdata
+        from dataretrieval.ogc import chunking
+
+        assert dataretrieval.parallel_chunks is chunking.parallel_chunks
+        assert waterdata.parallel_chunks is chunking.parallel_chunks
+        assert "parallel_chunks" in dataretrieval.__all__
+        assert "parallel_chunks" in waterdata.__all__
+
 
 class Test_BaseMetadata:
     """Tests of BaseMetadata"""

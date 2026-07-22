@@ -27,7 +27,6 @@ from __future__ import annotations
 import functools
 import json
 import logging
-import numbers
 import re
 from collections.abc import (
     AsyncIterator,
@@ -59,6 +58,7 @@ from dataretrieval.utils import (
     _default_headers,
     _get,
     _network_error,
+    _require_positive_int,
 )
 
 # Set up logger for this module
@@ -876,18 +876,12 @@ def get_ogc_data(
     - Handles optional arguments such as `convert_type`.
     - Applies column cleanup and reordering based on service and properties.
     """
-    # Enforce a genuine positive integer: a float (even ``10.0``) or ``bool``
-    # would pass a bare ``< 1`` check and then crash deep in
+    # Enforce a genuine positive integer up front: a float (even ``10.0``) or
+    # ``bool`` would pass a bare ``< 1`` check and then crash deep in
     # ``pd.DataFrame.head`` with an opaque ``TypeError`` after HTTP I/O has
-    # already fired. ``numbers.Integral`` (not ``int``) so numpy integers —
-    # e.g. ``max_rows`` derived from a numpy/pandas computation — are accepted;
-    # ``bool`` is an ``Integral`` subtype, so exclude it explicitly.
-    if max_rows is not None and (
-        not isinstance(max_rows, numbers.Integral)
-        or isinstance(max_rows, bool)
-        or max_rows < 1
-    ):
-        raise ValueError(f"max_rows must be a positive integer (got {max_rows!r}).")
+    # already fired. Shared with ``parallel_chunks(n)`` via the helper.
+    if max_rows is not None:
+        _require_positive_int(max_rows, "max_rows")
 
     if dialect is None:
         dialect = _DEFAULT_DIALECT
