@@ -127,7 +127,7 @@ sites, _ = waterdata.get_monitoring_locations(state="Ohio", site_type_code="ST")
 
 with waterdata.parallel_chunks(32):              # fan out into 32 sub-requests
     df, md = waterdata.get_daily(
-        monitoring_location_id=sites["monitoring_location_id"].tolist(),
+        monitoring_location_id=sites["monitoring_location_id"],
         parameter_code="00060",                  # discharge
         time="2004-01-01/2023-12-31",
     )
