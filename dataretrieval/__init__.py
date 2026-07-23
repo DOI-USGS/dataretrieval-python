@@ -44,6 +44,11 @@ from dataretrieval.exceptions import (
     URLTooLong,
 )
 
+# Parallel-chunks control (a context manager). Defined with the chunker in
+# ``dataretrieval.ogc.chunking``; surfaced here for a stable public path
+# ``from dataretrieval import parallel_chunks``.
+from dataretrieval.ogc.chunking import parallel_chunks
+
 # Resumable chunk-interruption exceptions. They are defined in
 # ``dataretrieval.ogc.interruptions`` rather than ``dataretrieval.exceptions``
 # because they carry pandas/httpx state and a resumable ``ChunkedCall`` handle,
@@ -93,5 +98,7 @@ __all__ = [
     "ChunkInterrupted",
     "QuotaExhausted",
     "ServiceInterrupted",
+    # parallel-chunks control (defined in ogc.chunking)
+    "parallel_chunks",
     "__version__",
 ]

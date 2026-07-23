@@ -105,6 +105,58 @@ df, metadata = waterdata.get_continuous(
 print(f"Retrieved {len(df)} continuous gage height measurements")
 ```
 
+#### Speeding up large downloads with `parallel_chunks`
+
+By default the getters split a multi-value request only as far as the server's
+~8 KB URL limit forces — the fewest sub-requests. For a **large, paginated**
+pull that is needlessly conservative: every sub-request pages through its own
+results, so dividing the query into more, smaller sub-requests lets those pages
+be fetched **in parallel**. `parallel_chunks(n)` opts a single call into that
+finer split, fanning it out into `n` sub-requests. It pays off only when the
+result is large enough to span many pages *and* the query has a multi-value
+argument to divide (such as a list of monitoring locations); on a small query —
+or one with nothing to split — it just adds requests, so it is a deliberate,
+scoped `with` block, never the default.
+
+```python
+from dataretrieval import waterdata
+
+# All stream gages in Ohio, then 20 years of their daily discharge — large
+# enough to span many pages, so it profits from a finer split.
+sites, _ = waterdata.get_monitoring_locations(state="Ohio", site_type_code="ST")
+
+with waterdata.parallel_chunks(32):              # fan out into 32 sub-requests
+    df, md = waterdata.get_daily(
+        monitoring_location_id=sites["monitoring_location_id"],
+        parameter_code="00060",                  # discharge
+        time="2004-01-01/2023-12-31",
+    )
+```
+
+`n` is the number of sub-requests to fan the call out into. It is capped by how
+many values there are to split, and each sub-request costs a request against
+your hourly [rate limit](https://api.waterdata.usgs.gov/signup/); since how many
+run *at once* is capped separately by `API_USGS_CONCURRENT` (default 32), the
+useful range is roughly `2` up to that value.
+
+Benchmark — a fixed 271-site subset of Ohio stream gages
+(`get_daily`, `parameter_code="00060"`), with a small fixed page size
+(`limit=250`) so every run fetches roughly the same number of pages (isolating
+the effect of parallelism). Each `n` was run against its own cold 1-year time
+window so no run is served from the server's data-window cache:
+
+| `n`  | parallelism | pages | wall-clock              | speedup |
+| ---- | ----------- | ----- | ----------------------- | ------- |
+| off  | 1           | ~30   | 9.5 s / 9.1 s (2 runs)  | 1×      |
+| `8`  | 8           | ~32   | 2.2 s / 1.9 s           | ~4.5×   |
+| `32` | 32          | 54    | 1.2 s                   | ~8×     |
+
+The gain comes from overlapping each sub-request's per-page latency and
+server-side work, so the exact multiplier scales with how many pages the pull
+spans — a larger pull (more pages) has more parallelism to exploit. The extra
+sub-requests each cost quota, so reserve a large `n` for pulls you know are
+large.
+
 Visit the
 [API Reference](https://doi-usgs.github.io/dataretrieval-python/reference/waterdata.html)
 for more information and examples on available services and input parameters.

@@ -9,6 +9,12 @@ sub-request URL under the budget; ``ChunkedCall`` fetches the resulting
 cartesian product of chunks. Requests that already fit get a trivial
 single-step plan — ``ChunkedCall`` has one code path either way.
 
+Parallel chunks: the planner is conservative by default — it splits only as far as
+the byte limit forces. A caller who knows their result is large can opt into a
+finer split via the ``parallel_chunks(n)`` context manager, which fans the query
+out into ``n`` parallel sub-requests; ``n`` drives :meth:`ChunkPlan._refine`. See
+``parallel_chunks`` for the why and the when.
+
 This module owns the *execution* half — the event loop and bounded
 concurrency that drive a plan to completion (``ChunkedCall``) plus the
 public ``multi_value_chunked`` decorator. The neighboring concerns live in
@@ -69,6 +75,7 @@ import asyncio
 import functools
 import os
 from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from contextvars import copy_context
 from typing import Any, cast
 
@@ -76,7 +83,7 @@ import httpx
 import pandas as pd
 from anyio.from_thread import start_blocking_portal
 
-from dataretrieval.utils import HTTPX_DEFAULTS, Ambient
+from dataretrieval.utils import HTTPX_DEFAULTS, Ambient, _require_positive_int
 
 from . import progress as _progress
 from .interruptions import (
@@ -170,6 +177,118 @@ def get_active_client() -> httpx.AsyncClient | None:
         a :class:`ChunkedCall` run; ``None`` otherwise.
     """
     return _chunked_client.get()
+
+
+# Parallel-chunks dial: opt-in to fan a query out *more finely* than the byte
+# limit alone requires. Scoped to a ``with parallel_chunks(...):`` block (a
+# ContextVar), deliberately NOT an env var (see :func:`parallel_chunks` for
+# why). The ambient holds ``n`` — the requested cap on the plan's total
+# sub-request count; ``1`` (the default, outside any block) means "off — chunk
+# only as much as the byte limit needs, no extra fan-out".
+_parallel_chunks: Ambient[int] = Ambient("ogc_parallel_chunks", 1)
+
+
+@contextmanager
+def parallel_chunks(n: int) -> Iterator[None]:
+    """
+    Fan the OGC getters' multi-value requests out into ``n`` parallel sub-requests.
+
+    By default the Water Data / NGWMN getters chunk a request only as much as
+    the server's ~8 KB URL-byte limit forces — the fewest sub-requests that
+    fit. That is the safe default, but it can be *needlessly* conservative:
+    because every sub-request paginates, splitting a large result further costs
+    little or no extra quota *as long as each sub-request still spans many
+    pages* — rows-per-chunk far exceeding the page size (ten states pulled as
+    one request then page nearly as many times as ten per-state requests
+    would). When a split leaves each sub-request only a page or two, its partial
+    final page is extra, so finer chunks do add some requests. This context
+    manager lets a caller who *knows* their pull is large ask for that finer
+    split — trading roughly the same pages for more, smaller sub-requests, which
+    gives smoother progress, more even concurrency, and a smaller unit of
+    retry/resume.
+
+    Because the library can't tell in advance whether a query is large (ten
+    states over a short window might fit in a single page, where extra chunks
+    would only burn quota), this is a *deliberate* per-call knob rather than an
+    automatic behavior or a process-wide environment variable — scoping it to a
+    ``with`` block keeps an aggressive setting from leaking into unrelated calls
+    and accidentally spending quota. Outside any block the getters use the
+    conservative default. Only the OGC getters (Water Data, NGWMN) read this;
+    wrapping a legacy NWIS call in the block is a harmless no-op.
+
+    Parameters
+    ----------
+    n : int
+        The number of sub-requests to fan the whole call out into — a positive
+        integer such as ``2``, ``8``, or ``32``. It caps the plan's *total*
+        sub-request count (the cartesian product across every multi-value
+        argument combined, not per argument), so several multi-value arguments
+        cannot multiply past it. The cap is a ceiling, never exceeded: the
+        actual count is bounded below by what the ~8 KB URL limit already
+        forces and above by ``n``, so an ``n`` larger than the input allows
+        simply yields one sub-request per value, and with several multi-value
+        arguments the total may land somewhat below ``n`` because splits are
+        whole (the plan can't always divide evenly onto ``n``); ``n=1`` asks
+        for no extra fan-out.
+
+        Each sub-request fetches at least one page, so it costs at least one
+        request against your hourly rate limit — a larger ``n`` spends more
+        quota. And because how many sub-requests run *at once* is capped
+        separately by ``API_USGS_CONCURRENT`` (default 32), an ``n`` beyond that
+        adds quota without adding parallelism; the useful range is roughly ``2``
+        up to ``API_USGS_CONCURRENT``.
+
+    Yields
+    ------
+    None
+
+    Raises
+    ------
+    ValueError
+        If ``n`` is not a positive integer — raised on ``with`` entry, before
+        any request is issued, so a bad value fails loudly rather than silently
+        doing nothing.
+
+    Notes
+    -----
+    Fanning out carries the same consequences as the byte-limit chunking the
+    getters already do for oversized requests; opting in just brings them to a
+    request that would otherwise be a single call:
+
+    - ``max_rows``: each sub-request paginates up to ``max_rows`` rows
+      independently, then the combined result is sorted and truncated to
+      ``max_rows``. So a call with ``max_rows`` set returns a *different*
+      (though still valid and deterministically sorted) row set inside a
+      ``parallel_chunks`` block than without one — the cap is drawn from the
+      union of the sub-requests, not a single stream. Don't pair a tight
+      ``max_rows`` preview with ``parallel_chunks`` if you need exactly the
+      rows the un-fanned call would return.
+    - Resumability: a single request either fully succeeds or fully fails,
+      but a fanned-out call can fail partway (e.g. a mid-call rate-limit) and
+      raise a resumable :class:`~dataretrieval.exceptions.ChunkInterrupted`
+      (or ``QuotaExhausted``) carrying the completed sub-requests, which you
+      finish with ``exc.call.resume()``.
+    - Cross-sub-request de-duplication keys on the feature ``id``; features
+      with no ``id`` can't be deduped, so overlapping filter clauses split
+      across chunks may yield duplicate rows.
+
+    Examples
+    --------
+    >>> from dataretrieval import waterdata
+    >>> with waterdata.parallel_chunks(32):
+    ...     df, md = waterdata.get_daily(
+    ...         monitoring_location_id=many_sites, parameter_code="00060"
+    ...     )  # doctest: +SKIP
+
+    See Also
+    --------
+    ChunkPlan._refine : the planning-side effect of ``n``.
+    """
+    # Fail loudly on a bad ``n`` at ``with`` entry, before any request. Shared
+    # rules with ``max_rows`` via the helper (accepts numpy ints, rejects bool).
+    _require_positive_int(n, "parallel_chunks(n)", examples="2, 8, 32")
+    with _parallel_chunks(n):
+        yield
 
 
 class ChunkedCall:
@@ -591,8 +710,9 @@ def multi_value_chunked(
     ``async def fetch(args) -> (df, response)``, and drives it to
     completion via :meth:`ChunkedCall.resume`. The plan splits multi-value
     list params and the cql-text filter so each sub-request URL fits the
-    byte limit; an already-fitting request is a one-step plan. See the
-    module docstring for the concurrency model.
+    byte limit; an already-fitting request is a one-step plan, unless an
+    active :func:`parallel_chunks` block asks the plan to fan out more
+    finely. See the module docstring for the concurrency model.
 
     Parameters
     ----------
@@ -636,7 +756,14 @@ def multi_value_chunked(
             finalize: _Finalize = _passthrough_result,
         ) -> tuple[pd.DataFrame, Any]:
             limit = _OGC_URL_BYTE_LIMIT if url_limit is None else url_limit
-            plan = ChunkPlan(args, build_request, limit)
+            # Read the parallel_chunks dial ``n`` from the ambient set by
+            # ``parallel_chunks`` (1 = off outside any such block; otherwise the
+            # requested total sub-request cap). It only affects *planning*, done
+            # here up front, so a later resume — which re-issues the
+            # already-planned sub-requests — needs no snapshot.
+            plan = ChunkPlan(
+                args, build_request, limit, max_chunks=_parallel_chunks.get()
+            )
             retry_policy = RetryPolicy.from_env()
             # The concurrency cap is resolved inside ``resume()`` from
             # ``API_USGS_CONCURRENT``; ``1`` is a sequential gather,
