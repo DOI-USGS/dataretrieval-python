@@ -433,7 +433,7 @@ class ChunkedCall:
         frames = [self._chunks[i][0] for i in sorted(self._chunks)]
         responses = [response for _, response in self._chunks.values()]
         return (
-            _combine_chunk_frames(frames),
+            _combine_chunk_frames(frames, dedup=self.plan.has_filter_axis),
             _combine_chunk_responses(responses, self.plan.canonical_url),
         )
 

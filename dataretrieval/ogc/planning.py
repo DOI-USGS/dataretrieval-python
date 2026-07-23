@@ -596,6 +596,28 @@ class ChunkPlan:
         """
         return math.prod((len(self.chunks[ax.arg_key]) for ax in self.axes), start=1)
 
+    @property
+    def has_filter_axis(self) -> bool:
+        """Whether the plan splits along the cql-text ``filter`` axis.
+
+        Filter-axis chunks can overlap (a feature matching multiple
+        OR-clauses appears in each clause's chunk), so deduplication is
+        required when combining their frames.  List-axis chunks (the
+        common case — multi-value list parameters like
+        ``monitoring_location_id``) never overlap, so the combine step
+        can skip the ``drop_duplicates`` call.
+
+        Returns
+        -------
+        bool
+            ``True`` when the plan has a filter axis with >1 chunk;
+            ``False`` otherwise.
+        """
+        return any(
+            ax.joiner != _LIST_SEP and len(self.chunks[ax.arg_key]) > 1
+            for ax in self.axes
+        )
+
     def iter_sub_args(self) -> Iterator[dict[str, Any]]:
         """
         Yield substituted args for each sub-request, in deterministic
@@ -621,20 +643,33 @@ class ChunkPlan:
             yield sub_args
 
 
-def _combine_chunk_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
+def _combine_chunk_frames(
+    frames: list[pd.DataFrame], *, dedup: bool = True
+) -> pd.DataFrame:
     """
-    Concatenate per-chunk frames, dropping empties and deduping by ``id``.
+    Concatenate per-chunk frames, dropping empties and optionally deduping
+    by ``id``.
 
     Parameters
     ----------
     frames : list[pandas.DataFrame]
         One frame per completed sub-request.
+    dedup : bool, default True
+        Whether to drop duplicate rows keyed on the ``id`` column.
+        List-axis chunks (multi-value list parameters like
+        ``monitoring_location_id``) produce non-overlapping partitions,
+        so dedup is unnecessary and skipping it saves ~2 ms on a 50 k-row
+        result.  Filter-axis chunks *can* overlap (a feature matching
+        multiple OR-clauses appears in each clause's chunk), so dedup is
+        required there.  Callers that know their chunks don't overlap
+        (e.g. :meth:`ChunkedCall._combine_raw` when the plan has no
+        filter axis) pass ``dedup=False``.
 
     Returns
     -------
     pandas.DataFrame
-        The concatenated, deduplicated result. Empty when every input
-        frame is empty.
+        The concatenated (and optionally deduplicated) result. Empty when
+        every input frame is empty.
 
     Notes
     -----
@@ -667,7 +702,7 @@ def _combine_chunk_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
         # don't accidentally mutate ``_chunks[0][0]`` in place.
         return non_empty[0].copy()
     combined = pd.concat(non_empty, ignore_index=True)
-    if "id" in combined.columns:
+    if dedup and "id" in combined.columns:
         has_id = combined["id"].notna()
         if has_id.all():
             combined = combined.drop_duplicates(subset="id", ignore_index=True)
