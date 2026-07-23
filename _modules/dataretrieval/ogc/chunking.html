@@ -1,0 +1,884 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dataretrieval.ogc.chunking &mdash; dataretrieval 0.1.dev1+gd2920217d documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=b530e927"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dataretrieval.ogc.chunking</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dataretrieval.ogc.chunking</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Joint URL-byte chunking for the OGC getters.</span>
+
+<span class="sd">An OGC query has several chunkable axes: every multi-value list</span>
+<span class="sd">parameter (sites, parameter codes, …) plus the cql-text ``filter``,</span>
+<span class="sd">which splits along its top-level OR clauses. Any of them can fan the</span>
+<span class="sd">URL past the server&#39;s ~8 KB byte limit. ``ChunkPlan`` picks a fan-out</span>
+<span class="sd">for each axis that minimizes total sub-requests while keeping every</span>
+<span class="sd">sub-request URL under the budget; ``ChunkedCall`` fetches the resulting</span>
+<span class="sd">cartesian product of chunks. Requests that already fit get a trivial</span>
+<span class="sd">single-step plan — ``ChunkedCall`` has one code path either way.</span>
+
+<span class="sd">Parallel chunks: the planner is conservative by default — it splits only as far as</span>
+<span class="sd">the byte limit forces. A caller who knows their result is large can opt into a</span>
+<span class="sd">finer split via the ``parallel_chunks(n)`` context manager, which fans the query</span>
+<span class="sd">out into ``n`` parallel sub-requests; ``n`` drives :meth:`ChunkPlan._refine`. See</span>
+<span class="sd">``parallel_chunks`` for the why and the when.</span>
+
+<span class="sd">This module owns the *execution* half — the event loop and bounded</span>
+<span class="sd">concurrency that drive a plan to completion (``ChunkedCall``) plus the</span>
+<span class="sd">public ``multi_value_chunked`` decorator. The neighboring concerns live in</span>
+<span class="sd">sibling modules it imports, each with its own reason to change:</span>
+<span class="sd">:mod:`~dataretrieval.ogc.planning` builds the</span>
+<span class="sd">:class:`~dataretrieval.ogc.planning.ChunkPlan` and recombines per-chunk</span>
+<span class="sd">frames and responses (pure, no I/O); :mod:`~dataretrieval.ogc.retry` holds</span>
+<span class="sd">the transient-classification and exponential-backoff policy; and</span>
+<span class="sd">:mod:`~dataretrieval.ogc.interruptions` defines the resumable</span>
+<span class="sd">:class:`~dataretrieval.ogc.interruptions.ChunkInterrupted` exception</span>
+<span class="sd">contract.</span>
+
+<span class="sd">Concurrency: ``multi_value_chunked`` fans every pending sub-request out</span>
+<span class="sd">under one ``asyncio.gather`` sharing a single ``httpx.AsyncClient``. An</span>
+<span class="sd">``asyncio.Semaphore`` — not the client&#39;s connection pool, which is</span>
+<span class="sd">merely sized to match — caps the sub-requests in flight at ``N``; see</span>
+<span class="sd">:meth:`ChunkedCall._run` for why the gate must be the semaphore rather</span>
+<span class="sd">than the pool. ``API_USGS_CONCURRENT`` resolves ``N``: an integer N &gt; 1</span>
+<span class="sd">allows N sub-requests in flight; ``1`` forces sequential dispatch (one</span>
+<span class="sd">request at a time); the literal ``unbounded`` lifts the cap. ``N``</span>
+<span class="sd">bounds only how many of a chunked query&#39;s sub-requests are in flight at</span>
+<span class="sd">once — a client-side trade-off between open connections and fan-out</span>
+<span class="sd">latency. It does not affect the API rate limit: a chunked call issues</span>
+<span class="sd">the same number of sub-requests regardless of ``N``, so ``N`` changes</span>
+<span class="sd">their timing, not the total request volume. The USGS API rate-limits by</span>
+<span class="sd">volume over time (HTTP 429), not by simultaneity; set ``API_USGS_PAT``</span>
+<span class="sd">to raise that quota. The default of 32 is a conservative cap that keeps</span>
+<span class="sd">connection use modest. The fan-out runs in a short-lived worker thread</span>
+<span class="sd">(an ``anyio`` blocking portal), so it works whether or not the caller is</span>
+<span class="sd">already inside an event loop (Jupyter / IPython / async apps).</span>
+
+<span class="sd">Retries: each sub-request is retried on a transient failure (429,</span>
+<span class="sd">5xx, connect/read timeout) with exponential backoff + full jitter,</span>
+<span class="sd">honoring a server ``Retry-After`` when present. ``API_USGS_RETRIES``</span>
+<span class="sd">sets the cap (default 4; ``0`` disables). A ``Retry-After`` longer</span>
+<span class="sd">than the per-call ceiling escalates to a resumable interruption.</span>
+
+<span class="sd">Interruption: any mid-stream transient failure — 429, 5xx, or a bare</span>
+<span class="sd">transport error (connect/read timeout, oversize follow-up URL) — surfaces</span>
+<span class="sd">as a ``ChunkInterrupted`` subclass: ``QuotaExhausted`` for 429,</span>
+<span class="sd">``ServiceInterrupted`` for the rest. The exception carries ``.call``, a</span>
+<span class="sd">``ChunkedCall`` handle that owns the already-completed sub-request</span>
+<span class="sd">state (sparse-indexed, since gathered sub-requests complete out of</span>
+<span class="sd">order). Call ``.call.resume()`` once the underlying condition clears;</span>
+<span class="sd">only the still-pending sub-requests are re-issued. ``Retry-After`` (when</span>
+<span class="sd">the server sets it) is surfaced on the exception as ``.retry_after``.</span>
+
+<span class="sd">Dedup: list-axis chunks don&#39;t overlap; filter-axis chunks can, so</span>
+<span class="sd">``_combine_chunk_frames`` dedupes by feature ``id``. ``properties``,</span>
+<span class="sd">``bbox``, date intervals, ``limit``, ``skip_geometry``, and</span>
+<span class="sd">``filter``/``filter_lang`` themselves are never sliced as list axes</span>
+<span class="sd">(the filter is partitioned along its top-level OR axis instead).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextvars</span><span class="w"> </span><span class="kn">import</span> <span class="n">copy_context</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">anyio.from_thread</span><span class="w"> </span><span class="kn">import</span> <span class="n">start_blocking_portal</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPX_DEFAULTS</span><span class="p">,</span> <span class="n">Ambient</span><span class="p">,</span> <span class="n">_require_positive_int</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">progress</span> <span class="k">as</span> <span class="n">_progress</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.interruptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ChunkInterrupted</span><span class="p">,</span>
+    <span class="n">_Fetch</span><span class="p">,</span>
+    <span class="n">_Finalize</span><span class="p">,</span>
+    <span class="n">_passthrough_result</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.planning</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ChunkPlan</span><span class="p">,</span>
+    <span class="n">_combine_chunk_frames</span><span class="p">,</span>
+    <span class="n">_combine_chunk_responses</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.retry</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_NO_RETRY</span><span class="p">,</span>
+    <span class="n">RetryPolicy</span><span class="p">,</span>
+    <span class="n">_classify_chunk_error</span><span class="p">,</span>
+    <span class="n">_retry</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Empirically the API replies HTTP 414 above ~8200 bytes of full URL —</span>
+<span class="c1"># matches nginx&#39;s default ``large_client_header_buffers`` of 8 KB. 8000</span>
+<span class="c1"># leaves ~200 bytes for request-line framing and proxy variance. The decorator</span>
+<span class="c1"># resolves this module-level default at call time when ``url_limit`` is None,</span>
+<span class="c1"># so a test can ``monkeypatch.setattr`` it on this module.</span>
+<span class="n">_OGC_URL_BYTE_LIMIT</span> <span class="o">=</span> <span class="mi">8000</span>
+
+
+<span class="c1"># Fan-out concurrency cap, read at call time (not import) so test</span>
+<span class="c1"># ``monkeypatch.setenv`` applies. Value grammar in :func:`_read_concurrency_env`;</span>
+<span class="c1"># the concurrency model is in the module docstring.</span>
+<span class="n">_CONCURRENCY_ENV</span> <span class="o">=</span> <span class="s2">&quot;API_USGS_CONCURRENT&quot;</span>
+<span class="n">_CONCURRENCY_DEFAULT</span> <span class="o">=</span> <span class="mi">32</span>
+<span class="n">_CONCURRENCY_UNBOUNDED</span> <span class="o">=</span> <span class="s2">&quot;unbounded&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_concurrency_env</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Resolve the ``API_USGS_CONCURRENT`` env var to a parallelism cap.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int or None</span>
+<span class="sd">        ``1`` for sequential dispatch (one sub-request at a time); an</span>
+<span class="sd">        integer &gt;1 for bounded concurrency; ``None`` to disable the</span>
+<span class="sd">        per-call cap entirely (``unbounded`` keyword). Unset → default</span>
+<span class="sd">        of ``_CONCURRENCY_DEFAULT``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_CONCURRENCY_ENV</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">raw</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_CONCURRENCY_DEFAULT</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">raw</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_CONCURRENCY_DEFAULT</span>
+    <span class="k">if</span> <span class="n">raw</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">_CONCURRENCY_UNBOUNDED</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_CONCURRENCY_ENV</span><span class="si">}</span><span class="s2"> must be a positive integer or &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">_CONCURRENCY_UNBOUNDED</span><span class="si">}</span><span class="s2">&#39;; got </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_CONCURRENCY_ENV</span><span class="si">}</span><span class="s2"> must be &gt;= 1 (got </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">); use &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">_CONCURRENCY_UNBOUNDED</span><span class="si">}</span><span class="s2">&#39; to disable the cap.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span>
+
+
+<span class="c1"># Shared per-call ``httpx.AsyncClient``, scoped via ``with _chunked_client(c):``</span>
+<span class="c1"># during ``ChunkedCall._run`` so paginated-loop helpers (``_walk_pages``) reuse</span>
+<span class="c1"># the same connection pool across every sub-request. ``None`` outside a chunked</span>
+<span class="c1"># call — paginated helpers then open their own short-lived client.</span>
+<span class="n">_chunked_client</span><span class="p">:</span> <span class="n">Ambient</span><span class="p">[</span><span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">Ambient</span><span class="p">(</span><span class="s2">&quot;_chunked_client&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_active_client</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the chunker&#39;s currently-published client, or ``None``.</span>
+
+<span class="sd">    Used by the paginated-loop helpers (e.g.</span>
+<span class="sd">    :func:`dataretrieval.ogc.engine._client_for`) to reuse the</span>
+<span class="sd">    per-call connection pool.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    httpx.AsyncClient or None</span>
+<span class="sd">        The client scoped via ``with _chunked_client(...)`` if currently inside</span>
+<span class="sd">        a :class:`ChunkedCall` run; ``None`` otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_chunked_client</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+
+<span class="c1"># Parallel-chunks dial: opt-in to fan a query out *more finely* than the byte</span>
+<span class="c1"># limit alone requires. Scoped to a ``with parallel_chunks(...):`` block (a</span>
+<span class="c1"># ContextVar), deliberately NOT an env var (see :func:`parallel_chunks` for</span>
+<span class="c1"># why). The ambient holds ``n`` — the requested cap on the plan&#39;s total</span>
+<span class="c1"># sub-request count; ``1`` (the default, outside any block) means &quot;off — chunk</span>
+<span class="c1"># only as much as the byte limit needs, no extra fan-out&quot;.</span>
+<span class="n">_parallel_chunks</span><span class="p">:</span> <span class="n">Ambient</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Ambient</span><span class="p">(</span><span class="s2">&quot;ogc_parallel_chunks&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="parallel_chunks">
+<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.parallel_chunks">[docs]</a>
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">parallel_chunks</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fan the OGC getters&#39; multi-value requests out into ``n`` parallel sub-requests.</span>
+
+<span class="sd">    By default the Water Data / NGWMN getters chunk a request only as much as</span>
+<span class="sd">    the server&#39;s ~8 KB URL-byte limit forces — the fewest sub-requests that</span>
+<span class="sd">    fit. That is the safe default, but it can be *needlessly* conservative:</span>
+<span class="sd">    because every sub-request paginates, splitting a large result further costs</span>
+<span class="sd">    little or no extra quota *as long as each sub-request still spans many</span>
+<span class="sd">    pages* — rows-per-chunk far exceeding the page size (ten states pulled as</span>
+<span class="sd">    one request then page nearly as many times as ten per-state requests</span>
+<span class="sd">    would). When a split leaves each sub-request only a page or two, its partial</span>
+<span class="sd">    final page is extra, so finer chunks do add some requests. This context</span>
+<span class="sd">    manager lets a caller who *knows* their pull is large ask for that finer</span>
+<span class="sd">    split — trading roughly the same pages for more, smaller sub-requests, which</span>
+<span class="sd">    gives smoother progress, more even concurrency, and a smaller unit of</span>
+<span class="sd">    retry/resume.</span>
+
+<span class="sd">    Because the library can&#39;t tell in advance whether a query is large (ten</span>
+<span class="sd">    states over a short window might fit in a single page, where extra chunks</span>
+<span class="sd">    would only burn quota), this is a *deliberate* per-call knob rather than an</span>
+<span class="sd">    automatic behavior or a process-wide environment variable — scoping it to a</span>
+<span class="sd">    ``with`` block keeps an aggressive setting from leaking into unrelated calls</span>
+<span class="sd">    and accidentally spending quota. Outside any block the getters use the</span>
+<span class="sd">    conservative default. Only the OGC getters (Water Data, NGWMN) read this;</span>
+<span class="sd">    wrapping a legacy NWIS call in the block is a harmless no-op.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int</span>
+<span class="sd">        The number of sub-requests to fan the whole call out into — a positive</span>
+<span class="sd">        integer such as ``2``, ``8``, or ``32``. It caps the plan&#39;s *total*</span>
+<span class="sd">        sub-request count (the cartesian product across every multi-value</span>
+<span class="sd">        argument combined, not per argument), so several multi-value arguments</span>
+<span class="sd">        cannot multiply past it. The cap is a ceiling, never exceeded: the</span>
+<span class="sd">        actual count is bounded below by what the ~8 KB URL limit already</span>
+<span class="sd">        forces and above by ``n``, so an ``n`` larger than the input allows</span>
+<span class="sd">        simply yields one sub-request per value, and with several multi-value</span>
+<span class="sd">        arguments the total may land somewhat below ``n`` because splits are</span>
+<span class="sd">        whole (the plan can&#39;t always divide evenly onto ``n``); ``n=1`` asks</span>
+<span class="sd">        for no extra fan-out.</span>
+
+<span class="sd">        Each sub-request fetches at least one page, so it costs at least one</span>
+<span class="sd">        request against your hourly rate limit — a larger ``n`` spends more</span>
+<span class="sd">        quota. And because how many sub-requests run *at once* is capped</span>
+<span class="sd">        separately by ``API_USGS_CONCURRENT`` (default 32), an ``n`` beyond that</span>
+<span class="sd">        adds quota without adding parallelism; the useful range is roughly ``2``</span>
+<span class="sd">        up to ``API_USGS_CONCURRENT``.</span>
+
+<span class="sd">    Yields</span>
+<span class="sd">    ------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``n`` is not a positive integer — raised on ``with`` entry, before</span>
+<span class="sd">        any request is issued, so a bad value fails loudly rather than silently</span>
+<span class="sd">        doing nothing.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Fanning out carries the same consequences as the byte-limit chunking the</span>
+<span class="sd">    getters already do for oversized requests; opting in just brings them to a</span>
+<span class="sd">    request that would otherwise be a single call:</span>
+
+<span class="sd">    - ``max_rows``: each sub-request paginates up to ``max_rows`` rows</span>
+<span class="sd">      independently, then the combined result is sorted and truncated to</span>
+<span class="sd">      ``max_rows``. So a call with ``max_rows`` set returns a *different*</span>
+<span class="sd">      (though still valid and deterministically sorted) row set inside a</span>
+<span class="sd">      ``parallel_chunks`` block than without one — the cap is drawn from the</span>
+<span class="sd">      union of the sub-requests, not a single stream. Don&#39;t pair a tight</span>
+<span class="sd">      ``max_rows`` preview with ``parallel_chunks`` if you need exactly the</span>
+<span class="sd">      rows the un-fanned call would return.</span>
+<span class="sd">    - Resumability: a single request either fully succeeds or fully fails,</span>
+<span class="sd">      but a fanned-out call can fail partway (e.g. a mid-call rate-limit) and</span>
+<span class="sd">      raise a resumable :class:`~dataretrieval.exceptions.ChunkInterrupted`</span>
+<span class="sd">      (or ``QuotaExhausted``) carrying the completed sub-requests, which you</span>
+<span class="sd">      finish with ``exc.call.resume()``.</span>
+<span class="sd">    - Cross-sub-request de-duplication keys on the feature ``id``; features</span>
+<span class="sd">      with no ``id`` can&#39;t be deduped, so overlapping filter clauses split</span>
+<span class="sd">      across chunks may yield duplicate rows.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from dataretrieval import waterdata</span>
+<span class="sd">    &gt;&gt;&gt; with waterdata.parallel_chunks(32):</span>
+<span class="sd">    ...     df, md = waterdata.get_daily(</span>
+<span class="sd">    ...         monitoring_location_id=many_sites, parameter_code=&quot;00060&quot;</span>
+<span class="sd">    ...     )  # doctest: +SKIP</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    ChunkPlan._refine : the planning-side effect of ``n``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Fail loudly on a bad ``n`` at ``with`` entry, before any request. Shared</span>
+    <span class="c1"># rules with ``max_rows`` via the helper (accepts numpy ints, rejects bool).</span>
+    <span class="n">_require_positive_int</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="s2">&quot;parallel_chunks(n)&quot;</span><span class="p">,</span> <span class="n">examples</span><span class="o">=</span><span class="s2">&quot;2, 8, 32&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">_parallel_chunks</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">yield</span></div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ChunkedCall</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stateful handle for a chunked call.</span>
+
+<span class="sd">    Holds the in-flight state (per-sub-request frames and responses)</span>
+<span class="sd">    and the async fetcher. A single :meth:`resume` entry point drives</span>
+<span class="sd">    the call from wherever it is to completion — used both for the</span>
+<span class="sd">    first invocation (from :meth:`ChunkPlan.execute`) and for subsequent</span>
+<span class="sd">    retries after a :class:`ChunkInterrupted`.</span>
+
+<span class="sd">    :meth:`_run` gathers every pending sub-request over one shared</span>
+<span class="sd">    :class:`httpx.AsyncClient`, applies the failure-precedence rules, and</span>
+<span class="sd">    combines; :meth:`resume` drives it through an ``anyio`` blocking</span>
+<span class="sd">    portal so it works whether or not the caller is already inside an</span>
+<span class="sd">    event loop. Concurrency is bounded by a per-run ``asyncio.Semaphore``</span>
+<span class="sd">    (see :meth:`_run`), so sequential dispatch</span>
+<span class="sd">    (``API_USGS_CONCURRENT=1``) is just a degenerate gather.</span>
+
+<span class="sd">    A ``ChunkedCall`` is created internally when a :class:`ChunkPlan`</span>
+<span class="sd">    executes; callers reach it via :attr:`ChunkInterrupted.call` on</span>
+<span class="sd">    the exception raised by a mid-stream failure.</span>
+
+<span class="sd">    :meth:`resume` is idempotent: :meth:`_run` iterates</span>
+<span class="sd">    :meth:`ChunkPlan.iter_sub_args` (deterministic order) and skips</span>
+<span class="sd">    any index whose result is already in ``self._chunks``. The</span>
+<span class="sd">    completion set is a sparse ``dict[int, (df, response)]`` so the</span>
+<span class="sd">    gather can record scattered completions (e.g. indices [0, 2, 5]</span>
+<span class="sd">    after siblings [1, 3, 4] failed) and a subsequent ``resume`` only</span>
+<span class="sd">    re-issues the missing indices.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    plan : ChunkPlan</span>
+<span class="sd">        The chunking plan to execute.</span>
+<span class="sd">    fetch : Callable</span>
+<span class="sd">        ``async def`` that issues a single sub-request, given the</span>
+<span class="sd">        substituted args dict, and returns ``(frame, response)``.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    plan : ChunkPlan</span>
+<span class="sd">        The plan being driven (read-only after construction).</span>
+<span class="sd">    fetch : Callable</span>
+<span class="sd">        The async per-sub-request fetch function.</span>
+<span class="sd">    finalize : Callable</span>
+<span class="sd">        Transform applied to the combined result (see :data:`_Finalize`) at</span>
+<span class="sd">        the terminal :meth:`_run` return, so a completed call yields the</span>
+<span class="sd">        caller&#39;s finished shape. The ``partial_*`` accessors deliberately</span>
+<span class="sd">        skip it and stay raw.</span>
+<span class="sd">    partial_frame : pandas.DataFrame</span>
+<span class="sd">        Raw combined frame of completed sub-requests (live; recomputed per</span>
+<span class="sd">        access). Not finalized — call :meth:`resume` for the finished shape.</span>
+<span class="sd">    partial_response : httpx.Response or None</span>
+<span class="sd">        Raw aggregate response (canonical URL restored), or ``None`` when</span>
+<span class="sd">        nothing has completed yet (live; recomputed per access).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">plan</span><span class="p">:</span> <span class="n">ChunkPlan</span><span class="p">,</span>
+        <span class="n">fetch</span><span class="p">:</span> <span class="n">_Fetch</span><span class="p">,</span>
+        <span class="n">retry_policy</span><span class="p">:</span> <span class="n">RetryPolicy</span> <span class="o">=</span> <span class="n">_NO_RETRY</span><span class="p">,</span>
+        <span class="n">finalize</span><span class="p">:</span> <span class="n">_Finalize</span> <span class="o">=</span> <span class="n">_passthrough_result</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plan</span> <span class="o">=</span> <span class="n">plan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fetch</span> <span class="o">=</span> <span class="n">fetch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">retry_policy</span> <span class="o">=</span> <span class="n">retry_policy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finalize</span> <span class="o">=</span> <span class="n">finalize</span>
+        <span class="c1"># Snapshot the ambient context at construction time — i.e. inside the</span>
+        <span class="c1"># caller&#39;s ``with`` blocks (base URL, dialect, row cap, progress</span>
+        <span class="c1"># reporter). :meth:`resume` runs every drive inside this snapshot, so</span>
+        <span class="c1"># a *later* ``exc.call.resume()`` — which fires after those ``with``</span>
+        <span class="c1"># blocks have exited and reset their ContextVars — still rebuilds</span>
+        <span class="c1"># sub-requests against the original API&#39;s base URL/dialect rather than</span>
+        <span class="c1"># the process defaults. ``build_request`` reads those ContextVars when</span>
+        <span class="c1"># it reconstructs each sub-request, so the snapshot must outlive them.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span> <span class="o">=</span> <span class="n">copy_context</span><span class="p">()</span>
+        <span class="c1"># Completed (frame, response) pairs keyed by sub-args index; sparse</span>
+        <span class="c1"># (gathered sub-requests complete out of order — see class docstring).</span>
+        <span class="c1"># ``_run``&#39;s ``track`` closure is the only writer, so ``dict`` insertion</span>
+        <span class="c1"># order is completion order (relied on by :meth:`_combine_raw`).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrap_failure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChunkInterrupted</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build the matching :class:`ChunkInterrupted` carrying this</span>
+<span class="sd">        call when ``exc`` is a recognized transient transport failure;</span>
+<span class="sd">        return ``None`` for unrecognized failures so the caller can</span>
+<span class="sd">        re-raise. Encapsulates the</span>
+<span class="sd">        ``classify → instantiate-with-call-state`` recipe so</span>
+<span class="sd">        :class:`ChunkedCall`&#39;s private fields stay private.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        exc : BaseException</span>
+<span class="sd">            The exception raised by a sub-request.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ChunkInterrupted or None</span>
+<span class="sd">            The matching :class:`ChunkInterrupted` subclass carrying this</span>
+<span class="sd">            call for a recognized transient failure; ``None`` otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">classification</span> <span class="o">=</span> <span class="n">_classify_chunk_error</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">classification</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">interrupted_class</span><span class="p">,</span> <span class="n">retry_after</span> <span class="o">=</span> <span class="n">classification</span>
+        <span class="k">return</span> <span class="n">interrupted_class</span><span class="p">(</span>
+            <span class="n">completed_chunks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">completed_chunks</span><span class="p">,</span>
+            <span class="n">total_chunks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plan</span><span class="o">.</span><span class="n">total</span><span class="p">,</span>
+            <span class="n">call</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">retry_after</span><span class="o">=</span><span class="n">retry_after</span><span class="p">,</span>
+            <span class="n">cause</span><span class="o">=</span><span class="n">exc</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">completed_chunks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of sub-requests completed so far.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_combine_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Assemble the raw ``(frame, response)`` from completed sub-requests,</span>
+<span class="sd">        before :attr:`finalize` runs.</span>
+
+<span class="sd">        Frames concatenate in sub-args *index* order (``sorted`` keys —</span>
+<span class="sd">        deterministic, independent of parallel completion order). The</span>
+<span class="sd">        aggregated response takes its headers from the most-recently-</span>
+<span class="sd">        *completed* sub-request: the ``track`` closure in :meth:`_run`</span>
+<span class="sd">        is the only writer of ``self._chunks`` and ``dict`` preserves</span>
+<span class="sd">        insertion order, so the chunks&#39; natural order is completion</span>
+<span class="sd">        order and the last one carries the freshest</span>
+<span class="sd">        ``x-ratelimit-remaining``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple of (pandas.DataFrame, httpx.Response)</span>
+<span class="sd">            The concatenated frame and the aggregated response, before</span>
+<span class="sd">            :attr:`finalize` is applied.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">frames</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span><span class="p">)]</span>
+        <span class="n">responses</span> <span class="o">=</span> <span class="p">[</span><span class="n">response</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">response</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">_combine_chunk_frames</span><span class="p">(</span><span class="n">frames</span><span class="p">),</span>
+            <span class="n">_combine_chunk_responses</span><span class="p">(</span><span class="n">responses</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plan</span><span class="o">.</span><span class="n">canonical_url</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">partial_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Raw combined frame of sub-requests that have completed so far.</span>
+
+<span class="sd">        Live — recomputed on each access so it reflects current state</span>
+<span class="sd">        across resume attempts. Deliberately the *raw* combined frame</span>
+<span class="sd">        (``_combine_raw``), NOT the finalized result: this is a cheap,</span>
+<span class="sd">        side-effect-free snapshot for inspecting partial progress, so</span>
+<span class="sd">        reading it (or building a :class:`ChunkInterrupted` around it)</span>
+<span class="sd">        never triggers ``finalize`` work — which for OGC getters includes</span>
+<span class="sd">        a schema network fetch on an empty frame. Use ``call.resume()``</span>
+<span class="sd">        for the finalized result.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            Combined frame of completed sub-requests, or an empty</span>
+<span class="sd">            ``DataFrame`` when nothing has completed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combine_raw</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">partial_response</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Raw aggregate response with the canonical URL restored to the</span>
+<span class="sd">        user&#39;s full original query.</span>
+
+<span class="sd">        Live — recomputed on each access. Like :attr:`partial_frame`, this</span>
+<span class="sd">        is the *raw* aggregate (an :class:`httpx.Response`), not the</span>
+<span class="sd">        finalized result, so inspecting it is side-effect-free.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        httpx.Response or None</span>
+<span class="sd">            Aggregated response when at least one sub-request has</span>
+<span class="sd">            completed, ``None`` otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combine_raw</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_pending</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Yield ``(index, sub_args)`` for sub-requests not yet completed.</span>
+
+<span class="sd">        Walks :meth:`ChunkPlan.iter_sub_args` in deterministic order</span>
+<span class="sd">        and skips any index already in ``self._chunks``. :meth:`_run`</span>
+<span class="sd">        uses this to pick up exactly the sub-requests it still owes —</span>
+<span class="sd">        first run and every resume alike.</span>
+
+<span class="sd">        Yields</span>
+<span class="sd">        ------</span>
+<span class="sd">        tuple of (int, dict)</span>
+<span class="sd">            The sub-args ``index`` and its ``sub_args`` dict for each</span>
+<span class="sd">            sub-request not yet completed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">sub_args</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plan</span><span class="o">.</span><span class="n">iter_sub_args</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">index</span><span class="p">,</span> <span class="n">sub_args</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">resume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Drive the chunked call to completion and return the combined result.</span>
+
+<span class="sd">        Runs :meth:`_run` through an ``anyio`` blocking portal (a</span>
+<span class="sd">        short-lived worker thread), so it works whether or not the caller</span>
+<span class="sd">        is already inside an event loop (Jupyter / IPython / async apps).</span>
+<span class="sd">        The portal copies the calling context, so the active progress</span>
+<span class="sd">        reporter still reaches the sub-requests.</span>
+
+<span class="sd">        Idempotent: only sub-requests whose index isn&#39;t already in</span>
+<span class="sd">        ``self._chunks`` are re-issued. Sub-args order matches</span>
+<span class="sd">        :meth:`ChunkPlan.iter_sub_args` and is deterministic, so a</span>
+<span class="sd">        partial completion (sparse indices) resumes correctly.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        df : pandas.DataFrame</span>
+<span class="sd">            Combined data from every successful sub-request.</span>
+<span class="sd">        response</span>
+<span class="sd">            The finalized aggregate — a raw :class:`httpx.Response`</span>
+<span class="sd">            (canonical URL, most-recently-completed sub-request&#39;s headers,</span>
+<span class="sd">            cumulative elapsed time) by default, or whatever</span>
+<span class="sd">            :attr:`finalize` produces (e.g. ``BaseMetadata`` for the OGC</span>
+<span class="sd">            getters).</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ChunkInterrupted</span>
+<span class="sd">            On a mid-stream transient failure — 429, 5xx, or a bare</span>
+<span class="sd">            transport error: :class:`QuotaExhausted` for 429,</span>
+<span class="sd">            :class:`ServiceInterrupted` for the rest. The resumable</span>
+<span class="sd">            handle is on ``exc.call`` — wait for the underlying</span>
+<span class="sd">            condition to clear and call ``exc.call.resume()`` again.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Drive inside the snapshot taken at construction (see ``__init__``).</span>
+        <span class="c1"># ``start_blocking_portal`` copies the *calling* context into its</span>
+        <span class="c1"># worker thread, and running here means that calling context is the</span>
+        <span class="c1"># snapshot — so the base URL / dialect / row cap / progress reporter</span>
+        <span class="c1"># active when the call was created reach the rebuilt sub-requests,</span>
+        <span class="c1"># even when this is a resume fired long after the original ``with``</span>
+        <span class="c1"># blocks exited.</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_resume_in_context</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resume_in_context</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Body of :meth:`resume`, run inside the captured context.&quot;&quot;&quot;</span>
+        <span class="n">concurrency</span> <span class="o">=</span> <span class="n">_read_concurrency_env</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">start_blocking_portal</span><span class="p">()</span> <span class="k">as</span> <span class="n">portal</span><span class="p">:</span>
+            <span class="c1"># ``portal.call`` returns ``Any`` because ``functools.partial``</span>
+            <span class="c1"># erases ``_run``&#39;s return type; restore the declared tuple.</span>
+            <span class="k">return</span> <span class="n">cast</span><span class="p">(</span>
+                <span class="s2">&quot;tuple[pd.DataFrame, Any]&quot;</span><span class="p">,</span>
+                <span class="n">portal</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">,</span> <span class="n">concurrency</span><span class="p">)),</span>
+            <span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_concurrent</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gather every pending sub-request over one shared</span>
+<span class="sd">        :class:`httpx.AsyncClient` and return the combined, finalized result.</span>
+
+<span class="sd">        Pending sub-requests (:meth:`_pending`) fan out under</span>
+<span class="sd">        ``asyncio.gather`` with ``return_exceptions=True`` so completed</span>
+<span class="sd">        sub-requests survive a sibling&#39;s transient failure. On a</span>
+<span class="sd">        recognized transient (:class:`RateLimited`, :class:`ServiceUnavailable`,</span>
+<span class="sd">        or a bare ``httpx.HTTPError`` / ``httpx.InvalidURL``) a</span>
+<span class="sd">        :class:`ChunkInterrupted` subclass is raised carrying ``self`` on</span>
+<span class="sd">        ``.call``; ``exc.call.resume()`` then re-issues only the unfinished</span>
+<span class="sd">        indices through this same runner.</span>
+
+<span class="sd">        The gather dispatches *every* pending sub-request at once, but an</span>
+<span class="sd">        ``asyncio.Semaphore`` caps the number of concurrent fetches at</span>
+<span class="sd">        ``N = max_concurrent`` — ``None`` lifts the cap, ``N=1`` runs them</span>
+<span class="sd">        one at a time. The connection pool is sized to the same ``N``</span>
+<span class="sd">        (``httpx.Limits(max_connections=N, max_keepalive_connections=N)``)</span>
+<span class="sd">        so the in-flight fetches reuse keepalive connections.</span>
+
+<span class="sd">        The semaphore, not the pool, is deliberately the throttle. If the</span>
+<span class="sd">        pool throttled instead, the excess sub-requests would queue</span>
+<span class="sd">        *inside* httpx waiting for a connection, and that wait counts</span>
+<span class="sd">        against the pool-acquire timeout (60 s, from ``HTTPX_DEFAULTS``).</span>
+<span class="sd">        A batch of slow pages that keeps every connection busy past that</span>
+<span class="sd">        window would then trip ``httpx.PoolTimeout`` on the queued tail —</span>
+<span class="sd">        a purely client-side failure that consumes the retry budget and</span>
+<span class="sd">        surfaces as a spurious resumable ``ServiceInterrupted``. Holding</span>
+<span class="sd">        sub-requests at the semaphore keeps them out of the pool until a</span>
+<span class="sd">        slot frees, so the pool timeout only fires for a genuinely stuck</span>
+<span class="sd">        connection.</span>
+
+<span class="sd">        The shared client is published on :data:`_chunked_client` so</span>
+<span class="sd">        the paginated-loop helpers reuse its connection pool.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        max_concurrent : int or None</span>
+<span class="sd">            Maximum sub-requests in flight (the semaphore value, and the</span>
+<span class="sd">            connection-pool size). ``None`` lifts the cap entirely.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        df : pandas.DataFrame</span>
+<span class="sd">            Combined data from every sub-request.</span>
+<span class="sd">        response</span>
+<span class="sd">            The finalized aggregate — a raw :class:`httpx.Response`</span>
+<span class="sd">            (canonical URL, most-recently-completed sub-request&#39;s headers,</span>
+<span class="sd">            cumulative elapsed time) by default, or whatever</span>
+<span class="sd">            :attr:`finalize` produces (e.g. ``BaseMetadata`` for OGC getters).</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ChunkInterrupted</span>
+<span class="sd">            On a transient sub-request failure. ``.call`` is ``self``,</span>
+<span class="sd">            holding the sparse completed sub-requests; ``.call.resume()``</span>
+<span class="sd">            re-issues the unfinished ones.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># The semaphore is the throttle; the pool is merely sized to match</span>
+        <span class="c1"># it. Left at httpx&#39;s default client limits (``max_connections=100``,</span>
+        <span class="c1"># keepalive 20) the pool would bottleneck a wider cap or churn</span>
+        <span class="c1"># connections by keeping too few alive. See the method docstring for</span>
+        <span class="c1"># why the gate can&#39;t be the pool itself. ``unbounded``</span>
+        <span class="c1"># (``max_concurrent=None``) is a degenerate cap at the plan total — a</span>
+        <span class="c1"># semaphore that can never block — so gated is the only code path.</span>
+        <span class="n">limits</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Limits</span><span class="p">(</span>
+            <span class="n">max_connections</span><span class="o">=</span><span class="n">max_concurrent</span><span class="p">,</span> <span class="n">max_keepalive_connections</span><span class="o">=</span><span class="n">max_concurrent</span>
+        <span class="p">)</span>
+        <span class="n">semaphore</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plan</span><span class="o">.</span><span class="n">total</span> <span class="k">if</span> <span class="n">max_concurrent</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">max_concurrent</span>
+        <span class="p">)</span>
+
+        <span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">(</span><span class="n">limits</span><span class="o">=</span><span class="n">limits</span><span class="p">,</span> <span class="o">**</span><span class="n">HTTPX_DEFAULTS</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">_chunked_client</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+                <span class="n">reporter</span> <span class="o">=</span> <span class="n">_progress</span><span class="o">.</span><span class="n">current</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">reporter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">reporter</span><span class="o">.</span><span class="n">set_chunks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plan</span><span class="o">.</span><span class="n">total</span><span class="p">)</span>
+
+                <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch_gated</span><span class="p">(</span>
+                    <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+                <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;One fetch attempt under the concurrency gate.</span>
+
+<span class="sd">                    The slot is held for the attempt&#39;s full duration —</span>
+<span class="sd">                    every page of a paginated sub-request — but acquired</span>
+<span class="sd">                    per *attempt* (this is what ``_retry`` re-invokes), so</span>
+<span class="sd">                    a sub-request sleeping off a retry backoff isn&#39;t</span>
+<span class="sd">                    holding a slot while it isn&#39;t touching the server.</span>
+<span class="sd">                    &quot;&quot;&quot;</span>
+                    <span class="k">async</span> <span class="k">with</span> <span class="n">semaphore</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+                <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">track</span><span class="p">(</span>
+                    <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+                <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;One sub-request (with retry) + result-store + progress tick.&quot;&quot;&quot;</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_retry</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">fetch_gated</span><span class="p">(</span><span class="n">args</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry_policy</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+                    <span class="k">if</span> <span class="n">reporter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="c1"># Chunks finish out of order under gather, so tick the</span>
+                        <span class="c1"># completed *count* rather than a positional index.</span>
+                        <span class="n">reporter</span><span class="o">.</span><span class="n">start_chunk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">completed_chunks</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">result</span>
+
+                <span class="c1"># Dispatch every pending sub-request concurrently; the</span>
+                <span class="c1"># semaphore (via ``fetch_gated``) is the only throttle.</span>
+                <span class="c1"># ``return_exceptions`` keeps completed pairs after a sibling</span>
+                <span class="c1"># fails, so partial state stays recoverable via :meth:`resume`.</span>
+                <span class="c1"># Failure precedence, in order:</span>
+                <span class="c1">#   1. Cancellation / interrupt signals (CancelledError,</span>
+                <span class="c1">#      KeyboardInterrupt, SystemExit — non-Exception) propagate</span>
+                <span class="c1">#      unmodified; wrapping them as a transient would swallow</span>
+                <span class="c1">#      the user&#39;s stop signal.</span>
+                <span class="c1">#   2. A non-transient failure (a real bug — unrecognized by</span>
+                <span class="c1">#      ``wrap_failure``) surfaces raw, so it isn&#39;t masked behind</span>
+                <span class="c1">#      a resumable handle for a transient sibling that landed</span>
+                <span class="c1">#      later.</span>
+                <span class="c1">#   3. Only when every failure is a recognized transient do we</span>
+                <span class="c1">#      raise the first as a resumable ``ChunkInterrupted``.</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+                    <span class="o">*</span><span class="p">(</span><span class="n">track</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span> <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">args</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pending</span><span class="p">()),</span>
+                    <span class="n">return_exceptions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">failures</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="ne">BaseException</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">exc</span> <span class="ow">in</span> <span class="n">failures</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+                        <span class="k">raise</span> <span class="n">exc</span>
+                <span class="n">first_transient</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ChunkInterrupted</span><span class="p">,</span> <span class="ne">BaseException</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">for</span> <span class="n">exc</span> <span class="ow">in</span> <span class="n">failures</span><span class="p">:</span>
+                    <span class="n">interrupted</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrap_failure</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">interrupted</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">exc</span>
+                    <span class="k">if</span> <span class="n">first_transient</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">first_transient</span> <span class="o">=</span> <span class="p">(</span><span class="n">interrupted</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">first_transient</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">interrupted</span><span class="p">,</span> <span class="n">exc</span> <span class="o">=</span> <span class="n">first_transient</span>
+                    <span class="k">raise</span> <span class="n">interrupted</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_combine_raw</span><span class="p">())</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">multi_value_chunked</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">build_request</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">],</span>
+    <span class="n">url_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">_Fetch</span><span class="p">],</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decorate an async fetcher to transparently chunk over-budget requests.</span>
+
+<span class="sd">    Returns a callable that builds a :class:`ChunkPlan` from ``args``,</span>
+<span class="sd">    constructs a :class:`ChunkedCall` over the decorated</span>
+<span class="sd">    ``async def fetch(args) -&gt; (df, response)``, and drives it to</span>
+<span class="sd">    completion via :meth:`ChunkedCall.resume`. The plan splits multi-value</span>
+<span class="sd">    list params and the cql-text filter so each sub-request URL fits the</span>
+<span class="sd">    byte limit; an already-fitting request is a one-step plan, unless an</span>
+<span class="sd">    active :func:`parallel_chunks` block asks the plan to fan out more</span>
+<span class="sd">    finely. See the module docstring for the concurrency model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    build_request : Callable[..., httpx.Request]</span>
+<span class="sd">        Factory that turns a kwargs dict into a sized httpx request,</span>
+<span class="sd">        e.g. ``_construct_api_requests``. Called during planning to</span>
+<span class="sd">        measure each candidate plan.</span>
+<span class="sd">    url_limit : int, optional</span>
+<span class="sd">        Byte budget for the request (URL + body). When ``None``</span>
+<span class="sd">        (default), the module-level ``_OGC_URL_BYTE_LIMIT`` is</span>
+<span class="sd">        resolved at call time so test patches via</span>
+<span class="sd">        ``monkeypatch.setattr`` take effect.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Callable</span>
+<span class="sd">        A *synchronous* wrapper ``wrapper(args, *, finalize=...) -&gt;</span>
+<span class="sd">        (df, response)`` that executes the underlying plan transparently</span>
+<span class="sd">        over the decorated async fetcher.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    Unchunkable</span>
+<span class="sd">        If no plan can fit ``url_limit``.</span>
+<span class="sd">    ChunkInterrupted</span>
+<span class="sd">        On a mid-execution transient — 429, 5xx, or a bare transport</span>
+<span class="sd">        error: :class:`QuotaExhausted` for 429, :class:`ServiceInterrupted`</span>
+<span class="sd">        for the rest. See :class:`ChunkedCall` for the resume semantics.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    ChunkPlan : Planning shape (axes, partitioning, passthrough).</span>
+<span class="sd">    ChunkedCall : Per-sub-request execution and resume semantics.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">decorator</span><span class="p">(</span><span class="n">fetch</span><span class="p">:</span> <span class="n">_Fetch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">fetch</span><span class="p">)</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span>
+            <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+            <span class="o">*</span><span class="p">,</span>
+            <span class="n">finalize</span><span class="p">:</span> <span class="n">_Finalize</span> <span class="o">=</span> <span class="n">_passthrough_result</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="n">_OGC_URL_BYTE_LIMIT</span> <span class="k">if</span> <span class="n">url_limit</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">url_limit</span>
+            <span class="c1"># Read the parallel_chunks dial ``n`` from the ambient set by</span>
+            <span class="c1"># ``parallel_chunks`` (1 = off outside any such block; otherwise the</span>
+            <span class="c1"># requested total sub-request cap). It only affects *planning*, done</span>
+            <span class="c1"># here up front, so a later resume — which re-issues the</span>
+            <span class="c1"># already-planned sub-requests — needs no snapshot.</span>
+            <span class="n">plan</span> <span class="o">=</span> <span class="n">ChunkPlan</span><span class="p">(</span>
+                <span class="n">args</span><span class="p">,</span> <span class="n">build_request</span><span class="p">,</span> <span class="n">limit</span><span class="p">,</span> <span class="n">max_chunks</span><span class="o">=</span><span class="n">_parallel_chunks</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">retry_policy</span> <span class="o">=</span> <span class="n">RetryPolicy</span><span class="o">.</span><span class="n">from_env</span><span class="p">()</span>
+            <span class="c1"># The concurrency cap is resolved inside ``resume()`` from</span>
+            <span class="c1"># ``API_USGS_CONCURRENT``; ``1`` is a sequential gather,</span>
+            <span class="c1"># ``total &lt;= 1`` a one-element gather — no special branch.</span>
+            <span class="k">return</span> <span class="n">ChunkedCall</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">fetch</span><span class="p">,</span> <span class="n">retry_policy</span><span class="p">,</span> <span class="n">finalize</span><span class="p">)</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">wrapper</span>
+
+    <span class="k">return</span> <span class="n">decorator</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

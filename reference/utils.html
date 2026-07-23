@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g6baa4ab9a documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+gd2920217d documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=1f58decc"></script>
+      <script src="../_static/documentation_options.js?v=b530e927"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -78,6 +78,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils._get"><code class="docutils literal notranslate"><span class="pre">_get()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils._network_error"><code class="docutils literal notranslate"><span class="pre">_network_error()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils._raise_for_status"><code class="docutils literal notranslate"><span class="pre">_raise_for_status()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils._require_positive_int"><code class="docutils literal notranslate"><span class="pre">_require_positive_int()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils.format_datetime"><code class="docutils literal notranslate"><span class="pre">format_datetime()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils.query"><code class="docutils literal notranslate"><span class="pre">query()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils.to_str"><code class="docutils literal notranslate"><span class="pre">to_str()</span></code></a></li>
@@ -317,6 +318,31 @@ API-specific detail string (e.g. a JSON error envelope’s message) out of the
 body; a truthy result is appended to the raised message. This lets callers
 surface their API’s error wording without re-implementing the status-to-type
 mapping and message format.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.utils._require_positive_int">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">_require_positive_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/utils.html#_require_positive_int"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils._require_positive_int" title="Link to this definition"></a></dt>
+<dd><p>Validate that <code class="docutils literal notranslate"><span class="pre">value</span></code> is a positive integer, else raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p>
+<p>Accepts any <code class="xref py py-class docutils literal notranslate"><span class="pre">numbers.Integral</span></code> (so a numpy/pandas integer passes,
+not only <code class="docutils literal notranslate"><span class="pre">int</span></code>) but rejects <code class="docutils literal notranslate"><span class="pre">bool</span></code> — an <code class="docutils literal notranslate"><span class="pre">Integral</span></code> subtype that is
+nonsensical as a count. A non-integer (float, str, <code class="docutils literal notranslate"><span class="pre">None</span></code>) or a value
+<code class="docutils literal notranslate"><span class="pre">&lt;</span> <span class="pre">1</span></code> raises before any I/O, rather than crashing later (e.g. deep in
+<code class="docutils literal notranslate"><span class="pre">pd.DataFrame.head</span></code>). Shared by the user-facing count knobs <code class="docutils literal notranslate"><span class="pre">max_rows</span></code>
+and <code class="docutils literal notranslate"><span class="pre">parallel_chunks(n)</span></code> so their boundary validation can’t drift.
+(<code class="docutils literal notranslate"><span class="pre">ChunkPlan.max_chunks</span></code> is an internal, already-<code class="docutils literal notranslate"><span class="pre">int</span></code> precondition with
+its own domain-specific message, so it keeps a lighter <code class="docutils literal notranslate"><span class="pre">&lt;</span> <span class="pre">1</span></code> guard rather
+than routing through here.)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<em>int</em>) – The value to check. Typed <code class="docutils literal notranslate"><span class="pre">int</span></code> for callers, but validated at
+runtime because the real value may be anything the user passed.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Parameter name, used as the subject of the error message.</p></li>
+<li><p><strong>examples</strong> (<em>str</em><em>, </em><em>optional</em>) – Illustrative values appended to the message (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;2,</span> <span class="pre">8,</span> <span class="pre">32&quot;</span></code>).</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">

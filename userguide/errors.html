@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Handling errors &mdash; dataretrieval 0.1.dev1+g6baa4ab9a documentation</title>
+  <title>Handling errors &mdash; dataretrieval 0.1.dev1+gd2920217d documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=1f58decc"></script>
+      <script src="../_static/documentation_options.js?v=b530e927"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -51,6 +51,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#branch-without-knowing-the-concrete-type">Branch without knowing the concrete type</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#retry-transient-failures-with-backoff">Retry transient failures with backoff</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#resume-a-large-water-data-request">Resume a large Water Data request</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#chunk-a-large-request-more-finely">Chunk a large request more finely</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#the-full-taxonomy">The full taxonomy</a></li>
 </ul>
 </li>
@@ -176,6 +177,42 @@ condition clears – only the unfinished sub-requests are re-issued.</p>
             <span class="n">exc</span> <span class="o">=</span> <span class="n">again</span>
 </pre></div>
 </div>
+</section>
+<section id="chunk-a-large-request-more-finely">
+<h2>Chunk a large request more finely<a class="headerlink" href="#chunk-a-large-request-more-finely" title="Link to this heading"></a></h2>
+<p>By default the getters split an over-large request only as much as the
+server’s ~8 KB URL limit forces – the fewest sub-requests. Because each
+sub-request paginates, splitting a large result further costs little or no
+extra quota <em>as long as each sub-request still spans many pages</em> (ten states
+pulled as one request then page nearly as many times as ten per-state requests
+would; a split that leaves each sub-request only a page or two adds its partial
+final page). So if you <em>know</em> your pull is large you can ask for a finer split
+with <code class="docutils literal notranslate"><span class="pre">parallel_chunks(n)</span></code> – trading roughly the same pages for more, smaller
+sub-requests, which gives smoother progress, more even concurrency, and a
+smaller unit of retry/resume. It is a scoped <code class="docutils literal notranslate"><span class="pre">with</span></code>
+block, so an aggressive setting can’t leak into unrelated calls and
+accidentally spend quota:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
+
+<span class="k">with</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">parallel_chunks</span><span class="p">(</span><span class="mi">32</span><span class="p">):</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
+        <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">many_sites</span><span class="p">,</span> <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">n</span></code> is a positive integer (e.g. <code class="docutils literal notranslate"><span class="pre">2</span></code>, <code class="docutils literal notranslate"><span class="pre">8</span></code>, <code class="docutils literal notranslate"><span class="pre">32</span></code>) – the number of
+sub-requests to fan the call out into; a non-integer or non-positive value
+raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> at the <code class="docutils literal notranslate"><span class="pre">with</span></code>. It caps the <em>total</em> sub-request count
+across every multi-value argument combined (not per argument), bounded below by
+what the byte limit already forces and above by how many values there are to
+split, so several multi-value arguments can’t multiply past it and <code class="docutils literal notranslate"><span class="pre">n=1</span></code> asks
+for no extra fan-out. Each sub-request costs a request against your hourly rate
+limit, and because how many run <em>at once</em> is capped separately by
+<code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> (default 32) an <code class="docutils literal notranslate"><span class="pre">n</span></code> beyond that adds quota without
+adding parallelism – the useful range is roughly <code class="docutils literal notranslate"><span class="pre">2</span></code> up to
+<code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code>. There is no “off” level: simply don’t enter the block
+unless you already expect a large, multi-page result – on a query that would
+have fit in a single page, extra chunks only burn quota.</p>
 </section>
 <section id="the-full-taxonomy">
 <h2>The full taxonomy<a class="headerlink" href="#the-full-taxonomy" title="Link to this heading"></a></h2>

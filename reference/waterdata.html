@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g6baa4ab9a documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+gd2920217d documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=1f58decc"></script>
+      <script src="../_static/documentation_options.js?v=b530e927"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -78,6 +78,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_stats_date_range"><code class="docutils literal notranslate"><span class="pre">get_stats_date_range()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_stats_por"><code class="docutils literal notranslate"><span class="pre">get_stats_por()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.get_time_series_metadata"><code class="docutils literal notranslate"><span class="pre">get_time_series_metadata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.waterdata.parallel_chunks"><code class="docutils literal notranslate"><span class="pre">parallel_chunks()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="wateruse.html">dataretrieval.wateruse</a></li>
@@ -2885,6 +2886,100 @@ collection supports.</p></li>
 <span class="gp">... </span>    <span class="n">begin</span><span class="o">=</span><span class="s2">&quot;1990-01-01/..&quot;</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.waterdata.parallel_chunks">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.waterdata.</span></span><span class="sig-name descname"><span class="pre">parallel_chunks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/ogc/chunking.html#parallel_chunks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.waterdata.parallel_chunks" title="Link to this definition"></a></dt>
+<dd><p>Fan the OGC getters’ multi-value requests out into <code class="docutils literal notranslate"><span class="pre">n</span></code> parallel sub-requests.</p>
+<p>By default the Water Data / NGWMN getters chunk a request only as much as
+the server’s ~8 KB URL-byte limit forces — the fewest sub-requests that
+fit. That is the safe default, but it can be <em>needlessly</em> conservative:
+because every sub-request paginates, splitting a large result further costs
+little or no extra quota <em>as long as each sub-request still spans many
+pages</em> — rows-per-chunk far exceeding the page size (ten states pulled as
+one request then page nearly as many times as ten per-state requests
+would). When a split leaves each sub-request only a page or two, its partial
+final page is extra, so finer chunks do add some requests. This context
+manager lets a caller who <em>knows</em> their pull is large ask for that finer
+split — trading roughly the same pages for more, smaller sub-requests, which
+gives smoother progress, more even concurrency, and a smaller unit of
+retry/resume.</p>
+<p>Because the library can’t tell in advance whether a query is large (ten
+states over a short window might fit in a single page, where extra chunks
+would only burn quota), this is a <em>deliberate</em> per-call knob rather than an
+automatic behavior or a process-wide environment variable — scoping it to a
+<code class="docutils literal notranslate"><span class="pre">with</span></code> block keeps an aggressive setting from leaking into unrelated calls
+and accidentally spending quota. Outside any block the getters use the
+conservative default. Only the OGC getters (Water Data, NGWMN) read this;
+wrapping a legacy NWIS call in the block is a harmless no-op.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – <p>The number of sub-requests to fan the whole call out into — a positive
+integer such as <code class="docutils literal notranslate"><span class="pre">2</span></code>, <code class="docutils literal notranslate"><span class="pre">8</span></code>, or <code class="docutils literal notranslate"><span class="pre">32</span></code>. It caps the plan’s <em>total</em>
+sub-request count (the cartesian product across every multi-value
+argument combined, not per argument), so several multi-value arguments
+cannot multiply past it. The cap is a ceiling, never exceeded: the
+actual count is bounded below by what the ~8 KB URL limit already
+forces and above by <code class="docutils literal notranslate"><span class="pre">n</span></code>, so an <code class="docutils literal notranslate"><span class="pre">n</span></code> larger than the input allows
+simply yields one sub-request per value, and with several multi-value
+arguments the total may land somewhat below <code class="docutils literal notranslate"><span class="pre">n</span></code> because splits are
+whole (the plan can’t always divide evenly onto <code class="docutils literal notranslate"><span class="pre">n</span></code>); <code class="docutils literal notranslate"><span class="pre">n=1</span></code> asks
+for no extra fan-out.</p>
+<p>Each sub-request fetches at least one page, so it costs at least one
+request against your hourly rate limit — a larger <code class="docutils literal notranslate"><span class="pre">n</span></code> spends more
+quota. And because how many sub-requests run <em>at once</em> is capped
+separately by <code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> (default 32), an <code class="docutils literal notranslate"><span class="pre">n</span></code> beyond that
+adds quota without adding parallelism; the useful range is roughly <code class="docutils literal notranslate"><span class="pre">2</span></code>
+up to <code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code>.</p>
+</p>
+</dd>
+<dt class="field-even">Yields<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>None</em></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">n</span></code> is not a positive integer — raised on <code class="docutils literal notranslate"><span class="pre">with</span></code> entry, before
+    any request is issued, so a bad value fails loudly rather than silently
+    doing nothing.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Fanning out carries the same consequences as the byte-limit chunking the
+getters already do for oversized requests; opting in just brings them to a
+request that would otherwise be a single call:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">max_rows</span></code>: each sub-request paginates up to <code class="docutils literal notranslate"><span class="pre">max_rows</span></code> rows
+independently, then the combined result is sorted and truncated to
+<code class="docutils literal notranslate"><span class="pre">max_rows</span></code>. So a call with <code class="docutils literal notranslate"><span class="pre">max_rows</span></code> set returns a <em>different</em>
+(though still valid and deterministically sorted) row set inside a
+<code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> block than without one — the cap is drawn from the
+union of the sub-requests, not a single stream. Don’t pair a tight
+<code class="docutils literal notranslate"><span class="pre">max_rows</span></code> preview with <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> if you need exactly the
+rows the un-fanned call would return.</p></li>
+<li><p>Resumability: a single request either fully succeeds or fully fails,
+but a fanned-out call can fail partway (e.g. a mid-call rate-limit) and
+raise a resumable <code class="xref py py-class docutils literal notranslate"><span class="pre">ChunkInterrupted</span></code>
+(or <code class="docutils literal notranslate"><span class="pre">QuotaExhausted</span></code>) carrying the completed sub-requests, which you
+finish with <code class="docutils literal notranslate"><span class="pre">exc.call.resume()</span></code>.</p></li>
+<li><p>Cross-sub-request de-duplication keys on the feature <code class="docutils literal notranslate"><span class="pre">id</span></code>; features
+with no <code class="docutils literal notranslate"><span class="pre">id</span></code> can’t be deduped, so overlapping filter clauses split
+across chunks may yield duplicate rows.</p></li>
+</ul>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">parallel_chunks</span><span class="p">(</span><span class="mi">32</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">many_sites</span><span class="p">,</span> <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span>
+<span class="gp">... </span>    <span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">ChunkPlan._refine</span></code></dt><dd><p>the planning-side effect of <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
+</dd>
+</dl>
 </div>
 </dd></dl>
 
