@@ -101,17 +101,13 @@ def _get_resp_data(
 
     Notes
     -----
-    The non-geopandas branch builds the frame directly from each
-    feature's ``properties`` dict, plus the top-level ``id`` and
-    ``geometry.coordinates`` columns — the ``id`` column is always
-    added (so the downstream rename to the service-specific output id
-    works even on an all-None id), while the ``geometry`` column is
-    added only when at least one feature carries geometry. This skips
-    the GeoJSON envelope entirely, so
-    newly-added Feature-level fields (e.g. ``geometry.type`` after
-    USGS migrated to full GeoJSON geometry objects) can't leak into
-    the result frame; no reactive drop-list needs maintenance every
-    time the upstream schema grows.
+    The non-geopandas branch normalizes each feature's ``properties`` object,
+    flattening nested dictionaries with an underscore separator, then adds the
+    top-level ``id`` and a ``geometry`` column containing the coordinates. The
+    ``id`` column is always added so the downstream service-specific rename
+    works even when all IDs are missing; ``geometry`` is added only when
+    coordinates are present. Feature-level envelope fields are deliberately
+    excluded.
     """
     if body is None:
         body = resp.json()
@@ -128,13 +124,11 @@ def _get_resp_data(
         return _empty_feature_frame(geopd)
 
     if not geopd:
-        df = pd.json_normalize([f.get("properties") or {} for f in features], sep="_")
-        # Always materialize the ``id`` column (may be all-None) so
-        # ``_arrange_cols``'s ``df.rename(columns={"id": output_id})``
-        # produces the documented service-specific output_id column
-        # (daily_id, channel_measurements_id, …) even if the upstream
-        # response carried no feature-level id.
-        df["id"] = [f.get("id") for f in features]
+        properties = [feature.get("properties") or {} for feature in features]
+        df = pd.json_normalize(properties, sep="_")
+        # Always materialize the feature-level ID (possibly all-None) so
+        # ``_arrange_cols`` can perform the documented service-specific rename.
+        df["id"] = [feature.get("id") for feature in features]
         _attach_coordinates(df, features)
         return df
 
@@ -369,7 +363,7 @@ def _finalize_ogc(
     as :class:`~dataretrieval.utils.BaseMetadata`.
 
     Injected into the chunker as its ``finalize`` hook (see
-    :data:`~dataretrieval.ogc.interruptions._Finalize`) so the
+    :data:`~dataretrieval.ogc.chunking._Finalize`) so the
     un-interrupted return *and* a resumed ``ChunkInterrupted.call.resume()``
     produce the same post-processed ``(DataFrame, BaseMetadata)`` shape, not
     the chunker's raw frame and bare ``httpx.Response``.

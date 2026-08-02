@@ -1,31 +1,32 @@
-"""Pure URL-byte chunk planning and result recombination (no I/O).
+"""Pure URL-byte chunk planning (no I/O).
 
-This module holds the side-effect-free half of the chunker: deciding how
-to split one over-budget OGC request into URL-fitting sub-requests
-(:class:`ChunkPlan` and the axis/byte-accounting helpers) and reassembling
-their per-chunk frames and responses (:func:`_combine_chunk_frames`,
-:func:`_combine_chunk_responses`). It has no event loop, retry policy, or
-network state — those live in :mod:`dataretrieval.ogc.chunking` (execution)
-and :mod:`dataretrieval.ogc.retry` (retry policy), which import the plan and
-drive it. Keeping the planning/combination logic here
-makes it unit-testable without an HTTP client and gives the two concerns
-separate reasons to change.
+This module holds the side-effect-free planning half of the chunker:
+deciding how to split one over-budget OGC request into URL-fitting
+sub-requests (:class:`ChunkPlan` and the axis/byte-accounting helpers).
+It has no event loop, retry policy, or network state — those live in
+:mod:`dataretrieval.ogc.chunking` (execution) and
+:mod:`dataretrieval.ogc.retry` (retry policy), which import the plan and
+drive it.
+
+Result recombination — reassembling the per-chunk frames and responses
+back into one result
+(:func:`~dataretrieval.ogc.combining._combine_chunk_frames`,
+:func:`~dataretrieval.ogc.combining._combine_chunk_responses`, etc.) — lives in
+the sibling :mod:`dataretrieval.ogc.combining` module, which callers import
+directly.
 """
 
 from __future__ import annotations
 
-import copy
 import itertools
 import math
 from collections.abc import Callable, Iterator
 from contextlib import suppress
 from dataclasses import dataclass
-from datetime import timedelta
 from typing import Any
 from urllib.parse import quote_plus
 
 import httpx
-import pandas as pd
 
 from dataretrieval.exceptions import Unchunkable
 from dataretrieval.ogc.filters import (
@@ -128,52 +129,6 @@ def _safe_request_bytes(
     except httpx.InvalidURL:
         return url_limit + 1
     return _request_bytes(req)
-
-
-def _safe_elapsed(response: httpx.Response) -> timedelta:
-    """
-    Read ``response.elapsed``, falling back to ``timedelta(0)`` when
-    the attribute hasn't been populated.
-
-    httpx only writes ``.elapsed`` when a response is closed through
-    its normal transport path. ``MockTransport`` (used by
-    ``pytest-httpx``) and hand-constructed ``httpx.Response`` objects
-    leave the attribute unset, so accessing it raises ``RuntimeError``.
-    Combining responses across chunks needs a defined duration, so we
-    treat the missing attribute as zero elapsed.
-    """
-    try:
-        return response.elapsed
-    except RuntimeError:
-        return timedelta(0)
-
-
-def _set_response_url(response: httpx.Response, url: str | httpx.URL) -> None:
-    """
-    Overwrite the URL surfaced by a response without back-propagating
-    the change into any aliased original.
-
-    Try the direct assignment first: on lightweight test mocks ``.url``
-    is a plain writable attribute. On real ``httpx.Response`` it's
-    read-only (it resolves through the bound request), so swap in a
-    fresh :class:`httpx.Request` carrying the new URL — mutating the
-    existing one would leak through any shallow copy that shares the
-    same ``.request``.
-    """
-    try:
-        response.url = url  # type: ignore[misc, assignment]
-    except AttributeError:
-        target = httpx.URL(str(url))
-        try:
-            old = response.request
-        except RuntimeError:
-            # No request bound (some hand-built httpx.Response fixtures);
-            # synthesize a minimal one to hold the URL.
-            response.request = httpx.Request("GET", target)
-            return
-        response.request = httpx.Request(
-            method=old.method, url=target, headers=old.headers
-        )
 
 
 @dataclass(frozen=True)
@@ -619,171 +574,3 @@ class ChunkPlan:
             for axis, chunk in zip(self.axes, combo, strict=False):
                 sub_args[axis.arg_key] = axis.render(chunk)
             yield sub_args
-
-
-def _combine_chunk_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
-    """
-    Concatenate per-chunk frames, dropping empties and deduping by ``id``.
-
-    Parameters
-    ----------
-    frames : list[pandas.DataFrame]
-        One frame per completed sub-request.
-
-    Returns
-    -------
-    pandas.DataFrame
-        The concatenated, deduplicated result. Empty when every input
-        frame is empty.
-
-    Notes
-    -----
-    An empty chunk can be a plain ``pd.DataFrame()`` (no geopandas);
-    concatenating it with real ``GeoDataFrame``s downgrades the result
-    to plain ``DataFrame`` and strips geometry/CRS, so empties are
-    dropped first. Dedup on the pre-rename feature ``id`` keeps
-    overlapping user OR-clauses from producing duplicate rows across
-    chunks.
-
-    Dedup is restricted to rows whose ``id`` is non-null. ``pandas``
-    treats NaN==NaN as a duplicate for ``drop_duplicates``, so a
-    blanket call would collapse every id-less row into a single one —
-    silent data loss if any chunk emits features without an
-    ``id`` field.
-    """
-    non_empty = [f for f in frames if not f.empty]
-    if not non_empty:
-        # Preserve the frame type (GeoDataFrame vs DataFrame) of the
-        # input even when every chunk is empty — ``_get_resp_data``
-        # returns ``gpd.GeoDataFrame()`` on empty geopd responses, and
-        # returning a plain ``pd.DataFrame()`` here would downgrade
-        # the type in a downstream ``pd.concat([result, geo_page])`` to
-        # a plain DataFrame and strip geometry/CRS.
-        return frames[0] if frames else pd.DataFrame()
-    if len(non_empty) == 1:
-        # Single-completed-chunk fast path. Return a copy so callers
-        # who treat ``ChunkedCall.partial_frame`` as a fresh result
-        # (the property docstring says "live; recomputed per access")
-        # don't accidentally mutate ``_chunks[0][0]`` in place.
-        return non_empty[0].copy()
-    combined = pd.concat(non_empty, ignore_index=True)
-    if "id" in combined.columns:
-        has_id = combined["id"].notna()
-        if has_id.all():
-            combined = combined.drop_duplicates(subset="id", ignore_index=True)
-        elif has_id.any():
-            # Mixed: dedupe only the id-bearing rows; preserve id-less
-            # rows verbatim (their order relative to id-bearing rows
-            # may shift, which is acceptable — dedup can't be id-keyed
-            # for rows without an id).
-            id_rows = combined[has_id].drop_duplicates(subset="id")
-            no_id_rows = combined[~has_id]
-            combined = pd.concat([id_rows, no_id_rows], ignore_index=True)
-    return combined
-
-
-# Response header USGS uses to advertise remaining hourly quota. Lives in this
-# base module so every layer (planning's ``_lowest_remaining``, the engine's
-# per-page progress) reads it from one place rather than hard-coding the string.
-_QUOTA_HEADER = "x-ratelimit-remaining"
-
-
-def _lowest_remaining(responses: list[httpx.Response]) -> httpx.Response:
-    """The response reporting the lowest ``x-ratelimit-remaining``.
-
-    The rate-limit counter decreases monotonically within a window, so the
-    smallest value any sub-request saw is the most-current "quota left after
-    this call" — the right thing to surface. Under concurrent fan-out the
-    last response *by index* need not be the one the server processed last, so
-    pick the minimum (falling back to the last response if none report it).
-    """
-    best: httpx.Response | None = None
-    best_remaining: int | None = None
-    for response in responses:
-        try:
-            remaining = int(response.headers[_QUOTA_HEADER])
-        except (KeyError, ValueError):
-            continue
-        if best_remaining is None or remaining < best_remaining:
-            best, best_remaining = response, remaining
-    return best if best is not None else responses[-1]
-
-
-def _merge_response(
-    base: httpx.Response,
-    *,
-    headers_from: httpx.Response,
-    elapsed: timedelta,
-    url: str | httpx.URL | None = None,
-) -> httpx.Response:
-    """Fold several responses into one: a shallow copy of ``base`` whose
-    ``.headers`` are rebuilt as a fresh ``httpx.Headers`` from ``headers_from``,
-    ``.elapsed`` set to ``elapsed``, and ``.url`` overridden when ``url`` is
-    given. ``base`` and ``headers_from`` are never mutated, and the fresh
-    ``httpx.Headers`` means downstream mutations don't back-propagate into any
-    underlying response — so callers may re-fold idempotently. This is the one
-    low-level merge behind both pagination (:func:`_paginate`) and the chunked /
-    fan-out aggregation (:func:`_combine_chunk_responses`)."""
-    merged = copy.copy(base)
-    merged.headers = httpx.Headers(headers_from.headers)
-    merged.elapsed = elapsed
-    if url is not None:
-        _set_response_url(merged, url)
-    return merged
-
-
-def _combine_chunk_responses(
-    responses: list[httpx.Response], canonical_url: str | None
-) -> httpx.Response:
-    """
-    Fold per-sub-request responses into a single aggregated response.
-
-    For a multi-response input, returns a shallow copy of
-    ``responses[0]`` with ``.headers`` set to those of the most-depleted
-    response (lowest ``x-ratelimit-remaining`` — the quota actually left
-    after the fan-out; see :func:`_lowest_remaining`), ``.elapsed`` set
-    to total wall-clock across every response, and ``.url`` set to the
-    canonical original-query URL (when supplied) so ``BaseMetadata``
-    reflects the user's full request rather than the first chunk.
-
-    For a single-response input with no canonical-URL override,
-    ``responses[0]`` is returned unchanged to skip the copy on the
-    passthrough hot path.
-
-    Parameters
-    ----------
-    responses : list[httpx.Response]
-        One response per completed sub-request, in execution order.
-    canonical_url : str or None
-        URL of the unchunked original request. ``None`` skips the URL
-        override — used by the passthrough path (the fetcher's
-        response already carries the original-query URL) and by the
-        worst-case overflow path (no buildable canonical URL exists).
-
-    Returns
-    -------
-    httpx.Response
-        A shallow copy of the first response with aggregated
-        ``headers``, ``elapsed``, and ``url``. The function is
-        idempotent (the input responses' ``headers`` / ``elapsed`` /
-        ``url`` are never mutated), so it's safe to call repeatedly
-        via :attr:`ChunkedCall.partial_response` during error
-        inspection or resume retries. ``headers`` on the returned
-        object is a fresh ``httpx.Headers``, so mutations there don't
-        back-propagate into any chunk's underlying response.
-    """
-    if len(responses) == 1 and canonical_url is None:
-        return responses[0]
-
-    # Headers come from the most-depleted response (lowest quota left after a
-    # concurrent fan-out; ``_lowest_remaining`` returns the lone response as-is
-    # for a single-element list). ``_merge_response`` re-sums elapsed onto a
-    # fresh copy, so repeated calls (e.g. via ``ChunkedCall.partial_response``
-    # during resume) stay idempotent.
-    elapsed = sum((_safe_elapsed(r) for r in responses), start=timedelta())
-    return _merge_response(
-        responses[0],
-        headers_from=_lowest_remaining(responses),
-        elapsed=elapsed,
-        url=canonical_url,
-    )

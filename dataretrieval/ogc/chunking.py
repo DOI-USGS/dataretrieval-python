@@ -74,7 +74,7 @@ from __future__ import annotations
 import asyncio
 import functools
 import os
-from collections.abc import Callable, Iterator
+from collections.abc import Awaitable, Callable, Iterator
 from contextlib import contextmanager
 from contextvars import copy_context
 from typing import Any, cast
@@ -86,17 +86,14 @@ from anyio.from_thread import start_blocking_portal
 from dataretrieval.utils import HTTPX_DEFAULTS, Ambient, _require_positive_int
 
 from . import progress as _progress
-from .interruptions import (
-    ChunkInterrupted,
-    _Fetch,
-    _Finalize,
-    _passthrough_result,
-)
-from .planning import (
-    ChunkPlan,
+from .combining import (
     _combine_chunk_frames,
     _combine_chunk_responses,
 )
+from .interruptions import (
+    ChunkInterrupted,
+)
+from .planning import ChunkPlan
 from .retry import (
     _NO_RETRY,
     RetryPolicy,
@@ -291,6 +288,30 @@ def parallel_chunks(n: int) -> Iterator[None]:
         yield
 
 
+# ---------------------------------------------------------------------------
+# Type aliases for the ChunkedCall contract.
+# ---------------------------------------------------------------------------
+
+# The per-sub-request fetcher the decorator wraps and ``ChunkedCall`` drives:
+# an ``async def fetch(args) -> (df, response)``.
+_Fetch = Callable[[dict[str, Any]], Awaitable[tuple[pd.DataFrame, httpx.Response]]]
+
+# Caller-supplied transform applied to the combined chunk result, so a
+# resumed call returns the same shape as an un-interrupted one rather than
+# the chunker's raw ``(frame, httpx.Response)``.  This keeps the chunker
+# generic: the OGC getters inject their post-processing (type coercion,
+# column arrangement, ``BaseMetadata``) through ``_finalize_ogc``.
+# The default is identity, so direct ``ChunkedCall`` use is unaffected.
+_Finalize = Callable[[pd.DataFrame, httpx.Response], tuple[pd.DataFrame, Any]]
+
+
+def _passthrough_result(
+    frame: pd.DataFrame, response: httpx.Response
+) -> tuple[pd.DataFrame, Any]:
+    """Default :data:`_Finalize`: return the raw combined pair unchanged."""
+    return frame, response
+
+
 class ChunkedCall:
     """
     Stateful handle for a chunked call.
@@ -417,12 +438,11 @@ class ChunkedCall:
 
         Frames concatenate in sub-args *index* order (``sorted`` keys —
         deterministic, independent of parallel completion order). The
-        aggregated response takes its headers from the most-recently-
-        *completed* sub-request: the ``track`` closure in :meth:`_run`
-        is the only writer of ``self._chunks`` and ``dict`` preserves
-        insertion order, so the chunks' natural order is completion
-        order and the last one carries the freshest
-        ``x-ratelimit-remaining``.
+        aggregated response takes its headers from the response with the
+        lowest reported ``x-ratelimit-remaining`` value. If no response
+        reports that header, it falls back to the last completed response;
+        ``self._chunks`` preserves completion order because the ``track``
+        closure in :meth:`_run` is its only writer.
 
         Returns
         -------
@@ -521,8 +541,9 @@ class ChunkedCall:
             Combined data from every successful sub-request.
         response
             The finalized aggregate — a raw :class:`httpx.Response`
-            (canonical URL, most-recently-completed sub-request's headers,
-            cumulative elapsed time) by default, or whatever
+            (canonical URL, headers from the response with the lowest reported
+            remaining quota, and summed response elapsed durations) by default,
+            or whatever
             :attr:`finalize` produces (e.g. ``BaseMetadata`` for the OGC
             getters).
 
@@ -603,8 +624,9 @@ class ChunkedCall:
             Combined data from every sub-request.
         response
             The finalized aggregate — a raw :class:`httpx.Response`
-            (canonical URL, most-recently-completed sub-request's headers,
-            cumulative elapsed time) by default, or whatever
+            (canonical URL, headers from the response with the lowest reported
+            remaining quota, and summed response elapsed durations) by default,
+            or whatever
             :attr:`finalize` produces (e.g. ``BaseMetadata`` for OGC getters).
 
         Raises

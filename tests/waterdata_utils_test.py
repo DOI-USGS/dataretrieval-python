@@ -676,6 +676,25 @@ def test_get_resp_data_always_materializes_id_column():
     assert df["id"].isna().all()
 
 
+def test_get_resp_data_flattens_nested_properties():
+    """Nested GeoJSON properties keep underscore-separated column names."""
+    resp = mock.MagicMock()
+    resp.json.return_value = {
+        "features": [
+            {
+                "id": "feature-1",
+                "properties": {"station": {"code": "A"}, "value": 1},
+            }
+        ]
+    }
+
+    df = _get_resp_data(resp, geopd=False)
+
+    assert df.to_dict(orient="records") == [
+        {"value": 1, "station_code": "A", "id": "feature-1"}
+    ]
+
+
 # --- _arrange_cols ----------------------------------------------------------
 
 

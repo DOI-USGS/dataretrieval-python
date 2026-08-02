@@ -47,6 +47,7 @@ and set it as an environment variable:
 
 ```python
 import os
+
 os.environ["API_USGS_PAT"] = "your_api_key_here"
 ```
 
@@ -59,9 +60,9 @@ from dataretrieval import waterdata
 
 # Get daily streamflow data (returns DataFrame and metadata)
 df, metadata = waterdata.get_daily(
-    monitoring_location_id='USGS-01646500',
-    parameter_code='00060',  # Discharge
-    time='2024-10-01/2025-09-30'
+    monitoring_location_id="USGS-01646500",
+    parameter_code="00060",  # Discharge
+    time="2024-10-01/2025-09-30",
 )
 
 print(f"Retrieved {len(df)} records")
@@ -72,9 +73,9 @@ Retrieve streamflow at multiple locations from October 1, 2024 to the present:
 
 ```python
 df, metadata = waterdata.get_daily(
-    monitoring_location_id=["USGS-13018750","USGS-13013650"],
-    parameter_code='00060',
-    time='2024-10-01/..'
+    monitoring_location_id=["USGS-13018750", "USGS-13013650"],
+    parameter_code="00060",
+    time="2024-10-01/..",
 )
 
 print(f"Retrieved {len(df)} records")
@@ -85,8 +86,8 @@ stream sites in Maryland:
 ```python
 # Get monitoring location information
 df, metadata = waterdata.get_monitoring_locations(
-    state='Maryland',  # full name, postal code ('MD'), or FIPS ('24')
-    site_type_code='ST'  # Stream sites
+    state="Maryland",  # full name, postal code ('MD'), or FIPS ('24')
+    site_type_code="ST",  # Stream sites
 )
 
 print(f"Found {len(df)} stream monitoring locations in Maryland")
@@ -98,9 +99,9 @@ windows to avoid timeouts and other issues:
 ```python
 # Get continuous data for a single monitoring location and water year
 df, metadata = waterdata.get_continuous(
-    monitoring_location_id='USGS-01646500',
-    parameter_code='00065',  # Gage height
-    time='2024-10-01/2025-09-30'
+    monitoring_location_id="USGS-01646500",
+    parameter_code="00065",  # Gage height
+    time="2024-10-01/2025-09-30",
 )
 print(f"Retrieved {len(df)} continuous gage height measurements")
 ```
@@ -125,10 +126,10 @@ from dataretrieval import waterdata
 # enough to span many pages, so it profits from a finer split.
 sites, _ = waterdata.get_monitoring_locations(state="Ohio", site_type_code="ST")
 
-with waterdata.parallel_chunks(32):              # fan out into 32 sub-requests
+with waterdata.parallel_chunks(32):  # fan out into 32 sub-requests
     df, md = waterdata.get_daily(
         monitoring_location_id=sites["monitoring_location_id"],
-        parameter_code="00060",                  # discharge
+        parameter_code="00060",  # discharge
         time="2004-01-01/2023-12-31",
     )
 ```
@@ -167,6 +168,7 @@ API — enable debug-level
 
 ```python
 import logging
+
 logging.basicConfig(level=logging.DEBUG)
 ```
 
@@ -181,14 +183,14 @@ from dataretrieval import ngwmn
 
 # Find the groundwater monitoring sites in a state
 # (state accepts a full name, a postal code like 'WI', or a FIPS code like '55')
-sites, metadata = ngwmn.get_sites(state='Wisconsin')
+sites, metadata = ngwmn.get_sites(state="Wisconsin")
 
 print(f"Found {len(sites)} NGWMN sites in Wisconsin")
 
 # Pull water levels from the first twenty sites over a time window.
 water_levels, metadata = ngwmn.get_water_level(
-    monitoring_location_id=sites['monitoring_location_id'][:20],
-    datetime=['2022-01-01', '2024-01-01']
+    monitoring_location_id=sites["monitoring_location_id"][:20],
+    datetime=["2022-01-01", "2024-01-01"],
 )
 
 print(f"Retrieved {len(water_levels)} water-level observations")
@@ -203,16 +205,15 @@ from dataretrieval import wqp
 
 # Find water quality monitoring sites (returns a DataFrame and metadata)
 sites, metadata = wqp.what_sites(
-    statecode='US:55',  # Wisconsin
-    siteType='Stream'
+    statecode="US:55",  # Wisconsin
+    siteType="Stream",
 )
 
 print(f"Found {len(sites)} stream monitoring sites in Wisconsin")
 
 # Get water quality results
 results, metadata = wqp.get_results(
-    siteid='USGS-05427718',
-    characteristicName='Temperature, water'
+    siteid="USGS-05427718", characteristicName="Temperature, water"
 )
 
 print(f"Retrieved {len(results)} temperature measurements")
@@ -227,18 +228,18 @@ from dataretrieval import nldi
 
 # Get watershed basin for a stream reach
 basin = nldi.get_basin(
-    feature_source='comid',
-    feature_id='13293474'  # NHD reach identifier
+    feature_source="comid",
+    feature_id="13293474",  # NHD reach identifier
 )
 
 print(f"Basin contains {len(basin)} feature(s)")
 
 # Find upstream flowlines
 flowlines = nldi.get_flowlines(
-    feature_source='comid',
-    feature_id='13293474',
-    navigation_mode='UT',  # Upstream tributaries
-    distance=50  # km
+    feature_source="comid",
+    feature_id="13293474",
+    navigation_mode="UT",  # Upstream tributaries
+    distance=50,  # km
 )
 
 print(f"Found {len(flowlines)} upstream tributaries within 50km")
@@ -255,17 +256,17 @@ from dataretrieval import wateruse
 # Monthly public-supply withdrawals for Rhode Island, split into
 # groundwater and surface-water sources (returns a DataFrame and metadata).
 df, metadata = wateruse.get_wateruse(
-    model='wu-public-supply-wd',
-    variable=['pswdtot', 'pswdgw', 'pswdsw'],
-    state='RI',  # name/postal/FIPS; pass a list to fan out over several areas
-    start_date='2020-01',
-    time_resolution='monthly',
+    model="wu-public-supply-wd",
+    variable=["pswdtot", "pswdgw", "pswdsw"],
+    state="RI",  # name/postal/FIPS; pass a list to fan out over several areas
+    start_date="2020-01",
+    time_resolution="monthly",
 )
 
 print(f"Retrieved {len(df)} records across {df['huc12_id'].nunique()} watersheds")
 
 # Aggregate the HUC12 grid to a statewide monthly total (million gallons/day)
-statewide = df.groupby('year_month')['pswdtot_mgd'].sum()
+statewide = df.groupby("year_month")["pswdtot_mgd"].sum()
 print(statewide.head())
 ```
 

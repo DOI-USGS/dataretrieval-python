@@ -20,7 +20,8 @@ jobs:
           python-version: "3.14"
           cache: "pip"
       - name: Install ruff
-        run: pip install ruff
+        # Keep this version aligned with the ruff-pre-commit revision.
+        run: pip install ruff==0.16.1
       - name: Lint with ruff
         run: |
           ruff check . --output-format=github

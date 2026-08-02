@@ -11,7 +11,6 @@ that raises and resumes them lives in :mod:`dataretrieval.ogc.chunking`.
 
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import httpx
@@ -21,27 +20,6 @@ from dataretrieval.exceptions import DataRetrievalError
 
 if TYPE_CHECKING:
     from dataretrieval.ogc.chunking import ChunkedCall
-
-
-# ``_Fetch`` is the per-sub-request fetcher the decorator wraps and
-# ``ChunkedCall`` drives: an ``async def fetch(args) -> (df, response)``.
-_Fetch = Callable[[dict[str, Any]], Awaitable[tuple[pd.DataFrame, httpx.Response]]]
-
-
-# Caller-supplied transform applied to the combined chunk result, so a
-# resumed call returns the same shape as an un-interrupted one rather than
-# the chunker's raw ``(frame, httpx.Response)``. This keeps the chunker
-# generic: the OGC getters inject their post-processing (type coercion,
-# column arrangement, ``BaseMetadata``) through ``utils._finalize_ogc``.
-# The default is identity, so direct ``ChunkedCall`` use is unaffected.
-_Finalize = Callable[[pd.DataFrame, httpx.Response], tuple[pd.DataFrame, Any]]
-
-
-def _passthrough_result(
-    frame: pd.DataFrame, response: httpx.Response
-) -> tuple[pd.DataFrame, Any]:
-    """Default :data:`_Finalize`: return the raw combined pair unchanged."""
-    return frame, response
 
 
 class ChunkInterrupted(DataRetrievalError):
@@ -140,10 +118,14 @@ class ChunkInterrupted(DataRetrievalError):
         self.total_chunks = total_chunks
         self.call = call
         self.retry_after = retry_after
-        # Snapshot partial state at raise time so the exception's view stays
-        # stable across later ``call.resume()`` advances (the live view is on
-        # ``call.partial_frame`` / ``.partial_response``). ``.copy()`` guards
-        # the single-chunk fast path, where the frame may be returned verbatim.
+        # Snapshot partial state at raise time so the exception stays a stable
+        # record of the failure moment: ``exc.partial_frame`` /
+        # ``.partial_response`` do NOT advance on a later ``call.resume()``
+        # (that live view is on ``call.partial_frame`` / ``.partial_response``).
+        # This keeps each interruption in a resume loop a faithful record of
+        # what it saw, rather than every exception aliasing the shared call's
+        # advancing state. ``.copy()`` guards the single-chunk fast path, where
+        # the combined frame may be returned verbatim.
         if call is None:
             self.partial_frame: pd.DataFrame = pd.DataFrame()
             self.partial_response: httpx.Response | None = None
@@ -155,9 +137,10 @@ class ChunkInterrupted(DataRetrievalError):
         # Drop the live ChunkedCall before pickling: its ``.fetch`` is an
         # undecorated module function pickle can't reference by name, so the
         # interruption can't cross a process boundary with ``.call`` attached.
-        # The degraded ``call=None`` form keeps the counts, retry hint, and
-        # partial frame / response; only ``.resume()`` is lost (cross-process
-        # resume was never possible anyway).
+        # The degraded ``call=None`` form keeps the counts, retry hint, and the
+        # snapshotted partial frame / response — plain instance attributes the
+        # base ``__getstate__`` already pickles; only ``.resume()`` is lost
+        # (cross-process resume was never possible anyway).
         return {**super().__getstate__(), "call": None}
 
 

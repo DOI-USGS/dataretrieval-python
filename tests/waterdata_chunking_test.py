@@ -35,6 +35,7 @@ from dataretrieval.exceptions import (
     DataRetrievalError,
     RateLimited,
     ServiceUnavailable,
+    TransientError,
     Unchunkable,
 )
 from dataretrieval.ogc import chunking as _chunking
@@ -47,6 +48,11 @@ from dataretrieval.ogc.chunking import (
     multi_value_chunked,
     parallel_chunks,
 )
+from dataretrieval.ogc.combining import (
+    _QUOTA_HEADER,
+    _combine_chunk_frames,
+    _combine_chunk_responses,
+)
 from dataretrieval.ogc.interruptions import (
     ChunkInterrupted,
     QuotaExhausted,
@@ -56,10 +62,7 @@ from dataretrieval.ogc.planning import (
     _LIST_SEP,
     _NEVER_CHUNK,
     _OR_SEP,
-    _QUOTA_HEADER,
     ChunkPlan,
-    _combine_chunk_frames,
-    _combine_chunk_responses,
     _extract_axes,
     _request_bytes,
     _safe_request_bytes,
@@ -1124,13 +1127,27 @@ def test_combine_chunk_frames_does_not_collapse_none_ids():
 
 
 def test_combine_chunk_frames_still_dedupes_overlapping_ids():
-    """The original dedup contract — overlapping OR-clause partitions
-    that produce duplicate-id rows across chunks must still collapse
-    to one row — has to keep working when ids ARE present."""
+    """Duplicate feature IDs collapse regardless of why chunks overlap."""
     df_a = pd.DataFrame({"id": ["x", "y"], "val": [1, 2]})
     df_b = pd.DataFrame({"id": ["y", "z"], "val": [2, 3]})
     combined = _combine_chunk_frames([df_a, df_b])
     assert sorted(combined["id"].tolist()) == ["x", "y", "z"]
+
+
+def test_list_axis_chunks_dedupe_repeated_feature_ids():
+    """Repeated list values can select the same feature in separate chunks."""
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=8000)
+    async def fetch(args):
+        return (
+            pd.DataFrame({"id": ["feature-1"], "site": [args["sites"][0]]}),
+            _quota_response(500),
+        )
+
+    with parallel_chunks(2):
+        frame, _ = fetch({"sites": ["A", "A"]})
+
+    assert frame.to_dict(orient="records") == [{"id": "feature-1", "site": "A"}]
 
 
 def test_retry_after_surfaces_on_quota_exhausted():
@@ -1995,6 +2012,25 @@ def test_chunker_retries_transient_then_completes(monkeypatch):
     sites = ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10]
     df, _ = decorated({"sites": sites})
     assert sorted(df["sites"]) == sorted(sites)  # all recovered despite the 429
+
+
+def test_future_transient_subclass_remains_resumable(monkeypatch):
+    """The shared taxonomy handles new typed transients by default."""
+
+    class MaintenanceWindow(TransientError):
+        _DEFAULT_STATUS = 503
+
+    monkeypatch.setenv("API_USGS_RETRIES", "0")
+
+    async def fetch(args):
+        raise MaintenanceWindow("planned maintenance", retry_after=30.0)
+
+    decorated = multi_value_chunked(build_request=_fake_build, url_limit=240)(fetch)
+    with pytest.raises(ServiceInterrupted) as excinfo:
+        decorated({"sites": ["S1" * 10, "S2" * 10]})
+
+    assert excinfo.value.retry_after == 30.0
+    assert isinstance(excinfo.value.__cause__, MaintenanceWindow)
 
 
 def test_chunker_exhausted_retries_still_resumable(monkeypatch):

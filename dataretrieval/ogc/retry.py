@@ -19,7 +19,7 @@ from dataclasses import dataclass
 import httpx
 import pandas as pd
 
-from dataretrieval.exceptions import RateLimited, ServiceUnavailable, TransientError
+from dataretrieval.exceptions import RateLimited, TransientError
 from dataretrieval.ogc import progress as _progress
 from dataretrieval.ogc.interruptions import (
     ChunkInterrupted,
@@ -190,6 +190,28 @@ class RetryPolicy:
 _NO_RETRY = RetryPolicy(max_retries=0)
 
 
+def _classify_transient(
+    exc: BaseException,
+) -> tuple[type[ChunkInterrupted], float | None] | None:
+    """Classify one exception as a transient, resumable failure.
+
+    This function owns the shared exception taxonomy; it deliberately does not
+    walk ``__cause__``. :func:`_classify_chunk_error` walks wrapped pagination
+    failures, while :func:`_retryable` applies the narrower automatic-retry
+    policy to this classification.
+    """
+    if isinstance(exc, RateLimited):
+        return QuotaExhausted, exc.retry_after
+    if isinstance(exc, TransientError):
+        # Every typed transient other than a rate-limit error is a service
+        # interruption. This fallback keeps future TransientError subclasses
+        # resumable after their inline retries are exhausted.
+        return ServiceInterrupted, exc.retry_after
+    if isinstance(exc, (httpx.HTTPError, httpx.InvalidURL)):
+        return ServiceInterrupted, None
+    return None
+
+
 def _classify_chunk_error(
     exc: BaseException,
 ) -> tuple[type[ChunkInterrupted], float | None] | None:
@@ -231,41 +253,28 @@ def _classify_chunk_error(
     """
     cur: BaseException | None = exc
     while cur is not None:
-        if isinstance(cur, RateLimited):
-            return QuotaExhausted, cur.retry_after
-        if isinstance(cur, ServiceUnavailable):
-            return ServiceInterrupted, cur.retry_after
-        if isinstance(cur, (httpx.HTTPError, httpx.InvalidURL)):
-            return ServiceInterrupted, None
+        result = _classify_transient(cur)
+        if result is not None:
+            return result
         cur = cur.__cause__
     return None
 
 
 def _retryable(exc: BaseException) -> tuple[bool, float | None]:
-    """
-    Decide whether ``exc`` is a transient worth an automatic retry.
+    """Decide whether a top-level transient is worth an automatic retry.
 
-    Only the *top-level* exception is inspected — unlike
-    :func:`_classify_chunk_error`, which walks the ``__cause__`` chain.
-    The distinction matters because ``_paginate`` raises an
-    initial-request transient (429 / 5xx / :class:`httpx.TransportError`)
-    *raw*, but wraps a mid-pagination failure as a base ``DataRetrievalError``.
-    So a raw transient means a sub-request that made no progress and is cheap to
-    re-issue, whereas a mid-pagination failure is left to escalate to a
-    resumable :class:`ChunkInterrupted` rather than re-walked from page 1
-    (which would re-spend the quota just exhausted). ``httpx.InvalidURL``
-    is never retried — a too-long cursor won't fix on a retry.
-
-    Returns
-    -------
-    tuple[bool, float or None]
-        ``(retryable, retry_after)`` — the server ``Retry-After`` hint
-        (seconds) when the transient carried one, else ``None``.
+    Wrapped mid-pagination failures are not retried from page one; they instead
+    escalate to a resumable :class:`ChunkInterrupted`. ``httpx.InvalidURL`` and
+    non-transport ``httpx.HTTPError`` instances are classified as resumable but
+    excluded from automatic retry by policy.
     """
-    if isinstance(exc, TransientError):
-        return True, exc.retry_after
-    if isinstance(exc, httpx.TransportError):
-        return True, None
+    classification = _classify_transient(exc)
+    if classification is None:
+        return False, None
+
+    _, retry_after = classification
+    if isinstance(exc, (TransientError, httpx.TransportError)):
+        return True, retry_after
     return False, None
 
 

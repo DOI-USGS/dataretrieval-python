@@ -53,8 +53,8 @@ import pandas as pd
 
 from dataretrieval.codes.states import to_state
 from dataretrieval.exceptions import DataRetrievalError
+from dataretrieval.ogc.combining import _combine_chunk_frames, _combine_chunk_responses
 from dataretrieval.ogc.engine import _paginate, _run_sync
-from dataretrieval.ogc.planning import _combine_chunk_frames, _combine_chunk_responses
 from dataretrieval.utils import (
     HTTPX_DEFAULTS,
     BaseMetadata,
@@ -365,8 +365,9 @@ async def _fan_out(
         results = await asyncio.gather(*(_one(req) for req in requests))
 
     # Reuse the engine's combine helpers: drop empty frames and concat, and fold
-    # the per-location responses into one (lowest-remaining rate-limit headers +
-    # cumulative elapsed), keeping the first request's URL as the query identity.
+    # the per-location responses into one (headers from the response with the
+    # lowest reported remaining quota plus summed response durations), keeping
+    # the first request's URL as the query identity.
     frames = [frame for frame, _ in results]
     responses = [resp for _, resp in results]
     return _combine_chunk_frames(frames), _combine_chunk_responses(
@@ -398,7 +399,7 @@ def _next_page_url(response: httpx.Response) -> str | None:
     url = response.links.get("next", {}).get("url")
     if not url:
         return None
-    return url.replace("https://water.usgs.gov", "https://api.water.usgs.gov", 1)
+    return str(url).replace("https://water.usgs.gov", "https://api.water.usgs.gov", 1)
 
 
 def _nwdc_error_detail(response: httpx.Response) -> str | None:
