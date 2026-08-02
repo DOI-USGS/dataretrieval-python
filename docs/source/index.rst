@@ -20,6 +20,7 @@ Table of Contents
    meta/installing
    userguide/index
    examples/index
+   architecture/index
    meta/contributing
    meta/license
    reference/index

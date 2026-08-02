@@ -59,13 +59,14 @@ Pull Request Guidelines:
 
 Before you submit a pull request, check that it meets these guidelines:
 
-1. Any pull request should include tests. However, a contribution with
-   no tests is preferable to no contribution at all.
-2. If the pull request adds functionality, the docs should be updated. Put
-   your new functionality into a function with a docstring, and add the
-   feature to the list in README.md.
-3. The pull request should work for Python 3.9 and later, and pass the GitHub
+1. Changes to package functionality should include tests.
+2. Changes to behavior should update the relevant documentation or docstrings.
+3. The pull request should work for Python 3.10 and later and pass the GitHub
    Actions continuous integration pipelines.
+4. Build-related changes should preserve the installed-wheel smoke test; tests
+   run from a source checkout do not prove that an artifact is complete.
+5. Architecturally significant changes should update :doc:`../architecture/index`,
+   add or supersede an ADR, and adjust the corresponding fitness function.
 
 
 Updating Package Version:
@@ -88,8 +89,21 @@ version and the documentation's ``version`` and ``release`` values (read via
 Coding Standards
 ----------------
 
-    - PEP8 (https://peps.python.org/pep-0008/)
-    - Doc-strings should follow the NumPy standard (`example`_):
+Formatting, linting, and strict type checking are enforced by CI and the
+pre-commit configuration. Run ``ruff check .``, ``ruff format --check .``,
+``mypy``, and the relevant pytest suite before submitting a change.
+
+    - Follow PEP8 (https://peps.python.org/pep-0008/).
+    - Docstrings should follow the NumPy standard (`example`_).
+    - The public interface should emphasize functions over classes; classes can
+      and should be used internally and in tests.
+    - Group public download functions by data portal.
+    - Preserve the dependency direction in :doc:`../architecture/index`:
+      public facades depend on service/protocol adapters, which depend on stable
+      shared policy and infrastructure. Shared OGC code must not import service
+      adapters, and modern modules must not depend on legacy NWIS.
+    - Treat underscore-prefixed helpers as implementation details. Existing
+      cross-package uses are documented variances, not extension points.
 
 .. _example: https://www.sphinx-doc.org/en/master/usage/extensions/example_numpy.html
 
