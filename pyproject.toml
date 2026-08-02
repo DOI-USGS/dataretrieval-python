@@ -36,8 +36,8 @@ dependencies = [
 ]
 dynamic = ["version"]
 
-[tool.setuptools]
-packages = ["dataretrieval", "dataretrieval.codes"]
+[tool.setuptools.packages.find]
+include = ["dataretrieval*"]
 
 [tool.setuptools.package-data]
 dataretrieval = ["py.typed"]
