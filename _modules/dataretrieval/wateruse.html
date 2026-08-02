@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wateruse &mdash; dataretrieval 0.1.dev1+gd2920217d documentation</title>
+  <title>dataretrieval.wateruse &mdash; dataretrieval 0.1.dev1+g09b566599 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=b530e927"></script>
+      <script src="../../_static/documentation_options.js?v=624d7af0"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -129,8 +129,8 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.codes.states</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_state</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataRetrievalError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.combining</span><span class="w"> </span><span class="kn">import</span> <span class="n">_combine_chunk_frames</span><span class="p">,</span> <span class="n">_combine_chunk_responses</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">_paginate</span><span class="p">,</span> <span class="n">_run_sync</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.planning</span><span class="w"> </span><span class="kn">import</span> <span class="n">_combine_chunk_frames</span><span class="p">,</span> <span class="n">_combine_chunk_responses</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">HTTPX_DEFAULTS</span><span class="p">,</span>
     <span class="n">BaseMetadata</span><span class="p">,</span>
@@ -458,8 +458,9 @@
         <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">_one</span><span class="p">(</span><span class="n">req</span><span class="p">)</span> <span class="k">for</span> <span class="n">req</span> <span class="ow">in</span> <span class="n">requests</span><span class="p">))</span>
 
     <span class="c1"># Reuse the engine&#39;s combine helpers: drop empty frames and concat, and fold</span>
-    <span class="c1"># the per-location responses into one (lowest-remaining rate-limit headers +</span>
-    <span class="c1"># cumulative elapsed), keeping the first request&#39;s URL as the query identity.</span>
+    <span class="c1"># the per-location responses into one (headers from the response with the</span>
+    <span class="c1"># lowest reported remaining quota plus summed response durations), keeping</span>
+    <span class="c1"># the first request&#39;s URL as the query identity.</span>
     <span class="n">frames</span> <span class="o">=</span> <span class="p">[</span><span class="n">frame</span> <span class="k">for</span> <span class="n">frame</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
     <span class="n">responses</span> <span class="o">=</span> <span class="p">[</span><span class="n">resp</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">resp</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">_combine_chunk_frames</span><span class="p">(</span><span class="n">frames</span><span class="p">),</span> <span class="n">_combine_chunk_responses</span><span class="p">(</span>
@@ -497,7 +498,7 @@
     <span class="n">url</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;next&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
-    <span class="k">return</span> <span class="n">url</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;https://water.usgs.gov&quot;</span><span class="p">,</span> <span class="s2">&quot;https://api.water.usgs.gov&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;https://water.usgs.gov&quot;</span><span class="p">,</span> <span class="s2">&quot;https://api.water.usgs.gov&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div>
 
 
 

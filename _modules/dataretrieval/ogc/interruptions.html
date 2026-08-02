@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ogc.interruptions &mdash; dataretrieval 0.1.dev1+gd2920217d documentation</title>
+  <title>dataretrieval.ogc.interruptions &mdash; dataretrieval 0.1.dev1+g09b566599 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=b530e927"></script>
+      <script src="../../../_static/documentation_options.js?v=624d7af0"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -87,7 +87,6 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
@@ -97,27 +96,6 @@
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.chunking</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkedCall</span>
-
-
-<span class="c1"># ``_Fetch`` is the per-sub-request fetcher the decorator wraps and</span>
-<span class="c1"># ``ChunkedCall`` drives: an ``async def fetch(args) -&gt; (df, response)``.</span>
-<span class="n">_Fetch</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]]]</span>
-
-
-<span class="c1"># Caller-supplied transform applied to the combined chunk result, so a</span>
-<span class="c1"># resumed call returns the same shape as an un-interrupted one rather than</span>
-<span class="c1"># the chunker&#39;s raw ``(frame, httpx.Response)``. This keeps the chunker</span>
-<span class="c1"># generic: the OGC getters inject their post-processing (type coercion,</span>
-<span class="c1"># column arrangement, ``BaseMetadata``) through ``utils._finalize_ogc``.</span>
-<span class="c1"># The default is identity, so direct ``ChunkedCall`` use is unaffected.</span>
-<span class="n">_Finalize</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_passthrough_result</span><span class="p">(</span>
-    <span class="n">frame</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Default :data:`_Finalize`: return the raw combined pair unchanged.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">frame</span><span class="p">,</span> <span class="n">response</span>
 
 
 <div class="viewcode-block" id="ChunkInterrupted">
@@ -218,10 +196,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">total_chunks</span> <span class="o">=</span> <span class="n">total_chunks</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">call</span> <span class="o">=</span> <span class="n">call</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">retry_after</span> <span class="o">=</span> <span class="n">retry_after</span>
-        <span class="c1"># Snapshot partial state at raise time so the exception&#39;s view stays</span>
-        <span class="c1"># stable across later ``call.resume()`` advances (the live view is on</span>
-        <span class="c1"># ``call.partial_frame`` / ``.partial_response``). ``.copy()`` guards</span>
-        <span class="c1"># the single-chunk fast path, where the frame may be returned verbatim.</span>
+        <span class="c1"># Snapshot partial state at raise time so the exception stays a stable</span>
+        <span class="c1"># record of the failure moment: ``exc.partial_frame`` /</span>
+        <span class="c1"># ``.partial_response`` do NOT advance on a later ``call.resume()``</span>
+        <span class="c1"># (that live view is on ``call.partial_frame`` / ``.partial_response``).</span>
+        <span class="c1"># This keeps each interruption in a resume loop a faithful record of</span>
+        <span class="c1"># what it saw, rather than every exception aliasing the shared call&#39;s</span>
+        <span class="c1"># advancing state. ``.copy()`` guards the single-chunk fast path, where</span>
+        <span class="c1"># the combined frame may be returned verbatim.</span>
         <span class="k">if</span> <span class="n">call</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">partial_frame</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">partial_response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -233,9 +215,10 @@
         <span class="c1"># Drop the live ChunkedCall before pickling: its ``.fetch`` is an</span>
         <span class="c1"># undecorated module function pickle can&#39;t reference by name, so the</span>
         <span class="c1"># interruption can&#39;t cross a process boundary with ``.call`` attached.</span>
-        <span class="c1"># The degraded ``call=None`` form keeps the counts, retry hint, and</span>
-        <span class="c1"># partial frame / response; only ``.resume()`` is lost (cross-process</span>
-        <span class="c1"># resume was never possible anyway).</span>
+        <span class="c1"># The degraded ``call=None`` form keeps the counts, retry hint, and the</span>
+        <span class="c1"># snapshotted partial frame / response — plain instance attributes the</span>
+        <span class="c1"># base ``__getstate__`` already pickles; only ``.resume()`` is lost</span>
+        <span class="c1"># (cross-process resume was never possible anyway).</span>
         <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__getstate__</span><span class="p">(),</span> <span class="s2">&quot;call&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span></div>
 
 

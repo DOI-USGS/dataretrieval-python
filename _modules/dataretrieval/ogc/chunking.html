@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ogc.chunking &mdash; dataretrieval 0.1.dev1+gd2920217d documentation</title>
+  <title>dataretrieval.ogc.chunking &mdash; dataretrieval 0.1.dev1+g09b566599 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=b530e927"></script>
+      <script src="../../../_static/documentation_options.js?v=624d7af0"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -150,7 +150,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextvars</span><span class="w"> </span><span class="kn">import</span> <span class="n">copy_context</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">cast</span>
@@ -162,17 +162,14 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPX_DEFAULTS</span><span class="p">,</span> <span class="n">Ambient</span><span class="p">,</span> <span class="n">_require_positive_int</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">progress</span> <span class="k">as</span> <span class="n">_progress</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.interruptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ChunkInterrupted</span><span class="p">,</span>
-    <span class="n">_Fetch</span><span class="p">,</span>
-    <span class="n">_Finalize</span><span class="p">,</span>
-    <span class="n">_passthrough_result</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.planning</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ChunkPlan</span><span class="p">,</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.combining</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">_combine_chunk_frames</span><span class="p">,</span>
     <span class="n">_combine_chunk_responses</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.interruptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ChunkInterrupted</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.planning</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkPlan</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.retry</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">_NO_RETRY</span><span class="p">,</span>
     <span class="n">RetryPolicy</span><span class="p">,</span>
@@ -370,6 +367,30 @@
 
 
 
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Type aliases for the ChunkedCall contract.</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="c1"># The per-sub-request fetcher the decorator wraps and ``ChunkedCall`` drives:</span>
+<span class="c1"># an ``async def fetch(args) -&gt; (df, response)``.</span>
+<span class="n">_Fetch</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]]]</span>
+
+<span class="c1"># Caller-supplied transform applied to the combined chunk result, so a</span>
+<span class="c1"># resumed call returns the same shape as an un-interrupted one rather than</span>
+<span class="c1"># the chunker&#39;s raw ``(frame, httpx.Response)``.  This keeps the chunker</span>
+<span class="c1"># generic: the OGC getters inject their post-processing (type coercion,</span>
+<span class="c1"># column arrangement, ``BaseMetadata``) through ``_finalize_ogc``.</span>
+<span class="c1"># The default is identity, so direct ``ChunkedCall`` use is unaffected.</span>
+<span class="n">_Finalize</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_passthrough_result</span><span class="p">(</span>
+    <span class="n">frame</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Default :data:`_Finalize`: return the raw combined pair unchanged.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">frame</span><span class="p">,</span> <span class="n">response</span>
+
+
 <span class="k">class</span><span class="w"> </span><span class="nc">ChunkedCall</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stateful handle for a chunked call.</span>
@@ -496,12 +517,11 @@
 
 <span class="sd">        Frames concatenate in sub-args *index* order (``sorted`` keys —</span>
 <span class="sd">        deterministic, independent of parallel completion order). The</span>
-<span class="sd">        aggregated response takes its headers from the most-recently-</span>
-<span class="sd">        *completed* sub-request: the ``track`` closure in :meth:`_run`</span>
-<span class="sd">        is the only writer of ``self._chunks`` and ``dict`` preserves</span>
-<span class="sd">        insertion order, so the chunks&#39; natural order is completion</span>
-<span class="sd">        order and the last one carries the freshest</span>
-<span class="sd">        ``x-ratelimit-remaining``.</span>
+<span class="sd">        aggregated response takes its headers from the response with the</span>
+<span class="sd">        lowest reported ``x-ratelimit-remaining`` value. If no response</span>
+<span class="sd">        reports that header, it falls back to the last completed response;</span>
+<span class="sd">        ``self._chunks`` preserves completion order because the ``track``</span>
+<span class="sd">        closure in :meth:`_run` is its only writer.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -600,8 +620,9 @@
 <span class="sd">            Combined data from every successful sub-request.</span>
 <span class="sd">        response</span>
 <span class="sd">            The finalized aggregate — a raw :class:`httpx.Response`</span>
-<span class="sd">            (canonical URL, most-recently-completed sub-request&#39;s headers,</span>
-<span class="sd">            cumulative elapsed time) by default, or whatever</span>
+<span class="sd">            (canonical URL, headers from the response with the lowest reported</span>
+<span class="sd">            remaining quota, and summed response elapsed durations) by default,</span>
+<span class="sd">            or whatever</span>
 <span class="sd">            :attr:`finalize` produces (e.g. ``BaseMetadata`` for the OGC</span>
 <span class="sd">            getters).</span>
 
@@ -682,8 +703,9 @@
 <span class="sd">            Combined data from every sub-request.</span>
 <span class="sd">        response</span>
 <span class="sd">            The finalized aggregate — a raw :class:`httpx.Response`</span>
-<span class="sd">            (canonical URL, most-recently-completed sub-request&#39;s headers,</span>
-<span class="sd">            cumulative elapsed time) by default, or whatever</span>
+<span class="sd">            (canonical URL, headers from the response with the lowest reported</span>
+<span class="sd">            remaining quota, and summed response elapsed durations) by default,</span>
+<span class="sd">            or whatever</span>
 <span class="sd">            :attr:`finalize` produces (e.g. ``BaseMetadata`` for OGC getters).</span>
 
 <span class="sd">        Raises</span>
