@@ -47,9 +47,9 @@ from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.ogc import chunking
 from dataretrieval.ogc import progress as _progress
 from dataretrieval.ogc.chunking import get_active_client
+from dataretrieval.ogc.combining import _QUOTA_HEADER, _merge_response, _safe_elapsed
 from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_api_dates
 from dataretrieval.ogc.errors import _paginated_failure_message, _raise_for_non_200
-from dataretrieval.ogc.planning import _QUOTA_HEADER, _merge_response, _safe_elapsed
 from dataretrieval.ogc.shaping import GEOPANDAS, _finalize_ogc, _get_resp_data
 from dataretrieval.utils import (
     HTTPX_DEFAULTS,
@@ -658,9 +658,9 @@ async def _paginate(
     response : httpx.Response
         A shallow copy of the first-page response, with ``.headers``
         rebuilt as a fresh ``httpx.Headers`` reflecting the last page and
-        ``.elapsed`` set to cumulative wall-clock. The canonical URL is
-        preserved from the first page. The original first-page response
-        is not mutated.
+        ``.elapsed`` set to the sum of the per-page response durations. The
+        canonical URL is preserved from the first page. The original first-page
+        response is not mutated.
 
     Raises
     ------

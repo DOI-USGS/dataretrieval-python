@@ -149,19 +149,20 @@ via any automated processes or pipelines.
   * Example:
 
     ``` python
+    LIGHT_MESSAGES = {
+        "English": "There are %(number_of_lights)s lights.",
+        "Pirate": "Arr! Thar be %(number_of_lights)s lights.",
+    }
 
-        LIGHT_MESSAGES = {
-            'English': "There are %(number_of_lights)s lights.",
-            'Pirate':  "Arr! Thar be %(number_of_lights)s lights."
-        }
 
-        def lights_message(language, number_of_lights):
-            """Return a language-appropriate string reporting the light count."""
-            return LIGHT_MESSAGES[language] % locals()
+    def lights_message(language, number_of_lights):
+        """Return a language-appropriate string reporting the light count."""
+        return LIGHT_MESSAGES[language] % locals()
 
-        def is_pirate(message):
-            """Return True if the given message sounds piratical."""
-            return re.search(r"(?i)(arr|avast|yohoho)!", message) is not None
+
+    def is_pirate(message):
+        """Return True if the given message sounds piratical."""
+        return re.search(r"(?i)(arr|avast|yohoho)!", message) is not None
     ```
 
 ---

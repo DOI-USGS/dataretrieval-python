@@ -54,7 +54,7 @@ test = [
   "pytest-rerunfailures",
   "coverage",
   "pytest-httpx",
-  "ruff",
+  "ruff==0.16.1",
   "dataretrieval[type-check]",  # mypy, pinned once in the type-check extra
 ]
 doc = [
