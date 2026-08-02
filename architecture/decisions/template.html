@@ -1,0 +1,174 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADR template &mdash; dataretrieval 0.1.dev1+g44f2aeec7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=b16bba99"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Contributing" href="../../meta/contributing.html" />
+    <link rel="prev" title="ADR 0005: Quarantine and retire legacy NWIS" href="0005-legacy-nwis.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Architecture</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#purpose-and-scope">Purpose and scope</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#architecture-characteristics">Architecture characteristics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#context-view">Context view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#composition-and-dependency-view">Composition and dependency view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#interface-view">Interface view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#interaction-view">Interaction view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#resource-and-configuration-view">Resource and configuration view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#known-architectural-debt">Known architectural debt</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#change-process">Change process</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Architecture Decision Records</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="0001-modular-monolith.html">ADR 0001: Retain a modular monolith with service adapters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0002-sync-api-async-internals.html">ADR 0002: Keep synchronous public APIs over async internals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0003-dependency-direction.html">ADR 0003: Direct dependencies toward stable policy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0004-error-retry-resume.html">ADR 0004: Use typed failures and bounded recovery</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0005-legacy-nwis.html">ADR 0005: Quarantine and retire legacy NWIS</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">ADR template</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Architecture</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Architecture Decision Records</a></li>
+      <li class="breadcrumb-item active">ADR template</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/architecture/decisions/template.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="adr-template">
+<h1>ADR template<a class="headerlink" href="#adr-template" title="Link to this heading"></a></h1>
+<section id="title">
+<h2>Title<a class="headerlink" href="#title" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">NNNN.</span> <span class="pre">Short</span> <span class="pre">imperative</span> <span class="pre">decision</span> <span class="pre">title</span></code></p>
+</section>
+<section id="status">
+<h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
+<p>Proposed | Accepted | Superseded by <code class="docutils literal notranslate"><span class="pre">NNNN-title</span></code> | Rejected</p>
+</section>
+<section id="context">
+<h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
+<p>Describe the forces, constraints, affected stakeholders, and architecture
+characteristics that make this decision significant. State known assumptions
+and the problem, not a preferred implementation.</p>
+</section>
+<section id="decision">
+<h2>Decision<a class="headerlink" href="#decision" title="Link to this heading"></a></h2>
+<p>State the decision and its boundary unambiguously. Emphasize why it was chosen;
+include implementation detail only where it is itself a constraint.</p>
+</section>
+<section id="consequences">
+<h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
+<p>List beneficial and adverse consequences, trade-offs, operational effects, and
+follow-up work. Record meaningful alternatives that were rejected and why.</p>
+</section>
+<section id="compliance">
+<h2>Compliance<a class="headerlink" href="#compliance" title="Link to this heading"></a></h2>
+<p>Name the automated test, CI job, review check, or measurable condition that
+shows the decision still holds. If temporary variances exist, list their exact
+scope and removal condition.</p>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<p>Add links to issues, pull requests, benchmarks, or superseded decisions when
+useful.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="0005-legacy-nwis.html" class="btn btn-neutral float-left" title="ADR 0005: Quarantine and retire legacy NWIS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../meta/contributing.html" class="btn btn-neutral float-right" title="Contributing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
