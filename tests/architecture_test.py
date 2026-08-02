@@ -19,9 +19,9 @@ _SERVICE_PREFIXES = (
 )
 
 # These top-level modules currently reach into OGC. NGWMN is an OGC adapter;
-# Water Use's imports are an accepted temporary variance recorded by ADR 0003.
-# Exact equality makes either growth or removal an intentional architecture
-# change that updates this fitness function and the ADR together.
+# Water Use's imports are an accepted temporary variance under ADR 0003. This
+# allowlist is the authoritative exact inventory; the ADR owns the policy and
+# rationale. Exact equality makes either growth or removal intentional.
 _ALLOWED_TOP_LEVEL_OGC_IMPORTS = {
     "dataretrieval.ngwmn": {"dataretrieval.ogc.engine"},
     "dataretrieval.wateruse": {
@@ -161,7 +161,8 @@ def test_top_level_ogc_consumers_match_documented_variances() -> None:
             observed[module] = dependencies
 
     assert observed == _ALLOWED_TOP_LEVEL_OGC_IMPORTS, (
-        "Top-level OGC dependencies differ from ADR 0003. Update the code, ADR, "
-        "and allowlist together.\n"
+        "Top-level OGC dependencies differ from the architecture allowlist. "
+        "Update the code and allowlist; supersede ADR 0003 if the dependency "
+        "policy changes.\n"
         f"expected={_ALLOWED_TOP_LEVEL_OGC_IMPORTS!r}\nobserved={observed!r}"
     )

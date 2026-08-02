@@ -22,6 +22,7 @@ however writing code is not the only way to contribute.
       - [Style](#style)
       - [Docstrings](#docstrings)
       - [Quotes](#quotes)
+    - [Updating Package Version](#updating-package-version)
   - [Documentation](#documentation)
     - [Contributing to the Documentation](#contributing-to-the-documentation)
     - [Adding Examples to the Documentation](#adding-examples-to-the-documentation)
@@ -185,6 +186,14 @@ link checking.
         """Return True if the given message sounds piratical."""
         return re.search(r"(?i)(arr|avast|yohoho)!", message) is not None
     ```
+
+### Updating Package Version
+
+The package version is derived automatically from Git tags by
+`setuptools_scm` (see `[tool.setuptools_scm]` in `pyproject.toml`), so there is
+no version string to edit by hand. To cut a release, tag the commit (for
+example, `git tag v1.2.3`) and push the tag; both the installed package version
+and the documentation's `version` and `release` values follow from it.
 
 ---
 

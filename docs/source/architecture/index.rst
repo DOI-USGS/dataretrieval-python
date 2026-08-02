@@ -191,6 +191,10 @@ remain visible until a shared transport policy replaces them deliberately.
 Known architectural debt
 ------------------------
 
+This view records categories and representative locations of debt. The fitness
+functions in ``tests/architecture_test.py`` are authoritative for exact current
+dependency allowlists.
+
 - ``waterdata.utils`` re-exports many underscore-prefixed OGC helpers.
 - ``wateruse`` depends on private generic helpers located under ``ogc`` even
   though NWDC is not an OGC service.

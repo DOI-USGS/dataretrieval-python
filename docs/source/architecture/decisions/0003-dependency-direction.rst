@@ -43,14 +43,10 @@ Compliance
 ----------
 
 ``tests/architecture_test.py`` parses runtime imports and enforces the rules
-that hold today. It records these temporary variances exactly:
+that hold today. Its allowlist is the authoritative inventory of exact temporary
+cross-boundary imports; this ADR owns the direction and rationale rather than a
+second copy of that mutable inventory.
 
-- ``wateruse`` imports generic pagination/sync and response-combining helpers
-  from private OGC modules.
-- ``waterdata.utils`` re-exports private OGC helpers for existing internal
-  callers and tests.
-- ``ogc.shaping`` lazily imports ``ogc.engine`` for schema/default-dialect
-  behavior.
-
-The allowlist may shrink as those seams move; adding a new variance requires an
-ADR update and explicit review.
+The allowlist should shrink as private seams move. Any growth requires explicit
+architecture review, and a change to the dependency policy requires this ADR to
+be superseded.
