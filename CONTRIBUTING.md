@@ -22,6 +22,7 @@ however writing code is not the only way to contribute.
       - [Style](#style)
       - [Docstrings](#docstrings)
       - [Quotes](#quotes)
+    - [Updating Package Version](#updating-package-version)
   - [Documentation](#documentation)
     - [Contributing to the Documentation](#contributing-to-the-documentation)
     - [Adding Examples to the Documentation](#adding-examples-to-the-documentation)
@@ -79,30 +80,51 @@ Please do not combine multiple feature enhancements into a single pull request.
 Before you submit a pull request, check that it meets these guidelines:
 
 1. If the pull request adds or modifies package functionality, unit tests
-   should be written to test the new functionality
-2. If the pull request adds or modifies functionality, the documentation should
-   be updated. To do so, either add or modify a functions docstring which will
-   automatically become part of the API documentation
-3. The pull request should work for Python 3.9 and later - refer to the
-   [python-package.yml file](https://github.com/DOI-USGS/dataretrieval-python/blob/main/.github/workflows/python-package.yml)
-   for the latest versions of Python being tested by the continuous integration
-   pipelines. This will be checked automatically by the CI pipelines once the
-   pull request is opened.
+   should be written to test the new functionality.
+2. If the pull request adds or modifies functionality, update the documentation
+   or function docstrings that describe it.
+3. The pull request should work for Python 3.10 and later. Refer to the
+   [Python package workflow](https://github.com/DOI-USGS/dataretrieval-python/blob/main/.github/workflows/python-package.yml)
+   for the versions and operating systems currently tested by CI.
+4. Build-related changes should preserve the installed-wheel smoke test; tests
+   run from a source checkout are not sufficient to prove package contents.
+5. Architecturally significant changes should update the
+   [architecture documentation](docs/source/architecture/index.rst), add or
+   supersede an ADR, and adjust the corresponding fitness function.
 
 ### Coding Standards and Style
 
-Note that coding standards and style as described below are strong suggestions,
-the `dataretrieval` project does not strictly lint or enforce style guidelines
-via any automated processes or pipelines.
+The continuous integration and pre-commit configurations enforce formatting,
+linting, and strict type checking. Run the relevant checks before opening a PR:
+
+```bash
+ruff check .
+ruff format --check .
+mypy
+coverage run -m pytest tests/
+coverage report -m
+```
+
+For documentation changes, install `.[doc,nldi]` and run `make html` from
+`docs/`. The broader `make docs` target also runs doctests and network-dependent
+link checking.
 
 #### Style
 
-* Attempt to write code following the [PEP8 style guidelines](https://peps.python.org/pep-0008/) as much as possible
-* The public interface should emphasize functions over classes; however, classes
-  can and should be used internally and in tests
-* Functions for downloading data from a specific web portal must be grouped
-  within their own submodule
-  * For example, all NWIS functions are located at `dataretrieval.nwis`
+* Follow the [PEP8 style guidelines](https://peps.python.org/pep-0008/).
+* The public interface should emphasize functions over classes; classes can and
+  should be used internally and in tests.
+* Group public download functions by data portal. For example, modern Water
+  Data functions belong in `dataretrieval.waterdata`; legacy NWIS functions
+  remain quarantined in `dataretrieval.nwis` during deprecation.
+* Preserve the dependency direction documented in
+  [`docs/source/architecture`](docs/source/architecture/index.rst): public
+  facades depend on service/protocol adapters, which depend on stable shared
+  policy and infrastructure. Shared OGC code must not import service adapters,
+  and modern modules must not depend on legacy NWIS.
+* Treat underscore-prefixed helpers as implementation details. Existing
+  cross-package uses are documented variances, not extension points for new
+  code.
 
 #### Docstrings
 * Docstrings should follow the [numpy standard](https://numpydoc.readthedocs.io/en/v1.5.0/format.html):
@@ -164,6 +186,14 @@ via any automated processes or pipelines.
         """Return True if the given message sounds piratical."""
         return re.search(r"(?i)(arr|avast|yohoho)!", message) is not None
     ```
+
+### Updating Package Version
+
+The package version is derived automatically from Git tags by
+`setuptools_scm` (see `[tool.setuptools_scm]` in `pyproject.toml`), so there is
+no version string to edit by hand. To cut a release, tag the commit (for
+example, `git tag v1.2.3`) and push the tag; both the installed package version
+and the documentation's `version` and `release` values follow from it.
 
 ---
 
