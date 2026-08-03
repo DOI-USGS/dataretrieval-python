@@ -61,7 +61,15 @@ jobs:
           installed = Path(dataretrieval.__file__).resolve()
           assert not installed.is_relative_to(checkout), (installed, checkout)
           assert importlib.util.find_spec("dataretrieval.waterdata.api") is not None
+          assert importlib.util.find_spec("dataretrieval.waterdata.time_series") is not None
+          assert importlib.util.find_spec("dataretrieval.waterdata.metadata") is not None
+          assert importlib.util.find_spec("dataretrieval.waterdata.measurements") is not None
+          assert importlib.util.find_spec("dataretrieval.waterdata.reference") is not None
+          assert importlib.util.find_spec("dataretrieval.waterdata.samples") is not None
+          assert importlib.util.find_spec("dataretrieval.waterdata.cql") is not None
           assert importlib.util.find_spec("dataretrieval.ogc.engine") is not None
+          assert importlib.util.find_spec("dataretrieval.ogc.context") is not None
+          assert importlib.util.find_spec("dataretrieval.ogc.schema") is not None
           assert files("dataretrieval").joinpath("py.typed").is_file()
           assert waterdata.get_daily
           assert ngwmn.get_sites

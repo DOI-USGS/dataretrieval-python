@@ -36,6 +36,9 @@ from dataretrieval.transport.http import (
 
 from .utils import BASE_URL
 
+__all__ = ["get_ratings"]
+
+
 logger = logging.getLogger(__name__)
 
 STAC_URL = f"{BASE_URL}/stac/v0"

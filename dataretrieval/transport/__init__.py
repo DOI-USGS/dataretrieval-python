@@ -5,3 +5,5 @@ pagination, retry, response aggregation, progress, and sync-dispatch behavior.
 Service and protocol adapters consume these components; this package is not a
 public framework API.
 """
+
+__all__: list[str] = []

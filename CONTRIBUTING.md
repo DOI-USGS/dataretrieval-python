@@ -117,6 +117,9 @@ link checking.
 * Group public download functions by data portal. For example, modern Water
   Data functions belong in `dataretrieval.waterdata`; legacy NWIS functions
   remain quarantined in `dataretrieval.nwis` during deprecation.
+* Treat a change to a service's documented return shape or metadata type as a
+  public compatibility change; update contract tests and architecture
+  documentation and follow the deprecation process where required.
 * Preserve the dependency direction documented in
   [`docs/source/architecture`](docs/source/architecture/index.rst): public
   facades depend on service/protocol adapters, which depend on stable shared

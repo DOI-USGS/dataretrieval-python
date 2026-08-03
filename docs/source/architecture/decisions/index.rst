@@ -23,4 +23,5 @@ records sequentially.
    0004-error-retry-resume
    0005-legacy-nwis
    0006-service-neutral-transport
+   0007-adapter-facades
    template

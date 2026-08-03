@@ -489,3 +489,204 @@ def test_transport_runtime_graph_is_acyclic() -> None:
 
     for module in graph:
         visit(module, ())
+
+
+# --- Adapter structure and public export boundaries ---
+
+_EXPECTED_MODULE_EXPORTS = {
+    "ngwmn.py": {
+        "get_sites",
+        "get_water_level",
+        "get_lithology",
+        "get_well_construction",
+        "get_providers",
+    },
+    "nldi.py": {
+        "get_flowlines",
+        "get_basin",
+        "get_features",
+        "get_features_by_data_source",
+        "search",
+    },
+    "streamstats.py": {
+        "download_workspace",
+        "get_sample_watershed",
+        "get_watershed",
+        "Watershed",
+    },
+    "wateruse.py": {
+        "get_wateruse",
+        "WATERUSE_URL",
+        "MODELS",
+        "TIME_RESOLUTIONS",
+        "MAX_CONCURRENT_REQUESTS",
+    },
+    "wqp.py": {
+        "get_results",
+        "what_sites",
+        "what_organizations",
+        "what_projects",
+        "what_activities",
+        "what_detection_limits",
+        "what_habitat_metrics",
+        "what_project_weights",
+        "what_activity_metrics",
+        "wqp_url",
+        "wqx3_url",
+        "WQP_Metadata",
+    },
+    "waterdata/api.py": {
+        "get_channel",
+        "get_codes",
+        "get_combined_metadata",
+        "get_continuous",
+        "get_cql",
+        "get_daily",
+        "get_field_measurements",
+        "get_field_measurements_metadata",
+        "get_latest_continuous",
+        "get_latest_daily",
+        "get_monitoring_locations",
+        "get_peaks",
+        "get_queryables",
+        "get_reference_table",
+        "get_samples",
+        "get_samples_summary",
+        "get_stats_date_range",
+        "get_stats_por",
+        "get_time_series_metadata",
+    },
+    "waterdata/time_series.py": {
+        "get_daily",
+        "get_continuous",
+        "get_latest_continuous",
+        "get_latest_daily",
+        "get_stats_por",
+        "get_stats_date_range",
+    },
+    "waterdata/metadata.py": {
+        "get_monitoring_locations",
+        "get_time_series_metadata",
+        "get_combined_metadata",
+        "get_field_measurements_metadata",
+    },
+    "waterdata/measurements.py": {
+        "get_field_measurements",
+        "get_peaks",
+        "get_channel",
+    },
+    "waterdata/reference.py": {"get_reference_table", "get_queryables"},
+    "waterdata/samples.py": {"get_codes", "get_samples", "get_samples_summary"},
+    "waterdata/cql.py": {"get_cql"},
+    "waterdata/ratings.py": {"get_ratings"},
+    "waterdata/nearest.py": {"get_nearest_continuous"},
+    "waterdata/stats.py": {"get_data"},
+    "waterdata/types.py": {
+        "CODE_SERVICES",
+        "METADATA_COLLECTIONS",
+        "SERVICES",
+        "WATERDATA_SERVICES",
+        "PROFILES",
+        "PROFILE_LOOKUP",
+    },
+}
+
+
+def _literal_exports(path: Path) -> set[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == "__all__"
+            for target in node.targets
+        ):
+            return set(ast.literal_eval(node.value))
+    raise AssertionError(f"{path.relative_to(PACKAGE_ROOT.parent)} has no __all__")
+
+
+def test_active_service_exports_are_explicit_and_stable() -> None:
+    for relative, expected in _EXPECTED_MODULE_EXPORTS.items():
+        assert _literal_exports(PACKAGE_ROOT / relative) == expected, relative
+
+
+def test_waterdata_api_is_a_logic_free_compatibility_facade() -> None:
+    path = PACKAGE_ROOT / "waterdata" / "api.py"
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    definitions = [
+        node.name
+        for node in tree.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+    ]
+    assert not definitions, f"waterdata.api contains implementation: {definitions}"
+
+
+def test_waterdata_collection_families_do_not_import_each_other() -> None:
+    families = {
+        "dataretrieval.waterdata.time_series",
+        "dataretrieval.waterdata.metadata",
+        "dataretrieval.waterdata.measurements",
+        "dataretrieval.waterdata.reference",
+        "dataretrieval.waterdata.samples",
+        "dataretrieval.waterdata.cql",
+    }
+    violations = []
+    graph = _package_import_graph()
+    for module in families:
+        for dependency in graph[module]:
+            if dependency in families:
+                violations.append(f"{module} -> {dependency}")
+    assert not violations, "Lateral collection-family imports:\n" + "\n".join(
+        violations
+    )
+
+
+def test_service_adapters_do_not_reach_through_each_other() -> None:
+    adapters = {
+        "dataretrieval.ngwmn",
+        "dataretrieval.nldi",
+        "dataretrieval.streamstats",
+        "dataretrieval.waterdata",
+        "dataretrieval.wateruse",
+        "dataretrieval.wqp",
+    }
+    violations: list[str] = []
+    for module, imports in _package_import_graph().items():
+        owner = next(
+            (
+                adapter
+                for adapter in adapters
+                if module == adapter or module.startswith(adapter + ".")
+            ),
+            None,
+        )
+        if owner is None:
+            continue
+        for dependency in imports:
+            target = next(
+                (
+                    adapter
+                    for adapter in adapters
+                    if dependency == adapter or dependency.startswith(adapter + ".")
+                ),
+                None,
+            )
+            if target is not None and target != owner:
+                violations.append(f"{module} -> {dependency}")
+    assert not violations, "Adapter-to-adapter imports:\n" + "\n".join(
+        sorted(set(violations))
+    )
+
+
+def test_ogc_request_construction_does_not_execute_http() -> None:
+    path = PACKAGE_ROOT / "ogc" / "requests.py"
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    transport_names = {
+        alias.name
+        for node in tree.body
+        if isinstance(node, ast.ImportFrom)
+        and node.module == "dataretrieval.transport.http"
+        for alias in node.names
+    }
+    assert transport_names == {"default_headers"}
+    assert "dataretrieval.ogc.schema" in _runtime_imports(
+        PACKAGE_ROOT / "ogc" / "shaping.py"
+    )

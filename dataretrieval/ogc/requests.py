@@ -1,58 +1,29 @@
-"""OGC request preparation, construction, and schema/queryables lookup.
+"""OGC argument normalization and HTTP request construction.
 
-This module owns the machinery for building OGC API requests (both GET and
-POST/CQL2 paths), the ambient base-URL and dialect state that request builders
-read, and the queryables/schema request helper used by empty-result shaping.
-
-It depends on :mod:`~dataretrieval.ogc.policy` (the dialect type and endpoint
-constants), :mod:`~dataretrieval.ogc.dates`, :mod:`~dataretrieval.ogc.errors`,
-and :mod:`~dataretrieval.utils` (shared HTTP primitives). It must NOT import
-engine or shaping.
+Ambient request state lives in :mod:`dataretrieval.ogc.context`; queryables and
+schema execution live in :mod:`dataretrieval.ogc.schema`. The schema helper is
+imported here only to preserve its previous private path.
 """
 
 from __future__ import annotations
 
 import json
-import logging
 import re
 from collections.abc import Iterable, Mapping
-from typing import Any, cast
+from typing import Any
 
 import httpx
 
+from dataretrieval.ogc.context import _dialect as _dialect
+from dataretrieval.ogc.context import _ogc_base_url as _ogc_base_url
+from dataretrieval.ogc.context import _row_cap as _context_row_cap
 from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_api_dates
-from dataretrieval.ogc.errors import _raise_for_non_200
-from dataretrieval.ogc.policy import DEFAULT_DIALECT, OGC_API_URL, OgcDialect
-from dataretrieval.transport.http import (
-    HTTPX_DEFAULTS,
-)
-from dataretrieval.transport.http import (
-    default_headers as _default_headers,
-)
-from dataretrieval.transport.http import (
-    get as _get,
-)
-from dataretrieval.utils import Ambient
+from dataretrieval.ogc.schema import _check_ogc_requests as _schema_check_ogc_requests
+from dataretrieval.transport.http import default_headers as _default_headers
 
-logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Ambient per-call state
-# ---------------------------------------------------------------------------
-
-# Optional cap on the rows one paginated call accumulates before it stops
-# following ``next`` links (``None`` = uncapped). Set by :func:`get_reference_table`
-# to preview large tables without downloading every page.
-_row_cap: Ambient[int | None] = Ambient("ogc_row_cap", None)
-
-# OGC base URL the shared request builder (:func:`_construct_api_requests`)
-# targets — the main Water Data API or, for NGWMN collections, their own base.
-_ogc_base_url: Ambient[str] = Ambient("ogc_base_url", OGC_API_URL)
-
-# Per-call OGC dialect the request builder reads for CQL2-vs-GET routing and
-# date-only formatting (default: a plain OGC API).
-_dialect: Ambient[OgcDialect] = Ambient("ogc_dialect", DEFAULT_DIALECT)
-
+# Previous private paths remain available while ownership lives in context/schema.
+_row_cap = _context_row_cap
+_check_ogc_requests = _schema_check_ogc_requests
 
 # ---------------------------------------------------------------------------
 # Monitoring location ID validation
@@ -219,18 +190,6 @@ def _construct_cql_request(
         content=cql_body,
         params=params,
     )
-
-
-def _check_ogc_requests(
-    endpoint: str, req_type: str = "queryables"
-) -> tuple[dict[str, Any], httpx.Response]:
-    """Send an HTTP GET request to the OGC endpoint for queryables/schema."""
-    if req_type not in ("queryables", "schema"):
-        raise ValueError(f"req_type must be 'queryables' or 'schema', got {req_type!r}")
-    url = f"{_ogc_base_url.get()}/collections/{endpoint}/{req_type}"
-    resp = _get(url, headers=_default_headers(url), **HTTPX_DEFAULTS)
-    _raise_for_non_200(resp)
-    return cast("dict[str, Any]", resp.json()), resp
 
 
 # ---------------------------------------------------------------------------
