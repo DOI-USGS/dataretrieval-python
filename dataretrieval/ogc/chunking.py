@@ -83,7 +83,7 @@ import httpx
 import pandas as pd
 from anyio.from_thread import start_blocking_portal
 
-from dataretrieval.utils import HTTPX_DEFAULTS, Ambient, _require_positive_int
+from dataretrieval.utils import HTTPX_ASYNC_DEFAULTS, Ambient, _require_positive_int
 
 from . import progress as _progress
 from .combining import (
@@ -600,7 +600,7 @@ class ChunkedCall:
         The semaphore, not the pool, is deliberately the throttle. If the
         pool throttled instead, the excess sub-requests would queue
         *inside* httpx waiting for a connection, and that wait counts
-        against the pool-acquire timeout (60 s, from ``HTTPX_DEFAULTS``).
+        against the pool-acquire timeout (60 s, from ``HTTPX_ASYNC_DEFAULTS``).
         A batch of slow pages that keeps every connection busy past that
         window would then trip ``httpx.PoolTimeout`` on the queued tail —
         a purely client-side failure that consumes the retry budget and
@@ -650,7 +650,7 @@ class ChunkedCall:
             self.plan.total if max_concurrent is None else max_concurrent
         )
 
-        async with httpx.AsyncClient(limits=limits, **HTTPX_DEFAULTS) as client:
+        async with httpx.AsyncClient(limits=limits, **HTTPX_ASYNC_DEFAULTS) as client:
             with _chunked_client(client):
                 reporter = _progress.current()
                 if reporter is not None:

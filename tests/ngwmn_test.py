@@ -106,9 +106,9 @@ def test_state_queryables_still_diverge_upstream():
     import httpx
 
     from dataretrieval.ngwmn import NGWMN_OGC_API_URL
-    from dataretrieval.ogc.engine import _default_headers
+    from dataretrieval.utils import _default_headers
 
-    headers = _default_headers()
+    headers = _default_headers(NGWMN_OGC_API_URL)
 
     def queryables(collection):
         resp = httpx.get(

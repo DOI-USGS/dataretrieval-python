@@ -1,16 +1,17 @@
-"""Water Data API layer over the generic OGC engine.
+"""Water Data API layer over the generic OGC facade.
 
-The API-agnostic OGC machinery (request construction, pagination, response
-shaping, the chunked ``get_ogc_data`` entry point) lives in the
-:mod:`dataretrieval.ogc` package — :mod:`~dataretrieval.ogc.engine` and its
-sibling modules (``dates``, ``errors``, ``shaping``, ``chunking``). This
-module is the Water-Data-specific layer
-on top of it: it supplies the service-to-id map, the CQL2/date-only dialect,
-profile validation, and a thin ``get_ogc_data`` wrapper that injects the
-Water Data defaults. (The statistics path lives in its own
-:mod:`dataretrieval.waterdata.stats` module.) Every engine symbol the Water Data
-getters (``api.py``, ``ratings.py``, ``nearest.py``) and the test suite import
-from here is re-exported below.
+This module is the Water-Data-specific adapter: it supplies the
+service-to-id map, the CQL2/date-only dialect, profile validation, and a
+thin ``get_ogc_data`` wrapper that injects the Water Data defaults. The
+statistics path lives in its own :mod:`dataretrieval.waterdata.stats`
+module.
+
+OGC machinery (request construction, pagination, response shaping, the
+chunked ``get_ogc_data`` entry point) lives in :mod:`dataretrieval.ogc`
+and its implementation submodules. This adapter consumes the public facade
+for dialects, argument normalization, and retrieval; callers that need an OGC
+implementation helper import its canonical module directly rather than using
+this module as a re-export layer.
 """
 
 from __future__ import annotations
@@ -23,56 +24,24 @@ from typing import Any, TypeVar, get_args
 import httpx
 import pandas as pd
 
+import dataretrieval.ogc.dates as _ogc_dates
+import dataretrieval.ogc.shaping as _ogc_shaping
 from dataretrieval.codes.states import apply_state
-from dataretrieval.ogc import engine
-from dataretrieval.ogc.dates import (
-    _DATE_RANGE_PARAMS,
-    _DURATION_RE,
-    _format_api_dates,
-)
-from dataretrieval.ogc.engine import (
-    BASE_URL,
-    OGC_API_URL,
-    OgcDialect,
-    _as_str_list,
-    _check_monitoring_location_id,
-    _check_ogc_requests,
-    _construct_api_requests,
-    _construct_cql_request,
-    _next_req_url,
-    _normalize_str_iterable,
-    _paginate,
-    _row_cap,
-    _run_sync,
-    _switch_properties_id,
-    _walk_pages,
-)
-from dataretrieval.ogc.engine import (
-    _get_args as _engine_get_args,
-)
-from dataretrieval.ogc.errors import (
-    _error_body,
-    _paginated_failure_message,
-    _parse_retry_after,
-    _raise_for_non_200,
-)
-from dataretrieval.ogc.shaping import (
-    GEOPANDAS,
-    _arrange_cols,
-    _deal_with_empty,
-    _get_resp_data,
-    _to_snake_case,
-)
-from dataretrieval.ogc.shaping import (
-    _finalize_ogc as _engine_finalize_ogc,
-)
-from dataretrieval.utils import BaseMetadata, _default_headers
+from dataretrieval.ogc import OgcDialect, prepare_request_args
+from dataretrieval.ogc import get_ogc_data as _facade_get_ogc_data
+from dataretrieval.utils import BaseMetadata
 from dataretrieval.waterdata.types import (
     PROFILE_LOOKUP,
     PROFILES,
     SERVICES,
 )
 
+# ---------------------------------------------------------------------------
+# Water Data endpoint constants (defined locally, not imported from OGC policy)
+# ---------------------------------------------------------------------------
+
+BASE_URL = "https://api.waterdata.usgs.gov"
+OGC_API_URL = f"{BASE_URL}/ogcapi/v0"
 SAMPLES_URL = f"{BASE_URL}/samples-data"
 
 # Maps each OGC waterdata service to its user-facing ``id`` column (the name the
@@ -143,7 +112,7 @@ WATERDATA_DIALECT = OgcDialect(
 #   - ``bbox``/``boundingBox`` are ``list[float]``, sometimes ``numpy.ndarray``
 #   - ``get_peaks``'s int-valued filters (``water_year`` etc.) are ``list[int]``
 #   - ``get_combined_metadata``'s ``thresholds`` is ``list[float]``
-_NO_NORMALIZE_PARAMS = _DATE_RANGE_PARAMS | {
+_NO_NORMALIZE_PARAMS = _ogc_dates._DATE_RANGE_PARAMS | {
     "bbox",
     "boundingBox",
     "water_year",
@@ -175,16 +144,15 @@ def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
 def _get_args(
     local_vars: dict[str, Any], exclude: set[str] | None = None
 ) -> dict[str, Any]:
-    """Water-Data wrapper over :func:`engine._get_args`.
+    """Water-Data wrapper over :func:`~dataretrieval.ogc.prepare_request_args`.
 
     Supplies the Water Data API's extended ``no_normalize`` set (numeric
     params such as ``water_year``, ``thresholds``, ``boundingBox``) so they
-    keep their element types. See :func:`engine._get_args` for the full
-    normalization contract. Also flattens any ``**queryables`` passthrough
+    keep their element types. Also flattens any ``**queryables`` passthrough
     (see :func:`_flatten_queryables`).
     """
     _flatten_queryables(local_vars)
-    return _engine_get_args(local_vars, exclude, no_normalize=_NO_NORMALIZE_PARAMS)
+    return prepare_request_args(local_vars, exclude, no_normalize=_NO_NORMALIZE_PARAMS)
 
 
 def _with_state(local_vars: dict[str, Any], *, to: str, into: str) -> dict[str, Any]:
@@ -216,13 +184,13 @@ def get_ogc_data(
     output_id: str | None = None,
     max_rows: int | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Water-Data wrapper over :func:`engine.get_ogc_data`.
+    """Water-Data wrapper over :func:`~dataretrieval.ogc.get_ogc_data`.
 
     Defaults ``output_id`` from the Water Data service map when not given,
     and supplies the Water Data extra-id columns and dialect, so the typed
     getters in ``api.py`` call this unchanged. (Sibling OGC APIs such as
-    NGWMN call ``engine.get_ogc_data`` directly with their own base URL and
-    dialect rather than going through this Water Data wrapper.)
+    NGWMN call ``dataretrieval.ogc.get_ogc_data`` directly with their own
+    base URL and dialect rather than going through this Water Data wrapper.)
 
     Parameters
     ----------
@@ -248,7 +216,7 @@ def get_ogc_data(
     """
     if output_id is None:
         output_id = _OUTPUT_ID_BY_SERVICE[service]
-    return engine.get_ogc_data(
+    return _facade_get_ogc_data(
         args,
         service,
         output_id,
@@ -277,7 +245,7 @@ def _finalize_ogc(
     :func:`~dataretrieval.ogc.shaping._finalize_ogc` for the full
     result-shaping contract.
     """
-    return _engine_finalize_ogc(
+    return _ogc_shaping._finalize_ogc(
         frame,
         response,
         properties=properties,
@@ -374,40 +342,16 @@ def _accept_legacy_kwargs(
 
 __all__ = [
     "BASE_URL",
-    "GEOPANDAS",
     "OGC_API_URL",
     "SAMPLES_URL",
     "WATERDATA_DIALECT",
-    "_DATE_RANGE_PARAMS",
-    "_DURATION_RE",
     "_EXTRA_ID_COLS",
     "_NO_NORMALIZE_PARAMS",
     "_OUTPUT_ID_BY_SERVICE",
     "_accept_legacy_kwargs",
-    "_arrange_cols",
-    "_as_str_list",
-    "_check_monitoring_location_id",
-    "_check_ogc_requests",
     "_check_profiles",
-    "_construct_api_requests",
-    "_construct_cql_request",
-    "_deal_with_empty",
-    "_default_headers",
-    "_error_body",
     "_finalize_ogc",
-    "_format_api_dates",
     "_get_args",
-    "_get_resp_data",
-    "_next_req_url",
-    "_normalize_str_iterable",
-    "_paginate",
-    "_paginated_failure_message",
-    "_parse_retry_after",
-    "_raise_for_non_200",
-    "_row_cap",
-    "_run_sync",
-    "_switch_properties_id",
-    "_to_snake_case",
-    "_walk_pages",
+    "_with_state",
     "get_ogc_data",
 ]

@@ -8,7 +8,6 @@ import httpx
 import pandas as pd
 import pytest
 
-import dataretrieval.ogc.engine as _engine_module
 import dataretrieval.ogc.shaping as _shaping_module
 import dataretrieval.waterdata.stats as _stats_module
 import dataretrieval.waterdata.utils as _utils_module
@@ -19,24 +18,25 @@ from dataretrieval.exceptions import (
     ServiceUnavailable,
     TransientError,
 )
-from dataretrieval.waterdata import get_stats_date_range, get_stats_por
-from dataretrieval.waterdata.stats import _handle_nesting, get_data
-from dataretrieval.waterdata.utils import (
-    OGC_API_URL,
-    _arrange_cols,
-    _check_ogc_requests,
-    _error_body,
-    _finalize_ogc,
-    _format_api_dates,
-    _get_args,
-    _get_resp_data,
+from dataretrieval.ogc.dates import _format_api_dates
+from dataretrieval.ogc.engine import (
     _next_req_url,
-    _parse_retry_after,
-    _raise_for_non_200,
-    _row_cap,
-    _to_snake_case,
     _walk_pages,
 )
+from dataretrieval.ogc.errors import (
+    _error_body,
+    _parse_retry_after,
+    _raise_for_non_200,
+)
+from dataretrieval.ogc.requests import _check_ogc_requests, _row_cap
+from dataretrieval.ogc.shaping import (
+    _arrange_cols,
+    _get_resp_data,
+    _to_snake_case,
+)
+from dataretrieval.waterdata import get_stats_date_range, get_stats_por
+from dataretrieval.waterdata.stats import _handle_nesting, get_data
+from dataretrieval.waterdata.utils import OGC_API_URL, _finalize_ogc, _get_args
 
 _LOGGER_NAME = _utils_module.__name__
 
@@ -1080,6 +1080,8 @@ def test_get_ogc_data_wrapper_does_not_touch_state():
         captured["args"] = dict(args)
         return pd.DataFrame(), mock.Mock()
 
-    with mock.patch.object(_engine_module, "get_ogc_data", fake_engine_get_ogc_data):
+    with mock.patch.object(
+        _utils_module, "_facade_get_ogc_data", fake_engine_get_ogc_data
+    ):
         _utils_module.get_ogc_data({"state": "WI"}, "monitoring-locations")
     assert captured["args"] == {"state": "WI"}

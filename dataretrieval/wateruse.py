@@ -56,7 +56,7 @@ from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.ogc.combining import _combine_chunk_frames, _combine_chunk_responses
 from dataretrieval.ogc.engine import _paginate, _run_sync
 from dataretrieval.utils import (
-    HTTPX_DEFAULTS,
+    HTTPX_ASYNC_DEFAULTS,
     BaseMetadata,
     _default_headers,
     _raise_for_status,
@@ -224,7 +224,7 @@ def get_wateruse(
     # The NWDC queries one location per request, so fan a multi-value selector
     # out into one request per location, each paginated by the OGC engine's
     # shared pager (``_paginate``), and concatenate the results.
-    headers = _default_headers()
+    headers = _default_headers(WATERUSE_URL)
     requests = [
         httpx.Request(
             "GET",
@@ -349,7 +349,7 @@ async def _fan_out(
     def raise_for_status(response: httpx.Response) -> None:
         _raise_for_status(response, detail_from=_nwdc_error_detail)
 
-    async with httpx.AsyncClient(verify=ssl_check, **HTTPX_DEFAULTS) as client:
+    async with httpx.AsyncClient(verify=ssl_check, **HTTPX_ASYNC_DEFAULTS) as client:
         semaphore = asyncio.Semaphore(max(1, MAX_CONCURRENT_REQUESTS))
 
         async def _one(request: httpx.Request) -> tuple[pd.DataFrame, httpx.Response]:

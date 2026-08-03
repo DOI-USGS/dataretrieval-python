@@ -11,8 +11,8 @@ from dataretrieval.ogc.filters import (
     _quote_cql_str,
     _split_top_level_or,
 )
+from dataretrieval.ogc.requests import _construct_api_requests
 from dataretrieval.waterdata import get_continuous
-from dataretrieval.waterdata.utils import _construct_api_requests
 
 
 def _query_params(prepared_request):

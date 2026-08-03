@@ -12,15 +12,13 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import httpx
 import pandas as pd
 
+from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect
 from dataretrieval.utils import BaseMetadata
-
-if TYPE_CHECKING:
-    from dataretrieval.ogc.engine import OgcDialect
 
 try:
     import geopandas as gpd
@@ -185,11 +183,8 @@ def _deal_with_empty(
     """
     if return_list.empty:
         if not properties or all(pd.isna(properties)):
-            # Lazy import to avoid a cycle: ``_check_ogc_requests`` is a
-            # request-side helper in the engine, which imports this module.
-            # This rare empty-result schema lookup is the only shaping->engine
-            # call (it goes away once requests move to their own module).
-            from dataretrieval.ogc.engine import _check_ogc_requests
+            # Import from requests module (no engine dependency).
+            from dataretrieval.ogc.requests import _check_ogc_requests
 
             schema, _ = _check_ogc_requests(endpoint=service, req_type="schema")
             properties = list(schema.get("properties", {}).keys())
@@ -374,11 +369,7 @@ def _finalize_ogc(
     per-``_paginate`` ``_row_cap`` is only an early-stop download bound.
     """
     if dialect is None:
-        # The default lives in the engine (the dialect type's home); import it
-        # lazily so this module needs no engine import at load time.
-        from dataretrieval.ogc.engine import _DEFAULT_DIALECT
-
-        dialect = _DEFAULT_DIALECT
+        dialect = DEFAULT_DIALECT
     frame = _deal_with_empty(frame, properties, service)
     # Normalize to PEP-8 snake_case column names *first*, so the dialect's
     # ``time_cols``/``numerical_cols``/``sort_cols`` (all snake_case) match

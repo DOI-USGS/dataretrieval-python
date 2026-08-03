@@ -16,11 +16,20 @@ from urllib.parse import quote
 import httpx
 import pandas as pd
 
+from dataretrieval.ogc import fetch_ogc_request
+from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.filters import FILTER_LANG
+from dataretrieval.ogc.requests import (
+    _as_str_list,
+    _check_ogc_requests,
+    _construct_cql_request,
+    _switch_properties_id,
+)
 from dataretrieval.utils import (
     HTTPX_DEFAULTS,
     BaseMetadata,
     _attach_datetime_columns,
+    _default_headers,
     _get,
     to_str,
 )
@@ -34,20 +43,11 @@ from dataretrieval.waterdata.types import (
 )
 from dataretrieval.waterdata.utils import (
     _OUTPUT_ID_BY_SERVICE,
-    GEOPANDAS,
     SAMPLES_URL,
     _accept_legacy_kwargs,
-    _as_str_list,
-    _check_ogc_requests,
     _check_profiles,
-    _construct_cql_request,
-    _default_headers,
     _finalize_ogc,
     _get_args,
-    _raise_for_non_200,
-    _run_sync,
-    _switch_properties_id,
-    _walk_pages,
     _with_state,
     get_ogc_data,
 )
@@ -2433,7 +2433,7 @@ def get_codes(code_service: CODE_SERVICES) -> tuple[pd.DataFrame, BaseMetadata]:
 
     url = f"{SAMPLES_URL}/codeservice/{code_service}?mimeType=application%2Fjson"
 
-    response = _get(url, headers=_default_headers(), **HTTPX_DEFAULTS)
+    response = _get(url, headers=_default_headers(url), **HTTPX_DEFAULTS)
 
     _raise_for_non_200(response)
 
@@ -2461,7 +2461,7 @@ def _get_samples_csv(
         url,
         params=params,
         verify=ssl_check,
-        headers=_default_headers(),
+        headers=_default_headers(url),
         **HTTPX_DEFAULTS,
     )
     _raise_for_non_200(response)
@@ -3427,10 +3427,7 @@ def get_cql(
         skip_geometry=skip_geometry,
     )
 
-    async def _run() -> tuple[pd.DataFrame, httpx.Response]:
-        return await _walk_pages(geopd=GEOPANDAS, req=req)
-
-    df, response = _run_sync(_run, service=service)
+    df, response = fetch_ogc_request(req, service=service)
 
     return _finalize_ogc(
         df,
