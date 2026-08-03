@@ -1,11 +1,11 @@
 """Generic OGC API engine shared by the Water Data and NGWMN getters.
 
-This module holds the API-agnostic core for talking to an OGC API Features
-service — request construction (GET comma-joined or POST/CQL2), async
-pagination, and the chunked fetch entry point :func:`get_ogc_data` that
-orchestrates them. The surrounding concerns live in sibling modules it
-composes, each with its own reason to change:
-:mod:`~dataretrieval.ogc.dates` (time-parameter marshalling),
+This module holds the API-agnostic orchestration core for talking to an OGC
+API Features service — async pagination, the sync bridge, and the chunked
+fetch entry point :func:`get_ogc_data` that orchestrates them. Request
+construction lives in :mod:`~dataretrieval.ogc.requests`. The surrounding
+concerns live in sibling modules it composes, each with its own reason to
+change: :mod:`~dataretrieval.ogc.dates` (time-parameter marshalling),
 :mod:`~dataretrieval.ogc.errors` (HTTP error mapping), and
 :mod:`~dataretrieval.ogc.shaping` (GeoJSON features to DataFrame and result
 finalization). It is deliberately free of any Water-Data-specific constants
@@ -25,38 +25,56 @@ API-specific behavior is supplied by the caller:
 from __future__ import annotations
 
 import functools
-import json
 import logging
-import re
 from collections.abc import (
     AsyncIterator,
     Awaitable,
     Callable,
-    Iterable,
-    Mapping,
 )
 from contextlib import asynccontextmanager
-from dataclasses import dataclass, field
 from typing import Any, TypeVar, cast
 
 import httpx
 import pandas as pd
 from anyio.from_thread import start_blocking_portal
 
+import dataretrieval.ogc.chunking as chunking
+import dataretrieval.ogc.progress as _progress
 from dataretrieval.exceptions import DataRetrievalError
-from dataretrieval.ogc import chunking
-from dataretrieval.ogc import progress as _progress
 from dataretrieval.ogc.chunking import get_active_client
 from dataretrieval.ogc.combining import _QUOTA_HEADER, _merge_response, _safe_elapsed
-from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_api_dates
 from dataretrieval.ogc.errors import _paginated_failure_message, _raise_for_non_200
+from dataretrieval.ogc.policy import (
+    BASE_URL,  # noqa: F401  — compatibility alias
+    DEFAULT_DIALECT,
+    OGC_API_URL,
+    OgcDialect,
+)
+
+# Frozen legacy compatibility surface; tests prevent new request-side re-exports.
+from dataretrieval.ogc.requests import (  # noqa: F401
+    _NO_NORMALIZE_PARAMS,
+    _as_str_list,
+    _check_monitoring_location_id,
+    _check_ogc_requests,
+    _construct_api_requests,
+    _construct_cql_request,
+    _cql2_param,
+    _dialect,
+    _get_args,
+    _normalize_str_iterable,
+    _ogc_base_url,
+    _ogc_query_params,
+    _row_cap,
+    _switch_arg_id,
+    _switch_properties_id,
+    prepare_request_args,
+)
 from dataretrieval.ogc.shaping import GEOPANDAS, _finalize_ogc, _get_resp_data
 from dataretrieval.utils import (
-    HTTPX_DEFAULTS,
-    Ambient,
+    HTTPX_ASYNC_DEFAULTS,
     BaseMetadata,
-    _default_headers,
-    _get,
+    _default_headers,  # noqa: F401  — compatibility re-export for tests
     _network_error,
     _require_positive_int,
 )
@@ -64,415 +82,8 @@ from dataretrieval.utils import (
 # Set up logger for this module
 logger = logging.getLogger(__name__)
 
-BASE_URL = "https://api.waterdata.usgs.gov"
-OGC_API_VERSION = "v0"
-OGC_API_URL = f"{BASE_URL}/ogcapi/{OGC_API_VERSION}"
-
-
-@dataclass(frozen=True)
-class OgcDialect:
-    """Per-API quirks the generic request builder needs to know about.
-
-    Attributes
-    ----------
-    cql2_services : frozenset[str]
-        Collections that don't accept comma-separated multi-value GET
-        parameters and so must be queried via POST with a CQL2 JSON body.
-    date_only_services : frozenset[str]
-        Collections whose time arguments are rendered date-only
-        (``YYYY-MM-DD``) rather than as a full UTC datetime. The
-        ``last_modified`` parameter is always rendered as a full datetime
-        regardless of this set.
-    time_cols : frozenset[str]
-        Result columns to coerce to datetime when ``convert_type`` is set.
-        Empty by default, so the generic engine carries no API-specific
-        column knowledge; each API supplies its own.
-    numerical_cols : frozenset[str]
-        Result columns to coerce to numeric when ``convert_type`` is set.
-    sort_cols : tuple[str, ...]
-        Columns to sort the combined result by, in priority order. Sorting
-        is applied only when the first (primary) column is present; any
-        later columns also present are added as secondary keys.
-    """
-
-    cql2_services: frozenset[str] = field(default_factory=frozenset)
-    date_only_services: frozenset[str] = field(default_factory=frozenset)
-    time_cols: frozenset[str] = field(default_factory=frozenset)
-    numerical_cols: frozenset[str] = field(default_factory=frozenset)
-    sort_cols: tuple[str, ...] = field(default_factory=tuple)
-
-
-# Default dialect: a plain OGC API with no CQL2-only collections and no
-# date-only collections (every time argument rendered as a full UTC datetime).
-_DEFAULT_DIALECT = OgcDialect()
-
-
-def _switch_arg_id(ls: dict[str, Any], id_name: str, service: str) -> dict[str, Any]:
-    """
-    Switch argument id from its package-specific identifier to the standardized "id" key
-    that the API recognizes.
-
-    If `ls` does not already have an "id" key, sets it from either the
-    service-derived id key or the expected id column name. If neither key
-    exists, "id" is left unset. The original service-specific id keys are
-    removed regardless.
-
-    Parameters
-    ----------
-    ls : Dict[str, Any]
-        The dictionary containing identifier keys to be standardized.
-    id_name : str
-        The name of the specific identifier key to look for.
-    service : str
-        The service name.
-
-    Returns
-    -------
-    Dict[str, Any]
-        The modified dictionary with the "id" key set appropriately.
-
-    Examples
-    --------
-    For service "time-series-metadata", the function will look for either
-    "time_series_metadata_id" or "time_series_id" and change the key to simply
-    "id".
-    """
-
-    service_id = service.replace("-", "_") + "_id"
-
-    if "id" not in ls:
-        if service_id in ls:
-            ls["id"] = ls[service_id]
-        elif id_name in ls:
-            ls["id"] = ls[id_name]
-
-    # Remove the original keys regardless of whether they were used
-    ls.pop(service_id, None)
-    ls.pop(id_name, None)
-
-    return ls
-
-
-def _switch_properties_id(
-    properties: list[str] | None, id_name: str, service: str
-) -> list[str]:
-    """
-    Build the wire ``properties`` list, dropping every id alias and
-    ``geometry``.
-
-    The feature ``id`` is always returned and is renamed to the
-    service-specific id column (e.g. ``daily_id``) in post-processing, so
-    it must not be requested as a property: several collections (e.g.
-    ``daily``, ``continuous``) reject ``id`` in ``properties`` with an
-    HTTP 400. ``geometry`` is likewise excluded because it is controlled
-    by ``skip_geometry``. Any service-specific id name (``daily_id``,
-    ``monitoring_location_id``, …) and the bare ``id`` are dropped, and
-    remaining hyphens are normalized to underscores. Returns an empty
-    list when `properties` is empty or None — the URL then omits the
-    ``properties`` filter and the result is shaped by :func:`_arrange_cols`.
-
-    Parameters
-    ----------
-    properties : Optional[List[str]]
-        A list containing the properties or column names to be pulled from the
-        service, or None.
-    id_name : str
-        The service-specific id column name to drop (e.g. ``daily_id``).
-    service : str
-        The service name.
-
-    Returns
-    -------
-    List[str]
-        The wire ``properties`` with id aliases and ``geometry`` removed
-        and hyphens normalized.
-
-    Examples
-    --------
-    For service "daily" with ``properties=["daily_id", "value", "geometry"]``,
-    returns ``["value"]`` — ``daily_id`` and ``geometry`` are dropped, while
-    the ``daily_id`` column still appears in the result, renamed from the
-    always-returned feature ``id``.
-    """
-    if not properties:
-        return []
-    service_id = service.replace("-", "_") + "_id"
-    # The feature ``id`` always comes back (renamed to the service id
-    # downstream) and several collections reject it as a selectable
-    # property; ``geometry`` is controlled by ``skip_geometry``. Drop both,
-    # plus the service-specific id column (``id_name``) and the name derived
-    # straight from the service (``service_id``).
-    drop = {"id", "geometry", id_name, service_id}
-    normalized = (p.replace("-", "_") for p in properties)
-    return [p for p in normalized if p not in drop]
-
-
-def _cql2_param(args: dict[str, Any]) -> str:
-    """
-    Convert query parameters to CQL2 JSON format for POST requests.
-
-    Parameters
-    ----------
-    args : Dict[str, Any]
-        Dictionary of query parameters to convert to CQL2 format.
-
-    Returns
-    -------
-    str
-        Compact JSON string representation of the CQL2 query.
-
-    Notes
-    -----
-    Serialized with the tightest separators (no indentation or
-    whitespace). The body counts against the server's ~8 KB request-size
-    limit and against :func:`planning._request_bytes` when planning
-    chunks, so every saved byte fits more values per POST: compact
-    encoding roughly halves the per-value cost versus pretty-printing,
-    which roughly doubles how many monitoring-location ids fit in one
-    sub-request and so halves the chunk count for large id lists.
-    """
-    query = {
-        "op": "and",
-        "args": [
-            {"op": "in", "args": [{"property": key}, values]}
-            for key, values in args.items()
-        ],
-    }
-    return json.dumps(query, separators=(",", ":"))
-
-
-def _check_ogc_requests(
-    endpoint: str, req_type: str = "queryables"
-) -> tuple[dict[str, Any], httpx.Response]:
-    """
-    Sends an HTTP GET request to the specified OGC endpoint and request type,
-    returning the parsed JSON body alongside the raw response (so a caller
-    that needs response-derived metadata, e.g. :class:`BaseMetadata`, doesn't
-    have to re-issue the request).
-
-    Parameters
-    ----------
-    endpoint : str
-        The OGC collection endpoint to query (e.g. the service/collection id).
-    req_type : str, optional
-        The type of request to make. Must be either "queryables" or "schema"
-        (default is "queryables").
-
-    Returns
-    -------
-    dict
-        The JSON response from the OGC endpoint.
-    httpx.Response
-        The raw response, for callers that need it (URL, elapsed time,
-        headers).
-
-    Raises
-    ------
-    ValueError
-        If req_type is not "queryables" or "schema".
-    DataRetrievalError
-        From :func:`_raise_for_non_200` on any non-200 (the typed subclass for
-        the status) — same typed contract as the main data path so callers can
-        use one ``except`` clause everywhere.
-    """
-    if req_type not in ("queryables", "schema"):
-        raise ValueError(f"req_type must be 'queryables' or 'schema', got {req_type!r}")
-    url = f"{_ogc_base_url.get()}/collections/{endpoint}/{req_type}"
-    resp = _get(url, headers=_default_headers(), **HTTPX_DEFAULTS)
-    _raise_for_non_200(resp)
-    # ``Response.json`` is typed ``Any``; the OGC queryables/schema endpoints
-    # return a JSON object, and callers index it as a dict.
-    return cast("dict[str, Any]", resp.json()), resp
-
-
-def _ogc_query_params(
-    params: dict[str, Any],
-    *,
-    properties: list[str] | None,
-    bbox: list[float] | None,
-    limit: int | None,
-    skip_geometry: bool | None,
-) -> dict[str, Any]:
-    """Add the shared OGC query knobs to ``params`` (mutated in place).
-
-    Factors out the ``skipGeometry``/``limit``/``bbox``/``properties`` block
-    common to every OGC request so the typed getters
-    (:func:`_construct_api_requests`) and the generalized CQL2 path
-    (:func:`_construct_cql_request`) build identical URL parameters.
-
-    ``skip_geometry=None`` leaves ``skipGeometry`` unset (the server defaults to
-    including geometry); the typed getters always pass a bool, so their behavior
-    is unchanged.
-    """
-    if skip_geometry is not None:
-        params["skipGeometry"] = skip_geometry
-    params["limit"] = 50000 if limit is None or limit > 50000 else limit
-    # `len()` instead of truthiness: a numpy ndarray would raise on `if bbox:`.
-    if bbox is not None and len(bbox) > 0:
-        params["bbox"] = ",".join(map(str, bbox))
-    if properties:
-        params["properties"] = ",".join(properties)
-    return params
-
-
-def _construct_api_requests(
-    service: str,
-    properties: list[str] | None = None,
-    bbox: list[float] | None = None,
-    limit: int | None = None,
-    skip_geometry: bool | None = None,
-    **kwargs: Any,
-) -> httpx.Request:
-    """
-    Constructs an HTTP request object for the specified water data API service.
-
-    For most services, list parameters are comma-joined and sent as a single
-    GET request (e.g. ``parameter_code=["00060","00010"]`` becomes
-    ``parameter_code=00060,00010`` in the URL). For services the active dialect
-    flags as CQL2-only (``dialect.cql2_services``, e.g. the Water Data API's
-    ``monitoring-locations``), a POST request with CQL2 JSON is used instead.
-
-    Parameters
-    ----------
-    service : str
-        The name of the API service to query (e.g., "daily").
-    properties : Optional[List[str]], optional
-        List of property names to include in the request.
-    bbox : Optional[List[float]], optional
-        Bounding box coordinates as a list of floats.
-    limit : Optional[int], optional
-        Maximum number of results to return per request.
-    skip_geometry : bool, optional
-        Whether to exclude geometry from the response (default is False).
-    **kwargs
-        Additional query parameters, including date/time filters and other
-        API-specific options.
-
-    Returns
-    -------
-    httpx.Request
-        The constructed HTTP request object ready to be sent.
-
-    Notes
-    -----
-    - Date/time parameters are automatically formatted to ISO8601.
-    """
-    service_url = f"{_ogc_base_url.get()}/collections/{service}/items"
-    dialect = _dialect.get()
-
-    # Format date/time parameters to ISO8601 first — both routing paths need it.
-    for key in _DATE_RANGE_PARAMS:
-        if key in kwargs:
-            kwargs[key] = _format_api_dates(
-                kwargs[key],
-                date=(service in dialect.date_only_services and key != "last_modified"),
-            )
-
-    if service in dialect.cql2_services:
-        # POST with CQL2 JSON: multi-value params go in the request body.
-        # The date-range loop above has already collapsed any _DATE_RANGE_PARAMS
-        # value to a string, so the list/tuple check below cannot match them.
-        post_params = {
-            k: v
-            for k, v in kwargs.items()
-            if isinstance(v, (list, tuple)) and len(v) > 1
-        }
-        params = {k: v for k, v in kwargs.items() if k not in post_params}
-    else:
-        # GET with comma-separated values: join list/tuple values into one string.
-        # Skip empty lists/tuples so they're omitted rather than emitted as a
-        # filterless ``&param=`` (which the server reads as "match empty").
-        post_params = {}
-        params = {
-            k: ",".join(str(x) for x in v) if isinstance(v, (list, tuple)) else v
-            for k, v in kwargs.items()
-            if not (isinstance(v, (list, tuple)) and len(v) == 0)
-        }
-
-    _ogc_query_params(
-        params,
-        properties=properties,
-        bbox=bbox,
-        limit=limit,
-        skip_geometry=skip_geometry,
-    )
-
-    # Translate CQL filter Python names to the hyphenated URL parameter that
-    # the OGC API expects. The Python kwarg is `filter_lang` because hyphens
-    # aren't valid in Python identifiers.
-    if "filter_lang" in params:
-        params["filter-lang"] = params.pop("filter_lang")
-
-    headers = _default_headers()
-
-    if post_params:
-        headers["Content-Type"] = "application/query-cql-json"
-        return httpx.Request(
-            method="POST",
-            url=service_url,
-            headers=headers,
-            content=_cql2_param(post_params),
-            params=params,
-        )
-    return httpx.Request(
-        method="GET",
-        url=service_url,
-        headers=headers,
-        params=params,
-    )
-
-
-def _construct_cql_request(
-    service: str,
-    cql_body: str,
-    *,
-    properties: list[str] | None = None,
-    bbox: list[float] | None = None,
-    limit: int | None = None,
-    skip_geometry: bool | None = None,
-) -> httpx.Request:
-    """Build a POST/CQL2 request from a verbatim CQL2 body.
-
-    The OGC-API counterpart to :func:`_construct_api_requests` for the
-    generalized :func:`~dataretrieval.waterdata.api.get_cql` path: the
-    caller supplies an already-serialized CQL2 JSON document (any predicate the
-    grammar allows), sent unchanged as the request body, while
-    ``properties``/``bbox``/``limit``/``skip_geometry`` go on the URL via the
-    shared :func:`_ogc_query_params` — so a generalized query and an equivalent
-    typed getter produce the same URL parameters.
-
-    Parameters
-    ----------
-    service : str
-        OGC collection name (e.g. ``"daily"``).
-    cql_body : str
-        Serialized CQL2 JSON document, sent as the POST body verbatim.
-    properties, bbox, limit, skip_geometry
-        See :func:`_ogc_query_params`. ``properties`` are wire-format
-        (``id``-translated) names.
-
-    Returns
-    -------
-    httpx.Request
-        A POST request with ``Content-Type: application/query-cql-json``.
-    """
-    service_url = f"{_ogc_base_url.get()}/collections/{service}/items"
-    params = _ogc_query_params(
-        {},
-        properties=properties,
-        bbox=bbox,
-        limit=limit,
-        skip_geometry=skip_geometry,
-    )
-    headers = _default_headers()
-    headers["Content-Type"] = "application/query-cql-json"
-    return httpx.Request(
-        method="POST",
-        url=service_url,
-        headers=headers,
-        content=cql_body,
-        params=params,
-    )
+# Compatibility alias: the old name used internally and in tests.
+_DEFAULT_DIALECT = DEFAULT_DIALECT
 
 
 def _next_req_url(
@@ -584,29 +195,11 @@ async def _client_for(
     if shared is not None:
         yield shared
         return
-    async with httpx.AsyncClient(**HTTPX_DEFAULTS) as new:
+    async with httpx.AsyncClient(**HTTPX_ASYNC_DEFAULTS) as new:
         yield new
 
 
 _Cursor = TypeVar("_Cursor")
-
-# Ambient per-call state the generic chunker would otherwise have to thread
-# through to the deep request builder / paginate loop. Each is read with
-# ``.get()`` and scoped with ``with _x(value):``; the defaults leave every
-# existing getter unaffected. (Mirrors the ``_progress`` ambient-reporter.)
-
-# Optional cap on the rows one paginated call accumulates before it stops
-# following ``next`` links (``None`` = uncapped). Set by :func:`get_reference_table`
-# to preview large tables without downloading every page.
-_row_cap: Ambient[int | None] = Ambient("ogc_row_cap", None)
-
-# OGC base URL the shared request builder (:func:`_construct_api_requests`)
-# targets — the main Water Data API or, for NGWMN collections, their own base.
-_ogc_base_url: Ambient[str] = Ambient("ogc_base_url", OGC_API_URL)
-
-# Per-call OGC dialect the request builder reads for CQL2-vs-GET routing and
-# date-only formatting (default: a plain OGC API).
-_dialect: Ambient[OgcDialect] = Ambient("ogc_dialect", _DEFAULT_DIALECT)
 
 
 async def _paginate(
@@ -988,202 +581,35 @@ def _run_sync(
                 ) from exc
 
 
-# ``AGENCY-ID``: a hyphen-separated agency prefix and local id. The local id
-# may itself contain hyphens (``\S+`` after the first separator) — NGWMN
-# aggregates many non-USGS agencies whose local ids aren't bare digits, so
-# only the agency prefix is constrained to be hyphen/space-free.
-_MONITORING_LOCATION_ID_RE = re.compile(r"[^-\s]+-\S+")
-
-# Default set of iterable-shaped params that ``_get_args`` must NOT push
-# through ``_normalize_str_iterable`` (date-range params may carry
-# ``pd.NaT``/None or interval strings; ``bbox`` is ``list[float]``). Callers
-# with extra numeric params (e.g. the Water Data API's ``water_year``,
-# ``thresholds``) pass their own superset.
-_NO_NORMALIZE_PARAMS = _DATE_RANGE_PARAMS | {"bbox"}
-
-
-def _normalize_str_iterable(
-    value: str | Iterable[str] | None,
-    param_name: str = "value",
-) -> str | list[str] | None:
-    """Validate that ``value`` is None, a string, or an iterable of strings.
-
-    Non-string iterables (``list``, ``tuple``, ``pandas.Series``,
-    ``pandas.Index``, ``numpy.ndarray``, generators) are materialized to a
-    ``list`` so downstream code that branches on ``isinstance(v, (list,
-    tuple))`` keeps working. ``Mapping`` types are rejected because
-    iterating a mapping yields keys, not values.
-
-    Parameters
-    ----------
-    value : None, str, or iterable of str
-    param_name : str, optional
-        Used in error messages. Defaults to ``"value"``.
-
-    Returns
-    -------
-    None, str, or list of str
-
-    Raises
-    ------
-    TypeError
-        If the input isn't ``None``, ``str``, or a non-``Mapping``
-        iterable; or if any iterable element isn't a string.
-    """
-    if value is None:
-        return None
-    if isinstance(value, str):
-        return value
-    if isinstance(value, Mapping) or not isinstance(value, Iterable):
-        raise TypeError(
-            f"{param_name} must be a string or iterable of strings, "
-            f"not {type(value).__name__} (got {value!r})."
-        )
-    values: list[str] = []
-    for v in value:
-        if not isinstance(v, str):
-            raise TypeError(
-                f"{param_name} elements must be strings, "
-                f"not {type(v).__name__} (got {v!r})."
-            )
-        values.append(v)
-    return values
-
-
-def _as_str_list(
-    value: str | Iterable[str] | None,
-    param_name: str = "value",
-) -> list[str] | None:
-    """Normalize ``value`` to ``list[str]`` (``None`` passes through).
-
-    Wraps a bare ``str`` in a single-element list — so a later
-    ``",".join(...)`` doesn't iterate it character-by-character — and
-    materializes any other iterable via :func:`_normalize_str_iterable`.
-    """
-    normalized = _normalize_str_iterable(value, param_name)
-    if isinstance(normalized, str):
-        return [normalized]
-    return normalized
-
-
-def _check_monitoring_location_id(
-    monitoring_location_id: str | Iterable[str] | None,
-) -> str | list[str] | None:
-    """Validate and normalize a ``monitoring_location_id`` value.
-
-    Combines :func:`_normalize_str_iterable` with the AGENCY-ID format
-    check that is unique to ``monitoring_location_id`` (the OGC spec
-    requires a hyphen separator, e.g. ``USGS-01646500``).
-
-    Parameters
-    ----------
-    monitoring_location_id : None, str, or iterable of str
-        See :func:`_normalize_str_iterable`. Each string is additionally
-        required to match the AGENCY-ID hyphen-separated format.
-
-    Returns
-    -------
-    None, str, or list of str
-
-    Raises
-    ------
-    TypeError
-        If the input isn't ``None``, ``str``, or a non-``Mapping``
-        iterable; or if any iterable element isn't a string.
-    ValueError
-        If any identifier doesn't contain a hyphen separator
-        (per the OGC API spec: AGENCY-ID format, e.g. ``USGS-01646500``).
-    """
-    try:
-        value = _normalize_str_iterable(
-            monitoring_location_id, "monitoring_location_id"
-        )
-    except TypeError as exc:
-        # Re-raise with the AGENCY-ID hint the generic helper doesn't carry.
-        raise TypeError(
-            f"{exc} Expected 'AGENCY-ID' format, e.g., 'USGS-01646500'."
-        ) from None
-    if value is None:
-        return None
-    for item in (value,) if isinstance(value, str) else value:
-        if not _MONITORING_LOCATION_ID_RE.fullmatch(item):
-            raise ValueError(
-                f"Invalid monitoring_location_id: {item!r}. "
-                f"Expected 'AGENCY-ID' format, e.g., 'USGS-01646500'."
-            )
-    return value
-
-
-def _get_args(
-    local_vars: dict[str, Any],
-    exclude: set[str] | None = None,
+def fetch_ogc_request(
+    request: httpx.Request,
     *,
-    no_normalize: frozenset[str] | set[str] = _NO_NORMALIZE_PARAMS,
-) -> dict[str, Any]:
-    """
-    Build the API-request kwargs dict from a getter's ``locals()``.
+    service: str,
+) -> tuple[pd.DataFrame, httpx.Response]:
+    """Execute a prepared OGC request with pagination, returning (df, response).
 
-    Drops bookkeeping keys (``service``, ``output_id``, anything in
-    ``exclude``) and ``None``-valued kwargs, then normalizes the
-    remaining values:
-
-    - ``monitoring_location_id`` is validated against the AGENCY-ID
-      format (per :func:`_check_monitoring_location_id`).
-    - ``properties`` is materialized to ``list[str]`` (a bare string
-      gets wrapped in a single-element list so downstream
-      ``",".join(properties)`` doesn't iterate per character).
-    - A non-string iterable in ``no_normalize`` (numeric params
-      such as ``water_year``, ``bbox``, ``thresholds``) is materialized
-      to a ``list`` with its element types preserved (no string
-      normalization), so the GET comma-join and the chunker — which test
-      ``list``/``tuple`` — handle it instead of ``str()``-ing the whole
-      array.
-    - Any other ``Iterable[str]`` (i.e. not in ``no_normalize``)
-      is materialized to ``list[str]`` via
-      :func:`_normalize_str_iterable` so downstream code that branches
-      on ``isinstance(v, (list, tuple))`` works for ``pandas.Series``,
-      ``numpy.ndarray``, generators, etc.
-    - Scalars and strings pass through unchanged.
+    This is the facade-level entry point for generalized CQL requests: the
+    caller builds its own :class:`httpx.Request` (e.g. via
+    :func:`~dataretrieval.ogc.requests._construct_cql_request`) and hands it
+    here. Pagination, progress reporting, and error handling are identical to
+    the typed getters' path through :func:`_walk_pages`.
 
     Parameters
     ----------
-    local_vars : dict[str, Any]
-        Dictionary of local variables, typically from ``locals()``.
-    exclude : set[str], optional
-        Additional keys to exclude from the resulting dictionary.
-    no_normalize : set[str], optional
-        Iterable-shaped params whose element types must be preserved
-        (no string normalization). Defaults to the generic date-range +
-        ``bbox`` set; callers with extra numeric params pass a superset.
+    request : httpx.Request
+        A fully-constructed OGC API request (typically a POST/CQL2).
+    service : str
+        Collection name, used only for progress-context labelling.
 
     Returns
     -------
-    dict[str, Any]
-        Filtered and normalized arguments for API requests.
+    pd.DataFrame
+        Concatenated page results.
+    httpx.Response
+        Aggregated response metadata.
     """
-    to_exclude = {"service", "output_id"}
-    if exclude:
-        to_exclude.update(exclude)
 
-    args: dict[str, Any] = {}
-    for k, v in local_vars.items():
-        if k in to_exclude or v is None:
-            continue
-        if k == "monitoring_location_id":
-            args[k] = _check_monitoring_location_id(v)
-        elif k == "properties":
-            args[k] = _as_str_list(v, k)
-        elif k in no_normalize and isinstance(v, Iterable) and not isinstance(v, str):
-            # Numeric params (water_year, bbox, thresholds, …) keep their
-            # element types — no string-normalization — but a non-string
-            # iterable (numpy array, pandas Series, generator) is materialized
-            # to a list so the GET comma-join and the chunker, which test
-            # ``list``/``tuple``, handle it instead of str()-ing the whole
-            # array. ``.tolist()`` yields native int/float; ``list()`` covers
-            # generators and other iterables. Scalars/strings fall through.
-            args[k] = v.tolist() if hasattr(v, "tolist") else list(v)
-        elif isinstance(v, str) or not isinstance(v, Iterable):
-            args[k] = v
-        else:
-            args[k] = _normalize_str_iterable(v, k)
-    return args
+    async def _coro() -> tuple[pd.DataFrame, httpx.Response]:
+        return await _walk_pages(geopd=GEOPANDAS, req=request)
+
+    return _run_sync(_coro, service=service)

@@ -17,7 +17,6 @@ import httpx
 import pandas as pd
 
 from dataretrieval.ogc.engine import (
-    BASE_URL,
     _paginate,
     _run_sync,
 )
@@ -28,6 +27,7 @@ from dataretrieval.ogc.shaping import (
     _empty_feature_frame,
 )
 from dataretrieval.utils import BaseMetadata, _default_headers
+from dataretrieval.waterdata.utils import BASE_URL
 
 # ``_handle_nesting``'s geopandas branch calls ``gpd.GeoDataFrame.from_features``
 # directly, so this module needs its own bound ``gpd`` name. Import it under the
@@ -261,7 +261,7 @@ def get_data(
     req = httpx.Request(
         method="GET",
         url=url,
-        headers=_default_headers(),
+        headers=_default_headers(url),
         params=args,
     )
     method = req.method

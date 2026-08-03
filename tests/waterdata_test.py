@@ -8,6 +8,12 @@ import pytest
 from pandas import DataFrame
 
 from dataretrieval.ogc.engine import _dialect
+from dataretrieval.ogc.requests import (
+    _check_monitoring_location_id,
+    _construct_api_requests,
+    _construct_cql_request,
+    _normalize_str_iterable,
+)
 from dataretrieval.waterdata import (
     get_channel,
     get_combined_metadata,
@@ -29,12 +35,8 @@ from dataretrieval.waterdata import (
 )
 from dataretrieval.waterdata.utils import (
     WATERDATA_DIALECT,
-    _check_monitoring_location_id,
     _check_profiles,
-    _construct_api_requests,
-    _construct_cql_request,
     _get_args,
-    _normalize_str_iterable,
 )
 from tests.conftest import flaky_api
 

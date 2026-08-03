@@ -18,16 +18,38 @@ _SERVICE_PREFIXES = (
     "dataretrieval.wqp",
 )
 
-# These top-level modules currently reach into OGC. NGWMN is an OGC adapter;
-# Water Use's imports are an accepted temporary variance under ADR 0003. This
-# allowlist is the authoritative exact inventory; the ADR owns the policy and
-# rationale. Exact equality makes either growth or removal intentional.
+# These top-level modules currently reach into OGC. NGWMN is an OGC adapter
+# that uses the small facade (``dataretrieval.ogc``) exclusively. Water Use's
+# imports are an accepted temporary variance under ADR 0003. This allowlist is
+# the authoritative exact inventory; the ADR owns the policy and rationale.
+# Exact equality makes either growth or removal intentional.
 _ALLOWED_TOP_LEVEL_OGC_IMPORTS = {
-    "dataretrieval.ngwmn": {"dataretrieval.ogc.engine"},
+    "dataretrieval.ngwmn": {
+        "dataretrieval.ogc",
+    },
     "dataretrieval.wateruse": {
         "dataretrieval.ogc.combining",
         "dataretrieval.ogc.engine",
     },
+}
+
+_ENGINE_REQUEST_IMPORTS = {
+    "_NO_NORMALIZE_PARAMS",
+    "_as_str_list",
+    "_check_monitoring_location_id",
+    "_check_ogc_requests",
+    "_construct_api_requests",
+    "_construct_cql_request",
+    "_cql2_param",
+    "_dialect",
+    "_get_args",
+    "_normalize_str_iterable",
+    "_ogc_base_url",
+    "_ogc_query_params",
+    "_row_cap",
+    "_switch_arg_id",
+    "_switch_properties_id",
+    "prepare_request_args",
 }
 
 
@@ -165,4 +187,179 @@ def test_top_level_ogc_consumers_match_documented_variances() -> None:
         "Update the code and allowlist; supersede ADR 0003 if the dependency "
         "policy changes.\n"
         f"expected={_ALLOWED_TOP_LEVEL_OGC_IMPORTS!r}\nobserved={observed!r}"
+    )
+
+
+def test_engine_request_import_surface_is_frozen() -> None:
+    """Engine may preserve legacy request names but may not grow a new hub."""
+    path = PACKAGE_ROOT / "ogc" / "engine.py"
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    imported = {
+        alias.name
+        for node in tree.body
+        if isinstance(node, ast.ImportFrom)
+        and node.module == "dataretrieval.ogc.requests"
+        for alias in node.names
+    }
+    assert imported == _ENGINE_REQUEST_IMPORTS, (
+        "ogc.engine request imports changed; use the canonical requests module "
+        "instead of expanding compatibility exports.\n"
+        f"expected={sorted(_ENGINE_REQUEST_IMPORTS)}\nobserved={sorted(imported)}"
+    )
+
+
+# --- Strengthened OGC boundary tests ---
+
+
+def test_ogc_runtime_graph_is_acyclic() -> None:
+    """The OGC runtime import graph (including the facade) has no cycles.
+
+    Now that no implementation module imports ``dataretrieval.ogc`` (the facade
+    ``__init__.py``), the full OGC graph — facade included — forms a DAG.
+    This is enforced without any documented exclusion.
+    """
+    ogc_modules: dict[str, set[str]] = {}
+    for module, imports in _package_import_graph().items():
+        if module == "dataretrieval.ogc" or module.startswith("dataretrieval.ogc."):
+            # Filter to intra-OGC dependencies
+            ogc_deps = {
+                dep
+                for dep in imports
+                if dep == "dataretrieval.ogc" or dep.startswith("dataretrieval.ogc.")
+            }
+            ogc_modules[module] = ogc_deps
+
+    # DFS cycle detection
+    WHITE, GRAY, BLACK = 0, 1, 2
+    color: dict[str, int] = {m: WHITE for m in ogc_modules}
+    path: list[str] = []
+
+    def dfs(node: str) -> list[str] | None:
+        color[node] = GRAY
+        path.append(node)
+        for dep in ogc_modules.get(node, set()):
+            if dep not in color:
+                continue
+            if color[dep] == GRAY:
+                cycle_start = path.index(dep)
+                return path[cycle_start:] + [dep]
+            if color[dep] == WHITE:
+                result = dfs(dep)
+                if result:
+                    return result
+        path.pop()
+        color[node] = BLACK
+        return None
+
+    for module in ogc_modules:
+        if color[module] == WHITE:
+            cycle = dfs(module)
+            if cycle:
+                raise AssertionError(
+                    f"Cycle in OGC runtime graph: {' -> '.join(cycle)}"
+                )
+
+
+def test_shaping_has_no_engine_dependency() -> None:
+    """ogc.shaping must not import ogc.engine, even lazily."""
+    shaping_imports = _runtime_imports(PACKAGE_ROOT / "ogc" / "shaping.py")
+    engine_deps = {dep for dep in shaping_imports if dep == "dataretrieval.ogc.engine"}
+    assert not engine_deps, (
+        f"ogc.shaping must not depend on ogc.engine. Found: {engine_deps}"
+    )
+
+
+def test_ngwmn_uses_ogc_facade() -> None:
+    """NGWMN must use ONLY the ogc facade, not engine or other internals."""
+    ngwmn_imports = _runtime_imports(PACKAGE_ROOT / "ngwmn.py")
+    ogc_deps = {
+        dep
+        for dep in ngwmn_imports
+        if dep == "dataretrieval.ogc" or dep.startswith("dataretrieval.ogc.")
+    }
+    # Exact equality: the ONLY OGC dependency is the facade package itself.
+    assert ogc_deps == {"dataretrieval.ogc"}, (
+        "NGWMN must use ONLY the OGC facade (dataretrieval.ogc), not internals. "
+        f"Found: {ogc_deps}"
+    )
+
+
+def test_waterdata_utils_is_not_an_ogc_reexport_hub() -> None:
+    """Water Data policy wrappers may not bulk re-export OGC internals."""
+    path = PACKAGE_ROOT / "waterdata" / "utils.py"
+    ogc_deps = {
+        dependency
+        for dependency in _runtime_imports(path)
+        if dependency == "dataretrieval.ogc"
+        or dependency.startswith("dataretrieval.ogc.")
+    }
+    assert ogc_deps == {
+        "dataretrieval.ogc",
+        "dataretrieval.ogc.dates",
+        "dataretrieval.ogc.shaping",
+    }, f"Water Data utils crossed its intended OGC seam: {ogc_deps}"
+
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    exports: set[str] | None = None
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        if any(
+            isinstance(target, ast.Name) and target.id == "__all__"
+            for target in node.targets
+        ):
+            exports = set(ast.literal_eval(node.value))
+            break
+    assert exports is not None, "waterdata.utils must declare its intentional exports"
+
+    old_reexports = {
+        "GEOPANDAS",
+        "_as_str_list",
+        "_check_monitoring_location_id",
+        "_check_ogc_requests",
+        "_construct_api_requests",
+        "_construct_cql_request",
+        "_default_headers",
+        "_format_api_dates",
+        "_paginate",
+        "_raise_for_non_200",
+        "_run_sync",
+        "_switch_properties_id",
+        "_walk_pages",
+        "fetch_ogc_request",
+    }
+    assert exports.isdisjoint(old_reexports), (
+        "waterdata.utils regained private OGC re-exports: "
+        f"{sorted(exports & old_reexports)}"
+    )
+
+
+def test_default_header_calls_are_target_scoped() -> None:
+    """Every production header construction must name the destination URL."""
+    violations: list[str] = []
+    for path in sorted(PACKAGE_ROOT.rglob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            function_name = (
+                node.func.id
+                if isinstance(node.func, ast.Name)
+                else node.func.attr
+                if isinstance(node.func, ast.Attribute)
+                else None
+            )
+            if function_name != "_default_headers":
+                continue
+            has_target = bool(node.args) or any(
+                keyword.arg == "target_url" for keyword in node.keywords
+            )
+            if not has_target:
+                violations.append(
+                    f"{path.relative_to(PACKAGE_ROOT.parent)}:{node.lineno}"
+                )
+
+    assert not violations, (
+        "_default_headers calls without destination URL context:\n"
+        + "\n".join(violations)
     )

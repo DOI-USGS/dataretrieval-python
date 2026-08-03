@@ -39,6 +39,7 @@ from dataretrieval.exceptions import (
     Unchunkable,
 )
 from dataretrieval.ogc import chunking as _chunking
+from dataretrieval.ogc import engine as _engine
 from dataretrieval.ogc import retry as _retry_mod
 from dataretrieval.ogc.chunking import (
     ChunkedCall,
@@ -53,6 +54,7 @@ from dataretrieval.ogc.combining import (
     _combine_chunk_frames,
     _combine_chunk_responses,
 )
+from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS
 from dataretrieval.ogc.interruptions import (
     ChunkInterrupted,
     QuotaExhausted,
@@ -67,6 +69,7 @@ from dataretrieval.ogc.planning import (
     _request_bytes,
     _safe_request_bytes,
 )
+from dataretrieval.ogc.requests import _construct_api_requests
 from dataretrieval.ogc.retry import (
     _RETRIES_DEFAULT,
     RetryPolicy,
@@ -74,8 +77,6 @@ from dataretrieval.ogc.retry import (
     _retryable,
 )
 from dataretrieval.utils import HTTPX_DEFAULTS
-from dataretrieval.waterdata import utils as _utils
-from dataretrieval.waterdata.utils import _DATE_RANGE_PARAMS, _construct_api_requests
 
 
 def _aiozero(_d):
@@ -1102,7 +1103,7 @@ def test_paginate_terminates_on_empty_string_cursor():
     req.content = b""
     req.url = "https://example.com/items?limit=1"
 
-    df, _ = asyncio.run(_utils._walk_pages(geopd=False, req=req, client=client))
+    df, _ = asyncio.run(_engine._walk_pages(geopd=False, req=req, client=client))
 
     # Single send + zero follow-ups: the loop terminated on the empty cursor.
     assert client.send.called

@@ -10,12 +10,13 @@ import warnings
 from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _pkg_version
 from typing import Any, Generic, TypeVar
 
 import httpx
 import pandas as pd
 
-import dataretrieval
 from dataretrieval.codes import tz
 from dataretrieval.exceptions import (
     NetworkError,
@@ -23,6 +24,11 @@ from dataretrieval.exceptions import (
     URLTooLong,
     error_for_status,
 )
+
+try:
+    _PACKAGE_VERSION = _pkg_version("dataretrieval")
+except PackageNotFoundError:
+    _PACKAGE_VERSION = "version-unknown"
 
 # Typed as ``dict[str, Any]`` (not the inferred ``dict[str, object]``) so that
 # splatting it as ``**HTTPX_DEFAULTS`` into ``httpx.get`` / ``httpx.AsyncClient``
@@ -97,33 +103,73 @@ def _require_positive_int(
         raise ValueError(f"{name} must be a positive integer{eg} (got {value!r}).")
 
 
-def _default_headers() -> dict[str, str]:
+# The single authorized host for the API key. The key is a USGS personal
+# access token issued for the Water Data API and must never be forwarded to
+# non-USGS hosts, lookalikes, or external endpoints (including STAC rating
+# asset downloads).
+_AUTHORIZED_API_KEY_HOST = "api.waterdata.usgs.gov"
+
+
+def _default_headers(target_url: str | httpx.URL | None = None) -> dict[str, str]:
     """Build the default HTTP headers for a USGS web-API request.
 
     Always sets a descriptive ``User-Agent`` plus ``Accept`` /
     ``Accept-Encoding`` and ``lang``. If the ``API_USGS_PAT`` environment
-    variable is set, its value is added as the ``X-Api-Key`` header — a USGS
-    personal access token raises the request rate limit.
+    variable is set AND ``target_url`` points to the explicitly authorized
+    Water Data host (``api.waterdata.usgs.gov``), its value is added as the
+    ``X-Api-Key`` header. The key is never sent to other hosts.
 
-    Shared by the OGC engine (:mod:`dataretrieval.ogc`), the Water Data getters
-    (:mod:`dataretrieval.waterdata`), and :mod:`dataretrieval.wateruse`, so the
-    request identity is consistent across every USGS API the package talks to.
+    Parameters
+    ----------
+    target_url : str or httpx.URL or None
+        The URL the request will be sent to. When provided, the API key is
+        included only if the host matches the authorized Water Data host.
+        When ``None`` (legacy callers), the key is NOT included — callers
+        must pass the concrete URL.
 
     Returns
     -------
     dict[str, str]
-        Headers suitable for an ``httpx`` request against a USGS API.
+        Headers suitable for an ``httpx`` request.
     """
     headers = {
         "Accept-Encoding": "compress, gzip",
         "Accept": "application/json",
-        "User-Agent": f"python-dataretrieval/{dataretrieval.__version__}",
+        "User-Agent": f"python-dataretrieval/{_PACKAGE_VERSION}",
         "lang": "en-US",
     }
     token = os.getenv("API_USGS_PAT")
-    if token:
-        headers["X-Api-Key"] = token
+    if token and target_url is not None:
+        try:
+            host = httpx.URL(str(target_url)).host
+        except (httpx.InvalidURL, TypeError):
+            host = None
+        if host == _AUTHORIZED_API_KEY_HOST:
+            headers["X-Api-Key"] = token
     return headers
+
+
+def _strip_api_key_from_untrusted_host(request: httpx.Request) -> None:
+    """Remove Water Data credentials from any request to another host.
+
+    HTTPX retains arbitrary custom headers across cross-origin redirects. This
+    hook runs for the initial request and every redirect, making host scoping an
+    execution-time invariant rather than relying only on initial header
+    construction.
+    """
+    if request.url.host != _AUTHORIZED_API_KEY_HOST:
+        request.headers.pop("X-Api-Key", None)
+
+
+async def _strip_api_key_from_untrusted_host_async(request: httpx.Request) -> None:
+    """Async-client form of :func:`_strip_api_key_from_untrusted_host`."""
+    _strip_api_key_from_untrusted_host(request)
+
+
+HTTPX_ASYNC_DEFAULTS: dict[str, Any] = {
+    **HTTPX_DEFAULTS,
+    "event_hooks": {"request": [_strip_api_key_from_untrusted_host_async]},
+}
 
 
 def to_str(listlike: object, delimiter: str = ",") -> str | None:
@@ -391,11 +437,21 @@ def _network_error(url: str | httpx.URL, exc: httpx.TransportError) -> NetworkEr
 
 
 def _get(url: str | httpx.URL, **kwargs: Any) -> httpx.Response:
-    """``httpx.get`` for the single-shot paths, surfacing a transport failure as
-    a typed :class:`~dataretrieval.exceptions.NetworkError` (the chunker wraps its
-    own as resumable interruptions, so it stays off this wrapper)."""
+    """Issue one guarded synchronous GET and map transport failures.
+
+    A short-lived client supplies a request hook for both the initial request
+    and every redirect. The hook removes ``X-Api-Key`` unless the destination
+    host is the authorized Water Data API host.
+    """
+    client_options: dict[str, Any] = {
+        key: kwargs.pop(key)
+        for key in ("follow_redirects", "timeout", "transport", "verify")
+        if key in kwargs
+    }
+    client_options["event_hooks"] = {"request": [_strip_api_key_from_untrusted_host]}
     try:
-        return httpx.get(url, **kwargs)
+        with httpx.Client(**client_options) as client:
+            return client.get(url, **kwargs)
     except httpx.TransportError as exc:
         raise _network_error(url, exc) from exc
 
@@ -479,7 +535,7 @@ def query(
     # Drop them. (``to_str`` returns None for non-iterable scalars like bools.)
     payload = {k: v for k, v in payload.items() if v is not None}
 
-    user_agent = {"user-agent": f"python-dataretrieval/{dataretrieval.__version__}"}
+    user_agent = {"user-agent": f"python-dataretrieval/{_PACKAGE_VERSION}"}
 
     try:
         response = _get(

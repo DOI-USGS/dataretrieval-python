@@ -19,8 +19,8 @@ from dataclasses import dataclass
 import httpx
 import pandas as pd
 
+import dataretrieval.ogc.progress as _progress
 from dataretrieval.exceptions import RateLimited, TransientError
-from dataretrieval.ogc import progress as _progress
 from dataretrieval.ogc.interruptions import (
     ChunkInterrupted,
     QuotaExhausted,

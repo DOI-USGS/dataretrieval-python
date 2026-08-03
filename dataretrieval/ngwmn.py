@@ -3,8 +3,8 @@
 The NGWMN exposes its data through a dedicated OGC API
 (``https://api.waterdata.usgs.gov/ngwmn/ogcapi``) with five collections:
 ``sites``, ``waterLevelObs``, ``lithologyObs``, ``constructionObs``, and
-``providers``. Each getter below delegates to the shared OGC engine
-(:func:`~dataretrieval.ogc.engine.get_ogc_data`) with
+``providers``. Each getter below delegates to the shared OGC facade
+(:func:`~dataretrieval.ogc.get_ogc_data`) with
 ``base_url=NGWMN_OGC_API_URL``, so multi-value chunking, pagination,
 retry/resume, and result shaping all behave exactly as they do for the main
 Water Data getters.
@@ -24,8 +24,11 @@ from typing import Any
 import pandas as pd
 
 from dataretrieval.codes.states import apply_state
-from dataretrieval.ogc.engine import BASE_URL, OgcDialect, _get_args, get_ogc_data
+from dataretrieval.ogc import OgcDialect, get_ogc_data, prepare_request_args
 from dataretrieval.utils import BaseMetadata
+
+# The Water Data API base URL, defined locally to avoid importing policy internals.
+BASE_URL = "https://api.waterdata.usgs.gov"
 
 # The National Ground-Water Monitoring Network exposes its own OGC API at a
 # separate, unversioned base.
@@ -72,7 +75,7 @@ NGWMN_DIALECT = OgcDialect(
 
 
 def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Marshal a getter's arguments and dispatch to the shared OGC engine.
+    """Marshal a getter's arguments and dispatch to the shared OGC facade.
 
     Every NGWMN getter ends with this same call; centralizing it keeps the
     NGWMN base URL, output id, and dialect wired up in exactly one place.
@@ -80,7 +83,7 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
     queryable = _STATE_QUERYABLE.get(service)
     if queryable is not None:
         apply_state(local_vars, to=queryable["to"], into=queryable["into"])
-    args = _get_args(local_vars)
+    args = prepare_request_args(local_vars)
     return get_ogc_data(
         args,
         service,

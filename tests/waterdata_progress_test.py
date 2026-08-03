@@ -19,13 +19,13 @@ import pytest
 
 from dataretrieval.ogc import progress as _progress
 from dataretrieval.ogc.chunking import ChunkedCall
+from dataretrieval.ogc.engine import _paginate, _walk_pages
 from dataretrieval.ogc.planning import ChunkPlan
 from dataretrieval.ogc.progress import (
     ProgressReporter,
     current,
     progress_context,
 )
-from dataretrieval.waterdata.utils import _paginate, _walk_pages
 
 
 def _run_walk_pages(*, geopd, req, client):

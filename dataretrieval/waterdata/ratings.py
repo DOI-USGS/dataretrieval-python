@@ -18,18 +18,14 @@ import httpx
 import pandas as pd
 
 from dataretrieval.exceptions import DataRetrievalError
+from dataretrieval.ogc.dates import _DURATION_RE, _format_api_dates
+from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.filters import _quote_cql_str
+from dataretrieval.ogc.requests import _check_monitoring_location_id
 from dataretrieval.rdb import extract_rdb_comment, read_rdb
-from dataretrieval.utils import HTTPX_DEFAULTS, _get
+from dataretrieval.utils import HTTPX_DEFAULTS, _default_headers, _get
 
-from .utils import (
-    _DURATION_RE,
-    BASE_URL,
-    _check_monitoring_location_id,
-    _default_headers,
-    _format_api_dates,
-    _raise_for_non_200,
-)
+from .utils import BASE_URL
 
 logger = logging.getLogger(__name__)
 
@@ -255,7 +251,7 @@ def _search(
         response = _get(
             url,
             params=params,
-            headers=_default_headers(),
+            headers=_default_headers(url),
             verify=ssl_check,
             **HTTPX_DEFAULTS,
         )
@@ -280,7 +276,9 @@ def _download_and_parse(
 ) -> pd.DataFrame:
     """Fetch the feature's data asset, parse RDB, optionally persist to disk."""
     url = feature["assets"]["data"]["href"]
-    response = _get(url, headers=_default_headers(), verify=ssl_check, **HTTPX_DEFAULTS)
+    response = _get(
+        url, headers=_default_headers(url), verify=ssl_check, **HTTPX_DEFAULTS
+    )
     _raise_for_non_200(response)
 
     if file_path is not None:

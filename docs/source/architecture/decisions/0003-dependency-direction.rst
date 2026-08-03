@@ -47,6 +47,11 @@ that hold today. Its allowlist is the authoritative inventory of exact temporary
 cross-boundary imports; this ADR owns the direction and rationale rather than a
 second copy of that mutable inventory.
 
-The allowlist should shrink as private seams move. Any growth requires explicit
-architecture review, and a change to the dependency policy requires this ADR to
-be superseded.
+Focused fitness functions verify the current boundaries: NGWMN's only OGC
+dependency is the facade, ``waterdata.utils`` does not bulk re-export private
+OGC helpers, ``ogc.shaping`` does not depend on ``ogc.engine``, and the full OGC
+runtime graph is acyclic.
+
+The exact allowlist should shrink as private seams move. Any growth requires
+explicit architecture review, and a change to the dependency policy requires
+this ADR to be superseded.
