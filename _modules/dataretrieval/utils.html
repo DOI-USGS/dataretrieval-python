@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g44f2aeec7 documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+gec88cec7a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=b16bba99"></script>
+      <script src="../../_static/documentation_options.js?v=f9586215"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -87,12 +87,13 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextvars</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContextVar</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">importlib.metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">PackageNotFoundError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">importlib.metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">version</span> <span class="k">as</span> <span class="n">_pkg_version</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TypeVar</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.codes</span><span class="w"> </span><span class="kn">import</span> <span class="n">tz</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">NetworkError</span><span class="p">,</span>
@@ -100,6 +101,11 @@
     <span class="n">URLTooLong</span><span class="p">,</span>
     <span class="n">error_for_status</span><span class="p">,</span>
 <span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">_PACKAGE_VERSION</span> <span class="o">=</span> <span class="n">_pkg_version</span><span class="p">(</span><span class="s2">&quot;dataretrieval&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">PackageNotFoundError</span><span class="p">:</span>
+    <span class="n">_PACKAGE_VERSION</span> <span class="o">=</span> <span class="s2">&quot;version-unknown&quot;</span>
 
 <span class="c1"># Typed as ``dict[str, Any]`` (not the inferred ``dict[str, object]``) so that</span>
 <span class="c1"># splatting it as ``**HTTPX_DEFAULTS`` into ``httpx.get`` / ``httpx.AsyncClient``</span>
@@ -189,36 +195,82 @@
 
 
 
+<span class="c1"># The single authorized host for the API key. The key is a USGS personal</span>
+<span class="c1"># access token issued for the Water Data API and must never be forwarded to</span>
+<span class="c1"># non-USGS hosts, lookalikes, or external endpoints (including STAC rating</span>
+<span class="c1"># asset downloads).</span>
+<span class="n">_AUTHORIZED_API_KEY_HOST</span> <span class="o">=</span> <span class="s2">&quot;api.waterdata.usgs.gov&quot;</span>
+
+
 <div class="viewcode-block" id="_default_headers">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils._default_headers">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">_default_headers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_default_headers</span><span class="p">(</span><span class="n">target_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">httpx</span><span class="o">.</span><span class="n">URL</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Build the default HTTP headers for a USGS web-API request.</span>
 
 <span class="sd">    Always sets a descriptive ``User-Agent`` plus ``Accept`` /</span>
 <span class="sd">    ``Accept-Encoding`` and ``lang``. If the ``API_USGS_PAT`` environment</span>
-<span class="sd">    variable is set, its value is added as the ``X-Api-Key`` header — a USGS</span>
-<span class="sd">    personal access token raises the request rate limit.</span>
+<span class="sd">    variable is set AND ``target_url`` points to the explicitly authorized</span>
+<span class="sd">    Water Data host (``api.waterdata.usgs.gov``), its value is added as the</span>
+<span class="sd">    ``X-Api-Key`` header. The key is never sent to other hosts.</span>
 
-<span class="sd">    Shared by the OGC engine (:mod:`dataretrieval.ogc`), the Water Data getters</span>
-<span class="sd">    (:mod:`dataretrieval.waterdata`), and :mod:`dataretrieval.wateruse`, so the</span>
-<span class="sd">    request identity is consistent across every USGS API the package talks to.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    target_url : str or httpx.URL or None</span>
+<span class="sd">        The URL the request will be sent to. When provided, the API key is</span>
+<span class="sd">        included only if the host matches the authorized Water Data host.</span>
+<span class="sd">        When ``None`` (legacy callers), the key is NOT included — callers</span>
+<span class="sd">        must pass the concrete URL.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    dict[str, str]</span>
-<span class="sd">        Headers suitable for an ``httpx`` request against a USGS API.</span>
+<span class="sd">        Headers suitable for an ``httpx`` request.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;Accept-Encoding&quot;</span><span class="p">:</span> <span class="s2">&quot;compress, gzip&quot;</span><span class="p">,</span>
         <span class="s2">&quot;Accept&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;python-dataretrieval/</span><span class="si">{</span><span class="n">dataretrieval</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;python-dataretrieval/</span><span class="si">{</span><span class="n">_PACKAGE_VERSION</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
         <span class="s2">&quot;lang&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="n">token</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;API_USGS_PAT&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">token</span><span class="p">:</span>
-        <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;X-Api-Key&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">token</span>
+    <span class="k">if</span> <span class="n">token</span> <span class="ow">and</span> <span class="n">target_url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">host</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">URL</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">target_url</span><span class="p">))</span><span class="o">.</span><span class="n">host</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">httpx</span><span class="o">.</span><span class="n">InvalidURL</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+            <span class="n">host</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">host</span> <span class="o">==</span> <span class="n">_AUTHORIZED_API_KEY_HOST</span><span class="p">:</span>
+            <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;X-Api-Key&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">token</span>
     <span class="k">return</span> <span class="n">headers</span></div>
 
+
+
+<div class="viewcode-block" id="_strip_api_key_from_untrusted_host">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils._strip_api_key_from_untrusted_host">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_strip_api_key_from_untrusted_host</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove Water Data credentials from any request to another host.</span>
+
+<span class="sd">    HTTPX retains arbitrary custom headers across cross-origin redirects. This</span>
+<span class="sd">    hook runs for the initial request and every redirect, making host scoping an</span>
+<span class="sd">    execution-time invariant rather than relying only on initial header</span>
+<span class="sd">    construction.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">host</span> <span class="o">!=</span> <span class="n">_AUTHORIZED_API_KEY_HOST</span><span class="p">:</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;X-Api-Key&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_strip_api_key_from_untrusted_host_async">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils._strip_api_key_from_untrusted_host_async">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_strip_api_key_from_untrusted_host_async</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Async-client form of :func:`_strip_api_key_from_untrusted_host`.&quot;&quot;&quot;</span>
+    <span class="n">_strip_api_key_from_untrusted_host</span><span class="p">(</span><span class="n">request</span><span class="p">)</span></div>
+
+
+
+<span class="n">HTTPX_ASYNC_DEFAULTS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="o">**</span><span class="n">HTTPX_DEFAULTS</span><span class="p">,</span>
+    <span class="s2">&quot;event_hooks&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">_strip_api_key_from_untrusted_host_async</span><span class="p">]},</span>
+<span class="p">}</span>
 
 
 <div class="viewcode-block" id="to_str">
@@ -512,11 +564,21 @@
 <div class="viewcode-block" id="_get">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils._get">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_get</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">httpx</span><span class="o">.</span><span class="n">URL</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``httpx.get`` for the single-shot paths, surfacing a transport failure as</span>
-<span class="sd">    a typed :class:`~dataretrieval.exceptions.NetworkError` (the chunker wraps its</span>
-<span class="sd">    own as resumable interruptions, so it stays off this wrapper).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Issue one guarded synchronous GET and map transport failures.</span>
+
+<span class="sd">    A short-lived client supplies a request hook for both the initial request</span>
+<span class="sd">    and every redirect. The hook removes ``X-Api-Key`` unless the destination</span>
+<span class="sd">    host is the authorized Water Data API host.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">client_options</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">key</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;follow_redirects&quot;</span><span class="p">,</span> <span class="s2">&quot;timeout&quot;</span><span class="p">,</span> <span class="s2">&quot;transport&quot;</span><span class="p">,</span> <span class="s2">&quot;verify&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span>
+    <span class="p">}</span>
+    <span class="n">client_options</span><span class="p">[</span><span class="s2">&quot;event_hooks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">_strip_api_key_from_untrusted_host</span><span class="p">]}</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">httpx</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="o">**</span><span class="n">client_options</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">httpx</span><span class="o">.</span><span class="n">TransportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">_network_error</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span></div>
 
@@ -606,7 +668,7 @@
     <span class="c1"># Drop them. (``to_str`` returns None for non-iterable scalars like bools.)</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">payload</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
 
-    <span class="n">user_agent</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;user-agent&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;python-dataretrieval/</span><span class="si">{</span><span class="n">dataretrieval</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}</span>
+    <span class="n">user_agent</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;user-agent&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;python-dataretrieval/</span><span class="si">{</span><span class="n">_PACKAGE_VERSION</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span>

@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g44f2aeec7 documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+gec88cec7a documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=b16bba99"></script>
+      <script src="../_static/documentation_options.js?v=f9586215"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -80,6 +80,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils._network_error"><code class="docutils literal notranslate"><span class="pre">_network_error()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils._raise_for_status"><code class="docutils literal notranslate"><span class="pre">_raise_for_status()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils._require_positive_int"><code class="docutils literal notranslate"><span class="pre">_require_positive_int()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils._strip_api_key_from_untrusted_host"><code class="docutils literal notranslate"><span class="pre">_strip_api_key_from_untrusted_host()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils._strip_api_key_from_untrusted_host_async"><code class="docutils literal notranslate"><span class="pre">_strip_api_key_from_untrusted_host_async()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils.format_datetime"><code class="docutils literal notranslate"><span class="pre">format_datetime()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils.query"><code class="docutils literal notranslate"><span class="pre">query()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils.to_str"><code class="docutils literal notranslate"><span class="pre">to_str()</span></code></a></li>
@@ -269,21 +271,25 @@ was detected).</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.utils._default_headers">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">_default_headers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/utils.html#_default_headers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils._default_headers" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">_default_headers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">URL</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/utils.html#_default_headers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils._default_headers" title="Link to this definition"></a></dt>
 <dd><p>Build the default HTTP headers for a USGS web-API request.</p>
 <p>Always sets a descriptive <code class="docutils literal notranslate"><span class="pre">User-Agent</span></code> plus <code class="docutils literal notranslate"><span class="pre">Accept</span></code> /
 <code class="docutils literal notranslate"><span class="pre">Accept-Encoding</span></code> and <code class="docutils literal notranslate"><span class="pre">lang</span></code>. If the <code class="docutils literal notranslate"><span class="pre">API_USGS_PAT</span></code> environment
-variable is set, its value is added as the <code class="docutils literal notranslate"><span class="pre">X-Api-Key</span></code> header — a USGS
-personal access token raises the request rate limit.</p>
-<p>Shared by the OGC engine (<code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.ogc</span></code>), the Water Data getters
-(<a class="reference internal" href="waterdata.html#module-dataretrieval.waterdata" title="dataretrieval.waterdata"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code></a>), and <a class="reference internal" href="wateruse.html#module-dataretrieval.wateruse" title="dataretrieval.wateruse"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.wateruse</span></code></a>, so the
-request identity is consistent across every USGS API the package talks to.</p>
+variable is set AND <code class="docutils literal notranslate"><span class="pre">target_url</span></code> points to the explicitly authorized
+Water Data host (<code class="docutils literal notranslate"><span class="pre">api.waterdata.usgs.gov</span></code>), its value is added as the
+<code class="docutils literal notranslate"><span class="pre">X-Api-Key</span></code> header. The key is never sent to other hosts.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Headers suitable for an <code class="docutils literal notranslate"><span class="pre">httpx</span></code> request against a USGS API.</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>target_url</strong> (<em>str</em><em> or </em><em>httpx.URL</em><em> or </em><em>None</em>) – The URL the request will be sent to. When provided, the API key is
+included only if the host matches the authorized Water Data host.
+When <code class="docutils literal notranslate"><span class="pre">None</span></code> (legacy callers), the key is NOT included — callers
+must pass the concrete URL.</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict[str, str]</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Headers suitable for an <code class="docutils literal notranslate"><span class="pre">httpx</span></code> request.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, str]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -291,9 +297,10 @@ request identity is consistent across every USGS API the package talks to.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.utils._get">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">_get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">URL</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Response</span></span></span><a class="reference internal" href="../_modules/dataretrieval/utils.html#_get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils._get" title="Link to this definition"></a></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">httpx.get</span></code> for the single-shot paths, surfacing a transport failure as
-a typed <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.NetworkError" title="dataretrieval.exceptions.NetworkError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkError</span></code></a> (the chunker wraps its
-own as resumable interruptions, so it stays off this wrapper).</p>
+<dd><p>Issue one guarded synchronous GET and map transport failures.</p>
+<p>A short-lived client supplies a request hook for both the initial request
+and every redirect. The hook removes <code class="docutils literal notranslate"><span class="pre">X-Api-Key</span></code> unless the destination
+host is the authorized Water Data API host.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -344,6 +351,22 @@ runtime because the real value may be anything the user passed.</p></li>
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.utils._strip_api_key_from_untrusted_host">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">_strip_api_key_from_untrusted_host</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Request</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/utils.html#_strip_api_key_from_untrusted_host"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils._strip_api_key_from_untrusted_host" title="Link to this definition"></a></dt>
+<dd><p>Remove Water Data credentials from any request to another host.</p>
+<p>HTTPX retains arbitrary custom headers across cross-origin redirects. This
+hook runs for the initial request and every redirect, making host scoping an
+execution-time invariant rather than relying only on initial header
+construction.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.utils._strip_api_key_from_untrusted_host_async">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">_strip_api_key_from_untrusted_host_async</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Request</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/utils.html#_strip_api_key_from_untrusted_host_async"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils._strip_api_key_from_untrusted_host_async" title="Link to this definition"></a></dt>
+<dd><p>Async-client form of <a class="reference internal" href="#dataretrieval.utils._strip_api_key_from_untrusted_host" title="dataretrieval.utils._strip_api_key_from_untrusted_host"><code class="xref py py-func docutils literal notranslate"><span class="pre">_strip_api_key_from_untrusted_host()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py function">

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wateruse &mdash; dataretrieval 0.1.dev1+g44f2aeec7 documentation</title>
+  <title>dataretrieval.wateruse &mdash; dataretrieval 0.1.dev1+gec88cec7a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=b16bba99"></script>
+      <script src="../../_static/documentation_options.js?v=f9586215"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -133,7 +133,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.combining</span><span class="w"> </span><span class="kn">import</span> <span class="n">_combine_chunk_frames</span><span class="p">,</span> <span class="n">_combine_chunk_responses</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">_paginate</span><span class="p">,</span> <span class="n">_run_sync</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">HTTPX_DEFAULTS</span><span class="p">,</span>
+    <span class="n">HTTPX_ASYNC_DEFAULTS</span><span class="p">,</span>
     <span class="n">BaseMetadata</span><span class="p">,</span>
     <span class="n">_default_headers</span><span class="p">,</span>
     <span class="n">_raise_for_status</span><span class="p">,</span>
@@ -303,7 +303,7 @@
     <span class="c1"># The NWDC queries one location per request, so fan a multi-value selector</span>
     <span class="c1"># out into one request per location, each paginated by the OGC engine&#39;s</span>
     <span class="c1"># shared pager (``_paginate``), and concatenate the results.</span>
-    <span class="n">headers</span> <span class="o">=</span> <span class="n">_default_headers</span><span class="p">()</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="n">_default_headers</span><span class="p">(</span><span class="n">WATERUSE_URL</span><span class="p">)</span>
     <span class="n">requests</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span>
             <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
@@ -443,7 +443,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">raise_for_status</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">_raise_for_status</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">detail_from</span><span class="o">=</span><span class="n">_nwdc_error_detail</span><span class="p">)</span>
 
-    <span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">(</span><span class="n">verify</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">HTTPX_DEFAULTS</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">(</span><span class="n">verify</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">HTTPX_ASYNC_DEFAULTS</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
         <span class="n">semaphore</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">MAX_CONCURRENT_REQUESTS</span><span class="p">))</span>
 
         <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_one</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>

@@ -67,13 +67,16 @@ Public service facades
 ^^^^^^^^^^^^^^^^^^^^^^
 
 ``dataretrieval.waterdata``
-    Modern USGS Water Data API facade. Typed getters delegate to the shared OGC
-    subsystem, with separate modules for statistics, ratings, and nearest-value
-    operations.
+    Modern USGS Water Data API facade. Its generic adapter uses the four-symbol
+    OGC facade; internal Water Data modules import protocol helpers from their
+    canonical OGC modules. Water-Data-specific utilities own service policy and
+    wrappers without re-exporting private OGC helpers. Statistics, ratings, and
+    nearest-value operations live in separate modules.
 
 ``dataretrieval.ngwmn``
-    NGWMN facade. Reuses the OGC subsystem with an NGWMN-specific base URL,
-    output identifiers, state translation, and :class:`OgcDialect`.
+    NGWMN facade. Its only OGC dependency is the public OGC facade, which it
+    configures with an NGWMN-specific base URL, output identifiers, state
+    translation, and :class:`OgcDialect`.
 
 ``dataretrieval.wateruse``
     NWDC Water Use facade. Builds CSV requests and follows ``Link`` headers.
@@ -93,12 +96,19 @@ Shared components
 ^^^^^^^^^^^^^^^^^
 
 ``dataretrieval.ogc``
-    Protocol subsystem for Water Data and NGWMN. ``engine`` orchestrates
-    requests and pagination; ``planning`` determines chunk boundaries;
-    ``chunking`` executes plans and retains resumable state; ``retry`` owns the
-    bounded retry policy; ``combining`` assembles results; and ``shaping``,
-    ``dates``, ``filters``, ``errors``, and ``progress`` isolate their named
-    concerns.
+    Protocol subsystem for Water Data and NGWMN. A small facade
+    (``__init__.py``) exposes the service-adapter seam: ``OgcDialect``,
+    ``prepare_request_args``, ``get_ogc_data``, and ``fetch_ogc_request``.
+    Internally, ``policy`` defines the dialect type and endpoint constants
+    (depends only on stdlib); ``requests`` owns request construction, argument
+    normalization, and queryables/schema lookup; ``engine`` orchestrates
+    pagination and sync-from-async; ``planning`` determines chunk boundaries;
+    ``chunking`` executes plans and retains resumable state; ``interruptions``
+    defines the resumable failure contract; ``retry`` owns the bounded retry
+    policy; ``combining`` assembles results; and ``shaping``, ``dates``,
+    ``filters``, ``errors``, and ``progress`` isolate their named concerns. The
+    full runtime OGC graph, including the facade, is acyclic —
+    enforced by ``tests/architecture_test.py``.
 
 ``dataretrieval.exceptions``
     Stable error-policy leaf. It has no runtime third-party dependency and may
@@ -168,8 +178,10 @@ Resource and configuration view
 -------------------------------
 
 ``API_USGS_PAT``
-    Optional USGS API token. Authentication must be scoped to appropriate USGS
-    hosts and never forwarded to WQP or another unrelated endpoint.
+    Optional USGS API token. It is attached only to requests for
+    ``api.waterdata.usgs.gov``. Shared synchronous and asynchronous clients
+    re-check every redirected request and strip the token before following a
+    link to any other host, including external rating assets.
 
 ``API_USGS_CONCURRENT``
     OGC subrequest concurrency cap; defaults to 32, ``1`` is sequential, and
@@ -195,11 +207,8 @@ This view records categories and representative locations of debt. The fitness
 functions in ``tests/architecture_test.py`` are authoritative for exact current
 dependency allowlists.
 
-- ``waterdata.utils`` re-exports many underscore-prefixed OGC helpers.
 - ``wateruse`` depends on private generic helpers located under ``ogc`` even
   though NWDC is not an OGC service.
-- ``ogc.shaping`` uses lazy engine imports for empty-result schema lookup and a
-  default dialect, creating a logical cycle.
 - ``waterdata/api.py`` and ``ogc/engine.py`` contain multiple reasons to change.
 - Active non-OGC services do not yet share OGC's retry/resume capabilities.
 - ``utils.py`` combines metadata, shaping, configuration, and transport duties.

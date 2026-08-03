@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+g44f2aeec7 documentation</title>
+  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+gec88cec7a documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=b16bba99"></script>
+      <script src="../_static/documentation_options.js?v=f9586215"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -103,7 +103,7 @@
 <p>The NGWMN exposes its data through a dedicated OGC API
 (<code class="docutils literal notranslate"><span class="pre">https://api.waterdata.usgs.gov/ngwmn/ogcapi</span></code>) with five collections:
 <code class="docutils literal notranslate"><span class="pre">sites</span></code>, <code class="docutils literal notranslate"><span class="pre">waterLevelObs</span></code>, <code class="docutils literal notranslate"><span class="pre">lithologyObs</span></code>, <code class="docutils literal notranslate"><span class="pre">constructionObs</span></code>, and
-<code class="docutils literal notranslate"><span class="pre">providers</span></code>. Each getter below delegates to the shared OGC engine
+<code class="docutils literal notranslate"><span class="pre">providers</span></code>. Each getter below delegates to the shared OGC facade
 (<code class="xref py py-func docutils literal notranslate"><span class="pre">get_ogc_data()</span></code>) with
 <code class="docutils literal notranslate"><span class="pre">base_url=NGWMN_OGC_API_URL</span></code>, so multi-value chunking, pagination,
 retry/resume, and result shaping all behave exactly as they do for the main
@@ -115,7 +115,7 @@ prefixes besides <code class="docutils literal notranslate"><span class="pre">US
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.ngwmn._get">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.ngwmn.</span></span><span class="sig-name descname"><span class="pre">_get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_vars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/ngwmn.html#_get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.ngwmn._get" title="Link to this definition"></a></dt>
-<dd><p>Marshal a getter’s arguments and dispatch to the shared OGC engine.</p>
+<dd><p>Marshal a getter’s arguments and dispatch to the shared OGC facade.</p>
 <p>Every NGWMN getter ends with this same call; centralizing it keeps the
 NGWMN base URL, output id, and dialect wired up in exactly one place.</p>
 </dd></dl>
