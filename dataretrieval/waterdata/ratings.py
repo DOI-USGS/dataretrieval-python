@@ -23,7 +23,15 @@ from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.filters import _quote_cql_str
 from dataretrieval.ogc.requests import _check_monitoring_location_id
 from dataretrieval.rdb import extract_rdb_comment, read_rdb
-from dataretrieval.utils import HTTPX_DEFAULTS, _default_headers, _get
+from dataretrieval.transport.http import (
+    HTTPX_DEFAULTS,
+)
+from dataretrieval.transport.http import (
+    default_headers as _default_headers,
+)
+from dataretrieval.transport.http import (
+    get as _get,
+)
 
 from .utils import BASE_URL
 

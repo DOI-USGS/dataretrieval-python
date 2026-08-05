@@ -11,7 +11,8 @@ Most failures are an :class:`HTTPError` carrying the response ``.status_code``,
 of which :class:`TransientError` (429 / 5xx) is the retryable subset. The rest
 aren't a plain status: :class:`RequestTooLarge` (with :class:`URLTooLong` /
 :class:`Unchunkable`), :class:`NetworkError` (a failed connection, per above),
-and :class:`NoSitesError`. :func:`error_for_status` maps a status to its type.
+:class:`NoSitesError`, and :class:`ConfigurationError` for an unusable setting.
+:func:`error_for_status` maps a status to its type.
 
 This module has no third-party runtime dependencies -- ``httpx`` is imported only
 for type checking -- so any module can import it without pulling in pandas / httpx
@@ -36,6 +37,7 @@ __all__ = [
     "Unchunkable",
     "NetworkError",
     "NoSitesError",
+    "ConfigurationError",
     "error_for_status",
 ]
 
@@ -238,6 +240,20 @@ class NetworkError(DataRetrievalError):
     """
 
     retryable: ClassVar[bool] = True
+
+
+# --- Bad configuration ---------------------------------------------------
+
+
+class ConfigurationError(DataRetrievalError, ValueError):
+    """A ``dataretrieval`` setting -- an environment variable, a policy field --
+    holds a value that can't be used, so no request was issued.
+
+    It is a :class:`DataRetrievalError` so ``except`` around a retrieval catches
+    it rather than letting a bare ``ValueError`` escape a request path, and a
+    :class:`ValueError` so code that already treats a bad setting as one keeps
+    working.
+    """
 
 
 # --- Empty result --------------------------------------------------------

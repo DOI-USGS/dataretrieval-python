@@ -1,3 +1,5 @@
+from unittest import mock
+
 import pytest
 from geopandas import GeoDataFrame
 
@@ -44,6 +46,17 @@ def mock_request_data_sources(httpx_mock):
         json=available_data_sources,
         headers={"mock_header": "value"},
     )
+
+
+def test_query_nldi_opts_into_retry(monkeypatch):
+    """NLDI explicitly enables shared retry while NWIS remains unchanged."""
+    response = mock.Mock()
+    response.json.return_value = {}
+    query = mock.Mock(return_value=response)
+    monkeypatch.setattr(nldi, "_query_with_retry", query)
+
+    assert nldi._query_nldi("https://example.test", {}) == {}
+    query.assert_called_once_with("https://example.test", payload={})
 
 
 def mock_request(httpx_mock, request_url, file_path):

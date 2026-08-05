@@ -12,11 +12,9 @@ Unlike the main Water Data getters (:mod:`dataretrieval.waterdata`) and NGWMN
 (:mod:`dataretrieval.ngwmn`), the NWDC is a plain CSV REST service rather than
 an OGC API Features collection. This module supplies the NWDC-specific bits —
 request building, CSV parsing, the ``Link``-header cursor, and the ``{detail}``
-error envelope — but reuses the OGC engine's generic, API-agnostic pagination
-and sync-from-async plumbing (:func:`~dataretrieval.ogc.engine._paginate` and
-:func:`~dataretrieval.ogc.engine._run_sync`) rather than re-implementing it. It
-follows the same conventions: shared request headers
-(:func:`~dataretrieval.utils._default_headers`), the typed
+error envelope — and uses the API-neutral transport layer for cursor pagination,
+response aggregation, client lifecycle, and sync-from-async dispatch. It follows
+the same conventions: host-scoped request headers, the typed
 :class:`~dataretrieval.exceptions.DataRetrievalError` taxonomy, and a
 ``(DataFrame, BaseMetadata)`` return.
 
@@ -53,17 +51,21 @@ import pandas as pd
 
 from dataretrieval.codes.states import to_state
 from dataretrieval.exceptions import DataRetrievalError
-from dataretrieval.ogc.combining import _combine_chunk_frames, _combine_chunk_responses
-from dataretrieval.ogc.engine import _paginate, _run_sync
-from dataretrieval.utils import (
-    HTTPX_ASYNC_DEFAULTS,
-    BaseMetadata,
-    _default_headers,
-    _raise_for_status,
-    to_str,
+from dataretrieval.transport.combining import (
+    _combine_chunk_frames,
+    _combine_chunk_responses,
 )
+from dataretrieval.transport.http import default_headers, open_async_client
+from dataretrieval.transport.pagination import paginate
+from dataretrieval.transport.retry import RetryPolicy, retry_async
+from dataretrieval.transport.sync import run_sync
+from dataretrieval.utils import BaseMetadata, _raise_for_status, to_str
 
 WATERUSE_URL = "https://api.water.usgs.gov/nwaa-data/data"
+_WATERUSE_HOST = httpx.URL(WATERUSE_URL).host
+# Hosts a ``rel="next"`` cursor may name for this same service; each is
+# rewritten to :data:`_WATERUSE_HOST` rather than followed as given.
+_WATERUSE_HOST_ALIASES = frozenset({_WATERUSE_HOST, "water.usgs.gov"})
 
 #: Water-use models (categories) served by the NWDC. The catalog at
 #: https://water.usgs.gov/nwaa-data/ lists the variables available within each.
@@ -80,9 +82,10 @@ TIME_RESOLUTIONS = ("monthly", "annualcy", "annualwy")
 
 #: Maximum locations fetched concurrently when a list of state/county/huc
 #: selectors is fanned out (one request per location). Kept conservative
-#: because this module intentionally carries no request backoff/retry; the
-#: NWDC tolerates this level of concurrency without rate-limit errors (verified
-#: by stress test). Set ``wateruse.MAX_CONCURRENT_REQUESTS = 1`` for serial.
+#: because every location retries independently, so the burst a rate-limit
+#: episode produces is this number times the retry count; the NWDC tolerates
+#: this level of concurrency without rate-limit errors (verified by stress
+#: test). Set ``wateruse.MAX_CONCURRENT_REQUESTS = 1`` for serial.
 MAX_CONCURRENT_REQUESTS = 4
 
 # Page responses carry the HUC12 identifier in this column; it must stay a
@@ -222,9 +225,9 @@ def get_wateruse(
     base_params = {k: v for k, v in base_params.items() if v is not None}
 
     # The NWDC queries one location per request, so fan a multi-value selector
-    # out into one request per location, each paginated by the OGC engine's
-    # shared pager (``_paginate``), and concatenate the results.
-    headers = _default_headers(WATERUSE_URL)
+    # out into one request per location, each handled by shared transport
+    # pagination, and concatenate the results.
+    headers = default_headers(WATERUSE_URL)
     requests = [
         httpx.Request(
             "GET",
@@ -238,7 +241,7 @@ def get_wateruse(
     # even inside an already-running event loop (e.g. a Jupyter notebook).
     # ``error_url`` is the host reported in any connection-error message (this
     # module builds its own requests, so it has no OGC request-builder base).
-    df, response = _run_sync(
+    df, response = run_sync(
         lambda: _fan_out(requests, headers, ssl_check),
         service="wateruse",
         error_url=WATERUSE_URL,
@@ -330,8 +333,8 @@ async def _fan_out(
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Fetch every request (each paginated) concurrently over one shared client.
 
-    Each request is paginated by the engine's
-    :func:`~dataretrieval.ogc.engine._paginate` with NWDC strategies: parse a CSV
+    Each request is paginated by :func:`dataretrieval.transport.pagination.paginate`
+    with NWDC strategies: parse a CSV
     page and read its ``Link`` header cursor (``parse``), follow that cursor
     (``follow``), and raise the typed error carrying the NWDC ``detail``
     (``raise_for_status``). Concurrency is bounded by a semaphore at
@@ -349,12 +352,17 @@ async def _fan_out(
     def raise_for_status(response: httpx.Response) -> None:
         _raise_for_status(response, detail_from=_nwdc_error_detail)
 
-    async with httpx.AsyncClient(verify=ssl_check, **HTTPX_ASYNC_DEFAULTS) as client:
+    # The broad status set on purpose: NWDC reports a bad query as a 400 with a
+    # ``{"detail": ...}`` envelope, so unlike WQP and StreamStats its 5xx really
+    # is an upstream fault worth re-sending. Note the cost is multiplied by the
+    # fan-out -- see MAX_CONCURRENT_REQUESTS.
+    policy = RetryPolicy.from_env()
+    async with open_async_client(verify=ssl_check) as client:
         semaphore = asyncio.Semaphore(max(1, MAX_CONCURRENT_REQUESTS))
 
         async def _one(request: httpx.Request) -> tuple[pd.DataFrame, httpx.Response]:
-            async with semaphore:
-                return await _paginate(
+            async def attempt() -> tuple[pd.DataFrame, httpx.Response]:
+                return await paginate(
                     request,
                     parse_response=parse,
                     follow_up=follow,
@@ -362,9 +370,15 @@ async def _fan_out(
                     raise_for_status=raise_for_status,
                 )
 
+            # ``retry_async`` owns the gate: the slot is acquired per attempt,
+            # so a location backing off isn't holding one. A later-page failure
+            # is intentionally wrapped by ``paginate`` and propagates instead of
+            # restarting a partially completed walk.
+            return await retry_async(attempt, policy, gate=semaphore)
+
         results = await asyncio.gather(*(_one(req) for req in requests))
 
-    # Reuse the engine's combine helpers: drop empty frames and concat, and fold
+    # Reuse the transport combine helpers: drop empty frames and concat, and fold
     # the per-location responses into one (headers from the response with the
     # lowest reported remaining quota plus summed response durations), keeping
     # the first request's URL as the query identity.
@@ -392,14 +406,38 @@ def _next_page_url(response: httpx.Response) -> str | None:
     """Return the absolute URL of the next page, or None if this is the last.
 
     Reads the standard ``Link: <...>; rel="next"`` header (parsed by httpx into
-    ``response.links``). A next link served against the bare ``water.usgs.gov``
-    host is normalized to the public ``api.water.usgs.gov`` gateway so the
-    follow-up request reaches the API.
+    ``response.links``). The cursor is normalized before it is trusted, because
+    the service spells it inconsistently: a relative reference is resolved
+    against the page it came from, and the bare ``water.usgs.gov`` host is
+    rewritten to the public ``api.water.usgs.gov`` gateway (over https, whatever
+    scheme the link used) so the follow-up request reaches the API. Only a
+    cursor that still points somewhere else after that is refused -- following
+    it would send Water Use requests, and any credentials on them, to a host the
+    caller never asked for.
     """
     url = response.links.get("next", {}).get("url")
     if not url:
         return None
-    return str(url).replace("https://water.usgs.gov", "https://api.water.usgs.gov", 1)
+    try:
+        target = httpx.URL(url)
+    except (httpx.InvalidURL, TypeError) as exc:
+        raise DataRetrievalError(
+            f"Water Use returned an unusable next-page link: {url!r}. The page "
+            f"walk cannot continue; report this if it persists."
+        ) from exc
+    if not target.is_absolute_url:
+        target = response.url.join(target)
+    if target.host not in _WATERUSE_HOST_ALIASES:
+        raise DataRetrievalError(
+            f"Refusing to follow a Water Use next-page link pointing at "
+            f"{target.host} rather than {_WATERUSE_HOST}. Following it would "
+            f"send this request, and any credentials on it, to a host you did "
+            f"not ask for. Retrying will not help; report this if it persists."
+        )
+    # Drop any explicit port along with the scheme/host rewrite: a port that
+    # went with the link's original scheme (``http://…:8080``) would otherwise
+    # survive into an https request and be dialed under TLS.
+    return str(target.copy_with(scheme="https", host=_WATERUSE_HOST, port=None))
 
 
 def _nwdc_error_detail(response: httpx.Response) -> str | None:

@@ -306,8 +306,26 @@ def test_fan_out_surfaces_final_rate_limit_header(httpx_mock):
     assert md.header["x-ratelimit-remaining"] == "850"
 
 
-# (response aggregation now reuses ogc.combining._combine_chunk_responses; the
+# (response aggregation uses transport.combining._combine_chunk_responses; the
 # integration test above pins the rate-limit-header behavior end-to-end.)
+
+
+def test_fan_out_failure_never_returns_partial_data(httpx_mock):
+    """A failed location aborts the call even when another location succeeded."""
+    httpx_mock.add_response(
+        method="GET",
+        url=re.compile(r".*location=stateCd%3ARI.*"),
+        text=_CSV_P1,
+    )
+    httpx_mock.add_response(
+        method="GET",
+        url=re.compile(r".*location=stateCd%3AWI.*"),
+        status_code=503,
+        json={"detail": "temporarily unavailable"},
+    )
+
+    with pytest.raises(dataretrieval.ServiceUnavailable):
+        get_wateruse(model="wu-public-supply-wd", state=["RI", "WI"])
 
 
 # --- _resolve_locations unit tests (no HTTP) -------------------------------
@@ -411,6 +429,60 @@ def test_next_page_url_leaves_api_host_untouched():
     assert _next_page_url(resp) == url
 
 
+def test_next_page_url_normalizes_other_spellings_of_the_same_service():
+    """The cursor is normalized by host, not by one literal prefix.
+
+    A plain-http or relative ``next`` link is the same service; refusing it
+    would throw away every page already collected for that location.
+    """
+    plain_http = httpx.Response(
+        200,
+        text="",
+        headers={"link": '<http://water.usgs.gov/nwaa-data/data?skip=600>; rel="next"'},
+    )
+    assert _next_page_url(plain_http) == (
+        "https://api.water.usgs.gov/nwaa-data/data?skip=600"
+    )
+
+    relative = httpx.Response(
+        200,
+        text="",
+        headers={"link": '</nwaa-data/data?skip=600>; rel="next"'},
+        request=httpx.Request("GET", "https://api.water.usgs.gov/nwaa-data/data"),
+    )
+    assert _next_page_url(relative) == (
+        "https://api.water.usgs.gov/nwaa-data/data?skip=600"
+    )
+
+
 def test_module_exposes_catalog_constants():
     assert "wu-public-supply-wd" in wateruse.MODELS
     assert set(wateruse.TIME_RESOLUTIONS) == {"monthly", "annualcy", "annualwy"}
+
+
+def test_initial_transient_is_retried(httpx_mock, monkeypatch):
+    """Water Use retries an initial transient without holding its semaphore."""
+    import dataretrieval.transport.retry as retry
+
+    url = re.compile(r".*location=stateCd%3ARI.*")
+    httpx_mock.add_response(method="GET", url=url, status_code=503)
+    httpx_mock.add_response(method="GET", url=url, text=_CSV_P1)
+    monkeypatch.setenv("API_USGS_RETRIES", "1")
+    monkeypatch.setattr(retry, "_RETRY_BASE_BACKOFF", 0.0)
+    monkeypatch.setattr(retry, "_RETRY_MAX_BACKOFF", 0.0)
+
+    df, _ = get_wateruse(model="wu-public-supply-wd", state="RI")
+
+    assert len(df) == 2
+    assert len(httpx_mock.get_requests()) == 2
+
+
+def test_next_page_url_rejects_cross_host_link():
+    response = httpx.Response(
+        200,
+        headers={"link": '<https://outside.example/next>; rel="next"'},
+    )
+    # Typed, so a caller's ``except DataRetrievalError`` catches it like any
+    # other failure rather than seeing a bare RuntimeError.
+    with pytest.raises(dataretrieval.DataRetrievalError, match="outside.example"):
+        _next_page_url(response)

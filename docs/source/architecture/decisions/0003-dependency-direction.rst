@@ -18,13 +18,15 @@ unintended cross-package contracts.
 Decision
 --------
 
-Dependencies point from public facades to service/protocol adapters and then to
-stable shared policy and third-party infrastructure. In particular:
+Dependencies point from public facades to service/protocol adapters, then to
+API-neutral transport and stable policy, and finally to third-party
+infrastructure. In particular:
 
 - ``dataretrieval.exceptions`` is a runtime-dependency-light leaf.
 - ``dataretrieval.ogc`` must not import Water Data, NGWMN, Water Use, or NWIS.
 - Modern modules must not import deprecated NWIS.
-- New non-OGC services must not obtain generic transport behavior by importing
+- API-neutral transport must not import OGC modules or service adapters.
+- Non-OGC services must obtain generic execution behavior from transport, not
   private OGC implementation symbols.
 
 Underscore-prefixed symbols remain implementation details even when existing
@@ -49,8 +51,8 @@ second copy of that mutable inventory.
 
 Focused fitness functions verify the current boundaries: NGWMN's only OGC
 dependency is the facade, ``waterdata.utils`` does not bulk re-export private
-OGC helpers, ``ogc.shaping`` does not depend on ``ogc.engine``, and the full OGC
-runtime graph is acyclic.
+OGC helpers, ``ogc.shaping`` does not depend on ``ogc.engine``, Water Use has
+no OGC dependency, and both the OGC and transport runtime graphs are acyclic.
 
 The exact allowlist should shrink as private seams move. Any growth requires
 explicit architecture review, and a change to the dependency policy requires

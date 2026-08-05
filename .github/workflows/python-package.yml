@@ -53,6 +53,7 @@ jobs:
           from pathlib import Path
 
           import dataretrieval
+          import dataretrieval.transport
           from dataretrieval import ngwmn, waterdata, wateruse
           from dataretrieval.ogc import engine
 
@@ -105,6 +106,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install .[test,nldi]
       - name: Test with pytest and report coverage
+        # Pinned to bash on every OS. The default Windows shell is PowerShell,
+        # which does not stop on a failing native command and takes the step's
+        # exit code from the last one -- so a pytest failure was masked by the
+        # coverage report that followed it, and the Windows matrix reported
+        # success while tests were red.
+        shell: bash
         run: |
           coverage run -m pytest tests/
           coverage report -m

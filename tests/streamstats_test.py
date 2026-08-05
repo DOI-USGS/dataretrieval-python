@@ -4,6 +4,7 @@ import json
 
 import pytest
 
+import dataretrieval
 from dataretrieval.streamstats import Watershed, get_watershed
 
 # Minimal StreamStats watershed payload shaped like the service response
@@ -60,3 +61,35 @@ def test_get_watershed_shape_raises_not_implemented(httpx_mock):
     httpx_mock.add_response(text=json.dumps(_SAMPLE))
     with pytest.raises(NotImplementedError):
         get_watershed("NY", -74.524, 43.939, format="shape")
+
+
+def test_get_watershed_does_not_retry_a_rejected_query(httpx_mock, monkeypatch):
+    """A 500 means the service rejected *this* request, so re-sending it only
+    multiplies load on a failing service and delays the caller's error."""
+    import dataretrieval.transport.retry as retry
+
+    httpx_mock.add_response(status_code=500)
+    monkeypatch.setenv("API_USGS_RETRIES", "4")
+    monkeypatch.setattr(retry, "_RETRY_BASE_BACKOFF", 0.0)
+    monkeypatch.setattr(retry, "_RETRY_MAX_BACKOFF", 0.0)
+
+    with pytest.raises(dataretrieval.ServiceUnavailable):
+        get_watershed("XX", -74.524, 43.939)
+
+    assert len(httpx_mock.get_requests()) == 1
+
+
+def test_get_watershed_retries_transient_failure(httpx_mock, monkeypatch):
+    """StreamStats retries a bounded transient before returning normally."""
+    import dataretrieval.transport.retry as retry
+
+    httpx_mock.add_response(status_code=503)
+    httpx_mock.add_response(text=json.dumps(_SAMPLE))
+    monkeypatch.setenv("API_USGS_RETRIES", "1")
+    monkeypatch.setattr(retry, "_RETRY_BASE_BACKOFF", 0.0)
+    monkeypatch.setattr(retry, "_RETRY_MAX_BACKOFF", 0.0)
+
+    response = get_watershed("NY", -74.524, 43.939)
+
+    assert response.status_code == 200
+    assert len(httpx_mock.get_requests()) == 2

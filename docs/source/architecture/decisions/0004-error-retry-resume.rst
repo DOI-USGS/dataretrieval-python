@@ -28,9 +28,10 @@ cancellation. OGC fan-out retains completed subrequests and raises a typed
 ``ChunkInterrupted`` with a handle that resumes only missing work. Fatal or
 unknown failures are not disguised as resumable transients.
 
-This decision does not assert that every upstream API supports pagination,
-chunking, or resume. Those capabilities remain explicit per service until a
-shared API-neutral transport contract is introduced.
+The shared transport layer supplies bounded retry and callback-driven cursor
+pagination, but each adapter opts in only where its requests are idempotent and
+its protocol exposes a cursor. Chunk planning and resumable partial state remain
+OGC-specific capabilities rather than assumptions imposed on every service.
 
 Consequences
 ------------

@@ -18,19 +18,11 @@ _SERVICE_PREFIXES = (
     "dataretrieval.wqp",
 )
 
-# These top-level modules currently reach into OGC. NGWMN is an OGC adapter
-# that uses the small facade (``dataretrieval.ogc``) exclusively. Water Use's
-# imports are an accepted temporary variance under ADR 0003. This allowlist is
-# the authoritative exact inventory; the ADR owns the policy and rationale.
-# Exact equality makes either growth or removal intentional.
+# NGWMN is the only top-level OGC consumer and uses the small facade
+# (``dataretrieval.ogc``) exclusively. Exact equality makes growth or removal
+# an intentional architecture change.
 _ALLOWED_TOP_LEVEL_OGC_IMPORTS = {
-    "dataretrieval.ngwmn": {
-        "dataretrieval.ogc",
-    },
-    "dataretrieval.wateruse": {
-        "dataretrieval.ogc.combining",
-        "dataretrieval.ogc.engine",
-    },
+    "dataretrieval.ngwmn": {"dataretrieval.ogc"},
 }
 
 _ENGINE_REQUEST_IMPORTS = {
@@ -349,7 +341,7 @@ def test_default_header_calls_are_target_scoped() -> None:
                 if isinstance(node.func, ast.Attribute)
                 else None
             )
-            if function_name != "_default_headers":
+            if function_name not in {"_default_headers", "default_headers"}:
                 continue
             has_target = bool(node.args) or any(
                 keyword.arg == "target_url" for keyword in node.keywords
@@ -363,3 +355,74 @@ def test_default_header_calls_are_target_scoped() -> None:
         "_default_headers calls without destination URL context:\n"
         + "\n".join(violations)
     )
+
+
+# --- API-neutral transport boundaries ---
+
+
+def test_transport_does_not_depend_on_ogc_or_services() -> None:
+    """Transport policy must point inward, never back to protocol adapters."""
+    violations: list[str] = []
+    transport_root = PACKAGE_ROOT / "transport"
+    for path in sorted(transport_root.rglob("*.py")):
+        module = _module_name(path)
+        for dependency in _runtime_imports(path):
+            if (
+                dependency == "dataretrieval.ogc"
+                or dependency.startswith("dataretrieval.ogc.")
+                or dependency.startswith(_SERVICE_PREFIXES)
+            ):
+                violations.append(f"{module} -> {dependency}")
+    assert not violations, "Transport crossed an adapter boundary:\n" + "\n".join(
+        violations
+    )
+
+
+def test_wateruse_has_no_ogc_dependency() -> None:
+    """The non-OGC Water Use adapter must consume transport directly."""
+    imports = _runtime_imports(PACKAGE_ROOT / "wateruse.py")
+    ogc_dependencies = {
+        dependency
+        for dependency in imports
+        if dependency == "dataretrieval.ogc"
+        or dependency.startswith("dataretrieval.ogc.")
+    }
+    assert not ogc_dependencies, (
+        f"Water Use imported OGC implementation modules: {sorted(ogc_dependencies)}"
+    )
+
+
+def test_transport_runtime_graph_is_acyclic() -> None:
+    """The API-neutral transport package must remain a directed acyclic graph."""
+    graph = {
+        module: {
+            dependency
+            for dependency in imports
+            if dependency == "dataretrieval.transport"
+            or dependency.startswith("dataretrieval.transport.")
+        }
+        for module, imports in _package_import_graph().items()
+        if module == "dataretrieval.transport"
+        or module.startswith("dataretrieval.transport.")
+    }
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(module: str, path: tuple[str, ...]) -> None:
+        if module in visiting:
+            start = path.index(module)
+            cycle = (*path[start:], module)
+            raise AssertionError(
+                f"Cycle in transport runtime graph: {' -> '.join(cycle)}"
+            )
+        if module in visited:
+            return
+        visiting.add(module)
+        for dependency in graph.get(module, set()):
+            if dependency in graph:
+                visit(dependency, (*path, module))
+        visiting.remove(module)
+        visited.add(module)
+
+    for module in graph:
+        visit(module, ())

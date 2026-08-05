@@ -878,13 +878,15 @@ def test_parse_retry_after_clamps_negative_delta_to_zero():
     assert _parse_retry_after("-0.5") == 0.0
 
 
-def test_parse_retry_after_returns_none_for_unparseable():
-    """Garbage values (including the RFC 1123 HTTP-date form that the
-    HTTP spec allows but USGS doesn't actually send) surface as
-    ``None``, letting the chunker fall back to its own retry policy
-    instead of guessing a delay."""
+def test_parse_retry_after_supports_http_date_and_rejects_garbage():
+    """Both standard header forms are accepted; malformed values use backoff.
+
+    A date is converted to seconds exactly like the delta-seconds form, however
+    far out it lands: an over-long wait stops the retry and travels to the
+    caller on ``.retry_after`` rather than being silently ignored.
+    """
     assert _parse_retry_after("not-a-date") is None
-    assert _parse_retry_after("Wed, 21 Oct 2099 07:28:00 GMT") is None
+    assert _parse_retry_after("Wed, 21 Oct 2099 07:28:00 GMT") > 0
 
 
 def test_raise_for_non_200_raises_service_unavailable_for_5xx():

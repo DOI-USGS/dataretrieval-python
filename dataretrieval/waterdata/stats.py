@@ -3,8 +3,9 @@
 Wraps ``https://api.waterdata.usgs.gov/statistics/v0`` — the daily-statistics
 service (period-of-record and date-range normals/intervals). This is a
 *separate*, non-OGC API: it has no chunkable multi-value axes, so it drives
-:func:`engine._paginate` directly through a blocking portal rather than going
-through ``multi_value_chunked``. The typed getters ``get_stats_por`` and
+:func:`dataretrieval.transport.pagination.paginate` through the shared sync
+bridge rather than going through ``multi_value_chunked``. The typed getters
+``get_stats_por`` and
 ``get_stats_date_range`` in :mod:`dataretrieval.waterdata.api` call
 :func:`get_data` here.
 """
@@ -16,17 +17,17 @@ from typing import Any
 import httpx
 import pandas as pd
 
-from dataretrieval.ogc.engine import (
-    _paginate,
-    _run_sync,
-)
+from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.shaping import (
     _CRS,
     GEOPANDAS,
     _attach_coordinates,
     _empty_feature_frame,
 )
-from dataretrieval.utils import BaseMetadata, _default_headers
+from dataretrieval.transport.http import default_headers
+from dataretrieval.transport.pagination import paginate
+from dataretrieval.transport.sync import run_sync
+from dataretrieval.utils import BaseMetadata
 from dataretrieval.waterdata.utils import BASE_URL
 
 # ``_handle_nesting``'s geopandas branch calls ``gpd.GeoDataFrame.from_features``
@@ -220,7 +221,7 @@ def get_data(
     to the specified parameters.
 
     The stats path doesn't go through ``multi_value_chunked`` (its query
-    shape has no chunkable list axes), so it drives :func:`engine._paginate`
+    shape has no chunkable list axes), so it drives transport pagination
     directly through an ``anyio`` blocking portal. The portal runs the
     pagination loop in a short-lived worker thread, so this works whether
     or not the caller is already inside an event loop.
@@ -238,8 +239,12 @@ def get_data(
         True and the user requests a computation_type other than
         percentiles, a percentile column is still returned.
     client : httpx.AsyncClient, optional
-        Caller-borrowed async client. ``None`` (default) opens a
-        temporary one inside the portal. Primarily a test seam.
+        Caller-borrowed async client. ``None`` (default) opens a temporary one
+        inside the portal. Primarily a test seam. Deliberately does *not* fall
+        back to the chunker's shared client: that client belongs to the
+        chunker's event loop, and this runs in its own portal loop, so driving
+        it from here would corrupt the connection pool. Statistics is a
+        standalone API and never runs nested inside a chunked call anyway.
 
     Returns
     -------
@@ -251,7 +256,8 @@ def get_data(
     Raises
     ------
     DataRetrievalError
-        The typed subclass for an HTTP error response (see :func:`engine._paginate`);
+        The typed subclass for an HTTP error response (see
+        :func:`transport.pagination.paginate`);
         or :class:`~dataretrieval.exceptions.NetworkError` if the initial request
         can't reach the service (timeout / DNS), the ``httpx`` exception chained
         on ``__cause__``.
@@ -261,7 +267,7 @@ def get_data(
     req = httpx.Request(
         method="GET",
         url=url,
-        headers=_default_headers(url),
+        headers=default_headers(url),
         params=args,
     )
     method = req.method
@@ -282,14 +288,15 @@ def get_data(
         )
 
     async def _run() -> tuple[pd.DataFrame, httpx.Response]:
-        return await _paginate(
+        return await paginate(
             req,
             parse_response=parse_response,
             follow_up=follow_up,
             client=client,
+            raise_for_status=_raise_for_non_200,
         )
 
-    df, response = _run_sync(_run, service=service)
+    df, response = run_sync(_run, service=service, error_url=url)
 
     if expand_percentiles:
         df = _expand_percentiles(df)

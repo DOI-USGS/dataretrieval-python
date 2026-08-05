@@ -17,15 +17,13 @@ out into ``n`` parallel sub-requests; ``n`` drives :meth:`ChunkPlan._refine`. Se
 
 This module owns the *execution* half — the event loop and bounded
 concurrency that drive a plan to completion (``ChunkedCall``) plus the
-public ``multi_value_chunked`` decorator. The neighboring concerns live in
-sibling modules it imports, each with its own reason to change:
-:mod:`~dataretrieval.ogc.planning` builds the
-:class:`~dataretrieval.ogc.planning.ChunkPlan` and recombines per-chunk
-frames and responses (pure, no I/O); :mod:`~dataretrieval.ogc.retry` holds
-the transient-classification and exponential-backoff policy; and
+public ``multi_value_chunked`` decorator. The neighboring concerns remain
+separate: :mod:`~dataretrieval.ogc.planning` builds the
+:class:`~dataretrieval.ogc.planning.ChunkPlan`;
+:mod:`~dataretrieval.transport.combining` assembles results;
+:mod:`~dataretrieval.transport.retry` owns bounded retry policy; and
 :mod:`~dataretrieval.ogc.interruptions` defines the resumable
-:class:`~dataretrieval.ogc.interruptions.ChunkInterrupted` exception
-contract.
+:class:`~dataretrieval.ogc.interruptions.ChunkInterrupted` contract.
 
 Concurrency: ``multi_value_chunked`` fans every pending sub-request out
 under one ``asyncio.gather`` sharing a single ``httpx.AsyncClient``. An
@@ -83,23 +81,20 @@ import httpx
 import pandas as pd
 from anyio.from_thread import start_blocking_portal
 
-from dataretrieval.utils import HTTPX_ASYNC_DEFAULTS, Ambient, _require_positive_int
-
-from . import progress as _progress
-from .combining import (
+from dataretrieval.exceptions import ConfigurationError
+from dataretrieval.transport import progress as _progress
+from dataretrieval.transport.combining import (
     _combine_chunk_frames,
     _combine_chunk_responses,
 )
-from .interruptions import (
-    ChunkInterrupted,
-)
+from dataretrieval.transport.http import open_async_client
+from dataretrieval.transport.retry import _NO_RETRY, RetryPolicy
+from dataretrieval.transport.retry import retry_async as _retry
+from dataretrieval.utils import Ambient, _require_positive_int
+
+from .interruptions import ChunkInterrupted
 from .planning import ChunkPlan
-from .retry import (
-    _NO_RETRY,
-    RetryPolicy,
-    _classify_chunk_error,
-    _retry,
-)
+from .retry import _classify_chunk_error
 
 # Empirically the API replies HTTP 414 above ~8200 bytes of full URL —
 # matches nginx's default ``large_client_header_buffers`` of 8 KB. 8000
@@ -140,12 +135,12 @@ def _read_concurrency_env() -> int | None:
     try:
         value = int(raw)
     except ValueError as exc:
-        raise ValueError(
+        raise ConfigurationError(
             f"{_CONCURRENCY_ENV} must be a positive integer or "
             f"'{_CONCURRENCY_UNBOUNDED}'; got {raw!r}."
         ) from exc
     if value < 1:
-        raise ValueError(
+        raise ConfigurationError(
             f"{_CONCURRENCY_ENV} must be >= 1 (got {value}); use "
             f"'{_CONCURRENCY_UNBOUNDED}' to disable the cap."
         )
@@ -650,31 +645,19 @@ class ChunkedCall:
             self.plan.total if max_concurrent is None else max_concurrent
         )
 
-        async with httpx.AsyncClient(limits=limits, **HTTPX_ASYNC_DEFAULTS) as client:
+        async with open_async_client(limits=limits) as client:
             with _chunked_client(client):
                 reporter = _progress.current()
                 if reporter is not None:
                     reporter.set_chunks(self.plan.total)
 
-                async def fetch_gated(
-                    args: dict[str, Any],
-                ) -> tuple[pd.DataFrame, httpx.Response]:
-                    """One fetch attempt under the concurrency gate.
-
-                    The slot is held for the attempt's full duration —
-                    every page of a paginated sub-request — but acquired
-                    per *attempt* (this is what ``_retry`` re-invokes), so
-                    a sub-request sleeping off a retry backoff isn't
-                    holding a slot while it isn't touching the server.
-                    """
-                    async with semaphore:
-                        return await self.fetch(args)
-
                 async def track(
                     index: int, args: dict[str, Any]
                 ) -> tuple[pd.DataFrame, httpx.Response]:
                     """One sub-request (with retry) + result-store + progress tick."""
-                    result = await _retry(lambda: fetch_gated(args), self.retry_policy)
+                    result = await _retry(
+                        lambda: self.fetch(args), self.retry_policy, gate=semaphore
+                    )
                     self._chunks[index] = result
                     if reporter is not None:
                         # Chunks finish out of order under gather, so tick the
@@ -683,7 +666,7 @@ class ChunkedCall:
                     return result
 
                 # Dispatch every pending sub-request concurrently; the
-                # semaphore (via ``fetch_gated``) is the only throttle.
+                # semaphore (held by ``_retry`` per attempt) is the only throttle.
                 # ``return_exceptions`` keeps completed pairs after a sibling
                 # fails, so partial state stays recoverable via :meth:`resume`.
                 # Failure precedence, in order:
