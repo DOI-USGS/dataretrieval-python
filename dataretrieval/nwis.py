@@ -129,27 +129,27 @@ def _parse_json_or_raise(response: httpx.Response) -> pd.DataFrame:
 def format_response(
     df: pd.DataFrame, service: str | None = None, **kwargs: Any
 ) -> pd.DataFrame:
-    """Setup index for response from query.
+    """Set up the index for a query response.
 
-    This function formats the response from the NWIS web services, in
-    particular it sets the index of the data frame. This function tries to
-    convert the NWIS response into pandas datetime values localized to UTC,
-    and if possible, uses these timestamps to define the data frame index.
+    Formats the response from the NWIS web services; in particular, it sets
+    the index of the data frame. It converts the NWIS response into pandas
+    datetime values localized to UTC and, where possible, uses those
+    timestamps to define the data frame index.
 
     Parameters
     ----------
     df: ``pandas.DataFrame``
-        The data frame to format
+        The data frame to format.
     service: string, optional, default is None
-        The NWIS service that was queried, important because the 'peaks'
-        service returns a different format than the other services.
+        The NWIS service that was queried. This matters because the 'peaks'
+        service returns a different format from the other services.
     **kwargs: optional
-        Additional keyword arguments, e.g., 'multi_index'
+        Additional keyword arguments, e.g. 'multi_index'.
 
     Returns
     -------
     df: ``pandas.DataFrame``
-        The formatted data frame
+        The formatted data frame.
 
     """
     mi = kwargs.pop("multi_index", True)
@@ -181,19 +181,17 @@ def format_response(
 
 
 def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
-    """Datetime formatting for the 'peaks' service response.
-
-    Function to format the datetime column of the 'peaks' service response.
+    """Format the datetime column of the 'peaks' service response.
 
     Parameters
     ----------
     df: ``pandas.DataFrame``
-        The data frame to format
+        The data frame to format.
 
     Returns
     -------
     df: ``pandas.DataFrame``
-        The formatted data frame
+        The formatted data frame.
 
     """
     df["datetime"] = pd.to_datetime(df.pop("peak_dt"), errors="coerce")
@@ -225,35 +223,33 @@ def get_discharge_peaks(
     ssl_check: bool = True,
     **kwargs: Any,
 ) -> tuple[pd.DataFrame, NWIS_Metadata]:
-    """
-    Get discharge peaks from the waterdata service.
+    """Get discharge peaks from the waterdata service.
 
     Parameters
     ----------
     sites: string or list of strings, optional, default is None
-        If the waterdata parameter site_no is supplied, it will overwrite the
-        sites parameter
+        USGS site number (or list of site numbers). If the waterdata parameter
+        site_no is supplied, it overwrites the sites parameter.
     start: string, optional, default is None
-        If the waterdata parameter begin_date is supplied, it will overwrite
-        the start parameter (YYYY-MM-DD)
+        Starting date of record (YYYY-MM-DD). If the waterdata parameter
+        begin_date is supplied, it overwrites the start parameter.
     end: string, optional, default is None
-        If the waterdata parameter end_date is supplied, it will overwrite
-        the end parameter (YYYY-MM-DD)
+        Ending date of record (YYYY-MM-DD). If the waterdata parameter
+        end_date is supplied, it overwrites the end parameter.
     multi_index: bool, optional
-        If False, a dataframe with a single-level index (datetime) is returned,
-        default is True
+        If False, return a dataframe with a single-level index (datetime).
+        Default is True.
     ssl_check: bool, optional
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
+        Whether to check SSL certificates. Default is True.
     **kwargs: optional
-        If supplied, will be used as query parameters
+        Additional query parameters, if supplied.
 
     Returns
     -------
     df: ``pandas.DataFrame``
-        Time series data from the NWIS JSON
+        Time series data from the NWIS JSON.
     md: :obj:`dataretrieval.nwis.NWIS_Metadata`
-        A custom metadata object
+        A custom metadata object.
 
     Examples
     --------
@@ -304,8 +300,7 @@ def get_gwlevels(**kwargs: Any) -> NoReturn:
 def get_stats(
     sites: list[str] | str | None = None, ssl_check: bool = True, **kwargs: Any
 ) -> tuple[pd.DataFrame, NWIS_Metadata]:
-    """
-    Queries water services statistics information.
+    """Query the water services statistics service.
 
     For more information about the water services statistics service, visit
     https://waterservices.usgs.gov/docs/statistics/statistics-details/
@@ -313,26 +308,25 @@ def get_stats(
     Parameters
     ----------
     sites: string or list of strings, optional, default is None
-        USGS site number (or list of site numbers)
+        USGS site number (or list of site numbers).
     ssl_check: bool, optional
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
+        Whether to check SSL certificates. Default is True.
     **kwargs: optional
-        If supplied, will be used as query parameters
+        Additional query parameters, if supplied.
 
     Keyword Arguments
-    ---------------------
+    -----------------
     statReportType: string
-        daily (default), monthly, or annual
+        daily (default), monthly, or annual.
     statTypeCd: string
-        all, mean, max, min, median
+        all, mean, max, min, median.
 
     Returns
     -------
     df: ``pandas.DataFrame``
-        Statistics data from the statistics service
+        Statistics data from the statistics service.
     md: :obj:`dataretrieval.nwis.NWIS_Metadata`
-        A custom metadata object
+        A custom metadata object.
 
     .. todo::
 
@@ -366,23 +360,21 @@ def get_stats(
 def query_waterdata(
     service: str, ssl_check: bool = True, **kwargs: Any
 ) -> httpx.Response:
-    """
-    Queries waterdata.
+    """Query the waterdata service.
 
     Parameters
     ----------
     service: string
         Name of the service to query: 'peaks' or 'ratings'.
     ssl_check: bool, optional
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
+        Whether to check SSL certificates. Default is True.
     **kwargs: optional
-        If supplied, will be used as query parameters
+        Additional query parameters, if supplied.
 
     Returns
     -------
     request: ``httpx.Response``
-        The response object from the API request to the web service
+        The response object from the API request to the web service.
     """
     major_params = ["site_no", "stateCd"]
     bbox_params = [
@@ -412,8 +404,7 @@ def query_waterdata(
 def query_waterservices(
     service: str, ssl_check: bool = True, **kwargs: Any
 ) -> httpx.Response:
-    """
-    Queries waterservices.usgs.gov
+    """Query waterservices.usgs.gov.
 
     For more documentation see https://waterservices.usgs.gov/docs/
 
@@ -426,31 +417,29 @@ def query_waterservices(
     service: string
         Name of the service to query: 'dv', 'iv', 'site', or 'stat'.
     ssl_check: bool, optional
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
+        Whether to check SSL certificates. Default is True.
     **kwargs: optional
-        If supplied, will be used as query parameters
+        Additional query parameters, if supplied.
 
     Keyword Arguments
-    ----------------
+    -----------------
     bBox: string
         Bounding box of decimal latitude and longitude values, given as
         west longitude, south latitude, east longitude, north latitude,
-        separated by commas
+        separated by commas.
     startDT: string
-        Start date (e.g., '2017-12-31')
+        Start date (e.g. '2017-12-31').
     endDT: string
-        End date (e.g., '2018-01-01')
+        End date (e.g. '2018-01-01').
     modifiedSince: string
-        Used to return only sites where attributes or period of record data
-        have changed during the request period. String expected to be formatted
-        in ISO-8601 duration format (e.g., 'P1D' for one day,
-        'P1Y' for one year)
+        Period during which site attributes or period-of-record data must have
+        changed for a site to be returned. Expected to be a string in ISO-8601
+        duration format (e.g. 'P1D' for one day, 'P1Y' for one year).
 
     Returns
     -------
     request: ``httpx.Response``
-        The response object from the API request to the web service
+        The response object from the API request to the web service.
 
     """
     if not any(
@@ -480,8 +469,7 @@ def get_dv(
     ssl_check: bool = True,
     **kwargs: Any,
 ) -> tuple[pd.DataFrame, NWIS_Metadata]:
-    """
-    Get daily values data from NWIS and return it as a ``pandas.DataFrame``.
+    """Get daily values data from NWIS and return it as a ``pandas.DataFrame``.
 
     .. note::
 
@@ -491,28 +479,27 @@ def get_dv(
     Parameters
     ----------
     sites: string or list of strings, optional, default is None
-        USGS site number (or list of site numbers)
+        USGS site number (or list of site numbers).
     start: string, optional, default is None
-        If the waterdata parameter startDT is supplied, it will overwrite the
-        start parameter (YYYY-MM-DD)
+        Starting date of record (YYYY-MM-DD). If the waterdata parameter
+        startDT is supplied, it overwrites the start parameter.
     end: string, optional, default is None
-        If the waterdata parameter endDT is supplied, it will overwrite the
-        end parameter (YYYY-MM-DD)
+        Ending date of record (YYYY-MM-DD). If the waterdata parameter endDT
+        is supplied, it overwrites the end parameter.
     multi_index: bool, optional
-        If True, return a multi-index dataframe, if False, return a
-        single-index dataframe, default is True
+        If True, return a multi-index dataframe; if False, return a
+        single-index dataframe. Default is True.
     ssl_check: bool, optional
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
+        Whether to check SSL certificates. Default is True.
     **kwargs: optional
-        If supplied, will be used as query parameters
+        Additional query parameters, if supplied.
 
     Returns
     -------
     df: ``pandas.DataFrame``
-        Time series data from the NWIS JSON
+        Time series data from the NWIS JSON.
     md: :obj:`dataretrieval.nwis.NWIS_Metadata`
-        A custom metadata object
+        A custom metadata object.
 
     Examples
     --------
@@ -547,8 +534,7 @@ def get_dv(
 def get_info(
     ssl_check: bool = True, **kwargs: Any
 ) -> tuple[pd.DataFrame, NWIS_Metadata]:
-    """
-    Get site description information from NWIS.
+    """Get site description information from NWIS.
 
     **Note:** *Must specify one major parameter.*
 
@@ -558,13 +544,12 @@ def get_info(
     Parameters
     ----------
     ssl_check: bool, optional
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
+        Whether to check SSL certificates. Default is True.
     **kwargs: optional
-        If supplied, will be used as query parameters
+        Additional query parameters, if supplied.
 
     Keyword Arguments
-    ----------------
+    -----------------
     sites: string or list of strings
         A list of site numbers. Sites may be prefixed with an optional agency
         code followed by a colon.
@@ -578,7 +563,7 @@ def get_info(
     bBox: string or list of strings
         A contiguous range of decimal latitude and longitude, starting with the
         west longitude, then the south latitude, then the east longitude, and
-        then the north latitude with each value separated by a comma. The
+        then the north latitude, with each value separated by a comma. The
         product of the range of latitude and longitude cannot exceed 25
         degrees. Whole or decimal degrees must be specified, up to six digits
         of precision. Minutes and seconds are not allowed.
@@ -611,9 +596,9 @@ def get_info(
     siteOutput: string ('basic' or 'expanded')
         Indicates the richness of metadata you want for site attributes. Note
         that for visually oriented formats like Google Map format, this
-        argument has no meaning. Note: for performance reasons,
-        siteOutput=expanded cannot be used if seriesCatalogOutput=true or with
-        any values for outputDataTypeCd.
+        argument has no meaning. For performance reasons, siteOutput=expanded
+        cannot be used if seriesCatalogOutput=true or with any values for
+        outputDataTypeCd.
     seriesCatalogOutput: bool
         A switch that provides detailed period of record information for
         certain output formats. The period of record indicates date ranges for
@@ -623,9 +608,9 @@ def get_info(
     Returns
     -------
     df: ``pandas.DataFrame``
-        Site data from the NWIS web service
+        Site data from the NWIS web service.
     md: :obj:`dataretrieval.nwis.NWIS_Metadata`
-        A custom metadata object
+        A custom metadata object.
 
     Examples
     --------
@@ -680,29 +665,28 @@ def get_iv(
     Parameters
     ----------
     sites: string or list of strings, optional, default is None
-        If the waterdata parameter site_no is supplied, it will overwrite the
-        sites parameter
+        USGS site number (or list of site numbers). If the waterdata parameter
+        site_no is supplied, it overwrites the sites parameter.
     start: string, optional, default is None
-        If the waterdata parameter startDT is supplied, it will overwrite the
-        start parameter (YYYY-MM-DD)
+        Starting date of record (YYYY-MM-DD). If the waterdata parameter
+        startDT is supplied, it overwrites the start parameter.
     end: string, optional, default is None
-        If the waterdata parameter endDT is supplied, it will overwrite the
-        end parameter (YYYY-MM-DD)
+        Ending date of record (YYYY-MM-DD). If the waterdata parameter endDT
+        is supplied, it overwrites the end parameter.
     multi_index: bool, optional
-        If False, a dataframe with a single-level index (datetime) is returned,
-        default is True
+        If False, return a dataframe with a single-level index (datetime).
+        Default is True.
     ssl_check: bool, optional
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
+        Whether to check SSL certificates. Default is True.
     **kwargs: optional
-        If supplied, will be used as query parameters
+        Additional query parameters, if supplied.
 
     Returns
     -------
     df: ``pandas.DataFrame``
-        Time series data from the NWIS JSON
+        Time series data from the NWIS JSON.
     md: :obj:`dataretrieval.nwis.NWIS_Metadata`
-        A custom metadata object
+        A custom metadata object.
 
     Examples
     --------
@@ -761,32 +745,29 @@ def get_ratings(
     ssl_check: bool = True,
     **kwargs: Any,
 ) -> tuple[pd.DataFrame, NWIS_Metadata]:
-    """
-    Rating table for an active USGS streamgage retrieval.
+    """Get the rating table for an active USGS streamgage.
 
-    Reads current rating table for an active USGS streamgage from NWISweb.
+    Reads the current rating table for an active USGS streamgage from NWISweb.
     Data is retrieved from https://waterdata.usgs.gov/nwis.
 
     Parameters
     ----------
     site: string, optional, default is None
-        USGS site number. This is usually an 8 digit number as a string.
-        If the nwis parameter site_no is supplied, it will overwrite the site
-        parameter
+        USGS site number, usually an 8 digit number as a string. If the nwis
+        parameter site_no is supplied, it overwrites the site parameter.
     file_type: string, default is "base"
-        can be "base", "corr", or "exsa"
+        One of "base", "corr", or "exsa".
     ssl_check: bool, optional
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
+        Whether to check SSL certificates. Default is True.
     **kwargs: optional
-        If supplied, will be used as query parameters
+        Additional query parameters, if supplied.
 
     Returns
     -------
     df: ``pandas.DataFrame``
-        Formatted requested data
+        Formatted requested data.
     md: :obj:`dataretrieval.nwis.NWIS_Metadata`
-        A custom metadata object
+        A custom metadata object.
 
     Examples
     --------
@@ -816,23 +797,21 @@ def get_ratings(
 def what_sites(
     ssl_check: bool = True, **kwargs: Any
 ) -> tuple[pd.DataFrame, NWIS_Metadata]:
-    """
-    Search NWIS for sites within a region with specific data.
+    """Search NWIS for sites within a region with specific data.
 
     Parameters
     ----------
     ssl_check: bool, optional
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
+        Whether to check SSL certificates. Default is True.
     **kwargs: optional
-        Accepts the same parameters as :obj:`dataretrieval.nwis.get_info`
+        Accepts the same parameters as :obj:`dataretrieval.nwis.get_info`.
 
     Returns
     -------
     df: ``pandas.DataFrame``
-        Formatted requested data
+        Formatted requested data.
     md: :obj:`dataretrieval.nwis.NWIS_Metadata`
-        A custom metadata object
+        A custom metadata object.
 
     Examples
     --------
@@ -867,8 +846,7 @@ def get_record(
     ssl_check: bool = True,
     **kwargs: Any,
 ) -> pd.DataFrame:
-    """
-    Get data from NWIS and return it as a ``pandas.DataFrame``.
+    """Get data from NWIS and return it as a ``pandas.DataFrame``.
 
     .. note::
 
@@ -878,21 +856,21 @@ def get_record(
     Parameters
     ----------
     sites: string or list of strings, optional, default is None
-        List or comma delimited string of sites.
+        List of sites, or a comma-delimited string of sites.
     start: string, optional, default is None
-        Starting date of record (YYYY-MM-DD)
+        Starting date of record (YYYY-MM-DD).
     end: string, optional, default is None
-        Ending date of record. (YYYY-MM-DD)
+        Ending date of record (YYYY-MM-DD).
     multi_index: bool, optional
-        If False, a dataframe with a single-level index (datetime) is returned,
-        default is True
+        If False, return a dataframe with a single-level index (datetime).
+        Default is True.
     wide_format : bool, optional
-        If True, return data in wide format with multiple samples per row and
-        one row per time, default is True
+        If True, return data in wide format, with multiple samples per row and
+        one row per time. Default is True.
     datetime_index : bool, optional
-        If True, create a datetime index. Default is True
+        If True, create a datetime index. Default is True.
     state: string, optional, default is None
-        full name, abbreviation or id
+        State full name, abbreviation, or id.
     service: string, default is 'iv'
         - 'iv' : instantaneous data
         - 'dv' : daily mean data
@@ -906,14 +884,13 @@ def get_record(
         - 'ratings': get rating table
         - 'stat': get statistics
     ssl_check: bool, optional
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
+        Whether to check SSL certificates. Default is True.
     **kwargs: optional
-        If supplied, will be used as query parameters
+        Additional query parameters, if supplied.
 
     Returns
     -------
-        ``pandas.DataFrame`` containing requested data
+        ``pandas.DataFrame`` containing the requested data.
 
     Examples
     --------
@@ -1018,18 +995,17 @@ def get_record(
 
 
 def _read_json(json: dict[str, Any]) -> pd.DataFrame:
-    """
-    Reads a NWIS Water Services formatted JSON into a ``pandas.DataFrame``.
+    """Read a NWIS Water Services formatted JSON into a ``pandas.DataFrame``.
 
     Parameters
     ----------
     json: dict
-        A JSON dictionary response to be parsed into a ``pandas.DataFrame``
+        A JSON dictionary response to be parsed into a ``pandas.DataFrame``.
 
     Returns
     -------
     df: ``pandas.DataFrame``
-        Time series data from the NWIS JSON
+        Time series data from the NWIS JSON.
 
     """
     all_site_dfs = []
@@ -1136,13 +1112,13 @@ class NWIS_Metadata(BaseMetadata):
     Attributes
     ----------
     url : str
-        Response url
+        Response url.
     query_time: datetime.timedelta
-        Response elapsed time
+        Response elapsed time.
     header: httpx.Headers
-        Response headers
+        Response headers.
     comments: str | None
-        Metadata comments, if any
+        Metadata comments, if any.
 
     Notes
     -----
@@ -1152,15 +1128,14 @@ class NWIS_Metadata(BaseMetadata):
     """
 
     def __init__(self, response: httpx.Response, **parameters: Any) -> None:
-        """Generates a standard set of metadata informed by the response with specific
-        metadata for NWIS data.
+        """Generate the standard metadata set, plus NWIS-specific metadata.
 
         Parameters
         ----------
         response: Response
-            Response object from httpx module
+            Response object from the ``httpx`` module.
         parameters: unpacked dictionary
-            Unpacked dictionary of the parameters supplied in the request
+            Unpacked dictionary of the parameters supplied in the request.
 
         """
         super().__init__(response)
@@ -1185,9 +1160,9 @@ class NWIS_Metadata(BaseMetadata):
         Returns
         -------
         df: ``pandas.DataFrame``
-            Formatted requested data from calling `nwis.what_sites`
+            Formatted requested data from calling `nwis.what_sites`.
         md: :obj:`dataretrieval.nwis.NWIS_Metadata`
-            A NWIS_Metadata object
+            A NWIS_Metadata object.
         """
         if "site_no" in self._parameters:
             return what_sites(sites=self._parameters["site_no"])

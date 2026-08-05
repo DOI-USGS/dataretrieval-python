@@ -1,7 +1,6 @@
-"""
-Tool for downloading data from the Water Quality Portal (https://waterqualitydata.us)
+"""Download data from the Water Quality Portal (https://waterqualitydata.us).
 
-See https://waterqualitydata.us/webservices_documentation for API reference
+See https://waterqualitydata.us/webservices_documentation for the API reference.
 
 .. todo::
 
@@ -42,9 +41,11 @@ services_legacy = [
 
 
 def _is_code_column(name: str) -> bool:
-    """True if a WQP column name denotes a code/identifier whose leading zeros
-    are significant and must be preserved as ``str`` (HUCs, parameter codes,
-    FIPS codes): the name ends with "code" or contains "identifier"/"huc"/"fips".
+    """Report whether a WQP column name denotes a code or identifier.
+
+    Such columns (HUCs, parameter codes, FIPS codes) have leading zeros that
+    are significant and must be preserved as ``str``. A name qualifies if it
+    ends with "code" or contains "identifier", "huc", or "fips".
     """
     lname = name.lower()
     return lname.endswith("code") or any(
@@ -85,17 +86,17 @@ def get_results(
     Parameters
     ----------
     ssl_check : bool, optional
-        Check the SSL certificate.
+        Whether to check the SSL certificate. Default is True.
     legacy : bool, optional
         Return the legacy WQX data profile. Default is True.
     dataProfile : string, optional
-        Specifies the data fields returned by the query.
+        Data fields returned by the query.
         WQX3.0 profiles include 'fullPhysChem', 'narrow', and 'basicPhysChem'.
         Legacy profiles include 'resultPhysChem', 'biological', and
         'narrowResult'. For WQX3.0 queries (``legacy=False``), defaults to
         'fullPhysChem'; legacy queries have no default profile.
     siteid : string
-        Monitoring location identified by agency code, a hyphen, and
+        Monitoring location identifier: an agency code, a hyphen, and an
         identification number (Example: "USGS-05586100").
     statecode : string
         US state FIPS code (Example: Illinois is "US:17").
@@ -104,7 +105,7 @@ def get_results(
     huc : string
         Eight-digit hydrologic unit (HUC), delimited by semicolons.
     bBox : string
-        Search bounding box (Example: bBox=-92.8,44.2,-88.9,46.0)
+        Search bounding box (Example: bBox=-92.8,44.2,-88.9,46.0).
     lat : string
         Radial-search central latitude in WGS84 decimal degrees.
     long : string
@@ -115,11 +116,11 @@ def get_results(
         Five-digit USGS parameter code, delimited by semicolons.
         NWIS only.
     startDateLo : string
-        Date of earliest desired data-collection activity,
-        expressed as 'MM-DD-YYYY'
+        Date of the earliest desired data-collection activity,
+        expressed as 'MM-DD-YYYY'.
     startDateHi : string
-        Date of last desired data-collection activity,
-        expressed as 'MM-DD-YYYY'
+        Date of the last desired data-collection activity,
+        expressed as 'MM-DD-YYYY'.
     characteristicName : string
         One or more case-sensitive characteristic names, separated by
         semicolons (https://www.waterqualitydata.us/public_srsnames/).
@@ -197,7 +198,7 @@ def _what(
 
     ``service`` is the WQP service name (e.g. ``"Station"``). Services with a
     WQX3.0 equivalent (those in :data:`services_wqx3`) use :func:`wqx3_url`
-    when ``legacy=False`` and :func:`wqp_url` otherwise; legacy-only services
+    when ``legacy=False`` and :func:`wqp_url` otherwise. Legacy-only services
     route through :func:`_legacy_only_url`, which warns and falls back to the
     legacy profile. The CSV response is parsed via :func:`_read_wqp_csv`.
     """
@@ -233,11 +234,11 @@ def what_sites(
     Parameters
     ----------
     ssl_check : bool, optional
-        Check the SSL certificate. Default is True.
+        Whether to check the SSL certificate. Default is True.
     legacy : bool, optional
-        If True, returns the legacy WQX data profile and warns the user of
-        the issues associated with it. If False, returns the new WQX3.0
-        profile, if available. Defaults to True.
+        If True, return the legacy WQX data profile and warn the user about
+        the issues associated with it. If False, return the new WQX3.0
+        profile when one is available. Defaults to True.
     **kwargs : optional
         Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`
 
@@ -280,7 +281,7 @@ def what_organizations(
     Parameters
     ----------
     ssl_check : bool, optional
-        Check the SSL certificate. Default is True.
+        Whether to check the SSL certificate. Default is True.
     legacy : bool, optional
         Return the legacy WQX data profile. Default is True.
     **kwargs : optional
@@ -323,7 +324,7 @@ def what_projects(
     Parameters
     ----------
     ssl_check : bool, optional
-        Check the SSL certificate. Default is True.
+        Whether to check the SSL certificate. Default is True.
     legacy : bool, optional
         Return the legacy WQX data profile. Default is True.
     **kwargs : optional
@@ -366,7 +367,7 @@ def what_activities(
     Parameters
     ----------
     ssl_check : bool, optional
-        Check the SSL certificate. Default is True.
+        Whether to check the SSL certificate. Default is True.
     legacy : bool, optional
         Return the legacy WQX data profile. Default is True.
     **kwargs : optional
@@ -409,8 +410,7 @@ def what_detection_limits(
     legacy: bool = True,
     **kwargs: Any,
 ) -> tuple[DataFrame, WQP_Metadata]:
-    """Search WQP for result detection limits within a region with specific
-    data.
+    """Search WQP for result detection limits within a region with specific data.
 
     Any WQP API parameter can be passed as a keyword argument to this function.
     More information about the API can be found at:
@@ -423,7 +423,7 @@ def what_detection_limits(
     Parameters
     ----------
     ssl_check : bool
-        Check the SSL certificate. Default is True.
+        Whether to check the SSL certificate. Default is True.
     legacy : bool
         Return the legacy WQX data profile. Default is True.
     **kwargs : optional
@@ -477,7 +477,7 @@ def what_habitat_metrics(
     Parameters
     ----------
     ssl_check : bool
-        Check the SSL certificate. Default is True.
+        Whether to check the SSL certificate. Default is True.
     legacy : bool
         Return the legacy WQX data profile. Default is True.
     **kwargs : optional
@@ -520,7 +520,7 @@ def what_project_weights(
     Parameters
     ----------
     ssl_check : bool
-        Check the SSL certificate. Default is True.
+        Whether to check the SSL certificate. Default is True.
     legacy : bool
         Return the legacy WQX data profile. Default is True.
     **kwargs : optional
@@ -573,7 +573,7 @@ def what_activity_metrics(
     Parameters
     ----------
     ssl_check : bool
-        Check the SSL certificate. Default is True.
+        Whether to check the SSL certificate. Default is True.
     legacy : bool
         Return the legacy WQX data profile. Default is True.
     **kwargs : optional
@@ -649,8 +649,7 @@ class WQP_Metadata(BaseMetadata):
     """
 
     def __init__(self, response: httpx.Response, **parameters: Any) -> None:
-        """Generates a standard set of metadata informed by the response with specific
-        metadata for WQP data.
+        """Generate the standard metadata set, plus WQP-specific metadata.
 
         Parameters
         ----------
@@ -658,7 +657,7 @@ class WQP_Metadata(BaseMetadata):
             Response object from the ``httpx`` module.
 
         parameters : dict
-            Unpacked dictionary of the parameters supplied in the request
+            Unpacked dictionary of the parameters supplied in the request.
 
         """
 
@@ -688,7 +687,7 @@ class WQP_Metadata(BaseMetadata):
 
 
 def _check_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
-    """Private function to check kwargs for unsupported parameters."""
+    """Check kwargs for unsupported parameters."""
     mimetype = kwargs.get("mimeType")
     if mimetype == "geojson":
         raise NotImplementedError("GeoJSON not yet supported. Set 'mimeType=csv'.")
@@ -732,10 +731,10 @@ def _warn_wqx3_unavailable() -> None:
 def _legacy_only_url(service: str, legacy: bool) -> str:
     """URL builder for WQP services that have no WQX3.0 equivalent.
 
-    When ``legacy=False`` is passed to one of these helpers we emit a
-    ``UserWarning`` explaining the fallback and *also* suppress the legacy
-    ``DeprecationWarning`` that ``wqp_url`` would otherwise raise — its
-    message claims setting ``legacy=False`` removes the warning, which is
+    Passing ``legacy=False`` to one of these helpers emits a ``UserWarning``
+    explaining the fallback and *also* suppresses the legacy
+    ``DeprecationWarning`` that ``wqp_url`` would otherwise raise. That
+    warning's message claims setting ``legacy=False`` removes it, which is
     a lie for endpoints that have no WQX3.0 alternative.
     """
     with warnings.catch_warnings():

@@ -1,3 +1,13 @@
+"""Retrieve hydrologic network features from the Network Linked Data Index (NLDI).
+
+The getters below navigate the hydrologic network from an origin -- a feature
+source and id, a ``comid``, or a lat/long point -- and return flowlines, basins,
+or registered features as a ``geopandas.GeoDataFrame``, or as raw JSON when
+``as_json=True``. This module requires geopandas.
+
+See https://api.water.usgs.gov/nldi/linked-data for the API reference.
+"""
+
 from __future__ import annotations
 
 from json import JSONDecodeError
@@ -39,7 +49,7 @@ def _features_to_gdf(feature_collection: dict[str, Any]) -> gpd.GeoDataFrame:
 
     NLDI can legitimately return no features (e.g. a feature with nothing
     upstream), and :func:`_query_nldi` returns ``{}`` when a 200 response
-    carries no JSON body. ``GeoDataFrame.from_features`` raises on those
+    carries no JSON body. ``GeoDataFrame.from_features`` raises on both cases
     (there's no geometry column to attach the CRS to), so return an empty
     GeoDataFrame with the correct CRS instead of crashing.
     """
@@ -59,8 +69,10 @@ def get_flowlines(
     trim_start: bool = False,
     as_json: bool = False,
 ) -> gpd.GeoDataFrame | dict[str, Any]:
-    """Gets the flowlines for the specified navigation either by comid or feature
-    source in WGS84 lat/long coordinates as GeoDataFrame containing a polyline geometry.
+    """Get the flowlines for a navigation, either by comid or by feature source.
+
+    Flowlines are returned in WGS84 lat/long coordinates as a GeoDataFrame
+    containing a polyline geometry.
 
     Parameters
     ----------
@@ -124,8 +136,10 @@ def get_basin(
     split_catchment: bool = False,
     as_json: bool = False,
 ) -> gpd.GeoDataFrame | dict[str, Any]:
-    """Gets the aggregated basin for the specified feature in WGS84 lat/lon
-    as GeoDataFrame or as JSON containing a polygon geometry.
+    """Get the aggregated basin for the specified feature.
+
+    The basin is returned in WGS84 lat/lon as a GeoDataFrame or as JSON,
+    containing a polygon geometry.
 
     Parameters
     ----------
@@ -181,9 +195,10 @@ def get_features(
     stop_comid: int | None = None,
     as_json: bool = False,
 ) -> gpd.GeoDataFrame | dict[str, Any]:
-    """Gets all features found along the specified navigation either by
-    comid or feature source as points in WGS84 lat/long coordinates - a GeoDataFrame
-    containing a point geometry.
+    """Get all features along a navigation, either by comid or by feature source.
+
+    Features are returned as points in WGS84 lat/long coordinates - a
+    GeoDataFrame containing a point geometry.
 
     Parameters
     ----------
@@ -286,8 +301,10 @@ def get_features(
 # TODO: This function can cause a timeout error for some data sources
 #  - maybe we shouldn't provide this function?
 def get_features_by_data_source(data_source: str) -> gpd.GeoDataFrame:
-    """Gets all features found for the specified data source as
-    points in WGS84 lat/long coordinates as GeoDataFrame containing a point geometry.
+    """Get all features for the specified data source.
+
+    Features are returned as points in WGS84 lat/long coordinates as a
+    GeoDataFrame containing a point geometry.
 
     Parameters
     ----------
@@ -327,8 +344,7 @@ def search(
     long: float | None = None,
     distance: int = 50,
 ) -> dict[str, Any]:
-    """Searches for the specified feature in NLDI and returns the results
-    as a dictionary.
+    """Search NLDI for the specified feature and return the results as a dict.
 
     Parameters
     ----------

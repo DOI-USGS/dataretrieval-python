@@ -50,9 +50,9 @@ def _handle_nesting(
     body: dict[str, Any],
     geopd: bool = False,
 ) -> pd.DataFrame:
-    """
-    Takes nested json from stats service and flattens into a dataframe with
-    one row per monitoring location, parameter, and statistic.
+    """Flatten nested JSON from the stats service into a dataframe.
+
+    The result has one row per monitoring location, parameter, and statistic.
 
     Parameters
     ----------
@@ -137,13 +137,12 @@ def _handle_nesting(
 
 
 def _expand_percentiles(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Takes percentile value and thresholds columns containing lists
-    of values and turns each list element into its own row in the
-    original dataframe. Exploded ``'nan'`` values are dropped. If
-    no percentile data exist, it adds a percentile column and
-    populates it with the percentile assigned to min, max, and
-    median.
+    """Explode percentile value and threshold lists into one row per element.
+
+    The "values" and "percentiles" columns hold lists; each element becomes its
+    own row in the original dataframe, and exploded ``'nan'`` values are
+    dropped. If no percentile data exist, a percentile column is added and
+    populated with the percentile assigned to min, max, and median.
 
     Parameters
     ----------
@@ -212,13 +211,12 @@ def get_data(
     expand_percentiles: bool,
     client: httpx.AsyncClient | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """
-    Retrieves statistical data from a specified endpoint and returns it
-    as a pandas DataFrame with metadata.
+    """Retrieve statistical data from a statistics endpoint.
 
-    This function prepares request arguments, constructs API requests,
-    handles pagination, processes results, and formats output according
-    to the specified parameters.
+    Returns the data as a pandas DataFrame with metadata. This function
+    prepares request arguments, constructs API requests, handles pagination,
+    processes results, and formats output according to the specified
+    parameters.
 
     The stats path doesn't go through ``multi_value_chunked`` (its query
     shape has no chunkable list axes), so it drives transport pagination
@@ -234,10 +232,10 @@ def get_data(
         The statistics service type (for example,
         "observationNormals" or "observationIntervals").
     expand_percentiles : bool
-        Determines whether the percentiles column is expanded so that
-        each percentile gets its own row in the returned dataframe. If
-        True and the user requests a computation_type other than
-        percentiles, a percentile column is still returned.
+        Whether to expand the percentiles column so that each percentile gets
+        its own row in the returned dataframe. If True and the caller requests a
+        computation_type other than percentiles, a percentile column is still
+        returned.
     client : httpx.AsyncClient, optional
         Caller-borrowed async client. ``None`` (default) opens a temporary one
         inside the portal. Primarily a test seam. Deliberately does *not* fall
@@ -251,7 +249,8 @@ def get_data(
     pd.DataFrame
         A DataFrame containing the retrieved and processed statistical data.
     BaseMetadata
-        A metadata object containing request information including URL and query time.
+        A metadata object with request information, including the URL and
+        query time.
 
     Raises
     ------

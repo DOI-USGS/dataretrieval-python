@@ -4,8 +4,8 @@ This module holds OGC API Features orchestration — OGC cursor/response
 strategies and the chunked fetch entry point :func:`get_ogc_data`. Generic
 pagination and sync dispatch live in :mod:`dataretrieval.transport`; request
 construction lives in :mod:`~dataretrieval.ogc.requests`. The surrounding
-concerns live in sibling modules it composes, each with its own reason to
-change: :mod:`~dataretrieval.ogc.dates` (time-parameter marshalling),
+concerns live in sibling modules this one composes, each with its own reason
+to change: :mod:`~dataretrieval.ogc.dates` (time-parameter marshalling),
 :mod:`~dataretrieval.ogc.errors` (HTTP error mapping), and
 :mod:`~dataretrieval.ogc.shaping` (GeoJSON features to DataFrame and result
 finalization). It is deliberately free of any Water-Data-specific constants
@@ -86,8 +86,7 @@ def _next_req_url(
     resp: httpx.Response, *, body: dict[str, Any] | None = None
 ) -> str | None:
     """
-    Extracts the URL for the next page of results from an HTTP response from a
-    water data endpoint.
+    Extracts the next-page URL from a water data endpoint's HTTP response.
 
     Parameters
     ----------
@@ -107,7 +106,7 @@ def _next_req_url(
     -----
     - Returns None when the response carries no features.
     - Expects the response JSON to contain a "links" list with objects having
-    "rel" and "href" keys.
+      "rel" and "href" keys.
     - Checks for the "next" relation in the "links" to determine the next URL.
     """
     if body is None:
@@ -210,8 +209,7 @@ async def _walk_pages(
     client: httpx.AsyncClient | None = None,
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """
-    Iterate paginated OGC API responses asynchronously and aggregate
-    them into one DataFrame.
+    Iterate paginated OGC API responses and aggregate them into one DataFrame.
 
     Thin wrapper that hands off to :func:`_paginate` with
     OGC-specific strategies: pages are parsed via :func:`_get_resp_data`
@@ -270,12 +268,11 @@ def get_ogc_data(
     dialect: OgcDialect | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
-    Retrieves OGC (Open Geospatial Consortium) data from a specified
-    endpoint and returns it as a pandas DataFrame with metadata.
+    Retrieves OGC (Open Geospatial Consortium) data as a DataFrame with metadata.
 
-    This function prepares request arguments, constructs API requests,
-    handles pagination, processes the results, and formats output
-    according to the specified parameters.
+    Prepares request arguments, constructs API requests, handles pagination,
+    processes the results, and formats output according to the specified
+    parameters.
 
     Parameters
     ----------
@@ -365,8 +362,7 @@ def get_ogc_data(
 async def _fetch_once(
     args: dict[str, Any],
 ) -> tuple[pd.DataFrame, httpx.Response]:
-    """Send one prepared-args OGC request asynchronously; return the
-    frame + response.
+    """Send one prepared-args OGC request asynchronously; return (frame, response).
 
     ``@chunking.multi_value_chunked`` models every multi-value list
     parameter and the cql-text filter as a chunkable axis, greedy-halves
@@ -374,8 +370,8 @@ async def _fetch_once(
     and iterates the cartesian product. With no chunkable inputs the
     decorator passes args through unchanged. The decorator gathers every
     sub-request over one shared :class:`httpx.AsyncClient` (concurrency
-    bounded by a semaphore, sized from ``API_USGS_CONCURRENT``)
-    and returns a *synchronous* wrapper, so ``get_ogc_data`` keeps calling
+    bounded by a semaphore, sized from ``API_USGS_CONCURRENT``). It also
+    returns a *synchronous* wrapper, so ``get_ogc_data`` keeps calling
     ``_fetch_once(args, finalize=...)`` synchronously. The return shape is
     ``(frame, response)``.
     """

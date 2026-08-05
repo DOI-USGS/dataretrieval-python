@@ -82,7 +82,7 @@ def _format_api_dates(
     """
     Formats date or datetime input(s) for use with an API.
 
-    Handles single values or ranges, and converting to ISO 8601 or date-only
+    Handles single values or ranges, converting to ISO 8601 or date-only
     formats as needed.
 
     Parameters
@@ -101,10 +101,10 @@ def _format_api_dates(
     -------
     Union[str, None]
         - If input is a single value, returns the formatted date/datetime string
-        or None if parsing fails.
+          or None if parsing fails.
         - If input is a list of two values, returns a date/datetime range string
-        separated by "/" (e.g., "YYYY-MM-DD/YYYY-MM-DD" or
-        "YYYY-MM-DDTHH:MM:SSZ/YYYY-MM-DDTHH:MM:SSZ").
+          separated by "/" (e.g., "YYYY-MM-DD/YYYY-MM-DD" or
+          "YYYY-MM-DDTHH:MM:SSZ/YYYY-MM-DDTHH:MM:SSZ").
         - Returns None if input is empty, all NA, or cannot be parsed.
 
     Raises
@@ -115,15 +115,15 @@ def _format_api_dates(
     Notes
     -----
     - A single blank/NA value returns None. In a two-value range, a blank/NA
-    endpoint is rendered as ``".."`` to denote an open bound (e.g.
-    ``"2024-01-01/.."``); the range is only None when *every* element is
-    blank/NA or any non-NA element fails to parse.
+      endpoint is rendered as ``".."`` to denote an open bound (e.g.
+      ``"2024-01-01/.."``); the range is only None when *every* element is
+      blank/NA or any non-NA element fails to parse.
     - Supports ISO 8601 durations such as "P7D" and "PT36H" and pre-formatted
-    intervals containing ``"/"``; both are passed through unchanged.
+      intervals containing ``"/"``; both are passed through unchanged.
     - Converts datetimes to UTC and formats as ISO 8601 with 'Z' suffix when
-    `date` is False. Inputs with an explicit offset (``Z`` or ``+HH:MM``) are
-    converted from that offset to UTC; naive inputs are interpreted in the
-    local time zone for backwards compatibility.
+      `date` is False. Inputs with an explicit offset (``Z`` or ``+HH:MM``) are
+      converted from that offset to UTC; naive inputs are interpreted in the
+      local time zone for backwards compatibility.
     """
     if datetime_input is None:
         return None
@@ -156,7 +156,7 @@ def _format_api_dates(
         if _DURATION_RE.match(single) or "/" in single:
             return single
 
-    # element invalidates the range.
+    # Format each element; any element that fails to parse invalidates the range.
     formatted: list[str] = []
     for dt in datetime_input:
         one = _format_one(dt, date=date)

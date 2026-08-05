@@ -1,7 +1,7 @@
-"""Functions for downloading data from the Water Data APIs, including the USGS
-Aquarius Samples database.
+"""Functions for downloading data from the USGS Water Data APIs.
 
-See https://api.waterdata.usgs.gov/ for API reference.
+Includes the USGS Aquarius Samples database. See
+https://api.waterdata.usgs.gov/ for the API reference.
 """
 
 from __future__ import annotations
@@ -80,8 +80,7 @@ def get_daily(
     max_rows: int | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Daily data provide one data value to represent water conditions for the
-    day.
+    """Get daily data: one value representing water conditions for each day.
 
     Throughout much of the history of the USGS, the primary water data available
     was daily data collected manually at the monitoring location once each day.
@@ -96,66 +95,64 @@ def get_daily(
     Parameters
     ----------
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location. This
-        corresponds to the id field in the monitoring-locations endpoint.
-        Monitoring location IDs are created by combining the agency code of
-        the agency responsible for the monitoring location (e.g. USGS) with
-        the ID number of the monitoring location (e.g. 02238500), separated
-        by a hyphen (e.g. USGS-02238500).
+        A unique identifier representing a single monitoring location,
+        corresponding to the id field in the monitoring-locations endpoint. IDs
+        combine the agency code of the agency responsible for the monitoring
+        location (e.g. USGS) with the location's ID number (e.g. 02238500),
+        separated by a hyphen (e.g. USGS-02238500).
     parameter_code : string or iterable of strings, optional
-        Parameter codes are 5-digit codes used to identify the constituent
-        measured and the units of measure. A complete list of parameter
-        codes and associated groupings can be found at
-        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+        A 5-digit code identifying the constituent measured and the units of
+        measure. A complete list of parameter codes and associated groupings is
+        available at https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
     statistic_id : string or iterable of strings, optional
         A code corresponding to the statistic an observation represents.
         Example codes include 00001 (max), 00002 (min), and 00003 (mean).
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
     properties : string or iterable of strings, optional
-        A list of requested columns to be returned from the query.
+        The columns to return from the query.
         Available options are: geometry, id, time_series_id,
         monitoring_location_id, parameter_code, statistic_id, time, value,
         unit_of_measure, approval_status, qualifier, last_modified
     time_series_id : string or iterable of strings, optional
-        A unique identifier representing a single time series. This
-        corresponds to the id field in the time-series-metadata endpoint.
+        A unique identifier representing a single time series, corresponding to
+        the id field in the time-series-metadata endpoint.
     daily_id : string or iterable of strings, optional
         A universally unique identifier (UUID) representing a single version of
-        a record. It is not stable over time. Every time the record is refreshed
-        in our database (which may happen as part of normal operations and does
-        not imply any change to the data itself) a new ID will be generated. To
-        uniquely identify a single observation over time, compare the time and
-        time_series_id fields; each time series will only have a single
+        a record. The UUID is not stable over time: every time the record is
+        refreshed in our database, a new ID is generated. A refresh may happen
+        as part of normal operations and does not imply any change to the data
+        itself. To uniquely identify a single observation over time, compare the
+        time and time_series_id fields; each time series has only a single
         observation at a given time.
     approval_status : string or iterable of strings, optional
-        Some of the data that you have obtained from this U.S. Geological Survey
-        database may not have received Director's approval. Any such data values
-        are qualified as provisional and are subject to revision. Provisional
-        data are released on the condition that neither the USGS nor the United
-        States Government may be held liable for any damages resulting from its
-        use. This field reflects the approval status of each record, and is either
-        "Approved", meaning processing review has been completed and the data is
-        approved for publication, or "Provisional" and subject to revision. For
-        more information about provisional data, go to:
+        The approval status of each record: either "Approved", meaning
+        processing review has been completed and the data are approved for
+        publication, or "Provisional", meaning the data are subject to revision.
+        Some of the data you obtain from this U.S. Geological Survey database
+        may not have received Director's approval. Any such data values are
+        qualified as provisional and are subject to revision. Provisional data
+        are released on the condition that neither the USGS nor the United
+        States Government may be held liable for any damages resulting from
+        their use. For more information about provisional data, see
         https://waterdata.usgs.gov/provisional-data-statement/.
     unit_of_measure : string or iterable of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
     qualifier : string or iterable of strings, optional
-        This field indicates any qualifiers associated with an observation, for
-        instance if a sensor may have been impacted by ice or if values were
-        estimated.
+        Any qualifiers associated with an observation, for instance whether a
+        sensor may have been impacted by ice or whether values were estimated.
     value : string or iterable of strings, optional
         The value of the observation. Values are transmitted as strings in
-        the JSON response format in order to preserve precision.
+        the JSON response format to preserve precision.
     last_modified : string, optional
-        The last time a record was refreshed in our database. This may happen
-        due to regular operational processes and does not necessarily indicate
-        that anything about the measurement has changed. You can query this field
-        using date-times or intervals, adhering to RFC 3339, or using ISO 8601
-        duration objects. Intervals may be bounded or half-bounded (double-dots
-        at start or end).
+        The last time a record was refreshed in our database. A refresh may
+        happen due to regular operational processes and does not necessarily
+        indicate that anything about the measurement has changed. You can query
+        this field using date-times or intervals, adhering to RFC 3339, or using
+        ISO 8601 duration objects. Intervals may be bounded or half-bounded
+        (double-dots at start or end). Only features whose last_modified
+        intersects the requested value are selected.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -165,22 +162,18 @@ def get_daily(
             * Duration objects: "P1M" for data from the past month or
                 "PT36H" for the last 36 hours
 
-        Only features that have a last_modified that intersects the value of
-        datetime are selected.
     skip_geometry : boolean, optional
-        This option can be used to skip response geometries for each feature.
-        The returning object will be a data frame with no spatial information.
-        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
-        CQL2 queries.
+        If True, the response omits the geometry of each feature and the
+        returned object is a data frame with no spatial information. The USGS
+        Water Data APIs use camelCase "skipGeometry" in CQL2 queries.
     time : string, optional
         The date an observation represents. You can query this field using
         date-times or intervals, adhering to RFC 3339, or using ISO 8601
         duration objects. Intervals may be bounded or half-bounded (double-dots
-        at start or end). Only features that have a time that intersects the
-        value of datetime are selected. If a feature has multiple temporal
-        properties, it is the decision of the server whether only a single
-        temporal property is used to determine the extent or all relevant
-        temporal properties.
+        at start or end). Only features whose time intersects the requested
+        value are selected. If a feature has multiple temporal properties, the
+        server decides whether to use a single property or all relevant ones to
+        determine the extent.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -191,22 +184,20 @@ def get_daily(
                 "PT36H" for the last 36 hours
 
     bbox : list of numbers, optional
-        Only features that have a geometry that intersects the bounding box are
-        selected.  The bounding box is provided as four or six numbers,
-        depending on whether the coordinate reference system includes a vertical
-        axis (height or depth). Coordinates are assumed to be in crs 4326. The
-        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
-        ``[Western-most longitude, Southern-most latitude, Eastern-most
-        longitude, Northern-most latitude]``.
+        Only features whose geometry intersects the bounding box are selected.
+        The bounding box is provided as four or six numbers, depending on
+        whether the coordinate reference system includes a vertical axis (height
+        or depth). Coordinates are assumed to be in crs 4326. The expected
+        format is ``[xmin, ymin, xmax, ymax]``, i.e. ``[Western-most longitude,
+        Southern-most latitude, Eastern-most longitude, Northern-most
+        latitude]``.
     limit : int, optional
-        The optional limit parameter is used to control the subset of the
-        selected features that should be returned in each page. The maximum
-        allowable limit is 50000. It may be beneficial to set this number lower
-        if your internet connection is spotty. The default (None) will set the
-        limit to the maximum allowable limit for the service.
-        This is a per-page size, not a cap on the total result: a query
-        matching more rows than ``limit`` still returns every matching row
-        across multiple pages. Use ``max_rows`` to cap the total instead.
+        The number of features returned in each page. The maximum allowable
+        limit is 50000; the default (None) requests that maximum. Set a lower
+        number if your internet connection is spotty. This is a per-page size,
+        not a cap on the total result: a query matching more rows than ``limit``
+        still returns every matching row across multiple pages. Use ``max_rows``
+        to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -315,38 +306,34 @@ def get_continuous(
     max_rows: int | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """
-    Continuous data provide instantaneous water conditions.
+    """Get continuous data, which provide instantaneous water conditions.
 
     This is an early version of the continuous endpoint that is feature-complete
-    and is being made available for limited use.  Geometries are not included
+    and is being made available for limited use. Geometries are not included
     with the continuous endpoint. If the "time" input is left blank, the service
-    will return the most recent year of measurements. Users may request no more
-    than three years of data with each function call.
+    returns the most recent year of measurements. Users may request no more than
+    three years of data with each function call.
 
     Continuous data are collected at a high frequency, typically 15-minute
-    intervals. Depending on the specific monitoring location, the data may be
-    transmitted automatically via telemetry and be available on WDFN within
-    minutes of collection, while other times the delivery of data may be delayed
-    if the monitoring location does not have the capacity to automatically
-    transmit data.  Continuous data are described by parameter name and
-    parameter code (pcode). These data might also be referred to as
+    intervals. Depending on the monitoring location, the data may be transmitted
+    automatically via telemetry and be available on WDFN within minutes of
+    collection. Delivery may be delayed where the monitoring location cannot
+    transmit data automatically. Continuous data are described by parameter name
+    and parameter code (pcode). These data might also be referred to as
     "instantaneous values" or "IV".
 
     Parameters
     ----------
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location. This
-        corresponds to the id field in the monitoring-locations endpoint.
-        Monitoring location IDs are created by combining the agency code of
-        the agency responsible for the monitoring location (e.g. USGS) with
-        the ID number of the monitoring location (e.g. 02238500), separated
-        by a hyphen (e.g. USGS-02238500).
+        A unique identifier representing a single monitoring location,
+        corresponding to the id field in the monitoring-locations endpoint. IDs
+        combine the agency code of the agency responsible for the monitoring
+        location (e.g. USGS) with the location's ID number (e.g. 02238500),
+        separated by a hyphen (e.g. USGS-02238500).
     parameter_code : string or iterable of strings, optional
-        Parameter codes are 5-digit codes used to identify the constituent
-        measured and the units of measure. A complete list of parameter
-        codes and associated groupings can be found at
-        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+        A 5-digit code identifying the constituent measured and the units of
+        measure. A complete list of parameter codes and associated groupings is
+        available at https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
     statistic_id : string or iterable of strings, optional
         A code corresponding to the statistic an observation represents.
         Continuous data are nearly always associated with statistic id
@@ -355,49 +342,49 @@ def get_continuous(
         descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
     properties : string or iterable of strings, optional
-        A list of requested columns to be returned from the query.
+        The columns to return from the query.
         Available options are: geometry, id, time_series_id,
         monitoring_location_id, parameter_code, statistic_id, time, value,
         unit_of_measure, approval_status, qualifier, last_modified
     time_series_id : string or iterable of strings, optional
-        A unique identifier representing a single time series. This
-        corresponds to the id field in the time-series-metadata endpoint.
+        A unique identifier representing a single time series, corresponding to
+        the id field in the time-series-metadata endpoint.
     continuous_id : string or iterable of strings, optional
         A universally unique identifier (UUID) representing a single version of
-        a record. It is not stable over time. Every time the record is refreshed
-        in our database (which may happen as part of normal operations and does
-        not imply any change to the data itself) a new ID will be generated. To
-        uniquely identify a single observation over time, compare the time and
-        time_series_id fields; each time series will only have a single
+        a record. The UUID is not stable over time: every time the record is
+        refreshed in our database, a new ID is generated. A refresh may happen
+        as part of normal operations and does not imply any change to the data
+        itself. To uniquely identify a single observation over time, compare the
+        time and time_series_id fields; each time series has only a single
         observation at a given time.
     approval_status : string or iterable of strings, optional
-        Some of the data that you have obtained from this U.S. Geological Survey
-        database may not have received Director's approval. Any such data values
-        are qualified as provisional and are subject to revision. Provisional
-        data are released on the condition that neither the USGS nor the United
-        States Government may be held liable for any damages resulting from its
-        use. This field reflects the approval status of each record, and is either
-        "Approved", meaning processing review has been completed and the data is
-        approved for publication, or "Provisional" and subject to revision. For
-        more information about provisional data, go to:
+        The approval status of each record: either "Approved", meaning
+        processing review has been completed and the data are approved for
+        publication, or "Provisional", meaning the data are subject to revision.
+        Some of the data you obtain from this U.S. Geological Survey database
+        may not have received Director's approval. Any such data values are
+        qualified as provisional and are subject to revision. Provisional data
+        are released on the condition that neither the USGS nor the United
+        States Government may be held liable for any damages resulting from
+        their use. For more information about provisional data, see
         https://waterdata.usgs.gov/provisional-data-statement/.
     unit_of_measure : string or iterable of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
     qualifier : string or iterable of strings, optional
-        This field indicates any qualifiers associated with an observation, for
-        instance if a sensor may have been impacted by ice or if values were
-        estimated.
+        Any qualifiers associated with an observation, for instance whether a
+        sensor may have been impacted by ice or whether values were estimated.
     value : string or iterable of strings, optional
         The value of the observation. Values are transmitted as strings in
-        the JSON response format in order to preserve precision.
+        the JSON response format to preserve precision.
     last_modified : string, optional
-        The last time a record was refreshed in our database. This may happen
-        due to regular operational processes and does not necessarily indicate
-        that anything about the measurement has changed. You can query this field
-        using date-times or intervals, adhering to RFC 3339, or using ISO 8601
-        duration objects. Intervals may be bounded or half-bounded (double-dots
-        at start or end).
+        The last time a record was refreshed in our database. A refresh may
+        happen due to regular operational processes and does not necessarily
+        indicate that anything about the measurement has changed. You can query
+        this field using date-times or intervals, adhering to RFC 3339, or using
+        ISO 8601 duration objects. Intervals may be bounded or half-bounded
+        (double-dots at start or end). Only features whose last_modified
+        intersects the requested value are selected.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -407,17 +394,14 @@ def get_continuous(
             * Duration objects: "P1M" for data from the past month or
                 "PT36H" for the last 36 hours
 
-        Only features that have a last_modified that intersects the value of
-        datetime are selected.
     time : string, optional
         The date an observation represents. You can query this field using
         date-times or intervals, adhering to RFC 3339, or using ISO 8601
         duration objects. Intervals may be bounded or half-bounded (double-dots
-        at start or end). Only features that have a time that intersects the
-        value of datetime are selected. If a feature has multiple temporal
-        properties, it is the decision of the server whether only a single
-        temporal property is used to determine the extent or all relevant
-        temporal properties.
+        at start or end). Only features whose time intersects the requested
+        value are selected. If a feature has multiple temporal properties, the
+        server decides whether to use a single property or all relevant ones to
+        determine the extent.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -428,14 +412,12 @@ def get_continuous(
                 "PT36H" for the last 36 hours
 
     limit : int, optional
-        The optional limit parameter is used to control the subset of the
-        selected features that should be returned in each page. The maximum
-        allowable limit is 10000. It may be beneficial to set this number lower
-        if your internet connection is spotty. The default (None) will set the
-        limit to the maximum allowable limit for the service.
-        This is a per-page size, not a cap on the total result: a query
-        matching more rows than ``limit`` still returns every matching row
-        across multiple pages. Use ``max_rows`` to cap the total instead.
+        The number of features returned in each page. The maximum allowable
+        limit is 10000; the default (None) requests that maximum. Set a lower
+        number if your internet connection is spotty. This is a per-page size,
+        not a cap on the total result: a query matching more rows than ``limit``
+        still returns every matching row across multiple pages. Use ``max_rows``
+        to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -554,31 +536,30 @@ def get_monitoring_locations(
     max_rows: int | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Location information is basic information about the monitoring location
-    including the name, identifier, agency responsible for data collection, and
-    the date the location was established. It also includes information about
+    """Get basic information about monitoring locations.
+
+    Location information includes the name, identifier, agency responsible for
+    data collection, and the date the location was established. It also includes
     the type of location, such as stream, lake, or groundwater, and geographic
-    information about the location, such as state, county, latitude and
-    longitude, and hydrologic unit code (HUC).
+    information such as state, county, latitude and longitude, and hydrologic
+    unit code (HUC).
 
     Parameters
     ----------
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location. This
-        corresponds to the id field in the monitoring-locations endpoint.
-        Monitoring location IDs are created by combining the agency code of
-        the agency responsible for the monitoring location (e.g. USGS) with
-        the ID number of the monitoring location (e.g. 02238500), separated
-        by a hyphen (e.g. USGS-02238500).
+        A unique identifier representing a single monitoring location,
+        corresponding to the id field in the monitoring-locations endpoint. IDs
+        combine the agency code of the agency responsible for the monitoring
+        location (e.g. USGS) with the location's ID number (e.g. 02238500),
+        separated by a hyphen (e.g. USGS-02238500).
     agency_code : string or iterable of strings, optional
         The agency that is reporting the data. Agency codes are fixed values
         assigned by the National Water Information System (NWIS).
     agency_name : string or iterable of strings, optional
         The name of the agency that is reporting the data.
     monitoring_location_number : string or iterable of strings, optional
-        Each monitoring location in the USGS data base has a unique 8- to
-        15-digit identification number. Monitoring location numbers are
-        assigned based on this logic:
+        A unique 8- to 15-digit identification number. Every monitoring location
+        in the USGS database has one, assigned according to this logic:
         https://help.waterdata.usgs.gov/faq/sites/do-station-numbers-have-any-particular-meaning.
     monitoring_location_name : string or iterable of strings, optional
         This is the official name of the monitoring location in the database.
@@ -587,10 +568,10 @@ def get_monitoring_locations(
         The Water Science Centers (WSCs) across the United States use the FIPS
         state code as the district code. In some cases, monitoring locations and
         samples may be managed by a water science center that is adjacent to the
-        state in which the monitoring location actually resides. For example a
-        monitoring location may have a district code of 30 which translates to
-        Montana, but the state code could be 56 for Wyoming because that is where
-        the monitoring location actually is located.
+        state in which the monitoring location actually resides. For example, a
+        monitoring location may have a district code of 30, which translates to
+        Montana, but a state code of 56 for Wyoming, because that is where the
+        monitoring location is actually located.
     country_code : string or iterable of strings, optional
         The code for the country in which the monitoring location is located.
     country_name : string or iterable of strings, optional
@@ -628,14 +609,13 @@ def get_monitoring_locations(
     site_type : string or iterable of strings, optional
         A description of the hydrologic setting of the monitoring location.
     hydrologic_unit_code : string or iterable of strings, optional
-        The United States is divided and sub-divided into successively smaller
-        hydrologic units which are classified into four levels: regions,
-        sub-regions, accounting units, and cataloging units. The hydrologic
-        units are arranged within each other, from the smallest (cataloging
-        units) to the largest (regions). Each hydrologic unit is identified by a
-        unique hydrologic unit code (HUC) consisting of two to eight digits
-        based on the four levels of classification in the hydrologic unit
-        system.
+        A unique hydrologic unit code (HUC) of two to eight digits, based on the
+        four levels of classification in the hydrologic unit system. The United
+        States is divided and sub-divided into successively smaller hydrologic
+        units, classified into four levels: regions, sub-regions, accounting
+        units, and cataloging units. The hydrologic units are arranged within
+        each other, from the smallest (cataloging units) to the largest
+        (regions).
     basin_code : string or iterable of strings, optional
         The Basin Code or "drainage basin code" is a two-digit code that further
         subdivides the 8-digit hydrologic-unit code. The drainage basin code is
@@ -686,12 +666,12 @@ def get_monitoring_locations(
         situation can occur when part of the drainage area consists of very
         porous soil or depressions that either allow all runoff to enter the
         groundwater or trap the water in ponds so that rainfall does not
-        contribute to runoff.  A transbasin diversion can also affect the total
+        contribute to runoff. A transbasin diversion can also affect the total
         drainage area.
     time_zone_abbreviation : string or iterable of strings, optional
         A short code describing the time zone used by a monitoring location.
     uses_daylight_savings : string or iterable of strings, optional
-        A flag indicating whether or not a monitoring location uses daylight savings.
+        A flag indicating whether a monitoring location uses daylight savings.
     construction_date : string or iterable of strings, optional
         Date the well was completed.
     aquifer_code : string or iterable of strings, optional
@@ -730,7 +710,7 @@ def get_monitoring_locations(
         codes <https://help.waterdata.usgs.gov/code/water_level_src_cd_query?fmt=html>`_
         is available.
     properties : string or iterable of strings, optional
-        A list of requested columns to be returned from the query. Available
+        The columns to return from the query. Available
         options are: geometry, id, agency_code, agency_name,
         monitoring_location_number, monitoring_location_name, district_code,
         country_code, country_name, state_code, state_name, county_code,
@@ -746,27 +726,24 @@ def get_monitoring_locations(
         national_aquifer_code, aquifer_type_code, well_constructed_depth,
         hole_constructed_depth, depth_source_code.
     bbox : list of numbers, optional
-        Only features that have a geometry that intersects the bounding box are
-        selected.  The bounding box is provided as four or six numbers,
-        depending on whether the coordinate reference system includes a vertical
-        axis (height or depth). Coordinates are assumed to be in crs 4326. The
-        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
-        ``[Western-most longitude, Southern-most latitude, Eastern-most
-        longitude, Northern-most latitude]``.
+        Only features whose geometry intersects the bounding box are selected.
+        The bounding box is provided as four or six numbers, depending on
+        whether the coordinate reference system includes a vertical axis (height
+        or depth). Coordinates are assumed to be in crs 4326. The expected
+        format is ``[xmin, ymin, xmax, ymax]``, i.e. ``[Western-most longitude,
+        Southern-most latitude, Eastern-most longitude, Northern-most
+        latitude]``.
     limit : int, optional
-        The optional limit parameter is used to control the subset of the
-        selected features that should be returned in each page. The maximum
-        allowable limit is 50000. It may be beneficial to set this number lower
-        if your internet connection is spotty. The default (None) will set the
-        limit to the maximum allowable limit for the service.
-        This is a per-page size, not a cap on the total result: a query
-        matching more rows than ``limit`` still returns every matching row
-        across multiple pages. Use ``max_rows`` to cap the total instead.
+        The number of features returned in each page. The maximum allowable
+        limit is 50000; the default (None) requests that maximum. Set a lower
+        number if your internet connection is spotty. This is a per-page size,
+        not a cap on the total result: a query matching more rows than ``limit``
+        still returns every matching row across multiple pages. Use ``max_rows``
+        to cap the total instead.
     skip_geometry : boolean, optional
-        This option can be used to skip response geometries for each feature.
-        The returning object will be a data frame with no spatial information.
-        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
-        CQL2 queries.
+        If True, the response omits the geometry of each feature and the
+        returned object is a data frame with no spatial information. The USGS
+        Water Data APIs use camelCase "skipGeometry" in CQL2 queries.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -858,31 +835,31 @@ def get_time_series_metadata(
     max_rows: int | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Daily data and continuous measurements are grouped into time series,
-    which represent a collection of observations of a single parameter,
-    potentially aggregated using a standard statistic, at a single monitoring
-    location. This endpoint provides metadata about those time series,
-    including their operational thresholds, units of measurement, and when
-    the earliest and most recent observations in a time series occurred.
+    """Get metadata about daily and continuous time series.
+
+    Daily data and continuous measurements are grouped into time series, which
+    represent a collection of observations of a single parameter, potentially
+    aggregated using a standard statistic, at a single monitoring location. This
+    endpoint provides metadata about those time series, including their
+    operational thresholds, units of measurement, and when the earliest and most
+    recent observations in a time series occurred.
 
     Parameters
     ----------
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location. This
-        corresponds to the id field in the monitoring-locations endpoint.
-        Monitoring location IDs are created by combining the agency code of
-        the agency responsible for the monitoring location (e.g. USGS) with
-        the ID number of the monitoring location (e.g. 02238500), separated
-        by a hyphen (e.g. USGS-02238500).
+        A unique identifier representing a single monitoring location,
+        corresponding to the id field in the monitoring-locations endpoint. IDs
+        combine the agency code of the agency responsible for the monitoring
+        location (e.g. USGS) with the location's ID number (e.g. 02238500),
+        separated by a hyphen (e.g. USGS-02238500).
     parameter_code : string or iterable of strings, optional
-        Parameter codes are 5-digit codes used to identify the constituent
-        measured and the units of measure. A complete list of parameter
-        codes and associated groupings can be found at
-        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+        A 5-digit code identifying the constituent measured and the units of
+        measure. A complete list of parameter codes and associated groupings is
+        available at https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
     parameter_name : string or iterable of strings, optional
         A human-understandable name corresponding to parameter_code.
     properties : string or iterable of strings, optional
-        A list of requested columns to be returned from the query.
+        The columns to return from the query.
         Available options are: begin, begin_utc, computation_identifier,
         computation_period_identifier, end, end_utc, geometry,
         hydrologic_unit_code, id, last_modified, monitoring_location_id,
@@ -895,13 +872,13 @@ def get_time_series_metadata(
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
     hydrologic_unit_code : string or iterable of strings, optional
-        The United States is divided and sub-divided into successively smaller
-        hydrologic units which are classified into four levels: regions,
-        sub-regions, accounting units, and cataloging units. The hydrologic
-        units are arranged within each other, from the smallest (cataloging units)
-        to the largest (regions). Each hydrologic unit is identified by a unique
-        hydrologic unit code (HUC) consisting of two to eight digits based on the
-        four levels of classification in the hydrologic unit system.
+        A unique hydrologic unit code (HUC) of two to eight digits, based on the
+        four levels of classification in the hydrologic unit system. The United
+        States is divided and sub-divided into successively smaller hydrologic
+        units, classified into four levels: regions, sub-regions, accounting
+        units, and cataloging units. The hydrologic units are arranged within
+        each other, from the smallest (cataloging units) to the largest
+        (regions).
     state : string or iterable of strings, optional
         State/territory filter (the recommended parameter). Accepts a full name
         (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a two-digit
@@ -910,13 +887,13 @@ def get_time_series_metadata(
         The name of the state or state equivalent in which the monitoring location
         is located.
     last_modified : string, optional
-        The last time a record was refreshed in our database. This may happen
-        due to regular operational processes and does not necessarily indicate
-        that anything about the measurement has changed. You can query this field
-        using date-times or intervals, adhering to RFC 3339, or using ISO 8601
-        duration objects. Intervals may be bounded or half-bounded (double-dots
-        at start or end). Only features that have a last_modified that
-        intersects the value of datetime are selected.
+        The last time a record was refreshed in our database. A refresh may
+        happen due to regular operational processes and does not necessarily
+        indicate that anything about the measurement has changed. You can query
+        this field using date-times or intervals, adhering to RFC 3339, or using
+        ISO 8601 duration objects. Intervals may be bounded or half-bounded
+        (double-dots at start or end). Only features whose last_modified
+        intersects the requested value are selected.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -993,33 +970,30 @@ def get_time_series_metadata(
     primary : string or iterable of strings, optional
     parent_time_series_id : string or iterable of strings, optional
     time_series_id : string or iterable of strings, optional
-        A unique identifier representing a single time series. This
-        corresponds to the id field in the time-series-metadata endpoint.
+        A unique identifier representing a single time series, corresponding to
+        the id field in the time-series-metadata endpoint.
     web_description : string or iterable of strings, optional
         A description of what this time series represents, as used by WDFN and
         other USGS data dissemination products.
     skip_geometry : boolean, optional
-        This option can be used to skip response geometries for each feature.
-        The returning object will be a data frame with no spatial information.
-        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
-        CQL2 queries.
+        If True, the response omits the geometry of each feature and the
+        returned object is a data frame with no spatial information. The USGS
+        Water Data APIs use camelCase "skipGeometry" in CQL2 queries.
     bbox : list of numbers, optional
-        Only features that have a geometry that intersects the bounding box are
-        selected.  The bounding box is provided as four or six numbers,
-        depending on whether the coordinate reference system includes a vertical
-        axis (height or depth). Coordinates are assumed to be in crs 4326. The
-        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
-        ``[Western-most longitude, Southern-most latitude, Eastern-most
-        longitude, Northern-most latitude]``.
+        Only features whose geometry intersects the bounding box are selected.
+        The bounding box is provided as four or six numbers, depending on
+        whether the coordinate reference system includes a vertical axis (height
+        or depth). Coordinates are assumed to be in crs 4326. The expected
+        format is ``[xmin, ymin, xmax, ymax]``, i.e. ``[Western-most longitude,
+        Southern-most latitude, Eastern-most longitude, Northern-most
+        latitude]``.
     limit : int, optional
-        The optional limit parameter is used to control the subset of the
-        selected features that should be returned in each page. The maximum
-        allowable limit is 50000. It may be beneficial to set this number lower
-        if your internet connection is spotty. The default (None) will set the
-        limit to the maximum allowable limit for the service.
-        This is a per-page size, not a cap on the total result: a query
-        matching more rows than ``limit`` still returns every matching row
-        across multiple pages. Use ``max_rows`` to cap the total instead.
+        The number of features returned in each page. The maximum allowable
+        limit is 50000; the default (None) requests that maximum. Set a lower
+        number if your internet connection is spotty. This is a per-page size,
+        not a cap on the total result: a query matching more rows than ``limit``
+        still returns every matching row across multiple pages. Use ``max_rows``
+        to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -1359,81 +1333,78 @@ def get_latest_continuous(
     max_rows: int | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """This endpoint provides the most recent observation for each time series
-    of continuous data. Continuous data are collected via automated sensors
-    installed at a monitoring location. They are collected at a high frequency
-    and often at a fixed 15-minute interval. Depending on the specific monitoring
-    location, the data may be transmitted automatically via telemetry and be
-    available on WDFN within minutes of collection, while other times the delivery
-    of data may be delayed if the monitoring location does not have the capacity to
-    automatically transmit data. Continuous data are described by parameter name
+    """Get the most recent observation for each continuous time series.
+
+    Continuous data are collected via automated sensors installed at a
+    monitoring location, at a high frequency and often at a fixed 15-minute
+    interval. Depending on the monitoring location, the data may be transmitted
+    automatically via telemetry and be available on WDFN within minutes of
+    collection. Delivery may be delayed where the monitoring location cannot
+    transmit data automatically. Continuous data are described by parameter name
     and parameter code. These data might also be referred to as "instantaneous
     values" or "IV".
 
     Parameters
     ----------
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location. This
-        corresponds to the id field in the monitoring-locations endpoint.
-        Monitoring location IDs are created by combining the agency code of the
-        agency responsible for the monitoring location (e.g. USGS) with the ID
-        number of the monitoring location (e.g. 02238500), separated by a hyphen
-        (e.g. USGS-02238500).
+        A unique identifier representing a single monitoring location,
+        corresponding to the id field in the monitoring-locations endpoint. IDs
+        combine the agency code of the agency responsible for the monitoring
+        location (e.g. USGS) with the location's ID number (e.g. 02238500),
+        separated by a hyphen (e.g. USGS-02238500).
     parameter_code : string or iterable of strings, optional
-        Parameter codes are 5-digit codes used to identify the constituent
-        measured and the units of measure. A complete list of parameter codes
-        and associated groupings can be found at
-        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+        A 5-digit code identifying the constituent measured and the units of
+        measure. A complete list of parameter codes and associated groupings is
+        available at https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
     statistic_id : string or iterable of strings, optional
         A code corresponding to the statistic an observation represents.
         Example codes include 00001 (max), 00002 (min), and 00003 (mean).
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
     properties : string or iterable of strings, optional
-        A list of requested columns to be returned from the query.  Available
+        The columns to return from the query. Available
         options are: geometry, id, time_series_id, monitoring_location_id,
         parameter_code, statistic_id, time, value, unit_of_measure,
         approval_status, qualifier, last_modified
     time_series_id : string or iterable of strings, optional
-        A unique identifier representing a single time series. This
-        corresponds to the id field in the time-series-metadata endpoint.
+        A unique identifier representing a single time series, corresponding to
+        the id field in the time-series-metadata endpoint.
     latest_continuous_id : string or iterable of strings, optional
         A universally unique identifier (UUID) representing a single version of
-        a record. It is not stable over time. Every time the record is refreshed
-        in our database (which may happen as part of normal operations and does
-        not imply any change to the data itself) a new ID will be generated. To
-        uniquely identify a single observation over time, compare the time and
-        time_series_id fields; each time series will only have a single
+        a record. The UUID is not stable over time: every time the record is
+        refreshed in our database, a new ID is generated. A refresh may happen
+        as part of normal operations and does not imply any change to the data
+        itself. To uniquely identify a single observation over time, compare the
+        time and time_series_id fields; each time series has only a single
         observation at a given time.
     approval_status : string or iterable of strings, optional
-        Some of the data that you have obtained from this U.S. Geological Survey
-        database may not have received Director's approval. Any such data values
-        are qualified as provisional and are subject to revision. Provisional
-        data are released on the condition that neither the USGS nor the United
-        States Government may be held liable for any damages resulting from its
-        use. This field reflects the approval status of each record, and is either
-        "Approved", meaning processing review has been completed and the data is
-        approved for publication, or "Provisional" and subject to revision. For
-        more information about provisional data, go to:
+        The approval status of each record: either "Approved", meaning
+        processing review has been completed and the data are approved for
+        publication, or "Provisional", meaning the data are subject to revision.
+        Some of the data you obtain from this U.S. Geological Survey database
+        may not have received Director's approval. Any such data values are
+        qualified as provisional and are subject to revision. Provisional data
+        are released on the condition that neither the USGS nor the United
+        States Government may be held liable for any damages resulting from
+        their use. For more information about provisional data, see
         https://waterdata.usgs.gov/provisional-data-statement/.
     unit_of_measure : string or iterable of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
     qualifier : string or iterable of strings, optional
-        This field indicates any qualifiers associated with an observation, for
-        instance if a sensor may have been impacted by ice or if values were
-        estimated.
+        Any qualifiers associated with an observation, for instance whether a
+        sensor may have been impacted by ice or whether values were estimated.
     value : string or iterable of strings, optional
         The value of the observation. Values are transmitted as strings in
-        the JSON response format in order to preserve precision.
+        the JSON response format to preserve precision.
     last_modified : string, optional
-        The last time a record was refreshed in our database. This may happen
-        due to regular operational processes and does not necessarily indicate
-        that anything about the measurement has changed. You can query this field
-        using date-times or intervals, adhering to RFC 3339, or using ISO 8601
-        duration objects. Intervals may be bounded or half-bounded (double-dots
-        at start or end). Only features that have a last_modified that
-        intersects the value of datetime are selected.
+        The last time a record was refreshed in our database. A refresh may
+        happen due to regular operational processes and does not necessarily
+        indicate that anything about the measurement has changed. You can query
+        this field using date-times or intervals, adhering to RFC 3339, or using
+        ISO 8601 duration objects. Intervals may be bounded or half-bounded
+        (double-dots at start or end). Only features whose last_modified
+        intersects the requested value are selected.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -1444,19 +1415,17 @@ def get_latest_continuous(
                 "PT36H" for the last 36 hours
 
     skip_geometry : boolean, optional
-        This option can be used to skip response geometries for each feature.
-        The returning object will be a data frame with no spatial information.
-        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
-        CQL2 queries.
+        If True, the response omits the geometry of each feature and the
+        returned object is a data frame with no spatial information. The USGS
+        Water Data APIs use camelCase "skipGeometry" in CQL2 queries.
     time : string, optional
         The date an observation represents. You can query this field using
         date-times or intervals, adhering to RFC 3339, or using ISO 8601
-        duration objects.  Intervals may be bounded or half-bounded (double-dots
-        at start or end).  Only features that have a time that intersects the
-        value of datetime are selected. If a feature has multiple temporal
-        properties, it is the decision of the server whether only a single
-        temporal property is used to determine the extent or all relevant
-        temporal properties.
+        duration objects. Intervals may be bounded or half-bounded (double-dots
+        at start or end). Only features whose time intersects the requested
+        value are selected. If a feature has multiple temporal properties, the
+        server decides whether to use a single property or all relevant ones to
+        determine the extent.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -1467,22 +1436,20 @@ def get_latest_continuous(
                 "PT36H" for the last 36 hours
 
     bbox : list of numbers, optional
-        Only features that have a geometry that intersects the bounding box are
-        selected.  The bounding box is provided as four or six numbers,
-        depending on whether the coordinate reference system includes a vertical
-        axis (height or depth). Coordinates are assumed to be in crs 4326. The
-        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
-        ``[Western-most longitude, Southern-most latitude, Eastern-most
-        longitude, Northern-most latitude]``.
+        Only features whose geometry intersects the bounding box are selected.
+        The bounding box is provided as four or six numbers, depending on
+        whether the coordinate reference system includes a vertical axis (height
+        or depth). Coordinates are assumed to be in crs 4326. The expected
+        format is ``[xmin, ymin, xmax, ymax]``, i.e. ``[Western-most longitude,
+        Southern-most latitude, Eastern-most longitude, Northern-most
+        latitude]``.
     limit : int, optional
-        The optional limit parameter is used to control the subset of the
-        selected features that should be returned in each page. The maximum
-        allowable limit is 50000. It may be beneficial to set this number lower
-        if your internet connection is spotty. The default (None) will set the
-        limit to the maximum allowable limit for the service.
-        This is a per-page size, not a cap on the total result: a query
-        matching more rows than ``limit`` still returns every matching row
-        across multiple pages. Use ``max_rows`` to cap the total instead.
+        The number of features returned in each page. The maximum allowable
+        limit is 50000; the default (None) requests that maximum. Set a lower
+        number if your internet connection is spotty. This is a per-page size,
+        not a cap on the total result: a query matching more rows than ``limit``
+        still returns every matching row across multiple pages. Use ``max_rows``
+        to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -1574,9 +1541,9 @@ def get_latest_daily(
     max_rows: int | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Daily data provide one data value to represent water conditions for the
-    day.
+    """Get the most recent daily value for each daily time series.
 
+    Daily data provide one data value to represent water conditions for the day.
     Throughout much of the history of the USGS, the primary water data available
     was daily data collected manually at the monitoring location once each day.
     With improved availability of computer storage and automated transmission of
@@ -1590,67 +1557,64 @@ def get_latest_daily(
     Parameters
     ----------
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location. This
-        corresponds to the id field in the monitoring-locations endpoint.
-        Monitoring location IDs are created by combining the agency code of the
-        agency responsible for the monitoring location (e.g. USGS) with the ID
-        number of the monitoring location (e.g. 02238500), separated by a hyphen
-        (e.g. USGS-02238500).
+        A unique identifier representing a single monitoring location,
+        corresponding to the id field in the monitoring-locations endpoint. IDs
+        combine the agency code of the agency responsible for the monitoring
+        location (e.g. USGS) with the location's ID number (e.g. 02238500),
+        separated by a hyphen (e.g. USGS-02238500).
     parameter_code : string or iterable of strings, optional
-        Parameter codes are 5-digit codes used to identify the constituent
-        measured and the units of measure. A complete list of parameter codes
-        and associated groupings can be found at
-        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+        A 5-digit code identifying the constituent measured and the units of
+        measure. A complete list of parameter codes and associated groupings is
+        available at https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
     statistic_id : string or iterable of strings, optional
         A code corresponding to the statistic an observation represents.
         Example codes include 00001 (max), 00002 (min), and 00003 (mean).
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
     properties : string or iterable of strings, optional
-        A list of requested columns to be returned from the query.  Available
+        The columns to return from the query. Available
         options are: geometry, id, time_series_id, monitoring_location_id,
         parameter_code, statistic_id, time, value, unit_of_measure,
         approval_status, qualifier, last_modified
     time_series_id : string or iterable of strings, optional
-        A unique identifier representing a single time series. This
-        corresponds to the id field in the time-series-metadata endpoint.
+        A unique identifier representing a single time series, corresponding to
+        the id field in the time-series-metadata endpoint.
     latest_daily_id : string or iterable of strings, optional
         A universally unique identifier (UUID) representing a single version of
-        a record. It is not stable over time. Every time the record is refreshed
-        in our database (which may happen as part of normal operations and does
-        not imply any change to the data itself) a new ID will be generated. To
-        uniquely identify a single observation over time, compare the time and
-        time_series_id fields; each time series will only have a single
+        a record. The UUID is not stable over time: every time the record is
+        refreshed in our database, a new ID is generated. A refresh may happen
+        as part of normal operations and does not imply any change to the data
+        itself. To uniquely identify a single observation over time, compare the
+        time and time_series_id fields; each time series has only a single
         observation at a given time.
     approval_status : string or iterable of strings, optional
-        Some of the data that you have obtained from this U.S. Geological Survey
-        database may not have received Director's approval. Any such data values
-        are qualified as provisional and are subject to revision. Provisional
-        data are released on the condition that neither the USGS nor the United
-        States Government may be held liable for any damages resulting from its
-        use. This field reflects the approval status of each record, and is either
-        "Approved", meaning processing review has been completed and the data is
-        approved for publication, or "Provisional" and subject to revision. For
-        more information about provisional data, go to:
+        The approval status of each record: either "Approved", meaning
+        processing review has been completed and the data are approved for
+        publication, or "Provisional", meaning the data are subject to revision.
+        Some of the data you obtain from this U.S. Geological Survey database
+        may not have received Director's approval. Any such data values are
+        qualified as provisional and are subject to revision. Provisional data
+        are released on the condition that neither the USGS nor the United
+        States Government may be held liable for any damages resulting from
+        their use. For more information about provisional data, see
         https://waterdata.usgs.gov/provisional-data-statement/.
     unit_of_measure : string or iterable of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
     qualifier : string or iterable of strings, optional
-        This field indicates any qualifiers associated with an observation, for
-        instance if a sensor may have been impacted by ice or if values were
-        estimated.
+        Any qualifiers associated with an observation, for instance whether a
+        sensor may have been impacted by ice or whether values were estimated.
     value : string or iterable of strings, optional
         The value of the observation. Values are transmitted as strings in
-        the JSON response format in order to preserve precision.
+        the JSON response format to preserve precision.
     last_modified : string, optional
-        The last time a record was refreshed in our database. This may happen
-        due to regular operational processes and does not necessarily indicate
-        that anything about the measurement has changed. You can query this field
-        using date-times or intervals, adhering to RFC 3339, or using ISO 8601
-        duration objects. Intervals may be bounded or half-bounded (double-dots
-        at start or end). Only features that have a last_modified that
-        intersects the value of datetime are selected.
+        The last time a record was refreshed in our database. A refresh may
+        happen due to regular operational processes and does not necessarily
+        indicate that anything about the measurement has changed. You can query
+        this field using date-times or intervals, adhering to RFC 3339, or using
+        ISO 8601 duration objects. Intervals may be bounded or half-bounded
+        (double-dots at start or end). Only features whose last_modified
+        intersects the requested value are selected.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -1661,19 +1625,17 @@ def get_latest_daily(
                 "PT36H" for the last 36 hours
 
     skip_geometry : boolean, optional
-        This option can be used to skip response geometries for each feature.
-        The returning object will be a data frame with no spatial information.
-        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
-        CQL2 queries.
+        If True, the response omits the geometry of each feature and the
+        returned object is a data frame with no spatial information. The USGS
+        Water Data APIs use camelCase "skipGeometry" in CQL2 queries.
     time : string, optional
         The date an observation represents. You can query this field using
         date-times or intervals, adhering to RFC 3339, or using ISO 8601
-        duration objects.  Intervals may be bounded or half-bounded (double-dots
-        at start or end).  Only features that have a time that intersects the
-        value of datetime are selected. If a feature has multiple temporal
-        properties, it is the decision of the server whether only a single
-        temporal property is used to determine the extent or all relevant
-        temporal properties.
+        duration objects. Intervals may be bounded or half-bounded (double-dots
+        at start or end). Only features whose time intersects the requested
+        value are selected. If a feature has multiple temporal properties, the
+        server decides whether to use a single property or all relevant ones to
+        determine the extent.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -1684,22 +1646,20 @@ def get_latest_daily(
                 "PT36H" for the last 36 hours
 
     bbox : list of numbers, optional
-        Only features that have a geometry that intersects the bounding box are
-        selected.  The bounding box is provided as four or six numbers,
-        depending on whether the coordinate reference system includes a vertical
-        axis (height or depth). Coordinates are assumed to be in crs 4326. The
-        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
-        ``[Western-most longitude, Southern-most latitude, Eastern-most
-        longitude, Northern-most latitude]``.
+        Only features whose geometry intersects the bounding box are selected.
+        The bounding box is provided as four or six numbers, depending on
+        whether the coordinate reference system includes a vertical axis (height
+        or depth). Coordinates are assumed to be in crs 4326. The expected
+        format is ``[xmin, ymin, xmax, ymax]``, i.e. ``[Western-most longitude,
+        Southern-most latitude, Eastern-most longitude, Northern-most
+        latitude]``.
     limit : int, optional
-        The optional limit parameter is used to control the subset of the
-        selected features that should be returned in each page. The maximum
-        allowable limit is 50000. It may be beneficial to set this number lower
-        if your internet connection is spotty. The default (None) will set the
-        limit to the maximum allowable limit for the service.
-        This is a per-page size, not a cap on the total result: a query
-        matching more rows than ``limit`` still returns every matching row
-        across multiple pages. Use ``max_rows`` to cap the total instead.
+        The number of features returned in each page. The maximum allowable
+        limit is 50000; the default (None) requests that maximum. Set a lower
+        number if your internet connection is spotty. This is a per-page size,
+        not a cap on the total result: a query matching more rows than ``limit``
+        still returns every matching row across multiple pages. Use ``max_rows``
+        to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -1792,32 +1752,31 @@ def get_field_measurements(
     max_rows: int | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Field measurements are physically measured values collected during a
-    visit to the monitoring location. Field measurements consist of measurements
-    of gage height and discharge, and readings of groundwater levels, and are
-    primarily used as calibration readings for the automated sensors collecting
-    continuous data. They are collected at a low frequency, and delivery of the
-    data in WDFN may be delayed due to data processing time.
+    """Get values physically measured during a visit to a monitoring location.
+
+    Field measurements consist of measurements of gage height and discharge, and
+    readings of groundwater levels. They are used primarily as calibration
+    readings for the automated sensors that collect continuous data. Field
+    measurements are collected at a low frequency, and their delivery in WDFN
+    may be delayed by data processing time.
 
     Parameters
     ----------
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location. This
-        corresponds to the id field in the monitoring-locations endpoint.
-        Monitoring location IDs are created by combining the agency code of the
-        agency responsible for the monitoring location (e.g. USGS) with the ID
-        number of the monitoring location (e.g. 02238500), separated by a hyphen
-        (e.g. USGS-02238500).
+        A unique identifier representing a single monitoring location,
+        corresponding to the id field in the monitoring-locations endpoint. IDs
+        combine the agency code of the agency responsible for the monitoring
+        location (e.g. USGS) with the location's ID number (e.g. 02238500),
+        separated by a hyphen (e.g. USGS-02238500).
     parameter_code : string or iterable of strings, optional
-        Parameter codes are 5-digit codes used to identify the constituent
-        measured and the units of measure. A complete list of parameter codes
-        and associated groupings can be found at
-        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+        A 5-digit code identifying the constituent measured and the units of
+        measure. A complete list of parameter codes and associated groupings is
+        available at https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
     observing_procedure_code : string or iterable of strings, optional
         A short code corresponding to the observing procedure for the field
         measurement.
     properties : string or iterable of strings, optional
-        A list of requested columns to be returned from the query. See the
+        The columns to return from the query. See the
         field-measurements schema in the OpenAPI reference for the available
         columns (e.g. geometry, id, monitoring_location_id, parameter_code,
         value, unit_of_measure, approval_status, qualifier, last_modified):
@@ -1826,34 +1785,33 @@ def get_field_measurements(
         A universally unique identifier (UUID) for the field visit.
         Multiple measurements may be made during a single field visit.
     approval_status : string or iterable of strings, optional
-        Some of the data that you have obtained from this U.S. Geological Survey
-        database may not have received Director's approval. Any such data values
-        are qualified as provisional and are subject to revision. Provisional
-        data are released on the condition that neither the USGS nor the United
-        States Government may be held liable for any damages resulting from its
-        use. This field reflects the approval status of each record, and is either
-        "Approved", meaning processing review has been completed and the data is
-        approved for publication, or "Provisional" and subject to revision. For
-        more information about provisional data, go to:
+        The approval status of each record: either "Approved", meaning
+        processing review has been completed and the data are approved for
+        publication, or "Provisional", meaning the data are subject to revision.
+        Some of the data you obtain from this U.S. Geological Survey database
+        may not have received Director's approval. Any such data values are
+        qualified as provisional and are subject to revision. Provisional data
+        are released on the condition that neither the USGS nor the United
+        States Government may be held liable for any damages resulting from
+        their use. For more information about provisional data, see
         https://waterdata.usgs.gov/provisional-data-statement/.
     unit_of_measure : string or iterable of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
     qualifier : string or iterable of strings, optional
-        This field indicates any qualifiers associated with an observation, for
-        instance if a sensor may have been impacted by ice or if values were
-        estimated.
+        Any qualifiers associated with an observation, for instance whether a
+        sensor may have been impacted by ice or whether values were estimated.
     value : string or iterable of strings, optional
         The value of the observation. Values are transmitted as strings in
-        the JSON response format in order to preserve precision.
+        the JSON response format to preserve precision.
     last_modified : string, optional
-        The last time a record was refreshed in our database. This may happen
-        due to regular operational processes and does not necessarily indicate
-        that anything about the measurement has changed. You can query this field
-        using date-times or intervals, adhering to RFC 3339, or using ISO 8601
-        duration objects. Intervals may be bounded or half-bounded (double-dots
-        at start or end). Only features that have a last_modified that
-        intersects the value of datetime are selected.
+        The last time a record was refreshed in our database. A refresh may
+        happen due to regular operational processes and does not necessarily
+        indicate that anything about the measurement has changed. You can query
+        this field using date-times or intervals, adhering to RFC 3339, or using
+        ISO 8601 duration objects. Intervals may be bounded or half-bounded
+        (double-dots at start or end). Only features whose last_modified
+        intersects the requested value are selected.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -1871,18 +1829,17 @@ def get_field_measurements(
     measuring_agency : string or iterable of strings, optional
         The agency performing the measurement.
     skip_geometry : boolean, optional
-        This option can be used to skip response geometries for each feature.
-        The returning object will be a data frame with no spatial information.
-        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
-        CQL2 queries.
+        If True, the response omits the geometry of each feature and the
+        returned object is a data frame with no spatial information. The USGS
+        Water Data APIs use camelCase "skipGeometry" in CQL2 queries.
     time : string, optional
-        The date an observation represents. You can query this field using date-times
-        or intervals, adhering to RFC 3339, or using ISO 8601 duration objects.
-        Intervals may be bounded or half-bounded (double-dots at start or end).
-        Only features that have a time that intersects the value of datetime are
-        selected. If a feature has multiple temporal properties, it is the
-        decision of the server whether only a single temporal property is used
-        to determine the extent or all relevant temporal properties.
+        The date an observation represents. You can query this field using
+        date-times or intervals, adhering to RFC 3339, or using ISO 8601
+        duration objects. Intervals may be bounded or half-bounded (double-dots
+        at start or end). Only features whose time intersects the requested
+        value are selected. If a feature has multiple temporal properties, the
+        server decides whether to use a single property or all relevant ones to
+        determine the extent.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -1893,22 +1850,20 @@ def get_field_measurements(
                 "PT36H" for the last 36 hours
 
     bbox : list of numbers, optional
-        Only features that have a geometry that intersects the bounding box are
-        selected.  The bounding box is provided as four or six numbers,
-        depending on whether the coordinate reference system includes a vertical
-        axis (height or depth). Coordinates are assumed to be in crs 4326. The
-        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
-        ``[Western-most longitude, Southern-most latitude, Eastern-most
-        longitude, Northern-most latitude]``.
+        Only features whose geometry intersects the bounding box are selected.
+        The bounding box is provided as four or six numbers, depending on
+        whether the coordinate reference system includes a vertical axis (height
+        or depth). Coordinates are assumed to be in crs 4326. The expected
+        format is ``[xmin, ymin, xmax, ymax]``, i.e. ``[Western-most longitude,
+        Southern-most latitude, Eastern-most longitude, Northern-most
+        latitude]``.
     limit : int, optional
-        The optional limit parameter is used to control the subset of the
-        selected features that should be returned in each page. The maximum
-        allowable limit is 50000. It may be beneficial to set this number lower
-        if your internet connection is spotty. The default (None) will set the
-        limit to the maximum allowable limit for the service.
-        This is a per-page size, not a cap on the total result: a query
-        matching more rows than ``limit`` still returns every matching row
-        across multiple pages. Use ``max_rows`` to cap the total instead.
+        The number of features returned in each page. The maximum allowable
+        limit is 50000; the default (None) requests that maximum. Set a lower
+        number if your internet connection is spotty. This is a per-page size,
+        not a cap on the total result: a query matching more rows than ``limit``
+        still returns every matching row across multiple pages. Use ``max_rows``
+        to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -2275,14 +2230,12 @@ def get_reference_table(
         "parameter-codes", "reliability-codes", "site-types", "states",
         "statistic-codes", "topographic-codes", "time-zone-codes"
     limit : int, optional
-        The optional limit parameter is used to control the subset of the
-        selected features that should be returned in each page. The maximum
-        allowable limit is 50000. It may be beneficial to set this number lower
-        if your internet connection is spotty. The default (None) will set the
-        limit to the maximum allowable limit for the service.
+        The number of features returned in each page. The maximum allowable
+        limit is 50000; the default (None) requests that maximum. Set a lower
+        number if your internet connection is spotty.
     query: dictionary, optional
-        The optional query parameter can be used to pass a dictionary of
-        query parameters to the collection API call.
+        A dictionary of extra query parameters to pass to the collection API
+        call.
     max_rows : int, optional
         Cap the total number of rows returned, stopping pagination early
         instead of downloading the whole table. Useful for cheaply
@@ -2353,9 +2306,9 @@ def get_queryables(collection: str) -> tuple[pd.DataFrame, BaseMetadata]:
     Every OGC collection (``daily``, ``continuous``, ``monitoring-locations``,
     ...) advertises the set of properties that can be filtered on -- exposed as
     the typed keyword arguments of the matching ``get_*`` function, and usable
-    directly in a CQL2 ``filter``. This returns that set, so the available
-    filters can be discovered programmatically and monitored for upstream
-    additions.
+    directly in a CQL2 ``filter``. This function returns that set, so you can
+    discover the available filters programmatically and monitor them for
+    upstream additions.
 
     Parameters
     ----------
@@ -2536,40 +2489,40 @@ def get_samples(
     project_id: str | Iterable[str] | None = None,
     record_identifier_user_supplied: str | Iterable[str] | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Search Samples database for USGS water quality data.
-    This is a wrapper function for the Samples database API. All potential
-    filters are provided as arguments to the function, but please do not
-    populate all possible filters; leave as many as feasible with their default
-    value (None). This is important because overcomplicated web service queries
-    can bog down the database's ability to return an applicable dataset before
-    it times out.
+    """Search the Samples database for USGS water-quality data.
 
-    The web GUI for the Samples database can be found here:
+    This is a wrapper function for the Samples database API. All potential
+    filters are provided as arguments, but do not populate all of them; leave as
+    many as feasible at their default value (None). Overcomplicated web service
+    queries can bog down the database's ability to return an applicable dataset
+    before it times out.
+
+    The web GUI for the Samples database is at
     https://waterdata.usgs.gov/download-samples/#dataProfile=site
 
-    If you would like more details on feasible query parameters (complete with
-    examples), please visit the Samples database swagger docs, here:
+    For more details on feasible query parameters, complete with examples, see
+    the Samples database swagger docs at
     https://api.waterdata.usgs.gov/samples-data/docs#/
 
     Parameters
     ----------
     ssl_check : bool, optional
-        Check the SSL certificate.
+        Verify the server's SSL certificate.
     service : string
         One of the available Samples services: "results", "locations", "activities",
         "projects", or "organizations". Defaults to "results".
     profile : string
-        One of the available profiles associated with a service. Options for each
-        service are:
-        results - "fullphyschem", "basicphyschem",
-        "fullbio", "basicbio", "narrow",
-        "resultdetectionquantitationlimit",
-        "labsampleprep", "count"
-        locations - "site", "count"
-        activities - "sampact", "actmetric",
-        "actgroup", "count"
-        projects - "project", "projectmonitoringlocationweight"
-        organizations - "organization", "count"
+        One of the available profiles associated with a service. Options for
+        each service are:
+
+            * results - "fullphyschem", "basicphyschem", "fullbio", "basicbio",
+              "narrow", "resultdetectionquantitationlimit", "labsampleprep",
+              "count"
+            * locations - "site", "count"
+            * activities - "sampact", "actmetric", "actgroup", "count"
+            * projects - "project", "projectmonitoringlocationweight"
+            * organizations - "organization", "count"
+
     activity_media_name : string or iterable of strings, optional
         Name or code indicating environmental medium in which sample was taken.
         Call ``get_codes("samplemedia")`` for the valid inputs.
@@ -2766,7 +2719,7 @@ def get_samples_summary(
         are accepted by the service but return an empty result, so a prefix
         is effectively required. (Samples API: ``monitoringLocationIdentifier``)
     ssl_check : bool, optional
-        Check the SSL certificate. Default is True.
+        Verify the server's SSL certificate. Default is True.
 
     Returns
     -------
@@ -2818,13 +2771,13 @@ def get_stats_por(
     normal_type: str | None = None,
     expand_percentiles: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Get day-of-year and month-of-year water data statistics from the
-    USGS Water Data API.
-    This service (called the "observationNormals" endpoint on api.waterdata.usgs.gov)
-    provides endpoints for access to computations on the historical record regarding
-    water conditions, including minimum, maximum, mean, median, and percentiles for
-    day of year and month of year. For more information regarding the calculation of
-    statistics and other details, please visit the Statistics documentation page:
+    """Get day-of-year and month-of-year statistics from the USGS Water Data API.
+
+    This service (called the "observationNormals" endpoint on
+    api.waterdata.usgs.gov) provides access to computations on the historical
+    record of water conditions, including minimum, maximum, mean, median, and
+    percentiles for day of year and month of year. For more information about
+    how these statistics are calculated, see the Statistics documentation page:
     https://waterdata.usgs.gov/statistics-documentation/.
 
     Note: This API is under active beta development and subject to
@@ -2857,52 +2810,49 @@ def get_stats_por(
     end_date: string or datetime, optional
         End day for the query in the month-day format (MM-DD).
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location. This
-        corresponds to the id field in the monitoring-locations endpoint.
-        Monitoring location IDs are created by combining the agency code of the
-        agency responsible for the monitoring location (e.g. USGS) with the ID
-        number of the monitoring location (e.g. 02238500), separated by a hyphen
-        (e.g. USGS-02238500).
+        A unique identifier representing a single monitoring location,
+        corresponding to the id field in the monitoring-locations endpoint. IDs
+        combine the agency code of the agency responsible for the monitoring
+        location (e.g. USGS) with the location's ID number (e.g. 02238500),
+        separated by a hyphen (e.g. USGS-02238500).
     page_size : int, optional
         The number of results to return per page, where one result represents a
         monitoring location. The default is 1000.
     parent_time_series_id: string, optional
-        The parent_time_series_id returns statistics tied to a
-        particular database entry.
+        Returns statistics tied to a particular database entry.
     site_type_code: string, optional
-        Site type code query parameter.
-        A list of valid site type codes is available at:
+        Site type code query parameter. A list of valid site type codes is
+        available at
         https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
         Example: "GW" (Groundwater site)
     site_type_name: string, optional
         Site type name query parameter.
     parameter_code : string or iterable of strings, optional
-        Parameter codes are 5-digit codes used to identify the constituent
-        measured and the units of measure. A complete list of parameter codes
-        and associated groupings can be found at
-        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+        A 5-digit code identifying the constituent measured and the units of
+        measure. A complete list of parameter codes and associated groupings is
+        available at https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
     normal_type : string, optional
         Filter the returned normals to a single period. If unspecified
         (default), all matching data are returned. Available values:
         "DOY" (day-of-year) and "MOY" (month-of-year).
     expand_percentiles : boolean
-        Percentile data for a given day of year or month of year by default
-        are returned from the service as lists of string values and percentile
-        thresholds in the "values" and "percentiles" columns, respectively.
-        When `expand_percentiles` is set to True (default), each value and
-        percentile threshold specific to a computation id are returned as
-        individual rows in the dataframe, with the value reported in the
-        "value" column and the corresponding percentile reported in a
-        "percentile" column (and the "values" and "percentiles" columns
-        are removed). Missing percentile values expressed as 'nan' in the
-        list of string values are removed from the dataframe to save space.
-        Setting `expand_percentiles` to False retains the "values" and
-        "percentiles" columns produced by the service. Including
-        both 'percentiles' and one or more other statistics ('median',
-        'minimum', 'maximum', or 'arithmetic_mean') in the `computation_type`
-        argument will return both the "values" column, containing the list
-        of percentile threshold values, and a "value" column, containing
-        the singular summary value for the other statistics.
+        Whether to expand percentile lists into one row per percentile.
+        By default, the service returns percentile data for a given day of year
+        or month of year as lists of string values and percentile thresholds, in
+        the "values" and "percentiles" columns respectively. When
+        `expand_percentiles` is True (default), each value and percentile
+        threshold specific to a computation id becomes its own row in the
+        dataframe: the value is reported in a "value" column and the
+        corresponding percentile in a "percentile" column, and the "values" and
+        "percentiles" columns are removed. Missing percentile values, expressed
+        as 'nan' in the list of string values, are removed from the dataframe to
+        save space. Setting `expand_percentiles` to False retains the "values"
+        and "percentiles" columns produced by the service. Including both
+        'percentiles' and one or more other statistics ('median', 'minimum',
+        'maximum', or 'arithmetic_mean') in the `computation_type` argument
+        returns both the "values" column, containing the list of percentile
+        threshold values, and a "value" column, containing the singular summary
+        value for the other statistics.
 
     Returns
     -------
@@ -2963,12 +2913,13 @@ def get_stats_date_range(
     expand_percentiles: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get monthly and annual water data statistics from the USGS Water Data API.
-    This service (called the "observationIntervals" endpoint on api.waterdata.usgs.gov)
-    provides endpoints for access to computations on the historical record regarding
-    water conditions, including minimum, maximum, mean, median, and percentiles for
-    month-year, and water/calendar years. For more information regarding the calculation
-    of statistics and other details, please visit the Statistics documentation page:
-    https://waterdata.usgs.gov/statistics-documentation/.
+
+    This service (called the "observationIntervals" endpoint on
+    api.waterdata.usgs.gov) provides access to computations on the historical
+    record of water conditions, including minimum, maximum, mean, median, and
+    percentiles for month-year and water/calendar years. For more information
+    about how these statistics are calculated, see the Statistics documentation
+    page: https://waterdata.usgs.gov/statistics-documentation/.
 
     Note: This API is under active beta development and subject to
     change. Improved handling of significant figures will be
@@ -3002,55 +2953,52 @@ def get_stats_date_range(
         End date for the query in the year-month-day format
         (YYYY-MM-DD).
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location. This
-        corresponds to the id field in the monitoring-locations endpoint.
-        Monitoring location IDs are created by combining the agency code of the
-        agency responsible for the monitoring location (e.g. USGS) with the ID
-        number of the monitoring location (e.g. 02238500), separated by a hyphen
-        (e.g. USGS-02238500).
+        A unique identifier representing a single monitoring location,
+        corresponding to the id field in the monitoring-locations endpoint. IDs
+        combine the agency code of the agency responsible for the monitoring
+        location (e.g. USGS) with the location's ID number (e.g. 02238500),
+        separated by a hyphen (e.g. USGS-02238500).
     page_size : int, optional
         The number of results to return per page, where one result represents a
         monitoring location. The default is 1000.
     parent_time_series_id: string, optional
-        The parent_time_series_id returns statistics tied to a
-        particular database entry.
+        Returns statistics tied to a particular database entry.
     site_type_code: string, optional
-        Site type code query parameter.
-        You can see a list of valid site type codes here:
+        Site type code query parameter. A list of valid site type codes is
+        available at
         https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
         Example: "GW" (Groundwater site)
     site_type_name: string, optional
-        Site type name query parameter.
-        You can see a list of valid site type names here:
+        Site type name query parameter. A list of valid site type names is
+        available at
         https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
         Example: "Well"
     parameter_code : string or iterable of strings, optional
-        Parameter codes are 5-digit codes used to identify the constituent
-        measured and the units of measure. A complete list of parameter codes
-        and associated groupings can be found at
-        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+        A 5-digit code identifying the constituent measured and the units of
+        measure. A complete list of parameter codes and associated groupings is
+        available at https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
     interval_type : string or iterable of strings, optional
         Filter the returned intervals to one or more periods. If unspecified
         (default), all matching data are returned. Available values:
         "M" (month), "CY" (calendar year), and "WY" (water year).
     expand_percentiles : boolean
-        Percentile data for a given day of year or month of year by default
-        are returned from the service as lists of string values and percentile
-        thresholds in the "values" and "percentiles" columns, respectively.
-        When `expand_percentiles` is set to True (default), each value and
-        percentile threshold specific to a computation id are returned as
-        individual rows in the dataframe, with the value reported in the
-        "value" column and the corresponding percentile reported in a
-        "percentile" column (and the "values" and "percentiles" columns
-        are removed). Missing percentile values expressed as 'nan' in the
-        list of string values are removed from the dataframe to save space.
-        Setting `expand_percentiles` to False retains the "values" and
-        "percentiles" columns produced by the service. Including
-        both 'percentiles' and one or more other statistics ('median',
-        'minimum', 'maximum', or 'arithmetic_mean') in the `computation_type`
-        argument will return both the "values" column, containing the list
-        of percentile threshold values, and a "value" column, containing
-        the singular summary value for the other statistics.
+        Whether to expand percentile lists into one row per percentile.
+        By default, the service returns percentile data for a given day of year
+        or month of year as lists of string values and percentile thresholds, in
+        the "values" and "percentiles" columns respectively. When
+        `expand_percentiles` is True (default), each value and percentile
+        threshold specific to a computation id becomes its own row in the
+        dataframe: the value is reported in a "value" column and the
+        corresponding percentile in a "percentile" column, and the "values" and
+        "percentiles" columns are removed. Missing percentile values, expressed
+        as 'nan' in the list of string values, are removed from the dataframe to
+        save space. Setting `expand_percentiles` to False retains the "values"
+        and "percentiles" columns produced by the service. Including both
+        'percentiles' and one or more other statistics ('median', 'minimum',
+        'maximum', or 'arithmetic_mean') in the `computation_type` argument
+        returns both the "values" column, containing the list of percentile
+        threshold values, and a "value" column, containing the singular summary
+        value for the other statistics.
 
     Returns
     -------
@@ -3130,33 +3078,29 @@ def get_channel(
     max_rows: int | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """
-    Channel measurements taken as part of streamflow field measurements.
+    """Get channel measurements taken as part of streamflow field measurements.
 
     Parameters
     ----------
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location. This
-        corresponds to the id field in the monitoring-locations endpoint.
-        Monitoring location IDs are created by combining the agency code of
-        the agency responsible for the monitoring location (e.g. USGS) with
-        the ID number of the monitoring location (e.g. 02238500), separated
-        by a hyphen (e.g. USGS-02238500).
+        A unique identifier representing a single monitoring location,
+        corresponding to the id field in the monitoring-locations endpoint. IDs
+        combine the agency code of the agency responsible for the monitoring
+        location (e.g. USGS) with the location's ID number (e.g. 02238500),
+        separated by a hyphen (e.g. USGS-02238500).
     field_visit_id : string or iterable of strings, optional
-        A universally unique identifier (UUID) for the field visit.
-        Multiple measurements
-        may be made during a single field visit.
+        A universally unique identifier (UUID) for the field visit. Multiple
+        measurements may be made during a single field visit.
     measurement_number : string or iterable of strings, optional
         Measurement number.
     time : string or iterable of strings, optional
         The date an observation represents. You can query this field using
         date-times or intervals, adhering to RFC 3339, or using ISO 8601
         duration objects. Intervals may be bounded or half-bounded (double-dots
-        at start or end). Only features that have a time that intersects the
-        value of datetime are selected. If a feature has multiple temporal
-        properties, it is the decision of the server whether only a single
-        temporal property is used to determine the extent or all relevant
-        temporal properties.
+        at start or end). Only features whose time intersects the requested
+        value are selected. If a feature has multiple temporal properties, the
+        server decides whether to use a single property or all relevant ones to
+        determine the extent.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -3203,13 +3147,13 @@ def get_channel(
     measurement_type : string or iterable of strings, optional
         The type of channel measurement.
     last_modified : string, optional
-        The last time a record was refreshed in our database. This may happen
-        due to regular operational processes and does not necessarily indicate
-        that anything about the measurement has changed. You can query this field
-        using date-times or intervals, adhering to RFC 3339, or using ISO 8601
-        duration objects. Intervals may be bounded or half-bounded (double-dots
-        at start or end). Only features that have a last_modified that
-        intersects the value of datetime are selected.
+        The last time a record was refreshed in our database. A refresh may
+        happen due to regular operational processes and does not necessarily
+        indicate that anything about the measurement has changed. You can query
+        this field using date-times or intervals, adhering to RFC 3339, or using
+        ISO 8601 duration objects. Intervals may be bounded or half-bounded
+        (double-dots at start or end). Only features whose last_modified
+        intersects the requested value are selected.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -3220,14 +3164,13 @@ def get_channel(
                 "PT36H" for the last 36 hours
 
     skip_geometry : boolean, optional
-        This option can be used to skip response geometries for each feature.
-        The returning object will be a data frame with no spatial information.
-        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
-        CQL2 queries.
+        If True, the response omits the geometry of each feature and the
+        returned object is a data frame with no spatial information. The USGS
+        Water Data APIs use camelCase "skipGeometry" in CQL2 queries.
     channel_measurement_type : string or iterable of strings, optional
         The channel measurement type.
     properties : string or iterable of strings, optional
-        A list of requested columns to be returned from the query. Available
+        The columns to return from the query. Available
         options are: geometry, channel_measurements_id, monitoring_location_id,
         field_visit_id, measurement_number, time, channel_name, channel_flow,
         channel_flow_unit, channel_width, channel_width_unit, channel_area,
@@ -3236,24 +3179,22 @@ def get_channel(
         channel_material, channel_evenness, horizontal_velocity_description,
         vertical_velocity_description, longitudinal_velocity_description,
         measurement_type, last_modified, channel_measurement_type. The default
-        (None) will return all columns of the data.
+        (None) returns all columns.
     bbox : list of numbers, optional
-        Only features that have a geometry that intersects the bounding box are
-        selected.  The bounding box is provided as four or six numbers,
-        depending on whether the coordinate reference system includes a vertical
-        axis (height or depth). Coordinates are assumed to be in crs 4326. The
-        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
-        ``[Western-most longitude, Southern-most latitude, Eastern-most
-        longitude, Northern-most latitude]``.
+        Only features whose geometry intersects the bounding box are selected.
+        The bounding box is provided as four or six numbers, depending on
+        whether the coordinate reference system includes a vertical axis (height
+        or depth). Coordinates are assumed to be in crs 4326. The expected
+        format is ``[xmin, ymin, xmax, ymax]``, i.e. ``[Western-most longitude,
+        Southern-most latitude, Eastern-most longitude, Northern-most
+        latitude]``.
     limit : int, optional
-        The optional limit parameter is used to control the subset of the
-        selected features that should be returned in each page. The maximum
-        allowable limit is 50000. It may be beneficial to set this number lower
-        if your internet connection is spotty. The default (None) will set the
-        limit to the maximum allowable limit for the service.
-        This is a per-page size, not a cap on the total result: a query
-        matching more rows than ``limit`` still returns every matching row
-        across multiple pages. Use ``max_rows`` to cap the total instead.
+        The number of features returned in each page. The maximum allowable
+        limit is 50000; the default (None) requests that maximum. Set a lower
+        number if your internet connection is spotty. This is a per-page size,
+        not a cap on the total result: a query matching more rows than ``limit``
+        still returns every matching row across multiple pages. Use ``max_rows``
+        to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See

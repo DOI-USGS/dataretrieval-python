@@ -1,5 +1,4 @@
-"""
-This module is a wrapper for the StreamStats API (`streamstats documentation`_).
+"""Wrapper for the StreamStats API (`streamstats documentation`_).
 
 .. _streamstats documentation: https://streamstats.usgs.gov/streamstatsservices/#/
 
@@ -17,16 +16,16 @@ from dataretrieval.utils import _get_with_retry
 
 
 def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
-    """Function to download a StreamStats workspace.
+    """Download a StreamStats workspace.
 
     Parameters
     ----------
     workspaceID: string
-        Service workspace received from watershed result
+        Service workspace received from a watershed result.
 
     format: string
-        Download return format. Default will return ESRI geodatabase zipfile.
-        'SHAPE' will return a zip file containing shape format.
+        Format of the download. The default returns an ESRI geodatabase
+        zipfile; 'SHAPE' returns a zip file containing shape format.
 
     Returns
     -------
@@ -49,11 +48,10 @@ def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
 
 
 def get_sample_watershed() -> Watershed:
-    """Sample function to get a watershed object for a location in NY.
+    """Get a watershed object for a sample location in NY.
 
-    Makes the function call :obj:`dataretrieval.streamstats.get_watershed`
-    with the parameters 'NY', -74.524, 43.939, and returns the watershed
-    object.
+    Calls :obj:`dataretrieval.streamstats.get_watershed` with the parameters
+    'NY', -74.524, and 43.939, and returns the resulting watershed object.
 
     Returns
     -------
@@ -79,13 +77,13 @@ def get_watershed(
     simplify: bool = True,
     format: str = "geojson",
 ) -> httpx.Response | Watershed:
-    """Get watershed object based on location
+    """Get a watershed object for a location.
 
     **StreamStats documentation:**
     Returns a watershed object. The request configuration will determine the
-    overall request response. However all returns will return a watershed
+    overall request response. However, all returns will return a watershed
     object with at least the workspaceid. The workspace id is the id to the
-    service workspace where files are stored and can be used for further
+    service workspace where files are stored, and can be used for further
     processing such as for downloads and flow statistic computations.
 
     See: https://streamstats.usgs.gov/streamstatsservices/#/ for more
@@ -101,17 +99,16 @@ def get_watershed(
     ylocation: float
         Y location of the most downstream point of desired study area.
     crs: integer, string, optional
-        EPSG spatial reference code, default is 4326
+        EPSG spatial reference code. Default is 4326.
     includeparameters: bool, optional
-        Boolean flag to include parameters in response.
+        Whether to include parameters in the response.
     includeflowtypes: bool, string, optional
-        Not yet implemented. Would be a comma separated list of region flow
-        types to compute with the default being True
+        Comma-separated list of region flow types to compute, with the default
+        being True. Not yet implemented.
     includefeatures: list, optional
-        Comma separated list of features to include in response.
+        Comma-separated list of features to include in the response.
     simplify: bool, optional
-        Boolean flag controlling whether or not to simplify the returned
-        result.
+        Whether to simplify the returned result.
     format: string, optional
         Controls the return type, default is 'geojson'. 'geojson' returns
         the raw ``httpx.Response``; 'object' parses the response into a
@@ -185,8 +182,10 @@ class Watershed:
     """
 
     def __init__(self, rcode: str, xlocation: float, ylocation: float) -> None:
-        """Delineate the watershed at ``(xlocation, ylocation)`` and
-        parse the response onto this instance."""
+        """Delineate the watershed at ``(xlocation, ylocation)``.
+
+        Parses the response onto this instance.
+        """
         response = cast(
             httpx.Response,
             get_watershed(rcode, xlocation, ylocation, format="geojson"),
@@ -195,21 +194,19 @@ class Watershed:
 
     @classmethod
     def from_streamstats_json(cls, streamstats_json: dict[str, Any]) -> Watershed:
-        """Create a :class:`Watershed` from an already-parsed StreamStats
-        JSON payload, without issuing a new request.
+        """Create a :class:`Watershed` from a parsed StreamStats JSON payload.
 
-        Builds a fresh instance (via ``__new__``, so the
-        network-fetching ``__init__`` is bypassed) and populates it; each
-        call returns an independent object rather than mutating shared
-        class state.
+        No new request is issued. Builds a fresh instance (via ``__new__``, so
+        the network-fetching ``__init__`` is bypassed) and populates it; each
+        call returns an independent object rather than mutating shared class
+        state.
         """
         self = cls.__new__(cls)
         self._populate(streamstats_json)
         return self
 
     def _populate(self, streamstats_json: dict[str, Any]) -> None:
-        """Extract watershed fields from a StreamStats JSON payload onto
-        this instance."""
+        """Extract watershed fields from ``streamstats_json`` onto this instance."""
         self.watershed_point = streamstats_json["featurecollection"][0]["feature"]
         self.watershed_polygon = streamstats_json["featurecollection"][1]["feature"]
         self.parameters = streamstats_json["parameters"]

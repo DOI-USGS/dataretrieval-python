@@ -26,7 +26,7 @@ def get_nearest_continuous(
     on_tie: OnTie = "first",
     **kwargs: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """For each target timestamp, return the nearest continuous observation.
+    """Return the nearest continuous observation to each target timestamp.
 
     Builds one bracketed ``(time >= t-window AND time <= t+window)`` clause
     per target, joins them as a top-level CQL ``OR`` filter, and lets

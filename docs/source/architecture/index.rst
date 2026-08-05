@@ -99,15 +99,15 @@ Shared components
     (``__init__.py``) exposes the service-adapter seam: ``OgcDialect``,
     ``prepare_request_args``, ``get_ogc_data``, and ``fetch_ogc_request``.
     Internally, ``policy`` defines the dialect type and endpoint constants
-    (depends only on stdlib); ``requests`` owns request construction, argument
-    normalization, and queryables/schema lookup; ``engine`` supplies OGC cursor
-    and response strategies to transport pagination; ``planning`` determines
-    chunk boundaries; ``chunking`` executes plans and retains resumable state;
-    ``interruptions`` defines the resumable failure contract; ``retry``
-    classifies failures into OGC interruption types; and ``shaping``, ``dates``,
-    ``filters``, and ``errors`` isolate their named protocol concerns. The full
-    runtime OGC graph, including the facade, is acyclic — enforced by
-    ``tests/architecture_test.py``.
+    (it depends only on stdlib); ``requests`` owns request construction,
+    argument normalization, and queryables/schema lookup; ``engine`` supplies
+    OGC cursor and response strategies to transport pagination. ``planning``
+    determines chunk boundaries; ``chunking`` executes plans and retains
+    resumable state; ``interruptions`` defines the resumable failure contract;
+    ``retry`` classifies failures into OGC interruption types; and ``shaping``,
+    ``dates``, ``filters``, and ``errors`` isolate their named protocol
+    concerns. The full runtime OGC graph, including the facade, is acyclic —
+    enforced by ``tests/architecture_test.py``.
 
 ``dataretrieval.transport``
     Internal service-neutral execution layer. Owns guarded client lifecycle and
@@ -115,18 +115,19 @@ Shared components
     response aggregation, progress, and sync-over-async dispatch. Internally,
     ``liveness`` is a stdlib-only leaf recording when data last arrived, so the
     page loop that observes progress and the retry loop that acts on it both
-    depend on it rather than on each other. It imports no service adapter or OGC
-    protocol module, and it is not exposed as a public framework API.
+    depend on ``liveness`` rather than on each other. Transport imports no
+    service adapter or OGC protocol module, and it is not exposed as a public
+    framework API.
 
 ``dataretrieval.exceptions``
-    Stable error-policy leaf. It has no runtime third-party dependency and may
-    be imported by every service without creating an infrastructure cycle.
+    Stable error-policy leaf. It has no runtime third-party dependency, and
+    every service can import it without creating an infrastructure cycle.
 
 ``dataretrieval.utils``
     Shared metadata, data-shaping helpers, ambient context support, legacy
     request composition, and compatibility imports for transport names that
-    historically lived here. New service-specific behavior should not be added
-    there by default.
+    historically lived here. By default, do not add new service-specific
+    behavior there.
 
 ``dataretrieval.codes`` and ``dataretrieval.rdb``
     State/time-zone code conversion and RDB parsing leaves.
@@ -154,7 +155,7 @@ inspect ``status_code``, ``retry_after``, and ``retryable`` without knowing the
 concrete subtype. OGC calls may raise ``ChunkInterrupted`` subclasses carrying a
 resumable call handle and completed partial state.
 
-The public surface is defined by package/module exports and documentation.
+Package/module exports and documentation define the public surface.
 Underscore-prefixed symbols are implementation details even where existing
 internal adapters currently import them; those imports are known variances, not
 new extension points.
@@ -211,21 +212,22 @@ Resource and configuration view
     Seconds a call may go without receiving any data before retrying stops and
     the failure surfaces; defaults to 60, and ``0`` disables the bound. It
     complements ``API_USGS_RETRIES``, which caps attempts rather than elapsed
-    time: without it, four retries of a request that times out after a minute is
-    four silent minutes. Progress restarts the budget — a page received, or a
-    queued sub-request acquiring its concurrency slot — so neither a slow but
-    productive download nor the tail of a wide fan-out is cut short, and an
-    attempt already in flight is never interrupted. The first retry is never
-    withheld by this bound, so one slow attempt cannot disable retry by itself;
-    the budget decides whether to continue after that. A dead connection
-    therefore costs about two read timeouts rather than five attempts' worth.
+    time: without this bound, four retries of a request that times out after a
+    minute add up to four silent minutes. Progress restarts the budget — a page
+    received, or a queued sub-request acquiring its concurrency slot. Neither a
+    slow but productive download nor the tail of a wide fan-out is cut short,
+    and an attempt already in flight is never interrupted. This bound never
+    withholds the first retry, so one slow attempt cannot disable retry by
+    itself; after that, the budget decides whether to continue. A dead
+    connection therefore costs about two read timeouts rather than five
+    attempts' worth.
 
 ``API_USGS_PROGRESS``
     Controls best-effort progress display. Reporting failures must never change
     retrieval results.
 
-HTTP timeout, redirect, and authentication policy is centralized in
-``dataretrieval.transport``. OGC subrequest fan-out and Water Use location
+``dataretrieval.transport`` centralizes HTTP timeout, redirect, and
+authentication policy. OGC subrequest fan-out and Water Use location
 fan-out retain separate explicit concurrency caps because their upstream costs
 and request shapes differ.
 
@@ -237,9 +239,9 @@ functions in ``tests/architecture_test.py`` are authoritative for exact current
 dependency allowlists.
 
 - ``waterdata/api.py`` and ``ogc/engine.py`` contain multiple reasons to change.
-These are documented so guardrails distinguish accepted current dependencies
-from new erosion. They should be removed through small, test-protected changes,
-not a rewrite.
+  These are documented so guardrails distinguish accepted current dependencies
+  from new erosion. They should be removed through small, test-protected
+  changes, not a rewrite.
 
 Change process
 --------------

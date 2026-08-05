@@ -1,6 +1,4 @@
-"""
-Time zone information
-"""
+"""Time zone information."""
 
 tz_str = """-1200 Y
 -1100 X NUT SST

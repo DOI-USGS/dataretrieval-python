@@ -123,8 +123,8 @@ def _check_numeric_filter_pitfall(filter_expr: str) -> None:
     ``hydrologic_unit_code``, ``channel_flow``). Any unquoted numeric
     comparison — ``value >= 1000``, ``parameter_code = 60``,
     ``parameter_code IN (60, 61)``, ``value BETWEEN 5 AND 10`` — either gets
-    rejected with HTTP 500 or silently produces lexicographic results;
-    zero-padded codes are the worst case (``parameter_code = '60'`` matches
+    rejected with HTTP 500 or silently produces lexicographic results.
+    Zero-padded codes are the worst case (``parameter_code = '60'`` matches
     nothing because the real codes are ``'00060'``-shaped).
 
     Quoted literals (``value >= '1000'``) are not flagged — the caller has

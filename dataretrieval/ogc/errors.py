@@ -90,9 +90,9 @@ def _raise_for_non_200(resp: httpx.Response) -> None:
         transient types (:class:`~dataretrieval.exceptions.TransientError`) are
         distinguished so ``ChunkedCall`` can wrap them as a resumable
         :class:`~dataretrieval.ogc.interruptions.QuotaExhausted` /
-        :class:`~dataretrieval.ogc.interruptions.ServiceInterrupted`; a fatal
-        :class:`~dataretrieval.exceptions.HTTPError` (not a ``TransientError``)
-        the chunker won't resume.
+        :class:`~dataretrieval.ogc.interruptions.ServiceInterrupted`. The
+        chunker won't resume a fatal
+        :class:`~dataretrieval.exceptions.HTTPError` (not a ``TransientError``).
     """
     status = resp.status_code
     if status < 400:

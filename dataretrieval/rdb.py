@@ -32,10 +32,9 @@ def read_rdb(text: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
     text : str
         The RDB text response from a USGS web service.
     dtypes : dict[str, type] or None, optional
-        Optional column-name to dtype hints, forwarded to
-        ``pandas.read_csv``. Unknown column names are silently ignored, so
-        callers may safely pass a dict of all columns they might be
-        interested in.
+        Column-name to dtype hints, forwarded to ``pandas.read_csv``. Unknown
+        column names are silently ignored, so callers can pass a dict of every
+        column they might be interested in.
 
     Returns
     -------

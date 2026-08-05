@@ -2,7 +2,7 @@
 
 When a transparently-chunked request fails mid-stream (a 429, a 5xx, or a
 bare transport error), the work already completed is preserved and the call
-is resumable: the raised exception carries a ``.call`` handle whose
+is resumable. The raised exception carries a ``.call`` handle whose
 ``resume()`` re-issues only the still-pending sub-requests. These exception
 types are that contract, re-exported at the top level
 (``from dataretrieval import ChunkInterrupted``). The execution machinery
@@ -24,8 +24,7 @@ if TYPE_CHECKING:
 
 class ChunkInterrupted(DataRetrievalError):
     """
-    Base class for mid-stream chunk failures whose completed work is
-    preserved and resumable.
+    Base class for mid-stream chunk failures whose completed work is resumable.
 
     A ``ChunkInterrupted`` subclass means: a sub-request failed, but
     ``ChunkedCall`` still owns whatever completed successfully before
@@ -139,20 +138,19 @@ class ChunkInterrupted(DataRetrievalError):
         # interruption can't cross a process boundary with ``.call`` attached.
         # The degraded ``call=None`` form keeps the counts, retry hint, and the
         # snapshotted partial frame / response — plain instance attributes the
-        # base ``__getstate__`` already pickles; only ``.resume()`` is lost
-        # (cross-process resume was never possible anyway).
+        # base ``__getstate__`` already pickles. Only ``.resume()`` is lost, and
+        # cross-process resume was never possible anyway.
         return {**super().__getstate__(), "call": None}
 
 
 class QuotaExhausted(ChunkInterrupted):
     """
-    A sub-request returned HTTP 429 — the per-key rate-limit window
-    is exhausted. Subclass of :class:`ChunkInterrupted`.
+    A sub-request returned HTTP 429 — the per-key rate-limit window is exhausted.
 
-    The completed sub-requests are preserved on ``.call``; once the
-    rate-limit window resets, ``.call.resume()`` re-issues only the
-    still-pending work. ``partial_frame`` holds what completed
-    before the 429.
+    Subclass of :class:`ChunkInterrupted`. The completed sub-requests are
+    preserved on ``.call``; once the rate-limit window resets,
+    ``.call.resume()`` re-issues only the still-pending work.
+    ``partial_frame`` holds what completed before the 429.
     """
 
     _MESSAGE_TEMPLATE = (
@@ -165,12 +163,11 @@ class QuotaExhausted(ChunkInterrupted):
 
 class ServiceInterrupted(ChunkInterrupted):
     """
-    A sub-request returned HTTP 5xx — the upstream service failed
-    transiently. Subclass of :class:`ChunkInterrupted`.
+    A sub-request returned HTTP 5xx — the upstream service failed transiently.
 
-    The completed sub-requests are preserved on ``.call``; once the
-    upstream recovers, ``.call.resume()`` resumes only the
-    still-pending work.
+    Subclass of :class:`ChunkInterrupted`. The completed sub-requests are
+    preserved on ``.call``; once the upstream recovers, ``.call.resume()``
+    resumes only the still-pending work.
     """
 
     _MESSAGE_TEMPLATE = (

@@ -3,8 +3,7 @@
 These utilities assemble the output of a chunked/fan-out call from its
 individual per-sub-request results.  They have no event-loop, retry, or
 network state — they're pure data transforms shared by protocol-specific
-chunk execution, service fan-out, and
-cursor-driven pagination.
+chunk execution, service fan-out, and cursor-driven pagination.
 
 Separated from :mod:`dataretrieval.ogc.planning` so that module stays
 focused on *what* to split, while this module owns *how* to reassemble.
@@ -101,13 +100,14 @@ def _merge_response(
     elapsed: timedelta,
     url: str | httpx.URL | None = None,
 ) -> httpx.Response:
-    """Fold several responses into one: a shallow copy of ``base`` whose
-    ``.headers`` are rebuilt as a fresh ``httpx.Headers`` from ``headers_from``,
-    ``.elapsed`` set to ``elapsed``, and ``.url`` overridden when ``url`` is
-    given.  ``base`` and ``headers_from`` are never mutated, and the fresh
-    ``httpx.Headers`` means downstream mutations don't back-propagate into any
-    underlying response — so callers may re-fold idempotently.  This is the one
-    low-level merge behind both pagination
+    """Fold several responses into one shallow copy of ``base``.
+
+    The copy's ``.headers`` are rebuilt as a fresh ``httpx.Headers`` from
+    ``headers_from``, ``.elapsed`` is set to ``elapsed``, and ``.url`` is
+    overridden when ``url`` is given.  ``base`` and ``headers_from`` are never
+    mutated, and the fresh ``httpx.Headers`` means downstream mutations don't
+    back-propagate into any underlying response — so callers may re-fold
+    idempotently.  This is the one low-level merge behind both pagination
     (:func:`~dataretrieval.transport.pagination.paginate`) and the chunked /
     fan-out aggregation (:func:`_combine_chunk_responses`)."""
     merged = copy.copy(base)
@@ -196,9 +196,9 @@ def _combine_chunk_responses(
     if len(responses) == 1 and canonical_url is None:
         return responses[0]
 
-    # Headers come from the response with the lowest reported remaining quota;
-    # ``_lowest_remaining`` returns the lone response as-is
-    # for a single-element list).  ``_merge_response`` re-sums elapsed onto a
+    # Headers come from the response with the lowest reported remaining quota
+    # (``_lowest_remaining`` returns the lone response as-is for a
+    # single-element list).  ``_merge_response`` re-sums elapsed onto a
     # fresh copy, so repeated calls (e.g. via ``ChunkedCall.partial_response``
     # during resume) stay idempotent.
     elapsed = sum((_safe_elapsed(r) for r in responses), start=timedelta())

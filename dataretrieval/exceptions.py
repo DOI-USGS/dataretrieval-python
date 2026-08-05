@@ -2,8 +2,8 @@
 
 Every service module (``nwis``, ``wqp``, ``nldi``, ``waterdata``,
 ``streamstats``) raises a subclass of :class:`DataRetrievalError` when a request
-fails, so one ``except dataretrieval.DataRetrievalError`` catches them all --
-including connection-level failures (timeouts, DNS, refused connections), which
+fails, so one ``except dataretrieval.DataRetrievalError`` catches them all. That
+includes connection-level failures (timeouts, DNS, refused connections), which
 are wrapped as :class:`NetworkError` with the underlying ``httpx`` exception on
 ``__cause__``.
 
@@ -15,8 +15,8 @@ aren't a plain status: :class:`RequestTooLarge` (with :class:`URLTooLong` /
 :func:`error_for_status` maps a status to its type.
 
 This module has no third-party runtime dependencies -- ``httpx`` is imported only
-for type checking -- so any module can import it without pulling in pandas / httpx
-and without risking an import cycle.
+for type checking. Any module can therefore import it without pulling in pandas
+or httpx, and without risking an import cycle.
 """
 
 from __future__ import annotations
@@ -94,8 +94,10 @@ class DataRetrievalError(Exception):
 
 
 def _new_error(cls: type[DataRetrievalError]) -> DataRetrievalError:
-    """Build a blank :class:`DataRetrievalError` for unpickling, bypassing
-    ``__init__``; pickle then calls ``__setstate__`` to restore its state."""
+    """Build a blank :class:`DataRetrievalError` for unpickling.
+
+    Bypasses ``__init__``; pickle then calls ``__setstate__`` to restore state.
+    """
     return cls.__new__(cls)
 
 
@@ -110,8 +112,8 @@ class HTTPError(DataRetrievalError):
     (429 / 5xx) is the retryable subset, and is itself an ``HTTPError``. The one
     exception to "a status is an ``HTTPError``" is a request the service rejects
     as too long: it surfaces as :class:`URLTooLong` (a :class:`RequestTooLarge`),
-    *not* an ``HTTPError`` -- so catch :class:`DataRetrievalError` to be certain
-    of spanning every failure. See :func:`error_for_status` for the full mapping.
+    *not* an ``HTTPError``. Catch :class:`DataRetrievalError` to be certain of
+    spanning every failure. See :func:`error_for_status` for the full mapping.
 
     Parameters
     ----------
@@ -127,8 +129,9 @@ class HTTPError(DataRetrievalError):
 
 
 class TransientError(HTTPError):
-    """A 429 or 5xx the server may serve on a later try -- :class:`RateLimited`
-    for 429, :class:`ServiceUnavailable` for 5xx.
+    """A 429 or 5xx the server may serve on a later try.
+
+    :class:`RateLimited` covers 429 and :class:`ServiceUnavailable` covers 5xx.
 
     This only classifies the condition; it does not itself retry. Whether to
     retry is up to the calling path: a single-shot request raises it for the
@@ -219,8 +222,8 @@ class Unchunkable(RequestTooLarge):
 
     Raised by the Water Data chunker when even the smallest reducible plan
     (every list axis at one atom per sub-request, the filter at one clause per
-    sub-request) still exceeds the server's byte limit -- so unlike
-    :class:`URLTooLong`, automatic splitting has already been tried and
+    sub-request) still exceeds the server's byte limit. Unlike
+    :class:`URLTooLong`, then, automatic splitting has already been tried and
     exhausted. Shrink the input lists, simplify the filter, or split the call
     manually.
     """
@@ -230,9 +233,10 @@ class Unchunkable(RequestTooLarge):
 
 
 class NetworkError(DataRetrievalError):
-    """The request never completed a round-trip to the service -- a DNS
-    failure, refused connection, or timeout -- so no HTTP response arrived to
-    classify.
+    """The request never completed a round-trip to the service.
+
+    A DNS failure, refused connection, or timeout stopped it, so no HTTP
+    response arrived to classify.
 
     Wraps the underlying ``httpx`` transport exception, preserved on
     ``__cause__``. Worth retrying (:attr:`~DataRetrievalError.retryable` is
@@ -246,8 +250,10 @@ class NetworkError(DataRetrievalError):
 
 
 class ConfigurationError(DataRetrievalError, ValueError):
-    """A ``dataretrieval`` setting -- an environment variable, a policy field --
-    holds a value that can't be used, so no request was issued.
+    """A ``dataretrieval`` setting holds a value that can't be used.
+
+    The setting may be an environment variable or a policy field; either way,
+    no request was issued.
 
     It is a :class:`DataRetrievalError` so ``except`` around a retrieval catches
     it rather than letting a bare ``ValueError`` escape a request path, and a
