@@ -514,3 +514,49 @@ def test_gate_does_not_reset_silence_from_earlier_attempts() -> None:
     # accumulates past the budget. Five attempts would mean the budget stopped
     # counting across attempts.
     assert asyncio.run(drive()) == 3
+
+
+def _wrapped_dns_failure(errno: int) -> NetworkError:
+    """A DNS failure shaped the way one reaches the chunker.
+
+    Our own wrapper uses ``raise ... from``, so the outer error links to the
+    httpx one explicitly; only the layers beneath it chain implicitly. The
+    chunker follows explicit links only, so this shape -- not
+    :func:`_dns_failure`'s -- is the one that decides whether an unresolvable
+    host is offered as resumable.
+    """
+    resolution_failed = socket.gaierror(errno, "name resolution failed")
+    transport_failed = httpx.ConnectError("name resolution failed")
+    transport_failed.__context__ = resolution_failed
+    wrapped = NetworkError("Could not reach the service at https://nope.invalid")
+    wrapped.__cause__ = transport_failed
+    return wrapped
+
+
+def test_deterministic_failures_are_not_offered_as_resumable() -> None:
+    """ "Retryable" and "resumable" are one judgement and must agree.
+
+    ``_retryable`` already refuses to re-send a hostname the resolver rejects
+    outright. If the interruption classifier still mapped it to
+    ``ServiceInterrupted``, the caller would be handed a ``.call.resume()``
+    whose every attempt fails identically -- a resumable handle for something
+    that cannot be resumed, hiding the ``NetworkError`` that actually explains
+    the failure.
+    """
+    from dataretrieval.ogc.retry import _classify_chunk_error
+
+    permanent = _wrapped_dns_failure(socket.EAI_NONAME)
+    assert retry._retryable(permanent) == (False, None)
+    assert _classify_chunk_error(permanent) is None
+
+    unsupported = httpx.UnsupportedProtocol("no scheme")
+    assert retry._retryable(unsupported) == (False, None)
+    assert _classify_chunk_error(unsupported) is None
+
+    # The converse still holds: a failure a later attempt could survive stays
+    # both retryable and resumable. A temporary resolver failure is the sharp
+    # case -- same exception type, same chain shape, opposite verdict, decided
+    # only by the errno.
+    temporary = _wrapped_dns_failure(socket.EAI_AGAIN)
+    assert retry._retryable(temporary) == (True, None)
+    assert _classify_chunk_error(temporary) is not None
