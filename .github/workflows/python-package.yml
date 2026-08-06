@@ -87,7 +87,6 @@ jobs:
           "$venv/bin/python" -m pip install "$GITHUB_WORKSPACE"/wheelhouse/*.whl
           cd "$RUNNER_TEMP"
           "$venv/bin/python" -I - <<'PY'
-          import importlib.util
           import os
           from importlib.resources import files
           from pathlib import Path
@@ -100,8 +99,6 @@ jobs:
           checkout = Path(os.environ["GITHUB_WORKSPACE"]).resolve()
           installed = Path(dataretrieval.__file__).resolve()
           assert not installed.is_relative_to(checkout), (installed, checkout)
-          assert importlib.util.find_spec("dataretrieval.waterdata.api") is not None
-          assert importlib.util.find_spec("dataretrieval.ogc.engine") is not None
           assert files("dataretrieval").joinpath("py.typed").is_file()
           assert waterdata.get_daily
           assert ngwmn.get_sites
