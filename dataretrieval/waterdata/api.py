@@ -1,4 +1,11 @@
-"""Backward-compatible facade for Water Data collection-family adapters."""
+"""Compatibility facade: the import path the collection getters used to have.
+
+Every getter here is defined in a collection-family module and re-exported
+unchanged. The path is kept because it is published, and this file exists only
+to preserve it -- it holds no logic, and a test enforces that.
+
+Import from :mod:`dataretrieval.waterdata` instead.
+"""
 
 from __future__ import annotations
 

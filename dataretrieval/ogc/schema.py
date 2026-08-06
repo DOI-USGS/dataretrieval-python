@@ -1,4 +1,9 @@
-"""OGC queryables and schema retrieval."""
+"""Asking an OGC service to describe itself.
+
+Queryables and collection schemas: which properties a collection accepts, and
+what columns it returns. Separate from request construction because answering
+these questions means *issuing* a request, and building one must not.
+"""
 
 from __future__ import annotations
 

@@ -27,8 +27,10 @@ selection, Statistics API execution, shared Water Data policy, and type
 vocabularies.
 
 The facade re-exports the established functions and preserves their signatures,
-identity at ``dataretrieval.waterdata``, legacy ``__module__`` value, and private
-Samples constants used by compatibility tests. Collection-family modules do not
+their identity at ``dataretrieval.waterdata``, and the private Samples constants
+compatibility tests rely on. It does not rewrite their ``__module__``: each
+function reports the family module that defines it, so a traceback names a file
+that contains code. Collection-family modules do not
 import one another; shared behavior belongs in Water Data policy, OGC, or
 transport modules.
 

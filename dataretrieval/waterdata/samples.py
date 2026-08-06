@@ -1,4 +1,10 @@
-"""Aquarius Samples API getters and wire-parameter policy."""
+"""Getters for the Aquarius Samples API, and its wire-parameter policy.
+
+Discrete water-quality results, which come from a different upstream service
+than the rest of Water Data -- with its own parameter spellings and its own
+error envelope. The translation between this package's argument names and that
+service's wire names lives here, next to the getters that need it.
+"""
 
 from __future__ import annotations
 
@@ -165,13 +171,12 @@ def get_samples(
     project_id: str | Iterable[str] | None = None,
     record_identifier_user_supplied: str | Iterable[str] | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Search Samples database for USGS water quality data.
-    This is a wrapper function for the Samples database API. All potential
-    filters are provided as arguments to the function, but please do not
-    populate all possible filters; leave as many as feasible with their default
-    value (None). This is important because overcomplicated web service queries
-    can bog down the database's ability to return an applicable dataset before
-    it times out.
+    """Search the USGS Samples database for discrete water-quality results.
+
+    Every available filter is exposed as an argument, but leave as many as
+    feasible at their default of ``None``. An overcomplicated query can bog
+    down the database's ability to assemble a result before it times out, so
+    filtering narrowly is faster than filtering exhaustively.
 
     The web GUI for the Samples database can be found here:
     https://waterdata.usgs.gov/download-samples/#dataProfile=site

@@ -1,4 +1,13 @@
-"""Time-series observation and statistics getters."""
+"""Getters for observations that form a time series.
+
+Daily and continuous values, their most-recent counterparts, and the
+period-of-record statistics computed over them. What unites them is shape: a
+monitoring location and a parameter, repeated over time.
+
+Metadata *about* these series -- what a location measures, over what period --
+lives in :mod:`~dataretrieval.waterdata.metadata`, so a caller can discover what
+exists before asking for the observations.
+"""
 
 from __future__ import annotations
 
@@ -39,7 +48,9 @@ def get_daily(
     max_rows: int | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Daily data provide one data value to represent water conditions for the
+    """Get daily values: one value per monitoring location, parameter, and day.
+
+    Daily data provide one data value to represent water conditions for the
     day.
 
     Throughout much of the history of the USGS, the primary water data available
@@ -274,7 +285,8 @@ def get_continuous(
     max_rows: int | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """
+    """Get continuous sensor observations, typically at a 15-minute interval.
+
     Continuous data provide instantaneous water conditions.
 
     This is an early version of the continuous endpoint that is feature-complete
@@ -483,8 +495,10 @@ def get_latest_continuous(
     max_rows: int | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """This endpoint provides the most recent observation for each time series
-    of continuous data. Continuous data are collected via automated sensors
+    """Get only the most recent observation of each continuous time series.
+
+    Use this for a current-conditions view; use :func:`get_continuous` for a
+    history. Continuous data are collected via automated sensors
     installed at a monitoring location. They are collected at a high frequency
     and often at a fixed 15-minute interval. Depending on the specific monitoring
     location, the data may be transmitted automatically via telemetry and be
@@ -698,8 +712,11 @@ def get_latest_daily(
     max_rows: int | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Daily data provide one data value to represent water conditions for the
-    day.
+    """Get only the most recent daily value of each time series.
+
+    Use this for a current-conditions view; use :func:`get_daily` for a
+    history. Daily data provide one data value to represent water conditions
+    for the day.
 
     Throughout much of the history of the USGS, the primary water data available
     was daily data collected manually at the monitoring location once each day.
@@ -910,13 +927,12 @@ def get_stats_por(
     normal_type: str | None = None,
     expand_percentiles: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Get day-of-year and month-of-year water data statistics from the
-    USGS Water Data API.
-    This service (called the "observationNormals" endpoint on api.waterdata.usgs.gov)
-    provides endpoints for access to computations on the historical record regarding
-    water conditions, including minimum, maximum, mean, median, and percentiles for
-    day of year and month of year. For more information regarding the calculation of
-    statistics and other details, please visit the Statistics documentation page:
+    """Get day-of-year and month-of-year statistics over the historical record.
+
+    Answers "how does today compare to a normal day here?" -- minimum, maximum,
+    mean, median, and percentiles computed per day of year and month of year
+    (the ``observationNormals`` endpoint). For more on how these statistics are
+    calculated, see the Statistics documentation page:
     https://waterdata.usgs.gov/statistics-documentation/.
 
     Note: This API is under active beta development and subject to
@@ -1054,12 +1070,12 @@ def get_stats_date_range(
     interval_type: str | Iterable[str] | None = None,
     expand_percentiles: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Get monthly and annual water data statistics from the USGS Water Data API.
-    This service (called the "observationIntervals" endpoint on api.waterdata.usgs.gov)
-    provides endpoints for access to computations on the historical record regarding
-    water conditions, including minimum, maximum, mean, median, and percentiles for
-    month-year, and water/calendar years. For more information regarding the calculation
-    of statistics and other details, please visit the Statistics documentation page:
+    """Get statistics summarizing whole months and years of the record.
+
+    Answers "how did this month or year compare to others?" -- minimum, maximum,
+    mean, median, and percentiles per month-year and per water or calendar year
+    (the ``observationIntervals`` endpoint). For more on how these statistics are
+    calculated, see the Statistics documentation page:
     https://waterdata.usgs.gov/statistics-documentation/.
 
     Note: This API is under active beta development and subject to

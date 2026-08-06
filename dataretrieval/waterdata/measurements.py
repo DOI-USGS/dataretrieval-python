@@ -1,4 +1,9 @@
-"""Discrete field, peak, and channel measurement getters."""
+"""Getters for values measured in person rather than by a sensor.
+
+Field measurements, annual peaks, and channel geometry. These are collected
+during site visits, at low frequency and with delivery lag, which is why they
+are grouped apart from the continuous record they help calibrate.
+"""
 
 from __future__ import annotations
 
@@ -39,7 +44,9 @@ def get_field_measurements(
     max_rows: int | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Field measurements are physically measured values collected during a
+    """Get discrete measurements collected in person during a site visit.
+
+    Field measurements are physically measured values collected during a
     visit to the monitoring location. Field measurements consist of measurements
     of gage height and discharge, and readings of groundwater levels, and are
     primarily used as calibration readings for the automated sensors collecting
@@ -401,7 +408,8 @@ def get_channel(
     max_rows: int | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """
+    """Get channel-geometry measurements recorded during streamflow field visits.
+
     Channel measurements taken as part of streamflow field measurements.
 
     Parameters

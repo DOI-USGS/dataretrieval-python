@@ -1,4 +1,10 @@
-"""Monitoring-location and data-inventory metadata getters."""
+"""Getters that answer "what data exists?" rather than returning it.
+
+The monitoring-location catalog, the time-series inventory, and the joins over
+them. These are the discovery step: narrow down which locations and parameters
+are worth requesting before pulling observations from
+:mod:`~dataretrieval.waterdata.time_series`.
+"""
 
 from __future__ import annotations
 
@@ -68,7 +74,9 @@ def get_monitoring_locations(
     max_rows: int | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Location information is basic information about the monitoring location
+    """Get the catalog of monitoring locations and their attributes.
+
+    Location information is basic information about the monitoring location
     including the name, identifier, agency responsible for data collection, and
     the date the location was established. It also includes information about
     the type of location, such as stream, lake, or groundwater, and geographic
@@ -372,7 +380,11 @@ def get_time_series_metadata(
     max_rows: int | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Daily data and continuous measurements are grouped into time series,
+    """Get metadata describing the time series available at a location.
+
+    Use this to discover what a location measures before requesting the
+    observations themselves. Daily data and continuous measurements are
+    grouped into time series,
     which represent a collection of observations of a single parameter,
     potentially aggregated using a standard statistic, at a single monitoring
     location. This endpoint provides metadata about those time series,

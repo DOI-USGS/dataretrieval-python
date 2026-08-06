@@ -1,4 +1,10 @@
-"""Reference-table and queryables discovery getters."""
+"""Getters for the API's own vocabularies.
+
+Reference tables and per-collection queryables -- the parameter codes, statistic
+codes, and filterable properties the other getters accept. These describe the
+service rather than the water, so they are the one family whose results are
+mostly stable between calls.
+"""
 
 from __future__ import annotations
 
