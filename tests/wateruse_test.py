@@ -306,8 +306,26 @@ def test_fan_out_surfaces_final_rate_limit_header(httpx_mock):
     assert md.header["x-ratelimit-remaining"] == "850"
 
 
-# (response aggregation now reuses ogc.combining._combine_chunk_responses; the
+# (response aggregation uses combining._combine_chunk_responses; the
 # integration test above pins the rate-limit-header behavior end-to-end.)
+
+
+def test_fan_out_failure_never_returns_partial_data(httpx_mock):
+    """A failed location aborts the call even when another location succeeded."""
+    httpx_mock.add_response(
+        method="GET",
+        url=re.compile(r".*location=stateCd%3ARI.*"),
+        text=_CSV_P1,
+    )
+    httpx_mock.add_response(
+        method="GET",
+        url=re.compile(r".*location=stateCd%3AWI.*"),
+        status_code=503,
+        json={"detail": "temporarily unavailable"},
+    )
+
+    with pytest.raises(dataretrieval.ServiceUnavailable):
+        get_wateruse(model="wu-public-supply-wd", state=["RI", "WI"])
 
 
 # --- _resolve_locations unit tests (no HTTP) -------------------------------
@@ -411,6 +429,165 @@ def test_next_page_url_leaves_api_host_untouched():
     assert _next_page_url(resp) == url
 
 
+def test_next_page_url_normalizes_other_spellings_of_the_same_service():
+    """The cursor is normalized by host, not by one literal prefix.
+
+    A plain-http or relative ``next`` link is the same service; refusing it
+    would throw away every page already collected for that location.
+    """
+    plain_http = httpx.Response(
+        200,
+        text="",
+        headers={"link": '<http://water.usgs.gov/nwaa-data/data?skip=600>; rel="next"'},
+    )
+    assert _next_page_url(plain_http) == (
+        "https://api.water.usgs.gov/nwaa-data/data?skip=600"
+    )
+
+    relative = httpx.Response(
+        200,
+        text="",
+        headers={"link": '</nwaa-data/data?skip=600>; rel="next"'},
+        request=httpx.Request("GET", "https://api.water.usgs.gov/nwaa-data/data"),
+    )
+    assert _next_page_url(relative) == (
+        "https://api.water.usgs.gov/nwaa-data/data?skip=600"
+    )
+
+
+def test_next_page_url_strips_credentials_from_the_cursor():
+    """Userinfo on a cursor must not become an Authorization header.
+
+    httpx derives ``Authorization: Basic ...`` from a URL's userinfo, so a
+    cursor spelled ``http://user:pass@water.usgs.gov/...`` would send a
+    credential the caller never configured to the rewritten host -- exactly what
+    the host check exists to prevent, arriving through the host check's own
+    normalization. The port is dropped for the same reason.
+    """
+    response = httpx.Response(
+        200,
+        text="",
+        headers={
+            "link": (
+                "<http://attacker:s3cret@water.usgs.gov:8080"
+                '/nwaa-data/data?skip=600>; rel="next"'
+            )
+        },
+    )
+
+    cursor = _next_page_url(response)
+
+    assert cursor == "https://api.water.usgs.gov/nwaa-data/data?skip=600"
+    assert "s3cret" not in cursor
+    assert httpx.URL(cursor).userinfo == b""
+
+    # Assert at the layer that actually synthesizes the header: ``httpx.Request``
+    # never derives Basic auth from userinfo (so asserting there would pass for
+    # any URL) -- the ``Client`` does it at send time.
+    sent: dict[str, str | None] = {}
+
+    def capture(request: httpx.Request) -> httpx.Response:
+        sent["auth"] = request.headers.get("Authorization")
+        return httpx.Response(200, text="")
+
+    with httpx.Client(transport=httpx.MockTransport(capture)) as client:
+        client.get(cursor)
+    assert sent["auth"] is None
+
+
 def test_module_exposes_catalog_constants():
     assert "wu-public-supply-wd" in wateruse.MODELS
     assert set(wateruse.TIME_RESOLUTIONS) == {"monthly", "annualcy", "annualwy"}
+
+
+def test_initial_transient_is_retried(httpx_mock, monkeypatch):
+    """Water Use retries an initial transient without holding its semaphore."""
+    import dataretrieval.transport.retry as retry
+
+    url = re.compile(r".*location=stateCd%3ARI.*")
+    httpx_mock.add_response(method="GET", url=url, status_code=503)
+    httpx_mock.add_response(method="GET", url=url, text=_CSV_P1)
+    monkeypatch.setenv("API_USGS_RETRIES", "1")
+    monkeypatch.setattr(retry, "_RETRY_BASE_BACKOFF", 0.0)
+    monkeypatch.setattr(retry, "_RETRY_MAX_BACKOFF", 0.0)
+
+    df, _ = get_wateruse(model="wu-public-supply-wd", state="RI")
+
+    assert len(df) == 2
+    assert len(httpx_mock.get_requests()) == 2
+
+
+def test_fatal_failure_waits_for_siblings_before_closing_the_client(monkeypatch):
+    """A fan-out failure must not close the client under its own siblings.
+
+    Every location shares one ``httpx.AsyncClient`` scoped to the fan-out. When
+    the first failure propagated straight out of the ``gather``, that block
+    exited while siblings were still walking pages, and the next page they asked
+    for failed with "Cannot send a request, as the client has been closed" -- on
+    a task nobody was awaiting any more, so it also surfaced as an unretrieved
+    exception. Both are artifacts of our own teardown, not of the service.
+    """
+    import asyncio
+    from contextlib import asynccontextmanager
+
+    pages = {"n": 0}
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.params.get("location") == "stateCd:AA":
+            return httpx.Response(400, json={"detail": "Invalid model name: bad"})
+        pages["n"] += 1
+        # A real suspension window, deliberately: the sibling has to still be
+        # mid-walk when the failure propagates, and an ``Event`` set by the
+        # failing branch is already set by the time this runs -- it returns
+        # without suspending, and the test then passes against the old code too.
+        await asyncio.sleep(0.05)
+        if pages["n"] == 1:
+            return httpx.Response(
+                200,
+                text=_CSV_P1,
+                headers={
+                    "link": (
+                        "<https://api.water.usgs.gov/nwaa-data/data"
+                        '?location=stateCd%3ABB&skip=2>; rel="next"'
+                    )
+                },
+            )
+        return httpx.Response(200, text=_CSV_P2)
+
+    @asynccontextmanager
+    async def open_mock_client(**overrides):
+        overrides.pop("verify", None)
+        async with httpx.AsyncClient(
+            transport=httpx.MockTransport(handler), **overrides
+        ) as client:
+            yield client
+
+    monkeypatch.setattr(wateruse, "open_async_client", open_mock_client)
+
+    requests = [
+        httpx.Request("GET", wateruse.WATERUSE_URL, params={"location": location})
+        for location in ("stateCd:AA", "stateCd:BB")
+    ]
+
+    async def drive() -> int:
+        with pytest.raises(dataretrieval.DataRetrievalError, match="Invalid model"):
+            await wateruse._fan_out(requests, {}, True)
+        # Nothing left running: the sibling was joined before teardown, so no
+        # task can later fail against the closed client.
+        return len(
+            [task for task in asyncio.all_tasks() if task is not asyncio.current_task()]
+        )
+
+    assert asyncio.run(drive()) == 0
+    assert pages["n"] == 2, "the sibling finished its walk rather than being abandoned"
+
+
+def test_next_page_url_rejects_cross_host_link():
+    response = httpx.Response(
+        200,
+        headers={"link": '<https://outside.example/next>; rel="next"'},
+    )
+    # Typed, so a caller's ``except DataRetrievalError`` catches it like any
+    # other failure rather than seeing a bare RuntimeError.
+    with pytest.raises(dataretrieval.DataRetrievalError, match="outside.example"):
+        _next_page_url(response)

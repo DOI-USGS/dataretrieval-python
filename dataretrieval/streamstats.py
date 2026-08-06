@@ -12,7 +12,8 @@ from typing import Any, cast
 
 import httpx
 
-from dataretrieval.utils import HTTPX_DEFAULTS, _get, _raise_for_status
+from dataretrieval.transport.http import HTTPX_DEFAULTS
+from dataretrieval.utils import _get_with_retry
 
 
 def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
@@ -37,9 +38,7 @@ def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
     payload = {"workspaceID": workspaceID, "format": format}
     url = "https://streamstats.usgs.gov/streamstatsservices/download"
 
-    r = _get(url, params=payload, **HTTPX_DEFAULTS)
-
-    _raise_for_status(r)
+    r = _get_with_retry(url, params=payload, **HTTPX_DEFAULTS)
     return r
     # data = r.raw.read()
 
@@ -144,9 +143,7 @@ def get_watershed(
     }
     url = "https://streamstats.usgs.gov/streamstatsservices/watershed.geojson"
 
-    r = _get(url, params=payload, **HTTPX_DEFAULTS)
-
-    _raise_for_status(r)
+    r = _get_with_retry(url, params=payload, **HTTPX_DEFAULTS)
 
     if format == "geojson":
         return r

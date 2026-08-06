@@ -4,16 +4,15 @@ This module holds the side-effect-free planning half of the chunker:
 deciding how to split one over-budget OGC request into URL-fitting
 sub-requests (:class:`ChunkPlan` and the axis/byte-accounting helpers).
 It has no event loop, retry policy, or network state — those live in
-:mod:`dataretrieval.ogc.chunking` (execution) and
-:mod:`dataretrieval.ogc.retry` (retry policy), which import the plan and
+:mod:`dataretrieval.ogc.chunking` (resumable execution) and
+:mod:`dataretrieval.transport.retry` (retry policy), which import the plan and
 drive it.
 
 Result recombination — reassembling the per-chunk frames and responses
 back into one result
-(:func:`~dataretrieval.ogc.combining._combine_chunk_frames`,
-:func:`~dataretrieval.ogc.combining._combine_chunk_responses`, etc.) — lives in
-the sibling :mod:`dataretrieval.ogc.combining` module, which callers import
-directly.
+(:func:`~dataretrieval.combining._combine_chunk_frames`,
+:func:`~dataretrieval.combining._combine_chunk_responses`, etc.) —
+lives in the top-level :mod:`dataretrieval.combining` module.
 """
 
 from __future__ import annotations

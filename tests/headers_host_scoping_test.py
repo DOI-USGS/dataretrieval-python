@@ -79,6 +79,42 @@ class TestDefaultHeadersHostScoping:
         # Key should NOT be sent to example.com
         assert "X-Api-Key" not in headers
 
+    def test_key_excluded_over_cleartext_on_the_authorized_host(self):
+        """The right host over plain http is still the wrong destination.
+
+        Matching on the host alone would send a bearer token in the clear on
+        the strength of a hostname an attacker chose to keep -- reachable via a
+        redirect or a server-supplied ``http://`` next-page link.
+        """
+        headers = _default_headers("http://api.waterdata.usgs.gov/ogcapi/v0/daily")
+        assert "X-Api-Key" not in headers
+
+    def test_sync_transport_withholds_key_on_downgrade_to_cleartext(self):
+        """The guard runs at send time, not only where headers are built."""
+        seen: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request)
+            if len(seen) == 1:
+                return httpx.Response(
+                    302,
+                    headers={"Location": "http://api.waterdata.usgs.gov/next"},
+                    request=request,
+                )
+            return httpx.Response(200, request=request)
+
+        url = "https://api.waterdata.usgs.gov/start"
+        _get(
+            url,
+            headers=_default_headers(url),
+            follow_redirects=True,
+            transport=httpx.MockTransport(handler),
+        )
+
+        assert seen[0].headers.get("X-Api-Key") == self.FAKE_TOKEN
+        assert seen[1].url.scheme == "http", "the redirect under test must downgrade"
+        assert "X-Api-Key" not in seen[1].headers
+
     def test_generic_ogc_request_excludes_key_for_custom_host(self):
         """A caller-supplied OGC base URL never inherits Water Data auth."""
         from dataretrieval.ogc.requests import _construct_api_requests, _ogc_base_url

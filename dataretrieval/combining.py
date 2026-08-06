@@ -2,12 +2,16 @@
 
 These utilities assemble the output of a chunked/fan-out call from its
 individual per-sub-request results.  They have no event-loop, retry, or
-network state — they're pure data transforms imported by both the
-chunked-call execution (:mod:`dataretrieval.ogc.chunking`) and the
-per-page pagination (:mod:`dataretrieval.ogc.engine`).
+network state — they're pure data transforms shared by protocol-specific
+chunk execution, service fan-out, and
+cursor-driven pagination.
 
 Separated from :mod:`dataretrieval.ogc.planning` so that module stays
 focused on *what* to split, while this module owns *how* to reassemble.
+
+A top-level leaf rather than part of :mod:`dataretrieval.transport`: these are
+pandas transforms over already-fetched results, with no HTTP or event-loop
+concern, consumed by chunk planning and service fan-out as well as by pagination.
 """
 
 from __future__ import annotations
@@ -104,8 +108,8 @@ def _merge_response(
     ``httpx.Headers`` means downstream mutations don't back-propagate into any
     underlying response — so callers may re-fold idempotently.  This is the one
     low-level merge behind both pagination
-    (:func:`~dataretrieval.ogc.engine._paginate`) and the chunked / fan-out
-    aggregation (:func:`_combine_chunk_responses`)."""
+    (:func:`~dataretrieval.transport.pagination.paginate`) and the chunked /
+    fan-out aggregation (:func:`_combine_chunk_responses`)."""
     merged = copy.copy(base)
     merged.headers = httpx.Headers(headers_from.headers)
     merged.elapsed = elapsed

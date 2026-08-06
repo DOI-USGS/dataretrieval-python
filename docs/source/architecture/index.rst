@@ -79,14 +79,13 @@ Public service facades
     translation, and :class:`OgcDialect`.
 
 ``dataretrieval.wateruse``
-    NWDC Water Use facade. Builds CSV requests and follows ``Link`` headers.
-    It currently reuses generic pagination and response-combining helpers from
-    private OGC modules; this is an explicitly recorded variance.
+    NWDC Water Use facade. Builds CSV requests, follows ``Link`` headers, and
+    uses service-neutral transport for bounded fan-out, retry, pagination, response
+    aggregation, and synchronous dispatch. It does not depend on OGC modules.
 
 ``dataretrieval.wqp``, ``dataretrieval.nldi``, and ``dataretrieval.streamstats``
-    Service-specific adapters over the synchronous request infrastructure in
-    ``dataretrieval.utils``. Their return types intentionally reflect their
-    upstream data models.
+    Service-specific adapters over shared synchronous HTTP and bounded retry
+    policy. Their return types intentionally reflect their upstream data models.
 
 ``dataretrieval.nwis``
     Deprecated legacy NWIS facade, scheduled for removal on or after
@@ -101,30 +100,41 @@ Shared components
     ``prepare_request_args``, ``get_ogc_data``, and ``fetch_ogc_request``.
     Internally, ``policy`` defines the dialect type and endpoint constants
     (depends only on stdlib); ``requests`` owns request construction, argument
-    normalization, and queryables/schema lookup; ``engine`` orchestrates
-    pagination and sync-from-async; ``planning`` determines chunk boundaries;
-    ``chunking`` executes plans and retains resumable state; ``interruptions``
-    defines the resumable failure contract; ``retry`` owns the bounded retry
-    policy; ``combining`` assembles results; and ``shaping``, ``dates``,
-    ``filters``, ``errors``, and ``progress`` isolate their named concerns. The
-    full runtime OGC graph, including the facade, is acyclic —
-    enforced by ``tests/architecture_test.py``.
+    normalization, and queryables/schema lookup; ``engine`` supplies OGC cursor
+    and response strategies to transport pagination; ``planning`` determines
+    chunk boundaries; ``chunking`` executes plans and retains resumable state;
+    ``interruptions`` defines the resumable failure contract; ``retry``
+    classifies failures into OGC interruption types; and ``shaping``, ``dates``,
+    ``filters``, and ``errors`` isolate their named protocol concerns. The full
+    runtime OGC graph, including the facade, is acyclic — enforced by
+    ``tests/architecture_test.py``.
+
+``dataretrieval.transport``
+    Internal service-neutral execution layer. Owns guarded client lifecycle and
+    timeouts, host-scoped authentication, cursor pagination, bounded retry,
+    response aggregation, progress, and sync-over-async dispatch. Internally,
+    ``liveness`` is a stdlib-only leaf recording when data last arrived, so the
+    page loop that observes progress and the retry loop that acts on it both
+    depend on it rather than on each other. It imports no service adapter or OGC
+    protocol module, and it is not exposed as a public framework API.
 
 ``dataretrieval.exceptions``
     Stable error-policy leaf. It has no runtime third-party dependency and may
     be imported by every service without creating an infrastructure cycle.
 
 ``dataretrieval.utils``
-    Shared metadata, data-shaping helpers, ambient context support, and the
-    legacy synchronous request path. Its broad responsibility is known debt;
-    new service-specific behavior should not be added there by default.
+    Shared metadata, data-shaping helpers, ambient context support, legacy
+    request composition, and compatibility imports for transport names that
+    historically lived here. New service-specific behavior should not be added
+    there by default.
 
 ``dataretrieval.codes`` and ``dataretrieval.rdb``
     State/time-zone code conversion and RDB parsing leaves.
 
 The intended direction is::
 
-    public facade -> service/protocol adapter -> shared policy/infrastructure
+    public facade -> service/protocol adapter -> service-neutral transport
+                                             -> stable policy/infrastructure
                                              -> third-party library / network
 
 Dependencies must not point from shared infrastructure back to a public service
@@ -170,9 +180,10 @@ The retained ``ChunkedCall`` reissues only missing chunks and applies the same
 finalization path when resumed. Cancellation and non-transient programming
 errors take precedence over retry/resume wrapping.
 
-Non-OGC services use simpler request paths where their protocols do not provide
-the same paging or resume semantics. Later transport consolidation must preserve
-those public contracts and must not invent unsupported upstream capabilities.
+Non-OGC services use the same transport policy only where their protocols have
+matching semantics. Retry and cursor pagination remain explicit adapter choices;
+chunk planning and resumable interruptions remain OGC capabilities rather than
+invented features of upstream APIs that do not provide them.
 
 Resource and configuration view
 -------------------------------
@@ -189,16 +200,34 @@ Resource and configuration view
     the execution throttle.
 
 ``API_USGS_RETRIES``
-    Number of OGC retries after the first attempt; defaults to four. Backoff is
-    exponential with full jitter and honors bounded ``Retry-After`` values.
+    Number of retries after the first attempt on supported active request paths;
+    defaults to four. Backoff is exponential with full jitter and honors bounded
+    ``Retry-After`` values. Only failures a later attempt could survive are
+    re-sent: 429 and gateway 5xx, not a 500 rejecting the query itself, and not a
+    transport failure that is settled before the request leaves (unresolvable
+    host, unsupported scheme). Deprecated NWIS compatibility paths do not opt in.
+
+``API_USGS_STALL_TIMEOUT``
+    Seconds a call may go without receiving any data before retrying stops and
+    the failure surfaces; defaults to 60, and ``0`` disables the bound. It
+    complements ``API_USGS_RETRIES``, which caps attempts rather than elapsed
+    time: without it, four retries of a request that times out after a minute is
+    four silent minutes. Progress restarts the budget — a page received, or a
+    queued sub-request acquiring its concurrency slot — so neither a slow but
+    productive download nor the tail of a wide fan-out is cut short, and an
+    attempt already in flight is never interrupted. The first retry is never
+    withheld by this bound, so one slow attempt cannot disable retry by itself;
+    the budget decides whether to continue after that. A dead connection
+    therefore costs about two read timeouts rather than five attempts' worth.
 
 ``API_USGS_PROGRESS``
     Controls best-effort progress display. Reporting failures must never change
     retrieval results.
 
-HTTP timeouts and connection limits are centralized for existing paths.
-``wateruse`` currently has its own smaller fan-out cap. These differences must
-remain visible until a shared transport policy replaces them deliberately.
+HTTP timeout, redirect, and authentication policy is centralized in
+``dataretrieval.transport``. OGC subrequest fan-out and Water Use location
+fan-out retain separate explicit concurrency caps because their upstream costs
+and request shapes differ.
 
 Known architectural debt
 ------------------------
@@ -207,12 +236,7 @@ This view records categories and representative locations of debt. The fitness
 functions in ``tests/architecture_test.py`` are authoritative for exact current
 dependency allowlists.
 
-- ``wateruse`` depends on private generic helpers located under ``ogc`` even
-  though NWDC is not an OGC service.
 - ``waterdata/api.py`` and ``ogc/engine.py`` contain multiple reasons to change.
-- Active non-OGC services do not yet share OGC's retry/resume capabilities.
-- ``utils.py`` combines metadata, shaping, configuration, and transport duties.
-
 These are documented so guardrails distinguish accepted current dependencies
 from new erosion. They should be removed through small, test-protected changes,
 not a rewrite.

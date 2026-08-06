@@ -5,38 +5,42 @@ Useful utilities for data munging.
 from __future__ import annotations
 
 import numbers
-import os
 import warnings
 from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
-from importlib.metadata import PackageNotFoundError
-from importlib.metadata import version as _pkg_version
 from typing import Any, Generic, TypeVar
 
 import httpx
 import pandas as pd
 
+import dataretrieval.credentials as _credentials
+import dataretrieval.transport.http as _transport_http
 from dataretrieval.codes import tz
 from dataretrieval.exceptions import (
-    NetworkError,
     NoSitesError,
     URLTooLong,
     error_for_status,
 )
+from dataretrieval.transport.retry import (
+    _GATEWAY_STATUSES,
+    RetryPolicy,
+    parse_retry_after,
+    retry_sync,
+)
 
-try:
-    _PACKAGE_VERSION = _pkg_version("dataretrieval")
-except PackageNotFoundError:
-    _PACKAGE_VERSION = "version-unknown"
-
-# Typed as ``dict[str, Any]`` (not the inferred ``dict[str, object]``) so that
-# splatting it as ``**HTTPX_DEFAULTS`` into ``httpx.get`` / ``httpx.AsyncClient``
-# type-checks: the values are a heterogeneous bag of httpx keyword arguments.
-HTTPX_DEFAULTS: dict[str, Any] = {
-    "follow_redirects": True,
-    "timeout": httpx.Timeout(60.0, connect=10.0),
-}
+# Compatibility names retained at their historical utility paths.
+_AUTHORIZED_API_KEY_HOST = _credentials._AUTHORIZED_API_KEY_HOST
+HTTPX_ASYNC_DEFAULTS = _transport_http.HTTPX_ASYNC_DEFAULTS
+HTTPX_DEFAULTS = _transport_http.HTTPX_DEFAULTS
+USER_AGENT = _transport_http.USER_AGENT
+_default_headers = _transport_http.default_headers
+_get = _transport_http.get
+_network_error = _transport_http.network_error
+_strip_api_key_from_untrusted_host = _transport_http.strip_api_key_from_untrusted_host
+_strip_api_key_from_untrusted_host_async = (
+    _transport_http.strip_api_key_from_untrusted_host_async
+)
 
 _T = TypeVar("_T")
 
@@ -101,75 +105,6 @@ def _require_positive_int(
     if not isinstance(value, numbers.Integral) or isinstance(value, bool) or value < 1:
         eg = f", e.g. {examples}" if examples else ""
         raise ValueError(f"{name} must be a positive integer{eg} (got {value!r}).")
-
-
-# The single authorized host for the API key. The key is a USGS personal
-# access token issued for the Water Data API and must never be forwarded to
-# non-USGS hosts, lookalikes, or external endpoints (including STAC rating
-# asset downloads).
-_AUTHORIZED_API_KEY_HOST = "api.waterdata.usgs.gov"
-
-
-def _default_headers(target_url: str | httpx.URL | None = None) -> dict[str, str]:
-    """Build the default HTTP headers for a USGS web-API request.
-
-    Always sets a descriptive ``User-Agent`` plus ``Accept`` /
-    ``Accept-Encoding`` and ``lang``. If the ``API_USGS_PAT`` environment
-    variable is set AND ``target_url`` points to the explicitly authorized
-    Water Data host (``api.waterdata.usgs.gov``), its value is added as the
-    ``X-Api-Key`` header. The key is never sent to other hosts.
-
-    Parameters
-    ----------
-    target_url : str or httpx.URL or None
-        The URL the request will be sent to. When provided, the API key is
-        included only if the host matches the authorized Water Data host.
-        When ``None`` (legacy callers), the key is NOT included — callers
-        must pass the concrete URL.
-
-    Returns
-    -------
-    dict[str, str]
-        Headers suitable for an ``httpx`` request.
-    """
-    headers = {
-        "Accept-Encoding": "compress, gzip",
-        "Accept": "application/json",
-        "User-Agent": f"python-dataretrieval/{_PACKAGE_VERSION}",
-        "lang": "en-US",
-    }
-    token = os.getenv("API_USGS_PAT")
-    if token and target_url is not None:
-        try:
-            host = httpx.URL(str(target_url)).host
-        except (httpx.InvalidURL, TypeError):
-            host = None
-        if host == _AUTHORIZED_API_KEY_HOST:
-            headers["X-Api-Key"] = token
-    return headers
-
-
-def _strip_api_key_from_untrusted_host(request: httpx.Request) -> None:
-    """Remove Water Data credentials from any request to another host.
-
-    HTTPX retains arbitrary custom headers across cross-origin redirects. This
-    hook runs for the initial request and every redirect, making host scoping an
-    execution-time invariant rather than relying only on initial header
-    construction.
-    """
-    if request.url.host != _AUTHORIZED_API_KEY_HOST:
-        request.headers.pop("X-Api-Key", None)
-
-
-async def _strip_api_key_from_untrusted_host_async(request: httpx.Request) -> None:
-    """Async-client form of :func:`_strip_api_key_from_untrusted_host`."""
-    _strip_api_key_from_untrusted_host(request)
-
-
-HTTPX_ASYNC_DEFAULTS: dict[str, Any] = {
-    **HTTPX_DEFAULTS,
-    "event_hooks": {"request": [_strip_api_key_from_untrusted_host_async]},
-}
 
 
 def to_str(listlike: object, delimiter: str = ",") -> str | None:
@@ -427,35 +362,6 @@ def _url_too_long_error(detail: str) -> URLTooLong:
     )
 
 
-def _network_error(url: str | httpx.URL, exc: httpx.TransportError) -> NetworkError:
-    """Build the :class:`~dataretrieval.exceptions.NetworkError` for a failed
-    round-trip ``exc`` (no HTTP response: timeout, DNS, refused connection)."""
-    # Some httpx transport errors stringify empty (e.g. ``ConnectTimeout()``);
-    # fall back to the class name so the message is always informative.
-    detail = str(exc) or type(exc).__name__
-    return NetworkError(f"Could not reach the service at {url}: {detail}")
-
-
-def _get(url: str | httpx.URL, **kwargs: Any) -> httpx.Response:
-    """Issue one guarded synchronous GET and map transport failures.
-
-    A short-lived client supplies a request hook for both the initial request
-    and every redirect. The hook removes ``X-Api-Key`` unless the destination
-    host is the authorized Water Data API host.
-    """
-    client_options: dict[str, Any] = {
-        key: kwargs.pop(key)
-        for key in ("follow_redirects", "timeout", "transport", "verify")
-        if key in kwargs
-    }
-    client_options["event_hooks"] = {"request": [_strip_api_key_from_untrusted_host]}
-    try:
-        with httpx.Client(**client_options) as client:
-            return client.get(url, **kwargs)
-    except httpx.TransportError as exc:
-        raise _network_error(url, exc) from exc
-
-
 def _raise_for_status(
     response: httpx.Response,
     *,
@@ -487,14 +393,53 @@ def _raise_for_status(
     if detail:
         message += f": {detail}"
     message += f" (URL: {response.url})"
-    raise error_for_status(status, message)
+    raise error_for_status(
+        status,
+        message,
+        retry_after=parse_retry_after(response.headers.get("Retry-After")),
+    )
 
 
-def query(
+def _single_request_policy() -> RetryPolicy:
+    """Retry policy for the one-shot adapters (WQP, NLDI, StreamStats).
+
+    These services answer a rejected query with a 500, so only the gateway
+    statuses are worth re-sending; the Water Data chunker keeps the broader
+    default, where a 5xx is an upstream hiccup worth riding out.
+    """
+    return RetryPolicy.from_env(retryable_statuses=_GATEWAY_STATUSES)
+
+
+def _get_with_retry(
+    url: str | httpx.URL,
+    *,
+    detail_from: Callable[[httpx.Response], str | None] | None = None,
+    retry_policy: RetryPolicy | None = None,
+    **kwargs: Any,
+) -> httpx.Response:
+    """GET with status mapping and bounded retry on typed transients."""
+
+    def attempt() -> httpx.Response:
+        response = _get(url, **kwargs)
+        _raise_for_status(response, detail_from=detail_from)
+        return response
+
+    try:
+        return retry_sync(
+            attempt,
+            _single_request_policy() if retry_policy is None else retry_policy,
+        )
+    except httpx.InvalidURL as exc:
+        raise _url_too_long_error(f"httpx rejected the URL client-side: {exc}") from exc
+
+
+def _query_impl(
     url: str,
     payload: dict[str, Any],
     delimiter: str = ",",
     ssl_check: bool = True,
+    *,
+    retry_policy: RetryPolicy,
 ) -> httpx.Response:
     """Send a query.
 
@@ -535,20 +480,16 @@ def query(
     # Drop them. (``to_str`` returns None for non-iterable scalars like bools.)
     payload = {k: v for k, v in payload.items() if v is not None}
 
-    user_agent = {"user-agent": f"python-dataretrieval/{_PACKAGE_VERSION}"}
+    user_agent = {"user-agent": USER_AGENT}
 
-    try:
-        response = _get(
-            url,
-            params=payload,
-            headers=user_agent,
-            verify=ssl_check,
-            **HTTPX_DEFAULTS,
-        )
-    except httpx.InvalidURL as exc:
-        raise _url_too_long_error(f"httpx rejected the URL client-side: {exc}") from exc
-
-    _raise_for_status(response)
+    response = _get_with_retry(
+        url,
+        params=payload,
+        headers=user_agent,
+        verify=ssl_check,
+        retry_policy=retry_policy,
+        **HTTPX_DEFAULTS,
+    )
 
     # USGS waterservices signals an empty result with a 200 whose body starts
     # "No sites/data ..." (its legacy wording); surface it as NoSitesError.
@@ -556,3 +497,37 @@ def query(
         raise NoSitesError(response.url)
 
     return response
+
+
+def query(
+    url: str,
+    payload: dict[str, Any],
+    delimiter: str = ",",
+    ssl_check: bool = True,
+) -> httpx.Response:
+    return _query_impl(
+        url,
+        payload,
+        delimiter,
+        ssl_check,
+        retry_policy=RetryPolicy(max_retries=0),
+    )
+
+
+query.__doc__ = _query_impl.__doc__
+
+
+def _query_with_retry(
+    url: str,
+    payload: dict[str, Any],
+    delimiter: str = ",",
+    ssl_check: bool = True,
+) -> httpx.Response:
+    """Active-service form of :func:`query` with bounded transient retry."""
+    return _query_impl(
+        url,
+        payload,
+        delimiter,
+        ssl_check,
+        retry_policy=_single_request_policy(),
+    )

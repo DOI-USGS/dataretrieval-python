@@ -33,6 +33,23 @@ class Test_query:
         assert response.status_code == 200  # GET was successful
         assert "user-agent" in response.request.headers
 
+    def test_opt_in_retry_recovers_from_transient(self, httpx_mock, monkeypatch):
+        """Active adapters can opt into bounded retry without changing NWIS."""
+        import dataretrieval.transport.retry as retry
+
+        url = "https://example.invalid/x"
+        request_url = f"{url}?a=1"
+        httpx_mock.add_response(method="GET", url=request_url, status_code=503)
+        httpx_mock.add_response(method="GET", url=request_url, text="ok")
+        monkeypatch.setenv("API_USGS_RETRIES", "1")
+        monkeypatch.setattr(retry, "_RETRY_BASE_BACKOFF", 0.0)
+        monkeypatch.setattr(retry, "_RETRY_MAX_BACKOFF", 0.0)
+
+        response = utils._query_with_retry(url, {"a": "1"})
+
+        assert response.text == "ok"
+        assert len(httpx_mock.get_requests()) == 2
+
 
 class Test_error_taxonomy:
     """The unified request-error hierarchy.
@@ -386,3 +403,17 @@ class Test_to_state:
         # A bad element fails the whole call (fail-fast).
         with pytest.raises(ValueError, match="not a recognized US state"):
             to_state(["WI", "XX"])
+
+
+def test_retrying_get_maps_invalid_url(monkeypatch):
+    """Direct active-service GETs do not leak raw httpx InvalidURL errors."""
+    import httpx
+
+    monkeypatch.setattr(
+        utils,
+        "_get",
+        mock.Mock(side_effect=httpx.InvalidURL("invalid URL")),
+    )
+
+    with pytest.raises(exceptions.URLTooLong):
+        utils._get_with_retry("https://example.invalid")

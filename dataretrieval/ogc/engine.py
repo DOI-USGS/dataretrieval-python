@@ -1,8 +1,8 @@
 """Generic OGC API engine shared by the Water Data and NGWMN getters.
 
-This module holds the API-agnostic orchestration core for talking to an OGC
-API Features service — async pagination, the sync bridge, and the chunked
-fetch entry point :func:`get_ogc_data` that orchestrates them. Request
+This module holds OGC API Features orchestration — OGC cursor/response
+strategies and the chunked fetch entry point :func:`get_ogc_data`. Generic
+pagination and sync dispatch live in :mod:`dataretrieval.transport`; request
 construction lives in :mod:`~dataretrieval.ogc.requests`. The surrounding
 concerns live in sibling modules it composes, each with its own reason to
 change: :mod:`~dataretrieval.ogc.dates` (time-parameter marshalling),
@@ -27,23 +27,19 @@ from __future__ import annotations
 import functools
 import logging
 from collections.abc import (
-    AsyncIterator,
     Awaitable,
     Callable,
 )
-from contextlib import asynccontextmanager
 from typing import Any, TypeVar, cast
 
 import httpx
 import pandas as pd
-from anyio.from_thread import start_blocking_portal
 
 import dataretrieval.ogc.chunking as chunking
-import dataretrieval.ogc.progress as _progress
-from dataretrieval.exceptions import DataRetrievalError
+import dataretrieval.progress as _progress
+from dataretrieval.credentials import without_embedded_credentials
 from dataretrieval.ogc.chunking import get_active_client
-from dataretrieval.ogc.combining import _QUOTA_HEADER, _merge_response, _safe_elapsed
-from dataretrieval.ogc.errors import _paginated_failure_message, _raise_for_non_200
+from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.policy import (
     BASE_URL,  # noqa: F401  — compatibility alias
     DEFAULT_DIALECT,
@@ -71,11 +67,11 @@ from dataretrieval.ogc.requests import (  # noqa: F401
     prepare_request_args,
 )
 from dataretrieval.ogc.shaping import GEOPANDAS, _finalize_ogc, _get_resp_data
+from dataretrieval.transport.pagination import paginate
+from dataretrieval.transport.sync import run_sync
 from dataretrieval.utils import (
-    HTTPX_ASYNC_DEFAULTS,
     BaseMetadata,
     _default_headers,  # noqa: F401  — compatibility re-export for tests
-    _network_error,
     _require_positive_int,
 )
 
@@ -137,8 +133,10 @@ def _next_req_url(
         # by falling open when host extraction isn't reliable.
         next_host: str | None
         cur_host: str | None
+        next_url: httpx.URL | None
         try:
-            next_host = httpx.URL(href).host
+            next_url = httpx.URL(href)
+            next_host = next_url.host
             resp_url = (
                 resp.url
                 if isinstance(resp.url, httpx.URL)
@@ -146,57 +144,24 @@ def _next_req_url(
             )
             cur_host = resp_url.host
         except (httpx.InvalidURL, TypeError):
+            next_url = None
             next_host = cur_host = None
         if next_host and cur_host and next_host != cur_host:
             raise RuntimeError(
                 f"Refusing to follow cross-host next-page URL: "
                 f"{next_host} != {cur_host}"
             )
+        # Matching hosts is not enough: a link may also carry ``user:pass@``,
+        # which httpx turns into an ``Authorization: Basic`` header on the
+        # follow-up request. The host check above passes in exactly that case,
+        # so strip it here rather than trusting the link we were handed.
+        if next_url is not None:
+            return str(without_embedded_credentials(next_url))
         # ``href`` comes from the JSON ``links`` array (typed ``Any``); the
         # ``not href`` guard above already excluded empty/None, and it is a
         # URL string (passed to ``httpx.URL`` above).
         return cast("str", href)
     return None
-
-
-@asynccontextmanager
-async def _client_for(
-    client: httpx.AsyncClient | None,
-) -> AsyncIterator[httpx.AsyncClient]:
-    """
-    Yield a usable async client, picking the best available source.
-
-    Resolution order:
-
-    1. ``client`` if the caller supplied one (borrowed; not closed
-       here — the caller owns its lifecycle).
-    2. The chunker's shared async client if we're inside a
-       :class:`~dataretrieval.ogc.chunking.ChunkedCall` run (per
-       :func:`chunking.get_active_client`). Borrowed; the chunker
-       closes it on exit.
-    3. A fresh short-lived ``httpx.AsyncClient`` opened here and closed
-       on context exit.
-
-    Parameters
-    ----------
-    client : httpx.AsyncClient or None
-        A caller-owned client to borrow, or ``None`` to defer to the
-        chunker's shared client or a temporary one.
-
-    Yields
-    ------
-    httpx.AsyncClient
-        The chosen client.
-    """
-    if client is not None:
-        yield client
-        return
-    shared = get_active_client()
-    if shared is not None:
-        yield shared
-        return
-    async with httpx.AsyncClient(**HTTPX_ASYNC_DEFAULTS) as new:
-        yield new
 
 
 _Cursor = TypeVar("_Cursor")
@@ -210,136 +175,16 @@ async def _paginate(
     client: httpx.AsyncClient | None = None,
     raise_for_status: Callable[[httpx.Response], None] = _raise_for_non_200,
 ) -> tuple[pd.DataFrame, httpx.Response]:
-    """
-    Drive a paginated request to completion over an
-    :class:`httpx.AsyncClient`.
-
-    The common shape behind the paginated fetch paths (e.g.
-    :func:`_walk_pages`): send the initial request, then loop calling
-    ``follow_up`` until ``parse_response`` reports a ``None`` cursor,
-    accumulating frames and elapsed time. Any mid-pagination failure
-    raises ``DataRetrievalError`` wrapping the cause — the API exposes no
-    resume cursor, so the caller's only recovery is to retry the whole
-    call. Issuing HTTP asynchronously lets the multiple sub-requests of a
-    chunked call run concurrently under
-    :meth:`~dataretrieval.ogc.chunking.ChunkedCall._run`.
-
-    Parameters
-    ----------
-    initial_req : httpx.Request
-        First-page request to send.
-    parse_response : callable
-        ``resp -> (df, next_cursor_or_None)``. Returns the page's
-        DataFrame and the cursor (URL, token, …) used to drive
-        ``follow_up`` for the next page; ``None`` terminates the loop.
-    follow_up : callable
-        ``(cursor, client) -> Awaitable[httpx.Response]``. Builds and
-        sends the next-page request.
-    client : httpx.AsyncClient, optional
-        Caller-borrowed client. ``None`` (default) means use the
-        chunker's shared client (if inside a chunked call) or open
-        a temporary one.
-    raise_for_status : callable, optional
-        ``resp -> None``; raises the typed error for a non-OK response.
-        Defaults to :func:`_raise_for_non_200` (the OGC ``{code, description}``
-        envelope); wateruse passes its own to surface the NWDC ``detail``.
-
-    Returns
-    -------
-    df : pandas.DataFrame
-        Concatenation of every page's parsed frame.
-    response : httpx.Response
-        A shallow copy of the first-page response, with ``.headers``
-        rebuilt as a fresh ``httpx.Headers`` reflecting the last page and
-        ``.elapsed`` set to the sum of the per-page response durations. The
-        canonical URL is preserved from the first page. The original first-page
-        response is not mutated.
-
-    Raises
-    ------
-    DataRetrievalError
-        On a non-200 initial response, the typed subclass for the status from
-        :func:`_raise_for_non_200` (a
-        :class:`~dataretrieval.exceptions.TransientError` for a retryable
-        429 / 5xx, otherwise a fatal :class:`~dataretrieval.exceptions.HTTPError`);
-        or, on an initial-page parse failure or any subsequent-page failure, a
-        base ``DataRetrievalError`` wrapping the cause (built by
-        :func:`_paginated_failure_message`, original exception on ``__cause__``).
-    httpx.HTTPError
-        Network-level failures on the *initial* request (e.g.
-        ``ConnectError``, ``TimeoutException``) propagate unmodified
-        so callers can branch on the specific type; equivalent
-        failures on subsequent pages are wrapped per above.
-    """
-    logger.debug("Requesting: %s", initial_req.url)
-    reporter = _progress.current()
-
-    def report_page(page: httpx.Response, frame: pd.DataFrame) -> None:
-        """Tick the ambient progress reporter (a no-op when unset) for one page."""
-        if reporter is not None:
-            reporter.set_rate_remaining(
-                page.headers.get(_QUOTA_HEADER),
-                limit=page.headers.get("x-ratelimit-limit"),
-            )
-            reporter.add_page(rows=len(frame))
-
-    async with _client_for(client) as sess:
-        resp = await sess.send(initial_req)
-        raise_for_status(resp)
-        initial_response = resp
-        total_elapsed = _safe_elapsed(resp)
-
-        try:
-            df, cursor = parse_response(resp)
-        except Exception as e:  # noqa: BLE001
-            # Initial-page parse failures (malformed JSON, missing
-            # ``features``, schema drift) get the same wrapped-message
-            # treatment as follow-up failures so callers see a consistent
-            # diagnostic regardless of which page broke.
-            logger.warning("Initial response parse failed.")
-            raise DataRetrievalError(_paginated_failure_message(0, e)) from e
-        dfs = [df]
-        # Stop following ``next`` links once the optional row cap is reached
-        # (see :func:`_row_cap`); ``None`` means uncapped. The concatenation
-        # is sliced to the cap below so a final over-budget page can't exceed it.
-        cap = _row_cap.get()
-        nrows = len(df)
-        # Guard a non-advancing or cyclic cursor (a server bug that would
-        # otherwise loop forever). OGC's next-URLs are unique, so this never
-        # fires for them; the Link-header pagers (e.g. wateruse) rely on it.
-        seen: set[Any] = set()
-        report_page(resp, df)
-        while (
-            cursor is not None and cursor not in seen and (cap is None or nrows < cap)
-        ):
-            seen.add(cursor)
-            try:
-                resp = await follow_up(cursor, sess)
-                raise_for_status(resp)
-                df, cursor = parse_response(resp)
-                dfs.append(df)
-                nrows += len(df)
-                total_elapsed += _safe_elapsed(resp)
-                report_page(resp, df)
-            except Exception as e:  # noqa: BLE001
-                logger.warning(
-                    "Request failed at cursor %r. Data download interrupted.",
-                    cursor,
-                )
-                raise DataRetrievalError(_paginated_failure_message(len(dfs), e)) from e
-
-        # Fold the pages onto a COPY of the initial response so a caller that
-        # inspected it mid-pagination (a hook, a test fixture) never sees an
-        # in-place mutation. ``resp`` is the last page, whose headers carry the
-        # current ``x-ratelimit-remaining`` (monotonic, so the last page is the
-        # most depleted) — the same low-level merge the fan-out aggregation uses.
-        final_response = _merge_response(
-            initial_response, headers_from=resp, elapsed=total_elapsed
-        )
-        result = pd.concat(dfs, ignore_index=True)
-        if cap is not None:
-            result = result.head(cap)
-        return result, final_response
+    """Compatibility wrapper around service-neutral cursor pagination."""
+    active_client = client if client is not None else get_active_client()
+    return await paginate(
+        initial_req,
+        parse_response=parse_response,
+        follow_up=follow_up,
+        client=active_client,
+        raise_for_status=raise_for_status,
+        row_cap=_row_cap.get(),
+    )
 
 
 def _ogc_parse_response(
@@ -508,7 +353,10 @@ def get_ogc_data(
         extra_id_cols=extra_id_cols,
         dialect=dialect,
     )
-    with _progress.progress_context(service=service), _row_cap(max_rows):
+    with (
+        _progress.progress_context(service=service, target_url=base_url),
+        _row_cap(max_rows),
+    ):
         with _ogc_base_url(base_url), _dialect(dialect):
             return _fetch_once(args, finalize=finalize)
 
@@ -541,44 +389,12 @@ def _run_sync(
     service: str,
     error_url: str | httpx.URL | None = None,
 ) -> tuple[pd.DataFrame, httpx.Response]:
-    """Drive an async OGC fetch to completion from synchronous code.
-
-    Opens the service progress context and runs ``make_coro()`` through a
-    short-lived ``anyio`` blocking portal (a worker thread), so the
-    non-chunked getters work whether or not the caller is already inside an
-    event loop (Jupyter/async apps). The portal copies the calling context,
-    so the active progress reporter still reaches the sub-requests.
-
-    Shared by the non-chunked fetch paths; the chunked OGC getters
-    drive their own portal
-    inside :meth:`chunking.ChunkedCall.resume`.
-
-    A connection failure on the initial request is surfaced as a typed
-    ``NetworkError`` against ``error_url`` when given (callers that build their
-    own requests, e.g. ``wateruse``), else the request-builder base the caller
-    scoped via ``_ogc_base_url`` (the OGC / NGWMN getters).
-    """
-    with _progress.progress_context(service=service):
-        with start_blocking_portal() as portal:
-            try:
-                # ``portal.call`` is ``Any`` (anyio is skipped by mypy — its
-                # source uses 3.10 syntax our 3.9 target can't parse), so cast
-                # to the declared return type, as ``ChunkedCall`` does too.
-                return cast(
-                    "tuple[pd.DataFrame, httpx.Response]", portal.call(make_coro)
-                )
-            except httpx.TransportError as exc:
-                # The initial-request connection failure ``_paginate`` lets
-                # through raw; mid-pagination failures are already typed.
-                # Report the base URL actually targeted: callers that build
-                # their own requests (``wateruse``) pass ``error_url``; the OGC
-                # getters leave it unset and fall back to the request-builder
-                # base they scoped via ``_ogc_base_url`` (NGWMN/sibling APIs set
-                # their own), not a hardcoded host.
-                raise _network_error(
-                    error_url if error_url is not None else _ogc_base_url.get(),
-                    exc,
-                ) from exc
+    """Compatibility wrapper around the service-neutral sync bridge."""
+    return run_sync(
+        make_coro,
+        service=service,
+        error_url=error_url if error_url is not None else _ogc_base_url.get(),
+    )
 
 
 def fetch_ogc_request(

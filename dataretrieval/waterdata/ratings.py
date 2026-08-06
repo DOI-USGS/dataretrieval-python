@@ -17,13 +17,22 @@ from typing import Any, Literal, get_args
 import httpx
 import pandas as pd
 
+from dataretrieval.credentials import without_embedded_credentials
 from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.ogc.dates import _DURATION_RE, _format_api_dates
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.filters import _quote_cql_str
 from dataretrieval.ogc.requests import _check_monitoring_location_id
 from dataretrieval.rdb import extract_rdb_comment, read_rdb
-from dataretrieval.utils import HTTPX_DEFAULTS, _default_headers, _get
+from dataretrieval.transport.http import (
+    HTTPX_DEFAULTS,
+)
+from dataretrieval.transport.http import (
+    default_headers as _default_headers,
+)
+from dataretrieval.transport.http import (
+    get as _get,
+)
 
 from .utils import BASE_URL
 
@@ -234,6 +243,29 @@ def _search(
     STAC ``next`` link is followed until exhausted so a result set larger than
     one page isn't silently truncated.
     """
+
+    def _checked_next_url(href: str, current: httpx.URL) -> str:
+        """Resolve a server-supplied ``next`` href into a URL safe to request."""
+        try:
+            target = httpx.URL(href)
+        except (httpx.InvalidURL, TypeError) as exc:
+            raise DataRetrievalError(
+                f"The ratings service returned an unusable next-page link: "
+                f"{href!r}. The page walk cannot continue; report this if it "
+                f"persists."
+            ) from exc
+        if not target.is_absolute_url:
+            target = current.join(target)
+        if target.host != current.host:
+            raise DataRetrievalError(
+                f"Refusing to follow a ratings next-page link pointing at "
+                f"{target.host} rather than {current.host}. Following it would "
+                f"send this request, and any credentials on it, to a host you "
+                f"did not ask for. Retrying will not help; report this if it "
+                f"persists."
+            )
+        return str(without_embedded_credentials(target))
+
     query_params: dict[str, Any] = {"limit": min(limit, 10000)}
     if filter_str is not None:
         query_params["filter"] = filter_str
@@ -261,10 +293,16 @@ def _search(
         # The STAC ``next`` link is a fully-formed GET href carrying the
         # limit/filter/bbox and a continuation token, so follow it verbatim
         # (dropping our own params) until the server stops emitting one.
-        url = next(
+        href = next(
             (lnk["href"] for lnk in body.get("links", []) if lnk.get("rel") == "next"),
             None,
         )
+        # Verbatim except for the credentials: the href is response data, so it
+        # is checked before it becomes a request. A link to another host would
+        # carry this request's API key off the authorized host, and one carrying
+        # ``user:pass@`` would mint an ``Authorization: Basic`` header the caller
+        # never configured.
+        url = None if href is None else _checked_next_url(href, response.url)
         params = None
     return features
 

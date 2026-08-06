@@ -27,6 +27,7 @@ import pandas as pd
 import dataretrieval.ogc.dates as _ogc_dates
 import dataretrieval.ogc.shaping as _ogc_shaping
 from dataretrieval.codes.states import apply_state
+from dataretrieval.credentials import WATERDATA_BASE_URL
 from dataretrieval.ogc import OgcDialect, prepare_request_args
 from dataretrieval.ogc import get_ogc_data as _facade_get_ogc_data
 from dataretrieval.utils import BaseMetadata
@@ -37,10 +38,12 @@ from dataretrieval.waterdata.types import (
 )
 
 # ---------------------------------------------------------------------------
-# Water Data endpoint constants (defined locally, not imported from OGC policy)
+# Water Data endpoint constants. The authority comes from the credentials leaf
+# -- the host that serves these endpoints is the host that honors the API key --
+# while the paths below stay local rather than importing OGC policy internals.
 # ---------------------------------------------------------------------------
 
-BASE_URL = "https://api.waterdata.usgs.gov"
+BASE_URL = WATERDATA_BASE_URL
 OGC_API_URL = f"{BASE_URL}/ogcapi/v0"
 SAMPLES_URL = f"{BASE_URL}/samples-data"
 

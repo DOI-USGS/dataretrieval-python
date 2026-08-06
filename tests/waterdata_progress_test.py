@@ -17,11 +17,11 @@ import httpx
 import pandas as pd
 import pytest
 
-from dataretrieval.ogc import progress as _progress
+from dataretrieval import progress as _progress
 from dataretrieval.ogc.chunking import ChunkedCall
 from dataretrieval.ogc.engine import _paginate, _walk_pages
 from dataretrieval.ogc.planning import ChunkPlan
-from dataretrieval.ogc.progress import (
+from dataretrieval.progress import (
     ProgressReporter,
     current,
     progress_context,
@@ -38,6 +38,11 @@ def _run_walk_pages(*, geopd, req, client):
     ``asyncio.run`` copies the calling context.
     """
     return asyncio.run(_walk_pages(geopd=geopd, req=req, client=client))
+
+
+# The Water Data host is the only one that honors ``API_USGS_PAT``, and so the
+# only one where pointing the user at API-key registration is useful advice.
+_KEYED_URL = "https://api.waterdata.usgs.gov/ogcapi/v0/"
 
 
 @pytest.fixture(autouse=True)
@@ -220,7 +225,7 @@ def test_reporter_swallows_stream_errors_and_disables(monkeypatch):
 def test_hints_api_key_when_no_key_configured(monkeypatch):
     monkeypatch.delenv("API_USGS_PAT", raising=False)
     stream = io.StringIO()
-    reporter = ProgressReporter(stream=stream, enabled=True)
+    reporter = ProgressReporter(stream=stream, enabled=True, target_url=_KEYED_URL)
     reporter.add_page(rows=5)
     reporter.close()
     assert _progress.SIGNUP_URL in stream.getvalue()
@@ -231,7 +236,7 @@ def test_hint_fires_even_when_rate_limit_was_seen(monkeypatch):
     # — not absence of the header — is what drives the pointer.
     monkeypatch.delenv("API_USGS_PAT", raising=False)
     stream = io.StringIO()
-    reporter = ProgressReporter(stream=stream, enabled=True)
+    reporter = ProgressReporter(stream=stream, enabled=True, target_url=_KEYED_URL)
     reporter.set_rate_remaining("891")
     reporter.add_page(rows=5)
     reporter.close()
@@ -241,8 +246,24 @@ def test_hint_fires_even_when_rate_limit_was_seen(monkeypatch):
 def test_no_hint_when_api_key_present(monkeypatch):
     monkeypatch.setenv("API_USGS_PAT", "secret")
     stream = io.StringIO()
-    reporter = ProgressReporter(stream=stream, enabled=True)
+    reporter = ProgressReporter(stream=stream, enabled=True, target_url=_KEYED_URL)
     reporter.add_page(rows=5)  # no rate-limit, but a key is configured
+    reporter.close()
+    assert _progress.SIGNUP_URL not in stream.getvalue()
+
+
+def test_no_hint_for_a_service_the_key_does_not_cover(monkeypatch):
+    """Only the host that honors ``API_USGS_PAT`` gets the sign-up pointer.
+
+    Water Use is on a different host and never receives the key, so telling its
+    users to register sends them after a fix that changes nothing.
+    """
+    monkeypatch.delenv("API_USGS_PAT", raising=False)
+    stream = io.StringIO()
+    reporter = ProgressReporter(
+        stream=stream, enabled=True, target_url="https://api.water.usgs.gov/nwaa-data/"
+    )
+    reporter.add_page(rows=5)
     reporter.close()
     assert _progress.SIGNUP_URL not in stream.getvalue()
 
@@ -260,13 +281,13 @@ def test_api_key_hint_shown_at_most_once(monkeypatch):
     monkeypatch.delenv("API_USGS_PAT", raising=False)
 
     first = io.StringIO()
-    r1 = ProgressReporter(stream=first, enabled=True)
+    r1 = ProgressReporter(stream=first, enabled=True, target_url=_KEYED_URL)
     r1.add_page(rows=5)
     r1.close()
     assert _progress.SIGNUP_URL in first.getvalue()
 
     second = io.StringIO()
-    r2 = ProgressReporter(stream=second, enabled=True)
+    r2 = ProgressReporter(stream=second, enabled=True, target_url=_KEYED_URL)
     r2.add_page(rows=5)
     r2.close()
     assert _progress.SIGNUP_URL not in second.getvalue()

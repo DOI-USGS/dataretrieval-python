@@ -8,10 +8,9 @@ The public facade exposes only the minimal service-adapter seam:
 - :func:`fetch_ogc_request` — execute a pre-built request with pagination.
 
 Service adapters (NGWMN, Water Data's generic wrapper) import from this
-facade rather than reaching into engine internals. The engine module remains
-available for lower-level orchestration needs (e.g. ``_paginate``,
-``_run_sync``) that sibling modules like ``wateruse`` use under the accepted
-temporary variance.
+facade rather than reaching into engine internals. Generic execution policy
+lives in :mod:`dataretrieval.transport`; the engine retains compatibility
+wrappers at previous private paths.
 """
 
 from dataretrieval.ogc.engine import fetch_ogc_request, get_ogc_data

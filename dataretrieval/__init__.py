@@ -32,6 +32,7 @@ except PackageNotFoundError:
     __version__ = "version-unknown"
 
 from dataretrieval.exceptions import (
+    ConfigurationError,
     DataRetrievalError,
     HTTPError,
     NetworkError,
@@ -84,6 +85,7 @@ __all__ = [
     # error taxonomy (canonical home: ``dataretrieval.exceptions``), re-exported
     # so callers can ``except dataretrieval.DataRetrievalError``
     "exceptions",
+    "ConfigurationError",
     "DataRetrievalError",
     "HTTPError",
     "NetworkError",

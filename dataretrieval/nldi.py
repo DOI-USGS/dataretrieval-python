@@ -3,7 +3,7 @@ from __future__ import annotations
 from json import JSONDecodeError
 from typing import Any, Literal, cast
 
-from dataretrieval.utils import query
+from dataretrieval.utils import _query_with_retry
 
 try:
     import geopandas as gpd
@@ -23,7 +23,7 @@ def _query_nldi(
     # A helper function to query the NLDI API. ``query()`` already raises a
     # typed ``DataRetrievalError`` for any HTTP error response, so a returned
     # response is a success that we only need to parse.
-    response = query(url, payload=query_params)
+    response = _query_with_retry(url, payload=query_params)
     response_data: dict[str, Any] | list[Any] = {}
     try:
         response_data = response.json()

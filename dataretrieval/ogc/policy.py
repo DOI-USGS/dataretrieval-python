@@ -12,11 +12,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from dataretrieval.credentials import WATERDATA_BASE_URL
+
 # ---------------------------------------------------------------------------
 # Endpoint constants
 # ---------------------------------------------------------------------------
 
-BASE_URL = "https://api.waterdata.usgs.gov"
+BASE_URL = WATERDATA_BASE_URL
 OGC_API_VERSION = "v0"
 OGC_API_URL = f"{BASE_URL}/ogcapi/{OGC_API_VERSION}"
 

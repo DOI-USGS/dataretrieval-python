@@ -23,7 +23,16 @@ import httpx
 from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_api_dates
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.policy import DEFAULT_DIALECT, OGC_API_URL, OgcDialect
-from dataretrieval.utils import HTTPX_DEFAULTS, Ambient, _default_headers, _get
+from dataretrieval.transport.http import (
+    HTTPX_DEFAULTS,
+)
+from dataretrieval.transport.http import (
+    default_headers as _default_headers,
+)
+from dataretrieval.transport.http import (
+    get as _get,
+)
+from dataretrieval.utils import Ambient
 
 logger = logging.getLogger(__name__)
 

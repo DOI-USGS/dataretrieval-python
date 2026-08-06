@@ -25,14 +25,16 @@ from dataretrieval.ogc.requests import (
     _construct_cql_request,
     _switch_properties_id,
 )
-from dataretrieval.utils import (
+from dataretrieval.transport.http import (
     HTTPX_DEFAULTS,
-    BaseMetadata,
-    _attach_datetime_columns,
-    _default_headers,
-    _get,
-    to_str,
 )
+from dataretrieval.transport.http import (
+    default_headers as _default_headers,
+)
+from dataretrieval.transport.http import (
+    get as _get,
+)
+from dataretrieval.utils import BaseMetadata, _attach_datetime_columns, to_str
 from dataretrieval.waterdata import stats
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,

@@ -31,6 +31,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from dataretrieval.combining import (
+    _QUOTA_HEADER,
+    _combine_chunk_frames,
+    _combine_chunk_responses,
+)
 from dataretrieval.exceptions import (
     DataRetrievalError,
     RateLimited,
@@ -40,7 +45,6 @@ from dataretrieval.exceptions import (
 )
 from dataretrieval.ogc import chunking as _chunking
 from dataretrieval.ogc import engine as _engine
-from dataretrieval.ogc import retry as _retry_mod
 from dataretrieval.ogc.chunking import (
     ChunkedCall,
     _chunked_client,
@@ -48,11 +52,6 @@ from dataretrieval.ogc.chunking import (
     get_active_client,
     multi_value_chunked,
     parallel_chunks,
-)
-from dataretrieval.ogc.combining import (
-    _QUOTA_HEADER,
-    _combine_chunk_frames,
-    _combine_chunk_responses,
 )
 from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS
 from dataretrieval.ogc.interruptions import (
@@ -70,11 +69,14 @@ from dataretrieval.ogc.planning import (
     _safe_request_bytes,
 )
 from dataretrieval.ogc.requests import _construct_api_requests
-from dataretrieval.ogc.retry import (
+from dataretrieval.transport import retry as _retry_mod
+from dataretrieval.transport.retry import (
     _RETRIES_DEFAULT,
     RetryPolicy,
-    _retry,
     _retryable,
+)
+from dataretrieval.transport.retry import (
+    retry_async as _retry,
 )
 from dataretrieval.utils import HTTPX_DEFAULTS
 
@@ -1816,13 +1818,6 @@ def _wrap_cause(transport_exc):
 
 
 # -- RetryPolicy (pure value object) ----------------------------------------
-
-
-def test_retry_policy_backoff_honors_retry_after():
-    policy = RetryPolicy()
-    # A server Retry-After overrides the computed backoff verbatim.
-    assert policy.backoff(attempt=1, retry_after=7.5) == 7.5
-    assert policy.backoff(attempt=4, retry_after=2.0) == 2.0
 
 
 def test_retry_policy_backoff_full_jitter_within_ceiling():

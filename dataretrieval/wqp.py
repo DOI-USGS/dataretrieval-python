@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
-from .utils import BaseMetadata, _attach_datetime_columns, query
+from .utils import BaseMetadata, _attach_datetime_columns, _query_with_retry
 
 if TYPE_CHECKING:
     import httpx
@@ -179,7 +179,7 @@ def get_results(
     if legacy is not True and profile is None:
         kwargs["dataProfile"] = "fullPhysChem"
 
-    response = query(url, kwargs, delimiter=";", ssl_check=ssl_check)
+    response = _query_with_retry(url, kwargs, delimiter=";", ssl_check=ssl_check)
 
     df = _read_wqp_csv(response.text)
     df = _attach_datetime_columns(df)
@@ -208,7 +208,9 @@ def _what(
     else:
         url = _legacy_only_url(service, legacy=legacy)
 
-    response = query(url, payload=kwargs, delimiter=";", ssl_check=ssl_check)
+    response = _query_with_retry(
+        url, payload=kwargs, delimiter=";", ssl_check=ssl_check
+    )
     df = _read_wqp_csv(response.text)
     return df, WQP_Metadata(response, **kwargs)
 

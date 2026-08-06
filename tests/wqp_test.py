@@ -4,6 +4,7 @@ from unittest import mock
 import pytest
 from pandas import DataFrame
 
+import dataretrieval.wqp as wqp
 from dataretrieval.wqp import (
     WQP_Metadata,
     _check_kwargs,
@@ -35,6 +36,23 @@ def _assert_wqp_metadata(md, request_url):
     assert isinstance(md.query_time, datetime.timedelta)
     assert md.header.get("mock_header") == "value"
     assert md.comment is None
+
+
+def test_get_results_opts_into_retry(monkeypatch):
+    """WQP explicitly enables retry at its shared query boundary."""
+    response = mock.Mock(
+        text="ResultIdentifier,ResultMeasureValue\nA,1.0\n",
+        url="https://example.test",
+        elapsed=datetime.timedelta(),
+        headers={},
+    )
+    query = mock.Mock(return_value=response)
+    monkeypatch.setattr(wqp, "_query_with_retry", query)
+
+    df, _ = wqp.get_results(legacy=True)
+
+    assert len(df) == 1
+    assert query.call_count == 1
 
 
 def test_read_wqp_csv_preserves_leading_zero_codes():
