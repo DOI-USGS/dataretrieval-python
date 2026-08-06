@@ -1,5 +1,6 @@
 """Unit tests for functions in utils.py"""
 
+import copy
 from unittest import mock
 
 import pandas as pd
@@ -32,6 +33,17 @@ class Test_query:
         response = utils.query(url, payload)
         assert response.status_code == 200  # GET was successful
         assert "user-agent" in response.request.headers
+
+    def test_does_not_mutate_caller_payload(self, httpx_mock):
+        """query() builds its own params dict and must not mutate the caller's
+        payload, which it previously stringified in place (so a reused dict
+        carried delimiter-joined values into the next call)."""
+        httpx_mock.add_response(method="GET", json={"value": {}})
+        url = "https://waterservices.usgs.gov/nwis/dv"
+        payload = {"sites": ["01646500", "01646501"], "format": "json"}
+        original = copy.deepcopy(payload)
+        utils.query(url, payload)
+        assert payload == original
 
 
 class Test_error_taxonomy:
